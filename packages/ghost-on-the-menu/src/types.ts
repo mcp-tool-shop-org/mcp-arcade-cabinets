@@ -3,7 +3,7 @@ import type { PatternSet } from './patterns';
 /** Decoration / enemy class. Lies share a class with their honest counterpart. */
 export type SpriteClass = 'init' | 'menu' | 'grid' | 'fog' | 'obstacle' | 'stall';
 
-export type EnemyMode = 'enter' | 'hover' | 'dive' | 'caught' | 'dying';
+export type EnemyMode = 'enter' | 'hover' | 'dive' | 'caught' | 'dying' | 'exit';
 
 export const VISIBLE_MIN = 40;
 export const VISIBLE_MAX = 80;
@@ -114,6 +114,8 @@ export interface Scene {
 export interface Caption {
   text: string;
   t: number;
+  /** Wave card vs catch. Optional so older callers still typecheck. */
+  kind?: 'wave' | 'catch';
 }
 
 export interface RoundState {

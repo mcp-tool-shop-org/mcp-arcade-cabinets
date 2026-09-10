@@ -319,7 +319,7 @@ describe('stepRound', () => {
         waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 5 }],
       }),
     );
-    stepRound(state, { left: false, right: false, fire: false }, 0.05);
+    stepRound(state, { left: false, right: false, fire: false }, 1.6);
     expect(state.boss).not.toBeNull();
     state.boss!.hp = 1;
     state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
@@ -365,5 +365,133 @@ describe('stepRound', () => {
     });
     attachPatterns(round, bad);
     expect(() => createRoundState(round)).toThrow('patterns/ladder.json: pools');
+  });
+
+  it('opens a wave with a kind caption and no digit or fact name', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_card',
+        duration: 12,
+        waveBounds: [
+          { atom: 'inspect.tools_list', t0: 0, t1: 3 },
+          { atom: 'poison.follow_through', t0: 4, t1: 10 },
+        ],
+      }),
+    );
+    stepRound(state, { left: false, right: false, fire: false }, 0.05);
+    expect(state.caption).not.toBeNull();
+    expect(state.caption!.kind).toBe('wave');
+    expect(state.caption!.text).toBe('inspect');
+    expect(state.caption!.text).not.toMatch(/\d|pass|fail|score|tools_list|follow_through/i);
+    expect(state.boss).toBeNull();
+    while (state.t < 4.05) {
+      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    }
+    expect(state.caption!.kind).toBe('wave');
+    expect(state.caption!.text).toBe('poison');
+  });
+
+  it('exits hovering sprites when the wave closes and parks trophies', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_reset',
+        duration: 12,
+        waveBounds: [
+          { atom: 'inspect.tools_list', t0: 0, t1: 3 },
+          { atom: 'poison.follow_through', t0: 4, t1: 10 },
+        ],
+        beats: [
+          {
+            id: 'inspect.tools_list:init:0',
+            t: 0,
+            x: 120,
+            sprite: 'init',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'initialize',
+              note: 'initialize',
+              index: 0,
+            },
+          },
+          {
+            id: 'inspect.tools_list:grid:1',
+            t: 0,
+            x: 200,
+            sprite: 'grid',
+            lie: true,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call leak',
+              index: 1,
+            },
+          },
+        ],
+      }),
+    );
+    const honest = state.enemies.find((e) => e.id.endsWith(':init:0'))!;
+    const trophy = state.enemies.find((e) => e.id.endsWith(':grid:1'))!;
+    park(state, honest);
+    park(state, trophy);
+    revealOnHit(trophy);
+    expect(trophy.mode).toBe('caught');
+    while (state.t < 4.05) {
+      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    }
+    expect(honest.mode).toBe('exit');
+    expect(trophy.mode).toBe('caught');
+    const yExit = honest.y;
+    const parked = trophy.y;
+    stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    expect(trophy.mode).toBe('caught');
+    expect(Math.abs(trophy.y - parked)).toBeLessThan(1);
+    expect(honest.y).toBeLessThan(yExit);
+  });
+
+  it('spawns the boss after the wave caption and emits grids from under the whisperer', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_emit',
+        duration: 12,
+        waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 10 }],
+        beats: [
+          {
+            id: 'poison.follow_through:grid:0',
+            t: 0,
+            x: 80,
+            sprite: 'grid',
+            lie: false,
+            members: 3,
+            source: {
+              atom: 'poison.follow_through',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 0,
+            },
+          },
+        ],
+      }),
+    );
+    const grid = state.enemies[0]!;
+    expect(grid.tEnter).toBe(Number.POSITIVE_INFINITY);
+    stepRound(state, { left: false, right: false, fire: false }, 0.05);
+    expect(state.caption!.kind).toBe('wave');
+    expect(state.boss).toBeNull();
+    expect(grid.tEnter).toBe(Number.POSITIVE_INFINITY);
+    while (state.t < 1.7) {
+      stepRound(state, { left: false, right: false, fire: false }, 0.1);
+    }
+    expect(state.boss).not.toBeNull();
+    expect(state.boss!.kind).toBe('whisperer');
+    expect(grid.tEnter).toBeLessThan(Number.POSITIVE_INFINITY);
+    expect(grid.mode).toBe('enter');
+    const origin = grid.path[0]!;
+    const mid = state.boss!.x + state.boss!.w / 2;
+    const by = state.boss!.y + state.boss!.h;
+    expect(Math.abs(origin.x - mid)).toBeLessThan(2);
+    expect(Math.abs(origin.y - by)).toBeLessThan(8);
   });
 });

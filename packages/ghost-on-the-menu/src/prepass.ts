@@ -148,6 +148,20 @@ function groupSizes(n: number, group: number): number[] {
   return sizes;
 }
 
+function protocolRank(sprite: Beat['sprite']): number {
+  if (sprite === 'init') return 0;
+  if (sprite === 'menu') return 1;
+  if (sprite === 'grid') return 2;
+  return 3;
+}
+
+/** Handshake, then menu, then calls, then the rest. Stable within a class. */
+function stageProtocol(beats: Beat[]): Beat[] {
+  const copy = beats.slice();
+  copy.sort((a, b) => protocolRank(a.sprite) - protocolRank(b.sprite));
+  return copy;
+}
+
 function placeRhythm(beats: Beat[], atoms: readonly { id: string }[], wave: WaveTier): WaveBound[] {
   const byAtom = new Map<string, Beat[]>();
   for (const a of atoms) byAtom.set(a.id, []);
@@ -164,6 +178,8 @@ function placeRhythm(beats: Beat[], atoms: readonly { id: string }[], wave: Wave
   let t = 0;
   for (let w = 0; w < waves.length; w++) {
     const pack = waves[w]!;
+    const staged = stageProtocol(pack.beats);
+    for (let i = 0; i < staged.length; i++) pack.beats[i] = staged[i]!;
     const t0 = t;
     const sizes = groupSizes(pack.beats.length, wave.beatsPerGroup);
     let idx = 0;
@@ -218,8 +234,9 @@ function columnX(seed: number, i: number, cols: number, margin: number): number 
  * Whole-tape pre-pass (lock G7, wave 2): placement from event order, then
  * selection from event class. Consecutive authorized tools/call rows collapse
  * into one formation. Visible events are capped at 80. Duration is
- * clamp((base / density) × beats, 45, 120). One wave per atom, rhythm groups
- * from waves.json. Density is unused in group/rest/breather placement.
+ * clamp((base / density) × beats, 45, 120). One wave per atom, staged in
+ * protocol order (init, menu, grids, rest) with rhythm groups from waves.json.
+ * Density is unused in group/rest/breather placement.
  */
 export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_SECONDS }): Round {
   const seed = opts.seed ?? seedFromTape(tape);

@@ -181,6 +181,27 @@ describe('prepassRound', () => {
     expect(t1.duration).toBe(Math.min(120, Math.max(45, (t1.beats.length * 2) / wave1.density)));
   });
 
+  it('stages each wave in protocol order: init, then menu, then grids, then the rest', () => {
+    const round = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
+    const rank = (s: string) => (s === 'init' ? 0 : s === 'menu' ? 1 : s === 'grid' ? 2 : 3);
+    for (const bound of round.waveBounds) {
+      const pack = round.beats
+        .filter((b) => b.source.atom === bound.atom)
+        .sort((a, b) => a.t - b.t);
+      for (let i = 1; i < pack.length; i++) {
+        expect(rank(pack[i]!.sprite)).toBeGreaterThanOrEqual(rank(pack[i - 1]!.sprite));
+      }
+      const first = (sprite: string) => pack.find((b) => b.sprite === sprite);
+      const last = (sprite: string) => [...pack].reverse().find((b) => b.sprite === sprite);
+      if (first('init') && first('menu')) {
+        expect(last('init')!.t).toBeLessThanOrEqual(first('menu')!.t);
+      }
+      if (first('menu') && first('grid')) {
+        expect(last('menu')!.t).toBeLessThanOrEqual(first('grid')!.t);
+      }
+    }
+  });
+
   it('derives tier from the tape header, never facts', () => {
     expect(prepassRound(load('naive-ndjson'), { seconds: 150 }).tier).toBe(0);
     // docker + image_id is live even when seated; this fixture is tier 2, not 1.

@@ -1,3 +1,4 @@
+import { kindOfAtom } from './cues';
 import {
   attachPatterns,
   attachedPatterns,
@@ -27,6 +28,8 @@ const SHAKE_DECAY = 0.3;
 const DIE_POP = 0.15;
 const CAPTION_T = 1.5;
 const CAUGHT_RISE = 220;
+const EXIT_SPEED = 220;
+const WAVE_CAPTION_T = 1.5;
 const PATH_RATE = 0.35;
 const BLIND_BEAT = 0.8;
 const SLIT_W = 16;
@@ -45,6 +48,9 @@ interface Meta {
   bossOriginY: number;
   fogBeats: { t: number; x: number }[];
   bossDeadFor: string | null;
+  captionedWave: number;
+  waveHold: number;
+  emittedGridForWave: boolean;
 }
 
 const metaOf = new WeakMap<RoundState, Meta>();
@@ -132,8 +138,17 @@ function bossKindFor(atom: string): Boss['kind'] | null {
 function hittable(state: RoundState, enemy: Enemy): boolean {
   if (enemy.sprite === 'fog') return false;
   return (
-    enemy.alive && state.t >= enemy.tEnter && enemy.mode !== 'caught' && enemy.mode !== 'dying'
+    enemy.alive &&
+    state.t >= enemy.tEnter &&
+    enemy.mode !== 'caught' &&
+    enemy.mode !== 'dying' &&
+    enemy.mode !== 'exit'
   );
+}
+
+function atomOf(enemy: Enemy): string {
+  const i = enemy.id.indexOf(':');
+  return i === -1 ? enemy.id : enemy.id.slice(0, i);
 }
 
 function endRound(state: RoundState, why: 'time' | 'lamps'): void {
@@ -211,7 +226,12 @@ export function createRoundState(round: Round): RoundState {
       lie: beat.lie,
       revealed: false,
       alive: true,
-      tEnter: beat.t,
+      tEnter:
+        beat.sprite === 'grid' &&
+        bossKindFor(beat.source.atom) === 'whisperer' &&
+        round.waveBounds.some((b) => b.atom === beat.source.atom)
+          ? Number.POSITIVE_INFINITY
+          : beat.t,
       members: beat.members,
       mode: 'enter',
       pathT: 0,
@@ -262,6 +282,9 @@ export function createRoundState(round: Round): RoundState {
     bossOriginY: 0,
     fogBeats,
     bossDeadFor: null,
+    captionedWave: -1,
+    waveHold: 0,
+    emittedGridForWave: false,
   };
   metaOf.set(state, meta);
   attachPatterns(state, patterns);
@@ -275,6 +298,56 @@ function syncWave(state: RoundState, meta: Meta): void {
     if (state.t >= bounds[i]!.t0) w = i;
   }
   state.wave = w;
+}
+
+function waveCaption(atom: string): string {
+  const kind = kindOfAtom(atom);
+  return kind === 'breather' ? 'inspect' : kind;
+}
+
+function closeWave(state: RoundState, atom: string): void {
+  for (const enemy of state.enemies) {
+    if (atomOf(enemy) !== atom) continue;
+    if (!enemy.alive) continue;
+    if (enemy.mode === 'caught') continue;
+    if (enemy.mode === 'dying' || enemy.mode === 'exit') continue;
+    enemy.mode = 'exit';
+    if (enemy.tEnter > state.t) enemy.tEnter = state.t;
+  }
+}
+
+function openWave(state: RoundState, meta: Meta, wave: number): void {
+  if (wave > 0) {
+    const prev = meta.round.waveBounds[wave - 1];
+    if (prev) closeWave(state, prev.atom);
+  }
+  const bound = meta.round.waveBounds[wave];
+  if (!bound) return;
+  state.caption = { text: waveCaption(bound.atom), t: WAVE_CAPTION_T, kind: 'wave' };
+  meta.waveHold = WAVE_CAPTION_T;
+  meta.emittedGridForWave = false;
+  meta.captionedWave = wave;
+}
+
+function emitWaveGrids(state: RoundState, meta: Meta): void {
+  if (meta.emittedGridForWave) return;
+  const bound = meta.round.waveBounds[state.wave];
+  const boss = state.boss;
+  if (!bound || !boss || !boss.alive) return;
+  const cx = boss.x + boss.w / 2;
+  const by = boss.y + boss.h;
+  for (const enemy of state.enemies) {
+    if (enemy.sprite !== 'grid') continue;
+    if (atomOf(enemy) !== bound.atom) continue;
+    if (!enemy.alive || enemy.mode === 'caught' || enemy.mode === 'dying') continue;
+    enemy.tEnter = state.t;
+    enemy.pathT = 0;
+    enemy.mode = 'enter';
+    enemy.x = cx - enemy.w / 2;
+    enemy.y = by - enemy.h / 2;
+    enemy.path = [{ x: cx, y: by }, ...enemy.path];
+  }
+  meta.emittedGridForWave = true;
 }
 
 function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossDef): void {
@@ -307,6 +380,10 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
 }
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
+  if (meta.waveHold > 0) {
+    state.boss = null;
+    return;
+  }
   const bound = meta.round.waveBounds[state.wave];
   const kind = bound ? bossKindFor(bound.atom) : null;
   if (!bound || state.t >= bound.t1) {
@@ -325,6 +402,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const def = meta.patterns.bosses[kind];
   if (!state.boss || state.boss.kind !== kind || !state.boss.alive) {
     spawnBoss(state, meta, kind, def);
+    if (kind === 'whisperer') emitWaveGrids(state, meta);
   }
   const boss = state.boss;
   if (!boss || !boss.alive) return;
@@ -369,6 +447,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   meta.bossFireAt = state.t + rhythm.period;
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
+  if (p.cue === 'emit-grid') emitWaveGrids(state, meta);
   if (p.fire === 'drop-fog') {
     spawnFog(state, cx, by, 40 * meta.rung.fog);
   } else if (p.fire === 'spread') {
@@ -441,7 +520,17 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     state.caption.t -= dt;
     if (state.caption.t <= 0) state.caption = null;
   }
-  if (meta) syncWave(state, meta);
+  if (meta) {
+    const prevWave = state.wave;
+    syncWave(state, meta);
+    if (meta.round.waveBounds.length > 0 && state.wave !== meta.captionedWave) {
+      if (meta.captionedWave >= 0 && state.wave !== prevWave) {
+        /* closeWave runs inside openWave */
+      }
+      openWave(state, meta, state.wave);
+    }
+    meta.waveHold = Math.max(0, meta.waveHold - dt);
+  }
 
   if (state.lives <= 0) {
     endRound(state, 'lamps');
@@ -492,6 +581,11 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       if (state.t >= enemy.dieAt) enemy.alive = false;
       continue;
     }
+    if (enemy.mode === 'exit') {
+      enemy.y -= EXIT_SPEED * speed * dt;
+      if (enemy.y + enemy.h < 0) enemy.alive = false;
+      continue;
+    }
     // Motion is class motion only. `lie` is not consulted here (G7).
     if (enemy.path.length > 0 && enemy.pathT < 1) {
       enemy.mode = 'enter';
@@ -540,7 +634,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         state.hitstop = HITSTOP;
         state.shake = 1;
         const text = labels.get(enemy) || sanitizeCaption('', enemy.sprite);
-        state.caption = { text, t: CAPTION_T };
+        state.caption = { text, t: CAPTION_T, kind: 'catch' };
       } else {
         enemy.mode = 'dying';
         enemy.dieAt = state.t + DIE_POP;
