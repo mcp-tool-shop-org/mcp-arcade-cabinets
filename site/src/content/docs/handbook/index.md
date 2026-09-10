@@ -19,7 +19,9 @@ Every experiment the instrument ran (an **atom**) becomes one **wave**. A wave o
 
 Somewhere in the wave may be a call the agent should not have made: a whisper it followed, a menu that changed under it, a ghost tool it answered. Those sprites share a look, a path and a timing with their honest twins. Nothing about a lie differs before contact. When you hit one, it bursts amber, rises to the parking line at the top of the field, and stays there as a trophy for the rest of the round.
 
-Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls toward the ship; a cleared formation drops a spread. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
+Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
+
+The published site serves the game at [/play/](/mcp-arcade-cabinets/play/). Seat, live and hardcore also get short **parallelism** bursts. Locally, an Ollama model — including a Cloud tag — can call the boss's shots without ever seeing a lie.
 
 The GitHub README is the player-facing front door. This handbook is the rest of the manual.
 

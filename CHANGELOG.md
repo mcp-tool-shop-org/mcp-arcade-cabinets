@@ -7,22 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
+## [0.3.0] - 2026-09-10
 
-- README and landing page rewritten for players. The fairness band, layout, bots, and threat model stay in the handbook and this file.
-- Drops fall straight down. You have to move under them; they no longer drift to the ship.
-- Difficulty ramps with the wave index. A fourth rung, hardcore, is selector-only: one lamp, rage from the start, boss hazards.
-- Voice lines are the agent thinking out loud, with asides during a wave. Soundtrack changes key with the experiment and the boss.
-- Handshake ack (`ready`) and error responses are their own classes. An optional Ollama seat can call boss fire (local 7B or a signed-in Cloud tag); the prompt never carries a fact.
-- Seat, live and hardcore rounds run longer (waves.json min/max/tail). Parallelism bursts multiply honest copies and heat the soundtrack; the first burst is short, later waves hold it.
+The cabinet grows a fight: more classes, recorded beds, parallelism, a Cloud boss seat. Play it at [the landing page](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/) or straight at [/play/](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/).
 
 ### Added
 
-- **Drops.** A downed boss drops a lamp; a cleared formation drops a spread. Both fall toward the ship's row and drift toward its column. Data in `patterns/drops.json`. Catching a lamp relights one; catching a spread fans the ship's fire for a few seconds. Drops never key on a lie.
-- **Voice.** A dry line per wave open and per boss enter, in the wave card's furniture paint, and a closing line on the end scene. Data in `patterns/voice.json`, four drafts per key, picked by the round seed. They name the experiment and the creature, never a fact, never a digit.
+- **Drops.** A downed boss drops a lamp; a cleared formation drops a spread. Both fall **straight down**. Catching a lamp relights one; catching a spread fans the ship's fire for a few seconds. Data in `patterns/drops.json`. Drops never key on a lie.
+- **Voice.** A dry line per wave open and per boss enter, and a closing line on the end scene. Data in `patterns/voice.json`, four drafts per key, picked by the round seed. They name the experiment and the creature, never a fact, never a digit.
 - **Tape labels.** The picker is a list. Each tape carries a difficulty word (fixture, seat, or live) and an **i** whose hover text explains the header and the wire shape. A test flips every fact and requires the identical label and why.
+- **Hardcore.** Selector-only fourth rung: one lamp, rage from the first shot, boss hazards (echo, band, plate).
 - **Parallelism.** Data in `patterns/parallelism.json`. Seed-placed bursts of extra honest copies and a hotter track. Off on the recorded rung. Extra copies are never lies.
 - **Class sprites** for `answer`, `ready`, `error`, drops, and hardcore hazards, plus recorded ACE-Step beds per wave, boss, breather and burst. Chiptune remains the fallback.
+- **Ollama Cloud bosses.** The local daemon can sit a Cloud tag (`gpt-oss:120b-cloud` when pulled). The prompt never carries a fact. Pages cannot reach the daemon.
+
+### Changed
+
+- README and landing page rewritten for players. The fairness band, layout, bots, and threat model stay in the handbook and this file.
+- Difficulty ramps with the wave index. Seat rounds run longer.
+- Handshake ack (`ready`) and error responses are their own classes.
+- The landing page header links **Play** into `/play/`.
 
 ## [0.2.0] - 2026-09-10
 
@@ -43,5 +47,6 @@ The first release. Ghost on the Menu is playable in a browser and from a termina
 
 - House Call, the turn-based calibration cabinet, is parked (last state 152f548) until a design that plays exists.
 
-[Unreleased]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.2.0

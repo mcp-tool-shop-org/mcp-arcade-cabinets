@@ -8,16 +8,16 @@ export const config: SiteConfig = {
   brandName: 'mcp-arcade-cabinets',
   repoUrl: 'https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets',
   footerText:
-    'MIT Licensed — built by <a href="https://github.com/mcp-tool-shop-org" style="color:var(--color-muted);text-decoration:underline">mcp-tool-shop-org</a>',
+    'MIT Licensed — built by <a href="https://mcp-tool-shop.github.io/" style="color:var(--color-muted);text-decoration:underline">MCP Tool Shop</a>',
 
   hero: {
-    badge: 'Arcade shooter',
+    badge: 'Arcade shooter · v0.3.0',
     headline: 'Shoot the whisper.',
     headlineAccent: 'Read the wire.',
     description:
       'A recorded bout becomes a round: handshake, menu, calls, answers, a boss. The calls the agent should not have made look like everything else until you hit one.',
-    primaryCta: { href: 'play/', label: 'Play in the browser' },
-    secondaryCta: { href: 'handbook/', label: 'How to read a round' },
+    primaryCta: { href: 'play/', label: 'Play Ghost on the Menu' },
+    secondaryCta: { href: 'handbook/', label: 'Read the Handbook' },
     previews: [
       { label: 'Play', code: 'open play/  —  or pnpm -F @mcp-arcade-cabinets/cabinets dev' },
       { label: 'Move', code: 'left, right, space to fire, F for full screen' },
@@ -45,16 +45,16 @@ export const config: SiteConfig = {
           desc: 'The Whisperer, the Menu and the Doorman show up whether or not anything went wrong. A dry line names the creature. Killing a boss reveals nothing.',
         },
         {
-          title: 'Drops fall toward you',
-          desc: 'The ship cannot move forward, so a downed boss drops a lamp toward its row, and a cleared formation drops a spread. Catch them as they drift in.',
+          title: 'Drops fall straight down',
+          desc: 'A downed boss drops a lamp; a cleared formation drops a spread. Move under them. They do not drift to the ship.',
         },
         {
           title: 'No score, ever',
           desc: 'Three lamps, words on the wave card, an end scene that names the tape, the server and the policy. No count, no digit, no verdict.',
         },
         {
-          title: 'Fixture, seat, live',
-          desc: 'Each tape on the list carries a difficulty word. Hover i for why. Seat is the default fight. Live is meant to be survived.',
+          title: 'Fixture, seat, live, hardcore',
+          desc: 'Each tape on the list carries a difficulty word. Hover i for why. Seat is the default fight. Live is meant to be survived. Hardcore is one lamp, from the selector only.',
         },
       ],
     },

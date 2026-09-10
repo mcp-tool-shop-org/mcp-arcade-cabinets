@@ -40,3 +40,5 @@
 | D. Shipping Hygiene | 5/10   | 9/10                                                                   |
 | E. Identity (soft)  | 0/10   | 10/10 (logo, 7 translations, landing page, handbook, /play/, metadata) |
 | **Overall**         | 24/50  | 45/50                                                                  |
+
+v0.3.0 (2026-09-10) re-ran the full treatment on the same score: shipcheck A–D pass, landing header **Play** into `/play/`, translations refreshed, GitHub metadata already set, no npm (all packages private).

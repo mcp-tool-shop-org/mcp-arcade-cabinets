@@ -34,8 +34,8 @@
 ## C. Operator Docs
 
 - [x] `[all]` README is current — 2026-09-10: what, play, terminal tools, Node 22+: what it does, install, usage, supported platforms + runtime versions
-- [x] `[all]` CHANGELOG.md (Keep a Changelog format) — 2026-09-10: 0.2.0 entry
-- [x] `[all]` LICENSE file present — 2026-09-10: MIT; support status in SECURITY.md (0.2.x) and repo states support status
+- [x] `[all]` CHANGELOG.md (Keep a Changelog format) — 2026-09-10: 0.3.0 entry
+- [x] `[all]` LICENSE file present — 2026-09-10: MIT; support status in SECURITY.md (0.3.x) and repo states support status
 - [x] `[cli]` `--help` output accurate — 2026-09-10: scripts/play.mjs prints usage on a missing cabinet; film and sweep document their flags in their headers for all commands and flags
 - [ ] `[cli|mcp|desktop]` SKIP: the tools print a transcript or a table; nothing logs secrets because nothing holds any — Logging levels defined: silent / normal / verbose / debug — secrets redacted at all levels
 - [ ] `[mcp]` SKIP: not an MCP server — All tools documented with description + parameters
@@ -44,7 +44,7 @@
 ## D. Shipping Hygiene
 
 - [x] `[all]` `verify` script exists — 2026-09-10: pnpm verify = lint, typecheck, test, build, play-through (test + build + smoke in one command)
-- [x] `[all]` Version in manifest matches git tag — 2026-09-10: 0.2.0 in every package.json; tag v0.2.0 cut at release — executed by `npx @mcptoolshop/shipcheck manifest` (D2: manifest version not behind the newest released tag; `--expect <ver>` for a strict release-time match)
+- [x] `[all]` Version in manifest matches git tag — 2026-09-10: 0.3.0 in every package.json; tag v0.3.0 cut at release — executed by `npx @mcptoolshop/shipcheck manifest` (D2: manifest version not behind the newest released tag; `--expect <ver>` for a strict release-time match)
 - [x] `[all]` Dependency scanning runs in CI — 2026-09-10: pnpm audit --audit-level=high in ci.yml (shipcheck ci: passed) (ecosystem-appropriate) — executed by `npx @mcptoolshop/shipcheck ci` (D3: a recognized scanner is _configured_ in CI, or dependabot is present)
 - [x] `[all]` No known high/critical vulnerabilities — 2026-09-10: pnpm audit reports 0 high/critical (2 moderate, dev-only); Dependabot alerts enabled via API. shipcheck deps cannot parse a pnpm tree (it runs npm audit), so this line is attested from pnpm audit in any dependency tree, and Dependabot alerts are enabled — executed by `npx @mcptoolshop/shipcheck deps` (the OUTCOME: audits **every** tree incl. subtrees, not just the root; `ci` only proves a scanner is configured)
 - [ ] `[all]` SKIP: org rule: no dependabot.yml unless asked; alerts are on — Automated dependency **update** mechanism exists <!-- soft/optional: the org rule restricts the auto-PR bot (CI minutes), NOT alerts. The security outcome is enforced by `shipcheck deps`; the update bot is optional. -->

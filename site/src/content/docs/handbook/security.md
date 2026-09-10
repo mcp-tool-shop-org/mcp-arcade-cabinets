@@ -18,7 +18,7 @@ No receipts, no proofs, no instrument code, no MCP connections, no filesystem wr
 
 ## Permissions, network, telemetry, secrets
 
-A browser. The published shell is static files on one origin; its only requests are for its own assets. No network egress, no telemetry, no secrets read, stored or transmitted.
+A browser. The published shell is static files on one origin; its only requests are for its own assets. No telemetry, no secrets read, stored or transmitted. The local Vite shell may proxy `/ollama` to a daemon on this machine, including Cloud tags already signed in; the prompt never carries a fact. GitHub Pages cannot reach that daemon.
 
 ## Art and licence
 
@@ -26,4 +26,4 @@ The sprite images were generated on a partner image API through Comfy Cloud and 
 
 ## Reporting
 
-See [SECURITY.md](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/SECURITY.md) in the repo for the reporting address and response timeline. Supported versions: 0.2.x.
+See [SECURITY.md](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/SECURITY.md) in the repo for the reporting address and response timeline. Supported versions: 0.3.x.

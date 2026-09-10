@@ -20,7 +20,11 @@ import { config } from '../site-config';
   packageLabel={config.packageLabel}
   npmUrl={config.npmUrl}
   footerText={config.footerText}
-  nav={config.sections.map(s => ({ href: `#${s.id}`, label: s.title }))}
+  nav={[
+    { href: 'play/', label: 'Play' },
+    ...config.sections.map((s) => ({ href: `#${s.id}`, label: s.title })),
+    { href: 'handbook/', label: 'Handbook' },
+  ]}
 >
   <Hero {...config.hero} />
 

@@ -29,7 +29,8 @@ tape ──prepass──▶ Round ──createRoundState──▶ RoundState ─
 - **`labelTape(tape)`** is pure. The picker label and the hover why come from the header and the wire shape (derived tier, wave count, boss count, rows per atom, framing). A test flips every fact and requires the same strings.
 - **`stepRound(state, input, dt)`** is the only sim function: motion on entry paths and at hover, dives, fire, fog, lamps and grace, bosses with phase scripts, the catch (hitstop, shake, caption, trophy), drops, voice lines, parallelism bursts, wave open and close, the end.
 - **`renderRound(ctx, state, opts)`** draws through a narrow `DrawContext` (fill style, font, rect, text, an optional sprite hook). It adds nothing the sim did not decide: no counts, no digits, lamps as rectangles, the caption in words.
-- **`cues`** diffs two snapshots of the state and names the sounds to fire; **`audio`** is pure note data until the shell attaches a WebAudio context.
+- **`cues`** diffs two snapshots of the state and names the sounds to fire; **`audio`** is pure note data until the shell attaches a WebAudio context. Recorded ACE-Step beds overlay the chiptune when the files are present.
+- **`askOllama`** is the optional boss seat. The prompt is frozen and fact-blind. The local Vite shell proxies `/ollama` to the daemon on this machine, including Cloud tags; GitHub Pages never reaches it.
 
 ## The contract
 
@@ -45,7 +46,7 @@ Two models built this, each reviewing the other's diff: Grok wrote the tape load
 | -------------------------------------- | ------------------------------------------------------------------------ |
 | `packages/tape-core`                   | Load a tape, refuse forbidden keys, slice by atom, scoring rules kept for a future cabinet |
 | `packages/ghost-on-the-menu/src`       | `prepass`, `sim`, `patterns` (the loader), `render`, `cues`, `audio`, `play` (the bots) |
-| `packages/ghost-on-the-menu/patterns`  | The nine data files                                                      |
+| `packages/ghost-on-the-menu/patterns`  | The ten data files (paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism) |
 | `packages/ghost-on-the-menu/test`      | Unit tests, the fairness band, the expressive-range plot                 |
 | `apps/cabinets`                        | The Vite shell: tape picker, canvas, controls, sprite atlas              |
 | `fixtures/tapes`                       | Sixteen tapes from the instrument                                        |
