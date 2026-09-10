@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createRoundState, prepassRound, revealOnHit, stepRound } from '../src/index';
+import { attachPatterns, DEFAULT_PATTERNS, type PatternSet } from '../src/patterns';
 import { PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
 
 function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
@@ -333,5 +334,36 @@ describe('stepRound', () => {
     }
     expect(state.t).toBeLessThan(5);
     expect(state.boss).toBeNull();
+  });
+
+  it('throws when the filtered path pool is empty', () => {
+    const bad = JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as PatternSet;
+    const gridIds = new Set(
+      bad.paths.paths.filter((p) => p.classes.includes('grid')).map((p) => p.id),
+    );
+    const r0 = bad.ladder.rungs.find((r) => r.tier === 0)!;
+    r0.pools = r0.pools.filter((id) => !gridIds.has(id));
+    const round = roundOf({
+      tapeId: 'bout_pool',
+      duration: 8,
+      beats: [
+        {
+          id: 'inspect.tools_list:grid:0',
+          t: 0,
+          x: 240,
+          sprite: 'grid',
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/call',
+            note: 'tools/call echo',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, bad);
+    expect(() => createRoundState(round)).toThrow('patterns/ladder.json: pools');
   });
 });

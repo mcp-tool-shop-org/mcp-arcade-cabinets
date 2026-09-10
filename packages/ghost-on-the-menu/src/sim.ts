@@ -80,14 +80,13 @@ function pickPath(
   sprite: SpriteClass,
   seed: number,
   index: number,
-): PathDef | null {
+): PathDef {
   const rung = rungOf(patterns, tier);
   const pool = patterns.paths.paths.filter(
     (p) => rung.pools.includes(p.id) && p.classes.includes(sprite) && p.tiers.includes(tier),
   );
-  const list = pool.length ? pool : patterns.paths.paths.filter((p) => p.classes.includes(sprite));
-  if (list.length === 0) return null;
-  return list[pickIndex(seed, index, list.length)] ?? null;
+  if (pool.length === 0) throw new Error('patterns/ladder.json: pools');
+  return pool[pickIndex(seed, index, pool.length)]!;
 }
 
 function scalePath(def: PathDef): { x: number; y: number }[] {
@@ -196,7 +195,7 @@ export function createRoundState(round: Round): RoundState {
     }
     const box = formationSize(beat.members, patterns);
     const def = pickPath(patterns, round.tier, beat.sprite, round.seed, i);
-    const path = def ? scalePath(def) : [];
+    const path = scalePath(def);
     const start = path[0] ?? { x: beat.x, y: 0 };
     const hover = path[path.length - 1] ?? { x: beat.x, y: 80 };
     const enemy: Enemy = {

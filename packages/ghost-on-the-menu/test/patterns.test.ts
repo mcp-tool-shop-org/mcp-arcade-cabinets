@@ -159,6 +159,15 @@ describe('loadPatterns', () => {
     expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: pools');
   });
 
+  it('rejects a rung whose pools cover no path for a spawn class', () => {
+    const raw = clone();
+    const paths = (raw.paths as { paths: { id: string; classes: string[] }[] }).paths;
+    const gridIds = new Set(paths.filter((p) => p.classes.includes('grid')).map((p) => p.id));
+    const rungs = (raw.ladder as { rungs: { pools: string[] }[] }).rungs;
+    rungs[0]!.pools = rungs[0]!.pools.filter((id) => !gridIds.has(id));
+    expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: pools');
+  });
+
   it('has three bosses with at least two phases and no fact keys', () => {
     for (const kind of ['whisperer', 'menu', 'doorman'] as const) {
       const boss = DEFAULT_PATTERNS.bosses[kind];

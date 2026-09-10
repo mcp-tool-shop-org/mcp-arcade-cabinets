@@ -9,6 +9,8 @@ import playerJson from '../patterns/player.json';
 import wavesJson from '../patterns/waves.json';
 
 const SPRITE_CLASSES: readonly SpriteClass[] = ['init', 'menu', 'grid', 'fog', 'obstacle', 'stall'];
+/** Classes that spawn as enemies. Fog becomes a FogBank, never a path. */
+const SPAWN_CLASSES: readonly SpriteClass[] = ['init', 'menu', 'grid', 'obstacle', 'stall'];
 
 const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
@@ -352,12 +354,21 @@ export function loadPatterns(raw: unknown): PatternSet {
     if (!Object.prototype.hasOwnProperty.call(obj, name)) fail(`${name}.json`, name);
   }
   const paths = loadPaths(obj.paths);
+  const ladder = loadLadder(obj.ladder, new Set(paths.paths.map((p) => p.id)));
+  for (const rung of ladder.rungs) {
+    for (const cls of SPAWN_CLASSES) {
+      const covered = paths.paths.some(
+        (p) => rung.pools.includes(p.id) && p.classes.includes(cls) && p.tiers.includes(rung.tier),
+      );
+      if (!covered) fail('ladder.json', 'pools');
+    }
+  }
   return {
     paths,
     formations: loadFormations(obj.formations),
     fire: loadFire(obj.fire),
     bosses: loadBosses(obj.bosses),
-    ladder: loadLadder(obj.ladder, new Set(paths.paths.map((p) => p.id))),
+    ladder,
     waves: loadWaves(obj.waves),
     player: loadPlayer(obj.player),
   };
