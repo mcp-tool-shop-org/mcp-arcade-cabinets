@@ -49,6 +49,8 @@ export function mountGhost(
   tape: Tape,
   onExit: () => void,
   onNext?: () => void,
+  /** True when the mount follows a click (Next tape), so the sound can start at once. */
+  startAudio = false,
 ) {
   root.replaceChildren();
   const wrap = document.createElement('section');
@@ -201,13 +203,14 @@ export function mountGhost(
   const newRound = () => prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor() });
   let round: Round = newRound();
   let state: RoundState = createRoundState(round);
-  let prev: CueSnapshot | null = null;
+  // Seeded from the fresh state, not null, so the first wave card's cue fires.
+  let prev: CueSnapshot | null = snapshot(state);
   let last = performance.now();
   let raf = 0;
   const restart = () => {
     round = newRound();
     state = createRoundState(round);
-    prev = null;
+    prev = snapshot(state);
     nextBtn.disabled = true;
   };
   difficulty.addEventListener('change', () => {
@@ -262,5 +265,6 @@ export function mountGhost(
     leave();
     onNext();
   });
+  if (startAudio) ensureAudio();
   canvas.focus();
 }

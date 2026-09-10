@@ -41,9 +41,9 @@ function menu() {
 }
 
 /** Mount the tape at index i; the end scene's Next tape walks the list in order. */
-function playAt(i: number) {
+function playAt(i: number, fromClick = false) {
   const t = TAPES[i % TAPES.length]!;
-  mountGhost(app, t.name, t.tape, menu, () => playAt(i + 1));
+  mountGhost(app, t.name, t.tape, menu, () => playAt(i + 1, true), fromClick);
 }
 
 menu();

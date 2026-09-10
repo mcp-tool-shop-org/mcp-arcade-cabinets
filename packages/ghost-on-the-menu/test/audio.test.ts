@@ -90,3 +90,39 @@ describe('wave motifs', () => {
     }
   });
 });
+
+describe('restart', () => {
+  it('follows the round clock backwards so a restarted round has music', () => {
+    const started: number[] = [];
+    const fake = {
+      currentTime: 0,
+      destination: {} as AudioNode,
+      createOscillator: () =>
+        ({
+          type: 'sine',
+          frequency: { value: 0 },
+          connect() {},
+          start(t: number) {
+            started.push(t);
+          },
+          stop() {},
+        }) as unknown as OscillatorNode,
+      createGain: () =>
+        ({
+          gain: {
+            setValueAtTime() {},
+            linearRampToValueAtTime() {},
+            exponentialRampToValueAtTime() {},
+          },
+          connect() {},
+        }) as unknown as GainNode,
+    };
+    const out = attach(fake);
+    const bs = barSeconds(DEFAULT_MUSIC);
+    out.tick(bs * 10, 'poison');
+    const late = started.length;
+    expect(late).toBeGreaterThan(0);
+    out.tick(0, 'inspect');
+    expect(started.length).toBeGreaterThan(late);
+  });
+});

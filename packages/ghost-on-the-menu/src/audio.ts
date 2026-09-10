@@ -218,6 +218,9 @@ export function attach(ctx: CtxLike, pattern: MusicPattern = DEFAULT_MUSIC): Aud
       // Bars are scheduled by the round clock so the music follows hitstop and the end.
       if (waveKind !== lastKind) lastKind = waveKind;
       const barIndex = Math.floor(t / bs);
+      // A restart sends the round clock backwards; follow it, or the score
+      // stays silent until the new round catches up with the old one.
+      if (barIndex < nextBar - 1) nextBar = barIndex;
       if (barIndex >= nextBar) {
         const lead = ctx.currentTime + 0.05;
         schedule(bar(pattern, waveKind, barIndex), lead);
