@@ -11,7 +11,7 @@ import path from 'node:path';
 
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import { DEFAULT_SECONDS, type Round, type RoundInput, type RoundState } from './types';
+import { DEFAULT_SECONDS, FIELD, type Round, type RoundInput, type RoundState } from './types';
 import { prepassRound } from './prepass';
 import { createRoundState, isHittable, stepRound } from './sim';
 import { makeTextCtx, renderRound } from './render';
@@ -74,7 +74,53 @@ export function tellIds(round: Round): Set<string> {
 
 const IDLE: RoundInput = { left: false, right: false, fire: false };
 
+/** Half-width of the lane in front of the ship that counts as a threat, in px. */
+const DODGE_LANE = 26;
+/** How far above the ship a threat must be to matter, in px. */
+const DODGE_REACH = 160;
+
+/**
+ * The x where a threat will cross the ship's row, or null if it will not.
+ * Reads only positions and velocities: what a player sees.
+ */
+function crossingX(
+  t: { x: number; y: number; w: number; vy: number; vx?: number },
+  playerY: number,
+): number | null {
+  if (t.vy <= 0 || t.y > playerY) return null;
+  if (playerY - t.y > DODGE_REACH) return null;
+  const dt = (playerY - t.y) / t.vy;
+  return t.x + t.w / 2 + (t.vx ?? 0) * dt;
+}
+
+/** Step out of the lane of the nearest incoming shot or diver; null if clear. */
+function dodge(state: RoundState): RoundInput | null {
+  const px = state.player.x + state.player.w / 2;
+  const py = state.player.y;
+  let threat: number | null = null;
+  for (const s of state.enemyShots) {
+    if (s.dead) continue;
+    const cx = crossingX(s, py);
+    if (cx !== null && Math.abs(cx - px) < DODGE_LANE) {
+      if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
+    }
+  }
+  for (const e of state.enemies) {
+    if (!e.alive || e.mode !== 'dive') continue;
+    const cx = e.x + e.w / 2;
+    if (e.y < py && py - e.y < DODGE_REACH && Math.abs(cx - px) < DODGE_LANE) {
+      if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
+    }
+  }
+  if (threat === null) return null;
+  // Away from the threat; a threat dead ahead sends the ship toward the field's centre.
+  const away = threat === px ? (px < FIELD.width / 2 ? 1 : -1) : px < threat ? -1 : 1;
+  return { left: away < 0, right: away > 0, fire: false };
+}
+
 function readerInput(state: RoundState, tells: Set<string>): RoundInput {
+  const d = dodge(state);
+  if (d) return d;
   const px = state.player.x + state.player.w / 2;
   let target: RoundState['enemies'][number] | undefined;
   for (const e of state.enemies) {
