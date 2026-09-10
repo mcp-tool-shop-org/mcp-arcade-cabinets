@@ -54,3 +54,17 @@ describe('cues', () => {
     expect(out).toEqual(['catch', 'pop', 'fire']);
   });
 });
+
+describe('wave card cue', () => {
+  it('fires once when a wave card appears and not while it stays', () => {
+    const state = createRoundState(round);
+    const a = snapshot(state);
+    state.caption = { text: 'poison', t: 1.5, kind: 'wave' };
+    const b = snapshot(state);
+    expect(cues(a, b)).toEqual(['wave']);
+    expect(cues(b, b)).toEqual([]);
+    state.caption = { text: 'tools/call leak', t: 1.5, kind: 'catch' };
+    const c = snapshot(state);
+    expect(cues(b, c)).toEqual([]);
+  });
+});

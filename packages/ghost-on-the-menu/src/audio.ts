@@ -6,7 +6,7 @@
 // (W7). Everything here is pure data until `attach` is given an AudioContext,
 // so the score can be tested in node.
 
-export type SfxName = 'fire' | 'pop' | 'catch' | 'fog' | 'lamp' | 'phase' | 'end';
+export type SfxName = 'fire' | 'pop' | 'catch' | 'fog' | 'lamp' | 'phase' | 'end' | 'wave';
 
 /** One synthesized note: a simple oscillator with an envelope. */
 export interface Note {
@@ -81,6 +81,12 @@ export function sfx(name: SfxName): Note[] {
       return [
         { at: 0, freq: 262, dur: 0.1, wave: 'square', gain: 0.1 },
         { at: 0.12, freq: 392, dur: 0.14, wave: 'square', gain: 0.1 },
+      ];
+    case 'wave':
+      // The wave card: two clean notes, a curtain rising, quieter than the catch.
+      return [
+        { at: 0, freq: 523, dur: 0.14, wave: 'square', gain: 0.09 },
+        { at: 0.16, freq: 784, dur: 0.3, wave: 'triangle', gain: 0.1 },
       ];
     case 'end':
       return [

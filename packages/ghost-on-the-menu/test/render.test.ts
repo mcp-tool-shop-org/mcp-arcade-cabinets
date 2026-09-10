@@ -171,3 +171,19 @@ describe('renderRound', () => {
     expect(bossFrame(boss({ kind: 'whisperer' }))).toBe('boss-whisperer');
   });
 });
+
+describe('caption paint', () => {
+  it('paints a wave card in furniture colour at the top and a catch in amber low on the field', () => {
+    const state = createRoundState(roundOf([]));
+    state.caption = { text: 'poison', t: 1, kind: 'wave' };
+    const a = recordingCtx();
+    renderRound(a, state);
+    expect(a.calls.some((c) => c.startsWith('text #c8d0dc 16 40 poison'))).toBe(true);
+    state.caption = { text: 'tools/call leak', t: 1, kind: 'catch' };
+    const b = recordingCtx();
+    renderRound(b, state);
+    expect(
+      b.calls.some((c) => c.startsWith('text #e8a04a 16 ') && c.endsWith('tools/call leak')),
+    ).toBe(true);
+  });
+});

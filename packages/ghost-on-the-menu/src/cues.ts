@@ -32,6 +32,8 @@ export interface CueSnapshot {
   phase: number | null;
   fog: boolean;
   cooldown: number;
+  /** True while a wave card is on screen. */
+  waveCard: boolean;
 }
 
 export function snapshot(state: RoundState): CueSnapshot {
@@ -49,6 +51,7 @@ export function snapshot(state: RoundState): CueSnapshot {
     phase: state.boss && state.boss.alive ? state.boss.phase : null,
     fog: state.fog !== null && state.fog.alive,
     cooldown: state.fireCooldown,
+    waveCard: state.caption !== null && state.caption.kind === 'wave',
   };
 }
 
@@ -59,6 +62,7 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
   if (next.caught > prev.caught) out.push('catch');
   if (next.lives < prev.lives) out.push('lamp');
   if (next.ended && !prev.ended) out.push('end');
+  if (next.waveCard && !prev.waveCard) out.push('wave');
   if (next.phase !== null && prev.phase !== null && next.phase !== prev.phase) out.push('phase');
   if (next.fog && !prev.fog) out.push('fog');
   if (next.dying > prev.dying) out.push('pop');

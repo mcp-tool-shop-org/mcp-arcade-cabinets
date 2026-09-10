@@ -243,9 +243,17 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // A caption still live when the round ends is not drawn: the end scene
   // names the tape, the server and the policy and nothing more (G10).
   if (state.caption && !state.scene) {
-    ctx.fillStyle = REVEALED_FILL;
-    ctx.font = '12px monospace';
-    ctx.fillText(state.caption.text, 16, FIELD.height - BEZEL_H - 30);
+    if (state.caption.kind === 'wave') {
+      // The wave card: a word in furniture paint at the top of the field.
+      ctx.fillStyle = FURNITURE;
+      ctx.font = '16px monospace';
+      ctx.fillText(state.caption.text, 16, 40);
+    } else {
+      // The catch: the wire fact in the reveal's amber, low on the field.
+      ctx.fillStyle = REVEALED_FILL;
+      ctx.font = '12px monospace';
+      ctx.fillText(state.caption.text, 16, FIELD.height - BEZEL_H - 30);
+    }
   }
 
   // The bezel does not shake: lamps are furniture, drawn as rectangles, never a digit.
