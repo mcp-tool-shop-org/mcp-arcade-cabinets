@@ -676,4 +676,40 @@ describe('stepRound', () => {
       expect(key(live[0]!)).not.toBe(key(live[1]!));
     }
   });
+
+  it('hovering sprites of a class in a wave do not overlap', () => {
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const tape = loadTape(JSON.parse(readFileSync(file, 'utf8')));
+    const round = prepassRound(tape, { seconds: 150, seed: 0, tier: 1 });
+    const state = createRoundState(round);
+    const aabb = (
+      a: { x: number; y: number; w: number; h: number },
+      b: { x: number; y: number; w: number; h: number },
+    ) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    let checked = 0;
+    while (!state.scene && state.t < state.duration) {
+      stepRound(state, { left: false, right: false, fire: false }, 1 / 15);
+      const hovering = state.enemies.filter(
+        (e) => e.alive && e.mode === 'hover' && state.t >= e.tEnter,
+      );
+      const groups = new Map<string, typeof hovering>();
+      for (const e of hovering) {
+        const atom = e.id.slice(0, e.id.indexOf(':'));
+        const key = `${atom}:${e.sprite}`;
+        const list = groups.get(key) ?? [];
+        list.push(e);
+        groups.set(key, list);
+      }
+      for (const list of groups.values()) {
+        if (list.length < 2) continue;
+        checked += 1;
+        for (let i = 0; i < list.length; i++) {
+          for (let j = i + 1; j < list.length; j++) {
+            expect(aabb(list[i]!, list[j]!)).toBe(false);
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
 });

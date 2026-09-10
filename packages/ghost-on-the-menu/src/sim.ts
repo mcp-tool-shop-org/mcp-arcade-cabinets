@@ -116,7 +116,18 @@ function along(path: { x: number; y: number }[], t: number): { x: number; y: num
   return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u };
 }
 
-function formationSize(members: number, patterns: PatternSet): { w: number; h: number } {
+function spriteBox(sprite: SpriteClass, patterns: PatternSet): { w: number; h: number } {
+  if (sprite === 'fog') return { w: 24, h: 16 };
+  return patterns.formations.sprites[sprite];
+}
+
+function formationSize(
+  members: number,
+  sprite: SpriteClass,
+  patterns: PatternSet,
+): { w: number; h: number } {
+  const base = spriteBox(sprite, patterns);
+  if (sprite !== 'grid') return { w: base.w, h: base.h };
   const key = String(Math.min(4, Math.max(1, members))) as '1' | '2' | '3' | '4';
   const layout = patterns.formations.layouts[key];
   let minDx = 0;
@@ -129,7 +140,48 @@ function formationSize(members: number, patterns: PatternSet): { w: number; h: n
     minDy = Math.min(minDy, o.dy);
     maxDy = Math.max(maxDy, o.dy);
   }
-  return { w: 14 + (maxDx - minDx), h: 12 + (maxDy - minDy) };
+  return { w: base.w + (maxDx - minDx), h: base.h + (maxDy - minDy) };
+}
+
+const HOVER_STRIDE = 40;
+const hoverHome = new WeakMap<Enemy, number>();
+
+function wrapX(x: number, w: number): number {
+  const lo = 8;
+  const hi = FIELD.width - w - 8;
+  const span = hi - lo;
+  if (span <= 0) return lo;
+  let t = (x - lo) % span;
+  if (t < 0) t += span;
+  return lo + t;
+}
+
+/** Lateral hover offset from class-rank k. Never reads lie. */
+function hoverShift(k: number, seed: number, idx: number): number {
+  const mag = Math.ceil(k / 2) * HOVER_STRIDE;
+  const sign = k % 2 === 0 ? 1 : -1;
+  const flip = pickIndex(seed, idx, 2) === 0 ? 1 : -1;
+  return mag * sign * flip;
+}
+
+function classRank(round: Round): Map<string, number> {
+  const rank = new Map<string, number>();
+  const waves = round.waveBounds.length ? round.waveBounds.map((w) => w.atom) : [];
+  const atoms = waves.length ? waves : [...new Set(round.beats.map((b) => b.source.atom))];
+  for (const atom of atoms) {
+    const pack = round.beats.filter((b) => b.source.atom === atom && b.sprite !== 'fog');
+    const byClass = new Map<string, typeof pack>();
+    for (const b of pack) {
+      const list = byClass.get(b.sprite) ?? [];
+      list.push(b);
+      byClass.set(b.sprite, list);
+    }
+    for (const list of byClass.values()) {
+      list.sort((a, b) => a.source.index - b.source.index);
+      list.forEach((b, k) => rank.set(`${atom}:${b.source.index}:${b.sprite}`, k));
+    }
+  }
+  return rank;
 }
 
 function bossKindFor(atom: string): Boss['kind'] | null {
@@ -207,14 +259,18 @@ export function createRoundState(round: Round): RoundState {
   const player = patterns.player;
   const fogBeats: { t: number; x: number }[] = [];
   const enemies: Enemy[] = [];
+  const ranks = classRank(round);
   round.beats.forEach((beat, i) => {
     if (beat.sprite === 'fog') {
       fogBeats.push({ t: beat.t, x: beat.x });
       return;
     }
-    const box = formationSize(beat.members, patterns);
+    const box = formationSize(beat.members, beat.sprite, patterns);
     const def = pickPath(patterns, round.tier, beat.sprite, round.seed, i);
     const path = scalePath(def);
+    const k = ranks.get(`${beat.source.atom}:${beat.source.index}:${beat.sprite}`) ?? 0;
+    const last = path[path.length - 1];
+    if (last) last.x = wrapX(last.x + hoverShift(k, round.seed, beat.source.index), box.w);
     const start = path[0] ?? { x: beat.x, y: 0 };
     const hover = path[path.length - 1] ?? { x: beat.x, y: 80 };
     const enemy: Enemy = {
@@ -522,7 +578,11 @@ function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy)
   }
   if (state.t < at) return;
   enemy.mode = 'dive';
-  dives.set(enemy, { phase: 'down', originX: enemy.x, originY: enemy.y });
+  dives.set(enemy, {
+    phase: 'down',
+    originX: hoverHome.get(enemy) ?? enemy.x,
+    originY: enemy.hoverY - enemy.h / 2,
+  });
 }
 
 function stepDive(state: RoundState, meta: Meta | undefined, enemy: Enemy, dt: number): void {
@@ -677,11 +737,18 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       const p = along(enemy.path, enemy.pathT);
       enemy.x = p.x - enemy.w / 2;
       enemy.y = p.y - enemy.h / 2;
-      if (enemy.pathT >= 1) enemy.mode = 'hover';
+      if (enemy.pathT >= 1) {
+        enemy.mode = 'hover';
+        hoverHome.set(enemy, enemy.x);
+      }
     } else {
       enemy.mode = 'hover';
-      enemy.x += Math.sin(state.t * 1.6 + enemy.x * 0.02) * 36 * dt;
-      enemy.x = Math.max(8, Math.min(FIELD.width - enemy.w - 8, enemy.x));
+      let home = hoverHome.get(enemy);
+      if (home === undefined) {
+        home = enemy.x;
+        hoverHome.set(enemy, home);
+      }
+      enemy.x = wrapX(home + Math.sin(state.t * 1.6 + home * 0.02) * 6, enemy.w);
       maybeStartDive(state, meta, enemy);
     }
     if (meta) stepFormationFire(state, meta, enemy);

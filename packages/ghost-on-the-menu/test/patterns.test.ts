@@ -50,6 +50,20 @@ describe('loadPatterns', () => {
         },
       },
       {
+        file: 'formations.json',
+        key: 'sprites',
+        drop: () => {
+          const raw = clone();
+          delete (raw.formations as Record<string, unknown>).sprites;
+          return raw;
+        },
+        mistype: () => {
+          const raw = clone();
+          (raw.formations as Record<string, unknown>).sprites = 0;
+          return raw;
+        },
+      },
+      {
         file: 'fire.json',
         key: 'tiers',
         drop: () => {

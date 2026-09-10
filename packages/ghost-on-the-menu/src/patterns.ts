@@ -115,9 +115,14 @@ export interface WaveTier {
   tail: number;
 }
 
+export type SpriteBox = { w: number; h: number };
+
 export interface PatternSet {
   paths: { paths: PathDef[] };
-  formations: { layouts: Record<'1' | '2' | '3' | '4', Offset[]> };
+  formations: {
+    layouts: Record<'1' | '2' | '3' | '4', Offset[]>;
+    sprites: Record<(typeof SPAWN_CLASSES)[number], SpriteBox>;
+  };
   fire: { tiers: Record<'0' | '1' | '2', FireTier> };
   bosses: Record<(typeof BOSS_KINDS)[number], BossDef>;
   ladder: { derive: DeriveRule[]; rungs: LadderRung[] };
@@ -249,7 +254,16 @@ function loadFormations(raw: unknown): PatternSet['formations'] {
       };
     });
   }
-  return { layouts };
+  const spritesRaw = asRecord(req(obj, file, 'sprites'), file, 'sprites');
+  const sprites = {} as PatternSet['formations']['sprites'];
+  for (const cls of SPAWN_CLASSES) {
+    const rec = asRecord(req(spritesRaw, file, cls), file, cls);
+    const w = asNumber(req(rec, file, 'w'), file, 'w');
+    const h = asNumber(req(rec, file, 'h'), file, 'h');
+    if (!(w > 0 && h > 0)) fail(file, cls);
+    sprites[cls] = { w, h };
+  }
+  return { layouts, sprites };
 }
 
 function loadFire(raw: unknown): PatternSet['fire'] {

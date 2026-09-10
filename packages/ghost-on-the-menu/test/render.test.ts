@@ -96,7 +96,9 @@ describe('renderRound', () => {
     renderRound(off, state, { shake: false, intensity: 'loud' });
     const player = (calls: string[]) => calls.find((c) => c.startsWith('rect #c8d0dc'));
     expect(player(on.calls)).not.toBe(player(off.calls));
-    expect(player(off.calls)).toBe(`rect #c8d0dc ${state.player.x} ${state.player.y} 16 12`);
+    expect(player(off.calls)).toBe(
+      `rect #c8d0dc ${state.player.x} ${state.player.y} ${state.player.w} ${state.player.h}`,
+    );
     const lamps = (calls: string[]) => calls.filter((c) => c.startsWith('rect #e8c060'));
     expect(lamps(on.calls)).toEqual(lamps(off.calls));
   });
