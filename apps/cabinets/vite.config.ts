@@ -6,4 +6,13 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   base: process.env.PLAY_BASE ?? './',
   build: { outDir: process.env.PLAY_OUT ?? 'dist', emptyOutDir: true },
+  server: {
+    proxy: {
+      '/ollama': {
+        target: 'http://127.0.0.1:11434',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ollama/, ''),
+      },
+    },
+  },
 });

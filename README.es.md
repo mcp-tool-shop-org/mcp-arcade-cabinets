@@ -26,13 +26,13 @@ En algún lugar de esa secuencia se encuentran las comunicaciones que el agente 
 
 Una **cinta** es una grabación de un enfrentamiento. Este juego solo reproduce cintas. Nunca se comunica con un servidor, nunca guarda una puntuación y nunca te dice quién ganó.
 
-- **Tres lámparas.** Un disparo de un jefe o una formación de vuelo en picado apaga una de ellas. Recoge una lámpara que cae de un jefe derrotado para volver a encender una. Si se apagan todas, la ronda termina.
-- **Dispersión.** Elimina una formación y una dispersión caerá hacia la nave. Recógela y tu disparo se extenderá durante unos segundos.
-- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Una línea descriptiva nombra el experimento cuando se inicia la oleada y la criatura cuando el jefe entra.
-- **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de forma diferente a su contraparte honesta. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú.
-- **La escena final** nombra la cinta, el servidor y la política. Las mentiras detectadas se muestran como trofeos. Las que se escapan se muestran con su apariencia original. No hay puntuación, ni recuento, ni dígitos.
+- **Tres lámparas.** Un disparo al jefe o una formación de buceo apaga una de ellas. Recoge una lámpara que cae **directamente hacia abajo** desde un jefe derrotado para volver a encender una. Debes moverte debajo de ella. Si se apagan todas, termina la ronda.
+- **Dispersión.** Elimina una formación y una dispersión caerá directamente hacia abajo. Recógela y tu fuego se intensificará durante unos segundos.
+- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Murmuran como un agente que piensa en voz alta. En el modo difícil, hay una lámpara y la ira se activa desde el primer disparo. Localmente, puedes dejar que un modelo Ollama determine los movimientos del jefe; nunca sabrá cuáles de los sprites son falsos.
+- **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de manera diferente a su gemelo honesto. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú.
+- **La escena final** indica el nombre de la grabación, el servidor y la política. Las mentiras capturadas se muestran como trofeos. Las que escapan se muestran con su apariencia original. Sin puntuación, sin conteo, sin dígitos.
 
-Elige una cinta de la lista. Cada una está etiquetada como "fijo", "estándar" o "en vivo"; pasa el cursor sobre la **i** para obtener más información. "Estándar" es el enfrentamiento predeterminado. "En vivo" está diseñado para que se sobreviva.
+Elige una grabación de la lista. Cada una está etiquetada como "fijo", "asiento" o "en vivo"; pasa el cursor sobre la **i** para ver la razón. "Asiento" es la configuración predeterminada para la pelea. "En vivo" está diseñada para ser superada. "Difícil" es el cuarto nivel, accesible solo desde el selector.
 
 ## Controles
 

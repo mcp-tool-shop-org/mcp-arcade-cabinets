@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - README and landing page rewritten for players. The fairness band, layout, bots, and threat model stay in the handbook and this file.
+- Drops fall straight down. You have to move under them; they no longer drift to the ship.
+- Difficulty ramps with the wave index. A fourth rung, hardcore, is selector-only: one lamp, rage from the start, boss hazards.
+- Voice lines are the agent thinking out loud, with asides during a wave. Soundtrack changes key with the experiment and the boss.
+- Handshake ack (`ready`) and error responses are their own classes. An optional local Ollama seat can call boss fire; the prompt never carries a fact.
 
 ### Added
 

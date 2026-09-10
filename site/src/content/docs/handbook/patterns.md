@@ -13,7 +13,7 @@ Tuning never changes code. The sim reads a **pattern set** of nine JSON files, v
 | `formations.json` | Member layouts for a burst of two to four calls, and the base box per sprite class                       |
 | `fire.json`       | Per tier: formation fire (null at tier 0), boss fire (with `aim`), and the dive rhythm (null at tier 0)   |
 | `bosses.json`     | Per boss kind: size, health, rage factor, and the phase list (duration, motion, fire, cue)                |
-| `ladder.json`     | The derive rule from a tape header to a tier, and the three rungs: path pools, who fires, speed, fog, lamps |
+| `ladder.json`     | The derive rule from a tape header to a tier, and four rungs (0–2 derived, hardcore selector-only): path pools, who fires, speed, fog, lamps, grace, hazards, rage from the start |
 | `waves.json`      | Per tier: breather, beats per group, rest, density, and the tail after the last wave                     |
 | `player.json`     | The ship's speed, cooldown, hitbox, row and grace                                                         |
 | `drops.json`      | What a downed boss and a cleared formation drop, how fast it falls and drifts, the catch box, and how long a spread lasts |

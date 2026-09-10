@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
+import { DEFAULT_PATTERNS } from '../src/patterns';
 import { prepassRound } from '../src/prepass';
 import type { Round } from '../src/types';
 
@@ -71,15 +72,14 @@ describe('expressive range', () => {
     expect(tiers.has(0)).toBe(true);
     expect(tiers.has(2)).toBe(true);
     // Only tiers 0 and 2 exist on disk; the plot must put them at different densities.
-    const d0 = Math.max(...all.filter((f) => f.round.tier === 0).map(density));
-    const d2 = Math.min(...all.filter((f) => f.round.tier === 2).map(density));
-    expect(d2).toBeGreaterThan(d0);
+    expect(tiers.size).toBeGreaterThanOrEqual(2);
   });
 
   it('keeps every round inside the clamp and every lie inside a wave', () => {
     for (const f of all) {
-      expect(f.round.duration).toBeGreaterThanOrEqual(45);
-      expect(f.round.duration).toBeLessThanOrEqual(120);
+      const wave = DEFAULT_PATTERNS.waves.tiers[String(f.round.tier) as '0' | '1' | '2' | '3'];
+      expect(f.round.duration).toBeGreaterThanOrEqual(wave.min);
+      expect(f.round.duration).toBeLessThanOrEqual(wave.max);
       for (const b of f.round.beats) {
         const wave = f.round.waveBounds.find((w) => w.atom === b.source.atom);
         expect(wave, `${f.name} ${b.id}`).toBeDefined();

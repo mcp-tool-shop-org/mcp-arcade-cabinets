@@ -12,11 +12,14 @@
 // toggle are the player's controls (W4 and the accessibility line).
 
 import {
+  askOllama,
   attach,
+  columnWord,
   createRoundState,
   cues,
   DEFAULT_SECONDS,
   FIELD,
+  hpWord,
   prepassRound,
   renderRound,
   snapshot,
@@ -36,11 +39,12 @@ import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
 /** The tier the round plays at: as the tape's header derives it, or forced. */
-export type Difficulty = 'recorded' | 'seat' | 'live';
-const DIFFICULTIES: { value: Difficulty; label: string; tier: 0 | 1 | 2 | undefined }[] = [
+export type Difficulty = 'recorded' | 'seat' | 'live' | 'hardcore';
+const DIFFICULTIES: { value: Difficulty; label: string; tier: 0 | 1 | 2 | 3 | undefined }[] = [
   { value: 'recorded', label: 'difficulty: as recorded', tier: undefined },
   { value: 'seat', label: 'difficulty: seat', tier: 1 },
   { value: 'live', label: 'difficulty: live', tier: 2 },
+  { value: 'hardcore', label: 'difficulty: hardcore', tier: 3 },
 ];
 
 export function mountGhost(
@@ -78,6 +82,13 @@ export function mountGhost(
   shake.type = 'checkbox';
   shake.checked = true;
   shakeLabel.append(shake, document.createTextNode(' shake'));
+  const ollamaLabel = document.createElement('label');
+  const ollama = document.createElement('input');
+  ollama.type = 'checkbox';
+  ollama.checked = false;
+  ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
+  ollamaLabel.title =
+    'Local only. The boss asks a local model how to fire. It never sees which sprites are lies. Needs the local game, not Pages.';
   const full = document.createElement('button');
   full.textContent = 'Full screen';
   const difficulty = document.createElement('select');
@@ -93,7 +104,7 @@ export function mountGhost(
   nextBtn.textContent = 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
-  controls.append(full, difficulty, mute, intensity, shakeLabel, nextBtn);
+  controls.append(full, difficulty, mute, intensity, shakeLabel, ollamaLabel, nextBtn);
 
   const hint = document.createElement('p');
   hint.className = 'muted';
@@ -198,7 +209,7 @@ export function mountGhost(
   window.addEventListener('keydown', keyDown);
   window.addEventListener('keyup', keyUp);
 
-  const tierFor = (): 0 | 1 | 2 | undefined =>
+  const tierFor = (): 0 | 1 | 2 | 3 | undefined =>
     DIFFICULTIES.find((d) => d.value === difficulty.value)?.tier;
   const newRound = () => prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor() });
   let round: Round = newRound();
@@ -206,6 +217,8 @@ export function mountGhost(
   // Seeded from the fresh state, not null, so the first wave card's cue fires.
   let prev: CueSnapshot | null = snapshot(state);
   let last = performance.now();
+  let lastPilot = 0;
+  let pilotBusy = false;
   let raf = 0;
   const restart = () => {
     round = newRound();
@@ -225,7 +238,31 @@ export function mountGhost(
     const next = snapshot(state);
     if (audio) {
       for (const c of cues(prev, next)) audio.play(c);
-      if (!state.scene) audio.tick(state.t, waveKindAt(round, state.t));
+      if (!state.scene) {
+        const kind = state.boss && state.boss.alive ? state.boss.kind : waveKindAt(round, state.t);
+        audio.tick(state.t, kind);
+      }
+    }
+    if (ollama.checked && state.boss && state.boss.alive && !pilotBusy && now - lastPilot > 2200) {
+      lastPilot = now;
+      const boss = state.boss;
+      const view = {
+        kind: boss.kind,
+        hp: hpWord(boss.hp, 8),
+        column: columnWord(state.player.x, FIELD.width),
+        motion: 'fight',
+      };
+      pilotBusy = true;
+      void askOllama(view, { url: '/ollama/api/generate', model: 'qwen2.5:7b-instruct' })
+        .then((intent) => {
+          if (state.boss && state.boss.alive) state.bossIntent = intent;
+        })
+        .catch(() => {
+          /* scripted fire stays */
+        })
+        .finally(() => {
+          pilotBusy = false;
+        });
     }
     prev = next;
     renderRound(draw, state, {

@@ -10,7 +10,7 @@ describe('loadPatterns', () => {
   it('accepts the shipped files', () => {
     const set = loadPatterns(clone());
     expect(set.paths.paths.length).toBeGreaterThan(0);
-    expect(set.ladder.rungs.map((r) => r.tier).sort()).toEqual([0, 1, 2]);
+    expect(set.ladder.rungs.map((r) => r.tier).sort()).toEqual([0, 1, 2, 3]);
     expect(set).toEqual(DEFAULT_PATTERNS);
   });
 
@@ -184,8 +184,8 @@ describe('loadPatterns', () => {
     expect(() => loadPatterns(raw)).toThrow('patterns/fire.json: dive');
   });
 
-  it('has ladder rungs 0, 1, 2', () => {
-    expect(DEFAULT_PATTERNS.ladder.rungs.map((r) => r.tier).sort()).toEqual([0, 1, 2]);
+  it('has ladder rungs 0, 1, 2, 3', () => {
+    expect(DEFAULT_PATTERNS.ladder.rungs.map((r) => r.tier).sort()).toEqual([0, 1, 2, 3]);
   });
 
   it('rejects a pool id that is not a path', () => {

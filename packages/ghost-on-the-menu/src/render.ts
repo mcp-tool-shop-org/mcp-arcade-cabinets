@@ -9,12 +9,14 @@ import {
 
 export const SPRITE_FILL: Record<SpriteClass, string> = {
   init: '#3d5a80',
+  ready: '#6a8aaa',
   menu: '#4a7c9b',
   grid: '#5b8c5a',
   answer: '#6a7f9b',
   fog: '#4c4c6a',
   obstacle: '#8a6a3a',
   stall: '#5a5a5a',
+  error: '#8a4a4a',
 };
 
 export const REVEALED_FILL = '#e8a04a';
@@ -53,7 +55,12 @@ export const SPRITE_KEYS = [
   'fog',
   'obstacle',
   'stall',
+  'error',
+  'ready',
   'revealed',
+  'hazard-echo',
+  'hazard-band',
+  'hazard-plate',
   'boss-whisperer',
   'boss-menu-open',
   'boss-menu-slit',
@@ -105,7 +112,6 @@ const BOSS_FLASH_FILL = 'rgba(255, 255, 255, 0.75)';
 /** Seconds the boss-down burst lasts. */
 const BOSS_BURST = 0.6;
 const BOSS_BURST_FILL = '#e8e0c8';
-const LAMPS = 3;
 const BEZEL_H = 14;
 
 export function makeTextCtx(): DrawContext & { texts: string[] } {
@@ -263,6 +269,20 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     rect(shot.x, shot.y, shot.w, shot.h);
   }
 
+  const HAZARD_FILL: Record<string, string> = {
+    echo: '#7a7a9a',
+    band: '#3a8a8a',
+    plate: '#a08040',
+  };
+  for (const h of state.hazards) {
+    if (!h.alive) continue;
+    const key = `hazard-${h.kind}`;
+    if (!sprite(key as SpriteKey, h.x, h.y, h.w, h.h)) {
+      ctx.fillStyle = HAZARD_FILL[h.kind] ?? '#888';
+      rect(h.x, h.y, h.w, h.h);
+    }
+  }
+
   for (const drop of state.drops) {
     if (!drop.alive) continue;
     const key = drop.kind === 'lamp' ? 'drop-lamp' : 'drop-spread';
@@ -289,15 +309,18 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // A caption still live when the round ends is not drawn: the end scene
   // names the tape, the server and the policy and nothing more (G10).
   if (state.caption && !state.scene) {
-    if (state.caption.kind === 'wave') {
-      // The wave card: a word in furniture paint at the top of the field,
-      // and the voice line under it, also furniture, never amber.
+    if (state.caption.kind === 'wave' || state.caption.kind === 'aside') {
       ctx.fillStyle = FURNITURE;
-      ctx.font = '16px monospace';
-      ctx.fillText(state.caption.text, 16, 40);
-      if (state.caption.line) {
+      if (state.caption.kind === 'wave') {
+        ctx.font = '16px monospace';
+        ctx.fillText(state.caption.text, 16, 40);
+        if (state.caption.line) {
+          ctx.font = '11px monospace';
+          ctx.fillText(state.caption.line, 16, 58);
+        }
+      } else {
         ctx.font = '11px monospace';
-        ctx.fillText(state.caption.line, 16, 58);
+        ctx.fillText(state.caption.text, 16, 40);
       }
     } else {
       // The catch: the wire fact in the reveal's amber, low on the field.
@@ -310,7 +333,8 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // The bezel does not shake: lamps are furniture, drawn as rectangles, never a digit.
   ctx.fillStyle = BEZEL;
   ctx.fillRect(0, FIELD.height - BEZEL_H, FIELD.width, BEZEL_H);
-  for (let i = 0; i < LAMPS; i++) {
+  const slots = Math.max(1, state.maxLives);
+  for (let i = 0; i < slots; i++) {
     ctx.fillStyle = i < state.lives ? LAMP_LIT : LAMP_DARK;
     ctx.fillRect(12 + i * 14, FIELD.height - BEZEL_H + 4, 8, 6);
   }

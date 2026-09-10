@@ -26,13 +26,13 @@ Somewhere in there are the calls the agent should not have made. They look like 
 
 A **tape** is a recording of one bout. This game only reads tapes. It never talks to a server, never keeps a score, and never tells you who won.
 
-- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls from a downed boss to relight one. All out ends the round.
-- **Spread.** Clear a formation and a spread falls toward the ship. Catch it and your fire fans for a few seconds.
-- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. A dry line names the experiment when the wave opens and the creature when the boss enters.
+- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
+- **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
+- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot. Locally, you can let an Ollama model call the boss’s shots — it never sees which sprites are lies.
 - **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
 - **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
 
-Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived.
+Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only.
 
 ## Controls
 

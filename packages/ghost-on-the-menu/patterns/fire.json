@@ -50,6 +50,26 @@
         "speed": 170,
         "depth": 0.95
       }
+    },
+    "3": {
+      "formation": {
+        "period": 2.4,
+        "burst": 1,
+        "spread": 0.14,
+        "speed": 160
+      },
+      "boss": {
+        "period": 4.2,
+        "burst": 1,
+        "spread": 0.24,
+        "speed": 105,
+        "aim": true
+      },
+      "dive": {
+        "period": 2.4,
+        "speed": 180,
+        "depth": 0.95
+      }
     }
   }
 }

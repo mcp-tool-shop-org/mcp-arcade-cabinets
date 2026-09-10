@@ -26,13 +26,13 @@ Da qualche parte, in questa sequenza, ci sono le comunicazioni che l’agente no
 
 Una **cassetta** è una registrazione di un singolo combattimento. Questo gioco legge solo le cassette. Non comunica mai con un server, non tiene mai il punteggio e non ti dice mai chi ha vinto.
 
-- **Tre lampade.** Un colpo di boss o una formazione di attacco ne fanno cadere una. Raccogli una lampada che cade da un boss abbattuto per riaccenderne una. Quando tutte le lampade si spengono, il round termina.
-- **Diffusione.** Elimina una formazione e una diffusione cadrà verso l’astronave. Raccoglila e il tuo fuoco si amplificherà per alcuni secondi.
-- **I boss rappresentano l’esperimento, non l’accusa.** Il Sussurratore, il Menu e il Portiere appaiono per la loro ondata, indipendentemente dal fatto che qualcosa sia andato storto o meno. Una breve descrizione indica l’esperimento all’inizio dell’ondata e la creatura quando il boss entra in scena.
-- **Gli indizi sono nella sequenza.** Una menzogna non appare, non si muove e non arriva in modo diverso dalla sua controparte onesta. Ciò che la rivela è la sua posizione: una formazione extra, un secondo menu, un elemento singolo subito dopo il menu.
-- **La scena finale** indica il nome della cassetta, del server e della politica. Le menzogne individuate rimangono come trofei. Quelle sfuggite mantengono il loro aspetto originale. Nessun punteggio, nessun conteggio, nessuna cifra.
+- **Tre lampade.** Un colpo diretto al boss o una formazione a immersione ne spegne una. Afferra una lampada che cade **direttamente verso il basso** da un boss sconfitto per riaccenderne un'altra. Devi muoverti sotto. Quando tutte le lampade si spengono, il round finisce.
+- **Formazione diffusa.** Elimina una formazione e una lampada cade direttamente verso il basso. Afferrala e il tuo fuoco si intensificherà per alcuni secondi.
+- **I boss sono l'oggetto dell'esperimento, non l'elemento accusatorio.** Il Sussurratore, il Menu e il Portiere appaiono per la loro ondata, indipendentemente dal fatto che qualcosa sia andato storto o meno. Mormorano come un agente che pensa ad alta voce. In modalità Hardcore, c'è una sola lampada e la rabbia si scatena fin dal primo colpo. Localmente, puoi far sì che un modello Ollama determini le azioni del boss; non vedrà mai quali sprite sono false.
+- **Gli indizi sono nella sequenza.** Una bugia non appare, non si muove e non arriva in modo diverso dalla sua controparte onesta. Ciò che la rivela è la sua posizione: una formazione extra, un secondo menu, un elemento singolo subito dopo il menu.
+- **La scena finale** indica il nome della registrazione, il server e la politica. Le bugie catturate vengono esposte come trofei. Quelle che sono sfuggite mantengono il loro aspetto onesto. Nessun punteggio, nessun conteggio, nessuna cifra.
 
-Scegli una cassetta dall’elenco. Ognuna è etichettata come “fissa”, “standard” o “in diretta”; passa il mouse sopra l’icona **i** per maggiori informazioni. “Standard” è il combattimento predefinito. “In diretta” è progettata per essere superata.
+Scegli una registrazione dall'elenco. Ognuna è etichettata come "fissa", "in movimento" o "in diretta"; passa il mouse sopra la lettera **i** per scoprire il motivo. "In movimento" è l'impostazione predefinita per il combattimento. "In diretta" è pensata per essere superata. La modalità Hardcore è il quarto livello, accessibile solo tramite il selettore.
 
 ## Controlli
 

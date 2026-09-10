@@ -46,6 +46,7 @@ Three scripted players live in `packages/ghost-on-the-menu/src/play.ts`. None of
 | Seat costs the reader at least 1.0 lamps a round | all sixteen tapes at seat |
 | Live: the sweeper survives 12 of 16 and finds half the lies | all sixteen tapes at live |
 | Live: the reader survives 8 of 16 and finds half the lies | all sixteen tapes at live |
+| Hardcore: idle and the sweeper die every round; the reader still finds a third of the lies | all sixteen tapes at tier 3 |
 
 A pattern change that turns the game into a gallery or a wall fails the build.
 

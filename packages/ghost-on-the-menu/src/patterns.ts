@@ -12,26 +12,30 @@ import wavesJson from '../patterns/waves.json';
 
 const SPRITE_CLASSES: readonly SpriteClass[] = [
   'init',
+  'ready',
   'menu',
   'grid',
   'answer',
   'fog',
   'obstacle',
   'stall',
+  'error',
 ];
 /** Classes that spawn as enemies. Fog becomes a FogBank, never a path. */
 const SPAWN_CLASSES: readonly SpriteClass[] = [
   'init',
+  'ready',
   'menu',
   'grid',
   'answer',
   'obstacle',
   'stall',
+  'error',
 ];
 
 const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
-const TIER_KEYS = ['0', '1', '2'] as const;
+const TIER_KEYS = ['0', '1', '2', '3'] as const;
 const WAVE_VOICE_KEYS = ['inspect', 'poison', 'rug', 'unlisted'] as const;
 const DROP_KINDS = ['lamp', 'spread'] as const;
 const VOICE_FORBIDDEN =
@@ -99,6 +103,8 @@ export interface BossDef {
   phases: BossPhase[];
 }
 
+export type Tier = 0 | 1 | 2 | 3;
+
 export interface DeriveRule {
   target_kind?: string;
   image?: boolean;
@@ -108,13 +114,19 @@ export interface DeriveRule {
 }
 
 export interface LadderRung {
-  tier: 0 | 1 | 2;
+  tier: Tier;
   pools: string[];
   bossFires: boolean;
   formationFires: boolean;
   speed: number;
   fog: number;
   lamps: number;
+  /** Seconds of invulnerability after a lamp. Hardcore is a blink. */
+  grace: number;
+  /** Boss-emitted plates, bands and echoes. */
+  hazards: boolean;
+  /** Rage from the first shot, not from half health. */
+  rageStart: boolean;
 }
 
 export interface WaveTier {
@@ -124,6 +136,10 @@ export interface WaveTier {
   density: number;
   /** Seconds after the last wave for the last boss to be fought. */
   tail: number;
+  min: number;
+  max: number;
+  /** Fire-period multiplier raised to the wave index. 1 is flat. */
+  escalate: number;
 }
 
 export type SpriteBox = { w: number; h: number };
@@ -146,6 +162,7 @@ export type VoiceBossKey = (typeof BOSS_KINDS)[number];
 export interface VoiceSet {
   wave: Record<VoiceWaveKey, string[]>;
   boss: Record<VoiceBossKey, string[]>;
+  aside: Record<VoiceWaveKey, string[]>;
   end: string[];
 }
 
@@ -155,10 +172,10 @@ export interface PatternSet {
     layouts: Record<'1' | '2' | '3' | '4', Offset[]>;
     sprites: Record<(typeof SPAWN_CLASSES)[number], SpriteBox>;
   };
-  fire: { tiers: Record<'0' | '1' | '2', FireTier> };
+  fire: { tiers: Record<'0' | '1' | '2' | '3', FireTier> };
   bosses: Record<(typeof BOSS_KINDS)[number], BossDef>;
   ladder: { derive: DeriveRule[]; rungs: LadderRung[] };
-  waves: { tiers: Record<'0' | '1' | '2', WaveTier> };
+  waves: { tiers: Record<'0' | '1' | '2' | '3', WaveTier> };
   player: {
     speed: number;
     cooldown: number;
@@ -226,9 +243,15 @@ function asSpriteClass(value: unknown, file: string, key: string): SpriteClass {
   return s as SpriteClass;
 }
 
-function asTier(value: unknown, file: string, key: string): 0 | 1 | 2 {
+function asTier(value: unknown, file: string, key: string): Tier {
   const n = asNumber(value, file, key);
-  if (n !== 0 && n !== 1 && n !== 2) fail(file, key);
+  if (n !== 0 && n !== 1 && n !== 2 && n !== 3) fail(file, key);
+  return n;
+}
+
+function asDeriveTier(value: unknown, file: string, key: string): 0 | 1 | 2 {
+  const n = asTier(value, file, key);
+  if (n === 3) fail(file, key);
   return n;
 }
 
@@ -246,7 +269,7 @@ function loadBossRhythm(
   value: unknown,
   file: string,
   key: string,
-  tierKey: '0' | '1' | '2',
+  tierKey: '0' | '1' | '2' | '3',
 ): BossRhythm {
   const obj = asRecord(value, file, key);
   const aim = asBoolean(req(obj, file, 'aim'), file, 'aim');
@@ -385,7 +408,7 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
   const obj = asRecord(raw, file, 'derive');
   const derive = asArray(req(obj, file, 'derive'), file, 'derive').map((item) => {
     const rec = asRecord(item, file, 'derive');
-    const rule: DeriveRule = { tier: asTier(req(rec, file, 'tier'), file, 'tier') };
+    const rule: DeriveRule = { tier: asDeriveTier(req(rec, file, 'tier'), file, 'tier') };
     if (Object.prototype.hasOwnProperty.call(rec, 'target_kind')) {
       rule.target_kind = asString(rec.target_kind, file, 'target_kind');
     }
@@ -411,10 +434,13 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
       speed: asNumber(req(rec, file, 'speed'), file, 'speed'),
       fog: asNumber(req(rec, file, 'fog'), file, 'fog'),
       lamps: asNumber(req(rec, file, 'lamps'), file, 'lamps'),
+      grace: asNumber(req(rec, file, 'grace'), file, 'grace'),
+      hazards: asBoolean(req(rec, file, 'hazards'), file, 'hazards'),
+      rageStart: asBoolean(req(rec, file, 'rageStart'), file, 'rageStart'),
     };
   });
   const seen = new Set(rungs.map((r) => r.tier));
-  if (!seen.has(0) || !seen.has(1) || !seen.has(2)) fail(file, 'rungs');
+  if (!seen.has(0) || !seen.has(1) || !seen.has(2) || !seen.has(3)) fail(file, 'rungs');
   for (const rung of rungs) {
     for (const id of rung.pools) {
       if (!pathIds.has(id)) fail(file, 'pools');
@@ -430,12 +456,20 @@ function loadWaves(raw: unknown): PatternSet['waves'] {
   const tiers = {} as PatternSet['waves']['tiers'];
   for (const key of TIER_KEYS) {
     const rec = asRecord(req(tiersRaw, file, key), file, key);
+    const min = asNumber(req(rec, file, 'min'), file, 'min');
+    const max = asNumber(req(rec, file, 'max'), file, 'max');
+    if (!(min > 0 && max >= min)) fail(file, 'max');
+    const escalate = asNumber(req(rec, file, 'escalate'), file, 'escalate');
+    if (!(escalate > 0 && escalate <= 1)) fail(file, 'escalate');
     tiers[key] = {
       breather: asNumber(req(rec, file, 'breather'), file, 'breather'),
       beatsPerGroup: asNumber(req(rec, file, 'beatsPerGroup'), file, 'beatsPerGroup'),
       rest: asNumber(req(rec, file, 'rest'), file, 'rest'),
       density: asNumber(req(rec, file, 'density'), file, 'density'),
       tail: asNumber(req(rec, file, 'tail'), file, 'tail'),
+      min,
+      max,
+      escalate,
     };
   }
   return { tiers };
@@ -517,7 +551,12 @@ function loadVoice(raw: unknown): VoiceSet {
   for (const key of BOSS_KINDS) {
     boss[key] = loadLines(req(bossRaw, file, key), file, key);
   }
-  return { wave, boss, end: loadLines(req(obj, file, 'end'), file, 'end') };
+  const asideRaw = asRecord(req(obj, file, 'aside'), file, 'aside');
+  const aside = {} as VoiceSet['aside'];
+  for (const key of WAVE_VOICE_KEYS) {
+    aside[key] = loadLines(req(asideRaw, file, key), file, key);
+  }
+  return { wave, boss, aside, end: loadLines(req(obj, file, 'end'), file, 'end') };
 }
 
 /** Pick a line by seed and salt. Same seed and salt, same line; never reads a fact. */

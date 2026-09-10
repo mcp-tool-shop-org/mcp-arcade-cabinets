@@ -14,6 +14,7 @@ export type {
   Drop,
   DropKind,
   Enemy,
+  Hazard,
   Round,
   RoundInput,
   RoundState,
@@ -38,7 +39,9 @@ export {
 export type { Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
-export { attach, bar, barSeconds, DEFAULT_MUSIC, sfx } from './audio';
+export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACKS, sfx } from './audio';
+export { askOllama, columnWord, hpWord, parseIntent, pilotPrompt } from './pilot';
+export type { BossView, PilotIntent } from './pilot';
 export type { AudioOut, MusicPattern, Note, SfxName } from './audio';
 // The scripted play-through (`./play`) reads fixtures from disk and is built
 // separately into dist/play.js for `pnpm test:play`; it stays off the barrel

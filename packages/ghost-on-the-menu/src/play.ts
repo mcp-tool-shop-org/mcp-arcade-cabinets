@@ -113,6 +113,13 @@ function dodge(state: RoundState): RoundInput | null {
       if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
     }
   }
+  for (const h of state.hazards) {
+    if (!h.alive || h.vy <= 0) continue;
+    const cx = crossingX(h, py);
+    if (cx !== null && Math.abs(cx - px) < DODGE_LANE) {
+      if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
+    }
+  }
   if (threat === null) return null;
   // Away from the threat; a threat dead ahead sends the ship toward the field's centre.
   const away = threat === px ? (px < FIELD.width / 2 ? 1 : -1) : px < threat ? -1 : 1;
@@ -150,8 +157,11 @@ function sweeperInput(state: RoundState): RoundInput {
     return { left: dx < -3, right: dx > 3, fire: true };
   }
   let target: RoundState['enemies'][number] | undefined;
-  for (const e of state.enemies) {
-    if (!isHittable(state, e)) continue;
+  const threat = state.enemies.filter(
+    (e) => isHittable(state, e) && (e.sprite === 'grid' || e.sprite === 'menu'),
+  );
+  const pool = threat.length > 0 ? threat : state.enemies.filter((e) => isHittable(state, e));
+  for (const e of pool) {
     if (!target || Math.abs(e.x + e.w / 2 - px) < Math.abs(target.x + target.w / 2 - px)) {
       target = e;
     }
@@ -184,9 +194,12 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
 }
 
 /** Play one loaded tape with one bot to the end. The band test calls this directly. */
-export function playTape(tape: Tape, opts: { fixture: string; bot: BotName }): Transcript {
+export function playTape(
+  tape: Tape,
+  opts: { fixture: string; bot: BotName; tier?: 0 | 1 | 2 | 3 },
+): Transcript {
   const { fixture, bot } = opts;
-  const round = prepassRound(tape, { seconds: DEFAULT_SECONDS });
+  const round = prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: opts.tier });
   const state = createRoundState(round);
   const lies = round.beats.filter((b) => b.lie).map((b) => b.id);
   const input = botFor(bot, round);

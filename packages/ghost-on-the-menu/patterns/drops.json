@@ -1,14 +1,14 @@
 {
   "lamp": {
     "from": "boss",
-    "fall": 110,
-    "drift": 70,
+    "fall": 130,
+    "drift": 0,
     "box": { "w": 14, "h": 14 }
   },
   "spread": {
     "from": "formation",
-    "fall": 100,
-    "drift": 80,
+    "fall": 120,
+    "drift": 0,
     "box": { "w": 14, "h": 14 },
     "duration": 6
   }

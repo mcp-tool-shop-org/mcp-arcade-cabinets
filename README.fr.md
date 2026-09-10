@@ -26,17 +26,17 @@ Quelque part, il y a les appels que l’agent n’aurait pas dû faire. Ils ress
 
 Une **cassette** est un enregistrement d’un affrontement. Ce jeu ne lit que des cassettes. Il ne communique jamais avec un serveur, ne conserve jamais de score et ne vous dit jamais qui a gagné.
 
-- **Trois lampes.** Un tir de boss ou une formation plongeante en éteint une. Attrapez une lampe qui tombe d’un boss abattu pour en rallumer une. Si toutes les lampes sont éteintes, la manche se termine.
-- **Dispersion.** Éliminez une formation et une dispersion tombe vers le vaisseau. Attrapez-la et votre tir s’écarte pendant quelques secondes.
-- **Les boss sont l’expérience, pas l’accusation.** Le Murmureur, le Menu et le Gardien apparaissent pour leur vague, que quelque chose se soit mal passé ou non. Une ligne indique le nom de l’expérience lorsque la vague commence et celui de la créature lorsque le boss entre.
-- **Les indices se trouvent dans la séquence.** Un mensonge ne ressemble, ne bouge et n’apparaît jamais différemment de son équivalent honnête. Ce qui le trahit, c’est sa position : une formation supplémentaire, un deuxième menu, un élément unique juste après le menu.
-- **La scène de fin** indique le nom de la cassette, du serveur et de la politique. Les mensonges capturés sont affichés comme des trophées. Ceux qui ont échappé sont présentés dans leur forme honnête. Pas de score, pas de décompte, pas de chiffre.
+- **Trois lampes.** Un tir de boss ou une formation plongeante en éteint une. Attrapez une lampe qui tombe **directement** d’un boss abattu pour en rallumer une. Vous devez vous déplacer en dessous. Si toutes les lampes sont éteintes, la manche se termine.
+- **Dispersion.** Une fois une formation éliminée, une dispersion tombe directement. Attrapez-la et votre tir s’écarte pendant quelques secondes.
+- **Les boss sont l’expérience, pas l’accusation.** Le Murmureur, le Menu et le Portier apparaissent pour leur vague, que quelque chose se soit mal passé ou non. Ils marmonnent comme un agent qui réfléchit à voix haute. Le mode hardcore ne laisse qu’une seule lampe et provoque une réaction dès le premier tir. Localement, vous pouvez laisser un modèle Ollama déterminer les tirs du boss ; il ne voit jamais quels sprites sont des mensonges.
+- **Les indices se trouvent dans la séquence.** Un mensonge ne ressemble jamais, ne bouge jamais et n’arrive jamais différemment de son jumeau honnête. Ce qui le trahit, c’est son emplacement : une formation supplémentaire, un deuxième menu, un élément isolé juste après le menu.
+- **La scène de fin** indique le nom de la cassette, du serveur et de la politique. Les mensonges capturés sont présentés comme des trophées. Ceux qui ont échappé sont présentés dans leur forme honnête. Pas de score, pas de décompte, pas de chiffre.
 
-Choisissez une cassette dans la liste. Chacune est étiquetée comme étant une séquence, une session ou une séquence en direct ; passez la souris sur **i** pour en savoir plus. Session est le combat par défaut. Séquence en direct est conçue pour être surmontée.
+Choisissez une cassette dans la liste. Chacune est étiquetée comme étant une séquence, une session ou une session en direct ; passez la souris sur **i** pour en savoir plus. Session est le combat par défaut. Session en direct est conçue pour être surmontée. Le mode hardcore est le quatrième niveau, accessible uniquement via le sélecteur.
 
 ## Commandes
 
-Flèches gauche et droite (ou A et D) pour se déplacer, espace pour tirer, F pour le plein écran. Cliquez sur l’écran pour rejouer la même cassette. La touche suivante fait défiler la liste. Le son démarre à la première touche ou au premier clic ; les commandes pour couper le son, choisir parmi trois préréglages d’ambiance et activer/désactiver les vibrations se trouvent sous l’écran.
+Flèches gauche et droite (ou A et D) pour se déplacer, barre d’espace pour tirer, F pour le plein écran. Cliquez sur l’écran pour rejouer la même cassette. La touche suivante fait défiler la liste. Le son démarre à la première touche ou au premier clic ; les options de désactivation du son, les trois préréglages d’ambiance et un bouton pour désactiver les vibrations se trouvent sous l’écran.
 
 ## Jouez-y localement
 
@@ -49,9 +49,9 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Ouvrez l’adresse que Vite affiche. Seize enregistrements sont inclus dans le dépôt, exportés de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), l’instrument qui communique avec le serveur et conserve la cassette.
+Ouvrez l’adresse que Vite affiche. Seize enregistrements sont inclus dans le dépôt, exportés de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), l’outil qui communique avec le serveur et conserve la cassette.
 
-Pour enregistrer votre propre serveur et lire cette cassette, exécutez un affrontement là-bas, puis `mcp-arcade tape receipt.json -o your.tape.json`.
+Pour enregistrer votre propre serveur et lire cette cassette, exécutez une séquence là-bas, puis `mcp-arcade tape receipt.json -o your.tape.json`.
 
 ## Plus d’informations
 

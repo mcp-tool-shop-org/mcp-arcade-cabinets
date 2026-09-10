@@ -26,13 +26,13 @@ Em algum lugar, estão as comunicações que o agente não deveria ter feito. El
 
 Uma **fita** é uma gravação de um confronto. Este jogo lê apenas fitas. Ele nunca se comunica com um servidor, nunca registra uma pontuação e nunca diz quem venceu.
 
-- **Três lâmpadas.** Um tiro de chefe ou uma formação de mergulho apaga uma delas. Pegue uma lâmpada que cai de um chefe derrotado para reacender uma. Todas apagadas, a rodada termina.
-- **Dispersão.** Limpe uma formação e uma dispersão cai em direção à nave. Pegue-a e seu poder de fogo aumenta por alguns segundos.
-- **Os chefes são o experimento, não a acusação.** O Sussurrador, o Menu e o Porteiro aparecem em suas ondas, independentemente de algo ter dado errado ou não. Uma frase curta nomeia o experimento quando a onda começa e a criatura quando o chefe entra.
-- **As pistas estão na sequência.** Uma mentira nunca parece, se move ou chega de forma diferente de sua contraparte honesta. O que a denuncia é onde ela está: uma formação extra, um segundo menu, um elemento único logo após o menu.
-- **A cena final** nomeia a fita, o servidor e a política. As mentiras capturadas ficam como troféus. As que escapam ficam em sua forma honesta. Sem pontuação, sem contagem, sem número.
+- **Três lâmpadas.** Um ataque certeiro ou uma formação de mergulho apaga uma delas. Pegue uma lâmpada que cai **diretamente para baixo** de um chefe derrotado para reacender outra. Você precisa se mover por baixo dela. Quando todas as lâmpadas se apagam, a rodada termina.
+- **Dispersão.** Limpe uma formação e uma dispersão cai diretamente para baixo. Pegue-a e seu poder de fogo aumenta por alguns segundos.
+- **Os chefes são o experimento, não a acusação.** O Sussurrador, o Menu e o Porteiro aparecem em sua onda, independentemente de algo ter dado errado ou não. Eles murmuram como um agente que está pensando em voz alta. No modo Hardcore, há apenas uma lâmpada e fúria a partir do primeiro ataque. Localmente, você pode deixar um modelo Ollama determinar os ataques do chefe — ele nunca sabe quais sprites são falsos.
+- **As pistas estão na sequência.** Uma mentira nunca parece, se move ou chega de forma diferente de sua contraparte honesta. O que a denuncia é onde ela se encontra: uma formação extra, um segundo menu, um elemento único logo após o menu.
+- **A cena final** indica o nome da gravação, o servidor e a política. As mentiras capturadas ficam como troféus. As que escapam ficam em sua forma honesta. Sem pontuação, sem contagem, sem número.
 
-Escolha uma fita da lista. Cada uma é rotulada como "fixa", "aleatória" ou "ao vivo"; passe o mouse sobre o **i** para saber o porquê. "Aleatória" é a luta padrão. "Ao vivo" foi feita para ser superada.
+Escolha uma gravação da lista. Cada uma é rotulada como "fixa", "aleatória" ou "ao vivo"; passe o mouse sobre o **i** para saber o porquê. "Aleatória" é a luta padrão. "Ao vivo" é para ser superada. Hardcore é o quarto nível, acessível apenas pelo seletor.
 
 ## Controles
 

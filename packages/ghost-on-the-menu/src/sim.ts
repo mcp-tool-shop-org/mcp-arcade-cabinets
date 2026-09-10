@@ -16,6 +16,8 @@ import {
   type Boss,
   type Drop,
   type Enemy,
+  type Hazard,
+  type HazardKind,
   type Round,
   type RoundInput,
   type RoundState,
@@ -62,6 +64,7 @@ interface Meta {
   captionedWave: number;
   waveHold: number;
   emittedGridForWave: boolean;
+  asideAt: number;
 }
 
 const metaOf = new WeakMap<RoundState, Meta>();
@@ -81,8 +84,17 @@ function sanitizeCaption(note: string, method: string): string {
     .trim();
 }
 
-function rungOf(patterns: PatternSet, tier: 0 | 1 | 2): LadderRung {
+function rungOf(patterns: PatternSet, tier: 0 | 1 | 2 | 3): LadderRung {
   return patterns.ladder.rungs.find((r) => r.tier === tier) ?? patterns.ladder.rungs[0]!;
+}
+
+function fireKey(tier: 0 | 1 | 2 | 3): '0' | '1' | '2' | '3' {
+  return String(tier) as '0' | '1' | '2' | '3';
+}
+
+function waveEscalate(meta: Meta, wave: number): number {
+  const spec = meta.patterns.waves.tiers[fireKey(meta.round.tier)];
+  return Math.pow(spec.escalate, Math.max(0, wave));
 }
 
 function pickIndex(seed: number, i: number, n: number): number {
@@ -93,7 +105,7 @@ function pickIndex(seed: number, i: number, n: number): number {
 
 function pickPath(
   patterns: PatternSet,
-  tier: 0 | 1 | 2,
+  tier: 0 | 1 | 2 | 3,
   sprite: SpriteClass,
   seed: number,
   index: number,
@@ -352,6 +364,7 @@ export function createRoundState(round: Round): RoundState {
     hitstop: 0,
     shake: 0,
     lives: rung.lamps,
+    maxLives: rung.lamps,
     fog: null,
     blind: 0,
     wave: 0,
@@ -366,6 +379,8 @@ export function createRoundState(round: Round): RoundState {
     drops: [],
     spreadT: 0,
     dropCatches: 0,
+    hazards: [],
+    bossIntent: null,
   };
   const meta: Meta = {
     patterns,
@@ -382,6 +397,7 @@ export function createRoundState(round: Round): RoundState {
     captionedWave: -1,
     waveHold: 0,
     emittedGridForWave: false,
+    asideAt: 6,
   };
   metaOf.set(state, meta);
   attachPatterns(state, patterns);
@@ -481,7 +497,8 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
   };
   meta.bossPhaseT = 0;
   meta.bossFireAt =
-    state.t + meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].boss.period;
+    state.t +
+    meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss.period * waveEscalate(meta, state.wave);
   meta.bossBaseW = def.w;
   meta.bossBaseH = def.h;
   meta.bossOriginX = x;
@@ -527,6 +544,68 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
   state.bossDownT = state.t;
 }
 
+function spawnHazard(
+  state: RoundState,
+  kind: HazardKind,
+  cx: number,
+  cy: number,
+  vx: number,
+  vy: number,
+): void {
+  const box =
+    kind === 'band' ? { w: 72, h: 8 } : kind === 'plate' ? { w: 28, h: 10 } : { w: 16, h: 16 };
+  const h: Hazard = {
+    kind,
+    x: cx - box.w / 2,
+    y: cy,
+    w: box.w,
+    h: box.h,
+    vx,
+    vy,
+    alive: true,
+  };
+  state.hazards.push(h);
+}
+
+function stepHazards(
+  state: RoundState,
+  meta: Meta | undefined,
+  dt: number,
+  fallbackGrace: number,
+): void {
+  const grace = meta?.rung.grace ?? fallbackGrace;
+  for (const h of state.hazards) {
+    if (!h.alive) continue;
+    h.x += h.vx * dt;
+    h.y += h.vy * dt;
+    if (h.y > FIELD.height || h.x + h.w < 0 || h.x > FIELD.width) {
+      h.alive = false;
+      continue;
+    }
+    if (state.grace > 0) continue;
+    if (overlaps(h, state.player)) {
+      h.alive = false;
+      takeLamp(state, grace);
+    }
+  }
+  state.hazards = state.hazards.filter((h) => h.alive);
+}
+
+function maybeAside(state: RoundState, meta: Meta): void {
+  if (state.caption) return;
+  if (state.t < meta.asideAt) return;
+  const bound = meta.round.waveBounds[state.wave];
+  const kind = bound ? voiceWaveKey(kindOfAtom(bound.atom)) : 'inspect';
+  const lines = meta.patterns.voice.aside[kind];
+  if (!lines || lines.length === 0) return;
+  state.caption = {
+    text: pickLine(lines, meta.round.seed, Math.floor(state.t * 10) + state.wave * 13),
+    t: 2.2,
+    kind: 'aside',
+  };
+  meta.asideAt = state.t + 7;
+}
+
 function spawnFormationDrop(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
   if (!meta) return;
   if (enemy.sprite !== 'grid') return;
@@ -538,10 +617,12 @@ function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void 
   for (const drop of state.drops) {
     if (!drop.alive) continue;
     const spec = meta.patterns.drops[drop.kind];
-    const targetX = state.player.x + state.player.w / 2 - drop.w / 2;
-    const dx = targetX - drop.x;
-    const step = spec.drift * dt;
-    drop.x += Math.abs(dx) <= step ? dx : Math.sign(dx) * step;
+    if (spec.drift > 0) {
+      const targetX = state.player.x + state.player.w / 2 - drop.w / 2;
+      const dx = targetX - drop.x;
+      const step = spec.drift * dt;
+      drop.x += Math.abs(dx) <= step ? dx : Math.sign(dx) * step;
+    }
     drop.y += spec.fall * dt;
     if (drop.y > FIELD.height) {
       drop.alive = false;
@@ -622,23 +703,34 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   boss.y = meta.bossOriginY;
 
   if (!meta.rung.bossFires) return;
-  const rhythm = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].boss;
+  const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss;
   if (state.t < meta.bossFireAt) return;
-  const raging = boss.hp < def.hp / 2;
-  meta.bossFireAt = state.t + rhythm.period * (raging ? def.rage : 1);
+  const raging = meta.rung.rageStart || boss.hp < def.hp / 2;
+  const wait = rhythm.period * (raging ? def.rage : 1) * waveEscalate(meta, state.wave);
+  meta.bossFireAt = state.t + wait;
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
-  if (p.cue === 'emit-grid') emitWaveGrids(state, meta);
-  if (p.fire === 'drop-fog') {
+  const intent = state.bossIntent;
+  if (intent) state.bossIntent = null;
+  const fire = intent && intent !== 'script' ? intent : p.fire;
+  if (p.cue === 'emit-grid' || fire === 'emit-grid') emitWaveGrids(state, meta);
+  if (fire === 'drop-fog' || fire === 'fog') {
     spawnFog(state, cx, by, 40 * meta.rung.fog);
-  } else if (p.fire === 'spread' || p.fire === 'column') {
+  } else if (fire === 'spread' || fire === 'column') {
     if (rhythm.aim) fireAimed(state.enemyShots, cx, by, rhythm, state.player);
-    else if (p.fire === 'spread') fireSpread(state.enemyShots, cx, by, rhythm);
+    else if (fire === 'spread') fireSpread(state.enemyShots, cx, by, rhythm);
     else spawnShot(state.enemyShots, cx, by, rhythm.speed);
-  } else if (p.fire === 'plate-out') {
+  } else if (fire === 'plate-out' || fire === 'plate') {
     boss.plate = { x: boss.x + boss.w, y: boss.y + boss.h / 4, w: 28, h: 10 };
-  } else if (p.fire === 'plate-back') {
+    if (meta.rung.hazards) spawnHazard(state, 'plate', cx, by, 80, 140);
+  } else if (fire === 'plate-back' || fire === 'hold') {
     boss.plate = null;
+  }
+  if (meta.rung.hazards) {
+    if (boss.kind === 'whisperer' && p.motion === 'pulse') {
+      spawnHazard(state, 'echo', cx, by, 0, 75);
+    }
+    if (boss.kind === 'menu' && p.motion === 'squash') spawnHazard(state, 'band', cx, by, 0, 90);
   }
 }
 
@@ -669,7 +761,7 @@ function stepFog(state: RoundState, dt: number): void {
 function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
   if (!meta) return;
   if (enemy.sprite !== 'grid') return;
-  const spec = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].dive;
+  const spec = meta.patterns.fire.tiers[fireKey(meta.round.tier)].dive;
   if (!spec) return;
   let at = nextDive.get(enemy);
   if (at === undefined) {
@@ -689,7 +781,7 @@ function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy)
 }
 
 function stepDive(state: RoundState, meta: Meta | undefined, enemy: Enemy, dt: number): void {
-  const spec = meta?.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].dive;
+  const spec = meta?.patterns.fire.tiers[fireKey(meta.round.tier)].dive;
   const d = dives.get(enemy);
   if (!spec || !d) {
     enemy.mode = 'hover';
@@ -733,12 +825,14 @@ function takeLamp(state: RoundState, grace: number): void {
 
 function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   if (!meta.rung.formationFires) return;
-  const rhythm = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].formation;
+  if (enemy.sprite !== 'grid' && enemy.sprite !== 'menu') return;
+  const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].formation;
   if (!rhythm) return;
   if (enemy.mode !== 'hover') return;
-  if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + rhythm.period;
+  const period = rhythm.period * waveEscalate(meta, state.wave);
+  if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + period;
   if (state.t < enemy.fireAt) return;
-  enemy.fireAt = state.t + rhythm.period;
+  enemy.fireAt = state.t + period;
   fireSpread(state.enemyShots, enemy.x + enemy.w / 2, enemy.y + enemy.h, rhythm);
 }
 
@@ -781,6 +875,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       openWave(state, meta, state.wave);
     }
     meta.waveHold = Math.max(0, meta.waveHold - dt);
+    maybeAside(state, meta);
   }
 
   if (state.lives <= 0) {
@@ -886,7 +981,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
 
   for (const enemy of state.enemies) {
     if (enemy.mode !== 'dive' || !enemy.alive) continue;
-    if (overlaps(enemy, state.player)) takeLamp(state, player.grace);
+    if (overlaps(enemy, state.player)) takeLamp(state, meta?.rung.grace ?? player.grace);
   }
 
   const boss = state.boss;
@@ -936,8 +1031,10 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     if (state.grace > 0) continue;
     if (!overlaps(shot, state.player)) continue;
     shot.dead = true;
-    takeLamp(state, player.grace);
+    takeLamp(state, meta?.rung.grace ?? player.grace);
   }
+
+  stepHazards(state, meta, dt, player.grace);
 
   state.shots = state.shots.filter((s: Shot) => !s.dead);
   state.enemyShots = state.enemyShots.filter((s: Shot) => !s.dead);

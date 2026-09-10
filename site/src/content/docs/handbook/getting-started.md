@@ -37,7 +37,8 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | Sound on / off               | Mute; sound starts on the first key or click               |
 | feel: calm / medium / loud   | How much the field shakes and how big the pops are         |
 | shake                        | Turn the shake off entirely; hitstop and the trophy stay   |
-| difficulty                   | As recorded, seat, or live (see below)                     |
+| difficulty                   | As recorded, seat, live, or hardcore                       |
+| Ollama bosses                | Local only. A local model calls the boss’s shots. Never sees lies. |
 
 ### Difficulties
 
@@ -46,8 +47,9 @@ A tape carries the tier it was recorded at: a fixture is tier 0, a seated run on
 - **Tier 0, as recorded**: only the boss fires, slowly. A gallery with teeth.
 - **Seat**: formations fire straight down and dive; the boss aims at you. A player who keeps moving loses about a lamp a round.
 - **Live**: faster, denser, the boss rages sooner. Meant to be survived, not cleared; a careful player finds every lie about half the time.
+- **Hardcore**: never derived from a tape. One lamp, rage from the first shot, boss hazards (echoes, bands, plates). Later waves fire faster. The scripted reader is not a human; a person who dodges can take it.
 
-A downed boss drops a lamp that falls toward the ship; a cleared formation drops a spread. The wave card carries a dry line about the experiment, and the boss enters with a line about the creature.
+A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. The wave card carries a dry line in the voice of an agent, and the boss enters with another. Short asides keep talking during the wave.
 
 ## Prove a round from the terminal
 

@@ -13,16 +13,21 @@
         "grid-swoop-slow",
         "menu-drop",
         "init-handshake",
+        "ready-ack",
         "fog-drift",
         "obstacle-slide",
         "stall-hang",
-        "answer-return"
+        "answer-return",
+        "error-drop"
       ],
       "bossFires": true,
       "formationFires": false,
       "speed": 0.7,
       "fog": 0.4,
-      "lamps": 3
+      "lamps": 3,
+      "grace": 0.55,
+      "hazards": false,
+      "rageStart": false
     },
     {
       "tier": 1,
@@ -31,16 +36,21 @@
         "grid-swoop-mid",
         "menu-drop",
         "init-handshake",
+        "ready-ack",
         "fog-drift",
         "obstacle-slide",
         "stall-hang",
-        "answer-return"
+        "answer-return",
+        "error-drop"
       ],
       "bossFires": true,
       "formationFires": true,
       "speed": 1,
       "fog": 0.7,
-      "lamps": 3
+      "lamps": 3,
+      "grace": 0.55,
+      "hazards": false,
+      "rageStart": false
     },
     {
       "tier": 2,
@@ -50,16 +60,45 @@
         "grid-dive-fast",
         "menu-drop",
         "init-handshake",
+        "ready-ack",
         "fog-drift",
         "obstacle-slide",
         "stall-hang",
-        "answer-return"
+        "answer-return",
+        "error-drop"
       ],
       "bossFires": true,
       "formationFires": true,
       "speed": 1.25,
       "fog": 1,
-      "lamps": 3
+      "lamps": 3,
+      "grace": 0.45,
+      "hazards": false,
+      "rageStart": false
+    },
+    {
+      "tier": 3,
+      "pools": [
+        "grid-swoop-slow",
+        "grid-swoop-mid",
+        "grid-dive-fast",
+        "menu-drop",
+        "init-handshake",
+        "ready-ack",
+        "fog-drift",
+        "obstacle-slide",
+        "stall-hang",
+        "answer-return",
+        "error-drop"
+      ],
+      "bossFires": true,
+      "formationFires": true,
+      "speed": 1.45,
+      "fog": 1.2,
+      "lamps": 1,
+      "grace": 0.4,
+      "hazards": true,
+      "rageStart": true
     }
   ]
 }

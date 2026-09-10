@@ -43,7 +43,9 @@ Bosses have enough health for a real fight, flash white when a shot lands, fire 
 - **Formations** fire straight down at seat and live, and dive: a diver tracks your column until half way down, then commits, so a player who reads the dive steps out of it.
 - **The boss** fires at where you are when the shot leaves, at seat and live. That is the one thing a player who keeps moving cannot shrug off.
 - **Contact** with a shot or a diver puts a lamp out and starts a short grace, during which the ship blinks and nothing else can hurt it.
-- **Drops** fall toward the ship's row and drift toward its column, because the ship cannot move forward. A downed boss drops a lamp (catch it to relight one). A cleared formation drops a spread shot that fans the ship's fire for a few seconds. A drop is class motion: the boss drops whether or not the wave had a lie.
+- **Drops** fall **straight down**. A downed boss drops a lamp (catch it to relight one). A cleared formation drops a spread. You have to fly under them; they do not come to you. A drop is class motion: the boss drops whether or not the wave had a lie.
+- **Hazards** (live’s harder cousin, on in hardcore): Whisperer echoes, Menu bands, Doorman plates. Boss data, never fact data.
+- **Ready** sprites are the `notifications/initialized` ack, distinct from the handshake lantern. Error responses have their own class.
 
 ## The wave card
 

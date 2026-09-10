@@ -22,7 +22,7 @@ const DIR = path.resolve(__dirname, '../../../fixtures/tapes');
 interface Case {
   name: string;
   tape: Tape;
-  tier: 0 | 1 | 2;
+  tier: 0 | 1 | 2 | 3;
   /** A header-only variant made for the curve; the fairness band skips these at tier 2. */
   variant?: boolean;
 }
@@ -158,5 +158,30 @@ describe('the difficulty curve', () => {
     const outs = byTier(2).map((c) => run(c, 'reader'));
     expect(alive(outs)).toBeGreaterThanOrEqual(8);
     expect(halfFound(outs)).toBe(true);
+  });
+});
+
+describe('hardcore', () => {
+  const unique = new Map<string, (typeof CASES)[number]>();
+  for (const c of CASES) {
+    if (c.variant) continue;
+    if (!unique.has(c.name.replace(/@.*$/, ''))) unique.set(c.name.replace(/@.*$/, ''), c);
+  }
+  const tapes = [...unique.values()].slice(0, 16);
+
+  it('idle dies, the sweeper dies, the reader lives on some tapes', () => {
+    const idle = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'idle', tier: 3 }));
+    expect(idle.every((o) => o.ended === 'lamps')).toBe(true);
+    const sweep = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'sweeper', tier: 3 }));
+    expect(sweep.every((o) => o.ended === 'lamps')).toBe(true);
+    const read = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'reader', tier: 3 }));
+    const lived = read.filter((o) => o.ended === 'time').length;
+    const lies = read.reduce((s, o) => s + o.lies.length, 0);
+    const found = read.reduce((s, o) => s + o.revealed.length, 0);
+    expect(found).toBeGreaterThanOrEqual(Math.ceil(lies / 3));
+    // One lamp: the scripted reader is not a human. It must still find lies
+    // and not turn the mode into a gallery. Surviving a few tapes is the
+    // human bar; the bot has to clear at least one or the mode is a wall.
+    expect(lived + read.filter((o) => o.revealed.length > 0).length).toBeGreaterThan(0);
   });
 });

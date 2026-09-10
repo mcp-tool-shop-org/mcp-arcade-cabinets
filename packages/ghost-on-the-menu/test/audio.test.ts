@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { attach, bar, barSeconds, DEFAULT_MUSIC, sfx, type Note } from '../src/audio';
+import { attach, bar, barSeconds, DEFAULT_MUSIC, TRACKS, sfx, type Note } from '../src/audio';
 
 describe('the score is pure data (no assets, no sim)', () => {
   it('every effect is a short list of notes with sane gains', () => {
@@ -35,6 +35,8 @@ describe('the score is pure data (no assets, no sim)', () => {
     expect(c).not.toEqual(a);
     for (const n of a) expect(n.at).toBeLessThan(barSeconds(DEFAULT_MUSIC));
     expect(bar(DEFAULT_MUSIC, 'nonsense', 3).length).toBeGreaterThan(0); // falls back to the breather
+    expect(TRACKS.poison).not.toEqual(TRACKS.inspect);
+    expect(TRACKS.whisperer!.rootHz).not.toBe(TRACKS.doorman!.rootHz);
   });
   it('the player schedules bars by the round clock, so hitstop and the end hold the music', () => {
     const started: number[] = [];

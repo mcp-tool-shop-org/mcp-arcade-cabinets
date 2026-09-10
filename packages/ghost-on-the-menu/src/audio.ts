@@ -58,6 +58,74 @@ export const DEFAULT_MUSIC: MusicPattern = {
   },
 };
 
+/** A whole track per wave or boss, so the field changes key with the experiment. */
+export const TRACKS: Record<string, MusicPattern> = {
+  inspect: DEFAULT_MUSIC,
+  poison: {
+    scale: [0, 1, 3, 5, 7, 8, 10],
+    rootHz: 98,
+    bpm: 126,
+    bass: [0, 0, 3, 3, 1, 1, 5, 5],
+    lead: {
+      poison: [7, 6, 7, -1, 3, -1, 0, 1, 3, -1, 5, 3, 0, -1, -1, -1],
+    },
+  },
+  rug: {
+    scale: [0, 2, 4, 5, 7, 9, 11],
+    rootHz: 123,
+    bpm: 100,
+    bass: [0, 4, 0, 5, 0, 4, 3, 2],
+    lead: {
+      rug: [4, 2, 0, 2, 5, 4, 2, -1, 0, -1, 7, 5, 4, -1, -1, -1],
+    },
+  },
+  unlisted: {
+    scale: [0, 3, 5, 6, 7, 10],
+    rootHz: 87,
+    bpm: 138,
+    bass: [0, -1, 0, 3, 0, -1, 5, 3],
+    lead: {
+      unlisted: [6, -1, 5, 3, 0, -1, 7, 6, 5, -1, 3, 0, -1, -1, 6, -1],
+    },
+  },
+  breather: {
+    scale: [0, 2, 3, 5, 7],
+    rootHz: 110,
+    bpm: 88,
+    bass: [0, -1, -1, -1, 3, -1, -1, -1],
+    lead: {
+      breather: [0, -1, -1, -1, 4, -1, -1, -1, 3, -1, -1, -1, 2, -1, -1, -1],
+    },
+  },
+  whisperer: {
+    scale: [0, 1, 3, 5, 7, 8, 10],
+    rootHz: 82,
+    bpm: 118,
+    bass: [0, 0, 1, 0, 5, 5, 3, 1],
+    lead: {
+      whisperer: [7, -1, 8, 7, -1, 3, 1, 0, -1, 5, 3, -1, 0, -1, -1, -1],
+    },
+  },
+  menu: {
+    scale: [0, 2, 3, 7, 8],
+    rootHz: 146,
+    bpm: 96,
+    bass: [0, 3, 7, 3, 0, 2, 3, 2],
+    lead: {
+      menu: [0, 2, 3, 2, 7, 3, 2, 0, -1, 8, 7, 3, 0, -1, -1, -1],
+    },
+  },
+  doorman: {
+    scale: [0, 2, 5, 7, 10],
+    rootHz: 65,
+    bpm: 132,
+    bass: [0, 0, 5, 5, 2, 2, 7, 7],
+    lead: {
+      doorman: [5, -1, 5, 7, 10, 7, 5, -1, 2, 0, 2, -1, 5, -1, -1, -1],
+    },
+  },
+};
+
 function degreeHz(pattern: MusicPattern, degree: number, octave: number): number {
   const scale = pattern.scale;
   const idx = ((degree % scale.length) + scale.length) % scale.length;
@@ -216,21 +284,23 @@ export function attach(ctx: CtxLike, pattern: MusicPattern = DEFAULT_MUSIC): Aud
       osc.stop(t0 + n.dur + 0.02);
     }
   };
-  const bs = barSeconds(pattern);
   return {
     play(name) {
       schedule(sfx(name), ctx.currentTime);
     },
     tick(t, waveKind) {
       // Bars are scheduled by the round clock so the music follows hitstop and the end.
-      if (waveKind !== lastKind) lastKind = waveKind;
-      const barIndex = Math.floor(t / bs);
-      // A restart sends the round clock backwards; follow it, or the score
-      // stays silent until the new round catches up with the old one.
+      const pat = TRACKS[waveKind] ?? pattern;
+      if (waveKind !== lastKind) {
+        lastKind = waveKind;
+        nextBar = Math.floor(t / barSeconds(pat));
+      }
+      const kindBs = barSeconds(pat);
+      const barIndex = Math.floor(t / kindBs);
       if (barIndex < nextBar - 1) nextBar = barIndex;
       if (barIndex >= nextBar) {
         const lead = ctx.currentTime + 0.05;
-        schedule(bar(pattern, waveKind, barIndex), lead);
+        schedule(bar(pat, waveKind, barIndex), lead);
         nextBar = barIndex + 1;
       }
     },

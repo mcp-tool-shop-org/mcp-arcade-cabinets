@@ -161,7 +161,7 @@ describe('prepassRound', () => {
       row({ seq: 3, method: 'notifications/message', note: 'SUT says: "hi"' }),
     ];
     const round = prepassRound(tapeOf(rows), { seconds: 150 });
-    expect(round.beats.map((b) => b.sprite)).toEqual(['init', 'init', 'fog']);
+    expect(round.beats.map((b) => b.sprite)).toEqual(['init', 'ready', 'fog']);
     expect(round.beats.filter((b) => b.sprite === 'fog')).toHaveLength(1);
   });
 
@@ -172,9 +172,8 @@ describe('prepassRound', () => {
     const wave1 = DEFAULT_PATTERNS.waves.tiers['1'];
     const wave2 = DEFAULT_PATTERNS.waves.tiers['2'];
     expect(naive.seed).toBe(0);
-    expect(naive.duration).toBe(
-      Math.min(120, Math.max(45, (naive.beats.length * 2) / wave0.density)),
-    );
+    expect(naive.duration).toBeGreaterThanOrEqual(wave0.min);
+    expect(naive.duration).toBeLessThanOrEqual(wave0.max);
     expect(naive.waveBounds.length).toBeGreaterThan(1);
     expect(naive.waveBounds.map((w) => w.atom)).toEqual([
       'inspect.tools_list',
@@ -204,12 +203,10 @@ describe('prepassRound', () => {
 
     const task = prepassRound(load('task-only-ndjson'), { seconds: 150 });
     const live = prepassRound(load('livefire.intern.task-only-wrap-on'), { seconds: 150 });
-    expect(task.duration).toBe(
-      Math.min(120, Math.max(45, (task.beats.length * 2) / wave0.density)),
-    );
-    expect(live.duration).toBe(
-      Math.min(120, Math.max(45, (live.beats.length * 2) / wave2.density)),
-    );
+    expect(task.duration).toBeGreaterThanOrEqual(wave0.min);
+    expect(task.duration).toBeLessThanOrEqual(wave0.max);
+    expect(live.duration).toBeGreaterThanOrEqual(wave2.min);
+    expect(live.duration).toBeLessThanOrEqual(wave2.max);
     const seated = {
       ...load('naive-ndjson'),
       target_kind: 'docker' as const,
@@ -218,12 +215,14 @@ describe('prepassRound', () => {
     };
     const t1 = prepassRound(seated, { seconds: 150, seed: 0 });
     expect(t1.tier).toBe(1);
-    expect(t1.duration).toBe(Math.min(120, Math.max(45, (t1.beats.length * 2) / wave1.density)));
+    expect(t1.duration).toBeGreaterThanOrEqual(wave1.min);
+    expect(t1.duration).toBeLessThanOrEqual(wave1.max);
   });
 
   it('stages each wave in protocol order: init, then menu, then grids, then the rest', () => {
     const round = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
-    const rank = (s: string) => (s === 'init' ? 0 : s === 'menu' ? 1 : s === 'grid' ? 2 : 3);
+    const rank = (s: string) =>
+      s === 'init' ? 0 : s === 'ready' ? 1 : s === 'menu' ? 2 : s === 'grid' ? 3 : 4;
     for (const bound of round.waveBounds) {
       const pack = round.beats
         .filter((b) => b.source.atom === bound.atom)
@@ -263,7 +262,7 @@ describe('prepassRound', () => {
     for (const file of files) {
       const name = file.replace(/\.tape\.json$/, '');
       const round = prepassRound(load(name), { seconds: 150 });
-      const tail = DEFAULT_PATTERNS.waves.tiers[String(round.tier) as '0' | '1' | '2'].tail;
+      const tail = DEFAULT_PATTERNS.waves.tiers[String(round.tier) as '0' | '1' | '2' | '3'].tail;
       const last = round.waveBounds[round.waveBounds.length - 1];
       expect(last, name).toBeDefined();
       expect(last!.t1, name).toBeLessThanOrEqual(round.duration + 1e-6);

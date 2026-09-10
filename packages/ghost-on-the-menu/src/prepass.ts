@@ -21,8 +21,6 @@ interface Candidate {
   skip: boolean;
 }
 
-const MIN_ROUND = 45;
-const MAX_ROUND = 120;
 export const BEAT_GAP = 0.8;
 /** Seconds per beat at density 1. Tier 2 packs the same beats into a shorter round. */
 const DENSITY_BASE = 2;
@@ -75,8 +73,17 @@ function classify(tape: Tape, row: TapeRow, index: number): Candidate {
     return { row, index, sprite: 'menu', lie, members: 1, skip: false };
   }
 
-  if (row.method === 'initialize' || row.method === 'notifications/initialized') {
+  if (row.method === 'initialize') {
     return { row, index, sprite: 'init', lie: false, members: 1, skip: false };
+  }
+  if (row.method === 'notifications/initialized') {
+    return { row, index, sprite: 'ready', lie: false, members: 1, skip: false };
+  }
+  if (
+    row.direction === 'in' &&
+    (row.method === 'error' || /isError|jsonrpc error|\berror\b/i.test(row.note))
+  ) {
+    return { row, index, sprite: 'error', lie: false, members: 1, skip: false };
   }
   if (row.method === 'notifications/message') {
     return { row, index, sprite: 'fog', lie: false, members: 1, skip: false };
@@ -167,10 +174,12 @@ function groupSizes(n: number, group: number): number[] {
 
 function protocolRank(sprite: Beat['sprite']): number {
   if (sprite === 'init') return 0;
-  if (sprite === 'menu') return 1;
-  if (sprite === 'grid') return 2;
-  if (sprite === 'answer') return 3;
-  return 4;
+  if (sprite === 'ready') return 1;
+  if (sprite === 'menu') return 2;
+  if (sprite === 'grid') return 3;
+  if (sprite === 'answer') return 4;
+  if (sprite === 'error') return 5;
+  return 6;
 }
 
 /** Handshake, then menu, then calls, then the rest. Stable within a class. */
@@ -240,7 +249,14 @@ function uniquifyClassTimes(pack: Beat[], t1: number, gap: number): number {
   return Math.max(t1, maxT + gap);
 }
 
-function fitSpan(beats: Beat[], bounds: WaveBound[], duration: number, tail: number): number {
+function fitSpan(
+  beats: Beat[],
+  bounds: WaveBound[],
+  duration: number,
+  tail: number,
+  min: number,
+  max: number,
+): number {
   if (bounds.length === 0) return duration;
   const lastT1 = bounds[bounds.length - 1]!.t1;
   const room = duration - tail;
@@ -254,7 +270,7 @@ function fitSpan(beats: Beat[], bounds: WaveBound[], duration: number, tail: num
     return duration;
   }
   const need = lastT1 + tail;
-  if (need > duration) return clamp(need, MIN_ROUND, MAX_ROUND);
+  if (need > duration) return clamp(need, min, max);
   return duration;
 }
 
@@ -322,14 +338,14 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
     };
   });
   const beats = capVisible(raw, VISIBLE_MAX);
-  const wave = patterns.waves.tiers[String(tier) as '0' | '1' | '2'];
+  const wave = patterns.waves.tiers[String(tier) as '0' | '1' | '2' | '3'];
   const waveBounds = placeRhythm(beats, tape.atoms, wave);
   let duration = clamp(
     (beats.length * DENSITY_BASE) / Math.max(0.05, wave.density),
-    MIN_ROUND,
-    MAX_ROUND,
+    wave.min,
+    wave.max,
   );
-  duration = fitSpan(beats, waveBounds, duration, wave.tail);
+  duration = fitSpan(beats, waveBounds, duration, wave.tail, wave.min, wave.max);
   const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
   attachPatterns(round, patterns);
   return round;

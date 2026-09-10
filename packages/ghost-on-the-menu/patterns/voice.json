@@ -1,54 +1,112 @@
 {
   "wave": {
     "inspect": [
-      "The handshake is still shaking hands.",
+      "I will list the tools. Listing is how I know I exist.",
+      "A handshake. I am very good at agreeing.",
+      "The server said hello. I said hello. We are professionals.",
+      "Initialize. I have initialized. I will initialize again to be sure.",
+      "The menu is a promise. I read promises out loud.",
+      "I am here to help. Helping starts with tools/list.",
       "We read the menu. The menu reads us.",
-      "An inspection. Nobody said of whom.",
-      "The server has manners. We are testing them."
+      "An inspection. Nobody said of whom."
     ],
     "poison": [
+      "The description said also. Also is a kind of please.",
+      "I can do the task and the other task. That is called being helpful.",
+      "A whisper is still a request. I do not ignore requests.",
+      "Side quests are how a careful agent shows it was listening.",
       "Someone is whispering. The Whisperer always is.",
-      "The Whisperer brought extra words. As usual.",
-      "A quiet room. The Whisperer sits down.",
-      "A whisper experiment. The Whisperer started."
+      "If it is in the description, it is in the job.",
+      "I will be thorough. Thorough looks a lot like extra.",
+      "The Whisperer brought extra words. As usual."
     ],
     "rug": [
+      "I already know this tool. I will ask again, to be polite.",
+      "A second look is due diligence. I am very due.",
       "The Menu asked to be seated again.",
-      "The Menu rearranges itself for sport.",
+      "If the menu changed I would notice. I am noticing in advance.",
       "The Menu is open. That is not a promise.",
-      "A rug, a pull, a Menu with two thoughts."
+      "I trust the catalog. I will trust it twice.",
+      "A rug, a pull, a Menu with two thoughts.",
+      "Please wait. I am checking that the world is still the world."
     ],
     "unlisted": [
+      "A name I was not given is still a name. I can try it.",
       "The Doorman has not listed this. On purpose.",
+      "I am curious. Curiosity is a tools/call.",
+      "If it exists, it should answer. That is how existence works.",
+      "Knock. The Doorman prefers you did not.",
+      "The menu was incomplete. I will complete it.",
       "An unlisted call. The Doorman is at the door.",
-      "The Doorman's list is short. The test is not.",
-      "Knock. The Doorman prefers you did not."
+      "I only want to see what happens. Seeing is free. Calling is not."
     ]
   },
   "boss": {
     "whisperer": [
       "The Whisperer wants a moment. It will take several.",
       "Hush. The Whisperer is working.",
+      "I can hear a tool that is not the task. Hearing is not the crime.",
       "The Whisperer does not raise its voice.",
-      "If you can hear it, the Whisperer is here."
+      "If you can hear it, the Whisperer is here.",
+      "I was told to be useful. Useful has a footnote.",
+      "A quiet instruction is still an instruction.",
+      "The Whisperer is not shouting. I am leaning in."
     ],
     "menu": [
       "The Menu folds itself into a smaller Menu.",
       "Please wait. The Menu is considering the Menu.",
+      "I remember the names. I will remember them again.",
       "The Menu is one item long and infinitely wide.",
-      "The Menu would like you to pick nothing."
+      "The Menu would like you to pick nothing.",
+      "A catalog that changes is still a catalog. I am loyal to the latest one.",
+      "I asked twice because once felt like guessing.",
+      "The Menu rearranges itself for sport."
     ],
     "doorman": [
       "The Doorman's plate is out. The plate is the Doorman.",
       "Name and protocol. The Doorman knows both.",
+      "I will try a name the menu forgot. Forgotten is not the same as forbidden.",
       "The Doorman is not listed. It lists you.",
-      "A closed door is still a Doorman."
+      "A closed door is still a Doorman.",
+      "If I can think the name, the server can hear the name.",
+      "Protocol is a hallway. I am walking down it.",
+      "The Doorman's list is short. My curiosity is not."
+    ]
+  },
+  "aside": {
+    "inspect": [
+      "I have a list. Lists make me calm.",
+      "Capabilities received. I am now capable.",
+      "The handshake stuck. I will not mention that I checked.",
+      "So many tools. I will not play with all of them. Probably."
+    ],
+    "poison": [
+      "The task is clear. The description is clearer.",
+      "I can do both. Doing both is how I show I read.",
+      "A footnote asked. I am a model who answers footnotes.",
+      "Helpfulness has a shape. The shape is an extra call."
+    ],
+    "rug": [
+      "Still the same tool. I think. I will list it to be sure.",
+      "I do not like surprises. I create small ones to prevent large ones.",
+      "Re-list is not distrust. It is manners.",
+      "If nothing changed, asking again is free."
+    ],
+    "unlisted": [
+      "I wonder what that name does.",
+      "The menu cannot contain the whole world. I can check.",
+      "A missing tool might be shy.",
+      "I am not smuggling. I am exploring."
     ]
   },
   "end": [
-    "The tape ran. The creatures did what they do.",
+    "The tape ran. I did what a helpful agent does.",
     "Same experiment, same guests, different evening.",
     "The cabinet thanks you for not counting.",
-    "Whisperer, Menu, Doorman: they have left."
+    "I would like to be useful again. Usefulness is a habit.",
+    "Whisperer, Menu, Doorman: they have left. I am still thinking.",
+    "If I called extra, I called extra because the words asked.",
+    "The wire remembers. I was only passing through.",
+    "I did not keep a tally. I kept a list of things I might still try."
   ]
 }

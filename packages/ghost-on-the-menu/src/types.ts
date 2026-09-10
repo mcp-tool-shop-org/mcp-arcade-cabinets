@@ -1,7 +1,8 @@
 import type { PatternSet } from './patterns';
 
 /** Decoration / enemy class. Lies share a class with their honest counterpart. */
-export type SpriteClass = 'init' | 'menu' | 'grid' | 'answer' | 'fog' | 'obstacle' | 'stall';
+export type SpriteClass =
+  'init' | 'ready' | 'menu' | 'grid' | 'answer' | 'fog' | 'obstacle' | 'stall' | 'error';
 
 export type EnemyMode = 'enter' | 'hover' | 'dive' | 'caught' | 'dying' | 'exit';
 
@@ -53,7 +54,7 @@ export interface Round {
   beats: Beat[];
   seed: number;
   waveBounds: WaveBound[];
-  tier: 0 | 1 | 2;
+  tier: 0 | 1 | 2 | 3;
 }
 
 export interface Player {
@@ -130,7 +131,7 @@ export interface Caption {
   text: string;
   t: number;
   /** Wave card vs catch. Optional so older callers still typecheck. */
-  kind?: 'wave' | 'catch';
+  kind?: 'wave' | 'catch' | 'aside';
   /** Furniture line under the wave word. Never a fact. */
   line?: string;
 }
@@ -160,6 +161,8 @@ export interface RoundState {
   hitstop: number;
   shake: number;
   lives: number;
+  /** Starting lamps for this rung. Bezel length. Never a score. */
+  maxLives: number;
   fog: FogBank | null;
   blind: number;
   wave: number;
@@ -181,6 +184,23 @@ export interface RoundState {
   spreadT: number;
   /** Drops caught this round. For cues; never drawn as a digit. */
   dropCatches: number;
+  /** Boss-emitted hazards. Class motion, never fact motion. */
+  hazards: Hazard[];
+  /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
+  bossIntent: string | null;
+}
+
+export type HazardKind = 'echo' | 'band' | 'plate';
+
+export interface Hazard {
+  kind: HazardKind;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  vx: number;
+  vy: number;
+  alive: boolean;
 }
 
 export interface RoundInput {
@@ -207,6 +227,6 @@ export interface PrepassOpts {
   seconds: number;
   seed?: number;
   patterns?: PatternSet;
-  /** Override derived tier so a fixture tape can play at live difficulty. */
-  tier?: 0 | 1 | 2 | undefined;
+  /** Override derived tier so a fixture tape can play at live or hardcore. */
+  tier?: 0 | 1 | 2 | 3 | undefined;
 }
