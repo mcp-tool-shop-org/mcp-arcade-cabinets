@@ -1,6 +1,6 @@
 import { factFor, type Tape, type TapeRow } from '@mcp-arcade-cabinets/tape-core';
 
-import { DEFAULT_PATTERNS, deriveTier } from './patterns';
+import { attachPatterns, DEFAULT_PATTERNS, deriveTier, type WaveTier } from './patterns';
 import {
   DEFAULT_SECONDS,
   FIELD,
@@ -25,8 +25,6 @@ const SECONDS_PER_BEAT = 4;
 const MIN_ROUND = 45;
 const MAX_ROUND = 120;
 const BEAT_GAP = 0.8;
-const GROUP_REST = 2.4;
-const WAVE_BREATHER = 2;
 
 function toolName(note: string): string {
   const m = /^tools\/call\s+(\S+)/.exec(note);
@@ -133,13 +131,14 @@ function beatId(c: Candidate, fact: ReturnType<typeof factFor>): string {
   return `${c.row.atom}:${c.sprite}:${c.index}`;
 }
 
-function groupSizes(n: number): number[] {
+function groupSizes(n: number, group: number): number[] {
+  const g = Math.max(1, Math.round(group));
   const sizes: number[] = [];
   let left = n;
   while (left > 0) {
-    if (left > 4) {
-      sizes.push(4);
-      left -= 4;
+    if (left > g) {
+      sizes.push(g);
+      left -= g;
     } else {
       sizes.push(left);
       left = 0;
@@ -148,7 +147,7 @@ function groupSizes(n: number): number[] {
   return sizes;
 }
 
-function placeRhythm(beats: Beat[], atoms: readonly { id: string }[]): WaveBound[] {
+function placeRhythm(beats: Beat[], atoms: readonly { id: string }[], wave: WaveTier): WaveBound[] {
   const byAtom = new Map<string, Beat[]>();
   for (const a of atoms) byAtom.set(a.id, []);
   for (const b of beats) {
@@ -163,23 +162,23 @@ function placeRhythm(beats: Beat[], atoms: readonly { id: string }[]): WaveBound
   const bounds: WaveBound[] = [];
   let t = 0;
   for (let w = 0; w < waves.length; w++) {
-    const wave = waves[w]!;
+    const pack = waves[w]!;
     const t0 = t;
-    const sizes = groupSizes(wave.beats.length);
+    const sizes = groupSizes(pack.beats.length, wave.beatsPerGroup);
     let idx = 0;
     for (let g = 0; g < sizes.length; g++) {
       const size = sizes[g]!;
       for (let k = 0; k < size; k++) {
-        wave.beats[idx]!.t = t;
+        pack.beats[idx]!.t = t;
         idx += 1;
         if (k < size - 1) t += BEAT_GAP;
       }
-      if (g < sizes.length - 1) t += GROUP_REST;
+      if (g < sizes.length - 1) t += wave.rest;
     }
     const t1 = t + BEAT_GAP;
-    bounds.push({ atom: wave.atom, t0, t1 });
+    bounds.push({ atom: pack.atom, t0, t1 });
     t = t1;
-    if (w < waves.length - 1) t += WAVE_BREATHER;
+    if (w < waves.length - 1) t += wave.breather;
   }
   return bounds;
 }
@@ -220,7 +219,10 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
     };
   });
   const beats = capVisible(raw, VISIBLE_MAX);
-  const waveBounds = placeRhythm(beats, tape.atoms);
+  const wave = patterns.waves.tiers[String(tier) as '0' | '1' | '2'];
+  const waveBounds = placeRhythm(beats, tape.atoms, wave);
   const duration = clamp(SECONDS_PER_BEAT * beats.length, MIN_ROUND, MAX_ROUND);
-  return { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
+  const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
+  attachPatterns(round, patterns);
+  return round;
 }

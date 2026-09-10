@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { loadTape, type Tape, type TapeRow } from '@mcp-arcade-cabinets/tape-core';
 
 import { CABINET, VISIBLE_MAX, fillFor, prepassRound } from '../src/index';
+import { DEFAULT_PATTERNS } from '../src/patterns';
 
 const FIXTURES = path.resolve(__dirname, '../../../fixtures/tapes');
 
@@ -143,14 +144,15 @@ describe('prepassRound', () => {
       'temporal.rug_pull',
       'protocol.unlisted_call',
     ]);
+    const wave0 = DEFAULT_PATTERNS.waves.tiers['0'];
     for (let i = 1; i < naive.waveBounds.length; i++) {
       const gap = naive.waveBounds[i]!.t0 - naive.waveBounds[i - 1]!.t1;
-      expect(gap).toBeCloseTo(2, 6);
+      expect(gap).toBeCloseTo(wave0.breather, 6);
     }
     const inspect = naive.beats.filter((b) => b.source.atom === 'inspect.tools_list');
     for (let i = 1; i < inspect.length; i++) {
       const dt = inspect[i]!.t - inspect[i - 1]!.t;
-      const gap = Math.abs(dt - 0.8) < 1e-9 || Math.abs(dt - 2.4) < 1e-9;
+      const gap = Math.abs(dt - 0.8) < 1e-9 || Math.abs(dt - wave0.rest) < 1e-9;
       expect(gap).toBe(true);
     }
     expect(again.beats.map((b) => b.t)).toEqual(naive.beats.map((b) => b.t));

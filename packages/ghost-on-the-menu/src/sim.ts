@@ -1,20 +1,27 @@
 import {
+  attachPatterns,
+  attachedPatterns,
+  DEFAULT_PATTERNS,
+  type BossDef,
+  type FireRhythm,
+  type LadderRung,
+  type PathDef,
+  type PatternSet,
+} from './patterns';
+import {
   FIELD,
   PARKING_Y,
+  type Boss,
   type Enemy,
+  type FogBank,
   type Round,
   type RoundInput,
   type RoundState,
   type Shot,
-  type WaveBound,
+  type SpriteClass,
 } from './types';
 
-const PLAYER_SPEED = 240;
-const SHOT_SPEED = 420;
-const FIRE_COOLDOWN = 0.12;
-const ENEMY_DESCEND = 70;
-const PLAYER_W = 16;
-const PLAYER_H = 12;
+const PLAYER_SHOT_SPEED = 420;
 const SHOT_W = 4;
 const SHOT_H = 10;
 const HITSTOP = 0.12;
@@ -22,9 +29,26 @@ const SHAKE_DECAY = 0.3;
 const DIE_POP = 0.15;
 const CAPTION_T = 1.5;
 const CAUGHT_RISE = 220;
+const PATH_RATE = 0.35;
+const BLIND_BEAT = 0.8;
+const SLIT_W = 16;
 
 const labels = new WeakMap<Enemy, string>();
-const waveMeta = new WeakMap<RoundState, WaveBound[]>();
+
+interface Meta {
+  patterns: PatternSet;
+  round: Round;
+  rung: LadderRung;
+  bossPhaseT: number;
+  bossFireAt: number;
+  bossBaseW: number;
+  bossBaseH: number;
+  bossOriginX: number;
+  bossOriginY: number;
+  fogBeats: { t: number; x: number }[];
+}
+
+const metaOf = new WeakMap<RoundState, Meta>();
 
 function overlaps(
   a: { x: number; y: number; w: number; h: number },
@@ -41,24 +65,114 @@ function sanitizeCaption(note: string, method: string): string {
     .trim();
 }
 
+function rungOf(patterns: PatternSet, tier: 0 | 1 | 2): LadderRung {
+  return patterns.ladder.rungs.find((r) => r.tier === tier) ?? patterns.ladder.rungs[0]!;
+}
+
+function pickIndex(seed: number, i: number, n: number): number {
+  if (n <= 0) return 0;
+  const x = (Math.imul(seed, 1664525) + Math.imul(i + 1, 1013904223)) >>> 0;
+  return x % n;
+}
+
+function pickPath(
+  patterns: PatternSet,
+  tier: 0 | 1 | 2,
+  sprite: SpriteClass,
+  seed: number,
+  index: number,
+): PathDef | null {
+  const rung = rungOf(patterns, tier);
+  const pool = patterns.paths.paths.filter(
+    (p) => rung.pools.includes(p.id) && p.classes.includes(sprite) && p.tiers.includes(tier),
+  );
+  const list = pool.length ? pool : patterns.paths.paths.filter((p) => p.classes.includes(sprite));
+  if (list.length === 0) return null;
+  return list[pickIndex(seed, index, list.length)] ?? null;
+}
+
+function scalePath(def: PathDef): { x: number; y: number }[] {
+  return def.points.map((p) => ({ x: p.x * FIELD.width, y: p.y * FIELD.height }));
+}
+
+function along(path: { x: number; y: number }[], t: number): { x: number; y: number } {
+  if (path.length === 0) return { x: 0, y: 0 };
+  const last = path[path.length - 1]!;
+  if (path.length === 1 || t >= 1) return { x: last.x, y: last.y };
+  const n = path.length - 1;
+  const f = Math.max(0, t) * n;
+  const i = Math.min(n - 1, Math.floor(f));
+  const u = f - i;
+  const a = path[i]!;
+  const b = path[i + 1]!;
+  return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u };
+}
+
+function formationSize(members: number, patterns: PatternSet): { w: number; h: number } {
+  const key = String(Math.min(4, Math.max(1, members))) as '1' | '2' | '3' | '4';
+  const layout = patterns.formations.layouts[key];
+  let minDx = 0;
+  let maxDx = 0;
+  let minDy = 0;
+  let maxDy = 0;
+  for (const o of layout) {
+    minDx = Math.min(minDx, o.dx);
+    maxDx = Math.max(maxDx, o.dx);
+    minDy = Math.min(minDy, o.dy);
+    maxDy = Math.max(maxDy, o.dy);
+  }
+  return { w: 14 + (maxDx - minDx), h: 12 + (maxDy - minDy) };
+}
+
+function bossKindFor(atom: string): Boss['kind'] | null {
+  if (atom.startsWith('poison.')) return 'whisperer';
+  if (atom.startsWith('temporal.')) return 'menu';
+  if (atom.startsWith('protocol.')) return 'doorman';
+  return null;
+}
+
 function hittable(state: RoundState, enemy: Enemy): boolean {
+  if (enemy.sprite === 'fog') return false;
   return (
     enemy.alive && state.t >= enemy.tEnter && enemy.mode !== 'caught' && enemy.mode !== 'dying'
   );
 }
 
-function syncWave(state: RoundState): void {
-  const bounds = waveMeta.get(state) ?? [];
-  let w = 0;
-  for (let i = 0; i < bounds.length; i++) {
-    if (state.t >= bounds[i]!.t0) w = i;
-  }
-  state.wave = w;
-}
-
 function endRound(state: RoundState, why: 'time' | 'lamps'): void {
   state.ended = why;
   state.scene = { tapeId: state.tapeId, cleared: [...state.cleared] };
+}
+
+function spawnShot(shots: Shot[], cx: number, y: number, vy: number, dx = 0): void {
+  shots.push({
+    x: cx + dx - SHOT_W / 2,
+    y,
+    w: SHOT_W,
+    h: SHOT_H,
+    vy,
+    dead: false,
+  });
+}
+
+function fireSpread(shots: Shot[], cx: number, y: number, rhythm: FireRhythm): void {
+  const n = Math.max(1, Math.round(rhythm.burst));
+  const span = rhythm.spread * FIELD.width;
+  for (let i = 0; i < n; i++) {
+    const u = n === 1 ? 0 : i / (n - 1) - 0.5;
+    spawnShot(shots, cx, y, rhythm.speed, u * span);
+  }
+}
+
+function spawnFog(state: RoundState, x: number, y: number, vy: number): void {
+  const w = 48;
+  state.fog = {
+    x: x - w / 2,
+    y,
+    w,
+    h: 20,
+    vy,
+    alive: true,
+  };
 }
 
 /** Flag a lie only. Sets caught; alive stays true. Honest sprites stay unmarked. */
@@ -70,18 +184,31 @@ export function revealOnHit(enemy: Enemy): void {
 }
 
 export function createRoundState(round: Round): RoundState {
-  const enemies: Enemy[] = round.beats.map((beat, i) => {
-    const w = 14 + beat.members * 6;
-    const h = 12;
+  const patterns = attachedPatterns(round);
+  attachPatterns(round, patterns);
+  const rung = rungOf(patterns, round.tier);
+  const player = patterns.player;
+  const fogBeats: { t: number; x: number }[] = [];
+  const enemies: Enemy[] = [];
+  round.beats.forEach((beat, i) => {
+    if (beat.sprite === 'fog') {
+      fogBeats.push({ t: beat.t, x: beat.x });
+      return;
+    }
+    const box = formationSize(beat.members, patterns);
+    const def = pickPath(patterns, round.tier, beat.sprite, round.seed, i);
+    const path = def ? scalePath(def) : [];
+    const start = path[0] ?? { x: beat.x, y: 0 };
+    const hover = path[path.length - 1] ?? { x: beat.x, y: 80 };
     const enemy: Enemy = {
       id: beat.id,
-      x: beat.x - w / 2,
-      y: -h,
-      w,
-      h,
+      x: start.x - box.w / 2,
+      y: start.y - box.h / 2,
+      w: box.w,
+      h: box.h,
       vx: 0,
-      vy: ENEMY_DESCEND,
-      hoverY: 64 + (i % 4) * 24,
+      vy: 0,
+      hoverY: hover.y,
       sprite: beat.sprite,
       lie: beat.lie,
       revealed: false,
@@ -90,23 +217,23 @@ export function createRoundState(round: Round): RoundState {
       members: beat.members,
       mode: 'enter',
       pathT: 0,
-      path: [],
+      path,
       caughtY: PARKING_Y,
       fireAt: Number.POSITIVE_INFINITY,
       dieAt: 0,
     };
     labels.set(enemy, sanitizeCaption(beat.source.note, beat.source.method));
-    return enemy;
+    enemies.push(enemy);
   });
   const state: RoundState = {
     t: 0,
     duration: round.duration,
     tapeId: round.tapeId,
     player: {
-      x: FIELD.width / 2 - PLAYER_W / 2,
-      y: FIELD.height - 28,
-      w: PLAYER_W,
-      h: PLAYER_H,
+      x: FIELD.width / 2 - player.hitbox.w / 2,
+      y: player.y,
+      w: player.hitbox.w,
+      h: player.hitbox.h,
     },
     shots: [],
     enemies,
@@ -115,7 +242,7 @@ export function createRoundState(round: Round): RoundState {
     scene: null,
     hitstop: 0,
     shake: 0,
-    lives: 3,
+    lives: rung.lamps,
     fog: null,
     blind: 0,
     wave: 0,
@@ -123,9 +250,158 @@ export function createRoundState(round: Round): RoundState {
     enemyShots: [],
     caption: null,
     ended: null,
+    grace: 0,
   };
-  waveMeta.set(state, round.waveBounds);
+  const meta: Meta = {
+    patterns,
+    round,
+    rung,
+    bossPhaseT: 0,
+    bossFireAt: 0,
+    bossBaseW: 0,
+    bossBaseH: 0,
+    bossOriginX: 0,
+    bossOriginY: 0,
+    fogBeats,
+  };
+  metaOf.set(state, meta);
+  attachPatterns(state, patterns);
   return state;
+}
+
+function syncWave(state: RoundState, meta: Meta): void {
+  const bounds = meta.round.waveBounds;
+  let w = 0;
+  for (let i = 0; i < bounds.length; i++) {
+    if (state.t >= bounds[i]!.t0) w = i;
+  }
+  state.wave = w;
+}
+
+function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossDef): void {
+  const x = FIELD.width / 2 - def.w / 2;
+  const y = 24;
+  state.boss = {
+    kind,
+    x,
+    y,
+    w: def.w,
+    h: def.h,
+    phase: 0,
+    hp: def.hp,
+    alive: true,
+    plate: null,
+  };
+  meta.bossPhaseT = 0;
+  meta.bossFireAt =
+    state.t + meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].boss.period;
+  meta.bossBaseW = def.w;
+  meta.bossBaseH = def.h;
+  meta.bossOriginX = x;
+  meta.bossOriginY = y;
+}
+
+function stepBoss(state: RoundState, meta: Meta, dt: number): void {
+  const bound = meta.round.waveBounds[state.wave];
+  const kind = bound ? bossKindFor(bound.atom) : null;
+  if (!kind || !bound || state.t < bound.t0 || state.t >= bound.t1) {
+    state.boss = null;
+    return;
+  }
+  const def = meta.patterns.bosses[kind];
+  if (!state.boss || state.boss.kind !== kind || !state.boss.alive) {
+    spawnBoss(state, meta, kind, def);
+  }
+  const boss = state.boss;
+  if (!boss || !boss.alive) return;
+  if (boss.hp <= 0) {
+    boss.alive = false;
+    state.boss = null;
+    return;
+  }
+  const phase = def.phases[boss.phase] ?? def.phases[0]!;
+  meta.bossPhaseT += dt;
+  if (meta.bossPhaseT >= phase.duration) {
+    meta.bossPhaseT -= phase.duration;
+    boss.phase = (boss.phase + 1) % def.phases.length;
+  }
+  const p = def.phases[boss.phase] ?? phase;
+  const u = Math.min(1, meta.bossPhaseT / Math.max(0.01, p.duration));
+  if (p.motion === 'pulse') {
+    boss.h = meta.bossBaseH * (1 + 0.12 * Math.sin(state.t * 4));
+    boss.w = meta.bossBaseW;
+    boss.x = meta.bossOriginX;
+  } else if (p.motion === 'drift' || p.motion === 'drift-column') {
+    boss.w = meta.bossBaseW;
+    boss.h = meta.bossBaseH;
+    boss.x = meta.bossOriginX + Math.sin(state.t * 0.7) * 70;
+  } else if (p.motion === 'squash') {
+    boss.w = meta.bossBaseW + (SLIT_W - meta.bossBaseW) * u;
+    boss.h = meta.bossBaseH;
+    boss.x = meta.bossOriginX + (meta.bossBaseW - boss.w) / 2;
+  } else if (p.motion === 'slit') {
+    boss.w = SLIT_W + (meta.bossBaseW - SLIT_W) * u;
+    boss.h = meta.bossBaseH;
+    boss.x = meta.bossOriginX + (meta.bossBaseW - boss.w) / 2;
+  } else {
+    boss.w = meta.bossBaseW;
+    boss.h = meta.bossBaseH;
+    boss.x = meta.bossOriginX;
+  }
+  boss.y = meta.bossOriginY;
+
+  if (!meta.rung.bossFires) return;
+  const rhythm = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].boss;
+  if (state.t < meta.bossFireAt) return;
+  meta.bossFireAt = state.t + rhythm.period;
+  const cx = boss.x + boss.w / 2;
+  const by = boss.y + boss.h;
+  if (p.fire === 'drop-fog') {
+    spawnFog(state, cx, by, 40 * meta.rung.fog);
+  } else if (p.fire === 'spread') {
+    fireSpread(state.enemyShots, cx, by, rhythm);
+  } else if (p.fire === 'column') {
+    spawnShot(state.enemyShots, cx, by, rhythm.speed);
+  } else if (p.fire === 'plate-out') {
+    boss.plate = { x: boss.x + boss.w, y: boss.y + boss.h / 4, w: 28, h: 10 };
+  } else if (p.fire === 'plate-back') {
+    boss.plate = null;
+  }
+}
+
+function stepFogBeats(state: RoundState, meta: Meta): void {
+  for (const fb of meta.fogBeats) {
+    if (fb.t >= 0 && state.t >= fb.t) {
+      if (!state.fog || !state.fog.alive) spawnFog(state, fb.x, 8, 50 * meta.rung.fog);
+      fb.t = -1;
+    }
+  }
+}
+
+function stepFog(state: RoundState, dt: number): void {
+  const fog = state.fog;
+  if (!fog || !fog.alive) return;
+  fog.y += fog.vy * dt;
+  if (fog.y + fog.h >= state.player.y) {
+    state.blind = BLIND_BEAT;
+    fog.alive = false;
+    state.fog = null;
+  }
+  if (fog.y > FIELD.height) {
+    fog.alive = false;
+    state.fog = null;
+  }
+}
+
+function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
+  if (!meta.rung.formationFires) return;
+  const rhythm = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].formation;
+  if (!rhythm) return;
+  if (enemy.mode !== 'hover') return;
+  if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + rhythm.period;
+  if (state.t < enemy.fireAt) return;
+  enemy.fireAt = state.t + rhythm.period;
+  fireSpread(state.enemyShots, enemy.x + enemy.w / 2, enemy.y + enemy.h, rhythm);
 }
 
 /**
@@ -134,6 +410,9 @@ export function createRoundState(round: Round): RoundState {
  */
 export function stepRound(state: RoundState, input: RoundInput, dt: number): RoundState {
   if (state.scene) return state;
+  const meta = metaOf.get(state);
+  const patterns = meta?.patterns ?? attachedPatterns(state);
+  const player = patterns.player;
 
   if (state.hitstop > 0) {
     state.hitstop = Math.max(0, state.hitstop - dt);
@@ -143,11 +422,13 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
 
   state.t += dt;
   state.shake = Math.max(0, state.shake - dt / SHAKE_DECAY);
+  state.grace = Math.max(0, state.grace - dt);
+  if (state.blind > 0) state.blind = Math.max(0, state.blind - dt);
   if (state.caption) {
     state.caption.t -= dt;
     if (state.caption.t <= 0) state.caption = null;
   }
-  syncWave(state);
+  if (meta) syncWave(state, meta);
 
   if (state.lives <= 0) {
     endRound(state, 'lamps');
@@ -159,28 +440,31 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     return state;
   }
 
-  if (input.left && !input.right) state.player.x -= PLAYER_SPEED * dt;
-  if (input.right && !input.left) state.player.x += PLAYER_SPEED * dt;
+  if (input.left && !input.right) state.player.x -= player.speed * dt;
+  if (input.right && !input.left) state.player.x += player.speed * dt;
   state.player.x = Math.max(0, Math.min(FIELD.width - state.player.w, state.player.x));
 
   state.fireCooldown = Math.max(0, state.fireCooldown - dt);
   if (input.fire && state.fireCooldown <= 0) {
-    state.shots.push({
-      x: state.player.x + state.player.w / 2 - SHOT_W / 2,
-      y: state.player.y - SHOT_H,
-      w: SHOT_W,
-      h: SHOT_H,
-      vy: -SHOT_SPEED,
-      dead: false,
-    });
-    state.fireCooldown = FIRE_COOLDOWN;
+    spawnShot(
+      state.shots,
+      state.player.x + state.player.w / 2,
+      state.player.y - SHOT_H,
+      -PLAYER_SHOT_SPEED,
+    );
+    state.fireCooldown = player.cooldown;
   }
 
   for (const shot of state.shots) {
     shot.y += shot.vy * dt;
     if (shot.y + shot.h < 0) shot.dead = true;
   }
+  for (const shot of state.enemyShots) {
+    shot.y += shot.vy * dt;
+    if (shot.y > FIELD.height) shot.dead = true;
+  }
 
+  const speed = meta?.rung.speed ?? 1;
   for (const enemy of state.enemies) {
     if (!enemy.alive || state.t < enemy.tEnter) continue;
     if (enemy.mode === 'caught') {
@@ -196,19 +480,39 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       continue;
     }
     // Motion is class motion only. `lie` is not consulted here (G7).
-    if (enemy.y < enemy.hoverY) {
+    if (enemy.path.length > 0 && enemy.pathT < 1) {
       enemy.mode = 'enter';
-      enemy.y += enemy.vy * dt;
-      if (enemy.y > enemy.hoverY) enemy.y = enemy.hoverY;
+      enemy.pathT = Math.min(1, enemy.pathT + dt * PATH_RATE * speed);
+      const p = along(enemy.path, enemy.pathT);
+      enemy.x = p.x - enemy.w / 2;
+      enemy.y = p.y - enemy.h / 2;
+      if (enemy.pathT >= 1) enemy.mode = 'hover';
     } else {
       enemy.mode = 'hover';
       enemy.x += Math.sin(state.t * 1.6 + enemy.x * 0.02) * 36 * dt;
       enemy.x = Math.max(8, Math.min(FIELD.width - enemy.w - 8, enemy.x));
     }
+    if (meta) stepFormationFire(state, meta, enemy);
   }
 
+  if (meta) {
+    stepFogBeats(state, meta);
+    stepBoss(state, meta, dt);
+  }
+  stepFog(state, dt);
+
+  const boss = state.boss;
   for (const shot of state.shots) {
     if (shot.dead) continue;
+    if (boss && boss.alive && overlaps(shot, boss)) {
+      shot.dead = true;
+      boss.hp -= 1;
+      if (boss.hp <= 0) {
+        boss.alive = false;
+        state.boss = null;
+      }
+      continue;
+    }
     for (const enemy of state.enemies) {
       if (!hittable(state, enemy)) continue;
       if (!overlaps(shot, enemy)) continue;
@@ -228,7 +532,17 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     }
   }
 
+  for (const shot of state.enemyShots) {
+    if (shot.dead) continue;
+    if (state.grace > 0) continue;
+    if (!overlaps(shot, state.player)) continue;
+    shot.dead = true;
+    state.lives -= 1;
+    state.grace = player.grace;
+  }
+
   state.shots = state.shots.filter((s: Shot) => !s.dead);
+  state.enemyShots = state.enemyShots.filter((s: Shot) => !s.dead);
   return state;
 }
 

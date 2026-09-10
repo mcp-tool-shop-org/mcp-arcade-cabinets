@@ -89,7 +89,13 @@ export interface PatternSet {
   bosses: Record<(typeof BOSS_KINDS)[number], BossDef>;
   ladder: { derive: DeriveRule[]; rungs: LadderRung[] };
   waves: { tiers: Record<'0' | '1' | '2', WaveTier> };
-  player: { speed: number; cooldown: number; hitbox: { w: number; h: number }; y: number };
+  player: {
+    speed: number;
+    cooldown: number;
+    hitbox: { w: number; h: number };
+    y: number;
+    grace: number;
+  };
 }
 
 export interface TapeHeader {
@@ -261,7 +267,7 @@ function loadBosses(raw: unknown): PatternSet['bosses'] {
   return bosses;
 }
 
-function loadLadder(raw: unknown): PatternSet['ladder'] {
+function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
   const file = 'ladder.json';
   const obj = asRecord(raw, file, 'derive');
   const derive = asArray(req(obj, file, 'derive'), file, 'derive').map((item) => {
@@ -296,6 +302,11 @@ function loadLadder(raw: unknown): PatternSet['ladder'] {
   });
   const seen = new Set(rungs.map((r) => r.tier));
   if (!seen.has(0) || !seen.has(1) || !seen.has(2)) fail(file, 'rungs');
+  for (const rung of rungs) {
+    for (const id of rung.pools) {
+      if (!pathIds.has(id)) fail(file, 'pools');
+    }
+  }
   return { derive, rungs };
 }
 
@@ -328,6 +339,7 @@ function loadPlayer(raw: unknown): PatternSet['player'] {
       h: asNumber(req(hitbox, file, 'h'), file, 'h'),
     },
     y: asNumber(req(obj, file, 'y'), file, 'y'),
+    grace: asNumber(req(obj, file, 'grace'), file, 'grace'),
   };
 }
 
@@ -339,15 +351,26 @@ export function loadPatterns(raw: unknown): PatternSet {
   for (const name of FILES) {
     if (!Object.prototype.hasOwnProperty.call(obj, name)) fail(`${name}.json`, name);
   }
+  const paths = loadPaths(obj.paths);
   return {
-    paths: loadPaths(obj.paths),
+    paths,
     formations: loadFormations(obj.formations),
     fire: loadFire(obj.fire),
     bosses: loadBosses(obj.bosses),
-    ladder: loadLadder(obj.ladder),
+    ladder: loadLadder(obj.ladder, new Set(paths.paths.map((p) => p.id))),
     waves: loadWaves(obj.waves),
     player: loadPlayer(obj.player),
   };
+}
+
+const attached = new WeakMap<object, PatternSet>();
+
+export function attachPatterns(host: object, set: PatternSet): void {
+  attached.set(host, set);
+}
+
+export function attachedPatterns(host: object): PatternSet {
+  return attached.get(host) ?? DEFAULT_PATTERNS;
 }
 
 /**

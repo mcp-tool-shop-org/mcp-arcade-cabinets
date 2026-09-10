@@ -1,3 +1,5 @@
+import type { PatternSet } from './patterns';
+
 /** Decoration / enemy class. Lies share a class with their honest counterpart. */
 export type SpriteClass = 'init' | 'menu' | 'grid' | 'fog' | 'obstacle' | 'stall';
 
@@ -135,6 +137,8 @@ export interface RoundState {
   enemyShots: Shot[];
   caption: Caption | null;
   ended: 'time' | 'lamps' | null;
+  /** Seconds of post-hit invulnerability. One burst must not take three lamps. */
+  grace: number;
 }
 
 export interface RoundInput {
@@ -153,5 +157,5 @@ export interface DrawContext {
 export interface PrepassOpts {
   seconds: number;
   seed?: number;
-  patterns?: import('./patterns').PatternSet;
+  patterns?: PatternSet;
 }

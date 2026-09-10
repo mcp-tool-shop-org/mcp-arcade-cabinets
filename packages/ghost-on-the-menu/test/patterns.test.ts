@@ -152,6 +152,13 @@ describe('loadPatterns', () => {
     expect(DEFAULT_PATTERNS.ladder.rungs.map((r) => r.tier).sort()).toEqual([0, 1, 2]);
   });
 
+  it('rejects a pool id that is not a path', () => {
+    const raw = clone();
+    const rungs = (raw.ladder as { rungs: { pools: string[] }[] }).rungs;
+    rungs[0]!.pools.push('no-such-path');
+    expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: pools');
+  });
+
   it('has three bosses with at least two phases and no fact keys', () => {
     for (const kind of ['whisperer', 'menu', 'doorman'] as const) {
       const boss = DEFAULT_PATTERNS.bosses[kind];
