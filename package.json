@@ -1,0 +1,29 @@
+{
+  "name": "mcp-arcade-cabinets",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Games on top of mcp-arcade. They read the tape and never touch the score.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.4.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:play": "node scripts/play.mjs",
+    "build": "pnpm -r --if-present build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "eslint": "^9.20.0",
+    "typescript-eslint": "^8.24.0",
+    "@eslint/js": "^9.20.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "globals": "^15.14.0"
+  }
+}

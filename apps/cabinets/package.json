@@ -1,0 +1,19 @@
+{
+  "name": "@mcp-arcade-cabinets/cabinets",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@mcp-arcade-cabinets/tape-core": "workspace:*",
+    "@mcp-arcade-cabinets/house-call": "workspace:*",
+    "@mcp-arcade-cabinets/ghost-on-the-menu": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

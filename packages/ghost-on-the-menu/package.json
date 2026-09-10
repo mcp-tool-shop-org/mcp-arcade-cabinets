@@ -1,0 +1,14 @@
+{
+  "name": "@mcp-arcade-cabinets/ghost-on-the-menu",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@mcp-arcade-cabinets/tape-core": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

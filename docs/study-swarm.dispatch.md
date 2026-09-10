@@ -9,14 +9,14 @@
 
 ## Standards compliance
 
-| Standard | Score | Evidence |
-|----------|-------|----------|
-| PIN_PER_STEP | 2 | Citations and verdicts are in signed, replayable prism receipts committed beside this file. Fixture tapes are exported by `mcp-arcade tape` from committed goldens and proofs. |
-| ANDON_AUTHORITY | 2 | Twenty-one findings could not be grounded and are barred from carrying architecture until the Director reinstates them (table below). Two claims that overreached their abstracts were tightened and re-verified once; the two that still failed are barred. |
-| NAMED_COMPENSATORS | 2 | The cabinets perform no irreversible action. Repo pushes and merges undo as in the instrument. |
-| DECOMPOSE_BY_SECRETS | 2 | `tape-core` (loader + schema + calibration math) changes with the tape schema; each cabinet changes with its own rules; nothing here can change the instrument. |
-| UNCERTAINTY_GATED_HUMANS | 2 | The reinstatement table is a contrastive checkpoint for the Director. Art is gated behind a playable slice. |
-| EXTERNAL_VERIFIER | 3 | Family-different, reasoning-stripped citation verification with signed receipts; Grok reviews every diff; the cloud panel adjudicates implementation claims. |
+| Standard                 | Score | Evidence                                                                                                                                                                                                                                                     |
+| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PIN_PER_STEP             | 2     | Citations and verdicts are in signed, replayable prism receipts committed beside this file. Fixture tapes are exported by `mcp-arcade tape` from committed goldens and proofs.                                                                               |
+| ANDON_AUTHORITY          | 2     | Twenty-one findings could not be grounded and are barred from carrying architecture until the Director reinstates them (table below). Two claims that overreached their abstracts were tightened and re-verified once; the two that still failed are barred. |
+| NAMED_COMPENSATORS       | 2     | The cabinets perform no irreversible action. Repo pushes and merges undo as in the instrument.                                                                                                                                                               |
+| DECOMPOSE_BY_SECRETS     | 2     | `tape-core` (loader + schema + calibration math) changes with the tape schema; each cabinet changes with its own rules; nothing here can change the instrument.                                                                                              |
+| UNCERTAINTY_GATED_HUMANS | 2     | The reinstatement table is a contrastive checkpoint for the Director. Art is gated behind a playable slice.                                                                                                                                                  |
+| EXTERNAL_VERIFIER        | 3     | Family-different, reasoning-stripped citation verification with signed receipts; Grok reviews every diff; the cloud panel adjudicates implementation claims.                                                                                                 |
 
 ## Questions dispatched (5 parallel research agents, Opus)
 
@@ -46,35 +46,35 @@ Only these may carry an architectural choice.
 
 ## Existence verified, groundedness unchecked — for the Director to reinstate
 
-Every identifier below resolved at the retrieval oracle (the paper exists with that title, authors and year). The groundedness lens could not run because Crossref returned no abstract for these publishers, or the claim was not addressed by the abstract alone. You probably expected these to be citable; I left them out of the lock because the verifier could not confirm the one-sentence claim against the source. Reinstate any you confirm by editing this table; the lock connections marked *advisory* then become load-bearing.
+Every identifier below resolved at the retrieval oracle (the paper exists with that title, authors and year). The groundedness lens could not run because Crossref returned no abstract for these publishers, or the claim was not addressed by the abstract alone. You probably expected these to be citable; I left them out of the lock because the verifier could not confirm the one-sentence claim against the source. Reinstate any you confirm by editing this table; the lock connections marked _advisory_ then become load-bearing.
 
-| # | Source | Claim | Why unchecked |
-|---|---|---|---|
-| F1 | Gneiting & Raftery 2007, DOI 10.1198/016214506000001437 | strictly proper rules make honest reporting dominant | no abstract |
-| F2 | Bolin & Wallin 2025, arXiv:2504.01781 | multi-class Brier bounded, log unbounded | claim not in abstract |
-| F3 | Gneiting 2011, DOI 10.1198/jasa.2011.r10138 | 0–1 loss on a label elicits the mode only | no abstract |
-| F8 | Aldous 2019, arXiv:1903.02131 | tournament winners often not the best forecaster | claim not in abstract |
-| F9 | Cooper et al. 2010, DOI 10.1038/nature09304 | Foldit players beat automated refinement | no abstract |
-| F11 | Kawrykow et al. 2012, DOI 10.1371/journal.pone.0031362 | Phylo: diversity of attempts + par gate | no abstract |
-| F12 | Kim et al. 2014, DOI 10.1038/nature13240 | Eyewire accuracy gate on graded data | no abstract |
-| F15 | Ponti et al. 2018, DOI 10.5334/cstp.101 | ranking made top players hoard technique | no abstract |
-| F16 | Strobl et al. 2019, DOI 10.1371/journal.pone.0222579 | a re-judging game improved data quality | no abstract |
-| F20 | Yannakakis & Togelius 2011, DOI 10.1109/T-AFFC.2011.6 | experience-driven PCG | no abstract |
-| F21 | Cheung & Huang 2011, DOI 10.1145/1978942.1979053 | spectator suspense from information asymmetry | no abstract |
-| F22 | Anderson et al. 2013, DOI 10.1145/2488388.2488398 | badges shift the action mixture | no abstract |
-| F23 | Sailer & Homner 2020, DOI 10.1007/s10648-019-09498-w | gamification effects small | no abstract |
-| F24 | Hanus & Fox 2015, DOI 10.1016/j.compedu.2014.08.019 | leaderboards + badges lowered motivation and grades | no abstract |
-| F25 | Mekler et al. 2017, DOI 10.1016/j.chb.2015.08.048 | points buy volume, not motivation | no abstract |
-| F26 | Almeida et al. 2023, DOI 10.1016/j.infsof.2022.107142 | leaderboard the riskiest element in SE tooling | no abstract |
-| F28 | Kluger & DeNisi 1996, DOI 10.1037/0033-2909.119.2.254 | a third of feedback interventions hurt | no abstract |
-| F30 | Kumari, Deterding & Freeman 2019, DOI 10.1145/3311350.3347148 | seven types of engaging uncertainty | no abstract |
-| F31 | Fazio & Marsh 2009, DOI 10.3758/PBR.16.1.88 | hypercorrection: confident errors are corrected best | no abstract |
-| F33 | Dragan, Lee & Srinivasa 2013, DOI 10.1109/HRI.2013.6483603 | legibility and predictability differ | no abstract |
-| F34 | Hamari, Koivisto & Sarsa 2014, DOI 10.1109/HICSS.2014.377 | effects depend on context and users | no abstract |
+| #   | Source                                                        | Claim                                                | Why unchecked         |
+| --- | ------------------------------------------------------------- | ---------------------------------------------------- | --------------------- |
+| F1  | Gneiting & Raftery 2007, DOI 10.1198/016214506000001437       | strictly proper rules make honest reporting dominant | no abstract           |
+| F2  | Bolin & Wallin 2025, arXiv:2504.01781                         | multi-class Brier bounded, log unbounded             | claim not in abstract |
+| F3  | Gneiting 2011, DOI 10.1198/jasa.2011.r10138                   | 0–1 loss on a label elicits the mode only            | no abstract           |
+| F8  | Aldous 2019, arXiv:1903.02131                                 | tournament winners often not the best forecaster     | claim not in abstract |
+| F9  | Cooper et al. 2010, DOI 10.1038/nature09304                   | Foldit players beat automated refinement             | no abstract           |
+| F11 | Kawrykow et al. 2012, DOI 10.1371/journal.pone.0031362        | Phylo: diversity of attempts + par gate              | no abstract           |
+| F12 | Kim et al. 2014, DOI 10.1038/nature13240                      | Eyewire accuracy gate on graded data                 | no abstract           |
+| F15 | Ponti et al. 2018, DOI 10.5334/cstp.101                       | ranking made top players hoard technique             | no abstract           |
+| F16 | Strobl et al. 2019, DOI 10.1371/journal.pone.0222579          | a re-judging game improved data quality              | no abstract           |
+| F20 | Yannakakis & Togelius 2011, DOI 10.1109/T-AFFC.2011.6         | experience-driven PCG                                | no abstract           |
+| F21 | Cheung & Huang 2011, DOI 10.1145/1978942.1979053              | spectator suspense from information asymmetry        | no abstract           |
+| F22 | Anderson et al. 2013, DOI 10.1145/2488388.2488398             | badges shift the action mixture                      | no abstract           |
+| F23 | Sailer & Homner 2020, DOI 10.1007/s10648-019-09498-w          | gamification effects small                           | no abstract           |
+| F24 | Hanus & Fox 2015, DOI 10.1016/j.compedu.2014.08.019           | leaderboards + badges lowered motivation and grades  | no abstract           |
+| F25 | Mekler et al. 2017, DOI 10.1016/j.chb.2015.08.048             | points buy volume, not motivation                    | no abstract           |
+| F26 | Almeida et al. 2023, DOI 10.1016/j.infsof.2022.107142         | leaderboard the riskiest element in SE tooling       | no abstract           |
+| F28 | Kluger & DeNisi 1996, DOI 10.1037/0033-2909.119.2.254         | a third of feedback interventions hurt               | no abstract           |
+| F30 | Kumari, Deterding & Freeman 2019, DOI 10.1145/3311350.3347148 | seven types of engaging uncertainty                  | no abstract           |
+| F31 | Fazio & Marsh 2009, DOI 10.3758/PBR.16.1.88                   | hypercorrection: confident errors are corrected best | no abstract           |
+| F33 | Dragan, Lee & Srinivasa 2013, DOI 10.1109/HRI.2013.6483603    | legibility and predictability differ                 | no abstract           |
+| F34 | Hamari, Koivisto & Sarsa 2014, DOI 10.1109/HICSS.2014.377     | effects depend on context and users                  | no abstract           |
 
 ## Advisory designer sources (not oracle-resolvable; never load-bearing)
 
-Davis, "Into the Breach" design postmortem, GDC 2019 (perfect information makes a loss legible as a wrong model, not bad luck). Giovannetti, "Slay the Spire" metrics talk, GDC 2019 (one difficulty ladder over the same content, tuned by telemetry). Jonasson & Purho, "Juice it or lose it", 2012 (feedback layers make hits feel alive). Swink, *Game Feel*, 2008 (control must be instantaneous and player-driven). Solomon on XCOM 2 randomness, Game Developer 2016 (players read displayed percentages categorically). Francke via Nutt & Zenke on Valve readability, 2008 (colour, silhouette, one detail). Galaxian/Galaga formation history, Wireframe #50 and shmuplations (lies peel off the grid and dive; a clean segment is a no-fire flyby). Audiosurf and Vib-Ribbon (pre-pass the whole file; four obstacle verbs). Metaculus 2023 scoring change (volume-sensitive and volume-neutral scores kept separate).
+Davis, "Into the Breach" design postmortem, GDC 2019 (perfect information makes a loss legible as a wrong model, not bad luck). Giovannetti, "Slay the Spire" metrics talk, GDC 2019 (one difficulty ladder over the same content, tuned by telemetry). Jonasson & Purho, "Juice it or lose it", 2012 (feedback layers make hits feel alive). Swink, _Game Feel_, 2008 (control must be instantaneous and player-driven). Solomon on XCOM 2 randomness, Game Developer 2016 (players read displayed percentages categorically). Francke via Nutt & Zenke on Valve readability, 2008 (colour, silhouette, one detail). Galaxian/Galaga formation history, Wireframe #50 and shmuplations (lies peel off the grid and dive; a clean segment is a no-fire flyby). Audiosurf and Vib-Ribbon (pre-pass the whole file; four obstacle verbs). Metaculus 2023 scoring change (volume-sensitive and volume-neutral scores kept separate).
 
 ## Grok's design answers (2026-09-10, all taken; two amended by findings)
 
