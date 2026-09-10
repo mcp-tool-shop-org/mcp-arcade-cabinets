@@ -68,3 +68,14 @@ describe('wave card cue', () => {
     expect(cues(b, c)).toEqual([]);
   });
 });
+
+describe('boss and dive cues', () => {
+  it('names a boss hit, a boss down and a dive from the snapshot diff', () => {
+    const state = createRoundState(round);
+    const a = snapshot(state);
+    expect(cues({ ...a, bossHitT: 2 }, { ...a, bossHitT: 0 })).toEqual(['bosshit']);
+    expect(cues({ ...a, bossHitT: 0 }, { ...a, bossHitT: 0.5 })).toEqual([]);
+    expect(cues(a, { ...a, bossKills: a.bossKills + 1, bossHitT: null })).toEqual(['bossdown']);
+    expect(cues(a, { ...a, diving: a.diving + 1 })).toEqual(['dive']);
+  });
+});

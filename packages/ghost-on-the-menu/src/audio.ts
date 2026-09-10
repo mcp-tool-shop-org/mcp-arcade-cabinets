@@ -6,7 +6,18 @@
 // (W7). Everything here is pure data until `attach` is given an AudioContext,
 // so the score can be tested in node.
 
-export type SfxName = 'fire' | 'pop' | 'catch' | 'fog' | 'lamp' | 'phase' | 'end' | 'wave';
+export type SfxName =
+  | 'fire'
+  | 'pop'
+  | 'catch'
+  | 'fog'
+  | 'lamp'
+  | 'phase'
+  | 'end'
+  | 'wave'
+  | 'bosshit'
+  | 'bossdown'
+  | 'dive';
 
 /** One synthesized note: a simple oscillator with an envelope. */
 export interface Note {
@@ -81,6 +92,23 @@ export function sfx(name: SfxName): Note[] {
       return [
         { at: 0, freq: 262, dur: 0.1, wave: 'square', gain: 0.1 },
         { at: 0.12, freq: 392, dur: 0.14, wave: 'square', gain: 0.1 },
+      ];
+    case 'bosshit':
+      // A dull thud: the boss is a wall, not a bell.
+      return [{ at: 0, freq: 98, dur: 0.07, wave: 'square', gain: 0.1 }];
+    case 'bossdown':
+      // Falling thirds, longer than a pop, shorter than the catch; a boss is the atom, not a lie.
+      return [
+        { at: 0, freq: 392, dur: 0.12, wave: 'square', gain: 0.12 },
+        { at: 0.12, freq: 311, dur: 0.12, wave: 'square', gain: 0.12 },
+        { at: 0.24, freq: 233, dur: 0.3, wave: 'triangle', gain: 0.12 },
+      ];
+    case 'dive':
+      // A falling whistle as a formation breaks and comes down.
+      return [
+        { at: 0, freq: 1200, dur: 0.08, wave: 'triangle', gain: 0.06 },
+        { at: 0.08, freq: 800, dur: 0.1, wave: 'triangle', gain: 0.06 },
+        { at: 0.18, freq: 500, dur: 0.12, wave: 'triangle', gain: 0.05 },
       ];
     case 'wave':
       // The wave card: two clean notes, a curtain rising, quieter than the catch.

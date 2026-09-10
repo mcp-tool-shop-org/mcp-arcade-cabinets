@@ -15,6 +15,7 @@ import {
   attach,
   createRoundState,
   cues,
+  DEFAULT_SECONDS,
   FIELD,
   prepassRound,
   renderRound,
@@ -34,7 +35,21 @@ import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
-export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: () => void) {
+/** The tier the round plays at: as the tape's header derives it, or forced. */
+export type Difficulty = 'recorded' | 'seat' | 'live';
+const DIFFICULTIES: { value: Difficulty; label: string; tier: 0 | 1 | 2 | undefined }[] = [
+  { value: 'recorded', label: 'difficulty: as recorded', tier: undefined },
+  { value: 'seat', label: 'difficulty: seat', tier: 1 },
+  { value: 'live', label: 'difficulty: live', tier: 2 },
+];
+
+export function mountGhost(
+  root: HTMLElement,
+  name: string,
+  tape: Tape,
+  onExit: () => void,
+  onNext?: () => void,
+) {
   root.replaceChildren();
   const wrap = document.createElement('section');
   wrap.className = 'column';
@@ -63,7 +78,19 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   shakeLabel.append(shake, document.createTextNode(' shake'));
   const full = document.createElement('button');
   full.textContent = 'Full screen';
-  controls.append(full, mute, intensity, shakeLabel);
+  const difficulty = document.createElement('select');
+  for (const d of DIFFICULTIES) {
+    const o = document.createElement('option');
+    o.value = d.value;
+    o.textContent = d.label;
+    difficulty.append(o);
+  }
+  difficulty.value = 'recorded';
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next tape';
+  nextBtn.disabled = true;
+  nextBtn.hidden = !onNext;
+  controls.append(full, difficulty, mute, intensity, shakeLabel, nextBtn);
 
   const hint = document.createElement('p');
   hint.className = 'muted';
@@ -168,11 +195,24 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   window.addEventListener('keydown', keyDown);
   window.addEventListener('keyup', keyUp);
 
-  let round: Round = prepassRound(tape);
+  const tierFor = (): 0 | 1 | 2 | undefined =>
+    DIFFICULTIES.find((d) => d.value === difficulty.value)?.tier;
+  const newRound = () => prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor() });
+  let round: Round = newRound();
   let state: RoundState = createRoundState(round);
   let prev: CueSnapshot | null = null;
   let last = performance.now();
   let raf = 0;
+  const restart = () => {
+    round = newRound();
+    state = createRoundState(round);
+    prev = null;
+    nextBtn.disabled = true;
+  };
+  difficulty.addEventListener('change', () => {
+    restart();
+    canvas.focus();
+  });
 
   function frame(now: number) {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -194,6 +234,7 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
       // A frame, so the end reads as a scene and not a pause.
       ctx.fillStyle = '#8a6a3a';
       ctx.fillRect(0, 0, FIELD.width, 4);
+      nextBtn.disabled = false;
     }
     raf = requestAnimationFrame(frame);
   }
@@ -202,19 +243,23 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   canvas.addEventListener('click', () => {
     canvas.focus();
     ensureAudio();
-    if (state.scene) {
-      round = prepassRound(tape);
-      state = createRoundState(round);
-      prev = null;
-    }
+    if (state.scene) restart();
   });
-  back.addEventListener('click', () => {
+  const leave = () => {
     cancelAnimationFrame(raf);
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     audio?.close();
     root.classList.remove('playing');
+  };
+  back.addEventListener('click', () => {
+    leave();
     onExit();
+  });
+  nextBtn.addEventListener('click', () => {
+    if (!onNext) return;
+    leave();
+    onNext();
   });
   canvas.focus();
 }

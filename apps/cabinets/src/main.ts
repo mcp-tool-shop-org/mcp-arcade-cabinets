@@ -32,9 +32,18 @@ function menu() {
   app.append(row);
 
   play.addEventListener('click', () => {
-    const t = TAPES.find((x) => x.name === pickTape.value) ?? TAPES[0]!;
-    mountGhost(app, t.name, t.tape, menu);
+    const i = Math.max(
+      0,
+      TAPES.findIndex((x) => x.name === pickTape.value),
+    );
+    playAt(i);
   });
+}
+
+/** Mount the tape at index i; the end scene's Next tape walks the list in order. */
+function playAt(i: number) {
+  const t = TAPES[i % TAPES.length]!;
+  mountGhost(app, t.name, t.tape, menu, () => playAt(i + 1));
 }
 
 menu();

@@ -4,17 +4,9 @@
 // `audio.ts`. Kept out of the sim so the sim stays one function (§5).
 
 import type { SfxName } from './audio';
-import type { Round, RoundState } from './types';
+import { kindOfAtom, type Round, type RoundState, type WaveKind } from './types';
 
-export type WaveKind = 'inspect' | 'poison' | 'rug' | 'unlisted' | 'breather';
-
-/** Atom id prefix → wave kind. Unknown atoms play as inspect. */
-export function kindOfAtom(atom: string): WaveKind {
-  if (atom.startsWith('poison.')) return 'poison';
-  if (atom.startsWith('temporal.')) return 'rug';
-  if (atom.startsWith('protocol.')) return 'unlisted';
-  return 'inspect';
-}
+export { kindOfAtom, type WaveKind };
 
 /** The wave kind at round time `t`; the gaps between wave bounds are breathers. */
 export function waveKindAt(round: Round, t: number): WaveKind {
@@ -34,14 +26,20 @@ export interface CueSnapshot {
   cooldown: number;
   /** True while a wave card is on screen. */
   waveCard: boolean;
+  /** Seconds since the boss was last hit, or null with no boss. */
+  bossHitT: number | null;
+  bossKills: number;
+  diving: number;
 }
 
 export function snapshot(state: RoundState): CueSnapshot {
   let caught = 0;
   let dying = 0;
+  let diving = 0;
   for (const e of state.enemies) {
     if (e.mode === 'caught') caught += 1;
     else if (e.mode === 'dying') dying += 1;
+    else if (e.mode === 'dive') diving += 1;
   }
   return {
     caught,
@@ -52,6 +50,9 @@ export function snapshot(state: RoundState): CueSnapshot {
     fog: state.fog !== null && state.fog.alive,
     cooldown: state.fireCooldown,
     waveCard: state.caption !== null && state.caption.kind === 'wave',
+    bossHitT: state.boss && state.boss.alive ? state.boss.hitT : null,
+    bossKills: state.bossKills,
+    diving,
   };
 }
 
@@ -63,6 +64,11 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
   if (next.lives < prev.lives) out.push('lamp');
   if (next.ended && !prev.ended) out.push('end');
   if (next.waveCard && !prev.waveCard) out.push('wave');
+  if (next.bossKills > prev.bossKills) out.push('bossdown');
+  else if (next.bossHitT !== null && prev.bossHitT !== null && next.bossHitT < prev.bossHitT) {
+    out.push('bosshit');
+  }
+  if (next.diving > prev.diving) out.push('dive');
   if (next.phase !== null && prev.phase !== null && next.phase !== prev.phase) out.push('phase');
   if (next.fog && !prev.fog) out.push('fog');
   if (next.dying > prev.dying) out.push('pop');

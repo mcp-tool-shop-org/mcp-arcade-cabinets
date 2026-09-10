@@ -95,6 +95,9 @@ const INTENSITY: Record<Intensity, { shake: number; pop: number; halo: number }>
 
 /** Honest pop length; matches the sim's DIE_POP without importing it. */
 const DIE_POP = 0.15;
+/** Seconds the boss reads white after a hit. */
+const BOSS_FLASH = 0.08;
+const BOSS_FLASH_FILL = 'rgba(255, 255, 255, 0.75)';
 const LAMPS = 3;
 const BEZEL_H = 14;
 
@@ -195,6 +198,12 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
         rect(b.plate.x, b.plate.y, b.plate.w, b.plate.h);
       }
     }
+    // A player shot that lands flashes the boss white for a few frames; the
+    // flash is the same whatever the wave's fact, because every boss takes hits.
+    if (b.hitT < BOSS_FLASH) {
+      ctx.fillStyle = BOSS_FLASH_FILL;
+      rect(b.x, b.y, b.w, b.h);
+    }
   }
 
   for (const enemy of state.enemies) {
@@ -230,8 +239,10 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     rect(shot.x, shot.y, shot.w, shot.h);
   }
 
+  // While grace runs after a lamp is lost the ship blinks, ten times a second.
   const p = state.player;
-  if (!sprite('player', p.x, p.y, p.w, p.h)) {
+  const blinkOff = state.grace > 0 && Math.floor(state.playerHitT * 10) % 2 === 1;
+  if (!blinkOff && !sprite('player', p.x, p.y, p.w, p.h)) {
     ctx.fillStyle = PLAYER_FILL;
     rect(p.x, p.y, p.w, p.h);
   }

@@ -114,6 +114,7 @@ describe('renderRound', () => {
       hp: 1,
       alive: true,
       plate: null,
+      hitT: Number.POSITIVE_INFINITY,
     };
     const ctx = recordingCtx();
     renderRound(ctx, state);
@@ -160,6 +161,7 @@ describe('renderRound', () => {
       hp: 1,
       alive: true,
       plate: null,
+      hitT: Number.POSITIVE_INFINITY,
       ...over,
     });
     expect(bossFrame(boss({ kind: 'menu', w: 72 }))).toBe('boss-menu-open');
@@ -185,5 +187,50 @@ describe('caption paint', () => {
     expect(
       b.calls.some((c) => c.startsWith('text #e8a04a 16 ') && c.endsWith('tools/call leak')),
     ).toBe(true);
+  });
+});
+
+describe('hit feedback paint', () => {
+  it('flashes the boss white right after a hit and not later', () => {
+    const state = createRoundState(roundOf([]));
+    const boss = (hitT: number): Boss => ({
+      kind: 'whisperer',
+      x: 100,
+      y: 24,
+      w: 96,
+      h: 40,
+      phase: 0,
+      hp: 5,
+      alive: true,
+      plate: null,
+      hitT,
+    });
+    state.boss = boss(0.02);
+    const a = recordingCtx();
+    renderRound(a, state);
+    expect(a.calls.some((c) => c.startsWith('rect rgba(255, 255, 255, 0.75) 100 24 96 40'))).toBe(
+      true,
+    );
+    state.boss = boss(1);
+    const b = recordingCtx();
+    renderRound(b, state);
+    expect(b.calls.some((c) => c.startsWith('rect rgba(255, 255, 255, 0.75)'))).toBe(false);
+  });
+
+  it('blinks the ship during grace and draws it steadily otherwise', () => {
+    const state = createRoundState(roundOf([]));
+    const drawn = (s: typeof state) => {
+      const ctx = recordingCtx();
+      renderRound(ctx, s);
+      return ctx.calls.some((c) => c.startsWith('rect #c8d0dc'));
+    };
+    expect(drawn(state)).toBe(true);
+    state.grace = 0.5;
+    state.playerHitT = 0.05;
+    expect(drawn(state)).toBe(true);
+    state.playerHitT = 0.15;
+    expect(drawn(state)).toBe(false);
+    state.grace = 0;
+    expect(drawn(state)).toBe(true);
   });
 });
