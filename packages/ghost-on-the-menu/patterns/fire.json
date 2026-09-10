@@ -2,18 +2,51 @@
   "tiers": {
     "0": {
       "formation": null,
-      "boss": { "period": 16, "burst": 1, "spread": 0, "speed": 50 },
+      "boss": {
+        "period": 16,
+        "burst": 1,
+        "spread": 0,
+        "speed": 50
+      },
       "dive": null
     },
     "1": {
-      "formation": { "period": 1.8, "burst": 1, "spread": 0.08, "speed": 90 },
-      "boss": { "period": 3.6, "burst": 1, "spread": 0.12, "speed": 90 },
-      "dive": { "period": 2.8, "speed": 130, "depth": 0.5 }
+      "formation": {
+        "period": 1.8,
+        "burst": 1,
+        "spread": 0.08,
+        "speed": 180
+      },
+      "boss": {
+        "period": 2.4,
+        "burst": 1,
+        "spread": 0.12,
+        "speed": 90
+      },
+      "dive": {
+        "period": 2.8,
+        "speed": 130,
+        "depth": 0.93
+      }
     },
     "2": {
-      "formation": { "period": 1.1, "burst": 2, "spread": 0.12, "speed": 110 },
-      "boss": { "period": 1, "burst": 3, "spread": 0.22, "speed": 130 },
-      "dive": { "period": 2, "speed": 170, "depth": 0.62 }
+      "formation": {
+        "period": 2.4,
+        "burst": 1,
+        "spread": 0.12,
+        "speed": 110
+      },
+      "boss": {
+        "period": 2.2,
+        "burst": 1,
+        "spread": 0.22,
+        "speed": 130
+      },
+      "dive": {
+        "period": 2,
+        "speed": 170,
+        "depth": 0.95
+      }
     }
   }
 }

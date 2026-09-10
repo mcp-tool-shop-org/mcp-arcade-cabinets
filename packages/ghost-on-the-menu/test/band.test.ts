@@ -108,3 +108,38 @@ describe('fairness band', () => {
     }
   });
 });
+
+// The Director's bar: challenging, not impossible. Measured on the whole
+// fixture set with the header-only tier variants (see `pnpm sweep`).
+describe('the difficulty curve', () => {
+  const byTier = (tier: 0 | 1 | 2) => CASES.filter((c) => c.tier === tier);
+
+  // A player who keeps moving under the targets is nearly untouchable by
+  // straight-falling fire at any speed (measured: 0.19 to 0.25 lamps a round
+  // across the tuning sweep), so the threat is measured over the two players
+  // together: the sweeper who never stops and the reader who waits for tells.
+  it('seat is a real threat: the sweeper and the reader together lose lamps on average', () => {
+    const outs = [
+      ...byTier(1).map((c) => run(c, 'sweeper')),
+      ...byTier(1).map((c) => run(c, 'reader')),
+    ];
+    const lost = outs.reduce((s, o) => s + (3 - o.lives), 0) / outs.length;
+    expect(lost).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it('live is survivable by the dumb player on most tapes, and it still finds half the lies', () => {
+    const outs = byTier(2).map((c) => run(c, 'sweeper'));
+    const alive = outs.filter((o) => o.ended === 'time').length;
+    expect(alive / outs.length).toBeGreaterThanOrEqual(0.75);
+    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
+    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
+    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+  });
+
+  it('live is beatable by the reader on most tapes', () => {
+    const outs = byTier(2).map((c) => run(c, 'reader'));
+    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
+    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
+    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+  });
+});

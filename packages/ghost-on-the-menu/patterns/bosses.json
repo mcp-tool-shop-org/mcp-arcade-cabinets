@@ -5,8 +5,18 @@
     "hp": 58,
     "rage": 0.6,
     "phases": [
-      { "duration": 6, "motion": "pulse", "fire": "drop-fog", "cue": "emit-grid" },
-      { "duration": 8, "motion": "drift", "fire": "spread", "cue": "emit-grid" }
+      {
+        "duration": 6,
+        "motion": "pulse",
+        "fire": "drop-fog",
+        "cue": "emit-grid"
+      },
+      {
+        "duration": 8,
+        "motion": "drift",
+        "fire": "spread",
+        "cue": "emit-grid"
+      }
     ]
   },
   "menu": {
@@ -15,9 +25,24 @@
     "hp": 52,
     "rage": 0.7,
     "phases": [
-      { "duration": 5, "motion": "squash", "fire": "column", "cue": "flip" },
-      { "duration": 5, "motion": "slit", "fire": "column", "cue": "flip" },
-      { "duration": 6, "motion": "drift-column", "fire": "spread", "cue": "flip" }
+      {
+        "duration": 5,
+        "motion": "squash",
+        "fire": "column",
+        "cue": "flip"
+      },
+      {
+        "duration": 5,
+        "motion": "slit",
+        "fire": "column",
+        "cue": "flip"
+      },
+      {
+        "duration": 6,
+        "motion": "drift-column",
+        "fire": "spread",
+        "cue": "flip"
+      }
     ]
   },
   "doorman": {
@@ -26,8 +51,18 @@
     "hp": 55,
     "rage": 0.55,
     "phases": [
-      { "duration": 4, "motion": "hold", "fire": "plate-out", "cue": "flick" },
-      { "duration": 4, "motion": "drift", "fire": "plate-back", "cue": "knock" }
+      {
+        "duration": 4,
+        "motion": "hold",
+        "fire": "plate-out",
+        "cue": "flick"
+      },
+      {
+        "duration": 4,
+        "motion": "drift",
+        "fire": "plate-back",
+        "cue": "knock"
+      }
     ]
   }
 }
