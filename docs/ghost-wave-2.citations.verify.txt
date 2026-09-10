@@ -1,0 +1,536 @@
+{
+  "verdict": "refuse",
+  "confidence": 0.9,
+  "retryable": false,
+  "revision_hint": "FIX METADATA: resolved, but to a different title than cited: 'Juicy Game Design'; FIX METADATA: resolved, but to a different title than cited: 'Quantifying Hit Feedback Preferences in 2D Action Games: A User-Adjustment Study of Visual and Temporal Parameters'",
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:4:W5",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "2a2ef5d8a78159333edcd0da0850153fdd2c42c908354f02d593b85404743583"
+    },
+    {
+      "lens": "citation_groundedness:7:W8",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "1481d72ba2200cc08a486045d4f29047df2dc8a60bf089c5d11faf5d2a732317"
+    },
+    {
+      "lens": "citation_groundedness:8:W9",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "918d0d9aedac869e5a6db6254fff21bbc0779074d4156c9499f33d9f71d09065"
+    },
+    {
+      "lens": "citation_groundedness:9:W10",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "2b4c0aec9df7075f82fb6f3ba5685e6e687f3d9f26d8ccc43656e6c4a5902417"
+    },
+    {
+      "lens": "citation_groundedness:12:W13",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "1c6323c1cff1879dc9fc19ee5b3d90bdfdfdb831ac73dbfb4069970deb196ca2"
+    },
+    {
+      "lens": "citation_groundedness:13:W14",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "b9d5bea20c32345565b270d379d4bc2b4def423c6cfa17c6b05929b74ac66c11"
+    },
+    {
+      "lens": "citation_groundedness:15:W16",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "124440c092e6ac1900e1418506d92e864bc5a2e627efa654012686523547d19d"
+    },
+    {
+      "lens": "citation_groundedness:16:W17",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "e04085e6f0559952298bfe88b1215aeb87f95baf09ea0937c888c17f1ae6f959"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "W1",
+      "identifier": "10.1016/j.entcom.2020.100359",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The effects of juiciness in an action RPG",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W2",
+      "identifier": "10.1145/3613904.3642656",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "How does Juicy Game Feedback Motivate? Testing Curiosity, Competence, and Effectance",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W3",
+      "identifier": "10.1145/3311350.3347171",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Juicy Game Design'",
+      "source_title": "Juicy Game Design",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W4",
+      "identifier": "10.1145/3772363.3798911",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Quantifying Hit Feedback Preferences in 2D Action Games: A User-Adjustment Study of Visual and Temporal Parameters'",
+      "source_title": "Quantifying Hit Feedback Preferences in 2D Action Games: A User-Adjustment Study of Visual and Temporal Parameters",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W5",
+      "identifier": "arXiv:2208.06155",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "What Features Influence Impact Feel? A Study of Impact Feedback in Action Games",
+      "source_abstract": "Making the hit effect satisfy players is a long-standing problem faced by action game designers. However, no research systematically analyzed which game design elements affect such game feel. There is not even a term to describe it. So, we propose to use impact feel to describe the player's feeling when receiving juicy impact feedback. After collecting player's comments on action games from Steam's top seller list, we trained a natural language processing (NLP) model to rank action games with their performance on impact feel. We presented a 19-feature framework of impact feedback design and examined it in the top eight and last eight games. We listed an inventory of the usage of features and found that hit stop, sound coherence, and camera control may strongly influence players' impact feel. A lack of dedicated design on one of these three features may ruin players' impact feel. Our findings may become an evaluation metric for future studies.",
+      "supporting_span": "We listed an inventory of the usage of features and found that hit stop, sound coherence, and camera control may strongly influence players' impact feel.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W6",
+      "identifier": "Nesbitt-Hoskens-AUIC-2008",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'Nesbitt-Hoskens-AUIC-2008' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W7",
+      "identifier": "10.3758/BF03214414",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The subtlety of distinctiveness: What von Restorff really did",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W8",
+      "identifier": "arXiv:2011.09201",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Designing Game Feel. A Survey",
+      "source_abstract": "Game feel design is the intentional design of the affective impact of moment-to-moment interaction with games. In this paper we survey academic research and publications by practitioners to give a complete overview of the state of research concerning this aspect of game design, including context from related areas. We analysed over 200 sources and categorised their content according to the design purpose presented. This resulted in three different domains of intended player experiences: physicality, amplification, and support. In these domains, the act of polishing that determines game feel, takes the shape of tuning, juicing, and streamlining respectively. Tuning the physicality of game objects creates cohesion, predictability, and the resulting movement informs many other design aspects. Juicing is the act of polishing amplification and it results in empowerment and provides clarity of feedback by communicating the importance of game events. Streamlining allows a game to act on the intention of the player, supporting the execution of actions in the game. These three design intents are the main means through which designers control minute details of interactivity and inform the player's reaction. This framework and its nuanced vocabulary can lead to an understanding of game feel that is shared between practitioners and researchers as highlighted in the concluding future research section.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W9",
+      "identifier": "10.1068/p3101",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Perception of Animacy from the Motion of a Single Object",
+      "source_abstract": "We demonstrate that a single moving object can create the subjective impression that it is alive, based solely on its pattern of movement. Our displays differ from conventional biological motion displays (which normally involve multiple moving points, usually integrated to suggest a human form) in that they contain only a single rigid object moving across a uniform field. We focus on motion paths in which the speed and direction of the target object change simultaneously. Naive subjects' ratings of animacy were significantly influenced by (i) the magnitude of the speed change, (ii) the angular magnitude of the direction change, (iii) the shape of the object, and (iv) the alignment between the principal axis of the object and its direction of motion. These findings are consistent with the hypothesis that observers classify as animate only those objects whose motion trajectories are otherwise unlikely to occur in the observed setting.",
+      "supporting_span": "Naive subjects' ratings of animacy were significantly influenced by (i) the magnitude of the speed change, (ii) the angular magnitude of the direction change",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W10",
+      "identifier": "10.1207/s15516709cog0504_2",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Toward a Theory of Intrinsically Motivating Instruction*",
+      "source_abstract": "First, a number of previous theories of intrinsic motivation are reviewed. Then, several studies of highly motivating computer games are described. These studies focus on what makes the games fun, not on what makes them educational. Finally, with this background, a rudimentary theory of intrinsically motivating instruction is developed, based on three categories: challenge, fantasy, and curiosity.Challenge is hypothesized to depend on goals with uncertain outcomes. Several ways of making outcomes uncertain are discussed, including variable difficulty level, multiple level goals, hidden information, and randomness. Fantasy is claimed to have both cognitive and emotional advantages in designing instructional environments. A distinction is made between extrinsic fantasies that depend only weakly on the skill used in a game, and intrinsic fantasies that are intimately related to the use of the skill. Curiosity is separated into sensory and cognitive components, and it is suggested that cognitive curiosity can be aroused by making learners believe their knowledge structures are incomplete, inconsistent, or unparsimonious.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W11",
+      "identifier": "10.1080/20009011.2018.1435104",
+      "existence": "fabricated",
+      "finding_match": "unchecked",
+      "verdict": "refuse",
+      "action": "DROP",
+      "detail": "Crossref has no record for DOI 10.1080/20009011.2018.1435104",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W12",
+      "identifier": "10.1109/TCIAIG.2011.2114130",
+      "existence": "fabricated",
+      "finding_match": "unchecked",
+      "verdict": "refuse",
+      "action": "DROP",
+      "detail": "Crossref has no record for DOI 10.1109/TCIAIG.2011.2114130",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W13",
+      "identifier": "arXiv:1703.06891",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Dance Dance Convolution",
+      "source_abstract": "Dance Dance Revolution (DDR) is a popular rhythm-based video game. Players perform steps on a dance platform in synchronization with music as directed by on-screen step charts. While many step charts are available in standardized packs, players may grow tired of existing charts, or wish to dance to a song for which no chart exists. We introduce the task of learning to choreograph. Given a raw audio track, the goal is to produce a new step chart. This task decomposes naturally into two subtasks: deciding when to place steps and deciding which steps to select. For the step placement task, we combine recurrent and convolutional neural networks to ingest spectrograms of low-level audio features to predict steps, conditioned on chart difficulty. For step selection, we present a conditional LSTM generative model that substantially outperforms n-gram and fixed-window approaches.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W14",
+      "identifier": "arXiv:2107.12506",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "TaikoNation: Patterning-focused Chart Generation for Rhythm Action Games",
+      "source_abstract": "Generating rhythm game charts from songs via machine learning has been a problem of increasing interest in recent years. However, all existing systems struggle to replicate human-like patterning: the placement of game objects in relation to each other to form congruent patterns based on events in the song. Patterning is a key identifier of high quality rhythm game content, seen as a necessary component in human rankings. We establish a new approach for chart generation that produces charts with more congruent, human-like patterning than seen in prior work.",
+      "supporting_span": "all existing systems struggle to replicate human-like patterning: the placement of game objects in relation to each other to form congruent patterns based on events in the song.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W15",
+      "identifier": "10.1145/1814256.1814260",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Analyzing the expressive range of a level generator",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W16",
+      "identifier": "10.1371/journal.pone.0263852",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Speech timing cues reveal deceptive speech in social deduction board games",
+      "source_abstract": "The faculty of language allows humans to state falsehoods in their choice of words. However, while what is said might easily uphold a lie,howit is said may reveal deception. Hence, some features of the voice that are difficult for liars to control may keep speech mostly, if not always, honest. Previous research has identified that speech timing and voice pitch cues can predict the truthfulness of speech, but this evidence has come primarily from laboratory experiments, which sacrifice ecological validity for experimental control. We obtained ecologically valid recordings of deceptive speech while observing natural utterances from players of a popular social deduction board game, in which players are assigned roles that either induce honest or dishonest interactions. When speakers chose to lie, they were prone to longer and more frequent pauses in their speech. This finding is in line with theoretical predictions that lying is more cognitively demanding. However, lying was not reliably associated with vocal pitch. This contradicts predictions that increased physiological arousal from lying might increase muscular tension in the larynx, but is consistent with human specialisations that grantHomo sapiens sapiensan unusual degree of control over the voice relative to other primates. The present study demonstrates the utility of social deduction board games as a means of making naturalistic observations of human behaviour from semi-structured social interactions.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W17",
+      "identifier": "10.1207/s15327957pspr1003_2",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Accuracy of Deception Judgments",
+      "source_abstract": "We analyze the accuracy of deception judgments, synthesizing research results from 206 documents and 24,483 judges. In relevant studies, people attempt to discriminate lies from truths in real time with no special aids or training. In these circumstances, people achieve an average of 54% correct lie-truth judgments, correctly classifying 47% of lies as deceptive and 61% of truths as nondeceptive. Relative to cross-judge differences in accuracy, mean lie-truth discrimination abilities are nontrivial, with a mean accuracy d of roughly .40. This produces an effect that is at roughly the 60th percentile in size, relative to others that have been meta-analyzed by social psychologists. Alternative indexes of lie-truth discrimination accuracy correlate highly with percentage correct, and rates of lie detection vary little from study to study. Our meta-analyses reveal that people are more accurate in judging audible than visible lies, that people appear deceptive when motivated to be believed, and that individuals regard their interaction partners as honest. We propose that people judge others' deceptions more harshly than their own and that this double standard in evaluating deceit can explain much of the accumulated literature.",
+      "supporting_span": "In these circumstances, people achieve an average of 54% correct lie-truth judgments, correctly classifying 47% of lies as deceptive and 61% of truths as nondeceptive.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "W18",
+      "identifier": "10.1016/0010-0285(73)90004-2",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Perception in chess",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W19",
+      "identifier": "10.1016/j.plrev.2008.12.001",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Perceptual learning and human expertise",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W20",
+      "identifier": "10.1145/1978942.1979053",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Starcraft from the stands",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m24texevhy0c2p7rehx8w04z",
+    "pre_strip_hash": "3c69489053fe78c40acb739b3afceaf03bc45cdcdd49d1871735701a43d0c3ed",
+    "post_strip_hash": "3c69489053fe78c40acb739b3afceaf03bc45cdcdd49d1871735701a43d0c3ed",
+    "timestamp": "2026-09-10 04:50:48.411605+00:00",
+    "verifier_models": [
+      "mistral-small:24b"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:4:W5": "2a2ef5d8a78159333edcd0da0850153fdd2c42c908354f02d593b85404743583",
+      "citation_groundedness:7:W8": "1481d72ba2200cc08a486045d4f29047df2dc8a60bf089c5d11faf5d2a732317",
+      "citation_groundedness:8:W9": "918d0d9aedac869e5a6db6254fff21bbc0779074d4156c9499f33d9f71d09065",
+      "citation_groundedness:9:W10": "2b4c0aec9df7075f82fb6f3ba5685e6e687f3d9f26d8ccc43656e6c4a5902417",
+      "citation_groundedness:12:W13": "1c6323c1cff1879dc9fc19ee5b3d90bdfdfdb831ac73dbfb4069970deb196ca2",
+      "citation_groundedness:13:W14": "b9d5bea20c32345565b270d379d4bc2b4def423c6cfa17c6b05929b74ac66c11",
+      "citation_groundedness:15:W16": "124440c092e6ac1900e1418506d92e864bc5a2e627efa654012686523547d19d",
+      "citation_groundedness:16:W17": "e04085e6f0559952298bfe88b1215aeb87f95baf09ea0937c888c17f1ae6f959"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "W1",
+        "identifier": "10.1016/j.entcom.2020.100359",
+        "query": "https://api.crossref.org/works/10.1016/j.entcom.2020.100359?mailto=verify%40prism-verify.dev",
+        "source_sha256": "25b56dd54334b66b58d633ea0e13619cdf9590bd4547250f685ddab2c39ec29c",
+        "existence": "resolved"
+      },
+      {
+        "id": "W2",
+        "identifier": "10.1145/3613904.3642656",
+        "query": "https://api.crossref.org/works/10.1145/3613904.3642656?mailto=verify%40prism-verify.dev",
+        "source_sha256": "04027b0306fc3a1060e0fb2cc5a960f7f0b82cb2a69c9b95fcd229c8efa7ff4a",
+        "existence": "resolved"
+      },
+      {
+        "id": "W3",
+        "identifier": "10.1145/3311350.3347171",
+        "query": "https://api.crossref.org/works/10.1145/3311350.3347171?mailto=verify%40prism-verify.dev",
+        "source_sha256": "edc64488acbe1c61316d9cf7f5583bfb7a43942f60ab9f0596a62a863ca9ee96",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "W4",
+        "identifier": "10.1145/3772363.3798911",
+        "query": "https://api.crossref.org/works/10.1145/3772363.3798911?mailto=verify%40prism-verify.dev",
+        "source_sha256": "2c4a5e0d06e7d851278d3dee768c78f120bd5d0447a3caa2649b6d569ba0e300",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "W5",
+        "identifier": "arXiv:2208.06155",
+        "query": "https://export.arxiv.org/api/query?id_list=2208.06155",
+        "source_sha256": "53a3cb4b3102deb0c7fdb3eec66d41af7e776c1dd1d2d32ccd16d577cb8ad812",
+        "existence": "resolved"
+      },
+      {
+        "id": "W6",
+        "identifier": "Nesbitt-Hoskens-AUIC-2008",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "W7",
+        "identifier": "10.3758/BF03214414",
+        "query": "https://api.crossref.org/works/10.3758/BF03214414?mailto=verify%40prism-verify.dev",
+        "source_sha256": "230a755ec3006cb3618a0b62e02401909e5b24bea98dd1aaad4b5e6fe8329cb7",
+        "existence": "resolved"
+      },
+      {
+        "id": "W8",
+        "identifier": "arXiv:2011.09201",
+        "query": "https://export.arxiv.org/api/query?id_list=2011.09201",
+        "source_sha256": "6a6db713e948e8d6a4b85d329d539d673cb3a58ecaf4c93937431773e1894bd9",
+        "existence": "resolved"
+      },
+      {
+        "id": "W9",
+        "identifier": "10.1068/p3101",
+        "query": "https://api.crossref.org/works/10.1068/p3101?mailto=verify%40prism-verify.dev",
+        "source_sha256": "c26b352798a37eb71306853455e4b06df18d1831b922d2b21650f582b7042c3b",
+        "existence": "resolved"
+      },
+      {
+        "id": "W10",
+        "identifier": "10.1207/s15516709cog0504_2",
+        "query": "https://api.crossref.org/works/10.1207/s15516709cog0504_2?mailto=verify%40prism-verify.dev",
+        "source_sha256": "172a92de03f9701c92794fceaeb72ac77358ae801602fc291eeba56485f2b574",
+        "existence": "resolved"
+      },
+      {
+        "id": "W11",
+        "identifier": "10.1080/20009011.2018.1435104",
+        "query": "https://api.crossref.org/works/10.1080/20009011.2018.1435104?mailto=verify%40prism-verify.dev",
+        "source_sha256": "",
+        "existence": "fabricated"
+      },
+      {
+        "id": "W12",
+        "identifier": "10.1109/TCIAIG.2011.2114130",
+        "query": "https://api.crossref.org/works/10.1109/TCIAIG.2011.2114130?mailto=verify%40prism-verify.dev",
+        "source_sha256": "",
+        "existence": "fabricated"
+      },
+      {
+        "id": "W13",
+        "identifier": "arXiv:1703.06891",
+        "query": "https://export.arxiv.org/api/query?id_list=1703.06891",
+        "source_sha256": "177b73b329231a119e1ac28b3d7d2066b3d8027985eaad44e6241efe65e69d1b",
+        "existence": "resolved"
+      },
+      {
+        "id": "W14",
+        "identifier": "arXiv:2107.12506",
+        "query": "https://export.arxiv.org/api/query?id_list=2107.12506",
+        "source_sha256": "f63cc829e5c13b63725db8fd9188dc94ef616a9ebaa6f55e57ce47620021a023",
+        "existence": "resolved"
+      },
+      {
+        "id": "W15",
+        "identifier": "10.1145/1814256.1814260",
+        "query": "https://api.crossref.org/works/10.1145/1814256.1814260?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ecf395bd00721e5733efd767e66a90eb6fe7a2c405e8bd55634ca73d5d678771",
+        "existence": "resolved"
+      },
+      {
+        "id": "W16",
+        "identifier": "10.1371/journal.pone.0263852",
+        "query": "https://api.crossref.org/works/10.1371/journal.pone.0263852?mailto=verify%40prism-verify.dev",
+        "source_sha256": "c4c5e32b73376c6acc873185126868bea70bc5ae85ebcfd213c66236cd1c186d",
+        "existence": "resolved"
+      },
+      {
+        "id": "W17",
+        "identifier": "10.1207/s15327957pspr1003_2",
+        "query": "https://api.crossref.org/works/10.1207/s15327957pspr1003_2?mailto=verify%40prism-verify.dev",
+        "source_sha256": "c3fed9c0b95b71dce752e468c6e646fdc8dac679413a06e033c67a6667f11be8",
+        "existence": "resolved"
+      },
+      {
+        "id": "W18",
+        "identifier": "10.1016/0010-0285(73)90004-2",
+        "query": "https://api.crossref.org/works/10.1016/0010-0285(73)90004-2?mailto=verify%40prism-verify.dev",
+        "source_sha256": "2d823583e20bc4c66aac85f01a40c30edfc72f44d255da205697a9f172ed2de2",
+        "existence": "resolved"
+      },
+      {
+        "id": "W19",
+        "identifier": "10.1016/j.plrev.2008.12.001",
+        "query": "https://api.crossref.org/works/10.1016/j.plrev.2008.12.001?mailto=verify%40prism-verify.dev",
+        "source_sha256": "0a4248202715047edfe20c67f5f8d58aedc33a709d780f1260661d5448f909ee",
+        "existence": "resolved"
+      },
+      {
+        "id": "W20",
+        "identifier": "10.1145/1978942.1979053",
+        "query": "https://api.crossref.org/works/10.1145/1978942.1979053?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ae1c3574f0c9fb171e698908caea402cb32bfaaaa299127afcee6b262334e88e",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-611e3cc65671873e",
+    "schema_version": 5,
+    "signature": "eeee46bd81ccd99ecd6e51c4f3d456f36971e5a33df5902eb49cc4bc0c3d09600558ea5eb3f006fdf0b50ce7b4a49c1550366d71c01ccf342d2789ed4439820c",
+    "replayable": true
+  }
+}

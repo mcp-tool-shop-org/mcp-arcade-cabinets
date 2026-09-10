@@ -1,0 +1,162 @@
+[
+  {
+    "id": "W1",
+    "claim": "Four builds of one action RPG with none, medium, high and extreme juice: both extremes reduced play time, experience, intrinsic motivation and performance; medium and high scored best.",
+    "title": "The Effects of Juiciness in an Action RPG",
+    "authors": "Kao",
+    "year": 2020,
+    "identifier": "10.1016/j.entcom.2020.100359"
+  },
+  {
+    "id": "W2",
+    "claim": "Feedback contingent on player success raised curiosity, competence and effectance, while raw amplification of feedback reduced them, in a pre-registered study of about 1,700 players.",
+    "title": "How does Juicy Game Feedback Motivate? Testing Curiosity, Competence, and Effectance",
+    "authors": "Kao, Ballou, Gerling, Breitsohl, Deterding",
+    "year": 2024,
+    "identifier": "10.1145/3613904.3642656"
+  },
+  {
+    "id": "W3",
+    "claim": "Visual embellishments raised aesthetic appeal but had no effect on usability or performance across three games including one built from plain cubes.",
+    "title": "Juicy Game Design",
+    "authors": "Hicks, Gerling, Dickinson, Vanden Abeele",
+    "year": 2019,
+    "identifier": "10.1145/3311350.3347171"
+  },
+  {
+    "id": "W4",
+    "claim": "Players calibrating eight hit-feedback parameters showed individual optima spanning a wide range in three clusters, judged random settings excessive about 45 percent of the time, and camera-shake time correlated with hit stop.",
+    "title": "Quantifying Hit Feedback Preferences in 2D Action Games: A User-Adjustment Study of Visual and Temporal Parameters",
+    "authors": "Seki, Ishikawa",
+    "year": 2026,
+    "identifier": "10.1145/3772363.3798911"
+  },
+  {
+    "id": "W5",
+    "claim": "Of nineteen impact-feedback features compared across well and poorly rated action games, hit stop, sound coherence and camera control dominate perceived impact.",
+    "title": "What Features Influence Impact Feel? A Study of Impact Feedback in Action Games",
+    "authors": "Lin, Duan, Wen, Cai",
+    "year": 2022,
+    "identifier": "arXiv:2208.06155"
+  },
+  {
+    "id": "W6",
+    "claim": "Adding audio to a visual-only game interface raised immersion, confidence and satisfaction without a performance gain.",
+    "title": "Multi-sensory Game Interface Improves Player Satisfaction but not Performance",
+    "authors": "Nesbitt, Hoskens",
+    "year": 2008,
+    "identifier": "Nesbitt-Hoskens-AUIC-2008"
+  },
+  {
+    "id": "W7",
+    "claim": "Isolated items are remembered better even when presented before any context, so distinctiveness against a homogeneous background, not perceptual salience, drives the effect.",
+    "title": "The subtlety of distinctiveness: What von Restorff really did",
+    "authors": "Hunt",
+    "year": 1995,
+    "identifier": "10.3758/BF03214414"
+  },
+  {
+    "id": "W8",
+    "claim": "Juicing is amplification that communicates the importance of game events, and the survey frames proportionality as its function.",
+    "title": "Designing Game Feel: A Survey",
+    "authors": "Pichlmair, Johansen",
+    "year": 2020,
+    "identifier": "arXiv:2011.09201"
+  },
+  {
+    "id": "W9",
+    "claim": "Animacy ratings for a single moving dot rose with the magnitude of speed change and direction change.",
+    "title": "Perception of Animacy from the Motion of a Single Object",
+    "authors": "Tremoulet, Feldman",
+    "year": 2000,
+    "identifier": "10.1068/p3101"
+  },
+  {
+    "id": "W10",
+    "claim": "In isomorphic game variants differing by one feature, removing the goal or the uncertain outcome cost more preference than any other single removal.",
+    "title": "Toward a Theory of Intrinsically Motivating Instruction",
+    "authors": "Malone",
+    "year": 1981,
+    "identifier": "10.1207/s15516709cog0504_2"
+  },
+  {
+    "id": "W11",
+    "claim": "Enjoyment of the challenge predicted overall enjoyment across four difficulty rounds where objective difficulty alone did not.",
+    "title": "Being enjoyably challenged is the key to an enjoyable gaming experience: an experimental approach in a first-person shooter game",
+    "authors": "Corcos",
+    "year": 2018,
+    "identifier": "10.1080/20009011.2018.1474668"
+  },
+  {
+    "id": "W12",
+    "claim": "Levels are generated two-tiered: rhythm groups of beats and pauses first, then geometry fitted to the rhythm, with pacing parameters on top.",
+    "title": "Launchpad: A Rhythm-Based Level Generator for 2-D Platformers",
+    "authors": "Smith, Treanor, Whitehead, Mateas",
+    "year": 2011,
+    "identifier": "10.1109/tciaig.2010.2095855"
+  },
+  {
+    "id": "W13",
+    "claim": "Step charting splits into placement (when, conditioned on difficulty) and selection (which), and placement is a rest-dominated class-imbalanced problem.",
+    "title": "Dance Dance Convolution",
+    "authors": "Donahue, Lipton, McAuley",
+    "year": 2017,
+    "identifier": "arXiv:1703.06891"
+  },
+  {
+    "id": "W14",
+    "claim": "Per-event chart generators fail to reproduce human patterning, the congruent relations between placed objects that raters treat as authored.",
+    "title": "TaikoNation: Patterning-focused Chart Generation for Rhythm Action Games",
+    "authors": "Halina, Guzdial",
+    "year": 2021,
+    "identifier": "arXiv:2107.12506"
+  },
+  {
+    "id": "W15",
+    "claim": "Plotting generated levels on metrics such as linearity and leniency exposes generator bias and unreachable regions of the design space.",
+    "title": "Analyzing the Expressive Range of a Level Generator",
+    "authors": "Smith, Whitehead",
+    "year": 2010,
+    "identifier": "10.1145/1814256.1814260"
+  },
+  {
+    "id": "W16",
+    "claim": "In a social deduction board game, deceptive statements were about twice as likely to contain a silent pause and those pauses were longer, while pitch showed no reliable association.",
+    "title": "Speech timing cues reveal deceptive speech in social deduction board games",
+    "authors": "Zhang, McGettigan, Belyk",
+    "year": 2022,
+    "identifier": "10.1371/journal.pone.0263852"
+  },
+  {
+    "id": "W17",
+    "claim": "Across 206 documents and about 24,000 judges, lie detection accuracy averaged 54 percent, with truths judged more accurately than lies.",
+    "title": "Accuracy of Deception Judgments",
+    "authors": "Bond, DePaulo",
+    "year": 2006,
+    "identifier": "10.1207/s15327957pspr1003_2"
+  },
+  {
+    "id": "W18",
+    "claim": "Chess masters' recall advantage vanishes on randomly arranged boards, so expertise is chunking of recurring legal configurations.",
+    "title": "Perception in chess",
+    "authors": "Chase, Simon",
+    "year": 1973,
+    "identifier": "10.1016/0010-0285(73)90004-2"
+  },
+  {
+    "id": "W19",
+    "claim": "Perceptual learning yields discovery effects, extracting the relevant relation, and fluency effects, extracting it faster, and abstract perceptual learning transfers to novel instances.",
+    "title": "Perceptual learning and human expertise",
+    "authors": "Kellman, Garrigan",
+    "year": 2009,
+    "identifier": "10.1016/j.plrev.2008.12.001"
+  },
+  {
+    "id": "W20",
+    "claim": "From spectator accounts of StarCraft the authors derive personas and a theory of information asymmetry as the source of suspense, implying value in controlling how and when information is uncovered.",
+    "title": "Starcraft from the Stands: Understanding the Game Spectator",
+    "authors": "Cheung, Huang",
+    "year": 2011,
+    "identifier": "10.1145/1978942.1979053"
+  }
+]

@@ -1,0 +1,110 @@
+{
+  "verdict": "escalate",
+  "confidence": 1.0,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "W3",
+      "identifier": "10.1145/3311350.3347171",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Juicy Game Design",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W4",
+      "identifier": "10.1145/3772363.3798911",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Quantifying Hit Feedback Preferences in 2D Action Games: A User-Adjustment Study of Visual and Temporal Parameters",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W11",
+      "identifier": "10.1080/20009011.2018.1474668",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Being enjoyably challenged is the key to an enjoyable gaming experience: an experimental approach in a first-person shooter game",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "W12",
+      "identifier": "10.1109/tciaig.2010.2095855",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Launchpad: A Rhythm-Based Level Generator for 2-D Platformers",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m24tj4denxvk7zcwm0twngdx",
+    "pre_strip_hash": "227ad7c363c99c575c669b5beae9c8066c643fd68b48a20fcbcd6f0a6aaeda76",
+    "post_strip_hash": "227ad7c363c99c575c669b5beae9c8066c643fd68b48a20fcbcd6f0a6aaeda76",
+    "timestamp": "2026-09-10 04:52:33.838292+00:00",
+    "verifier_models": [
+      "mistral-small:24b"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {},
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "W3",
+        "identifier": "10.1145/3311350.3347171",
+        "query": "https://api.crossref.org/works/10.1145/3311350.3347171?mailto=verify%40prism-verify.dev",
+        "source_sha256": "edc64488acbe1c61316d9cf7f5583bfb7a43942f60ab9f0596a62a863ca9ee96",
+        "existence": "resolved"
+      },
+      {
+        "id": "W4",
+        "identifier": "10.1145/3772363.3798911",
+        "query": "https://api.crossref.org/works/10.1145/3772363.3798911?mailto=verify%40prism-verify.dev",
+        "source_sha256": "2c4a5e0d06e7d851278d3dee768c78f120bd5d0447a3caa2649b6d569ba0e300",
+        "existence": "resolved"
+      },
+      {
+        "id": "W11",
+        "identifier": "10.1080/20009011.2018.1474668",
+        "query": "https://api.crossref.org/works/10.1080/20009011.2018.1474668?mailto=verify%40prism-verify.dev",
+        "source_sha256": "f6471ff7d9ef25491cf348a137a9253e2e29d2ec5822d7362dd51dbdc676967d",
+        "existence": "resolved"
+      },
+      {
+        "id": "W12",
+        "identifier": "10.1109/tciaig.2010.2095855",
+        "query": "https://api.crossref.org/works/10.1109/tciaig.2010.2095855?mailto=verify%40prism-verify.dev",
+        "source_sha256": "f11ee0d3fbac27071a902c6bf43b04ab93c0b81820056ba95398cbd22d58bff6",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-611e3cc65671873e",
+    "schema_version": 5,
+    "signature": "6206beeb55fb81970de485b9e04bf2028bc25f27bde43a55593c37af44baa9e12c897315485dd3c63dd937df728c48eb083a94d2f51c3739acd936ca700bcf0d",
+    "replayable": true
+  }
+}

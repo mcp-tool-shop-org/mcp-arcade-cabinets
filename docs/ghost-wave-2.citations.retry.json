@@ -1,0 +1,34 @@
+[
+  {
+    "id": "W3",
+    "claim": "Visual embellishments raised aesthetic appeal but had no effect on usability or performance across three games including one built from plain cubes.",
+    "title": "Juicy Game Design",
+    "authors": "Hicks, Gerling, Dickinson, Vanden Abeele",
+    "year": 2019,
+    "identifier": "10.1145/3311350.3347171"
+  },
+  {
+    "id": "W4",
+    "claim": "Players calibrating eight hit-feedback parameters showed individual optima spanning a wide range in three clusters, judged random settings excessive about 45 percent of the time, and camera-shake time correlated with hit stop.",
+    "title": "Quantifying Hit Feedback Preferences in 2D Action Games: A User-Adjustment Study of Visual and Temporal Parameters",
+    "authors": "Seki, Ishikawa",
+    "year": 2026,
+    "identifier": "10.1145/3772363.3798911"
+  },
+  {
+    "id": "W11",
+    "claim": "Enjoyment of the challenge predicted overall enjoyment across four difficulty rounds where objective difficulty alone did not.",
+    "title": "Being enjoyably challenged is the key to an enjoyable gaming experience: an experimental approach in a first-person shooter game",
+    "authors": "Corcos",
+    "year": 2018,
+    "identifier": "10.1080/20009011.2018.1474668"
+  },
+  {
+    "id": "W12",
+    "claim": "Levels are generated two-tiered: rhythm groups of beats and pauses first, then geometry fitted to the rhythm, with pacing parameters on top.",
+    "title": "Launchpad: A Rhythm-Based Level Generator for 2-D Platformers",
+    "authors": "Smith, Treanor, Whitehead, Mateas",
+    "year": 2011,
+    "identifier": "10.1109/tciaig.2010.2095855"
+  }
+]
