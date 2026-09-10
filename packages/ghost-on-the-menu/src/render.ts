@@ -1,4 +1,11 @@
-import { FIELD, type DrawContext, type RoundState, type SpriteClass } from './types';
+import {
+  FIELD,
+  type Boss,
+  type DrawContext,
+  type Enemy,
+  type RoundState,
+  type SpriteClass,
+} from './types';
 
 export const SPRITE_FILL: Record<SpriteClass, string> = {
   init: '#3d5a80',
@@ -10,11 +17,56 @@ export const SPRITE_FILL: Record<SpriteClass, string> = {
 };
 
 export const REVEALED_FILL = '#e8a04a';
+const REVEALED_HALO = '#6a4418';
+const PLAYER_FILL = '#c8d0dc';
+const SHOT_FILL = '#e8e0c8';
+const ENEMY_SHOT_FILL = '#d8624a';
+const FOG_FILL = 'rgba(76, 76, 106, 0.55)';
+const VEIL_FILL = 'rgba(52, 52, 82, 0.88)';
+const LAMP_LIT = '#e8c060';
+const LAMP_DARK = '#2a2a34';
+const BEZEL = '#181822';
+const FIELD_FILL = '#101018';
+const FURNITURE = '#c8d0dc';
+
+export const BOSS_FILL: Record<Boss['kind'], string> = {
+  whisperer: '#5a5a7a',
+  menu: '#3a8a8a',
+  doorman: '#a08040',
+};
 
 /** Pre-hit colour depends only on sprite class, never on `lie`. */
 export function fillFor(sprite: SpriteClass, revealed: boolean): string {
   return revealed ? REVEALED_FILL : SPRITE_FILL[sprite];
 }
+
+/**
+ * Three presets, default below the midpoint (W4): hit-feedback preference
+ * varies about six-fold and random settings read as excessive nearly half
+ * the time, so the game starts calm and the player turns it up.
+ */
+export type Intensity = 'calm' | 'medium' | 'loud';
+
+export interface RenderOpts {
+  intensity?: Intensity;
+  /** Shake off is the accessibility line; hitstop and the trophy stay. */
+  shake?: boolean;
+  /** Lines drawn as furniture on the end scene: tape, server, policy. Nothing else. */
+  furniture?: readonly string[];
+  /** Wall clock in seconds for the end-scene parade; the round clock is frozen there. */
+  clock?: number;
+}
+
+const INTENSITY: Record<Intensity, { shake: number; pop: number; halo: number }> = {
+  calm: { shake: 3, pop: 6, halo: 2 },
+  medium: { shake: 6, pop: 10, halo: 3 },
+  loud: { shake: 10, pop: 16, halo: 4 },
+};
+
+/** Honest pop length; matches the sim's DIE_POP without importing it. */
+const DIE_POP = 0.15;
+const LAMPS = 3;
+const BEZEL_H = 14;
 
 export function makeTextCtx(): DrawContext & { texts: string[] } {
   const texts: string[] = [];
@@ -29,33 +81,139 @@ export function makeTextCtx(): DrawContext & { texts: string[] } {
   };
 }
 
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
+
+/** Members draw as segments so a burst reads as a formation; a singleton is one block. */
+function drawFormation(
+  rect: (x: number, y: number, w: number, h: number) => void,
+  enemy: Enemy,
+): void {
+  const n = Math.max(1, enemy.members);
+  const gap = n > 1 ? 2 : 0;
+  const bw = (enemy.w - gap * (n - 1)) / n;
+  for (let i = 0; i < n; i++) {
+    rect(enemy.x + i * (bw + gap), enemy.y, bw, enemy.h);
+  }
+}
+
+/** Four fragments flying outward and shrinking; small on purpose (W2). */
+function drawPop(
+  ctx: DrawContext,
+  rect: (x: number, y: number, w: number, h: number) => void,
+  enemy: Enemy,
+  t: number,
+  spread: number,
+): void {
+  const k = clamp01((enemy.dieAt - t) / DIE_POP);
+  const d = (1 - k) * spread;
+  const fw = Math.max(1, (enemy.w / 2) * k);
+  const fh = Math.max(1, (enemy.h / 2) * k);
+  const cx = enemy.x + enemy.w / 2;
+  const cy = enemy.y + enemy.h / 2;
+  ctx.fillStyle = fillFor(enemy.sprite, false);
+  rect(cx - fw - d, cy - fh - d, fw, fh);
+  rect(cx + d, cy - fh - d, fw, fh);
+  rect(cx - fw - d, cy + d, fw, fh);
+  rect(cx + d, cy + d, fw, fh);
+}
+
 /**
- * Rectangles only. No score, no counts, no pass/fail. The end scene names
- * the tape and the lies that were cleared, as a list, not a total.
+ * The renderer draws the state and adds nothing the sim did not decide.
+ * No score, no counts, no pass/fail, no digits. Lamps are rectangles. The
+ * end scene is the frozen field with the trophies at the parking line, the
+ * escaped lies in their honest paint, and the tape's name as furniture.
  */
-export function renderRound(ctx: DrawContext, state: RoundState): void {
-  ctx.fillStyle = '#101018';
+export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpts = {}): void {
+  const level = INTENSITY[opts.intensity ?? 'calm'];
+  const shakeOn = opts.shake ?? true;
+  const s = shakeOn ? state.shake : 0;
+  // Deterministic offset from the shake value itself, so the field jitters
+  // during hitstop (when the clock is frozen) and settles as shake decays.
+  const ox = s * level.shake * Math.sin(s * 53.7);
+  const oy = s * level.shake * Math.cos(s * 31.1);
+  const rect = (x: number, y: number, w: number, h: number) => ctx.fillRect(x + ox, y + oy, w, h);
+
+  ctx.fillStyle = FIELD_FILL;
   ctx.fillRect(0, 0, FIELD.width, FIELD.height);
 
-  ctx.fillStyle = '#c8d0dc';
-  ctx.fillRect(state.player.x, state.player.y, state.player.w, state.player.h);
+  if (state.fog && state.fog.alive) {
+    ctx.fillStyle = FOG_FILL;
+    rect(state.fog.x, state.fog.y, state.fog.w, state.fog.h);
+  }
 
-  ctx.fillStyle = '#e8e0c8';
-  for (const shot of state.shots) {
-    ctx.fillRect(shot.x, shot.y, shot.w, shot.h);
+  if (state.boss && state.boss.alive) {
+    const b = state.boss;
+    ctx.fillStyle = BOSS_FILL[b.kind];
+    rect(b.x, b.y, b.w, b.h);
+    // A darker band so a boss reads as a wall, not a large grid sprite.
+    ctx.fillStyle = FIELD_FILL;
+    const band = Math.max(2, Math.floor(b.h / 5));
+    if (b.w > 8 && b.h > band * 3) rect(b.x + 4, b.y + b.h - band * 2, b.w - 8, band);
   }
 
   for (const enemy of state.enemies) {
     if (!enemy.alive || state.t < enemy.tEnter) continue;
+    if (enemy.mode === 'dying') {
+      drawPop(ctx, rect, enemy, state.t, level.pop);
+      continue;
+    }
+    if (enemy.mode === 'caught') {
+      const bob = opts.clock !== undefined && state.scene ? Math.sin(opts.clock * 2 + enemy.x) : 0;
+      const h = level.halo;
+      ctx.fillStyle = REVEALED_HALO;
+      rect(enemy.x - h, enemy.y - h + bob, enemy.w + h * 2, enemy.h + h * 2);
+      ctx.fillStyle = REVEALED_FILL;
+      rect(enemy.x, enemy.y + bob, enemy.w, enemy.h);
+      continue;
+    }
     ctx.fillStyle = fillFor(enemy.sprite, enemy.revealed);
-    ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+    drawFormation(rect, enemy);
+  }
+
+  ctx.fillStyle = ENEMY_SHOT_FILL;
+  for (const shot of state.enemyShots) {
+    if (shot.dead) continue;
+    rect(shot.x, shot.y, shot.w, shot.h);
+  }
+
+  ctx.fillStyle = SHOT_FILL;
+  for (const shot of state.shots) {
+    rect(shot.x, shot.y, shot.w, shot.h);
+  }
+
+  ctx.fillStyle = PLAYER_FILL;
+  rect(state.player.x, state.player.y, state.player.w, state.player.h);
+
+  if (state.blind > 0) {
+    ctx.fillStyle = VEIL_FILL;
+    const top = Math.floor((FIELD.height * 2) / 3);
+    ctx.fillRect(0, top, FIELD.width, FIELD.height - top);
+  }
+
+  if (state.caption) {
+    ctx.fillStyle = REVEALED_FILL;
+    ctx.font = '12px monospace';
+    ctx.fillText(state.caption.text, 16, FIELD.height - BEZEL_H - 30);
+  }
+
+  // The bezel does not shake: lamps are furniture, drawn as rectangles, never a digit.
+  ctx.fillStyle = BEZEL;
+  ctx.fillRect(0, FIELD.height - BEZEL_H, FIELD.width, BEZEL_H);
+  for (let i = 0; i < LAMPS; i++) {
+    ctx.fillStyle = i < state.lives ? LAMP_LIT : LAMP_DARK;
+    ctx.fillRect(12 + i * 14, FIELD.height - BEZEL_H + 4, 8, 6);
   }
 
   if (state.scene) {
-    ctx.fillStyle = '#e8e0d0';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`tape ${state.scene.tapeId}`, 16, 28);
-    const names = state.scene.cleared.join(', ') || 'none';
-    ctx.fillText(`cleared: ${names}`, 16, 50);
+    ctx.fillStyle = FURNITURE;
+    ctx.font = '12px monospace';
+    ctx.fillText(`tape ${state.scene.tapeId}`, 16, 46);
+    let y = 62;
+    for (const line of opts.furniture ?? []) {
+      ctx.fillText(line, 16, y);
+      y += 16;
+    }
   }
 }

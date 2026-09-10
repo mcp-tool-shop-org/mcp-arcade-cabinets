@@ -28,7 +28,7 @@ describe('scripted bot', () => {
     const out = await play({ fixture: 'livefire.intern.task-only-wrap-on' });
     expect(out.text).not.toMatch(FORBIDDEN);
     expect(out.text).toMatch(/round complete/);
-    expect(out.text).toMatch(/cleared: none/);
+    expect(out.text).toMatch(/revealed: none/);
     expect(out.ok).toBe(true);
   });
 });

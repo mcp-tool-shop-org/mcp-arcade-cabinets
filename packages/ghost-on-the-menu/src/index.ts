@@ -20,7 +20,12 @@ export type {
 } from './types';
 export { prepassRound } from './prepass';
 export { botInput, createRoundState, revealOnHit, stepRound } from './sim';
-export { fillFor, makeTextCtx, renderRound, SPRITE_FILL } from './render';
+export { BOSS_FILL, fillFor, makeTextCtx, renderRound, REVEALED_FILL, SPRITE_FILL } from './render';
+export type { Intensity, RenderOpts } from './render';
+export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
+export type { CueSnapshot, WaveKind } from './cues';
+export { attach, bar, barSeconds, DEFAULT_MUSIC, sfx } from './audio';
+export type { AudioOut, MusicPattern, Note, SfxName } from './audio';
 // The scripted play-through (`./play`) reads fixtures from disk and is built
 // separately into dist/play.js for `pnpm test:play`; it stays off the barrel
 // so the browser bundle never pulls node:fs.
