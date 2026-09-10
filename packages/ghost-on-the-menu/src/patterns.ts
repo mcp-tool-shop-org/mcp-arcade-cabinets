@@ -8,9 +8,24 @@ import pathsJson from '../patterns/paths.json';
 import playerJson from '../patterns/player.json';
 import wavesJson from '../patterns/waves.json';
 
-const SPRITE_CLASSES: readonly SpriteClass[] = ['init', 'menu', 'grid', 'fog', 'obstacle', 'stall'];
+const SPRITE_CLASSES: readonly SpriteClass[] = [
+  'init',
+  'menu',
+  'grid',
+  'answer',
+  'fog',
+  'obstacle',
+  'stall',
+];
 /** Classes that spawn as enemies. Fog becomes a FogBank, never a path. */
-const SPAWN_CLASSES: readonly SpriteClass[] = ['init', 'menu', 'grid', 'obstacle', 'stall'];
+const SPAWN_CLASSES: readonly SpriteClass[] = [
+  'init',
+  'menu',
+  'grid',
+  'answer',
+  'obstacle',
+  'stall',
+];
 
 const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;

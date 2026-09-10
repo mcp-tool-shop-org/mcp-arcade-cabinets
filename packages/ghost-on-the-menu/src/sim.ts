@@ -227,7 +227,7 @@ export function createRoundState(round: Round): RoundState {
       revealed: false,
       alive: true,
       tEnter:
-        beat.sprite === 'grid' &&
+        (beat.sprite === 'grid' || beat.sprite === 'answer') &&
         bossKindFor(beat.source.atom) === 'whisperer' &&
         round.waveBounds.some((b) => b.atom === beat.source.atom)
           ? Number.POSITIVE_INFINITY
@@ -337,15 +337,23 @@ function emitWaveGrids(state: RoundState, meta: Meta): void {
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
   for (const enemy of state.enemies) {
-    if (enemy.sprite !== 'grid') continue;
+    if (enemy.sprite !== 'grid' && enemy.sprite !== 'answer') continue;
     if (atomOf(enemy) !== bound.atom) continue;
     if (!enemy.alive || enemy.mode === 'caught' || enemy.mode === 'dying') continue;
     enemy.tEnter = state.t;
     enemy.pathT = 0;
     enemy.mode = 'enter';
-    enemy.x = cx - enemy.w / 2;
-    enemy.y = by - enemy.h / 2;
-    enemy.path = [{ x: cx, y: by }, ...enemy.path];
+    if (enemy.sprite === 'grid') {
+      enemy.x = cx - enemy.w / 2;
+      enemy.y = by - enemy.h / 2;
+      enemy.path = [{ x: cx, y: by }, ...enemy.path];
+    } else {
+      const start = enemy.path[0];
+      if (start) {
+        enemy.x = start.x - enemy.w / 2;
+        enemy.y = start.y - enemy.h / 2;
+      }
+    }
   }
   meta.emittedGridForWave = true;
 }

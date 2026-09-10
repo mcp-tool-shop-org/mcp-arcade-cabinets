@@ -1,7 +1,7 @@
 import type { PatternSet } from './patterns';
 
 /** Decoration / enemy class. Lies share a class with their honest counterpart. */
-export type SpriteClass = 'init' | 'menu' | 'grid' | 'fog' | 'obstacle' | 'stall';
+export type SpriteClass = 'init' | 'menu' | 'grid' | 'answer' | 'fog' | 'obstacle' | 'stall';
 
 export type EnemyMode = 'enter' | 'hover' | 'dive' | 'caught' | 'dying' | 'exit';
 

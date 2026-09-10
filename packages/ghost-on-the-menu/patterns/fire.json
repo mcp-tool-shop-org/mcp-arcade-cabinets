@@ -2,7 +2,7 @@
   "tiers": {
     "0": {
       "formation": null,
-      "boss": { "period": 2.4, "burst": 1, "spread": 0, "speed": 70 }
+      "boss": { "period": 3.5, "burst": 1, "spread": 0, "speed": 70 }
     },
     "1": {
       "formation": { "period": 1.8, "burst": 1, "spread": 0.08, "speed": 90 },

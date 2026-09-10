@@ -121,6 +121,39 @@ describe('prepassRound', () => {
     expect(round.beats.every((b) => !/ghost probe/i.test(b.source.note))).toBe(true);
   });
 
+  it('turns inbound tools/call responses into answer beats after the grids', () => {
+    const tape = load('naive-ndjson');
+    const round = prepassRound(tape, { seconds: 150, seed: 0 });
+    const callAtoms = new Set(
+      tape.rows
+        .filter((r) => r.direction === 'out' && r.method === 'tools/call')
+        .map((r) => r.atom),
+    );
+    for (const atom of callAtoms) {
+      expect(
+        round.beats.some((b) => b.source.atom === atom && b.sprite === 'answer'),
+        atom,
+      ).toBe(true);
+    }
+    expect(round.beats.filter((b) => b.sprite === 'answer').every((b) => !b.lie)).toBe(true);
+    expect(
+      round.beats.some(
+        (b) =>
+          b.sprite === 'answer' &&
+          (b.source.method === 'initialize' || b.source.method === 'tools/list'),
+      ),
+    ).toBe(false);
+    for (const atom of callAtoms) {
+      const firstGrid = round.beats.find((b) => b.source.atom === atom && b.sprite === 'grid');
+      const answers = round.beats.filter((b) => b.source.atom === atom && b.sprite === 'answer');
+      expect(firstGrid, atom).toBeDefined();
+      for (const a of answers) {
+        expect(a.t).toBeGreaterThan(firstGrid!.t);
+        expect(a.source.method).toBe('(response)');
+      }
+    }
+  });
+
   it('classifies handshake as init and only notifications/message as fog', () => {
     const rows: TapeRow[] = [
       row({ seq: 1, method: 'initialize' }),

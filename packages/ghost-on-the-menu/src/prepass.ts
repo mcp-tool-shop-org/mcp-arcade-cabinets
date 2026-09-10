@@ -87,24 +87,41 @@ function classify(tape: Tape, row: TapeRow, index: number): Candidate {
   if (noResponse) {
     return { row, index, sprite: 'stall', lie: false, members: 1, skip: false };
   }
-  // Inbound responses, other notifications, and replies are not visible.
+  if (row.direction === 'in' && row.method === '(response)' && row.rpc_id !== '') {
+    const call = tape.rows.some(
+      (r) =>
+        r.atom === row.atom &&
+        r.direction === 'out' &&
+        r.method === 'tools/call' &&
+        r.rpc_id === row.rpc_id,
+    );
+    if (call) {
+      return { row, index, sprite: 'answer', lie: false, members: 1, skip: false };
+    }
+  }
+  // Other inbound responses (initialize, tools/list) and replies stay skipped.
   return { row, index, sprite: 'fog', lie: false, members: 1, skip: true };
+}
+
+function lastGridRun(out: Candidate[]): Candidate | undefined {
+  for (let i = out.length - 1; i >= 0; i--) {
+    const prev = out[i]!;
+    if (prev.sprite === 'answer') continue;
+    if (prev.sprite === 'grid' && !prev.lie) return prev;
+    return undefined;
+  }
+  return undefined;
 }
 
 function collapse(candidates: Candidate[]): Candidate[] {
   const out: Candidate[] = [];
   for (const c of candidates) {
-    const prev = out[out.length - 1];
-    if (
-      prev &&
-      !prev.lie &&
-      !c.lie &&
-      prev.sprite === 'grid' &&
-      c.sprite === 'grid' &&
-      prev.row.atom === c.row.atom
-    ) {
-      prev.members += 1;
-      continue;
+    if (c.sprite === 'grid' && !c.lie) {
+      const prev = lastGridRun(out);
+      if (prev && prev.row.atom === c.row.atom) {
+        prev.members += 1;
+        continue;
+      }
     }
     out.push({ ...c });
   }
@@ -152,7 +169,8 @@ function protocolRank(sprite: Beat['sprite']): number {
   if (sprite === 'init') return 0;
   if (sprite === 'menu') return 1;
   if (sprite === 'grid') return 2;
-  return 3;
+  if (sprite === 'answer') return 3;
+  return 4;
 }
 
 /** Handshake, then menu, then calls, then the rest. Stable within a class. */
@@ -235,7 +253,7 @@ function columnX(seed: number, i: number, cols: number, margin: number): number 
  * selection from event class. Consecutive authorized tools/call rows collapse
  * into one formation. Visible events are capped at 80. Duration is
  * clamp((base / density) × beats, 45, 120). One wave per atom, staged in
- * protocol order (init, menu, grids, rest) with rhythm groups from waves.json.
+ * protocol order (init, menu, grids, answers, rest) with rhythm groups from waves.json.
  * Density is unused in group/rest/breather placement.
  */
 export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_SECONDS }): Round {

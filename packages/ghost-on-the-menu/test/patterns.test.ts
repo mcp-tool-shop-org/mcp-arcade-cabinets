@@ -168,6 +168,22 @@ describe('loadPatterns', () => {
     expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: pools');
   });
 
+  it('covers the answer class in every rung pool', () => {
+    for (const rung of DEFAULT_PATTERNS.ladder.rungs) {
+      const hit = DEFAULT_PATTERNS.paths.paths.some(
+        (p) =>
+          rung.pools.includes(p.id) && p.classes.includes('answer') && p.tiers.includes(rung.tier),
+      );
+      expect(hit, `tier ${rung.tier}`).toBe(true);
+    }
+    const raw = clone();
+    const paths = (raw.paths as { paths: { id: string; classes: string[] }[] }).paths;
+    const answerIds = new Set(paths.filter((p) => p.classes.includes('answer')).map((p) => p.id));
+    const rungs = (raw.ladder as { rungs: { pools: string[] }[] }).rungs;
+    rungs[0]!.pools = rungs[0]!.pools.filter((id) => !answerIds.has(id));
+    expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: pools');
+  });
+
   it('has three bosses with at least two phases and no fact keys', () => {
     for (const kind of ['whisperer', 'menu', 'doorman'] as const) {
       const boss = DEFAULT_PATTERNS.bosses[kind];
