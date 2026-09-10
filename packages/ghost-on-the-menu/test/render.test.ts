@@ -234,3 +234,20 @@ describe('hit feedback paint', () => {
     expect(drawn(state)).toBe(true);
   });
 });
+
+describe('boss-down burst', () => {
+  it('draws an expanding ring for a moment after a kill and nothing before or after', () => {
+    const state = createRoundState(roundOf([]));
+    const ring = (s: typeof state) => {
+      const ctx = recordingCtx();
+      renderRound(ctx, s);
+      return ctx.calls.filter((c) => c.startsWith('rect #e8e0c8')).length;
+    };
+    expect(ring(state)).toBe(0);
+    state.t = 10;
+    state.bossDownT = 9.9;
+    expect(ring(state)).toBe(8);
+    state.t = 11;
+    expect(ring(state)).toBe(0);
+  });
+});

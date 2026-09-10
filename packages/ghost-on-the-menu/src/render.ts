@@ -98,6 +98,9 @@ const DIE_POP = 0.15;
 /** Seconds the boss reads white after a hit. */
 const BOSS_FLASH = 0.08;
 const BOSS_FLASH_FILL = 'rgba(255, 255, 255, 0.75)';
+/** Seconds the boss-down burst lasts. */
+const BOSS_BURST = 0.6;
+const BOSS_BURST_FILL = '#e8e0c8';
 const LAMPS = 3;
 const BEZEL_H = 14;
 
@@ -203,6 +206,23 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     if (b.hitT < BOSS_FLASH) {
       ctx.fillStyle = BOSS_FLASH_FILL;
       rect(b.x, b.y, b.w, b.h);
+    }
+  }
+
+  // A boss that has just gone down bursts: an expanding ring of blocks at
+  // the top of the field for a moment. Bigger than an honest pop, smaller
+  // than the catch, and the same for every boss (W2, W7).
+  const sinceDown = state.t - state.bossDownT;
+  if (sinceDown >= 0 && sinceDown < BOSS_BURST) {
+    const k = sinceDown / BOSS_BURST;
+    const r = 20 + 90 * k;
+    const size = Math.max(2, 10 * (1 - k));
+    const cx = FIELD.width / 2;
+    const cy = 44;
+    ctx.fillStyle = BOSS_BURST_FILL;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      rect(cx + Math.cos(a) * r - size / 2, cy + Math.sin(a) * r * 0.6 - size / 2, size, size);
     }
   }
 

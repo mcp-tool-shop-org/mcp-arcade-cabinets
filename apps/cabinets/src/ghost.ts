@@ -85,7 +85,8 @@ export function mountGhost(
     o.textContent = d.label;
     difficulty.append(o);
   }
-  difficulty.value = 'recorded';
+  // Fixture tapes derive to tier 0, where formations neither fire nor dive; seat is the fun default.
+  difficulty.value = 'seat';
   const nextBtn = document.createElement('button');
   nextBtn.textContent = 'Next tape';
   nextBtn.disabled = true;

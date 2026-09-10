@@ -81,3 +81,12 @@ describe('the score is pure data (no assets, no sim)', () => {
     expect(notes.length).toBe(4);
   });
 });
+
+describe('wave motifs', () => {
+  it('has a lead for every wave kind the cues can name', () => {
+    for (const kind of ['inspect', 'poison', 'rug', 'unlisted', 'breather']) {
+      expect(DEFAULT_MUSIC.lead[kind], kind).toBeDefined();
+      expect(bar(DEFAULT_MUSIC, kind, 0).length).toBeGreaterThan(0);
+    }
+  });
+});
