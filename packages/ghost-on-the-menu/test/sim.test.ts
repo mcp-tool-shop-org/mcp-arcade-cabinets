@@ -6,7 +6,7 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createRoundState, prepassRound, revealOnHit, stepRound } from '../src/index';
 import { attachPatterns, DEFAULT_PATTERNS, type PatternSet } from '../src/patterns';
-import { PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
+import { FIELD, PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
 
 function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
   return {
@@ -711,5 +711,85 @@ describe('stepRound', () => {
       }
     }
     expect(checked).toBeGreaterThan(0);
+  });
+
+  it('a dive aims then commits: a mover can step out, a stayer is hit', () => {
+    const diveRound = (): RoundState => {
+      const state = createRoundState(
+        roundOf({
+          tapeId: 'bout_commit',
+          duration: 20,
+          tier: 1,
+          waveBounds: [{ atom: 'inspect.tools_list', t0: 0, t1: 18 }],
+          beats: [
+            {
+              id: 'inspect.tools_list:grid:0',
+              t: 0,
+              x: 100,
+              sprite: 'grid',
+              lie: false,
+              members: 1,
+              source: {
+                atom: 'inspect.tools_list',
+                method: 'tools/call',
+                note: 'tools/call echo',
+                index: 0,
+              },
+            },
+          ],
+        }),
+      );
+      const g = state.enemies[0]!;
+      park(state, g);
+      g.hoverY = 80;
+      g.x = 100;
+      state.player.x = 100;
+      return state;
+    };
+
+    const dodge = diveRound();
+    const g1 = dodge.enemies[0]!;
+    let guard = 0;
+    while (g1.mode !== 'dive' && guard++ < 400) {
+      stepRound(dodge, { left: false, right: false, fire: false }, 1 / 30);
+    }
+    expect(g1.mode).toBe('dive');
+    const originY = g1.y;
+    const destY = 0.93 * FIELD.height;
+    const mid = originY + (destY - originY) * 0.5;
+    guard = 0;
+    while (g1.y < mid && g1.mode === 'dive' && guard++ < 400) {
+      stepRound(dodge, { left: false, right: false, fire: false }, 1 / 30);
+    }
+    dodge.player.x = 400;
+    guard = 0;
+    while (g1.mode === 'dive' && g1.y < destY - 8 && guard++ < 400) {
+      stepRound(dodge, { left: false, right: false, fire: false }, 1 / 30);
+    }
+    const cx = g1.x + g1.w / 2;
+    expect(cx).toBeLessThan(200);
+    expect(cx).toBeGreaterThan(50);
+
+    const stay = diveRound();
+    const g2 = stay.enemies[0]!;
+    stay.player.x = 100;
+    guard = 0;
+    while (g2.mode !== 'dive' && guard++ < 400) {
+      stepRound(stay, { left: false, right: false, fire: false }, 1 / 30);
+    }
+    guard = 0;
+    let hit = false;
+    while (g2.mode === 'dive' && guard++ < 500) {
+      stepRound(stay, { left: false, right: false, fire: false }, 1 / 30);
+      if (
+        g2.x < stay.player.x + stay.player.w &&
+        g2.x + g2.w > stay.player.x &&
+        g2.y < stay.player.y + stay.player.h &&
+        g2.y + g2.h > stay.player.y
+      ) {
+        hit = true;
+      }
+    }
+    expect(hit).toBe(true);
   });
 });

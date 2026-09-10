@@ -38,7 +38,10 @@ const SLIT_W = 16;
 const labels = new WeakMap<Enemy, string>();
 const diveIndex = new WeakMap<Enemy, number>();
 const nextDive = new WeakMap<Enemy, number>();
-const dives = new WeakMap<Enemy, { phase: 'down' | 'up'; originX: number; originY: number }>();
+const dives = new WeakMap<
+  Enemy,
+  { phase: 'down' | 'up'; originX: number; originY: number; commitX: number | null }
+>();
 
 interface Meta {
   patterns: PatternSet;
@@ -582,6 +585,7 @@ function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy)
     phase: 'down',
     originX: hoverHome.get(enemy) ?? enemy.x,
     originY: enemy.hoverY - enemy.h / 2,
+    commitX: null,
   });
 }
 
@@ -592,8 +596,15 @@ function stepDive(state: RoundState, meta: Meta | undefined, enemy: Enemy, dt: n
     enemy.mode = 'hover';
     return;
   }
-  const destX = d.phase === 'down' ? state.player.x + state.player.w / 2 - enemy.w / 2 : d.originX;
   const destY = d.phase === 'down' ? spec.depth * FIELD.height : d.originY;
+  if (d.phase === 'down' && d.commitX === null) {
+    const half = Math.abs(destY - d.originY) * 0.5;
+    if (Math.abs(enemy.y - d.originY) >= half) {
+      d.commitX = state.player.x + state.player.w / 2 - enemy.w / 2;
+    }
+  }
+  const destX =
+    d.phase === 'up' ? d.originX : (d.commitX ?? state.player.x + state.player.w / 2 - enemy.w / 2);
   const dx = destX - enemy.x;
   const dy = destY - enemy.y;
   const dist = Math.hypot(dx, dy);

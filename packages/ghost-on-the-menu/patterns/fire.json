@@ -24,7 +24,7 @@
         "speed": 90
       },
       "dive": {
-        "period": 2.8,
+        "period": 1.8,
         "speed": 130,
         "depth": 0.93
       }
