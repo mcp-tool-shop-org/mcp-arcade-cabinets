@@ -119,4 +119,46 @@ describe('prepassRound', () => {
     expect(round.beats.filter((b) => b.lie)).toHaveLength(0);
     expect(round.beats.every((b) => !/ghost probe/i.test(b.source.note))).toBe(true);
   });
+
+  it('classifies handshake as init and only notifications/message as fog', () => {
+    const rows: TapeRow[] = [
+      row({ seq: 1, method: 'initialize' }),
+      row({ seq: 2, method: 'notifications/initialized' }),
+      row({ seq: 3, method: 'notifications/message', note: 'SUT says: "hi"' }),
+    ];
+    const round = prepassRound(tapeOf(rows), { seconds: 150 });
+    expect(round.beats.map((b) => b.sprite)).toEqual(['init', 'init', 'fog']);
+    expect(round.beats.filter((b) => b.sprite === 'fog')).toHaveLength(1);
+  });
+
+  it('times waves by atom with rhythm groups and clamps duration', () => {
+    const naive = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
+    const again = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
+    expect(naive.seed).toBe(0);
+    expect(naive.duration).toBe(Math.min(120, Math.max(45, 4 * naive.beats.length)));
+    expect(naive.waveBounds.length).toBeGreaterThan(1);
+    expect(naive.waveBounds.map((w) => w.atom)).toEqual([
+      'inspect.tools_list',
+      'poison.follow_through',
+      'temporal.rug_pull',
+      'protocol.unlisted_call',
+    ]);
+    for (let i = 1; i < naive.waveBounds.length; i++) {
+      const gap = naive.waveBounds[i]!.t0 - naive.waveBounds[i - 1]!.t1;
+      expect(gap).toBeCloseTo(2, 6);
+    }
+    const inspect = naive.beats.filter((b) => b.source.atom === 'inspect.tools_list');
+    for (let i = 1; i < inspect.length; i++) {
+      const dt = inspect[i]!.t - inspect[i - 1]!.t;
+      const gap = Math.abs(dt - 0.8) < 1e-9 || Math.abs(dt - 2.4) < 1e-9;
+      expect(gap).toBe(true);
+    }
+    expect(again.beats.map((b) => b.t)).toEqual(naive.beats.map((b) => b.t));
+    expect(naive.beats.every((b) => b.t < naive.duration)).toBe(true);
+
+    const task = prepassRound(load('task-only-ndjson'), { seconds: 150 });
+    const live = prepassRound(load('livefire.intern.task-only-wrap-on'), { seconds: 150 });
+    expect(task.duration).toBe(Math.min(120, Math.max(45, 4 * task.beats.length)));
+    expect(live.duration).toBe(Math.min(120, Math.max(45, 4 * live.beats.length)));
+  });
 });

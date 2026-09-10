@@ -5,8 +5,10 @@ import {
   FIELD,
   VISIBLE_MAX,
   type Beat,
+  type PrepassOpts,
   type Round,
   type SpriteClass,
+  type WaveBound,
 } from './types';
 
 interface Candidate {
@@ -17,6 +19,13 @@ interface Candidate {
   members: number;
   skip: boolean;
 }
+
+const SECONDS_PER_BEAT = 4;
+const MIN_ROUND = 45;
+const MAX_ROUND = 120;
+const BEAT_GAP = 0.8;
+const GROUP_REST = 2.4;
+const WAVE_BREATHER = 2;
 
 function toolName(note: string): string {
   const m = /^tools\/call\s+(\S+)/.exec(note);
@@ -66,10 +75,10 @@ function classify(tape: Tape, row: TapeRow, index: number): Candidate {
     return { row, index, sprite: 'menu', lie, members: 1, skip: false };
   }
 
-  if (row.method === 'initialize') {
+  if (row.method === 'initialize' || row.method === 'notifications/initialized') {
     return { row, index, sprite: 'init', lie: false, members: 1, skip: false };
   }
-  if (row.method.startsWith('notifications/')) {
+  if (row.method === 'notifications/message') {
     return { row, index, sprite: 'fog', lie: false, members: 1, skip: false };
   }
   if (serverReq) {
@@ -78,7 +87,7 @@ function classify(tape: Tape, row: TapeRow, index: number): Candidate {
   if (noResponse) {
     return { row, index, sprite: 'stall', lie: false, members: 1, skip: false };
   }
-  // Inbound responses and replies to server requests are not visible events.
+  // Inbound responses, other notifications, and replies are not visible.
   return { row, index, sprite: 'fog', lie: false, members: 1, skip: true };
 }
 
@@ -123,17 +132,69 @@ function beatId(c: Candidate, fact: ReturnType<typeof factFor>): string {
   return `${c.row.atom}:${c.sprite}:${c.index}`;
 }
 
+function groupSizes(n: number): number[] {
+  const sizes: number[] = [];
+  let left = n;
+  while (left > 0) {
+    if (left > 4) {
+      sizes.push(4);
+      left -= 4;
+    } else {
+      sizes.push(left);
+      left = 0;
+    }
+  }
+  return sizes;
+}
+
+function placeRhythm(beats: Beat[], atoms: readonly { id: string }[]): WaveBound[] {
+  const byAtom = new Map<string, Beat[]>();
+  for (const a of atoms) byAtom.set(a.id, []);
+  for (const b of beats) {
+    const list = byAtom.get(b.source.atom);
+    if (list) list.push(b);
+    else byAtom.set(b.source.atom, [b]);
+  }
+  const waves = atoms
+    .map((a) => ({ atom: a.id, beats: byAtom.get(a.id) ?? [] }))
+    .filter((w) => w.beats.length > 0);
+
+  const bounds: WaveBound[] = [];
+  let t = 0;
+  for (let w = 0; w < waves.length; w++) {
+    const wave = waves[w]!;
+    const t0 = t;
+    const sizes = groupSizes(wave.beats.length);
+    let idx = 0;
+    for (let g = 0; g < sizes.length; g++) {
+      const size = sizes[g]!;
+      for (let k = 0; k < size; k++) {
+        wave.beats[idx]!.t = t;
+        idx += 1;
+        if (k < size - 1) t += BEAT_GAP;
+      }
+      if (g < sizes.length - 1) t += GROUP_REST;
+    }
+    const t1 = t + BEAT_GAP;
+    bounds.push({ atom: wave.atom, t0, t1 });
+    t = t1;
+    if (w < waves.length - 1) t += WAVE_BREATHER;
+  }
+  return bounds;
+}
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
+}
+
 /**
- * Whole-tape pre-pass (lock G7): placement from event order, then selection
- * from event class. Consecutive authorized tools/call rows collapse into one
- * formation. Visible events are capped at 80. Lies are flagged but share a
- * sprite class with the honest event of the same kind.
+ * Whole-tape pre-pass (lock G7, wave 2): placement from event order, then
+ * selection from event class. Consecutive authorized tools/call rows collapse
+ * into one formation. Visible events are capped at 80. Duration is
+ * clamp(4s × beats, 45, 120). One wave per atom, rhythm groups of 3–4.
  */
-export function prepassRound(
-  tape: Tape,
-  opts: { seconds: number } = { seconds: DEFAULT_SECONDS },
-): Round {
-  const seconds = opts.seconds;
+export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_SECONDS }): Round {
+  const seed = opts.seed ?? 0;
   const classified = tape.rows.map((row, index) => classify(tape, row, index));
   const visible = collapse(classified.filter((c) => !c.skip));
   const cols = 8;
@@ -156,12 +217,7 @@ export function prepassRound(
     };
   });
   const beats = capVisible(raw, VISIBLE_MAX);
-  const lead = 1.2;
-  const tail = 12;
-  const span = Math.max(1, seconds - lead - tail);
-  const last = Math.max(1, beats.length - 1);
-  for (let i = 0; i < beats.length; i++) {
-    beats[i]!.t = beats.length === 1 ? lead : lead + (i / last) * span;
-  }
-  return { tapeId: tape.bout_id, duration: seconds, beats };
+  const waveBounds = placeRhythm(beats, tape.atoms);
+  const duration = clamp(SECONDS_PER_BEAT * beats.length, MIN_ROUND, MAX_ROUND);
+  return { tapeId: tape.bout_id, duration, beats, seed, waveBounds };
 }
