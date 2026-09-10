@@ -9,6 +9,7 @@
     "@mcp-arcade-cabinets/tape-core": "workspace:*"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "esbuild src/play.ts --bundle --platform=node --format=esm --outfile=dist/play.js --log-level=warning"
   }
 }

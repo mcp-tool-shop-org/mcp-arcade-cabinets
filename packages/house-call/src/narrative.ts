@@ -38,9 +38,21 @@ export function confidenceWord(p: number): string {
   return 'a coin flip';
 }
 
-export function introduce(party: PartyMember, server: string, taskTool: string | null): string {
+export function introduce(
+  party: PartyMember,
+  server: string,
+  taskTool: string | null,
+  atomId?: string,
+): string {
   const who = party.model ? `${party.role} (${party.model})` : party.role;
-  const task = taskTool ? ` The task is ${taskTool}.` : '';
+  let task = taskTool ? ` The task is ${taskTool}.` : '';
+  if (atomId === 'protocol.unlisted_call') {
+    // The ghost probe is not a task the party runs: the house asks the server for
+    // a name that is not on the menu it just published.
+    task = ' The house will ask the server for a name that is not on its menu.';
+  } else if (atomId === 'temporal.rug_pull' && taskTool) {
+    task = ` The task is ${taskTool}, three times, then the menu is fetched again.`;
+  }
   return `The ${who} steps up to ${server}. This one ${party.verb}.${task}`;
 }
 

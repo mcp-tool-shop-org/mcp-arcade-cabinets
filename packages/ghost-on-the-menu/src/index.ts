@@ -6,3 +6,20 @@
 // ends with a scene, not a count. See docs/study-swarm.dispatch.md G7.
 
 export const CABINET = 'ghost-on-the-menu';
+
+export { DEFAULT_SECONDS, FIELD, VISIBLE_MAX, VISIBLE_MIN } from './types';
+export type {
+  Beat,
+  DrawContext,
+  Enemy,
+  Round,
+  RoundInput,
+  RoundState,
+  Scene,
+  SpriteClass,
+} from './types';
+export { prepassRound } from './prepass';
+export { botInput, createRoundState, revealOnHit, stepRound } from './sim';
+export { fillFor, makeTextCtx, renderRound, SPRITE_FILL } from './render';
+export { play } from './play';
+export type { PlayArgs, Transcript } from './play';
