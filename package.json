@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:play": "node scripts/play.mjs",
     "build": "pnpm -r --if-present build",
-    "film": "node scripts/film.mjs"
+    "film": "node scripts/film.mjs",
+    "sweep": "node scripts/sweep.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
