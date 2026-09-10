@@ -21,6 +21,8 @@ import {
 } from '@mcp-arcade-cabinets/house-call';
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
+import { recordRun } from './history';
+
 /** Surety words and the confidence each stands for. The figure stays here. */
 const SURETY: readonly { word: string; p: number }[] = [
   { word: 'a coin flip', p: 0.5 },
@@ -123,6 +125,8 @@ export function mountHouseCall(root: HTMLElement, name: string, tape: Tape, onEx
 
   function mountEnd() {
     column.replaceChildren();
+    // The director remembers the run whether or not the numbers are asked for.
+    recordRun(name, readout(run));
     column.append(el('h2', `House Call — ${name}`));
     column.append(el('p', 'The run is over. The numbers are here when you want them.'));
     const show = el('button', 'Show the numbers', 'commit');
