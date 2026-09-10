@@ -21,6 +21,8 @@ Somewhere in the wave may be a call the agent should not have made: a whisper it
 
 Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls toward the ship; a cleared formation drops a spread. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
 
+The GitHub README is the player-facing front door. This handbook is the rest of the manual.
+
 ## Where to go next
 
 - [Getting started](./getting-started/): install, play, the controls, the difficulties, the tape labels.

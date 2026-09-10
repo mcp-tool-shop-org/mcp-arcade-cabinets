@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- README and landing page rewritten for players. The fairness band, layout, bots, and threat model stay in the handbook and this file.
+
 ### Added
 
 - **Drops.** A downed boss drops a lamp; a cleared formation drops a spread. Both fall toward the ship's row and drift toward its column. Data in `patterns/drops.json`. Catching a lamp relights one; catching a spread fans the ship's fire for a few seconds. Drops never key on a lie.

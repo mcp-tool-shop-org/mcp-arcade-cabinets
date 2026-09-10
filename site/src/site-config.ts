@@ -3,7 +3,7 @@ import type { SiteConfig } from '@mcptoolshop/site-theme';
 export const config: SiteConfig = {
   title: 'Ghost on the Menu',
   description:
-    'An arcade shooter that replays what your MCP server said on the wire. A cabinet on top of mcp-arcade; it reads the tape and never touches the score.',
+    'A short arcade shooter made from a recording of an MCP server. Read the wire by playing it.',
   logoBadge: 'GM',
   brandName: 'mcp-arcade-cabinets',
   repoUrl: 'https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets',
@@ -11,17 +11,17 @@ export const config: SiteConfig = {
     'MIT Licensed — built by <a href="https://github.com/mcp-tool-shop-org" style="color:var(--color-muted);text-decoration:underline">mcp-tool-shop-org</a>',
 
   hero: {
-    badge: 'Arcade cabinet',
+    badge: 'Arcade shooter',
     headline: 'Shoot the whisper.',
     headlineAccent: 'Read the wire.',
     description:
-      'Every experiment mcp-arcade ran against a server is a wave: the handshake, the menu, the calls, the answers, the boss. The calls the agent should not have made look like everything else until you hit one.',
+      'A recorded bout becomes a round: handshake, menu, calls, answers, a boss. The calls the agent should not have made look like everything else until you hit one.',
     primaryCta: { href: 'play/', label: 'Play in the browser' },
-    secondaryCta: { href: 'handbook/', label: 'Read the Handbook' },
+    secondaryCta: { href: 'handbook/', label: 'How to read a round' },
     previews: [
-      { label: 'Play', code: 'pnpm install && pnpm -F @mcp-arcade-cabinets/cabinets dev' },
-      { label: 'Prove', code: 'pnpm test:play ghost --fixture naive-ndjson' },
-      { label: 'Tune', code: 'pnpm sweep' },
+      { label: 'Play', code: 'open play/  —  or pnpm -F @mcp-arcade-cabinets/cabinets dev' },
+      { label: 'Move', code: 'left, right, space to fire, F for full screen' },
+      { label: 'End', code: 'the tape, the server, the policy. no score.' },
     ],
   },
 
@@ -29,47 +29,47 @@ export const config: SiteConfig = {
     {
       kind: 'features',
       id: 'features',
-      title: 'What the cabinet does with a tape',
-      subtitle: 'The instrument keeps the tape and scores the wire. The cabinet makes it play.',
+      title: 'What you are flying through',
+      subtitle: 'The instrument scored the wire. This game lets you read it with a ship.',
       features: [
         {
           title: 'Waves are experiments',
-          desc: 'One wave per atom the instrument ran. A word opens it, then the wire in order: handshake, menu, calls, answers, and the atom’s own boss.',
+          desc: 'One wave per experiment on the tape. A word opens it, then the handshake, the menu, the calls, the answers, and that experiment’s own boss.',
         },
         {
           title: 'Lies reveal on the hit',
-          desc: 'A followed whisper, a changed menu, an answered ghost: they share a sprite with their honest twins. Nothing about a lie differs before contact. Hit one and it parks as a trophy.',
+          desc: 'They share a look, a path and a timing with their honest twins. Nothing about a lie differs before contact. Hit one and it parks as a trophy.',
         },
         {
-          title: 'Threat as data',
-          desc: 'Entry paths, fire rhythms, dives that aim then commit, bosses with guard phases and rage. All of it in JSON, all of it tuned against a fairness band that runs in CI.',
+          title: 'Bosses are the experiment',
+          desc: 'The Whisperer, the Menu and the Doorman show up whether or not anything went wrong. A dry line names the creature. Killing a boss reveals nothing.',
+        },
+        {
+          title: 'Drops fall toward you',
+          desc: 'The ship cannot move forward, so a downed boss drops a lamp toward its row, and a cleared formation drops a spread. Catch them as they drift in.',
         },
         {
           title: 'No score, ever',
-          desc: 'Three lamps, a caption in words, an end scene that names the tape, the server and the policy. No count, no digit, no verdict. Learning to read the round is the point.',
+          desc: 'Three lamps, words on the wave card, an end scene that names the tape, the server and the policy. No count, no digit, no verdict.',
         },
         {
-          title: 'Three difficulties',
-          desc: 'As recorded, seat, live. Seat threatens a moving player; live is meant to be survived, not cleared. Three scripted bots keep it challenging and not impossible.',
-        },
-        {
-          title: 'Retro sprites, sound, a soundtrack',
-          desc: 'Generated sprites signed off against the lock, synthesized effects, and a procedural chiptune with a motif per wave kind. Mute, feel presets and a shake-off toggle.',
+          title: 'Fixture, seat, live',
+          desc: 'Each tape on the list carries a difficulty word. Hover i for why. Seat is the default fight. Live is meant to be survived.',
         },
       ],
     },
     {
       kind: 'code-cards',
       id: 'usage',
-      title: 'Run it',
+      title: 'Play it',
       cards: [
         {
           title: 'In a browser',
-          code: 'pnpm install\npnpm -F @mcp-arcade-cabinets/cabinets dev\n\n# left, right, space; F for full screen',
+          code: 'https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/',
         },
         {
-          title: 'From a terminal',
-          code: 'pnpm test:play ghost --fixture naive-ndjson\npnpm film --fixture naive-ndjson --tier 1\npnpm sweep',
+          title: 'On your machine',
+          code: 'pnpm install\npnpm -F @mcp-arcade-cabinets/cabinets dev\n\n# left, right, space; F for full screen',
         },
       ],
     },

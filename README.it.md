@@ -9,79 +9,52 @@
 <p align="center">
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml"><img src="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp-tool-shop-org/mcp-arcade-cabinets" alt="License: MIT" /></a>
-  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Landing_Page-live-blue" alt="Landing Page" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
 </p>
 
 <p align="center">
-  <strong>An arcade shooter that replays what your MCP server said on the wire.</strong>
+  <strong>An arcade shooter made from what an MCP server said on the wire.</strong>
 </p>
 
-**Ghost on the Menu** trasforma una registrazione di un confronto tra un server MCP e un agente in un round di uno sparatutto retrò. Ogni esperimento eseguito dallo strumento [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) è un'ondata: una parola la nomina, poi la stretta di mano, il menu, le chiamate, le risposte che arrivano, con il boss dell'ondata che veglia su di essa. Da qualche parte, ci sono le chiamate che l'agente non avrebbe dovuto fare. Sembrano come tutto il resto finché non ne colpisci una. A quel punto, è tua per il resto del round.
+**Ghost on the Menu** è un breve sparatutto in stile retrò. Si controlla un’astronave che si muove lungo il bordo inferiore dello schermo. Sopra, viene riprodotto un combattimento registrato tra un server MCP e un agente, che si svolge a ondate: la sequenza di avvio, il menu, le comunicazioni, le risposte e un boss che rappresenta l’esperimento stesso.
 
-[Giocalo nel browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Leggi il manuale](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)
+Da qualche parte, in questa sequenza, ci sono le comunicazioni che l’agente non avrebbe dovuto inviare. Sembrano uguali a tutte le altre finché non le si intercetta. A quel punto, diventano permanenti per il resto del round.
 
-## A cosa stai sparando
+[Gioca nel browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Come interpretare un round](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
-Lo strumento conserva una **registrazione** di ogni confronto: quali `tools/call` sono stati attivati, cosa è tornato e i fatti che ha fissato sul filo (seguì un sussurro, un menu che è cambiato, uno strumento fantasma a cui è stata data una risposta). La console legge quella registrazione e la organizza in un round. Non tocca mai il punteggio, non parla mai con un server e non ti dice mai chi ha vinto. Una bugia viene rivelata attraverso il contatto, non etichettata in anticipo: non dall'aspetto, non dal movimento, non dalla tempistica. Imparare a leggere il round significa imparare a leggere il filo.
+## Come si gioca
 
-- **Tre lampade.** Un colpo del boss o una formazione di immersione ne spegne una. Quando tutte e tre sono spente, il round termina prematuramente.
-- **I boss sono l'esperimento, non la bugia.** Il Sussurratore, il Menu e il Portiere appaiono per ogni ondata del loro tipo, indipendentemente dal fatto che qualcosa sia andato storto o meno, quindi nulla riguardo a un boss è un'accusa.
-- **Tre livelli di difficoltà.** Come registrato (il livello della registrazione), simulazione e in diretta. Simulazione è l'impostazione predefinita; in diretta è progettato per essere superato, non completato.
-- **La scena finale** nomina la registrazione, il server e la politica. Le bugie scoperte rimangono parcheggiate come trofei. Quelle evitate rimangono nel loro aspetto onesto. Nessun punteggio, nessun conteggio, nessuna cifra, mai.
+Una **cassetta** è una registrazione di un singolo combattimento. Questo gioco legge solo le cassette. Non comunica mai con un server, non tiene mai il punteggio e non ti dice mai chi ha vinto.
 
-## Gioca
+- **Tre lampade.** Un colpo di boss o una formazione di attacco ne fanno cadere una. Raccogli una lampada che cade da un boss abbattuto per riaccenderne una. Quando tutte le lampade si spengono, il round termina.
+- **Diffusione.** Elimina una formazione e una diffusione cadrà verso l’astronave. Raccoglila e il tuo fuoco si amplificherà per alcuni secondi.
+- **I boss rappresentano l’esperimento, non l’accusa.** Il Sussurratore, il Menu e il Portiere appaiono per la loro ondata, indipendentemente dal fatto che qualcosa sia andato storto o meno. Una breve descrizione indica l’esperimento all’inizio dell’ondata e la creatura quando il boss entra in scena.
+- **Gli indizi sono nella sequenza.** Una menzogna non appare, non si muove e non arriva in modo diverso dalla sua controparte onesta. Ciò che la rivela è la sua posizione: una formazione extra, un secondo menu, un elemento singolo subito dopo il menu.
+- **La scena finale** indica il nome della cassetta, del server e della politica. Le menzogne individuate rimangono come trofei. Quelle sfuggite mantengono il loro aspetto originale. Nessun punteggio, nessun conteggio, nessuna cifra.
+
+Scegli una cassetta dall’elenco. Ognuna è etichettata come “fissa”, “standard” o “in diretta”; passa il mouse sopra l’icona **i** per maggiori informazioni. “Standard” è il combattimento predefinito. “In diretta” è progettata per essere superata.
+
+## Controlli
+
+Sinistra e destra (o A e D) per muoversi, spazio per sparare, F per la modalità a schermo intero. Fai clic sullo schermo per riprodurre la stessa cassetta. Il pulsante “Avanti” fa avanzare l’elenco. Il suono si avvia con il primo tasto o clic; i controlli per disattivare l’audio, i tre preset di sensibilità e un interruttore per disattivare le vibrazioni si trovano sotto lo schermo.
+
+## Gioca in locale
+
+È necessario Node 22 e pnpm 11.
 
 ```bash
+git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git
+cd mcp-arcade-cabinets
 pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Sinistra e destra per muoversi, spazio per sparare, F per schermo intero, fai clic sul campo per riavviare la stessa registrazione, "Registrazione successiva" alla fine per scorrere l'elenco delle registrazioni. Il suono si avvia alla prima pressione di un tasto o al primo clic; i controlli per disattivare l'audio, tre preimpostazioni di sensazione e un interruttore per disattivare le vibrazioni si trovano sotto il campo.
+Apri l’indirizzo che Vite visualizza. Sedici registrazioni sono incluse nel repository, esportate da [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), lo strumento che comunica con il server e registra la cassetta.
 
-Ogni registrazione viene fornita nel repository, esportata dalle ricevute dorate dello strumento, dal suo ambiente Docker, dalle sue esecuzioni in ambiente simulato Ollama e da un pacchetto di test in diretta. Sedici registrazioni, un catalogo di quattro elementi.
+Per registrare il tuo server e riprodurre quella cassetta, esegui un combattimento lì, quindi esegui il comando `mcp-arcade tape receipt.json -o your.tape.json`.
 
-## Da un terminale
+## Altro
 
-```bash
-pnpm test
-pnpm test:play ghost --fixture naive-ndjson
-pnpm film --fixture naive-ndjson --tier 1
-pnpm sweep
-```
+Il [manuale](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) contiene il resto delle istruzioni: gli indizi, i boss, le difficoltà e come è strutturato il gioco. Cosa è stato incluso e quando è indicato nel [registro delle modifiche](CHANGELOG.md). Cosa tocca il gioco è indicato in [SECURITY.md](SECURITY.md).
 
-`test:play` è il test di accettazione: un bot programmato gioca un intero round e la trascrizione viene controllata per verificare cosa deve e cosa non deve apparire prima della schermata finale. `film` scrive i fotogrammi di un round in formato PNG utilizzando lo stesso motore di rendering utilizzato dalla shell. `sweep` riproduce ogni registrazione a ogni livello con ogni bot e stampa la tabella dei risultati.
-
-## La fascia di equità
-
-Tre bot programmati riproducono ogni registrazione in CI. **Inattivo** non si muove né spara e deve perdere ogni lampada in modalità simulazione e in diretta. **Lo spazzino** insegue lo sprite più vicino, sparando sempre, e deve sopravvivere al livello registrato e trovare metà delle bugie. **Il lettore** spara solo alle sequenze rivelatrici e schiva ciò che sta arrivando, e deve rivelare ogni bugia nel livello registrato e in modalità simulazione. La fascia include anche la curva di difficoltà sotto forma di barre, quindi una modifica delle impostazioni che rende il gioco una galleria o un muro fa fallire la build. Tutte le impostazioni sono dati sotto `packages/ghost-on-the-menu/patterns/`: percorsi di ingresso, formazioni, ritmi di fuoco, immersioni, boss, la scala, il ritmo dell'ondata.
-
-## Modello di fiducia e di minaccia
-
-Le console leggono le registrazioni e non scrivono nulla.
-
-- **Dati toccati:** i file di registrazione sotto `fixtures/tapes/` (inclusi nella build del browser) e i dati di pattern. Una registrazione contiene eventi del filo, ID degli elementi, nomi degli strumenti e i fatti fissati dallo strumento. Il caricatore rifiuta qualsiasi registrazione che contenga un punteggio, un verdetto, una chiamata operatore o NRP, a qualsiasi livello, quindi il gioco non può mostrare ciò che non gli è stato fornito.
-- **Dati non toccati:** nessuna ricevuta, nessuna prova, nessun codice dello strumento, nessuna connessione MCP, nessuna scrittura sul file system da parte del gioco.
-- **Autorizzazioni:** un browser. Gli strumenti del terminale vengono eseguiti sotto Node e leggono gli elementi del repository.
-- **Rete:** nessuna. La shell è costituita da file statici su un'unica origine.
-- **Telemetria:** nessuna. **Segreti:** nessuno.
-
-Gli sprite sono stati generati su un'API di immagini partner e sono inclusi come file; la loro provenienza e i termini di licenza sono in `docs/art/receipts.json`. Sono risorse di gioco e potrebbero non essere utilizzati per addestrare modelli. Vedi [SECURITY.md](SECURITY.md).
-
-## Layout
-
-| Percorso                     | Cosa                                                                                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/tape-core`         | Carica una registrazione, rifiuta le chiavi proibite, suddivide per elemento, le regole di punteggio sono conservate per una console futura |
-| `packages/ghost-on-the-menu` | Pre-passaggio, simulazione, motore di rendering, indizi, suono, bot, i dati di pattern                                                      |
-| `apps/cabinets`              | La shell del browser                                                                                                                        |
-| `fixtures/tapes`             | Registrazioni esportate da mcp-arcade                                                                                                       |
-| `scripts/`                   | `test:play`, `film`, `sweep`                                                                                                                |
-| `docs/`                      | Il blocco del design e le relative ricevute, il brief artistico e le ricevute, la spedizione dell'ondata 2                                  |
-
-Il design è bloccato in `docs/study-swarm.dispatch.md` (da G1 a G10). House Call, una console di calibrazione a turni, è parcheggiata al commit 152f548 fino a quando non sarà disponibile un design che possa essere giocato.
-
-Creato con Grok come partner di progettazione e verificatore tra famiglie: Grok ha scritto il caricatore di registrazioni e la simulazione, Claude ha scritto la shell e la presentazione, ciascuno rivedendo il lavoro dell'altro.
-
-Node 22 o successivo. Versione 0.2.0. MIT.
-
-<p align="center">Built by <a href="https://mcp-tool-shop.github.io/">MCP Tool Shop</a></p>
+MIT. Creato da [MCP Tool Shop](https://mcp-tool-shop.github.io/).
