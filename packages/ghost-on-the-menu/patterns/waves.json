@@ -1,7 +1,7 @@
 {
   "tiers": {
-    "0": { "breather": 2, "beatsPerGroup": 3, "rest": 3.2, "density": 0.43 },
-    "1": { "breather": 1.6, "beatsPerGroup": 4, "rest": 2.4, "density": 0.5 },
-    "2": { "breather": 1.2, "beatsPerGroup": 4, "rest": 1.6, "density": 0.6 }
+    "0": { "breather": 2, "beatsPerGroup": 3, "rest": 3.2, "density": 0.7, "tail": 6 },
+    "1": { "breather": 1.6, "beatsPerGroup": 4, "rest": 2.4, "density": 0.95, "tail": 8 },
+    "2": { "breather": 1.2, "beatsPerGroup": 4, "rest": 1.6, "density": 0.85, "tail": 6 }
   }
 }

@@ -23,7 +23,7 @@ interface Candidate {
 
 const MIN_ROUND = 45;
 const MAX_ROUND = 120;
-const BEAT_GAP = 0.8;
+export const BEAT_GAP = 0.8;
 /** Seconds per beat at density 1. Tier 2 packs the same beats into a shorter round. */
 const DENSITY_BASE = 2;
 
@@ -210,12 +210,52 @@ function placeRhythm(beats: Beat[], atoms: readonly { id: string }[], wave: Wave
       }
       if (g < sizes.length - 1) t += wave.rest;
     }
-    const t1 = t + BEAT_GAP;
+    let t1 = t + BEAT_GAP;
+    t1 = uniquifyClassTimes(pack.beats, t1, BEAT_GAP);
     bounds.push({ atom: pack.atom, t0, t1 });
     t = t1;
     if (w < waves.length - 1) t += wave.breather;
   }
   return bounds;
+}
+
+/** Same class in one wave never shares a t; later beats shift forward. */
+function uniquifyClassTimes(pack: Beat[], t1: number, gap: number): number {
+  const byClass = new Map<string, Beat[]>();
+  for (const b of pack) {
+    const list = byClass.get(b.sprite) ?? [];
+    list.push(b);
+    byClass.set(b.sprite, list);
+  }
+  for (const list of byClass.values()) {
+    list.sort((a, b) => a.t - b.t || a.source.index - b.source.index);
+    for (let i = 1; i < list.length; i++) {
+      const prev = list[i - 1]!;
+      const cur = list[i]!;
+      if (cur.t <= prev.t) cur.t = prev.t + gap;
+    }
+  }
+  let maxT = 0;
+  for (const b of pack) if (b.t > maxT) maxT = b.t;
+  return Math.max(t1, maxT + gap);
+}
+
+function fitSpan(beats: Beat[], bounds: WaveBound[], duration: number, tail: number): number {
+  if (bounds.length === 0) return duration;
+  const lastT1 = bounds[bounds.length - 1]!.t1;
+  const room = duration - tail;
+  if (lastT1 > 0 && lastT1 < room) {
+    const scale = room / lastT1;
+    for (const b of beats) b.t *= scale;
+    for (const w of bounds) {
+      w.t0 *= scale;
+      w.t1 *= scale;
+    }
+    return duration;
+  }
+  const need = lastT1 + tail;
+  if (need > duration) return clamp(need, MIN_ROUND, MAX_ROUND);
+  return duration;
 }
 
 function clamp(n: number, lo: number, hi: number): number {
@@ -284,11 +324,12 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
   const beats = capVisible(raw, VISIBLE_MAX);
   const wave = patterns.waves.tiers[String(tier) as '0' | '1' | '2'];
   const waveBounds = placeRhythm(beats, tape.atoms, wave);
-  const duration = clamp(
+  let duration = clamp(
     (beats.length * DENSITY_BASE) / Math.max(0.05, wave.density),
     MIN_ROUND,
     MAX_ROUND,
   );
+  duration = fitSpan(beats, waveBounds, duration, wave.tail);
   const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
   attachPatterns(round, patterns);
   return round;

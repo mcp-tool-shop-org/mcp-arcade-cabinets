@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -184,13 +184,20 @@ describe('prepassRound', () => {
     ]);
     for (let i = 1; i < naive.waveBounds.length; i++) {
       const gap = naive.waveBounds[i]!.t0 - naive.waveBounds[i - 1]!.t1;
-      expect(gap).toBeCloseTo(wave0.breather, 6);
+      const first = naive.waveBounds[1]!.t0 - naive.waveBounds[0]!.t1;
+      expect(gap).toBeCloseTo(first, 6);
     }
     const inspect = naive.beats.filter((b) => b.source.atom === 'inspect.tools_list');
+    const dts: number[] = [];
     for (let i = 1; i < inspect.length; i++) {
-      const dt = inspect[i]!.t - inspect[i - 1]!.t;
-      const gap = Math.abs(dt - 0.8) < 1e-9 || Math.abs(dt - wave0.rest) < 1e-9;
-      expect(gap).toBe(true);
+      dts.push(inspect[i]!.t - inspect[i - 1]!.t);
+    }
+    const minGap = Math.min(...dts);
+    expect(minGap).toBeGreaterThan(0);
+    for (const dt of dts) {
+      const ratio = dt / minGap;
+      const restRatio = wave0.rest / 0.8;
+      expect(Math.abs(ratio - 1) < 0.08 || Math.abs(ratio - restRatio) < 0.08).toBe(true);
     }
     expect(again.beats.map((b) => b.t)).toEqual(naive.beats.map((b) => b.t));
     expect(naive.beats.every((b) => b.t < naive.duration)).toBe(true);
@@ -248,5 +255,40 @@ describe('prepassRound', () => {
       seat: { model: 'qwen2.5:7b-instruct', template_sha256: 'abc' },
     };
     expect(prepassRound(seated, { seconds: 150 }).tier).toBe(1);
+  });
+
+  it('fills the round so the last wave ends within tail of duration', () => {
+    const files = readdirSync(FIXTURES).filter((f) => f.endsWith('.tape.json'));
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) {
+      const name = file.replace(/\.tape\.json$/, '');
+      const round = prepassRound(load(name), { seconds: 150 });
+      const tail = DEFAULT_PATTERNS.waves.tiers[String(round.tier) as '0' | '1' | '2'].tail;
+      const last = round.waveBounds[round.waveBounds.length - 1];
+      expect(last, name).toBeDefined();
+      expect(last!.t1, name).toBeLessThanOrEqual(round.duration + 1e-6);
+      expect(round.duration - last!.t1, name).toBeLessThanOrEqual(tail + 1);
+      const byWave = new Map<string, typeof round.beats>();
+      for (const b of round.beats) {
+        const list = byWave.get(b.source.atom) ?? [];
+        list.push(b);
+        byWave.set(b.source.atom, list);
+      }
+      for (const pack of byWave.values()) {
+        const ordered = pack.slice().sort((a, b) => a.t - b.t || a.source.index - b.source.index);
+        expect(ordered.map((b) => b.id)).toEqual(
+          pack.sort((a, b) => a.t - b.t || a.source.index - b.source.index).map((b) => b.id),
+        );
+        const byClass = new Map<string, number[]>();
+        for (const b of ordered) {
+          const ts = byClass.get(b.sprite) ?? [];
+          ts.push(b.t);
+          byClass.set(b.sprite, ts);
+        }
+        for (const ts of byClass.values()) {
+          expect(new Set(ts.map((t) => t.toFixed(6))).size).toBe(ts.length);
+        }
+      }
+    }
   });
 });

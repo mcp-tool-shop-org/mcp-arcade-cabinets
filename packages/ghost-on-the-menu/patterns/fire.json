@@ -2,12 +2,12 @@
   "tiers": {
     "0": {
       "formation": null,
-      "boss": { "period": 3.5, "burst": 1, "spread": 0, "speed": 70 },
+      "boss": { "period": 16, "burst": 1, "spread": 0, "speed": 50 },
       "dive": null
     },
     "1": {
       "formation": { "period": 1.8, "burst": 1, "spread": 0.08, "speed": 90 },
-      "boss": { "period": 2.6, "burst": 1, "spread": 0.16, "speed": 100 },
+      "boss": { "period": 3.6, "burst": 1, "spread": 0.12, "speed": 90 },
       "dive": { "period": 2.8, "speed": 130, "depth": 0.5 }
     },
     "2": {

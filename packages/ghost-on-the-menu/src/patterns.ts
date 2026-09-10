@@ -111,6 +111,8 @@ export interface WaveTier {
   beatsPerGroup: number;
   rest: number;
   density: number;
+  /** Seconds after the last wave for the last boss to be fought. */
+  tail: number;
 }
 
 export interface PatternSet {
@@ -372,6 +374,7 @@ function loadWaves(raw: unknown): PatternSet['waves'] {
       beatsPerGroup: asNumber(req(rec, file, 'beatsPerGroup'), file, 'beatsPerGroup'),
       rest: asNumber(req(rec, file, 'rest'), file, 'rest'),
       density: asNumber(req(rec, file, 'density'), file, 'density'),
+      tail: asNumber(req(rec, file, 'tail'), file, 'tail'),
     };
   }
   return { tiers };

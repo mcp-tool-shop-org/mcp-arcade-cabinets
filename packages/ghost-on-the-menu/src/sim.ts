@@ -19,6 +19,7 @@ import {
   type SpriteClass,
   kindOfAtom,
 } from './types';
+import { BEAT_GAP } from './prepass';
 
 const PLAYER_SHOT_SPEED = 420;
 const SHOT_W = 4;
@@ -343,25 +344,28 @@ function emitWaveGrids(state: RoundState, meta: Meta): void {
   if (!bound || !boss || !boss.alive) return;
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
-  for (const enemy of state.enemies) {
-    if (enemy.sprite !== 'grid' && enemy.sprite !== 'answer') continue;
-    if (atomOf(enemy) !== bound.atom) continue;
-    if (!enemy.alive || enemy.mode === 'caught' || enemy.mode === 'dying') continue;
-    enemy.tEnter = state.t;
+  const launched = state.enemies.filter(
+    (enemy) =>
+      (enemy.sprite === 'grid' || enemy.sprite === 'answer') &&
+      atomOf(enemy) === bound.atom &&
+      enemy.alive &&
+      enemy.mode !== 'caught' &&
+      enemy.mode !== 'dying',
+  );
+  launched.sort((a, b) => {
+    const ra = a.sprite === 'grid' ? 0 : 1;
+    const rb = b.sprite === 'grid' ? 0 : 1;
+    if (ra !== rb) return ra - rb;
+    return (diveIndex.get(a) ?? 0) - (diveIndex.get(b) ?? 0);
+  });
+  launched.forEach((enemy, i) => {
+    enemy.tEnter = state.t + i * BEAT_GAP;
     enemy.pathT = 0;
     enemy.mode = 'enter';
     if (enemy.sprite === 'grid') {
-      enemy.x = cx - enemy.w / 2;
-      enemy.y = by - enemy.h / 2;
       enemy.path = [{ x: cx, y: by }, ...enemy.path];
-    } else {
-      const start = enemy.path[0];
-      if (start) {
-        enemy.x = start.x - enemy.w / 2;
-        enemy.y = start.y - enemy.h / 2;
-      }
     }
-  }
+  });
   meta.emittedGridForWave = true;
 }
 

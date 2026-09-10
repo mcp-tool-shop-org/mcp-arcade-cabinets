@@ -297,9 +297,11 @@ describe('stepRound', () => {
     const sb = createRoundState(b);
     const samplesA: string[] = [];
     const samplesB: string[] = [];
-    for (let i = 0; i < 400; i++) {
-      stepRound(sa, { left: false, right: false, fire: false }, 1 / 30);
-      stepRound(sb, { left: false, right: false, fire: false }, 1 / 30);
+    const poison = a.waveBounds.find((w) => w.atom.startsWith('poison.'));
+    const until = (poison?.t0 ?? 8) + 4;
+    while (sa.t < until && !sa.scene && !sb.scene) {
+      stepRound(sa, { left: false, right: false, fire: false }, 1 / 15);
+      stepRound(sb, { left: false, right: false, fire: false }, 1 / 15);
       const snap = (s: RoundState) =>
         s.boss
           ? `${s.boss.kind}:${s.boss.x.toFixed(3)}:${s.boss.y.toFixed(3)}:${s.boss.w.toFixed(3)}:${s.boss.h.toFixed(3)}:${s.boss.phase}`
@@ -409,8 +411,8 @@ describe('stepRound', () => {
       const state = createRoundState(
         roundOf({
           tapeId: 'bout_rage',
-          duration: 20,
-          waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 18 }],
+          duration: 50,
+          waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 45 }],
         }),
       );
       stepRound(state, { left: false, right: false, fire: false }, 1.6);
@@ -418,7 +420,7 @@ describe('stepRound', () => {
       const marks: number[] = [];
       let shots = 0;
       let fog = false;
-      while (state.t < 12 && marks.length < 3) {
+      while (state.t < 40 && marks.length < 3 && !state.scene) {
         stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
         const nowFog = Boolean(state.fog && state.fog.alive);
         if (state.enemyShots.length > shots || (nowFog && !fog)) marks.push(state.t);
@@ -616,5 +618,62 @@ describe('stepRound', () => {
     const by = state.boss!.y + state.boss!.h;
     expect(Math.abs(origin.x - mid)).toBeLessThan(2);
     expect(Math.abs(origin.y - by)).toBeLessThan(8);
+  });
+
+  it('staggers whisperer grids so they never share tEnter or a pixel', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_stagger',
+        duration: 12,
+        waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 10 }],
+        beats: [
+          {
+            id: 'poison.follow_through:grid:0',
+            t: 0,
+            x: 80,
+            sprite: 'grid',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'poison.follow_through',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 0,
+            },
+          },
+          {
+            id: 'poison.follow_through:grid:1',
+            t: 0.8,
+            x: 200,
+            sprite: 'grid',
+            lie: true,
+            members: 1,
+            source: {
+              atom: 'poison.follow_through',
+              method: 'tools/call',
+              note: 'tools/call leak',
+              index: 1,
+            },
+          },
+        ],
+      }),
+    );
+    while (state.t < 1.7) {
+      stepRound(state, { left: false, right: false, fire: false }, 0.1);
+    }
+    const grids = state.enemies.filter((e) => e.sprite === 'grid');
+    expect(grids).toHaveLength(2);
+    expect(grids[0]!.tEnter).not.toBe(grids[1]!.tEnter);
+    const later = Math.max(grids[0]!.tEnter, grids[1]!.tEnter);
+    expect(later).toBeLessThan(1e6);
+    while (state.t < later + 0.4 && state.t < 8) {
+      stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+      const live = state.enemies.filter(
+        (e) => e.sprite === 'grid' && e.alive && state.t >= e.tEnter,
+      );
+      if (live.length < 2) continue;
+      const key = (e: (typeof live)[0]) => `${e.x.toFixed(1)},${e.y.toFixed(1)}`;
+      expect(key(live[0]!)).not.toBe(key(live[1]!));
+    }
   });
 });
