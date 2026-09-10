@@ -32,6 +32,8 @@ export interface Transcript {
   lies: string[];
   ended: 'time' | 'lamps' | null;
   lives: number;
+  /** True if any forbidden word or digit reached the screen or the transcript. */
+  leaked: boolean;
 }
 
 /** The transcript may name a bout id; the screen may not carry a digit at all. */
@@ -166,5 +168,5 @@ export function playTape(tape: Tape, opts: { fixture: string; bot: BotName }): T
   // least half; idle is judged by the band alone. Every bot must not leak.
   const bar = bot === 'reader' ? allRevealed : bot === 'sweeper' ? halfRevealed : true;
   const ok = state.scene !== null && !leaked && bar;
-  return { ok, text, revealed, lies, ended: state.ended, lives: state.lives };
+  return { ok, text, revealed, lies, ended: state.ended, lives: state.lives, leaked };
 }

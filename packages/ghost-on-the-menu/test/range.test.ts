@@ -64,13 +64,16 @@ describe('expressive range', () => {
   // beats/s because the round was always 4 s per beat. Duration now follows
   // the tier's density from waves.json (W13).
   it('spreads the fixtures across density and tier, not one point', () => {
-    const points = new Set(
-      all.map((f) => `${(f.round.beats.length / f.round.duration).toFixed(3)}@${f.round.tier}`),
-    );
-    expect(points.size).toBeGreaterThanOrEqual(3);
+    const density = (f: (typeof all)[number]) => f.round.beats.length / f.round.duration;
+    const points = new Set(all.map((f) => `${density(f).toFixed(3)}@${f.round.tier}`));
+    expect(points.size).toBeGreaterThanOrEqual(2);
     const tiers = new Set(all.map((f) => f.round.tier));
     expect(tiers.has(0)).toBe(true);
     expect(tiers.has(2)).toBe(true);
+    // Only tiers 0 and 2 exist on disk; the plot must put them at different densities.
+    const d0 = Math.max(...all.filter((f) => f.round.tier === 0).map(density));
+    const d2 = Math.min(...all.filter((f) => f.round.tier === 2).map(density));
+    expect(d2).toBeGreaterThan(d0);
   });
 
   it('keeps every round inside the clamp and every lie inside a wave', () => {

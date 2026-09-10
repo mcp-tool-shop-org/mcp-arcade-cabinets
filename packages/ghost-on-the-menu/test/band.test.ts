@@ -103,7 +103,7 @@ describe('fairness band', () => {
   it('no bot ever puts a forbidden word on screen', () => {
     for (const c of CASES) {
       for (const bot of ['idle', 'sweeper', 'reader'] as const) {
-        expect(run(c, bot).ok || bot === 'sweeper', `${c.name} ${bot}`).toBe(true);
+        expect(run(c, bot).leaked, `${c.name} ${bot}`).toBe(false);
       }
     }
   });
