@@ -1,6 +1,6 @@
 # HANDOFF — Ghost on the Menu, wave 2 landed
 
-Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 87 tests, three play-throughs green, identity scan clean).
+Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 98 tests, three play-throughs green, identity scan clean).
 
 ## The one decision that frames everything
 
@@ -35,6 +35,12 @@ Done the same session: the frame is gone, the field takes the page width, F or a
 **Why it reads as noise (Grok, design session, grounded in the sim as it runs):** (1) the field never resets: sprites enter, then wiggle at hover for the rest of the round, so the handshake is still twitching when the Doorman arrives; (2) the wire never answers: every inbound response is skipped and honest grids collapse, so blocks drift in instead of handshake, menu, call, answer; (3) nothing names a beat until a lucky catch: captions fire only on a lie hit, the wave kind drives the soundtrack but never the canvas, and the boss is a second object rather than the source of the sprites. At tier 0 formations do not fire, so shooting is optional scenery.
 
 **The next slice, "wave card and field reset":** a wave-start caption in words from the atom kind (furniture paint, not amber; a caption kind on the contract); protocol order inside a wave (init, menu, grids) with the rest and breather the wave data already carries; honest sprites exit at the wave's close, trophies stay parked, escaped lies stay in class paint for the end; the boss enters after the caption and its existing cue emits the grid row. Inbound answers on a return path come after. Owner: Grok on prepass, sim and types; Claude on the caption paint. Andon: the naive-ndjson play-through shows a caption at each wave open with no digit, score word or fact name; no honest hover from the previous atom after the next starts; the three lies still catchable; catch captions still amber. G7 holds: the caption names the atom kind, which has its boss whether or not the lie happened; protocol order is every tape's honest shape; exit at wave close is class motion; the boss cue is the atom, never a fact.
+
+## Built out after the play (same day)
+
+- **A(i), Grok:** dives at tiers 1 and 2 from a dive rhythm in fire.json (a hovering grid formation swoops to the ship's column and back on a seeded schedule; contact costs a lamp under grace), Boss.hitT and RoundState.playerHitT for feedback, RoundState.bossKills, a tier override on the prepass, and kindOfAtom moved into types.ts.
+- **A(j), Grok:** the boss battle arc: hp for a six-to-eight-second fight, no damage in slit or hold phases (Menu dodge, Doorman guard), rage below half hp, RoundState.bossDownT.
+- **Claude:** boss flash on hit, ship blink during grace, boss-hit, boss-down and dive sounds, a boss-down burst, an inspect motif, a difficulty selector (as recorded / seat / live, default seat) and a Next tape button on the end scene that walks the fixture list.
 
 ## Order of work, next session
 
