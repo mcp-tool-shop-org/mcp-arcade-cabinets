@@ -1,0 +1,916 @@
+provider call failed
+{
+  "verdict": "escalate",
+  "confidence": 0.9,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:1:F2",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [
+        {
+          "file": null,
+          "line": null,
+          "category": "provider_error",
+          "evidence": "Ollama API timed out",
+          "severity": "major"
+        }
+      ],
+      "confidence": 0.0,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": true,
+      "prompt_hash": "928255a0a4a0125bc6c07833f3f0c59cfa67a706179fe9890f92f44e2e9ee679"
+    },
+    {
+      "lens": "citation_groundedness:3:F4",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "284fb5965d0a2563b164a19b71eca52b1bcec66b75d0639d99f5ae17d24f5b28"
+    },
+    {
+      "lens": "citation_groundedness:4:F5",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "c03513db91978cb81fafdaced1a559c2e93cb03bcc4ccaa685d82eed2ed7575d"
+    },
+    {
+      "lens": "citation_groundedness:5:F6",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "b3de46bc9c7c303752cc1941a2f8fe3de05c7e650db0abca44fac057977c494e"
+    },
+    {
+      "lens": "citation_groundedness:6:F7",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "215380fd76ae049bc9ad1b98c8043ad6bf4b67745f8a85909b4661e08e8aa02a"
+    },
+    {
+      "lens": "citation_groundedness:7:F8",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "3b975bedf28f26aee2e21982069f01d77f5239c2f62064d6b0e03380e23e6841"
+    },
+    {
+      "lens": "citation_groundedness:9:F10",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "f9c34aa206077fcf72353d085f13584bd2c8be180670ce8355bc9113412c90c2"
+    },
+    {
+      "lens": "citation_groundedness:12:F13",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "d28cd12b9e39dcea815b22f4d6a359d24d168142a2263ed39bffd646a4237eb8"
+    },
+    {
+      "lens": "citation_groundedness:13:F14",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "4963d68089dba4885f4b0bf6d559f9707f2483b8cd040fb432eaba5e0c4f4f39"
+    },
+    {
+      "lens": "citation_groundedness:16:F17",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "7a8d4ed45526a41c506bd2cfda4fa716f773b763123392da40189e2d773c1335"
+    },
+    {
+      "lens": "citation_groundedness:17:F18",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "d0e01251d969cd93b1b6e22fb286b58ca4d995ace45cd814bb5c0f4756749c9f"
+    },
+    {
+      "lens": "citation_groundedness:18:F19",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "4c4e21f74d8add1738f3ff76b4bcb4b04fb589ed4590c70ebc52ae6d5e8c29e5"
+    },
+    {
+      "lens": "citation_groundedness:26:F27",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "2796d6693e288d8d755e09c693ae874611c6f1af1a21a264f14e7c502dbd99b0"
+    },
+    {
+      "lens": "citation_groundedness:28:F29",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "8a6f74d0f382be1d517e8ec432146e77987436d49e53aa2d86731ffc3194c006"
+    },
+    {
+      "lens": "citation_groundedness:31:F32",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "2cd5a71b6ff108a75216bbacc3fbbb2dffa81f6a32d80d4613e1befcee9828ce"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "F1",
+      "identifier": "10.1198/016214506000001437",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Strictly Proper Scoring Rules, Prediction, and Estimation",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F2",
+      "identifier": "arXiv:2504.01781",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "groundedness verifier unavailable: Ollama API timed out",
+      "source_title": "Proper scoring rules for estimation and forecast evaluation",
+      "source_abstract": "Proper scoring rules have been a subject of growing interest in recent years, not only as tools for evaluation of probabilistic forecasts but also as methods for estimating probability distributions. In this article, we review the mathematical foundations of proper scoring rules including general characterization results and important families of scoring rules. We discuss their role in statistics and machine learning for estimation and forecast evaluation. Furthermore, we comment on interesting developments of their usage in applications.",
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F3",
+      "identifier": "10.1198/jasa.2011.r10138",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Making and Evaluating Point Forecasts",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F4",
+      "identifier": "10.1017/S1930297500004599",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Developing expert political judgment: The impact of training and practice on judgmental accuracy in geopolitical forecasting tournaments",
+      "source_abstract": "AbstractThe heuristics-and-biases research program highlights reasons for expecting people to be poor intuitive forecasters. This article tests the power of a cognitive-debiasing training module (\u201cCHAMPS KNOW\u201d) to improve probability judgments in a four-year series of geopolitical forecasting tournaments sponsored by the U.S. intelligence community. Although the training lasted less than one hour, it consistently improved accuracy (Brier scores) by 6 to 11% over the control condition. Cognitive ability and practice also made largely independent contributions to predictive accuracy. Given the brevity of the training tutorials and the heterogeneity of the problems posed, the observed effects are likely to be lower-bound estimates of what could be achieved by more intensive interventions. Future work should isolate which prongs of the multipronged CHAMPS KNOW training were most effective in improving judgment on which categories of problems.",
+      "supporting_span": "Although the training lasted less than one hour, it consistently improved accuracy (Brier scores) by 6 to 11% over the control condition.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F5",
+      "identifier": "10.1287/mnsc.2016.2525",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Confidence Calibration in a Multiyear Geopolitical Forecasting Competition",
+      "source_abstract": "This research examines the development of confidence and accuracy over time in the context of forecasting. Although overconfidence has been studied in many contexts, little research examines its progression over long periods of time or in consequential policy domains. This study employs a unique data set from a geopolitical forecasting tournament spanning three years in which thousands of forecasters predicted the outcomes of hundreds of events. We sought to apply insights from research to structure the questions, interactions, and elicitations to improve forecasts. Indeed, forecasters\u2019 confidence roughly matched their accuracy. As information came in, accuracy increased. Confidence increased at approximately the same rate as accuracy, and good calibration persisted. Nevertheless, there was evidence of a small amount of overconfidence (3%), especially on the most confident forecasts. Training helped reduce overconfidence, and team collaboration improved forecast accuracy. Together, teams and training reduced overconfidence to 1%. Our results provide reason for tempered optimism regarding confidence calibration and its development over time in consequential field contexts.\n                  This paper was accepted by Yuval Rottenstreich, judgment and decision making.",
+      "supporting_span": "Indeed, forecasters\u2019 confidence roughly matched their accuracy. As information came in, accuracy increased. Confidence increased at approximately the same rate as accuracy, and good calibration persisted.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F6",
+      "identifier": "10.1287/mnsc.1070.0729",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Probability Elicitation, Scoring Rules, and Competition Among Forecasters",
+      "source_abstract": "Probability forecasters who are rewarded via a proper scoring rule may care not only about the score, but also about their performance relative to other forecasters. We model this type of preference and show that a competitive forecaster who wants to do better than another forecaster typically should report more extreme probabilities, exaggerating toward zero or one. We consider a competitive forecaster's best response to truthful reporting and also investigate equilibrium reporting functions in the case where another forecaster also cares about relative performance. We show how a decision maker can revise probabilities of an event after receiving reported probabilities from competitive forecasters and note that the strategy of exaggerating probabilities can make well-calibrated forecasters (and a decision maker who takes their reported probabilities at face value) appear to be overconfident. However, a decision maker who adjusts appropriately for the misrepresentation of probabilities by one or more forecasters can still be well calibrated. Finally, to try to overcome the forecasters' competitive instincts and induce cooperative behavior, we develop the notion of joint scoring rules based on business sharing and show that these scoring rules are strictly proper.",
+      "supporting_span": "a competitive forecaster who wants to do better than another forecaster typically should report more extreme probabilities, exaggerating toward zero or one.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F7",
+      "identifier": "10.1609/aaai.v32i1.11471",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Incentive-Compatible Forecasting Competitions",
+      "source_abstract": "We consider the design of forecasting competitions in which multiple forecasters make predictions about one or more independent events and compete for a single prize. We have two objectives: (1) to award the prize to the most accurate forecaster, and (2) to incentivize forecasters to report truthfully, so that forecasts are informative and forecasters need not spend any cognitive effort strategizing about reports. Proper scoring rules incentivize truthful reporting if all forecasters are paid according to their scores. However, incentives become distorted if only the best-scoring forecaster wins a prize, since forecasters can often increase their probability of having the highest score by reporting extreme beliefs. Even if forecasters do report truthfully, awarding the prize to the forecaster with highest score does not guarantee that high-accuracy forecasters are likely to win; in extreme cases, it can result in a perfect forecaster having zero probability of winning. In this paper, we introduce a truthful forecaster selection mechanism. We lower-bound the probability that our mechanism selects the most accurate forecaster, and give rates for how quickly this bound approaches 1 as the number of events grows. Our techniques can be generalized to the related problems of outputting a ranking over forecasters and hiring a forecaster with high accuracy on future events.",
+      "supporting_span": "However, incentives become distorted if only the best-scoring forecaster wins a prize, since forecasters can often increase their probability of having the highest score by reporting extreme beliefs.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F8",
+      "identifier": "arXiv:1903.02131",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "A Prediction Tournament Paradox",
+      "source_abstract": "In a prediction tournament, contestants \"forecast\" by asserting a numerical probability for each of (say) 100 future real-world events. The scoring system is designed so that (regardless of the unknown true probabilities) more accurate forecasters will likely score better. This is true for one-on-one comparisons between contestants. But consider a realistic-size tournament with many contestants, with a range of accuracies. It may seem self-evident that the winner will likely be one of the most accurate forecasters. But, in the setting where the range extends to very accurate forecasters, simulations show this is mathematically false, within a somewhat plausible model. Even outside that setting the winner is less likely than intuition suggests to be one of the handful of best forecasters. Though implicit in recent technical papers, this paradox has apparently not been explicitly pointed out before, though is easily explained. It perhaps has implications for the ongoing IARPA-sponsored research programs involving forecasting.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F9",
+      "identifier": "10.1038/nature09304",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Predicting protein structures with a multiplayer online game",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F10",
+      "identifier": "10.1073/pnas.1313039111",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "RNA design rules from a massive open laboratory",
+      "source_abstract": "Significance\n                  Self-assembling RNA molecules play critical roles throughout biology and bioengineering. To accelerate progress in RNA design, we present EteRNA, the first internet-scale citizen science \u201cgame\u201d scored by high-throughput experiments. A community of 37,000 nonexperts leveraged continuous remote laboratory feedback to learn new design rules that substantially improve the experimental accuracy of RNA structure designs. These rules, distilled by machine learning into a new automated algorithm EteRNABot, also significantly outperform prior algorithms in a gauntlet of independent tests. These results show that an online community can carry out large-scale experiments, hypothesis generation, and algorithm design to create practical advances in empirical science.",
+      "supporting_span": "A community of 37,000 nonexperts leveraged continuous remote laboratory feedback to learn new design rules that substantially improve the experimental accuracy of RNA structure designs.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F11",
+      "identifier": "10.1371/journal.pone.0031362",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Phylo: A Citizen Science Approach for Improving Multiple Sequence Alignment",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F12",
+      "identifier": "10.1038/nature13240",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Space\u2013time wiring specificity supports direction selectivity in the retina",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F13",
+      "identifier": "arXiv:1904.01008",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Algorithms Clearly Beat Gamers at Quantum Moves. A Verification",
+      "source_abstract": "The paper [S\u00f8rensen et al., Nature 532] considers how human players compare to algorithms for solving the Quantum Moves game BringHomeWater and design new algorithms based on the intuition extracted from players. The claim by [S\u00f8rensen et al., Nature 532] is that players outperform widely used algorithms, in particular the KASS algorithm, based on the Krotov algorithm, and that player intuition is crucial to develop improved methods. However, as initially discussed by D. Sels [D. Sels, Phys. Rev. A 97], a standard Coordinate Ascent algorithm outperforms all players by a large margin. Albeit D. Sels only compare to player solutions, the simple algorithm outperforms all algorithms based on player solutions and Krotov, and it does so using much less time and iterations. In this paper we elaborate on the methods discussed by D. Sels and verify that the presented algorithm, solves the problem better than all players and algorithms derived from player solutions in [S\u00f8rensen et al., Nature 532]. We also verify the theoretical analysis presented by D. Sels, that gives a theoretically derived protocol that outperforms all players. We add a comparison with gradient ascent or GRAPE. Starting from uniform random values, GRAPE outperforms all players by a large margin. GRAPE works at least as well as the methods from [S\u00f8rensen et al., Nature 532] initialized with player solutions. A standard analysis of the results from GRAPE provides a starting point for GRAPE, that outperform all algorithms from [S\u00f8rensen et al., Nature 532]. We compare with a basic Krotov algorithm, and get results similar to GRAPE, clearly outperforming players and the KASS algorithm. These experiments verify and underline the result in [D. Sels, Phys. Rev. A 97] that the conclusions from [S\u00f8rensen et al., Nature 532] regarding algorithms are untenable. In fact the opposite conclusions are true.",
+      "supporting_span": "A standard Coordinate Ascent algorithm outperforms all players by a large margin.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F14",
+      "identifier": "10.1073/pnas.1008636108",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "How social influence can undermine the wisdom of crowd effect",
+      "source_abstract": "Social groups can be remarkably smart and knowledgeable when their averaged judgements are compared with the judgements of individuals. Already Galton [Galton F (1907)\n                    Nature\n                    75:7] found evidence that the median estimate of a group can be more accurate than estimates of experts. This wisdom of crowd effect was recently supported by examples from stock markets, political elections, and quiz shows [Surowiecki J (2004)\n                    The Wisdom of Crowds\n                    ]. In contrast, we demonstrate by experimental evidence (\n                    N\n                    = 144) that even mild social influence can undermine the wisdom of crowd effect in simple estimation tasks. In the experiment, subjects could reconsider their response to factual questions after having received average or full information of the responses of other subjects. We compare subjects\u2019 convergence of estimates and improvements in accuracy over five consecutive estimation periods with a control condition, in which no information about others\u2019 responses was provided. Although groups are initially \u201cwise,\u201d knowledge about estimates of others narrows the diversity of opinions to such an extent that it undermines the wisdom of crowd effect in three different ways. The \u201csocial influence effect\u201d diminishes the diversity of the crowd without improvements of its collective error. The \u201crange reduction effect\u201d moves the position of the truth to peripheral regions of the range of estimates so that the crowd becomes less reliable in providing expertise for external observers. The \u201cconfidence effect\u201d boosts individuals\u2019 confidence after convergence of their estimates despite lack of improved accuracy. Examples of the revealed mechanism range from misled elites to the recent global financial crisis.",
+      "supporting_span": "The \u201csocial influence effect\u201d diminishes the diversity of the crowd without improvements of its collective error. The \u201cconfidence effect\u201d boosts individuals\u2019 confidence after convergence of their estimates despite lack of improved accuracy.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F15",
+      "identifier": "10.5334/cstp.101",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Getting it Right or Being Top Rank: Games in Citizen Science",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F16",
+      "identifier": "10.1371/journal.pone.0222579",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The CrowdWater game: A\u00a0playful way to improve the accuracy of crowdsourced water level class data",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F17",
+      "identifier": "10.1002/fee.1436",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Assessing data quality in citizen science",
+      "source_abstract": "Ecological and environmental citizen\u2010science projects have enormous potential to advance scientific knowledge, influence policy, and guide resource management by producing datasets that would otherwise be infeasible to generate. However, this potential can only be realized if the datasets are of high quality. While scientists are often skeptical of the ability of unpaid volunteers to produce accurate datasets, a growing body of publications clearly shows that diverse types of citizen\u2010science projects can produce data with accuracy equal to or surpassing that of professionals. Successful projects rely on a suite of methods to boost data accuracy and account for bias, including iterative project development, volunteer training and testing, expert validation, replication across volunteers, and statistical modeling of systematic error. Each citizen\u2010science dataset should therefore be judged individually, according to project design and application, and not assumed to be substandard simply because volunteers generated it.",
+      "supporting_span": "Successful projects rely on a suite of methods to boost data accuracy and account for bias, including iterative project development, volunteer training and testing, expert validation, replication across volunteers, and statistical modeling of systematic error.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F18",
+      "identifier": "arXiv:1703.06891",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Dance Dance Convolution",
+      "source_abstract": "Dance Dance Revolution (DDR) is a popular rhythm-based video game. Players perform steps on a dance platform in synchronization with music as directed by on-screen step charts. While many step charts are available in standardized packs, players may grow tired of existing charts, or wish to dance to a song for which no chart exists. We introduce the task of learning to choreograph. Given a raw audio track, the goal is to produce a new step chart. This task decomposes naturally into two subtasks: deciding when to place steps and deciding which steps to select. For the step placement task, we combine recurrent and convolutional neural networks to ingest spectrograms of low-level audio features to predict steps, conditioned on chart difficulty. For step selection, we present a conditional LSTM generative model that substantially outperforms n-gram and fixed-window approaches.",
+      "supporting_span": "This task decomposes naturally into two subtasks: deciding when to place steps and deciding which steps to select. For the step placement task, we combine recurrent and convolutional neural networks to ingest spectrograms of low-level audio features to predict steps, conditioned on chart difficulty.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F19",
+      "identifier": "arXiv:2107.12506",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "TaikoNation: Patterning-focused Chart Generation for Rhythm Action Games",
+      "source_abstract": "Generating rhythm game charts from songs via machine learning has been a problem of increasing interest in recent years. However, all existing systems struggle to replicate human-like patterning: the placement of game objects in relation to each other to form congruent patterns based on events in the song. Patterning is a key identifier of high quality rhythm game content, seen as a necessary component in human rankings. We establish a new approach for chart generation that produces charts with more congruent, human-like patterning than seen in prior work.",
+      "supporting_span": "all existing systems struggle to replicate human-like patterning: the placement of game objects in relation to each other to form congruent patterns based on events in the song.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F20",
+      "identifier": "10.1109/T-AFFC.2011.6",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Experience-Driven Procedural Content Generation",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F21",
+      "identifier": "10.1145/1978942.1979053",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Starcraft from the stands",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F22",
+      "identifier": "10.1145/2488388.2488398",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Steering user behavior with badges",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F23",
+      "identifier": "10.1007/s10648-019-09498-w",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The Gamification of Learning: a Meta-analysis",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F24",
+      "identifier": "10.1016/j.compedu.2014.08.019",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Assessing the effects of gamification in the classroom: A longitudinal study on intrinsic motivation, social comparison, satisfaction, effort, and academic performance",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F25",
+      "identifier": "10.1016/j.chb.2015.08.048",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Towards understanding the effects of individual gamification elements on intrinsic motivation and performance",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F26",
+      "identifier": "10.1016/j.infsof.2022.107142",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Negative effects of gamification in education software: Systematic mapping and practitioner perceptions",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F27",
+      "identifier": "10.1111/j.2044-8279.1988.tb00874.x",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "ENHANCING AND UNDERMINING INTRINSIC MOTIVATION: THE EFFECTS OF TASK\u2010INVOLVING AND EGO\u2010INVOLVING EVALUATION ON INTEREST AND PERFORMANCE",
+      "source_abstract": "S\n                      ummary\n                      .\n                    \n                    This study was designed to test the hypothesis that intrinsic motivation will be differentially affected by task\u2010involving and ego\u2010involving evaluation, and that provision of both kinds of evaluation will promote ego\u2010involvement rather than task\u2010involvement. Twelve classes of fifth and sixth grade pupils were randomly assigned to one of three feedback conditions. Pupils received either ego\u2010involving numerical grades or task\u2010involving individual comments or both after performing interesting tasks, one convergent and one divergent, on each of two sessions. Interest and performance for 132 randomly selected pupils of high or low school achievement were measured at pre\u2010test, during the manipulation and at a third session, when no further evaluation was anticipated. As hypothesised, interest and performance on both tasks at both levels of school achievement were highest after comments, both when further comments were anticipated and when they were not. Grades and grades plus comments had similar and generally undermining effects on both interest and performance, although high achievers who received grades maintained high interest and convergent thinking when further grades were anticipated. These results are discussed in terms of the contribution of this distinction between task and ego\u2010involvement to further understanding of intrinsically motivated activity.",
+      "supporting_span": "As hypothesised, interest and performance on both tasks at both levels of school achievement were highest after comments, both when further comments were anticipated and when they were not. Grades and grades plus comments had similar and generally undermining effects on both interest and performance",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F28",
+      "identifier": "10.1037/0033-2909.119.2.254",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The effects of feedback interventions on performance: A historical review, a meta-analysis, and a preliminary feedback intervention theory.",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F29",
+      "identifier": "10.1093/jcr/ucv095",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "The Hidden Cost of Personal Quantification",
+      "source_abstract": "Abstract\n                  From sleep and energy use to exercise and health, consumers have access to more information about their behavior than ever before. The appeal of personal quantification seems clear. By better understanding our behavior, we can make the necessary changes to live happier, healthier lives. But might the new tools people are using\u2014quantifying life\u2014 rob them of some of the benefits of engaging in those activities? Six experiments demonstrate that while measurement increases how much of an activity people do (e.g., walk or read more), it can simultaneously reduce how much people enjoy those activities. This occurs because measurement can undermine intrinsic motivation. By drawing attention to output, measurement can make enjoyable activities feel more like work, which reduces their enjoyment. As a result, measurement can decrease continued engagement in the activity and subjective well-being. Even in the absence of explicit external incentives, measurement itself can thus have similar effects. The findings have implications for measurement\u2019s use, as well as for the psychology of external incentives and intrinsic motivation.",
+      "supporting_span": "While measurement increases how much of an activity people do (e.g., walk or read more), it can simultaneously reduce how much people enjoy those activities. This occurs because measurement can undermine intrinsic motivation. By drawing attention to output, measurement can make enjoyable activities feel more like work, which reduces their enjoyment.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F30",
+      "identifier": "10.1145/3311350.3347148",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The Role of Uncertainty in Moment-to-Moment Player Motivation",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F31",
+      "identifier": "10.3758/PBR.16.1.88",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Surprising feedback improves later memory",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F32",
+      "identifier": "10.1609/aiide.v19i1.27540",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Dynamic Difficulty Adjustment via Procedural Level Generation Guided by a Markov Decision Process for Platformers and Roguelikes",
+      "source_abstract": "Procedural level generation can create unseen levels and improve the replayability of games, but there are requirements for a generated level. First, a level must be completable. Second, a level must look and feel like a level that would exist in the game, meaning a random combination of tiles that happens to be completable is not enough. On top of these two requirements, though, is the player experience. If a level is too hard, the player will be frustrated. If too easy, they will be bored. Neither outcome is desirable. A procedural level generation system has to account for the player's skill and generate levels at the correct difficulty. I address this issue by showing how a Markov Decision Process can be used as a director to assemble levels tailored to a player's skill level, but I've only demonstrated that my approach works with surrogate agents. For my thesis, I plan to build on my past work by creating a full roguelike and platformer and running two player studies to validate my approach.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F33",
+      "identifier": "10.1109/HRI.2013.6483603",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Legibility and predictability of robot motion",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "F34",
+      "identifier": "10.1109/HICSS.2014.377",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Does Gamification Work? -- A Literature Review of Empirical Studies on Gamification",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m24p8wzrq4apz5nxnyhhfe1t",
+    "pre_strip_hash": "4eff73551b7cdd891a5655c9c57b186cb5c57375fb6490c4d0104ddf7ac6a03b",
+    "post_strip_hash": "4eff73551b7cdd891a5655c9c57b186cb5c57375fb6490c4d0104ddf7ac6a03b",
+    "timestamp": "2026-09-10 03:37:37.016185+00:00",
+    "verifier_models": [
+      "mistral-small:24b"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:1:F2": "928255a0a4a0125bc6c07833f3f0c59cfa67a706179fe9890f92f44e2e9ee679",
+      "citation_groundedness:3:F4": "284fb5965d0a2563b164a19b71eca52b1bcec66b75d0639d99f5ae17d24f5b28",
+      "citation_groundedness:4:F5": "c03513db91978cb81fafdaced1a559c2e93cb03bcc4ccaa685d82eed2ed7575d",
+      "citation_groundedness:5:F6": "b3de46bc9c7c303752cc1941a2f8fe3de05c7e650db0abca44fac057977c494e",
+      "citation_groundedness:6:F7": "215380fd76ae049bc9ad1b98c8043ad6bf4b67745f8a85909b4661e08e8aa02a",
+      "citation_groundedness:7:F8": "3b975bedf28f26aee2e21982069f01d77f5239c2f62064d6b0e03380e23e6841",
+      "citation_groundedness:9:F10": "f9c34aa206077fcf72353d085f13584bd2c8be180670ce8355bc9113412c90c2",
+      "citation_groundedness:12:F13": "d28cd12b9e39dcea815b22f4d6a359d24d168142a2263ed39bffd646a4237eb8",
+      "citation_groundedness:13:F14": "4963d68089dba4885f4b0bf6d559f9707f2483b8cd040fb432eaba5e0c4f4f39",
+      "citation_groundedness:16:F17": "7a8d4ed45526a41c506bd2cfda4fa716f773b763123392da40189e2d773c1335",
+      "citation_groundedness:17:F18": "d0e01251d969cd93b1b6e22fb286b58ca4d995ace45cd814bb5c0f4756749c9f",
+      "citation_groundedness:18:F19": "4c4e21f74d8add1738f3ff76b4bcb4b04fb589ed4590c70ebc52ae6d5e8c29e5",
+      "citation_groundedness:26:F27": "2796d6693e288d8d755e09c693ae874611c6f1af1a21a264f14e7c502dbd99b0",
+      "citation_groundedness:28:F29": "8a6f74d0f382be1d517e8ec432146e77987436d49e53aa2d86731ffc3194c006",
+      "citation_groundedness:31:F32": "2cd5a71b6ff108a75216bbacc3fbbb2dffa81f6a32d80d4613e1befcee9828ce"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "F1",
+        "identifier": "10.1198/016214506000001437",
+        "query": "https://api.crossref.org/works/10.1198/016214506000001437?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a6c7e87896402d0496d77161c63f1f35368a29638bbc187b364d8eded3da9e10",
+        "existence": "resolved"
+      },
+      {
+        "id": "F2",
+        "identifier": "arXiv:2504.01781",
+        "query": "https://export.arxiv.org/api/query?id_list=2504.01781",
+        "source_sha256": "b6c2c93e10696d744a6f14691ed0a46433a9fd499362c87c2cb7b3ed9608a23d",
+        "existence": "resolved"
+      },
+      {
+        "id": "F3",
+        "identifier": "10.1198/jasa.2011.r10138",
+        "query": "https://api.crossref.org/works/10.1198/jasa.2011.r10138?mailto=verify%40prism-verify.dev",
+        "source_sha256": "f454740cf4f188bdfaf14e6f99d45ad536a4057709d641ba00afad68c6bc9e41",
+        "existence": "resolved"
+      },
+      {
+        "id": "F4",
+        "identifier": "10.1017/S1930297500004599",
+        "query": "https://api.crossref.org/works/10.1017/S1930297500004599?mailto=verify%40prism-verify.dev",
+        "source_sha256": "cd8761cefc2df33d2acc3da15ed19730feb73455f4b099edb640dd888869c02e",
+        "existence": "resolved"
+      },
+      {
+        "id": "F5",
+        "identifier": "10.1287/mnsc.2016.2525",
+        "query": "https://api.crossref.org/works/10.1287/mnsc.2016.2525?mailto=verify%40prism-verify.dev",
+        "source_sha256": "aec02f9fa00d1ebc79d808ef8cedc60a26662d3794931de02f5045c29c363789",
+        "existence": "resolved"
+      },
+      {
+        "id": "F6",
+        "identifier": "10.1287/mnsc.1070.0729",
+        "query": "https://api.crossref.org/works/10.1287/mnsc.1070.0729?mailto=verify%40prism-verify.dev",
+        "source_sha256": "59a6f6f284cc3f75d84b709b9a2f52a1f868f9cba8e42b8b7e606f7fa3ce3499",
+        "existence": "resolved"
+      },
+      {
+        "id": "F7",
+        "identifier": "10.1609/aaai.v32i1.11471",
+        "query": "https://api.crossref.org/works/10.1609/aaai.v32i1.11471?mailto=verify%40prism-verify.dev",
+        "source_sha256": "55755db770ba7ef971e8effee11de21c419674d2d3c6b317566a2de43f3b6268",
+        "existence": "resolved"
+      },
+      {
+        "id": "F8",
+        "identifier": "arXiv:1903.02131",
+        "query": "https://export.arxiv.org/api/query?id_list=1903.02131",
+        "source_sha256": "93356fece4cbe26dfd91a71821fa1bb7f804048f78b3bb39893e343eddbe7df2",
+        "existence": "resolved"
+      },
+      {
+        "id": "F9",
+        "identifier": "10.1038/nature09304",
+        "query": "https://api.crossref.org/works/10.1038/nature09304?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a4d4123de89c02ae9b9b339460911cbde57fc61c06c7dc4a0d883257b5b1c69a",
+        "existence": "resolved"
+      },
+      {
+        "id": "F10",
+        "identifier": "10.1073/pnas.1313039111",
+        "query": "https://api.crossref.org/works/10.1073/pnas.1313039111?mailto=verify%40prism-verify.dev",
+        "source_sha256": "28bc456f6530893456c1fc73ef94a36ac7f27088346bc45f0b0324076da151d8",
+        "existence": "resolved"
+      },
+      {
+        "id": "F11",
+        "identifier": "10.1371/journal.pone.0031362",
+        "query": "https://api.crossref.org/works/10.1371/journal.pone.0031362?mailto=verify%40prism-verify.dev",
+        "source_sha256": "60dd932d69ebe1c8b3ed15f4b9dedbd1dedb263159f7f2f81242fd9a938d1d6c",
+        "existence": "resolved"
+      },
+      {
+        "id": "F12",
+        "identifier": "10.1038/nature13240",
+        "query": "https://api.crossref.org/works/10.1038/nature13240?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a4b997c6a48737ff62361d3f8fc43666385d817735137e759ef0115cd51903f0",
+        "existence": "resolved"
+      },
+      {
+        "id": "F13",
+        "identifier": "arXiv:1904.01008",
+        "query": "https://export.arxiv.org/api/query?id_list=1904.01008",
+        "source_sha256": "b2b6d5c3b4c623779877656a0ee0906a777e8c97d840349a7c692a3de2513dbc",
+        "existence": "resolved"
+      },
+      {
+        "id": "F14",
+        "identifier": "10.1073/pnas.1008636108",
+        "query": "https://api.crossref.org/works/10.1073/pnas.1008636108?mailto=verify%40prism-verify.dev",
+        "source_sha256": "d97e1e698fac1840e7545f9ae32506d44b20e8b0fc5995a321467694835bb0e8",
+        "existence": "resolved"
+      },
+      {
+        "id": "F15",
+        "identifier": "10.5334/cstp.101",
+        "query": "https://api.crossref.org/works/10.5334/cstp.101?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a7d23f7e4c16e0ba51c77af810804ca9af6473da6b510334a01682fb406b1649",
+        "existence": "resolved"
+      },
+      {
+        "id": "F16",
+        "identifier": "10.1371/journal.pone.0222579",
+        "query": "https://api.crossref.org/works/10.1371/journal.pone.0222579?mailto=verify%40prism-verify.dev",
+        "source_sha256": "715e544f009badfc2064e5e7119f1861d1882113c8170bb10461f13c6ec272b2",
+        "existence": "resolved"
+      },
+      {
+        "id": "F17",
+        "identifier": "10.1002/fee.1436",
+        "query": "https://api.crossref.org/works/10.1002/fee.1436?mailto=verify%40prism-verify.dev",
+        "source_sha256": "686344efa5faa13d1d1bef6b522e1a4ed568efa4ccedbd23fa95b2828c90cbc9",
+        "existence": "resolved"
+      },
+      {
+        "id": "F18",
+        "identifier": "arXiv:1703.06891",
+        "query": "https://export.arxiv.org/api/query?id_list=1703.06891",
+        "source_sha256": "177b73b329231a119e1ac28b3d7d2066b3d8027985eaad44e6241efe65e69d1b",
+        "existence": "resolved"
+      },
+      {
+        "id": "F19",
+        "identifier": "arXiv:2107.12506",
+        "query": "https://export.arxiv.org/api/query?id_list=2107.12506",
+        "source_sha256": "f63cc829e5c13b63725db8fd9188dc94ef616a9ebaa6f55e57ce47620021a023",
+        "existence": "resolved"
+      },
+      {
+        "id": "F20",
+        "identifier": "10.1109/T-AFFC.2011.6",
+        "query": "https://api.crossref.org/works/10.1109/T-AFFC.2011.6?mailto=verify%40prism-verify.dev",
+        "source_sha256": "0ef3ab5d5f60f3bc6d1de206a7fb2e9487769105aec8daff1c2fc500cb174787",
+        "existence": "resolved"
+      },
+      {
+        "id": "F21",
+        "identifier": "10.1145/1978942.1979053",
+        "query": "https://api.crossref.org/works/10.1145/1978942.1979053?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ae1c3574f0c9fb171e698908caea402cb32bfaaaa299127afcee6b262334e88e",
+        "existence": "resolved"
+      },
+      {
+        "id": "F22",
+        "identifier": "10.1145/2488388.2488398",
+        "query": "https://api.crossref.org/works/10.1145/2488388.2488398?mailto=verify%40prism-verify.dev",
+        "source_sha256": "60b740e4d4f9f8b4afa47a2032adc8a205de468770ddf67c514f36b4a43c3596",
+        "existence": "resolved"
+      },
+      {
+        "id": "F23",
+        "identifier": "10.1007/s10648-019-09498-w",
+        "query": "https://api.crossref.org/works/10.1007/s10648-019-09498-w?mailto=verify%40prism-verify.dev",
+        "source_sha256": "685e738b224c722d60dcdacc4e3ba961efd1c1d8963d7dd4d0f0349e793e6e30",
+        "existence": "resolved"
+      },
+      {
+        "id": "F24",
+        "identifier": "10.1016/j.compedu.2014.08.019",
+        "query": "https://api.crossref.org/works/10.1016/j.compedu.2014.08.019?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a101d2978452bcd23285a8db75dcaa1883295485f39caeefcefc940bfa8d80df",
+        "existence": "resolved"
+      },
+      {
+        "id": "F25",
+        "identifier": "10.1016/j.chb.2015.08.048",
+        "query": "https://api.crossref.org/works/10.1016/j.chb.2015.08.048?mailto=verify%40prism-verify.dev",
+        "source_sha256": "efb64763d9c8cf9d9831498b37d4041cd6cc83aca780145d64dcaa366a05f510",
+        "existence": "resolved"
+      },
+      {
+        "id": "F26",
+        "identifier": "10.1016/j.infsof.2022.107142",
+        "query": "https://api.crossref.org/works/10.1016/j.infsof.2022.107142?mailto=verify%40prism-verify.dev",
+        "source_sha256": "421b221f04d65775f37968da87ac20b21c9e54b641f119cbb4715d69a0b3b500",
+        "existence": "resolved"
+      },
+      {
+        "id": "F27",
+        "identifier": "10.1111/j.2044-8279.1988.tb00874.x",
+        "query": "https://api.crossref.org/works/10.1111/j.2044-8279.1988.tb00874.x?mailto=verify%40prism-verify.dev",
+        "source_sha256": "86aa72d5752f3e59cc3b0e0e0abda163cc06e9b16a37eca486aa0a7d25f8d4ed",
+        "existence": "resolved"
+      },
+      {
+        "id": "F28",
+        "identifier": "10.1037/0033-2909.119.2.254",
+        "query": "https://api.crossref.org/works/10.1037/0033-2909.119.2.254?mailto=verify%40prism-verify.dev",
+        "source_sha256": "d4d8f77e1b2b097587282a3f7b29184721c36223b072fac9d38ec134ccf5f4ef",
+        "existence": "resolved"
+      },
+      {
+        "id": "F29",
+        "identifier": "10.1093/jcr/ucv095",
+        "query": "https://api.crossref.org/works/10.1093/jcr/ucv095?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a1c14d77fa96e2d8a0fa73401c85f0c5b91b77c248be8b2e7b21349f9b1b47b0",
+        "existence": "resolved"
+      },
+      {
+        "id": "F30",
+        "identifier": "10.1145/3311350.3347148",
+        "query": "https://api.crossref.org/works/10.1145/3311350.3347148?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ff6ed5f1638dcf183c28bd120b8bb3ee802a5c61ff4919aa30206bdc55c37b05",
+        "existence": "resolved"
+      },
+      {
+        "id": "F31",
+        "identifier": "10.3758/PBR.16.1.88",
+        "query": "https://api.crossref.org/works/10.3758/PBR.16.1.88?mailto=verify%40prism-verify.dev",
+        "source_sha256": "09fe7c3b641f04ffeaf6296382d124ad86113ea96d6b1a1a78dbb38b4c23c2b3",
+        "existence": "resolved"
+      },
+      {
+        "id": "F32",
+        "identifier": "10.1609/aiide.v19i1.27540",
+        "query": "https://api.crossref.org/works/10.1609/aiide.v19i1.27540?mailto=verify%40prism-verify.dev",
+        "source_sha256": "5b2c83125445f7ad06d8f23f9093cc1fa8377016c70c1ac57c5b63abde462ae8",
+        "existence": "resolved"
+      },
+      {
+        "id": "F33",
+        "identifier": "10.1109/HRI.2013.6483603",
+        "query": "https://api.crossref.org/works/10.1109/HRI.2013.6483603?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ee99969e3be8f360702bbe2ca9128ade0e65acff493e8071c5d2d49a1b337af3",
+        "existence": "resolved"
+      },
+      {
+        "id": "F34",
+        "identifier": "10.1109/HICSS.2014.377",
+        "query": "https://api.crossref.org/works/10.1109/HICSS.2014.377?mailto=verify%40prism-verify.dev",
+        "source_sha256": "4e4c0d304178263e4011bc0315340b807f845e7fe0bf4935f5a48788170082d7",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-611e3cc65671873e",
+    "schema_version": 5,
+    "signature": "7f93b1fd27d8eaae9506b78edb70a71442855b2578274306b1c98979ab30b9112a523567d7ba575df69746f6d7416eb8889030e9d38a1c68e82191e70b544108",
+    "replayable": true
+  }
+}

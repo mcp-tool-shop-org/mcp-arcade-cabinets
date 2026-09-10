@@ -1,0 +1,5 @@
+[
+  {"id": "F2", "claim": "For categorical outcomes the Brier, logarithmic and spherical rules are proper; the multi-class Brier score is bounded while the logarithmic score is unbounded on a confident miss.", "title": "Proper scoring rules for estimation and forecast evaluation", "authors": "Bolin, Wallin", "year": 2025, "identifier": "arXiv:2504.01781"},
+  {"id": "F8", "claim": "In a prediction tournament the winner may be far from the best forecaster, because the luck of which questions are asked and how they resolve can dominate skill differences.", "title": "A Prediction Tournament Paradox", "authors": "Aldous", "year": 2019, "identifier": "arXiv:1903.02131"},
+  {"id": "F32", "claim": "A Markov decision process can choose which level segment to generate next so that a platformer's difficulty adjusts to the player's observed performance.", "title": "Dynamic Difficulty Adjustment via Procedural Level Generation Guided by a Markov Decision Process for Platformers", "authors": "Biemer", "year": 2023, "identifier": "10.1609/aiide.v19i1.27540"}
+]

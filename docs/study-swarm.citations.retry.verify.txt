@@ -1,0 +1,131 @@
+{
+  "verdict": "escalate",
+  "confidence": 0.9,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:0:F2",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "928255a0a4a0125bc6c07833f3f0c59cfa67a706179fe9890f92f44e2e9ee679"
+    },
+    {
+      "lens": "citation_groundedness:1:F8",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "ee71f00dbdbe1ae0ca9313238de5fbf698f468c43f4d9108dcc5fd07061fd7fa"
+    },
+    {
+      "lens": "citation_groundedness:2:F32",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "844588fe04493f0573fdfb512696f2a984a9c6f02e2181378a134c00b2c3922c"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "F2",
+      "identifier": "arXiv:2504.01781",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Proper scoring rules for estimation and forecast evaluation",
+      "source_abstract": "Proper scoring rules have been a subject of growing interest in recent years, not only as tools for evaluation of probabilistic forecasts but also as methods for estimating probability distributions. In this article, we review the mathematical foundations of proper scoring rules including general characterization results and important families of scoring rules. We discuss their role in statistics and machine learning for estimation and forecast evaluation. Furthermore, we comment on interesting developments of their usage in applications.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F8",
+      "identifier": "arXiv:1903.02131",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "A Prediction Tournament Paradox",
+      "source_abstract": "In a prediction tournament, contestants \"forecast\" by asserting a numerical probability for each of (say) 100 future real-world events. The scoring system is designed so that (regardless of the unknown true probabilities) more accurate forecasters will likely score better. This is true for one-on-one comparisons between contestants. But consider a realistic-size tournament with many contestants, with a range of accuracies. It may seem self-evident that the winner will likely be one of the most accurate forecasters. But, in the setting where the range extends to very accurate forecasters, simulations show this is mathematically false, within a somewhat plausible model. Even outside that setting the winner is less likely than intuition suggests to be one of the handful of best forecasters. Though implicit in recent technical papers, this paradox has apparently not been explicitly pointed out before, though is easily explained. It perhaps has implications for the ongoing IARPA-sponsored research programs involving forecasting.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "F32",
+      "identifier": "10.1609/aiide.v19i1.27540",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Dynamic Difficulty Adjustment via Procedural Level Generation Guided by a Markov Decision Process for Platformers and Roguelikes",
+      "source_abstract": "Procedural level generation can create unseen levels and improve the replayability of games, but there are requirements for a generated level. First, a level must be completable. Second, a level must look and feel like a level that would exist in the game, meaning a random combination of tiles that happens to be completable is not enough. On top of these two requirements, though, is the player experience. If a level is too hard, the player will be frustrated. If too easy, they will be bored. Neither outcome is desirable. A procedural level generation system has to account for the player's skill and generate levels at the correct difficulty. I address this issue by showing how a Markov Decision Process can be used as a director to assemble levels tailored to a player's skill level, but I've only demonstrated that my approach works with surrogate agents. For my thesis, I plan to build on my past work by creating a full roguelike and platformer and running two player studies to validate my approach.",
+      "supporting_span": "A procedural level generation system has to account for the player's skill and generate levels at the correct difficulty. I address this issue by showing how a Markov Decision Process can be used as a director to assemble levels tailored to a player's skill level",
+      "confidence": 0.9
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m24pbw5nheh49eamhyx4fjjw",
+    "pre_strip_hash": "cc470b22a94e3a6b3ccc04c3a86c15f67a7c7b3c1d0d92064a01d83c2855f9ed",
+    "post_strip_hash": "cc470b22a94e3a6b3ccc04c3a86c15f67a7c7b3c1d0d92064a01d83c2855f9ed",
+    "timestamp": "2026-09-10 03:39:14.485087+00:00",
+    "verifier_models": [
+      "mistral-small:24b"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:0:F2": "928255a0a4a0125bc6c07833f3f0c59cfa67a706179fe9890f92f44e2e9ee679",
+      "citation_groundedness:1:F8": "ee71f00dbdbe1ae0ca9313238de5fbf698f468c43f4d9108dcc5fd07061fd7fa",
+      "citation_groundedness:2:F32": "844588fe04493f0573fdfb512696f2a984a9c6f02e2181378a134c00b2c3922c"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "F2",
+        "identifier": "arXiv:2504.01781",
+        "query": "https://export.arxiv.org/api/query?id_list=2504.01781",
+        "source_sha256": "b6c2c93e10696d744a6f14691ed0a46433a9fd499362c87c2cb7b3ed9608a23d",
+        "existence": "resolved"
+      },
+      {
+        "id": "F8",
+        "identifier": "arXiv:1903.02131",
+        "query": "https://export.arxiv.org/api/query?id_list=1903.02131",
+        "source_sha256": "93356fece4cbe26dfd91a71821fa1bb7f804048f78b3bb39893e343eddbe7df2",
+        "existence": "resolved"
+      },
+      {
+        "id": "F32",
+        "identifier": "10.1609/aiide.v19i1.27540",
+        "query": "https://api.crossref.org/works/10.1609/aiide.v19i1.27540?mailto=verify%40prism-verify.dev",
+        "source_sha256": "5b2c83125445f7ad06d8f23f9093cc1fa8377016c70c1ac57c5b63abde462ae8",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-611e3cc65671873e",
+    "schema_version": 5,
+    "signature": "3fad5d9f7edc346bb2e9db65c02e108d483fcf0860b14da37ff24bdb57d3de8b810ee8cb0caf1f44a03f90b4d6db20cebea9f4cf7ae954de77a5b0f2429fa80a",
+    "replayable": true
+  }
+}
