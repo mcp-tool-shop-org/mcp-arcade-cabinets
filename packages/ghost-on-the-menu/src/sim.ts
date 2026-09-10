@@ -1,7 +1,6 @@
 import {
   attachPatterns,
   attachedPatterns,
-  DEFAULT_PATTERNS,
   type BossDef,
   type FireRhythm,
   type LadderRung,
@@ -13,7 +12,6 @@ import {
   PARKING_Y,
   type Boss,
   type Enemy,
-  type FogBank,
   type Round,
   type RoundInput,
   type RoundState,
@@ -566,21 +564,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   return state;
 }
 
-export function botInput(state: RoundState): RoundInput {
-  const live = state.enemies.filter((e) => hittable(state, e));
-  const lies = live.filter((e) => e.lie && !e.revealed);
-  const pool = lies.length ? lies : live;
-  let target = pool[0];
-  const px = state.player.x + state.player.w / 2;
-  for (const e of pool) {
-    if (!target) {
-      target = e;
-      continue;
-    }
-    const closer = Math.abs(e.x + e.w / 2 - px) < Math.abs(target.x + target.w / 2 - px);
-    if (closer) target = e;
-  }
-  if (!target) return { left: false, right: false, fire: true };
-  const dx = target.x + target.w / 2 - px;
-  return { left: dx < -3, right: dx > 3, fire: true };
+/** Can a player shot hit this enemy now? Exported for the bots; reads no fact. */
+export function isHittable(state: RoundState, enemy: Enemy): boolean {
+  return hittable(state, enemy);
 }

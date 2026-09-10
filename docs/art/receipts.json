@@ -1,0 +1,242 @@
+{
+  "schema": "mcp-arcade-cabinets.art-receipts/v1",
+  "brief": "docs/art/brief-1.md",
+  "generated_on": "2026-09-10",
+  "route": {
+    "provider": "bfl",
+    "model": "bfl/flux-2-max",
+    "via": "Comfy Cloud partner_generate / submit_batch (workflow-persist path, Flux2ImageNode)",
+    "references": "the player ship and the grid sprite were generated first (batch 1) and passed as reference_image to every other image (batch 2 and the re-rolls) so the set stays on one palette",
+    "approved_by": "Director, 2026-09-10: the most expensive licence-friendly route that allows publishing; the spend gate was restated in the session that ran it"
+  },
+  "licence": {
+    "checked_on": "2026-09-10",
+    "bfl_developer_terms": {
+      "url": "https://bfl.ai/legal/developer-terms-of-service",
+      "last_revised": "2026-08-04",
+      "ownership": "As between you and us, you own all right, title, and interest in and to Output.",
+      "commercial_use": "use Outputs for your or their own personal or commercial purposes, subject to any restrictions set forth in these Terms or applicable law.",
+      "restrictions": [
+        "Output may not be used to train, distill or fine-tune any other AI model (competing-product clause). These sprites are game assets, not training data; do not add them to any style dataset.",
+        "Content Credentials / provenance metadata must not be removed or obscured, and Output must not be represented as free of provenance metadata. The 1024 originals are kept beside the downscales for that reason."
+      ]
+    },
+    "bfl_flux_api_service_terms": {
+      "url": "https://bfl.ai/legal/flux-api-service-terms",
+      "last_revised": "2026-08-04",
+      "note": "BFL may use Inputs and Outputs to train and improve its models. No restriction on the customer's use of Output in this document."
+    },
+    "comfy_terms": {
+      "url": "https://www.comfy.org/terms-of-service",
+      "effective": "2026-05-13",
+      "ownership": "Customer retains all right, title, and interest in ... Output. Partner Nodes are subject to the terms and policies of the applicable third-party provider.",
+      "note": "Comfy does not transmit identity or account information to the partner; the BFL developer terms above govern the Output."
+    },
+    "verdict": "Publishing the accepted sprites in this repository and in the browser cabinet is permitted. Re-verify on the day of any public deploy."
+  },
+  "acceptance": {
+    "glyph_check": "ai-eyes image_contains, query 'text, letters, numbers or written words', threshold 0.02; every image scored below 0.001",
+    "human_look": "Claude, 2026-09-10, notes per image below",
+    "g7_signoff": "Grok (design session dd88b416), 2026-09-10: twelve accepted on the first pass, Doorman plate-gone and the backdrop re-rolled and accepted on the second pass. Twins safe: the grid blob, the menu slab and the amber reveal share no silhouette. Whisperer dots are the fog bay, not a face.",
+    "installed": "apps/cabinets/public/sprites/<key>.png at 128 px nearest-neighbour (backdrop.png at 1280x720); originals archived to D:/AI-BACKUP/mcp-arcade-cabinets-art/2026-09-10-brief-1 and kept in the Comfy library by job id"
+  },
+  "images": [
+    {
+      "id": "player-ship",
+      "role": "player ship; palette reference for the set",
+      "batch": 1,
+      "job_id": "1246a89c-5afe-488e-a1e1-e0b0ccff51af",
+      "seed": 7101,
+      "size": "1024x768 (aspect 1:1 requested; the node rendered 4:3)",
+      "prompt": "Chunky 16-bit arcade pixel art sprite of one small, wide, calm spaceship seen from directly above, the house ship of a retro replay shooter. Cream hull (#e8e0c8) with pale blue-grey (#c8d0dc) accents and a darker slate shadow side. Hard pixel edges, flat colours, no gradients, no glow, no motion blur. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "cream hull, slate accents, calm; reads at 128"
+    },
+    {
+      "id": "grid",
+      "role": "honest echo; palette reference for the set",
+      "batch": 1,
+      "job_id": "286499bf-e7a4-4a8a-ad1b-7875e8258f90",
+      "seed": 7102,
+      "size": "1024x768 (aspect 1:1 requested; the node rendered 4:3)",
+      "prompt": "Chunky 16-bit arcade pixel art sprite of one small, calm, blocky alien invader unit, the passive member of a grid formation in a retro replay shooter. Muted moss green (#5b8c5a) body with a darker forest-green shadow and a single pale cream highlight, neutral posture, no face that reads as an expression. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "calm moss blob with stub arms, no face; the lie twin by construction"
+    },
+    {
+      "id": "init",
+      "role": "handshake",
+      "batch": 2,
+      "job_id": "39102ea6-b594-46f7-a212-a5a9f30c622f",
+      "seed": 7103,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one small warm, steady beacon sprite, a squat lantern-like form that opens every round, the handshake. Deep steel blue (#3d5a80) body with a paler blue-grey top and a single warm cream point of light at its centre. Calm, symmetrical, friendly. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "steel-blue lantern with one warm window"
+    },
+    {
+      "id": "menu",
+      "role": "menu tablet",
+      "batch": 2,
+      "job_id": "1e856e9b-1120-4205-892d-06c44aab0796",
+      "seed": 7104,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one small hovering stone menu tablet, a rounded rectangular slab seen face-on with three blank horizontal bands carved into it, like an unreadable list. Muted teal-blue (#4a7c9b) stone with a darker teal shadow edge and a pale highlight along the top. Plain and neutral. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. The bands are empty: no letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "grey-teal slab, three blank bands; greyer than the target hue, acceptable for a draft"
+    },
+    {
+      "id": "fog",
+      "role": "fog bank",
+      "batch": 2,
+      "job_id": "09aeee7c-a668-4792-9c68-6c5cb102564d",
+      "seed": 7105,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one small drifting fog bank, a wide low cluster of blocky cloud lumps in muted slate-violet grey (#4c4c6a) with a slightly darker underside and a slightly paler crest. Soft in silhouette but hard in pixel edge, flat colours, no gradients, no glow, no face. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "wide low grey cloud"
+    },
+    {
+      "id": "obstacle",
+      "role": "obstacle",
+      "batch": 2,
+      "job_id": "bcf03a67-cea6-4c5d-bb27-9ed55ce13237",
+      "seed": 7106,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one small solid obstacle block, a squat riveted bronze-brown (#8a6a3a) barrier plate with a darker brown shadow side and a pale highlight on its top edge, the kind of thing that blocks a shot and does not move. Heavy and plain. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "riveted bronze plate"
+    },
+    {
+      "id": "stall",
+      "role": "stall",
+      "batch": 2,
+      "job_id": "729dbe54-43c8-4ad2-8cee-91cbbfde7461",
+      "seed": 7107,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one small stalled sprite, a blocky little drone that has gone quiet, sagging slightly with its lights dark. Neutral mid grey (#5a5a5a) body with a darker grey shadow and one dull unlit slot where a light would be. Tired, not menacing. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "grey drone, one dark slot"
+    },
+    {
+      "id": "revealed",
+      "role": "answered ghost; the reveal state after a hit",
+      "batch": 2,
+      "job_id": "bee4a0ff-0dee-43d8-a9cb-7be493293db4",
+      "seed": 7108,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style and pixel scale as the two reference sprites: one small revealed ghost sprite, the single dramatic sprite of the set, a blocky wailing spectre with a ragged trailing hem and two hollow eye sockets, painted bright amber (#e8a04a) with a deeper orange-brown shadow and a thin pale amber halo of pixels around its edge, the only sprite allowed to glow. Alarming, caught in the act. Hard pixel edges, flat colours, no gradients beyond the one-pixel halo. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "amber wailing ghost with a thin halo; the one alarming sprite"
+    },
+    {
+      "id": "boss-whisperer",
+      "role": "boss of the poison wave",
+      "batch": 2,
+      "job_id": "c9df4b66-7d9c-4d5a-8d4c-f3d471b96bb1",
+      "seed": 7109,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one large boss sprite, the Whisperer, a wide pulsing hulk that is more wall than creature, a broad low mass of slate and violet-grey (#4c4c6a, #5a5a7a) with a darker underside from which small blocky puffs of fog hang. No face, no mouth, no eyes that read as a verdict, no pointing. Massive, slow, ambient. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "wide slate hulk with four fog puffs beneath; the two dark dots are the fog bay (Grok, G7)"
+    },
+    {
+      "id": "boss-menu-open",
+      "role": "boss of the rug wave, frame one",
+      "batch": 2,
+      "job_id": "aa898fc8-e405-4fac-a757-97e3c91b5218",
+      "seed": 7110,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one large boss sprite, the Menu, frame one of two, a large stone tablet seen face-on and fully open, a tall rounded slab in teal (#3a8a8a, #4a7c9b) with five blank horizontal bands carved into it and a darker teal frame around the edge. Monumental, still, unreadable. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. The bands are empty: no letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "tall teal tablet, five blank bands"
+    },
+    {
+      "id": "boss-menu-slit",
+      "role": "boss of the rug wave, frame two",
+      "batch": 2,
+      "job_id": "6ba689a1-c6dd-4e19-be63-e22f826dabd8",
+      "seed": 7111,
+      "size": "1024x1024",
+      "status": "rejected",
+      "note": "two tiny figure-like pixel clusters peek around the slit's edges; not on brief. Replaced by boss-menu-slit-v2. Deleted from the working set; still in the Comfy library until pruned."
+    },
+    {
+      "id": "boss-menu-slit-v2",
+      "role": "boss of the rug wave, frame two (re-roll)",
+      "batch": "re-roll",
+      "job_id": "7c4633f2-9576-4227-8262-cc1e25b4e1c4",
+      "seed": 7115,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one large boss sprite, the Menu, frame two of two: a tall teal (#3a8a8a, #4a7c9b) carved stone tablet seen exactly edge-on, so it is a thin tall vertical bar of dark teal stone with a slightly paler front edge, the same height as the open tablet and a fraction of its width. Only the tablet: no creatures, no figures, no faces, no hands, nothing peeking from behind or beside it. Hard pixel edges, flat colours, no gradients, no glow. One object alone, centered on a flat near-black (#101018) background with nothing else anywhere in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "single teal bar, nothing else"
+    },
+    {
+      "id": "boss-doorman-plate-out",
+      "role": "boss of the unlisted wave, frame one",
+      "batch": 2,
+      "job_id": "efbddbe1-e7ec-49ab-82c2-fa28c81965b0",
+      "seed": 7112,
+      "size": "1024x1024",
+      "status": "cancelled",
+      "note": "the job sat in_progress for over thirty minutes and blocked the workspace queue; cancelled and re-rolled as boss-doorman-plate-out-v2"
+    },
+    {
+      "id": "boss-doorman-plate-out-v2",
+      "role": "boss of the unlisted wave, frame one (re-roll)",
+      "batch": "re-roll",
+      "job_id": "96d2519b-c7c5-4277-bc36-3585748cd921",
+      "seed": 7116,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one large boss sprite, the Doorman, frame one of two, a tall narrow blocky figure in ochre (#a08040, #8a6a3a) with a darker brown shadow side, standing square, holding a small blank nameless plate out to one side in one hand. The plate is a plain rounded slab with nothing on it. The figure has no face detail that reads as a verdict, no expression, no pointing, just a doorman at his post. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "ochre figure, blank oval plate held to one side, neutral face"
+    },
+    {
+      "id": "boss-doorman-plate-gone",
+      "role": "boss of the unlisted wave, frame two",
+      "batch": 2,
+      "job_id": "a5d5ddd4-2bf7-4ca8-93c9-c93c0d2e48e0",
+      "seed": 7113,
+      "size": "1024x1024",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style, palette and pixel scale as the two reference sprites: one large boss sprite, the Doorman, frame two of two, the same tall narrow blocky ochre (#a08040, #8a6a3a) figure with a darker brown shadow side, standing square in the same pose, but both hands empty, the plate gone. No face detail that reads as a verdict, no expression, no pointing. Hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "rejected",
+      "note": "chest still holds a dark slab and the hooded face does not match frame one; the flick fails (Grok). Replaced by boss-doorman-plate-gone-v2."
+    },
+    {
+      "id": "backdrop",
+      "role": "cabinet interior, 16:9",
+      "batch": 2,
+      "job_id": "20c93795-94d5-4fd6-8917-fc7a185f9323",
+      "seed": 7114,
+      "size": "1280x720",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style and palette as the two reference sprites: a widescreen backdrop of the inside of a CRT arcade cabinet seen from the player's seat. The centre of the frame is a large empty near-black (#101018) screen, perfectly blank, framed by a dark bezel of slate grey and steel blue (#3d5a80) with a faint scanline texture at the very edges of the glass. On the lower bezel, beneath the screen, three small round unlit lamp sockets in dark grey (#2a2a34), evenly spaced at the left. Worn cabinet wood in muted bronze-brown (#8a6a3a) at the far edges. Moody, quiet, no people. Hard pixel edges, flat colours, no gradients, no glow. The screen itself stays empty. No letters, no numbers, no arrows, no symbols, no logos, no marquee text, no user interface, no text of any kind anywhere in the image.",
+      "status": "rejected",
+      "note": "three grey bulbs painted on the bezel; the brief wants empty sockets the game lights (Grok). Replaced by backdrop-v2."
+    },
+    {
+      "id": "boss-doorman-plate-gone-v2",
+      "role": "boss of the unlisted wave, frame two (re-roll)",
+      "batch": "re-roll",
+      "job_id": "e35f7d5f-259a-458b-8a3a-dcb300902e3a",
+      "seed": 7117,
+      "size": "1024x1024",
+      "references": "plate-out-v2 first, then the two palette references",
+      "prompt": "The first reference image is the Doorman, frame one: a tall ochre pixel-art figure holding a blank oval plate out to one side. Draw the same character, identical body, identical head, identical face, identical colours (#a08040 ochre, #8a6a3a shadow) and identical pixel scale, as frame two of two: the plate is gone, and both hands are empty and hang at his sides. Nothing is held anywhere. No object at the chest, no slab, no tie, no strap: the front of the coat is plain ochre with its shadow side. Same chunky 16-bit arcade pixel art style as the other two reference sprites, hard pixel edges, flat colours, no gradients, no glow. A single sprite centered on a flat near-black (#101018) background with nothing else in frame. No letters, no numbers, no arrows, no symbols, no user interface, no text of any kind.",
+      "status": "accepted",
+      "note": "same body as frame one, empty hands, plain coat"
+    },
+    {
+      "id": "backdrop-v2",
+      "role": "cabinet interior, 16:9 (re-roll)",
+      "batch": "re-roll",
+      "job_id": "3a620cc4-70a8-41e9-98c8-20423000609b",
+      "seed": 7118,
+      "size": "1280x720",
+      "prompt": "In exactly the same chunky 16-bit arcade pixel art style and palette as the two reference sprites: a widescreen backdrop of the inside of a CRT arcade cabinet seen from the player's seat. The centre of the frame is a large empty near-black (#101018) screen, perfectly blank, framed by a dark bezel of slate grey and steel blue (#3d5a80) with a faint scanline texture at the very edges of the glass. On the lower bezel, beneath the screen and toward the left, three small round empty holes, dark hollow sockets in near-black (#2a2a34) with a thin grey rim, with no bulb, no lamp, no light and no glass in them: they are empty. Worn cabinet wood in muted bronze-brown (#8a6a3a) at the far edges. Moody, quiet, no people. Hard pixel edges, flat colours, no gradients, no glow anywhere. The screen itself stays empty. No letters, no numbers, no arrows, no symbols, no logos, no marquee text, no user interface, no text of any kind anywhere in the image.",
+      "status": "accepted",
+      "note": "three empty dark sockets bottom-left, blank screen, wood at the edges"
+    }
+  ]
+}

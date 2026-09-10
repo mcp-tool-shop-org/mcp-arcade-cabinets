@@ -67,10 +67,12 @@ describe('renderRound', () => {
     state.caption = { text: 'tools/call leak', t: 1 };
     state.scene = { tapeId: state.tapeId, cleared: ['a'] };
     const ctx = makeTextCtx();
-    renderRound(ctx, state, { furniture: ['server the-fixture', 'policy naive'] });
+    renderRound(ctx, state, { furniture: ['naive-ndjson', 'server the-fixture', 'policy naive'] });
     expect(ctx.texts.length).toBeGreaterThan(0);
     for (const t of ctx.texts) expect(t).not.toMatch(FORBIDDEN);
-    expect(ctx.texts.join('\n')).toMatch(/tape bout_render/);
+    // The bout id is hex; it never reaches the canvas, and a live caption is dropped at the end.
+    expect(ctx.texts.join('\n')).not.toMatch(/bout_render/);
+    expect(ctx.texts.join('\n')).not.toMatch(/leak/);
     expect(ctx.texts.join('\n')).toMatch(/policy naive/);
   });
 

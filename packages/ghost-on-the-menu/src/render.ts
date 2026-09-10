@@ -212,7 +212,8 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
       }
       continue;
     }
-    ctx.fillStyle = fillFor(enemy.sprite, enemy.revealed);
+    // A revealed lie is always in `caught` and drawn above; this path is pre-hit.
+    ctx.fillStyle = fillFor(enemy.sprite, false);
     drawFormation(rect, sprite, enemy);
   }
 
@@ -239,7 +240,9 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     ctx.fillRect(0, top, FIELD.width, FIELD.height - top);
   }
 
-  if (state.caption) {
+  // A caption still live when the round ends is not drawn: the end scene
+  // names the tape, the server and the policy and nothing more (G10).
+  if (state.caption && !state.scene) {
     ctx.fillStyle = REVEALED_FILL;
     ctx.font = '12px monospace';
     ctx.fillText(state.caption.text, 16, FIELD.height - BEZEL_H - 30);
@@ -254,10 +257,11 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   }
 
   if (state.scene) {
+    // Furniture only, and only what the shell passes: the tape by name, the
+    // server, the policy. The bout id is hex and never goes on the canvas.
     ctx.fillStyle = FURNITURE;
     ctx.font = '12px monospace';
-    ctx.fillText(`tape ${state.scene.tapeId}`, 16, 46);
-    let y = 62;
+    let y = 46;
     for (const line of opts.furniture ?? []) {
       ctx.fillText(line, 16, y);
       y += 16;

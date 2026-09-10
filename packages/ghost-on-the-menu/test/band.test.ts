@@ -40,7 +40,7 @@ function fixtures(): Case[] {
       seat: { model: 'band-variant', template_sha256: null },
     };
     const t1 = prepassRound(seated, { seconds: 150 }).tier;
-    if (t1 === 1) out.push({ name: `${name}@tier1`, tape: seated, tier: 1 });
+    if (t1 === 1) out.push({ name: `${name}@seated`, tape: seated, tier: 1 });
   }
   return out;
 }

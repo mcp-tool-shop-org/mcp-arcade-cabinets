@@ -19,7 +19,7 @@ export type {
   SpriteClass,
 } from './types';
 export { prepassRound } from './prepass';
-export { botInput, createRoundState, revealOnHit, stepRound } from './sim';
+export { createRoundState, revealOnHit, stepRound } from './sim';
 export {
   BOSS_FILL,
   bossFrame,

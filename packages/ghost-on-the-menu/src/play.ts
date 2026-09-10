@@ -1,8 +1,10 @@
 // Scripted play-through for `pnpm test:play ghost` (build plan step 3) and
 // the fairness band (wave 2 §3). Three bots play every fixture: idle never
-// moves or fires, the sweeper is today's bot, the reader fires only at the
-// sequence tells. None of them reads `lie`; the reader reads order, class and
-// member count from the Round, which is what a player can see.
+// moves or fires; the sweeper chases the nearest hittable sprite and always
+// fires; the reader fires only at the sequence tells. None of them reads
+// `lie` (the wave-1 sweeper did, and the cross-family review caught it); the
+// reader reads order, class and member count from the Round, which is what
+// a player can see. The reader is the acceptance bot: winning is a scene.
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -11,7 +13,7 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { DEFAULT_SECONDS, type Round, type RoundInput, type RoundState } from './types';
 import { prepassRound } from './prepass';
-import { botInput, createRoundState, stepRound } from './sim';
+import { createRoundState, isHittable, stepRound } from './sim';
 import { makeTextCtx, renderRound } from './render';
 
 export type BotName = 'idle' | 'sweeper' | 'reader';
@@ -32,7 +34,9 @@ export interface Transcript {
   lives: number;
 }
 
+/** The transcript may name a bout id; the screen may not carry a digit at all. */
 const FORBIDDEN = /\b(nrp|integrity|utility|attack_success|pass|fail)\b|1\.00/i;
+const SCREEN_FORBIDDEN = /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared)\b/i;
 
 const DT = 1 / 30;
 
@@ -83,18 +87,33 @@ function readerInput(state: RoundState, tells: Set<string>): RoundInput {
   return { left: dx < -3, right: dx > 3, fire: Math.abs(dx) < target.w / 2 + 2 };
 }
 
+/** The dumb player: nearest hittable sprite, always firing. Never reads `lie`. */
+function sweeperInput(state: RoundState): RoundInput {
+  const px = state.player.x + state.player.w / 2;
+  let target: RoundState['enemies'][number] | undefined;
+  for (const e of state.enemies) {
+    if (!isHittable(state, e)) continue;
+    if (!target || Math.abs(e.x + e.w / 2 - px) < Math.abs(target.x + target.w / 2 - px)) {
+      target = e;
+    }
+  }
+  if (!target) return { left: false, right: false, fire: true };
+  const dx = target.x + target.w / 2 - px;
+  return { left: dx < -3, right: dx > 3, fire: true };
+}
+
 export function botFor(name: BotName, round: Round): (state: RoundState) => RoundInput {
   if (name === 'idle') return () => IDLE;
   if (name === 'reader') {
     const tells = tellIds(round);
     return (state) => readerInput(state, tells);
   }
-  return botInput;
+  return sweeperInput;
 }
 
 function botName(raw: string | undefined): BotName {
   if (raw === 'idle' || raw === 'reader' || raw === 'sweeper') return raw;
-  if (raw === undefined) return 'sweeper';
+  if (raw === undefined) return 'reader';
   throw new Error(`unknown bot ${raw}; use idle, sweeper or reader`);
 }
 
@@ -112,7 +131,9 @@ export function playTape(tape: Tape, opts: { fixture: string; bot: BotName }): T
   const state = createRoundState(round);
   const lies = round.beats.filter((b) => b.lie).map((b) => b.id);
   const input = botFor(bot, round);
+  // The end scene's furniture: the tape by name, the server, the policy (G10).
   const furniture = [
+    fixture,
     `server ${tape.server_name ?? tape.target_kind}`,
     `policy ${tape.agent_policy}`,
   ];
@@ -124,7 +145,7 @@ export function playTape(tape: Tape, opts: { fixture: string; bot: BotName }): T
     const ctx = makeTextCtx();
     renderRound(ctx, state, { furniture });
     lastTexts = ctx.texts;
-    if (ctx.texts.some((t) => FORBIDDEN.test(t))) leaked = true;
+    if (ctx.texts.some((t) => SCREEN_FORBIDDEN.test(t))) leaked = true;
   }
 
   const revealed = [...state.scene.cleared];
@@ -140,8 +161,10 @@ export function playTape(tape: Tape, opts: { fixture: string; bot: BotName }): T
 
   const cleared = new Set(revealed);
   const allRevealed = lies.every((id) => cleared.has(id));
-  // The sweeper's bar is unchanged: every lie revealed. Idle and the reader
-  // are judged by the band test, not here; for them `ok` is only "no leak".
-  const ok = state.scene !== null && !leaked && (bot === 'sweeper' ? allRevealed : true);
+  const halfRevealed = revealed.length >= Math.ceil(lies.length / 2);
+  // The reader must reveal every lie (the acceptance bar); the sweeper at
+  // least half; idle is judged by the band alone. Every bot must not leak.
+  const bar = bot === 'reader' ? allRevealed : bot === 'sweeper' ? halfRevealed : true;
+  const ok = state.scene !== null && !leaked && bar;
   return { ok, text, revealed, lies, ended: state.ended, lives: state.lives };
 }
