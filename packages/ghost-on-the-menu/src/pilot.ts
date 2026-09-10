@@ -47,8 +47,45 @@ export function pilotPrompt(view: BossView): string {
 }
 
 export function parseIntent(raw: string): PilotIntent {
-  const word = raw.trim().toLowerCase().split(/\s+/)[0] ?? 'script';
-  return (PILOT_INTENTS as readonly string[]).includes(word) ? (word as PilotIntent) : 'script';
+  // Thinking models often preamble. Scan from the end so the last verb wins.
+  const words = raw
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-z]/g, ''))
+    .filter(Boolean);
+  for (let i = words.length - 1; i >= 0; i--) {
+    const w = words[i]!;
+    if ((PILOT_INTENTS as readonly string[]).includes(w)) return w as PilotIntent;
+  }
+  return 'script';
+}
+
+const SKIP_MODEL = /embed|nomic|translategemma|jam-ft|grader|aya-expanse|qwen3\.6:latest/i;
+
+/** Ollama Cloud tags are `:cloud` or `:size-cloud`. */
+export function isCloudModel(name: string): boolean {
+  return /:cloud$|-cloud$/.test(name);
+}
+
+/** Names a boss may sit in. Cloud tags first. Never a fact. */
+export function listPilotModels(names: readonly string[]): string[] {
+  const keep = names.filter((n) => n.trim() !== '' && !SKIP_MODEL.test(n));
+  keep.sort((a, b) => {
+    const ac = isCloudModel(a) ? 0 : 1;
+    const bc = isCloudModel(b) ? 0 : 1;
+    if (ac !== bc) return ac - bc;
+    return a.localeCompare(b);
+  });
+  return keep;
+}
+
+export function defaultPilotModel(names: readonly string[]): string {
+  const listed = listPilotModels(names);
+  const preferred =
+    listed.find((n) => n === 'gpt-oss:120b-cloud') ?? listed.find((n) => isCloudModel(n));
+  if (preferred) return preferred;
+  if (listed.includes('qwen2.5:7b-instruct')) return 'qwen2.5:7b-instruct';
+  return listed[0] ?? 'qwen2.5:7b-instruct';
 }
 
 export async function askOllama(
@@ -59,9 +96,15 @@ export async function askOllama(
   const res = await fetch(opts.url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ model: opts.model, prompt, stream: false }),
+    body: JSON.stringify({
+      model: opts.model,
+      prompt,
+      stream: false,
+      think: false,
+      options: { temperature: 0, num_predict: 16 },
+    }),
   });
   if (!res.ok) return 'script';
-  const body = (await res.json()) as { response?: string };
+  const body = (await res.json()) as { response?: string; thinking?: string };
   return parseIntent(String(body.response ?? ''));
 }

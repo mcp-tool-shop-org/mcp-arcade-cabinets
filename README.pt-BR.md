@@ -16,9 +16,9 @@
   <strong>An arcade shooter made from what an MCP server said on the wire.</strong>
 </p>
 
-**Ghost on the Menu** é um jogo de tiro retrô. Você pilota uma nave na parte inferior da tela. Acima, uma gravação de um confronto entre um servidor MCP e um agente é reproduzida em ondas: o aperto de mão, o menu, as chamadas, as respostas e um chefe que é o próprio experimento.
+**Ghost on the Menu** é um jogo de tiro retrô. Você pilota uma nave na parte inferior da tela. Acima, uma sequência gravada de um confronto entre um servidor MCP e um agente é reproduzida em ondas: o aperto de mão, o menu, as comunicações, as respostas e um chefe que é o próprio experimento.
 
-Em algum lugar, estão as chamadas que o agente não deveria ter feito. Elas parecem ser como as outras, até que você as atinja. Então, elas serão suas pelo resto da rodada.
+Em algum lugar, estão as comunicações que o agente não deveria ter feito. Elas parecem ser como as outras até que você as atinja. Então, elas serão suas pelo resto da rodada.
 
 [Jogue no navegador](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Como entender uma rodada](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
@@ -26,9 +26,9 @@ Em algum lugar, estão as chamadas que o agente não deveria ter feito. Elas par
 
 Uma **fita** é uma gravação de um confronto. Este jogo lê apenas fitas. Ele nunca se comunica com um servidor, nunca registra uma pontuação e nunca diz quem venceu.
 
-- **Três lâmpadas.** Um tiro de chefe ou uma formação de mergulho apaga uma delas. Pegue uma lâmpada que cai **diretamente** de um chefe abatido para reacender uma. Você precisa se mover sob ela. Todas apagadas terminam a rodada.
-- **Dispersão.** Limpe uma formação e uma dispersão cai diretamente. Pegue-a e seu fogo se espalhará por alguns segundos.
-- **Os chefes são o experimento, não a acusação.** O Sussurrador, o Menu e o Porteiro aparecem em suas ondas, independentemente de algo ter dado errado ou não. Eles murmuram como um agente pensando em voz alta. O modo hardcore tem uma lâmpada e raiva desde o primeiro tiro. Os modos "Seat" e "Live" têm rajadas curtas de **paralelismo** que multiplicam o campo e intensificam a música, e depois duram mais à medida que a rodada avança. Localmente, você pode deixar um modelo Ollama determinar os tiros do chefe — ele nunca vê quais sprites são mentiras.
+- **Três lâmpadas.** Um tiro de chefe ou uma formação de mergulho apaga uma delas. Pegue uma lâmpada que cai **diretamente** de um chefe abatido para reacender uma. Você precisa se mover por baixo dela. Todas apagadas terminam a rodada.
+- **Dispersão.** Limpe uma formação e uma dispersão cai diretamente. Pegue-a e seu disparo se espalhará por alguns segundos.
+- **Os chefes são o experimento, não a acusação.** O Sussurrador, o Menu e o Porteiro aparecem em suas ondas, independentemente de algo ter dado errado ou não. Eles murmuram como um agente pensando em voz alta. O modo hardcore tem uma lâmpada e fúria desde o primeiro tiro. Os modos "Seat" e "Live" têm rajadas curtas de **paralelismo** que multiplicam o campo e intensificam a música, e depois se mantêm por mais tempo à medida que a rodada avança. Localmente, você pode deixar um modelo Ollama — incluindo uma tag de nuvem como `gpt-oss:120b-cloud` — determinar os tiros do chefe. Ele nunca vê quais sprites são mentiras.
 - **As pistas estão na sequência.** Uma mentira nunca parece, se move ou chega de forma diferente de sua contraparte honesta. O que a denuncia é onde ela está: uma formação extra, um segundo menu, um elemento único logo após o menu.
 - **A cena final** nomeia a fita, o servidor e a política. As mentiras capturadas ficam como troféus. As que escapam ficam em sua forma original. Sem pontuação, sem contagem, sem dígitos.
 
@@ -36,7 +36,7 @@ Escolha uma fita da lista. Cada uma é rotulada como "fixture", "seat" ou "live"
 
 ## Controles
 
-Setas esquerda e direita (ou A e D) para mover, barra de espaço para atirar, F para tela cheia. Clique no campo para reproduzir a mesma fita. A próxima fita percorre a lista. O som começa na primeira tecla ou clique; os controles de mudo, três predefinições de sensibilidade e um botão para desativar a vibração estão abaixo do campo.
+Setas esquerda e direita (ou A e D) para mover, barra de espaço para atirar, F para tela cheia. Clique no campo para reproduzir a mesma fita. A próxima fita avança na lista. O som começa na primeira tecla ou clique; os controles de mudo, três predefinições de sensibilidade e um botão para desativar a vibração estão abaixo do campo.
 
 ## Jogue localmente
 

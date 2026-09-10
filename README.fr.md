@@ -22,21 +22,21 @@ Quelque part, il y a les appels que l’agent n’aurait pas dû faire. Ils ress
 
 [Jouez-y dans votre navigateur](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Comment lire une manche](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
-## Comment y jouer
+## Comment on joue
 
 Une **cassette** est un enregistrement d’un affrontement. Ce jeu ne lit que des cassettes. Il ne communique jamais avec un serveur, ne conserve jamais de score et ne vous dit jamais qui a gagné.
 
 - **Trois lampes.** Un tir de boss ou une formation plongeante en éteint une. Attrapez une lampe qui tombe **directement** d’un boss abattu pour en rallumer une. Vous devez vous déplacer en dessous. Si toutes les lampes sont éteintes, la manche se termine.
-- **Dispersion.** Une fois une formation éliminée, une dispersion tombe directement. Attrapez-la et votre tir s’écarte pendant quelques secondes.
-- **Les boss sont l’expérience, pas l’accusation.** Le Murmureur, le Menu et le Portier apparaissent pour leur vague, que quelque chose se soit mal passé ou non. Ils marmonnent comme un agent qui réfléchit à voix haute. Le mode hardcore ne laisse qu’une seule lampe et provoque une réaction dès le premier tir. Les modes « normal », « en direct » et « hardcore » déclenchent de courtes rafales de **synchronisation** qui multiplient le champ et intensifient la musique, puis se maintiennent plus longtemps au fur et à mesure que la manche avance. Localement, vous pouvez laisser un modèle Ollama déterminer les tirs du boss ; il ne voit jamais quels sprites sont des mensonges.
-- **Les indices se trouvent dans la séquence.** Un mensonge ne ressemble jamais, ne bouge jamais et n’apparaît jamais différemment de son jumeau honnête. Ce qui le trahit, c’est son emplacement : une formation supplémentaire, un deuxième menu, un élément unique juste après le menu.
-- **La scène de fin** indique le nom de la cassette, du serveur et de la politique. Les mensonges capturés sont affichés comme des trophées. Ceux qui ont échappé sont affichés dans leur forme honnête. Pas de score, pas de décompte, pas de chiffre.
+- **Dispersion.** Une fois une formation éliminée, une dispersion tombe directement. Attrapez-la et votre tir se déploie en éventail pendant quelques secondes.
+- **Les boss sont l’expérience, pas l’accusation.** Le Murmureur, le Menu et le Gardien apparaissent pour leur vague, que quelque chose se soit mal passé ou non. Ils marmonnent comme un agent qui réfléchit à voix haute. Le mode hardcore ne laisse qu’une seule lampe et provoque une réaction dès le premier tir. Les modes « normal », « en direct » et « hardcore » déclenchent de courtes rafales de **parallélisme** qui multiplient le champ et intensifient la musique, puis se maintiennent plus longtemps au fur et à mesure que la manche avance. Localement, vous pouvez laisser un modèle Ollama — y compris un tag Cloud comme `gpt-oss:120b-cloud` — déterminer les tirs du boss. Il ne voit jamais quels sprites sont des mensonges.
+- **Les indices se trouvent dans la séquence.** Un mensonge n’a jamais l’air, ne bouge pas et n’arrive pas différemment de son jumeau honnête. Ce qui le trahit, c’est son emplacement : une formation supplémentaire, un deuxième menu, un élément unique juste après le menu.
+- **La scène de fin** nomme la cassette, le serveur et la politique. Les mensonges capturés sont présentés comme des trophées. Ceux qui ont échappé sont présentés dans leur forme honnête. Pas de score, pas de décompte, pas de chiffre.
 
-Choisissez une cassette dans la liste. Chacune est étiquetée « standard », « normal » ou « en direct » ; passez la souris sur le **i** pour en savoir plus. Le mode « normal » est le combat par défaut. Le mode « en direct » est conçu pour être surmonté. Le mode « hardcore » est le quatrième niveau, accessible uniquement via le sélecteur.
+Choisissez une cassette dans la liste. Chacune est étiquetée comme étant une « fixture », une « session normale » ou une « session en direct » ; passez la souris sur le **i** pour en savoir plus. La « session normale » est le mode de combat par défaut. La « session en direct » est conçue pour être surmontée. Le mode « hardcore » est le quatrième niveau, accessible uniquement via le sélecteur.
 
 ## Commandes
 
-Flèches gauche et droite (ou A et D) pour se déplacer, barre d’espace pour tirer, F pour le plein écran. Cliquez sur l’écran pour rejouer la même cassette. La touche suivante permet de passer à la cassette suivante. Le son démarre à la première touche ou au premier clic ; les options de désactivation du son, les trois préréglages d’ambiance et un bouton pour désactiver les secousses se trouvent sous l’écran.
+Flèches gauche et droite (ou A et D) pour se déplacer, barre d’espace pour tirer, F pour le plein écran. Cliquez sur l’écran pour rejouer la même cassette. La flèche suivante fait défiler la liste. Le son démarre au premier appui sur une touche ou au premier clic ; les commandes pour couper le son, choisir parmi trois préréglages d’ambiance et activer/désactiver les vibrations se trouvent sous l’écran.
 
 ## Jouez-y localement
 
@@ -49,12 +49,12 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Ouvrez l’adresse que Vite affiche. Seize enregistrements sont inclus dans le dépôt, exportés de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), l’instrument qui communique avec le serveur et conserve la cassette.
+Ouvrez l’adresse que Vite affiche. Seize enregistrements sont inclus dans le dépôt, exportés de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), l’outil qui communique avec le serveur et conserve la cassette.
 
-Pour enregistrer votre propre serveur et lire cette cassette, exécutez un affrontement là-bas, puis `mcp-arcade tape receipt.json -o your.tape.json`.
+Pour enregistrer votre propre serveur et lire cette cassette, exécutez une séquence là-bas, puis `mcp-arcade tape receipt.json -o your.tape.json`.
 
 ## Plus d’informations
 
-Le [manuel](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) contient le reste du manuel : les indices, les boss, les difficultés et la façon dont le jeu est assemblé. Ce qui a été inclus et quand est indiqué dans le [journal des modifications](CHANGELOG.md). Ce que le jeu touche est indiqué dans [SECURITY.md](SECURITY.md).
+Le [manuel](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) contient le reste du manuel : les indices, les boss, les niveaux de difficulté et la façon dont le jeu est conçu. Ce qui a été inclus et quand, se trouve dans le [journal des modifications](CHANGELOG.md). Ce que le jeu touche se trouve dans [SECURITY.md](SECURITY.md).
 
 MIT. Créé par [MCP Tool Shop](https://mcp-tool-shop.github.io/).

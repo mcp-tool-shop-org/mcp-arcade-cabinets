@@ -18,8 +18,11 @@ import {
   createRoundState,
   cues,
   DEFAULT_SECONDS,
+  defaultPilotModel,
   FIELD,
   hpWord,
+  isCloudModel,
+  listPilotModels,
   prepassRound,
   renderRound,
   snapshot,
@@ -89,7 +92,34 @@ export function mountGhost(
   ollama.checked = false;
   ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
   ollamaLabel.title =
-    'Local only. The boss asks a local model how to fire. It never sees which sprites are lies. Needs the local game, not Pages.';
+    'Local daemon or Ollama Cloud. The boss never sees which sprites are lies. Needs the local game, not Pages.';
+  const pilotModel = document.createElement('select');
+  const localDefault = 'qwen2.5:7b-instruct';
+  const seedOpt = document.createElement('option');
+  seedOpt.value = localDefault;
+  seedOpt.textContent = localDefault;
+  pilotModel.append(seedOpt);
+  pilotModel.value = localDefault;
+  pilotModel.title = 'Cloud tags first when the local daemon has signed in.';
+  void fetch('/ollama/api/tags')
+    .then((r) => (r.ok ? r.json() : Promise.reject()))
+    .then((body: { models?: { name?: string }[] }) => {
+      const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
+      const listed = listPilotModels(names);
+      if (listed.length === 0) return;
+      const pick = defaultPilotModel(listed);
+      pilotModel.replaceChildren();
+      for (const name of listed) {
+        const o = document.createElement('option');
+        o.value = name;
+        o.textContent = isCloudModel(name) ? `${name} (cloud)` : name;
+        pilotModel.append(o);
+      }
+      pilotModel.value = pick;
+    })
+    .catch(() => {
+      /* local daemon down: keep the 7B default */
+    });
   const full = document.createElement('button');
   full.textContent = 'Full screen';
   const difficulty = document.createElement('select');
@@ -105,7 +135,7 @@ export function mountGhost(
   nextBtn.textContent = 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
-  controls.append(full, difficulty, mute, intensity, shakeLabel, ollamaLabel, nextBtn);
+  controls.append(full, difficulty, mute, intensity, shakeLabel, ollamaLabel, pilotModel, nextBtn);
 
   const hint = document.createElement('p');
   hint.className = 'muted';
@@ -266,7 +296,7 @@ export function mountGhost(
         motion: 'fight',
       };
       pilotBusy = true;
-      void askOllama(view, { url: '/ollama/api/generate', model: 'qwen2.5:7b-instruct' })
+      void askOllama(view, { url: '/ollama/api/generate', model: pilotModel.value || localDefault })
         .then((intent) => {
           if (state.boss && state.boss.alive) state.bossIntent = intent;
         })

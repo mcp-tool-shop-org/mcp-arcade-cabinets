@@ -26,13 +26,13 @@ En algún lugar de esa secuencia se encuentran las comunicaciones que el agente 
 
 Una **cinta** es una grabación de un enfrentamiento. Este juego solo reproduce cintas. Nunca se comunica con un servidor, nunca guarda una puntuación y nunca te dice quién ganó.
 
-- **Tres lámparas.** Un disparo de un jefe o una formación de vuelo en picado apaga una de ellas. Recoge una lámpara que caiga **directamente** desde un jefe derribado para volver a encender una. Debes moverte debajo de ella. Si se apagan todas, la ronda termina.
-- **Dispersión.** Elimina una formación y una dispersión caerá directamente. Recógela y tu disparo se extenderá durante unos segundos.
-- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Murmuran como un agente que piensa en voz alta. El modo hardcore tiene una sola lámpara y enfado desde el primer disparo. Los modos "Seat", "Live" y "Hardcore" tienen breves ráfagas de **paralelismo** que multiplican el campo y aumentan la intensidad de la música, y luego se mantienen más tiempo a medida que avanza la ronda. Localmente, puedes permitir que un modelo de Ollama determine los disparos del jefe; nunca verá cuáles son las imágenes falsas.
+- **Tres lámparas.** Un disparo del jefe o una formación de vuelo en picado apaga una de ellas. Recoge una lámpara que caiga **directamente** desde un jefe derribado para volver a encender una. Debes moverte debajo de ella. Si se apagan todas, la ronda termina.
+- **Dispersión.** Al eliminar una formación, una dispersión cae directamente. Recógela y tu disparo se extenderá durante unos segundos.
+- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Murmuran como un agente que piensa en voz alta. El modo hardcore tiene una sola lámpara y enfado desde el primer disparo. Los modos "Seat", "Live" y "Hardcore" tienen breves ráfagas de **paralelismo** que multiplican el campo y aumentan la intensidad de la música, y luego se mantienen más tiempo a medida que avanza la ronda. Localmente, puedes hacer que un modelo de Ollama (incluida una etiqueta de Cloud como `gpt-oss:120b-cloud`) determine los disparos del jefe. Nunca ve qué sprites son falsos.
 - **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de manera diferente a su contraparte honesta. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú.
-- **La escena final** indica el nombre de la cinta, el servidor y la política. Las mentiras detectadas se muestran como trofeos. Las que se escapan se muestran con su apariencia original. No hay puntuación, ni recuento, ni dígito.
+- **La escena final** nombra la cinta, el servidor y la política. Las mentiras detectadas se muestran como trofeos. Las que escapan se muestran con su apariencia original. No hay puntuación, ni recuento, ni dígito.
 
-Elige una cinta de la lista. Cada una está etiquetada como "fixture", "seat" o "live"; pasa el cursor sobre la **i** para obtener más información. "Seat" es el modo de combate predeterminado. "Live" está diseñado para que se pueda superar. "Hardcore" es el cuarto nivel, disponible solo desde el selector.
+Elige una cinta de la lista. Cada una está etiquetada como "fixture", "seat" o "live"; pasa el cursor sobre la **i** para obtener más información. "Seat" es el modo de combate predeterminado. "Live" está diseñado para ser superado. "Hardcore" es el cuarto nivel, disponible solo desde el selector.
 
 ## Controles
 
@@ -55,6 +55,6 @@ Para grabar tu propio servidor y reproducir esa cinta, ejecuta un enfrentamiento
 
 ## Más
 
-El [manual](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) contiene el resto del manual: las pistas, los jefes, las dificultades y cómo se construye el juego. Lo que se incluyó y cuándo, se encuentra en el [registro de cambios](CHANGELOG.md). Lo que el juego afecta, se encuentra en [SECURITY.md](SECURITY.md).
+El [manual](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) es el resto del manual: las pistas, los jefes, las dificultades y cómo se construye el juego. Lo que se incluyó y cuándo, se encuentra en el [registro de cambios](CHANGELOG.md). Lo que el juego afecta, se encuentra en [SECURITY.md](SECURITY.md).
 
 MIT. Creado por [MCP Tool Shop](https://mcp-tool-shop.github.io/).

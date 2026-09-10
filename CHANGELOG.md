@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Drops fall straight down. You have to move under them; they no longer drift to the ship.
 - Difficulty ramps with the wave index. A fourth rung, hardcore, is selector-only: one lamp, rage from the start, boss hazards.
 - Voice lines are the agent thinking out loud, with asides during a wave. Soundtrack changes key with the experiment and the boss.
-- Handshake ack (`ready`) and error responses are their own classes. An optional local Ollama seat can call boss fire; the prompt never carries a fact.
+- Handshake ack (`ready`) and error responses are their own classes. An optional Ollama seat can call boss fire (local 7B or a signed-in Cloud tag); the prompt never carries a fact.
 - Seat, live and hardcore rounds run longer (waves.json min/max/tail). Parallelism bursts multiply honest copies and heat the soundtrack; the first burst is short, later waves hold it.
 
 ### Added

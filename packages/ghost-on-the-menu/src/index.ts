@@ -41,7 +41,16 @@ export type { Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
 export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
-export { askOllama, columnWord, hpWord, parseIntent, pilotPrompt } from './pilot';
+export {
+  askOllama,
+  columnWord,
+  defaultPilotModel,
+  hpWord,
+  isCloudModel,
+  listPilotModels,
+  parseIntent,
+  pilotPrompt,
+} from './pilot';
 export type { BossView, PilotIntent } from './pilot';
 export type { AudioOut, BedLookup, MediaBed, MusicPattern, Note, SfxName, TrackKey } from './audio';
 // The scripted play-through (`./play`) reads fixtures from disk and is built
