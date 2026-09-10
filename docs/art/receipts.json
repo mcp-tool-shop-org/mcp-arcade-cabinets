@@ -237,6 +237,163 @@
       "prompt": "In exactly the same chunky 16-bit arcade pixel art style and palette as the two reference sprites: a widescreen backdrop of the inside of a CRT arcade cabinet seen from the player's seat. The centre of the frame is a large empty near-black (#101018) screen, perfectly blank, framed by a dark bezel of slate grey and steel blue (#3d5a80) with a faint scanline texture at the very edges of the glass. On the lower bezel, beneath the screen and toward the left, three small round empty holes, dark hollow sockets in near-black (#2a2a34) with a thin grey rim, with no bulb, no lamp, no light and no glass in them: they are empty. Worn cabinet wood in muted bronze-brown (#8a6a3a) at the far edges. Moody, quiet, no people. Hard pixel edges, flat colours, no gradients, no glow anywhere. The screen itself stays empty. No letters, no numbers, no arrows, no symbols, no logos, no marquee text, no user interface, no text of any kind anywhere in the image.",
       "status": "accepted",
       "note": "three empty dark sockets bottom-left, blank screen, wood at the edges"
+    },
+    {
+      "id": "answer",
+      "role": "tools/call response class",
+      "batch": 3,
+      "job_id": "4ad52bb4-65c1-41ce-a920-9ec1566dcb9e",
+      "seed": 7201,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "steel-blue capsule with a cream bar, empty, no glyphs"
+    },
+    {
+      "id": "ready",
+      "role": "handshake ack class",
+      "batch": 3,
+      "job_id": "615e5171-682c-44e6-9980-a2b2200d8cce",
+      "seed": 7202,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "pale teal saucer-beacon with a cream window; not a lantern, distinct from init"
+    },
+    {
+      "id": "error",
+      "role": "error response class",
+      "batch": 3,
+      "job_id": "f728aabd-6595-404e-bc1e-b639922d134f",
+      "seed": 7203,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "cracked rust-red brick, no X, no face"
+    },
+    {
+      "id": "drop-lamp",
+      "role": "lamp pickup",
+      "batch": 3,
+      "job_id": "eba652bf-6073-4514-8a88-8360e6fd0aa9",
+      "seed": 7204,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "gold bulb with a screw collar; reads lit rather than unlit, still a pickup"
+    },
+    {
+      "id": "drop-spread",
+      "role": "spread pickup",
+      "batch": 3,
+      "job_id": "39f11fc1-4321-47ff-95da-f73e3668b9ea",
+      "seed": 7205,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "cyan diamond gem with a cream top facet"
+    },
+    {
+      "id": "hazard-echo",
+      "role": "Whisperer hazard",
+      "batch": 3,
+      "job_id": "0fc34b00-0d9e-42d2-baca-aa53efb4eda8",
+      "seed": 7206,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "slate-violet puff; darker underside, no letters"
+    },
+    {
+      "id": "hazard-band",
+      "role": "Menu hazard",
+      "batch": 3,
+      "job_id": "10e2ea83-fce6-4d38-9e1f-7664666bcf30",
+      "seed": 7207,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "wide empty teal stone band"
+    },
+    {
+      "id": "hazard-plate",
+      "role": "Doorman hazard",
+      "batch": 3,
+      "job_id": "9fd44386-959e-4f77-93d3-d22d87f259aa",
+      "seed": 7208,
+      "size": "1024x768",
+      "status": "rejected",
+      "note": "four objects on a grey field (meteor, gold slab, grey stone, white oval). Replaced by hazard-plate-v2."
+    },
+    {
+      "id": "hazard-plate-v2",
+      "role": "Doorman hazard (re-roll)",
+      "batch": "re-roll",
+      "job_id": "0d86c7c5-650a-4b3c-8cc6-6443a251382f",
+      "seed": 7218,
+      "size": "1024x768",
+      "status": "accepted",
+      "note": "one empty ochre rounded slab, near-black field"
+    }
+  ],
+  "tracks": [
+    {
+      "id": "inspect",
+      "job_id": "c5f2b88d-dc6a-422d-831c-411ad28c631d",
+      "template": "audio_ace_step_1_5_checkpoint",
+      "seed": 8111,
+      "seconds": 36,
+      "file": "apps/cabinets/public/tracks/inspect.mp3",
+      "note": "first inspect job failed in the batch; this is the retry"
+    },
+    {
+      "id": "poison",
+      "job_id": "5459941a-3306-4e7e-9639-2d5569ca0fd8",
+      "seed": 8102,
+      "seconds": 36,
+      "file": "apps/cabinets/public/tracks/poison.mp3"
+    },
+    {
+      "id": "rug",
+      "job_id": "b8ed499e-dca8-4fcf-b6f1-21492bdd6000",
+      "seed": 8103,
+      "seconds": 36,
+      "file": "apps/cabinets/public/tracks/rug.mp3"
+    },
+    {
+      "id": "unlisted",
+      "job_id": "a859da72-f37a-4493-abd1-29990ec1b553",
+      "seed": 8104,
+      "seconds": 36,
+      "file": "apps/cabinets/public/tracks/unlisted.mp3"
+    },
+    {
+      "id": "whisperer",
+      "job_id": "a195124b-b70e-4aa1-b5c9-121d7a890e8f",
+      "seed": 8105,
+      "seconds": 40,
+      "file": "apps/cabinets/public/tracks/whisperer.mp3"
+    },
+    {
+      "id": "menu",
+      "job_id": "a4043d99-6774-4669-819a-ebee5fc3f9d0",
+      "seed": 8106,
+      "seconds": 40,
+      "file": "apps/cabinets/public/tracks/menu.mp3"
+    },
+    {
+      "id": "doorman",
+      "job_id": "8da9deaf-97d9-463c-9c15-5f9b5f02274b",
+      "seed": 8107,
+      "seconds": 40,
+      "file": "apps/cabinets/public/tracks/doorman.mp3"
+    },
+    {
+      "id": "parallelism",
+      "job_id": "d0f43e83-7360-48b3-9dd6-3fffd0e3ec72",
+      "seed": 8108,
+      "seconds": 24,
+      "file": "apps/cabinets/public/tracks/parallelism.mp3"
+    },
+    {
+      "id": "breather",
+      "job_id": "c280bd7a-6958-4f13-bc11-1afea655db0f",
+      "seed": 8109,
+      "seconds": 32,
+      "file": "apps/cabinets/public/tracks/breather.mp3"
     }
   ]
 }

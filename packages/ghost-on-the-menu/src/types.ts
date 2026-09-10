@@ -188,6 +188,11 @@ export interface RoundState {
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
   bossIntent: string | null;
+  /**
+   * True while a seed-scheduled parallelism burst is on. Extra honest
+   * decoys and a hotter soundtrack; never a fact.
+   */
+  parallelism: boolean;
 }
 
 export type HazardKind = 'echo' | 'band' | 'plate';

@@ -7,6 +7,9 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 
+# 1024 originals for a sprite batch; the cabinet ships 128 px downscales
+docs/art/originals-2/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/

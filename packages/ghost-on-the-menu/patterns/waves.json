@@ -13,11 +13,11 @@
     "1": {
       "breather": 1.6,
       "beatsPerGroup": 4,
-      "rest": 2.4,
-      "density": 0.95,
-      "tail": 8,
-      "min": 70,
-      "max": 140,
+      "rest": 2.8,
+      "density": 0.8,
+      "tail": 14,
+      "min": 90,
+      "max": 180,
       "escalate": 0.97
     },
     "2": {
@@ -25,19 +25,19 @@
       "beatsPerGroup": 4,
       "rest": 1.6,
       "density": 0.85,
-      "tail": 6,
-      "min": 45,
-      "max": 120,
+      "tail": 8,
+      "min": 50,
+      "max": 130,
       "escalate": 1
     },
     "3": {
-      "breather": 0.8,
+      "breather": 1,
       "beatsPerGroup": 4,
-      "rest": 1.1,
-      "density": 1.05,
-      "tail": 8,
-      "min": 50,
-      "max": 100,
+      "rest": 1.4,
+      "density": 0.9,
+      "tail": 18,
+      "min": 80,
+      "max": 220,
       "escalate": 0.95
     }
   }

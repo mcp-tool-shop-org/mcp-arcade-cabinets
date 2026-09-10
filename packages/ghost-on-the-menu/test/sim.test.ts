@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import { createRoundState, prepassRound, revealOnHit, stepRound } from '../src/index';
-import { attachPatterns, DEFAULT_PATTERNS, type PatternSet } from '../src/patterns';
+import { createRoundState, isDecoy, prepassRound, revealOnHit, stepRound } from '../src/index';
+import { attachPatterns, burstActive, DEFAULT_PATTERNS, type PatternSet } from '../src/patterns';
 import { FIELD, PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
 
 function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
@@ -1001,5 +1001,104 @@ describe('voice', () => {
     while (!a.scene) stepRound(a, { left: false, right: false, fire: false }, 0.5);
     expect(a.scene!.line).toBeTruthy();
     expect(a.scene!.line).not.toMatch(FORBIDDEN_CAPTION);
+  });
+});
+
+describe('parallelism', () => {
+  it('spawns honest decoys during a burst and never copies a lie as a lie', () => {
+    const spec = DEFAULT_PATTERNS.parallelism.tiers['2'];
+    const bounds = [{ atom: 'inspect.tools_list', t0: 0, t1: 24 }];
+    let tOn = -1;
+    for (let t = 0; t < 24; t += 0.05) {
+      if (burstActive(t, 0, bounds, 11, spec)) {
+        tOn = t;
+        break;
+      }
+    }
+    expect(tOn).toBeGreaterThan(0);
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_para',
+        duration: 30,
+        seed: 11,
+        tier: 2,
+        waveBounds: bounds,
+        beats: [
+          {
+            id: 'inspect.tools_list:grid:0',
+            t: 0,
+            x: 120,
+            sprite: 'grid',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 0,
+            },
+          },
+          {
+            id: 'inspect.tools_list:followed',
+            t: 0,
+            x: 280,
+            sprite: 'grid',
+            lie: true,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call leak',
+              index: 1,
+            },
+          },
+        ],
+      }),
+    );
+    for (const e of state.enemies) park(state, e);
+    state.lives = 99;
+    const idle = { left: false, right: false, fire: false };
+    while (state.t < tOn + 0.2 && !state.scene) stepRound(state, idle, 1 / 30);
+    expect(state.parallelism).toBe(true);
+    const decoys = state.enemies.filter((e) => isDecoy(e) && e.alive);
+    expect(decoys.length).toBeGreaterThan(0);
+    expect(decoys.every((d) => d.lie === false)).toBe(true);
+    const lies = state.enemies.filter((e) => e.lie);
+    expect(lies).toHaveLength(1);
+    expect(isDecoy(lies[0]!)).toBe(false);
+  });
+
+  it('stays off on the recorded rung', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_para0',
+        duration: 20,
+        seed: 3,
+        tier: 0,
+        waveBounds: [{ atom: 'inspect.tools_list', t0: 0, t1: 18 }],
+        beats: [
+          {
+            id: 'inspect.tools_list:grid:0',
+            t: 0,
+            x: 200,
+            sprite: 'grid',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 0,
+            },
+          },
+        ],
+      }),
+    );
+    park(state, state.enemies[0]!);
+    for (let i = 0; i < 90; i++) {
+      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    }
+    expect(state.parallelism).toBe(false);
+    expect(state.enemies.some((e) => isDecoy(e))).toBe(false);
   });
 });

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PATTERNS, loadPatterns, pickLine, voiceWaveKey } from '../src/patterns';
+import {
+  burstActive,
+  DEFAULT_PATTERNS,
+  loadPatterns,
+  pickLine,
+  voiceWaveKey,
+} from '../src/patterns';
 
 function clone(): Record<string, unknown> {
   return JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as Record<string, unknown>;
@@ -130,6 +136,20 @@ describe('loadPatterns', () => {
         mistype: () => {
           const raw = clone();
           (raw.player as Record<string, unknown>).speed = 'fast';
+          return raw;
+        },
+      },
+      {
+        file: 'parallelism.json',
+        key: 'tiers',
+        drop: () => {
+          const raw = clone();
+          delete (raw.parallelism as Record<string, unknown>).tiers;
+          return raw;
+        },
+        mistype: () => {
+          const raw = clone();
+          (raw.parallelism as Record<string, unknown>).tiers = 0;
           return raw;
         },
       },
@@ -299,5 +319,43 @@ describe('loadPatterns', () => {
       'a lie on the wire',
     ];
     expect(() => loadPatterns(fact)).toThrow('patterns/voice.json: inspect');
+  });
+
+  it('loads parallelism rails: off on recorded, longer later, placed by seed', () => {
+    expect(DEFAULT_PATTERNS.parallelism.tiers['0'].enabled).toBe(false);
+    expect(DEFAULT_PATTERNS.parallelism.tiers['1'].enabled).toBe(true);
+    expect(DEFAULT_PATTERNS.parallelism.tiers['2'].copies).toBeGreaterThan(1);
+    expect(DEFAULT_PATTERNS.parallelism.tiers['3'].laterBurst).toBeGreaterThan(
+      DEFAULT_PATTERNS.parallelism.tiers['3'].firstBurst,
+    );
+    const spec = DEFAULT_PATTERNS.parallelism.tiers['2'];
+    const bounds = [
+      { t0: 0, t1: 20 },
+      { t0: 22, t1: 42 },
+      { t0: 44, t1: 64 },
+    ];
+    expect(burstActive(1, 0, bounds, 1, DEFAULT_PATTERNS.parallelism.tiers['0'])).toBe(false);
+    const hold = (wave: number, seed: number) => {
+      let n = 0;
+      const b = bounds[wave]!;
+      for (let t = b.t0; t < b.t1; t += 0.05) {
+        if (burstActive(t, wave, bounds, seed, spec)) n += 1;
+      }
+      return n;
+    };
+    expect(hold(0, 7)).toBeGreaterThan(0);
+    expect(hold(2, 7)).toBeGreaterThan(hold(0, 7));
+    const starts = [1, 99, 404].map((seed) => {
+      const b = bounds[0]!;
+      for (let t = b.t0; t < b.t1; t += 0.05) {
+        if (burstActive(t, 0, bounds, seed, spec)) return t;
+      }
+      return -1;
+    });
+    expect(new Set(starts).size).toBeGreaterThan(1);
+    const raw = clone();
+    (raw.parallelism as { tiers: Record<string, { intensity: number }> }).tiers['1']!.intensity =
+      0.5;
+    expect(() => loadPatterns(raw)).toThrow('patterns/parallelism.json: intensity');
   });
 });

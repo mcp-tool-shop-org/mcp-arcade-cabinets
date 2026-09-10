@@ -158,7 +158,10 @@ function sweeperInput(state: RoundState): RoundInput {
   }
   let target: RoundState['enemies'][number] | undefined;
   const threat = state.enemies.filter(
-    (e) => isHittable(state, e) && (e.sprite === 'grid' || e.sprite === 'menu'),
+    (e) =>
+      isHittable(state, e) &&
+      !e.id.startsWith('para:') &&
+      (e.sprite === 'grid' || e.sprite === 'menu'),
   );
   const pool = threat.length > 0 ? threat : state.enemies.filter((e) => isHittable(state, e));
   for (const e of pool) {

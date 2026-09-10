@@ -4,7 +4,17 @@ import { attach, bar, barSeconds, DEFAULT_MUSIC, TRACKS, sfx, type Note } from '
 
 describe('the score is pure data (no assets, no sim)', () => {
   it('every effect is a short list of notes with sane gains', () => {
-    for (const name of ['fire', 'pop', 'catch', 'drop', 'fog', 'lamp', 'phase', 'end'] as const) {
+    for (const name of [
+      'fire',
+      'pop',
+      'catch',
+      'drop',
+      'fog',
+      'lamp',
+      'phase',
+      'end',
+      'burst',
+    ] as const) {
       const notes = sfx(name);
       expect(notes.length).toBeGreaterThan(0);
       for (const n of notes) {
@@ -37,6 +47,8 @@ describe('the score is pure data (no assets, no sim)', () => {
     expect(bar(DEFAULT_MUSIC, 'nonsense', 3).length).toBeGreaterThan(0); // falls back to the breather
     expect(TRACKS.poison).not.toEqual(TRACKS.inspect);
     expect(TRACKS.whisperer!.rootHz).not.toBe(TRACKS.doorman!.rootHz);
+    expect(TRACKS.parallelism!.bpm).toBeGreaterThan(TRACKS.inspect!.bpm);
+    expect(bar(TRACKS.parallelism!, 'parallelism', 0).length).toBeGreaterThan(0);
   });
   it('the player schedules bars by the round clock, so hitstop and the end hold the music', () => {
     const started: number[] = [];

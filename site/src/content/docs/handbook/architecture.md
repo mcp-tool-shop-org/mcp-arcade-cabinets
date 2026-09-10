@@ -27,7 +27,7 @@ tape ──prepass──▶ Round ──createRoundState──▶ RoundState ─
 
 - **`prepass(tape, patterns, seed)`** is pure. It classifies every wire row into a beat (class, members, lie), collapses honest call runs into formations, stages each atom's beats in protocol order (handshake, menu, calls, answers, the rest), lays them out with the wave rhythm, derives the tier, and fits the whole round to its duration. The seed is a hash of the tape's header and rows when none is given, so two tapes with different wire land sprites in different columns.
 - **`labelTape(tape)`** is pure. The picker label and the hover why come from the header and the wire shape (derived tier, wave count, boss count, rows per atom, framing). A test flips every fact and requires the same strings.
-- **`stepRound(state, input, dt)`** is the only sim function: motion on entry paths and at hover, dives, fire, fog, lamps and grace, bosses with phase scripts, the catch (hitstop, shake, caption, trophy), drops, voice lines, wave open and close, the end.
+- **`stepRound(state, input, dt)`** is the only sim function: motion on entry paths and at hover, dives, fire, fog, lamps and grace, bosses with phase scripts, the catch (hitstop, shake, caption, trophy), drops, voice lines, parallelism bursts, wave open and close, the end.
 - **`renderRound(ctx, state, opts)`** draws through a narrow `DrawContext` (fill style, font, rect, text, an optional sprite hook). It adds nothing the sim did not decide: no counts, no digits, lamps as rectangles, the caption in words.
 - **`cues`** diffs two snapshots of the state and names the sounds to fire; **`audio`** is pure note data until the shell attaches a WebAudio context.
 

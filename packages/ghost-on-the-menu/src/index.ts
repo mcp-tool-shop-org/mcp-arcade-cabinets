@@ -22,8 +22,9 @@ export type {
   SpriteClass,
 } from './types';
 export { prepassRound } from './prepass';
-export { createRoundState, revealOnHit, stepRound } from './sim';
-export { pickLine, voiceWaveKey } from './patterns';
+export { createRoundState, isDecoy, revealOnHit, stepRound } from './sim';
+export { burstActive, pickLine, voiceWaveKey } from './patterns';
+export type { ParallelismTier, PatternSet } from './patterns';
 export { labelTape } from './label';
 export type { TapeLabel } from './label';
 export {
@@ -39,10 +40,10 @@ export {
 export type { Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
-export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACKS, sfx } from './audio';
+export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
 export { askOllama, columnWord, hpWord, parseIntent, pilotPrompt } from './pilot';
 export type { BossView, PilotIntent } from './pilot';
-export type { AudioOut, MusicPattern, Note, SfxName } from './audio';
+export type { AudioOut, BedLookup, MediaBed, MusicPattern, Note, SfxName, TrackKey } from './audio';
 // The scripted play-through (`./play`) reads fixtures from disk and is built
 // separately into dist/play.js for `pnpm test:play`; it stays off the barrel
 // so the browser bundle never pulls node:fs.

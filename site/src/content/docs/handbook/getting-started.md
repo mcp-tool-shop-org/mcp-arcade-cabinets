@@ -49,6 +49,8 @@ A tape carries the tier it was recorded at: a fixture is tier 0, a seated run on
 - **Live**: faster, denser, the boss rages sooner. Meant to be survived, not cleared; a careful player finds every lie about half the time.
 - **Hardcore**: never derived from a tape. One lamp, rage from the first shot, boss hazards (echoes, bands, plates). Later waves fire faster. The scripted reader is not a human; a person who dodges can take it.
 
+Seat, live and hardcore also get **parallelism** bursts: extra honest copies and hotter music. The first burst is a blink; later waves hold it longer. Recorded tapes stay a gallery.
+
 A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. The wave card carries a dry line in the voice of an agent, and the boss enters with another. Short asides keep talking during the wave.
 
 ## Prove a round from the terminal

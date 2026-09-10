@@ -78,5 +78,6 @@ describe('boss and dive cues', () => {
     expect(cues(a, { ...a, bossKills: a.bossKills + 1, bossHitT: null })).toEqual(['bossdown']);
     expect(cues(a, { ...a, diving: a.diving + 1 })).toEqual(['dive']);
     expect(cues(a, { ...a, dropCatches: a.dropCatches + 1 })).toEqual(['drop']);
+    expect(cues(a, { ...a, parallelism: true })).toEqual(['burst']);
   });
 });

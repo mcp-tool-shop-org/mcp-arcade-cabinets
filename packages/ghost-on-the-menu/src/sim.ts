@@ -1,12 +1,14 @@
 import {
   attachPatterns,
   attachedPatterns,
+  burstActive,
   pickLine,
   voiceWaveKey,
   type BossDef,
   type DropKind,
   type FireRhythm,
   type LadderRung,
+  type ParallelismTier,
   type PathDef,
   type PatternSet,
 } from './patterns';
@@ -95,6 +97,21 @@ function fireKey(tier: 0 | 1 | 2 | 3): '0' | '1' | '2' | '3' {
 function waveEscalate(meta: Meta, wave: number): number {
   const spec = meta.patterns.waves.tiers[fireKey(meta.round.tier)];
   return Math.pow(spec.escalate, Math.max(0, wave));
+}
+
+function paraSpec(meta: Meta): ParallelismTier {
+  return meta.patterns.parallelism.tiers[fireKey(meta.round.tier)];
+}
+
+function fireScale(state: RoundState, meta: Meta): number {
+  const spec = paraSpec(meta);
+  const hot = state.parallelism ? 1 / spec.intensity : 1;
+  return waveEscalate(meta, state.wave) * hot;
+}
+
+/** Extra copies spawned for a burst. Always honest; never a tape beat. */
+export function isDecoy(enemy: Enemy): boolean {
+  return enemy.id.startsWith('para:');
 }
 
 function pickIndex(seed: number, i: number, n: number): number {
@@ -212,6 +229,10 @@ function bossKindFor(atom: string): Boss['kind'] | null {
 
 function hittable(state: RoundState, enemy: Enemy): boolean {
   if (enemy.sprite === 'fog') return false;
+  if (isDecoy(enemy)) {
+    const meta = metaOf.get(state);
+    if (!meta || !paraSpec(meta).decoysFire) return false;
+  }
   return (
     enemy.alive &&
     state.t >= enemy.tEnter &&
@@ -381,6 +402,7 @@ export function createRoundState(round: Round): RoundState {
     dropCatches: 0,
     hazards: [],
     bossIntent: null,
+    parallelism: false,
   };
   const meta: Meta = {
     patterns,
@@ -498,7 +520,7 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
   meta.bossPhaseT = 0;
   meta.bossFireAt =
     state.t +
-    meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss.period * waveEscalate(meta, state.wave);
+    meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss.period * fireScale(state, meta);
   meta.bossBaseW = def.w;
   meta.bossBaseH = def.h;
   meta.bossOriginX = x;
@@ -609,7 +631,71 @@ function maybeAside(state: RoundState, meta: Meta): void {
 function spawnFormationDrop(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
   if (!meta) return;
   if (enemy.sprite !== 'grid') return;
+  if (isDecoy(enemy)) return;
   spawnDrop(state, meta, 'spread', enemy.x + enemy.w / 2, enemy.y + enemy.h / 2);
+}
+
+function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void {
+  if (spec.copies <= 1) return;
+  const extras = spec.copies - 1;
+  const hosts = state.enemies.filter(
+    (e) =>
+      e.alive &&
+      !isDecoy(e) &&
+      e.mode === 'hover' &&
+      (e.sprite === 'grid' || e.sprite === 'menu' || e.sprite === 'answer'),
+  );
+  const born: Enemy[] = [];
+  for (const host of hosts) {
+    for (let i = 0; i < extras; i++) {
+      const box = spriteBox(host.sprite, meta.patterns);
+      const decoy: Enemy = {
+        id: `para:${host.id}:${i}`,
+        x: wrapX(host.x + (i + 1) * 28, box.w),
+        y: host.y,
+        w: box.w,
+        h: box.h,
+        vx: 0,
+        vy: 0,
+        hoverY: host.hoverY,
+        sprite: host.sprite,
+        lie: false,
+        revealed: false,
+        alive: true,
+        tEnter: state.t,
+        members: 1,
+        mode: 'hover',
+        pathT: 1,
+        path: [],
+        caughtY: PARKING_Y,
+        fireAt: Number.POSITIVE_INFINITY,
+        dieAt: 0,
+      };
+      hoverHome.set(decoy, decoy.x);
+      born.push(decoy);
+    }
+  }
+  if (born.length > 0) state.enemies.push(...born);
+}
+
+function despawnDecoys(state: RoundState): void {
+  for (const e of state.enemies) {
+    if (!isDecoy(e)) continue;
+    if (!e.alive) continue;
+    if (e.mode === 'caught' || e.mode === 'dying') continue;
+    e.mode = 'exit';
+  }
+}
+
+function stepParallelism(state: RoundState, meta: Meta): void {
+  const spec = paraSpec(meta);
+  const on = burstActive(state.t, state.wave, meta.round.waveBounds, meta.round.seed, spec);
+  if (on && !state.parallelism) {
+    spawnDecoys(state, meta, spec);
+  } else if (!on && state.parallelism) {
+    despawnDecoys(state);
+  }
+  state.parallelism = on;
 }
 
 function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void {
@@ -706,7 +792,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss;
   if (state.t < meta.bossFireAt) return;
   const raging = meta.rung.rageStart || boss.hp < def.hp / 2;
-  const wait = rhythm.period * (raging ? def.rage : 1) * waveEscalate(meta, state.wave);
+  const wait = rhythm.period * (raging ? def.rage : 1) * fireScale(state, meta);
   meta.bossFireAt = state.t + wait;
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
@@ -826,10 +912,11 @@ function takeLamp(state: RoundState, grace: number): void {
 function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   if (!meta.rung.formationFires) return;
   if (enemy.sprite !== 'grid' && enemy.sprite !== 'menu') return;
+  if (isDecoy(enemy) && !paraSpec(meta).decoysFire) return;
   const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].formation;
   if (!rhythm) return;
   if (enemy.mode !== 'hover') return;
-  const period = rhythm.period * waveEscalate(meta, state.wave);
+  const period = rhythm.period * fireScale(state, meta);
   if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + period;
   if (state.t < enemy.fireAt) return;
   enemy.fireAt = state.t + period;
@@ -876,6 +963,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     }
     meta.waveHold = Math.max(0, meta.waveHold - dt);
     maybeAside(state, meta);
+    stepParallelism(state, meta);
   }
 
   if (state.lives <= 0) {

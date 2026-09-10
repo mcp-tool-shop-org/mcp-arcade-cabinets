@@ -31,6 +31,7 @@ export interface CueSnapshot {
   bossKills: number;
   diving: number;
   dropCatches: number;
+  parallelism: boolean;
 }
 
 export function snapshot(state: RoundState): CueSnapshot {
@@ -55,6 +56,7 @@ export function snapshot(state: RoundState): CueSnapshot {
     bossKills: state.bossKills,
     diving,
     dropCatches: state.dropCatches,
+    parallelism: state.parallelism,
   };
 }
 
@@ -72,6 +74,7 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
     out.push('bosshit');
   }
   if (next.diving > prev.diving) out.push('dive');
+  if (next.parallelism && !prev.parallelism) out.push('burst');
   if (next.phase !== null && prev.phase !== null && next.phase !== prev.phase) out.push('phase');
   if (next.fog && !prev.fog) out.push('fog');
   if (next.dying > prev.dying) out.push('pop');

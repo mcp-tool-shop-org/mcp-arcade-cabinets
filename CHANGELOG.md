@@ -14,12 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Difficulty ramps with the wave index. A fourth rung, hardcore, is selector-only: one lamp, rage from the start, boss hazards.
 - Voice lines are the agent thinking out loud, with asides during a wave. Soundtrack changes key with the experiment and the boss.
 - Handshake ack (`ready`) and error responses are their own classes. An optional local Ollama seat can call boss fire; the prompt never carries a fact.
+- Seat, live and hardcore rounds run longer (waves.json min/max/tail). Parallelism bursts multiply honest copies and heat the soundtrack; the first burst is short, later waves hold it.
 
 ### Added
 
 - **Drops.** A downed boss drops a lamp; a cleared formation drops a spread. Both fall toward the ship's row and drift toward its column. Data in `patterns/drops.json`. Catching a lamp relights one; catching a spread fans the ship's fire for a few seconds. Drops never key on a lie.
 - **Voice.** A dry line per wave open and per boss enter, in the wave card's furniture paint, and a closing line on the end scene. Data in `patterns/voice.json`, four drafts per key, picked by the round seed. They name the experiment and the creature, never a fact, never a digit.
 - **Tape labels.** The picker is a list. Each tape carries a difficulty word (fixture, seat, or live) and an **i** whose hover text explains the header and the wire shape. A test flips every fact and requires the identical label and why.
+- **Parallelism.** Data in `patterns/parallelism.json`. Seed-placed bursts of extra honest copies and a hotter track. Off on the recorded rung. Extra copies are never lies.
+- **Class sprites** for `answer`, `ready`, `error`, drops, and hardcore hazards, plus recorded ACE-Step beds per wave, boss, breather and burst. Chiptune remains the fallback.
 
 ## [0.2.0] - 2026-09-10
 

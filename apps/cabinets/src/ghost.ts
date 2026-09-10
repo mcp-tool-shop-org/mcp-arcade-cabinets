@@ -25,6 +25,7 @@ import {
   snapshot,
   SPRITE_KEYS,
   stepRound,
+  TRACK_KEYS,
   waveKindAt,
   type AudioOut,
   type CueSnapshot,
@@ -169,9 +170,17 @@ export function mountGhost(
 
   let audio: AudioOut | null = null;
   let muted = false;
+  const beds = new Map<string, HTMLAudioElement>();
+  for (const key of TRACK_KEYS) {
+    const el = new Audio();
+    el.preload = 'auto';
+    el.loop = true;
+    el.addEventListener('canplaythrough', () => beds.set(key, el), { once: true });
+    el.src = `${import.meta.env.BASE_URL}tracks/${key}.mp3`;
+  }
   const ensureAudio = () => {
     if (audio || typeof AudioContext === 'undefined') return;
-    audio = attach(new AudioContext());
+    audio = attach(new AudioContext(), undefined, (k) => beds.get(k));
     audio.setMuted(muted);
   };
   mute.addEventListener('click', () => {
@@ -239,7 +248,11 @@ export function mountGhost(
     if (audio) {
       for (const c of cues(prev, next)) audio.play(c);
       if (!state.scene) {
-        const kind = state.boss && state.boss.alive ? state.boss.kind : waveKindAt(round, state.t);
+        const kind = state.parallelism
+          ? 'parallelism'
+          : state.boss && state.boss.alive
+            ? state.boss.kind
+            : waveKindAt(round, state.t);
         audio.tick(state.t, kind);
       }
     }

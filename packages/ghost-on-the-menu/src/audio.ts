@@ -18,7 +18,8 @@ export type SfxName =
   | 'wave'
   | 'bosshit'
   | 'bossdown'
-  | 'dive';
+  | 'dive'
+  | 'burst';
 
 /** One synthesized note: a simple oscillator with an envelope. */
 export interface Note {
@@ -124,7 +125,41 @@ export const TRACKS: Record<string, MusicPattern> = {
       doorman: [5, -1, 5, 7, 10, 7, 5, -1, 2, 0, 2, -1, 5, -1, -1, -1],
     },
   },
+  parallelism: {
+    scale: [0, 2, 3, 5, 7, 8, 10, 12],
+    rootHz: 146,
+    bpm: 168,
+    bass: [0, 0, 7, 7, 3, 3, 10, 10],
+    lead: {
+      parallelism: [7, 4, 7, 12, 7, 4, 0, 7, 10, 7, 4, 0, 7, 12, 7, -1],
+    },
+  },
 };
+
+/** Recorded beds the cabinet may overlay. Missing files keep the chiptune. */
+export const TRACK_KEYS = [
+  'inspect',
+  'poison',
+  'rug',
+  'unlisted',
+  'breather',
+  'whisperer',
+  'menu',
+  'doorman',
+  'parallelism',
+] as const;
+export type TrackKey = (typeof TRACK_KEYS)[number];
+
+/** Enough of an HTMLAudioElement for the recorded overlay. */
+export interface MediaBed {
+  loop: boolean;
+  muted: boolean;
+  currentTime: number;
+  play(): Promise<void> | void;
+  pause(): void;
+}
+
+export type BedLookup = (key: string) => MediaBed | undefined;
 
 function degreeHz(pattern: MusicPattern, degree: number, octave: number): number {
   const scale = pattern.scale;
@@ -185,6 +220,13 @@ export function sfx(name: SfxName): Note[] {
         { at: 0, freq: 1200, dur: 0.08, wave: 'triangle', gain: 0.06 },
         { at: 0.08, freq: 800, dur: 0.1, wave: 'triangle', gain: 0.06 },
         { at: 0.18, freq: 500, dur: 0.12, wave: 'triangle', gain: 0.05 },
+      ];
+    case 'burst':
+      // Parallelism in: stacked rising fifths, not the catch chord (W7).
+      return [
+        { at: 0, freq: 196, dur: 0.08, wave: 'square', gain: 0.1 },
+        { at: 0.05, freq: 294, dur: 0.1, wave: 'square', gain: 0.1 },
+        { at: 0.1, freq: 392, dur: 0.16, wave: 'triangle', gain: 0.1 },
       ];
     case 'wave':
       // The wave card: two clean notes, a curtain rising, quieter than the catch.
@@ -263,10 +305,15 @@ interface CtxLike {
  * Attach the score to an AudioContext. The shell constructs the context on
  * the first user gesture (browsers require it); tests never call this.
  */
-export function attach(ctx: CtxLike, pattern: MusicPattern = DEFAULT_MUSIC): AudioOut {
+export function attach(
+  ctx: CtxLike,
+  pattern: MusicPattern = DEFAULT_MUSIC,
+  bed?: BedLookup,
+): AudioOut {
   let muted = false;
   let nextBar = 0;
   let lastKind = '';
+  let currentBed: MediaBed | undefined;
   const schedule = (notes: Note[], base: number) => {
     if (muted) return;
     for (const n of notes) {
@@ -284,11 +331,30 @@ export function attach(ctx: CtxLike, pattern: MusicPattern = DEFAULT_MUSIC): Aud
       osc.stop(t0 + n.dur + 0.02);
     }
   };
+  const switchBed = (waveKind: string) => {
+    const next = bed?.(waveKind);
+    if (next === currentBed) return Boolean(next);
+    currentBed?.pause();
+    currentBed = next;
+    if (next) {
+      next.loop = true;
+      next.muted = muted;
+      try {
+        next.currentTime = 0;
+      } catch {
+        /* some test doubles have no currentTime setter */
+      }
+      void next.play();
+    }
+    return Boolean(next);
+  };
   return {
     play(name) {
       schedule(sfx(name), ctx.currentTime);
     },
     tick(t, waveKind) {
+      // A recorded bed, when present, replaces the chiptune for that kind.
+      if (switchBed(waveKind)) return;
       // Bars are scheduled by the round clock so the music follows hitstop and the end.
       const pat = TRACKS[waveKind] ?? pattern;
       if (waveKind !== lastKind) {
@@ -306,8 +372,11 @@ export function attach(ctx: CtxLike, pattern: MusicPattern = DEFAULT_MUSIC): Aud
     },
     setMuted(m) {
       muted = m;
+      if (currentBed) currentBed.muted = m;
     },
     close() {
+      currentBed?.pause();
+      currentBed = undefined;
       void ctx.close?.();
     },
   };

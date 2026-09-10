@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Tuning never changes code. The sim reads a **pattern set** of nine JSON files, validated at load; a missing or mistyped key fails with `patterns/<file>: <key>`, and a rung whose pools cover no path for a class is a load error, never a silent upgrade.
+Tuning never changes code. The sim reads a **pattern set** of ten JSON files, validated at load; a missing or mistyped key fails with `patterns/<file>: <key>`, and a rung whose pools cover no path for a class is a load error, never a silent upgrade.
 
 | File              | Holds                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------- |
@@ -18,6 +18,7 @@ Tuning never changes code. The sim reads a **pattern set** of nine JSON files, v
 | `player.json`     | The ship's speed, cooldown, hitbox, row and grace                                                         |
 | `drops.json`      | What a downed boss and a cleared formation drop, how fast it falls and drifts, the catch box, and how long a spread lasts |
 | `voice.json`      | Four dry lines per wave kind, boss kind, and the end scene, picked by the round seed                      |
+| `parallelism.json` | Per tier: whether a burst is on, how many honest extra copies, how long the first burst vs later ones, the quiet gap, fire intensity, whether the extras shoot |
 
 ## Tiers
 
@@ -40,6 +41,7 @@ The shell can override the derived tier (the difficulty selector), and the fairn
 - **`ladder.json` → rungs[].speed, fog, lamps**: a multiplier on entry and dive speed, a multiplier on fog drift, and the number of lamps.
 - **`drops.json`**: a downed boss always drops a lamp; a cleared grid formation always drops a spread. Fall speed, drift toward the ship, catch box, spread duration. Never keyed on a lie.
 - **`voice.json`**: lines named by atom kind and boss kind, never by fact. The loader rejects a digit or a fact word.
+- **`parallelism.json`**: a seed-placed burst per wave. Off on the recorded rung. First burst is short; later waves hold it longer. Extra copies are always honest, even when they clone a lie's class. The soundtrack switches to the parallelism bed (recorded if present, chiptune if not).
 
 ## Measuring a change
 

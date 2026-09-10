@@ -1,0 +1,40 @@
+{
+  "tiers": {
+    "0": {
+      "enabled": false,
+      "copies": 1,
+      "firstBurst": 1.2,
+      "laterBurst": 2.4,
+      "gap": 10,
+      "intensity": 1,
+      "decoysFire": false
+    },
+    "1": {
+      "enabled": true,
+      "copies": 2,
+      "firstBurst": 1.6,
+      "laterBurst": 3.6,
+      "gap": 8,
+      "intensity": 1.15,
+      "decoysFire": false
+    },
+    "2": {
+      "enabled": true,
+      "copies": 2,
+      "firstBurst": 1.8,
+      "laterBurst": 4,
+      "gap": 8,
+      "intensity": 1,
+      "decoysFire": false
+    },
+    "3": {
+      "enabled": true,
+      "copies": 3,
+      "firstBurst": 2.4,
+      "laterBurst": 6.5,
+      "gap": 5,
+      "intensity": 1.35,
+      "decoysFire": true
+    }
+  }
+}

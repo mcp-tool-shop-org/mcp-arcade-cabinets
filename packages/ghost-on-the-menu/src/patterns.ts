@@ -5,6 +5,7 @@ import dropsJson from '../patterns/drops.json';
 import fireJson from '../patterns/fire.json';
 import formationsJson from '../patterns/formations.json';
 import ladderJson from '../patterns/ladder.json';
+import parallelismJson from '../patterns/parallelism.json';
 import pathsJson from '../patterns/paths.json';
 import playerJson from '../patterns/player.json';
 import voiceJson from '../patterns/voice.json';
@@ -142,6 +143,24 @@ export interface WaveTier {
   escalate: number;
 }
 
+/**
+ * A short burst of extra honest copies and hotter fire. First burst is
+ * brief; later waves hold it longer. Seed places the window so two tapes
+ * never share a schedule.
+ */
+export interface ParallelismTier {
+  enabled: boolean;
+  /** Honest copies during a burst, including the original. 1 is none extra. */
+  copies: number;
+  firstBurst: number;
+  laterBurst: number;
+  /** Minimum quiet seconds around a burst inside a wave. */
+  gap: number;
+  /** Fire-period divisor while the burst is on. 1 is unchanged. */
+  intensity: number;
+  decoysFire: boolean;
+}
+
 export type SpriteBox = { w: number; h: number };
 
 export type DropKind = (typeof DROP_KINDS)[number];
@@ -185,6 +204,7 @@ export interface PatternSet {
   };
   drops: Record<DropKind, DropSpec>;
   voice: VoiceSet;
+  parallelism: { tiers: Record<'0' | '1' | '2' | '3', ParallelismTier> };
 }
 
 export interface TapeHeader {
@@ -538,6 +558,63 @@ function loadLines(raw: unknown, file: string, key: string): string[] {
   return list;
 }
 
+function loadParallelism(raw: unknown): PatternSet['parallelism'] {
+  const file = 'parallelism.json';
+  const obj = asRecord(raw, file, 'tiers');
+  const tiersRaw = asRecord(req(obj, file, 'tiers'), file, 'tiers');
+  const tiers = {} as PatternSet['parallelism']['tiers'];
+  for (const key of TIER_KEYS) {
+    const rec = asRecord(req(tiersRaw, file, key), file, key);
+    const copies = asNumber(req(rec, file, 'copies'), file, 'copies');
+    if (!(copies >= 1) || copies !== Math.floor(copies)) fail(file, 'copies');
+    const firstBurst = asNumber(req(rec, file, 'firstBurst'), file, 'firstBurst');
+    const laterBurst = asNumber(req(rec, file, 'laterBurst'), file, 'laterBurst');
+    if (!(firstBurst > 0)) fail(file, 'firstBurst');
+    if (!(laterBurst >= firstBurst)) fail(file, 'laterBurst');
+    const gap = asNumber(req(rec, file, 'gap'), file, 'gap');
+    if (!(gap >= 0)) fail(file, 'gap');
+    const intensity = asNumber(req(rec, file, 'intensity'), file, 'intensity');
+    if (!(intensity >= 1)) fail(file, 'intensity');
+    tiers[key] = {
+      enabled: asBoolean(req(rec, file, 'enabled'), file, 'enabled'),
+      copies,
+      firstBurst,
+      laterBurst,
+      gap,
+      intensity,
+      decoysFire: asBoolean(req(rec, file, 'decoysFire'), file, 'decoysFire'),
+    };
+  }
+  return { tiers };
+}
+
+/**
+ * Whether round time `t` sits inside the seed-placed burst for this wave.
+ * Same seed and wave, same window. Never reads a fact.
+ */
+export function burstActive(
+  t: number,
+  wave: number,
+  bounds: readonly { t0: number; t1: number }[],
+  seed: number,
+  spec: ParallelismTier,
+): boolean {
+  if (!spec.enabled) return false;
+  const bound = bounds[wave];
+  if (!bound) return false;
+  const span = bound.t1 - bound.t0;
+  if (!(span > 0)) return false;
+  const last = Math.max(1, bounds.length - 1);
+  const progress = Math.min(1, Math.max(0, wave / last));
+  const len = spec.firstBurst + (spec.laterBurst - spec.firstBurst) * progress;
+  if (span < Math.min(len, spec.firstBurst) + spec.gap * 0.25) return false;
+  const hold = Math.min(len, Math.max(spec.firstBurst * 0.5, span - spec.gap));
+  const slack = Math.max(0, span - hold);
+  const salt = ((Math.imul(seed, 1664525) + Math.imul(wave + 97, 1013904223)) >>> 0) / 0x100000000;
+  const start = bound.t0 + slack * (0.15 + 0.7 * salt);
+  return t >= start && t < start + hold;
+}
+
 function loadVoice(raw: unknown): VoiceSet {
   const file = 'voice.json';
   const obj = asRecord(raw, file, 'wave');
@@ -582,6 +659,7 @@ const FILES = [
   'player',
   'drops',
   'voice',
+  'parallelism',
 ] as const;
 
 /** Validate every pattern file. Message is `patterns/<file>: <key>` for the first bad key. */
@@ -610,6 +688,7 @@ export function loadPatterns(raw: unknown): PatternSet {
     player: loadPlayer(obj.player),
     drops: loadDrops(obj.drops),
     voice: loadVoice(obj.voice),
+    parallelism: loadParallelism(obj.parallelism),
   };
 }
 
@@ -653,4 +732,5 @@ export const DEFAULT_PATTERNS: PatternSet = loadPatterns({
   player: playerJson,
   drops: dropsJson,
   voice: voiceJson,
+  parallelism: parallelismJson,
 });
