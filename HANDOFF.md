@@ -1,6 +1,8 @@
-# HANDOFF — Ghost on the Menu, wave 2 landed
+# HANDOFF — Ghost on the Menu, v0.2.0 published
 
-Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 110 tests, three play-throughs green, identity scan clean).
+Written 2026-09-10 at the end of the session that built wave 2 with Grok, gave the repo the full treatment and published v0.2.0. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 110 tests, three play-throughs green, identity scan clean).
+
+**Published 2026-09-10:** tag `v0.2.0`, GitHub release, Pages live at https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/ (landing page), `/play/` (the game, all sixteen tapes, sprites resolve under the site base) and `/handbook/` (seven Starlight pages: index, getting started, reading a round, the pattern data, reference, architecture, security). README translated to seven languages on TranslateGemma 27B. Shipcheck audit exit 0; SCORECARD post 45/50. repo-knowledge has the thesis, architecture, convention and next-step notes and the two relationships to mcp-arcade.
 
 ## The one decision that frames everything
 
@@ -66,11 +68,12 @@ Levers, all data: `fire.json` per tier (formation and boss rhythms with `aim`, d
 
 ## Order of work, next session
 
+0. **The Director's word after v0.2.0 (verbatim):** "The drop would need to fall toward the character, since you can't move forward, but that's a great idea. ... We need to make more of a narrative and add humor to it." So the next slice is **drops and voice**: a downed boss drops a lamp and a cleared formation drops a spread shot, both falling toward the ship's row (the ship cannot advance); a narrative line per wave and per boss in the wave card's paint, funny, never a fact name, never a digit. Drops are data in `patterns/` (what drops, fall speed, catch box) and never key on a lie; the panel must confirm the lines against G7 before they land. Version stays 0.x; the next publish is 0.3.0.
 1. **The Director plays it again.** What changed since his play: the field resets per wave, a word opens each wave, the calls are answered, the boss is staged. If it still reads as noise, the remaining levers are in the section below and in the sim: last-wave hoverers stay for the end scene by design; the whisperer both drops fog and emits its row on phase one (data in bosses.json); the sim imports kindOfAtom from cues.ts (move it to types or prepass if the dependency bothers you); the answer class has no sprite yet and draws as its rectangle.
 2. **Tuning stays in data.** `patterns/fire.json` (tier-1 period first), `waves.json` (density), `ladder.json` (speeds, fog). The band and the three play-throughs are the andon: a change that kills the sweeper on tier 0 or lets idle survive tier 1 fails the build.
 3. **Sprite fit.** Grid formations draw one sprite per member in a member-width box; bosses stretch to the sim's rect (the Menu squash is the point). If the Director wants the boss art unstretched, add an aspect-fit in `render.ts`, not in the sim.
 4. **A soundtrack track from Comfy Cloud** if the procedural one is not enough; spend-gated.
-5. **Pages deploy** when the game is worth showing; Director's call, public surface.
+5. **Pages** deploys on every push that touches site, apps, packages, fixtures or the lockfile (`.github/workflows/pages.yml`); the site build is `pnpm build:play` then `npm run build` in `site/`. Handbook pages live in `site/src/content/docs/handbook/`; keep them true when a control or a lever changes.
 
 ## Grok mechanics (both sessions on disk)
 
@@ -98,7 +101,7 @@ Licence, checked 2026-09-10: BFL Developer Terms (last revised 2026-08-04) give 
 
 ## Hard stops
 
-- Version 0.0.0. No tag. No Pages deploy without the Director.
+- Version 0.2.0, tagged and released 2026-09-10 by the Director's word. Stays 0.x; the next publish is 0.3.0 with a CHANGELOG entry, translations before the tag, identity scan of the tag tree.
 - No score, count, digit, pass/fail, NRP, integrity or utility on screen, ever. The play-through greps screen text for any digit.
 - Nothing about a lie may differ before the hit: not look, not motion, not timing, not a boss pose, not a sprite key.
 - Tapes only. No receipt, no `docs/proof`, no instrument code in this repo.
