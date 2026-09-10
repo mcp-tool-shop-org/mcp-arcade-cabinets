@@ -27,7 +27,18 @@ The lock's step 6 named four sprites: whisper wisp, answered ghost, honest echo,
 | `stall`      | `[no response]`                           | stall          | A call that got nothing back.                                                                     |
 | revealed     | any lie after the hit                     | answered ghost | The one dramatic sprite. Disproportionate feedback (F21). Currently `#e8a04a`.                    |
 
-Plus one 1280×720 backdrop: a CRT arcade cabinet interior, the field is the screen.
+Wave 2 adds four sprites, same rules, same palette:
+
+| Working name | Role                      | Note                                                                                                                         |
+| ------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| player ship  | the house                 | Small, wide, calm. Reads at 16×12 field units. Cream on near-black.                                                          |
+| Whisperer    | boss of the poison wave   | A wide pulsing hulk that breathes fog from its underside. Slate and violet grey. Big enough to be a wall, not a face.        |
+| Menu         | boss of the rug wave      | A large stone tablet with blank bands that can squash to a slit, so two frames: open and slit. Teal.                         |
+| Doorman      | boss of the unlisted wave | A tall figure with a plate in one hand, two frames: plate out and plate gone. Ochre. No face detail that reads as a verdict. |
+
+Bosses are the atom, not the lie, and every round of that kind gets its boss, so nothing about a boss may look like an accusation.
+
+Plus one 1280×720 backdrop: a CRT arcade cabinet interior, the field is the screen, three unlit lamp sockets on the lower bezel (the lamps are drawn by the game, never by the art).
 
 ## Rules for every image
 
@@ -39,7 +50,7 @@ Plus one 1280×720 backdrop: a CRT arcade cabinet interior, the field is the scr
 
 ## Draft pass
 
-Drafts run on the cheap tier (`vertexai/nano-banana-2-lite`) so the Director can pick a direction before anything runs on Flux 2 Pro or Grok Imagine. Eight images: seven sprites, one backdrop. Prompts and receipts land in `docs/art/receipts.json`.
+Drafts run on the cheap tier (`vertexai/nano-banana-2-lite`) so the Director can pick a direction before anything runs on Flux 2 Pro or Grok Imagine. Twelve images: seven event sprites, the player ship, three bosses (two frames each where noted, the second frame as a separate image), one backdrop. Prompts and receipts land in `docs/art/receipts.json`.
 
 ## Acceptance
 
