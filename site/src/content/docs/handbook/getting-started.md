@@ -23,7 +23,7 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Open the address Vite prints. Pick a tape and press **Play**. The published site also serves the game at [/play/](../../play/) with every fixture tape bundled.
+Open the address Vite prints. The tape list shows a difficulty label (fixture, seat, or live) derived from the tape's header and wire shape. Hover the **i** for the why: how the server was reached, how many waves and bosses, how dense the wire is. The why never mentions a fact. Press **Play**. The published site also serves the game at [/play/](../../play/) with every fixture tape bundled.
 
 ### Controls
 
@@ -46,6 +46,8 @@ A tape carries the tier it was recorded at: a fixture is tier 0, a seated run on
 - **Tier 0, as recorded**: only the boss fires, slowly. A gallery with teeth.
 - **Seat**: formations fire straight down and dive; the boss aims at you. A player who keeps moving loses about a lamp a round.
 - **Live**: faster, denser, the boss rages sooner. Meant to be survived, not cleared; a careful player finds every lie about half the time.
+
+A downed boss drops a lamp that falls toward the ship; a cleared formation drops a spread. The wave card carries a dry line about the experiment, and the boss enters with a line about the creature.
 
 ## Prove a round from the terminal
 

@@ -10,6 +10,7 @@ export type SfxName =
   | 'fire'
   | 'pop'
   | 'catch'
+  | 'drop'
   | 'fog'
   | 'lamp'
   | 'phase'
@@ -81,6 +82,12 @@ export function sfx(name: SfxName): Note[] {
         { at: 0.08, freq: 415, dur: 0.5, wave: 'triangle', gain: 0.2 },
         { at: 0.16, freq: 494, dur: 0.6, wave: 'triangle', gain: 0.2 },
         { at: 0.24, freq: 659, dur: 0.9, wave: 'sine', gain: 0.18 },
+      ];
+    case 'drop':
+      // A small pickup ding, not the lie-catch chord (W7).
+      return [
+        { at: 0, freq: 784, dur: 0.08, wave: 'square', gain: 0.1 },
+        { at: 0.07, freq: 1046, dur: 0.12, wave: 'triangle', gain: 0.1 },
       ];
     case 'fog':
       return [{ at: 0, freq: 55, dur: 1.2, wave: 'sawtooth', gain: 0.05 }];

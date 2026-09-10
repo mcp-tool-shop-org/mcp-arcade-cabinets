@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Drops.** A downed boss drops a lamp; a cleared formation drops a spread. Both fall toward the ship's row and drift toward its column. Data in `patterns/drops.json`. Catching a lamp relights one; catching a spread fans the ship's fire for a few seconds. Drops never key on a lie.
+- **Voice.** A dry line per wave open and per boss enter, in the wave card's furniture paint, and a closing line on the end scene. Data in `patterns/voice.json`, four drafts per key, picked by the round seed. They name the experiment and the creature, never a fact, never a digit.
+- **Tape labels.** The picker is a list. Each tape carries a difficulty word (fixture, seat, or live) and an **i** whose hover text explains the header and the wire shape. A test flips every fact and requires the identical label and why.
+
 ## [0.2.0] - 2026-09-10
 
 The first release. Ghost on the Menu is playable in a browser and from a terminal.

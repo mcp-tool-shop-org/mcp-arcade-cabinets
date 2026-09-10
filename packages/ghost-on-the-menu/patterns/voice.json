@@ -1,0 +1,54 @@
+{
+  "wave": {
+    "inspect": [
+      "The handshake is still shaking hands.",
+      "We read the menu. The menu reads us.",
+      "An inspection. Nobody said of whom.",
+      "The server has manners. We are testing them."
+    ],
+    "poison": [
+      "Someone is whispering. The Whisperer always is.",
+      "The Whisperer brought extra words. As usual.",
+      "A quiet room. The Whisperer sits down.",
+      "A whisper experiment. The Whisperer started."
+    ],
+    "rug": [
+      "The Menu asked to be seated again.",
+      "The Menu rearranges itself for sport.",
+      "The Menu is open. That is not a promise.",
+      "A rug, a pull, a Menu with two thoughts."
+    ],
+    "unlisted": [
+      "The Doorman has not listed this. On purpose.",
+      "An unlisted call. The Doorman is at the door.",
+      "The Doorman's list is short. The test is not.",
+      "Knock. The Doorman prefers you did not."
+    ]
+  },
+  "boss": {
+    "whisperer": [
+      "The Whisperer wants a moment. It will take several.",
+      "Hush. The Whisperer is working.",
+      "The Whisperer does not raise its voice.",
+      "If you can hear it, the Whisperer is here."
+    ],
+    "menu": [
+      "The Menu folds itself into a smaller Menu.",
+      "Please wait. The Menu is considering the Menu.",
+      "The Menu is one item long and infinitely wide.",
+      "The Menu would like you to pick nothing."
+    ],
+    "doorman": [
+      "The Doorman's plate is out. The plate is the Doorman.",
+      "Name and protocol. The Doorman knows both.",
+      "The Doorman is not listed. It lists you.",
+      "A closed door is still a Doorman."
+    ]
+  },
+  "end": [
+    "The tape ran. The creatures did what they do.",
+    "Same experiment, same guests, different evening.",
+    "The cabinet thanks you for not counting.",
+    "Whisperer, Menu, Doorman: they have left."
+  ]
+}

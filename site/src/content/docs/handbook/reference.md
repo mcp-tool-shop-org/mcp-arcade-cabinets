@@ -19,13 +19,17 @@ All run from the repo root.
 | `pnpm build:play` | Builds the shell under `site/public/play/` with the site's base path (CI does this before the site build) |
 | `pnpm -F @mcp-arcade-cabinets/cabinets dev` | The browser shell on a local port |
 
+## Tape labels
+
+Each tape on the picker carries a short difficulty word (`fixture`, `seat`, or `live`) and an **i** whose hover text explains it. Both are derived from the header and the wire shape: the derived tier, the number of waves, the number of bosses, rows per atom, and the framing. They never mention a fact or a lie count. A unit test flips every fact on a tape and requires the identical label and why.
+
 ## The bots
 
 Three scripted players live in `packages/ghost-on-the-menu/src/play.ts`. None of them reads whether a sprite is a lie; that would be cheating, and the cross-family review caught the wave-1 bot doing it.
 
 - **idle** never moves and never fires. The floor: threat must be real, so idle must lose every lamp at seat and live and must never be killed at tier 0.
-- **sweeper** chases the nearest hittable sprite and always fires. The dumb player: it must survive tier 0 and find at least half the lies.
-- **reader** fires only at the **sequence tells** it computes from the round's order, class and member counts (a second grid formation in an atom, a second menu tablet, a singleton grid right after a menu), and steps out of the lane of any shot or diver about to cross the ship. The ceiling: it must reveal every lie at tier 0 and seat.
+- **sweeper** chases the nearest hittable sprite and always fires, and catches a drop that is already crossing its lane. The dumb player: it must survive tier 0 and find at least half the lies.
+- **reader** fires only at the **sequence tells** it computes from the round's order, class and member counts (a second grid formation in an atom, a second menu tablet, a singleton grid right after a menu), and steps out of the lane of any shot or diver about to cross the ship. It ignores drops. The ceiling: it must reveal every lie at tier 0 and seat.
 
 ## The fairness band
 

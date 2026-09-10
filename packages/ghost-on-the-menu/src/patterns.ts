@@ -1,11 +1,13 @@
-import type { SpriteClass } from './types';
+import type { SpriteClass, WaveKind } from './types';
 
 import bossesJson from '../patterns/bosses.json';
+import dropsJson from '../patterns/drops.json';
 import fireJson from '../patterns/fire.json';
 import formationsJson from '../patterns/formations.json';
 import ladderJson from '../patterns/ladder.json';
 import pathsJson from '../patterns/paths.json';
 import playerJson from '../patterns/player.json';
+import voiceJson from '../patterns/voice.json';
 import wavesJson from '../patterns/waves.json';
 
 const SPRITE_CLASSES: readonly SpriteClass[] = [
@@ -30,6 +32,11 @@ const SPAWN_CLASSES: readonly SpriteClass[] = [
 const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
 const TIER_KEYS = ['0', '1', '2'] as const;
+const WAVE_VOICE_KEYS = ['inspect', 'poison', 'rug', 'unlisted'] as const;
+const DROP_KINDS = ['lamp', 'spread'] as const;
+const VOICE_FORBIDDEN =
+  /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
+const MIN_VOICE_LINES = 4;
 
 export interface PathPoint {
   x: number;
@@ -121,6 +128,27 @@ export interface WaveTier {
 
 export type SpriteBox = { w: number; h: number };
 
+export type DropKind = (typeof DROP_KINDS)[number];
+export type DropFrom = 'boss' | 'formation';
+
+export interface DropSpec {
+  from: DropFrom;
+  fall: number;
+  drift: number;
+  box: SpriteBox;
+  /** Seconds of spread fire; only on the spread kind. */
+  duration: number;
+}
+
+export type VoiceWaveKey = (typeof WAVE_VOICE_KEYS)[number];
+export type VoiceBossKey = (typeof BOSS_KINDS)[number];
+
+export interface VoiceSet {
+  wave: Record<VoiceWaveKey, string[]>;
+  boss: Record<VoiceBossKey, string[]>;
+  end: string[];
+}
+
 export interface PatternSet {
   paths: { paths: PathDef[] };
   formations: {
@@ -138,6 +166,8 @@ export interface PatternSet {
     y: number;
     grace: number;
   };
+  drops: Record<DropKind, DropSpec>;
+  voice: VoiceSet;
 }
 
 export interface TapeHeader {
@@ -427,7 +457,93 @@ function loadPlayer(raw: unknown): PatternSet['player'] {
   };
 }
 
-const FILES = ['paths', 'formations', 'fire', 'bosses', 'ladder', 'waves', 'player'] as const;
+function loadDropSpec(raw: unknown, file: string, kind: DropKind): DropSpec {
+  const rec = asRecord(raw, file, kind);
+  for (const key of Object.keys(rec)) {
+    if (PHASE_FORBIDDEN.has(key)) fail(file, key);
+  }
+  const from = asString(req(rec, file, 'from'), file, 'from');
+  if (kind === 'lamp' && from !== 'boss') fail(file, 'from');
+  if (kind === 'spread' && from !== 'formation') fail(file, 'from');
+  const box = asRecord(req(rec, file, 'box'), file, 'box');
+  const w = asNumber(req(box, file, 'w'), file, 'w');
+  const h = asNumber(req(box, file, 'h'), file, 'h');
+  if (!(w > 0 && h > 0)) fail(file, kind);
+  const fall = asNumber(req(rec, file, 'fall'), file, 'fall');
+  const drift = asNumber(req(rec, file, 'drift'), file, 'drift');
+  if (!(fall > 0)) fail(file, 'fall');
+  if (!(drift >= 0)) fail(file, 'drift');
+  let duration = 0;
+  if (Object.prototype.hasOwnProperty.call(rec, 'duration')) {
+    duration = asNumber(rec.duration, file, 'duration');
+  }
+  if (kind === 'spread') {
+    if (!(duration > 0)) fail(file, 'duration');
+  } else if (duration !== 0) {
+    fail(file, 'duration');
+  }
+  return { from: from as DropFrom, fall, drift, box: { w, h }, duration };
+}
+
+function loadDrops(raw: unknown): PatternSet['drops'] {
+  const file = 'drops.json';
+  const obj = asRecord(raw, file, 'lamp');
+  const drops = {} as PatternSet['drops'];
+  for (const kind of DROP_KINDS) {
+    drops[kind] = loadDropSpec(req(obj, file, kind), file, kind);
+  }
+  return drops;
+}
+
+function loadLines(raw: unknown, file: string, key: string): string[] {
+  const list = asArray(raw, file, key).map((item, i) => asString(item, file, `${key}.${i}`));
+  if (list.length < MIN_VOICE_LINES) fail(file, key);
+  for (const line of list) {
+    if (line.trim() === '' || VOICE_FORBIDDEN.test(line)) fail(file, key);
+  }
+  return list;
+}
+
+function loadVoice(raw: unknown): VoiceSet {
+  const file = 'voice.json';
+  const obj = asRecord(raw, file, 'wave');
+  const waveRaw = asRecord(req(obj, file, 'wave'), file, 'wave');
+  const wave = {} as VoiceSet['wave'];
+  for (const key of WAVE_VOICE_KEYS) {
+    wave[key] = loadLines(req(waveRaw, file, key), file, key);
+  }
+  const bossRaw = asRecord(req(obj, file, 'boss'), file, 'boss');
+  const boss = {} as VoiceSet['boss'];
+  for (const key of BOSS_KINDS) {
+    boss[key] = loadLines(req(bossRaw, file, key), file, key);
+  }
+  return { wave, boss, end: loadLines(req(obj, file, 'end'), file, 'end') };
+}
+
+/** Pick a line by seed and salt. Same seed and salt, same line; never reads a fact. */
+export function pickLine(lines: readonly string[], seed: number, salt: number): string {
+  if (lines.length === 0) return '';
+  const x = (Math.imul(seed, 1664525) + Math.imul(salt + 1, 1013904223)) >>> 0;
+  return lines[x % lines.length]!;
+}
+
+/** Wave voice key for an atom kind. Breath and unknowns share inspect's lines. */
+export function voiceWaveKey(kind: WaveKind): VoiceWaveKey {
+  if (kind === 'poison' || kind === 'rug' || kind === 'unlisted') return kind;
+  return 'inspect';
+}
+
+const FILES = [
+  'paths',
+  'formations',
+  'fire',
+  'bosses',
+  'ladder',
+  'waves',
+  'player',
+  'drops',
+  'voice',
+] as const;
 
 /** Validate every pattern file. Message is `patterns/<file>: <key>` for the first bad key. */
 export function loadPatterns(raw: unknown): PatternSet {
@@ -453,6 +569,8 @@ export function loadPatterns(raw: unknown): PatternSet {
     ladder,
     waves: loadWaves(obj.waves),
     player: loadPlayer(obj.player),
+    drops: loadDrops(obj.drops),
+    voice: loadVoice(obj.voice),
   };
 }
 
@@ -494,4 +612,6 @@ export const DEFAULT_PATTERNS: PatternSet = loadPatterns({
   ladder: ladderJson,
   waves: wavesJson,
   player: playerJson,
+  drops: dropsJson,
+  voice: voiceJson,
 });

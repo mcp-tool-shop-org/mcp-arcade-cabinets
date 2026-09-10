@@ -9,7 +9,7 @@ sidebar:
 
 ## What a round is made of
 
-Every experiment the instrument ran (an **atom**) becomes one **wave**. A wave opens with a word naming its kind, then plays the wire in the order it happened:
+Every experiment the instrument ran (an **atom**) becomes one **wave**. A wave opens with a word naming its kind and a dry line about the experiment, then plays the wire in the order it happened:
 
 1. the **handshake** (a lantern),
 2. the **menu** the server published (a stone tablet with blank bands),
@@ -19,11 +19,11 @@ Every experiment the instrument ran (an **atom**) becomes one **wave**. A wave o
 
 Somewhere in the wave may be a call the agent should not have made: a whisper it followed, a menu that changed under it, a ghost tool it answered. Those sprites share a look, a path and a timing with their honest twins. Nothing about a lie differs before contact. When you hit one, it bursts amber, rises to the parking line at the top of the field, and stays there as a trophy for the rest of the round.
 
-Three lamps sit on the bezel. A boss shot or a diving formation puts one out. Lose all three and the round ends early, with the same end scene as time-up: the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
+Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls toward the ship; a cleared formation drops a spread. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
 
 ## Where to go next
 
-- [Getting started](./getting-started/): install, play, the controls, the difficulties.
+- [Getting started](./getting-started/): install, play, the controls, the difficulties, the tape labels.
 - [Reading a round](./reading-a-round/): the tells, the bosses, what a wave looks like on the wire.
 - [The pattern data](./patterns/): every number that shapes threat lives in JSON.
 - [Reference](./reference/): the scripts, the bots, the tapes, the fairness band.

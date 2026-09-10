@@ -38,7 +38,8 @@ export interface Transcript {
 
 /** The transcript may name a bout id; the screen may not carry a digit at all. */
 const FORBIDDEN = /\b(nrp|integrity|utility|attack_success|pass|fail)\b|1\.00/i;
-const SCREEN_FORBIDDEN = /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared)\b/i;
+const SCREEN_FORBIDDEN =
+  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
 
 const DT = 1 / 30;
 
@@ -138,6 +139,16 @@ function readerInput(state: RoundState, tells: Set<string>): RoundInput {
 /** The dumb player: nearest hittable sprite, always firing. Never reads `lie`. */
 function sweeperInput(state: RoundState): RoundInput {
   const px = state.player.x + state.player.w / 2;
+  const py = state.player.y;
+  // Catch a drop that is already crossing this lane; do not chase across the field.
+  for (const d of state.drops) {
+    if (!d.alive) continue;
+    const cx = d.x + d.w / 2;
+    if (Math.abs(cx - px) >= DODGE_LANE) continue;
+    if (d.y > py + 8 || py - d.y > DODGE_REACH) continue;
+    const dx = cx - px;
+    return { left: dx < -3, right: dx > 3, fire: true };
+  }
   let target: RoundState['enemies'][number] | undefined;
   for (const e of state.enemies) {
     if (!isHittable(state, e)) continue;

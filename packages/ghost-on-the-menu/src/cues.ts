@@ -30,6 +30,7 @@ export interface CueSnapshot {
   bossHitT: number | null;
   bossKills: number;
   diving: number;
+  dropCatches: number;
 }
 
 export function snapshot(state: RoundState): CueSnapshot {
@@ -53,6 +54,7 @@ export function snapshot(state: RoundState): CueSnapshot {
     bossHitT: state.boss && state.boss.alive ? state.boss.hitT : null,
     bossKills: state.bossKills,
     diving,
+    dropCatches: state.dropCatches,
   };
 }
 
@@ -61,6 +63,7 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
   if (!prev) return [];
   const out: SfxName[] = [];
   if (next.caught > prev.caught) out.push('catch');
+  if (next.dropCatches > prev.dropCatches) out.push('drop');
   if (next.lives < prev.lives) out.push('lamp');
   if (next.ended && !prev.ended) out.push('end');
   if (next.waveCard && !prev.waveCard) out.push('wave');

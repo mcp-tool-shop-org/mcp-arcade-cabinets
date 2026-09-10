@@ -179,16 +179,41 @@ describe('renderRound', () => {
 describe('caption paint', () => {
   it('paints a wave card in furniture colour at the top and a catch in amber low on the field', () => {
     const state = createRoundState(roundOf([]));
-    state.caption = { text: 'poison', t: 1, kind: 'wave' };
+    state.caption = { text: 'poison', t: 1, kind: 'wave', line: 'Hush. The Whisperer is working.' };
     const a = recordingCtx();
     renderRound(a, state);
     expect(a.calls.some((c) => c.startsWith('text #c8d0dc 16 40 poison'))).toBe(true);
+    expect(
+      a.calls.some((c) => c.startsWith('text #c8d0dc 16 58 Hush. The Whisperer is working.')),
+    ).toBe(true);
     state.caption = { text: 'tools/call leak', t: 1, kind: 'catch' };
     const b = recordingCtx();
     renderRound(b, state);
     expect(
       b.calls.some((c) => c.startsWith('text #e8a04a 16 ') && c.endsWith('tools/call leak')),
     ).toBe(true);
+  });
+
+  it('draws the end-scene voice line above the furniture, never a digit', () => {
+    const state = createRoundState(roundOf([]));
+    state.scene = {
+      tapeId: state.tapeId,
+      cleared: [],
+      line: 'The cabinet thanks you for not counting.',
+    };
+    const ctx = makeTextCtx();
+    renderRound(ctx, state, { furniture: ['naive-ndjson', 'server the-fixture', 'policy naive'] });
+    expect(ctx.texts[0]).toBe('The cabinet thanks you for not counting.');
+    expect(ctx.texts.join('\n')).toMatch(/policy naive/);
+    for (const t of ctx.texts) expect(t).not.toMatch(FORBIDDEN);
+  });
+
+  it('draws a drop as a rectangle until art, same key for any fact', () => {
+    const state = createRoundState(roundOf([]));
+    state.drops.push({ kind: 'lamp', x: 100, y: 80, w: 14, h: 14, alive: true });
+    const a = recordingCtx();
+    renderRound(a, state);
+    expect(a.calls.some((c) => c.startsWith('rect #f0d878 100 80 14 14'))).toBe(true);
   });
 });
 

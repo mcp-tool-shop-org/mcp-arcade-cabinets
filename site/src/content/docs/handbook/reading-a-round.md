@@ -43,7 +43,12 @@ Bosses have enough health for a real fight, flash white when a shot lands, fire 
 - **Formations** fire straight down at seat and live, and dive: a diver tracks your column until half way down, then commits, so a player who reads the dive steps out of it.
 - **The boss** fires at where you are when the shot leaves, at seat and live. That is the one thing a player who keeps moving cannot shrug off.
 - **Contact** with a shot or a diver puts a lamp out and starts a short grace, during which the ship blinks and nothing else can hurt it.
+- **Drops** fall toward the ship's row and drift toward its column, because the ship cannot move forward. A downed boss drops a lamp (catch it to relight one). A cleared formation drops a spread shot that fans the ship's fire for a few seconds. A drop is class motion: the boss drops whether or not the wave had a lie.
+
+## The wave card
+
+A wave opens with a word naming the experiment (inspect, poison, rug, unlisted) and a dry line under it in the same furniture paint. When the boss enters, a line about the creature replaces it. The lines live in `voice.json`, picked by the round seed. They name the experiment and the creature. They never name a fact and they never carry a digit.
 
 ## The end scene
 
-When the last wave closes or the lamps are out, the field freezes. The trophies you caught sit on the parking line. A lie you missed sits where it hovered, in its honest paint; you can see what got away, but the game does not name it. Three lines of furniture: the tape's name, the server, the policy. Click to play the same tape again, or take the next one.
+When the last wave closes or the lamps are out, the field freezes. The trophies you caught sit on the parking line. A lie you missed sits where it hovered, in its honest paint; you can see what got away, but the game does not name it. Furniture: a closing line, then the tape's name, the server, the policy. Click to play the same tape again, or take the next one.

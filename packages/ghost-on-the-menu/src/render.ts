@@ -26,6 +26,8 @@ const FOG_FILL = 'rgba(76, 76, 106, 0.55)';
 const VEIL_FILL = 'rgba(52, 52, 82, 0.88)';
 const LAMP_LIT = '#e8c060';
 const LAMP_DARK = '#2a2a34';
+const DROP_LAMP_FILL = '#f0d878';
+const DROP_SPREAD_FILL = '#7ec8c8';
 const BEZEL = '#181822';
 const FIELD_FILL = '#101018';
 const FURNITURE = '#c8d0dc';
@@ -57,6 +59,8 @@ export const SPRITE_KEYS = [
   'boss-menu-slit',
   'boss-doorman-plate-out',
   'boss-doorman-plate-gone',
+  'drop-lamp',
+  'drop-spread',
 ] as const;
 export type SpriteKey = (typeof SPRITE_KEYS)[number];
 
@@ -259,6 +263,15 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     rect(shot.x, shot.y, shot.w, shot.h);
   }
 
+  for (const drop of state.drops) {
+    if (!drop.alive) continue;
+    const key = drop.kind === 'lamp' ? 'drop-lamp' : 'drop-spread';
+    if (!sprite(key, drop.x, drop.y, drop.w, drop.h)) {
+      ctx.fillStyle = drop.kind === 'lamp' ? DROP_LAMP_FILL : DROP_SPREAD_FILL;
+      rect(drop.x, drop.y, drop.w, drop.h);
+    }
+  }
+
   // While grace runs after a lamp is lost the ship blinks, ten times a second.
   const p = state.player;
   const blinkOff = state.grace > 0 && Math.floor(state.playerHitT * 10) % 2 === 1;
@@ -277,10 +290,15 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // names the tape, the server and the policy and nothing more (G10).
   if (state.caption && !state.scene) {
     if (state.caption.kind === 'wave') {
-      // The wave card: a word in furniture paint at the top of the field.
+      // The wave card: a word in furniture paint at the top of the field,
+      // and the voice line under it, also furniture, never amber.
       ctx.fillStyle = FURNITURE;
       ctx.font = '16px monospace';
       ctx.fillText(state.caption.text, 16, 40);
+      if (state.caption.line) {
+        ctx.font = '11px monospace';
+        ctx.fillText(state.caption.line, 16, 58);
+      }
     } else {
       // The catch: the wire fact in the reveal's amber, low on the field.
       ctx.fillStyle = REVEALED_FILL;
@@ -298,11 +316,15 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   }
 
   if (state.scene) {
-    // Furniture only, and only what the shell passes: the tape by name, the
-    // server, the policy. The bout id is hex and never goes on the canvas.
+    // Furniture only: a voice line, then the tape by name, the server, the
+    // policy. The bout id is hex and never goes on the canvas.
     ctx.fillStyle = FURNITURE;
     ctx.font = '12px monospace';
     let y = 46;
+    if (state.scene.line) {
+      ctx.fillText(state.scene.line, 16, y);
+      y += 18;
+    }
     for (const line of opts.furniture ?? []) {
       ctx.fillText(line, 16, y);
       y += 16;

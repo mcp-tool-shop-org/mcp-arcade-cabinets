@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PATTERNS, loadPatterns } from '../src/patterns';
+import { DEFAULT_PATTERNS, loadPatterns, pickLine, voiceWaveKey } from '../src/patterns';
 
 function clone(): Record<string, unknown> {
   return JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as Record<string, unknown>;
@@ -243,5 +243,61 @@ describe('loadPatterns', () => {
     if (!whisperer) throw new Error('patterns/bosses.json: whisperer');
     whisperer.phases[0]!.lie = true;
     expect(() => loadPatterns(raw)).toThrow('patterns/bosses.json: lie');
+  });
+
+  it('loads drops that fall toward the ship and never key on a lie', () => {
+    expect(DEFAULT_PATTERNS.drops.lamp.from).toBe('boss');
+    expect(DEFAULT_PATTERNS.drops.spread.from).toBe('formation');
+    expect(DEFAULT_PATTERNS.drops.spread.duration).toBeGreaterThan(0);
+    expect(DEFAULT_PATTERNS.drops.lamp).not.toHaveProperty('lie');
+    const raw = clone();
+    delete (raw as { drops?: unknown }).drops;
+    expect(() => loadPatterns(raw)).toThrow('patterns/drops.json: drops');
+    const mistype = clone();
+    (mistype.drops as { lamp: unknown }).lamp = 0;
+    expect(() => loadPatterns(mistype)).toThrow('patterns/drops.json: lamp');
+    const lieKey = clone();
+    (lieKey.drops as { lamp: Record<string, unknown> }).lamp.lie = true;
+    expect(() => loadPatterns(lieKey)).toThrow('patterns/drops.json: lie');
+    const badFrom = clone();
+    (badFrom.drops as { lamp: { from: string } }).lamp.from = 'formation';
+    expect(() => loadPatterns(badFrom)).toThrow('patterns/drops.json: from');
+  });
+
+  it('loads four voice lines per key with no digit or fact word', () => {
+    const voice = DEFAULT_PATTERNS.voice;
+    for (const key of ['inspect', 'poison', 'rug', 'unlisted'] as const) {
+      expect(voice.wave[key].length).toBeGreaterThanOrEqual(4);
+    }
+    for (const key of ['whisperer', 'menu', 'doorman'] as const) {
+      expect(voice.boss[key].length).toBeGreaterThanOrEqual(4);
+    }
+    expect(voice.end.length).toBeGreaterThanOrEqual(4);
+    const forbidden =
+      /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
+    for (const line of [
+      ...Object.values(voice.wave).flat(),
+      ...Object.values(voice.boss).flat(),
+      ...voice.end,
+    ]) {
+      expect(line).not.toMatch(forbidden);
+    }
+    expect(pickLine(voice.end, 1, 0)).toBe(pickLine(voice.end, 1, 0));
+    expect(voiceWaveKey('breather')).toBe('inspect');
+    expect(voiceWaveKey('poison')).toBe('poison');
+    const raw = clone();
+    (raw.voice as { wave: { poison: string[] } }).wave.poison = ['ok', 'ok', 'ok'];
+    expect(() => loadPatterns(raw)).toThrow('patterns/voice.json: poison');
+    const digit = clone();
+    (digit.voice as { end: string[] }).end = ['a', 'b', 'c', 'wave 4'];
+    expect(() => loadPatterns(digit)).toThrow('patterns/voice.json: end');
+    const fact = clone();
+    (fact.voice as { wave: { inspect: string[] } }).wave.inspect = [
+      'hello',
+      'there',
+      'friend',
+      'a lie on the wire',
+    ];
+    expect(() => loadPatterns(fact)).toThrow('patterns/voice.json: inspect');
   });
 });

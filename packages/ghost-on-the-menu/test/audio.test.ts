@@ -4,7 +4,7 @@ import { attach, bar, barSeconds, DEFAULT_MUSIC, sfx, type Note } from '../src/a
 
 describe('the score is pure data (no assets, no sim)', () => {
   it('every effect is a short list of notes with sane gains', () => {
-    for (const name of ['fire', 'pop', 'catch', 'fog', 'lamp', 'phase', 'end'] as const) {
+    for (const name of ['fire', 'pop', 'catch', 'drop', 'fog', 'lamp', 'phase', 'end'] as const) {
       const notes = sfx(name);
       expect(notes.length).toBeGreaterThan(0);
       for (const n of notes) {

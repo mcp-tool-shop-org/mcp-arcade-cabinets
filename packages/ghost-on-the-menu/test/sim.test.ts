@@ -824,3 +824,181 @@ describe('stepRound', () => {
     expect(hit).toBe(true);
   });
 });
+
+describe('drops', () => {
+  it('a downed boss drops a lamp that falls toward the ship, honest or not', () => {
+    const make = (lie: boolean): RoundState =>
+      createRoundState(
+        roundOf({
+          tapeId: 'bout_drop_boss',
+          duration: 8,
+          seed: 7,
+          waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 6 }],
+          beats: lie
+            ? [
+                {
+                  id: 'poison.follow_through:grid:0',
+                  t: 0,
+                  x: 240,
+                  sprite: 'grid',
+                  lie: true,
+                  members: 1,
+                  source: {
+                    atom: 'poison.follow_through',
+                    method: 'tools/call',
+                    note: 'tools/call echo',
+                    index: 0,
+                  },
+                },
+              ]
+            : [],
+        }),
+      );
+    const run = (state: RoundState) => {
+      stepRound(state, { left: false, right: false, fire: false }, 1.6);
+      expect(state.boss).not.toBeNull();
+      state.boss!.hp = 0;
+      stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+      return state;
+    };
+    const a = run(make(true));
+    const b = run(make(false));
+    expect(a.boss).toBeNull();
+    expect(b.boss).toBeNull();
+    const lampA = a.drops.filter((d) => d.kind === 'lamp');
+    const lampB = b.drops.filter((d) => d.kind === 'lamp');
+    expect(lampA).toHaveLength(1);
+    expect(lampB).toHaveLength(1);
+    expect(lampA[0]!.x).toBeCloseTo(lampB[0]!.x, 5);
+    expect(lampA[0]!.y).toBeCloseTo(lampB[0]!.y, 5);
+    const beforeY = lampA[0]!.y;
+    const shipX = a.player.x;
+    a.player.x = 40;
+    stepRound(a, { left: false, right: false, fire: false }, 0.2);
+    expect(a.drops[0]!.y).toBeGreaterThan(beforeY);
+    expect(a.drops[0]!.x).toBeLessThan(shipX);
+  });
+
+  it('a cleared formation drops a spread whether the formation was a lie', () => {
+    const make = (lie: boolean): RoundState => {
+      const state = createRoundState(
+        roundOf({
+          tapeId: 'bout_drop_form',
+          duration: 8,
+          seed: 3,
+          beats: [
+            {
+              id: 'inspect.tools_list:grid:0',
+              t: 0,
+              x: 240,
+              sprite: 'grid',
+              lie,
+              members: 3,
+              source: {
+                atom: 'inspect.tools_list',
+                method: 'tools/call',
+                note: 'tools/call echo',
+                index: 0,
+              },
+            },
+          ],
+        }),
+      );
+      park(state, state.enemies[0]!);
+      return state;
+    };
+    const pop = (state: RoundState) => {
+      let guard = 0;
+      while (state.drops.length === 0 && guard < 200) {
+        stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+        guard += 1;
+      }
+      return state;
+    };
+    const a = pop(make(true));
+    const b = pop(make(false));
+    expect(a.drops).toHaveLength(1);
+    expect(b.drops).toHaveLength(1);
+    expect(a.drops[0]!.kind).toBe('spread');
+    expect(b.drops[0]!.kind).toBe('spread');
+  });
+
+  it('catching a lamp restores a life and catching a spread fans the next shots', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_catch', duration: 8 }));
+    state.lives = 1;
+    state.drops.push({
+      kind: 'lamp',
+      x: state.player.x,
+      y: state.player.y,
+      w: 14,
+      h: 14,
+      alive: true,
+    });
+    stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+    expect(state.lives).toBe(2);
+    expect(state.dropCatches).toBe(1);
+    expect(state.drops).toHaveLength(0);
+    state.drops.push({
+      kind: 'spread',
+      x: state.player.x,
+      y: state.player.y,
+      w: 14,
+      h: 14,
+      alive: true,
+    });
+    stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+    expect(state.spreadT).toBeGreaterThan(0);
+    const before = state.shots.length;
+    stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+    expect(state.shots.length - before).toBe(3);
+  });
+});
+
+describe('voice', () => {
+  it('picks a wave line and a boss line by seed, never by fact', () => {
+    const make = (lie: boolean): RoundState =>
+      createRoundState(
+        roundOf({
+          tapeId: 'bout_voice',
+          duration: 12,
+          seed: 42,
+          waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 10 }],
+          beats: [
+            {
+              id: 'poison.follow_through:grid:0',
+              t: 0,
+              x: 80,
+              sprite: 'grid',
+              lie,
+              members: 1,
+              source: {
+                atom: 'poison.follow_through',
+                method: 'tools/call',
+                note: 'tools/call echo',
+                index: 0,
+              },
+            },
+          ],
+        }),
+      );
+    const a = make(true);
+    const b = make(false);
+    stepRound(a, { left: false, right: false, fire: false }, 0.05);
+    stepRound(b, { left: false, right: false, fire: false }, 0.05);
+    expect(a.caption!.kind).toBe('wave');
+    expect(a.caption!.text).toBe('poison');
+    expect(a.caption!.line).toBe(b.caption!.line);
+    expect(a.caption!.line).toBeTruthy();
+    expect(a.caption!.line).not.toMatch(FORBIDDEN_CAPTION);
+    expect(a.caption!.line).not.toMatch(/\blie\b|\bfact\b|followed|held/i);
+    while (a.t < 1.7) stepRound(a, { left: false, right: false, fire: false }, 0.1);
+    while (b.t < 1.7) stepRound(b, { left: false, right: false, fire: false }, 0.1);
+    expect(a.boss).not.toBeNull();
+    expect(a.caption!.line).toBe(b.caption!.line);
+    expect(a.caption!.line).not.toBe('poison');
+    expect(a.caption!.line).toMatch(/Whisperer/);
+    while (!a.scene) stepRound(a, { left: false, right: false, fire: false }, 0.5);
+    expect(a.scene!.line).toBeTruthy();
+    expect(a.scene!.line).not.toMatch(FORBIDDEN_CAPTION);
+  });
+});

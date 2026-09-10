@@ -122,6 +122,8 @@ export interface Boss {
 export interface Scene {
   tapeId: string;
   cleared: string[];
+  /** Furniture line above the tape/server/policy. Never a fact. */
+  line?: string;
 }
 
 export interface Caption {
@@ -129,6 +131,19 @@ export interface Caption {
   t: number;
   /** Wave card vs catch. Optional so older callers still typecheck. */
   kind?: 'wave' | 'catch';
+  /** Furniture line under the wave word. Never a fact. */
+  line?: string;
+}
+
+export type DropKind = 'lamp' | 'spread';
+
+export interface Drop {
+  kind: DropKind;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  alive: boolean;
 }
 
 export interface RoundState {
@@ -160,6 +175,12 @@ export interface RoundState {
   playerHitT: number;
   /** Round time of the last boss kill. NEGATIVE_INFINITY before any. */
   bossDownT: number;
+  /** Drops falling toward the ship. Class motion, never fact motion. */
+  drops: Drop[];
+  /** Seconds of spread fire remaining. */
+  spreadT: number;
+  /** Drops caught this round. For cues; never drawn as a digit. */
+  dropCatches: number;
 }
 
 export interface RoundInput {

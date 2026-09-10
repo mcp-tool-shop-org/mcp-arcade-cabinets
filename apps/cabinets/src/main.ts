@@ -1,5 +1,7 @@
 // The browser shell. Pick a tape; Ghost on the Menu takes the page.
 
+import { labelTape } from '@mcp-arcade-cabinets/ghost-on-the-menu';
+
 import { mountGhost } from './ghost';
 import { TAPES } from './tapes';
 
@@ -19,28 +21,54 @@ function menu() {
     'Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made. Hit one and it is yours for the rest of the round. Three lamps; a boss shot or a diving formation puts one out.';
   app.append(h, p, how);
 
-  const pickTape = document.createElement('select');
-  for (const t of TAPES) {
-    const o = document.createElement('option');
-    o.value = t.name;
-    o.textContent = t.name;
-    pickTape.append(o);
-  }
-  pickTape.value = 'naive-ndjson';
+  let picked = Math.max(
+    0,
+    TAPES.findIndex((x) => x.name === 'naive-ndjson'),
+  );
+  const list = document.createElement('ul');
+  list.className = 'tape-list';
+  const rows: HTMLLIElement[] = [];
+  const mark = () => {
+    rows.forEach((row, i) => row.classList.toggle('picked', i === picked));
+  };
+  TAPES.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.className = 'tape-row';
+    const name = document.createElement('button');
+    name.type = 'button';
+    name.className = 'tape-name';
+    name.textContent = t.name;
+    const tagged = labelTape(t.tape);
+    const diff = document.createElement('span');
+    diff.className = 'tape-diff';
+    diff.textContent = tagged.label;
+    const info = document.createElement('span');
+    info.className = 'tape-info';
+    info.tabIndex = 0;
+    info.textContent = 'i';
+    const why = document.createElement('span');
+    why.className = 'tape-why';
+    why.textContent = tagged.why;
+    info.append(why);
+    li.append(name, diff, info);
+    name.addEventListener('click', () => {
+      picked = i;
+      mark();
+    });
+    rows.push(li);
+    list.append(li);
+  });
+  mark();
   const row = document.createElement('div');
   row.className = 'row';
   const play = document.createElement('button');
   play.textContent = 'Play';
   play.className = 'commit';
-  row.append(pickTape, play);
-  app.append(row);
+  row.append(play);
+  app.append(list, row);
 
   play.addEventListener('click', () => {
-    const i = Math.max(
-      0,
-      TAPES.findIndex((x) => x.name === pickTape.value),
-    );
-    playAt(i);
+    playAt(picked);
   });
 }
 

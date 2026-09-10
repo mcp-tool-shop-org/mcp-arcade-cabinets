@@ -11,6 +11,8 @@ export { DEFAULT_SECONDS, FIELD, VISIBLE_MAX, VISIBLE_MIN } from './types';
 export type {
   Beat,
   DrawContext,
+  Drop,
+  DropKind,
   Enemy,
   Round,
   RoundInput,
@@ -20,6 +22,9 @@ export type {
 } from './types';
 export { prepassRound } from './prepass';
 export { createRoundState, revealOnHit, stepRound } from './sim';
+export { pickLine, voiceWaveKey } from './patterns';
+export { labelTape } from './label';
+export type { TapeLabel } from './label';
 export {
   BOSS_FILL,
   bossFrame,

@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Tuning never changes code. The sim reads a **pattern set** of seven JSON files, validated at load; a missing or mistyped key fails with `patterns/<file>: <key>`, and a rung whose pools cover no path for a class is a load error, never a silent upgrade.
+Tuning never changes code. The sim reads a **pattern set** of nine JSON files, validated at load; a missing or mistyped key fails with `patterns/<file>: <key>`, and a rung whose pools cover no path for a class is a load error, never a silent upgrade.
 
 | File              | Holds                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------- |
@@ -16,6 +16,8 @@ Tuning never changes code. The sim reads a **pattern set** of seven JSON files, 
 | `ladder.json`     | The derive rule from a tape header to a tier, and the three rungs: path pools, who fires, speed, fog, lamps |
 | `waves.json`      | Per tier: breather, beats per group, rest, density, and the tail after the last wave                     |
 | `player.json`     | The ship's speed, cooldown, hitbox, row and grace                                                         |
+| `drops.json`      | What a downed boss and a cleared formation drop, how fast it falls and drifts, the catch box, and how long a spread lasts |
+| `voice.json`      | Four dry lines per wave kind, boss kind, and the end scene, picked by the round seed                      |
 
 ## Tiers
 
@@ -36,6 +38,8 @@ The shell can override the derived tier (the difficulty selector), and the fairn
 - **`bosses.json` → hp, rage**: health in hits; the fire-period multiplier below half health (in 0..1). Phases whose motion is `slit` or `hold` take no damage.
 - **`waves.json` → density, tail**: seconds per beat is a base over density, so a higher density packs the same beats into a shorter round; the tail is how long the round runs after the last wave closes. Placement is stretched so the last wave ends a tail before time-up.
 - **`ladder.json` → rungs[].speed, fog, lamps**: a multiplier on entry and dive speed, a multiplier on fog drift, and the number of lamps.
+- **`drops.json`**: a downed boss always drops a lamp; a cleared grid formation always drops a spread. Fall speed, drift toward the ship, catch box, spread duration. Never keyed on a lie.
+- **`voice.json`**: lines named by atom kind and boss kind, never by fact. The loader rejects a digit or a fact word.
 
 ## Measuring a change
 

@@ -1,7 +1,10 @@
 import {
   attachPatterns,
   attachedPatterns,
+  pickLine,
+  voiceWaveKey,
   type BossDef,
+  type DropKind,
   type FireRhythm,
   type LadderRung,
   type PathDef,
@@ -11,6 +14,7 @@ import {
   FIELD,
   PARKING_Y,
   type Boss,
+  type Drop,
   type Enemy,
   type Round,
   type RoundInput,
@@ -210,9 +214,12 @@ function atomOf(enemy: Enemy): string {
   return i === -1 ? enemy.id : enemy.id.slice(0, i);
 }
 
-function endRound(state: RoundState, why: 'time' | 'lamps'): void {
+function endRound(state: RoundState, why: 'time' | 'lamps', meta?: Meta): void {
   state.ended = why;
-  state.scene = { tapeId: state.tapeId, cleared: [...state.cleared] };
+  const line = meta ? pickLine(meta.patterns.voice.end, meta.round.seed, 99) : undefined;
+  state.scene = line
+    ? { tapeId: state.tapeId, cleared: [...state.cleared], line }
+    : { tapeId: state.tapeId, cleared: [...state.cleared] };
 }
 
 function spawnShot(shots: Shot[], cx: number, y: number, vy: number, dx = 0, vx = 0): void {
@@ -356,6 +363,9 @@ export function createRoundState(round: Round): RoundState {
     bossKills: 0,
     playerHitT: Number.POSITIVE_INFINITY,
     bossDownT: Number.NEGATIVE_INFINITY,
+    drops: [],
+    spreadT: 0,
+    dropCatches: 0,
   };
   const meta: Meta = {
     patterns,
@@ -410,7 +420,13 @@ function openWave(state: RoundState, meta: Meta, wave: number): void {
   }
   const bound = meta.round.waveBounds[wave];
   if (!bound) return;
-  state.caption = { text: waveCaption(bound.atom), t: WAVE_CAPTION_T, kind: 'wave' };
+  const kind = voiceWaveKey(kindOfAtom(bound.atom));
+  state.caption = {
+    text: waveCaption(bound.atom),
+    t: WAVE_CAPTION_T,
+    kind: 'wave',
+    line: pickLine(meta.patterns.voice.wave[kind], meta.round.seed, 17 + wave),
+  };
   meta.waveHold = WAVE_CAPTION_T;
   meta.emittedGridForWave = false;
   meta.captionedWave = wave;
@@ -470,14 +486,77 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
   meta.bossBaseH = def.h;
   meta.bossOriginX = x;
   meta.bossOriginY = y;
+  const bound = meta.round.waveBounds[state.wave];
+  const word = bound ? waveCaption(bound.atom) : kind;
+  const salt = 41 + kind.length + state.wave * 3;
+  state.caption = {
+    text: word,
+    t: WAVE_CAPTION_T,
+    kind: 'wave',
+    line: pickLine(meta.patterns.voice.boss[kind], meta.round.seed, salt),
+  };
+}
+
+function spawnDrop(state: RoundState, meta: Meta, kind: DropKind, cx: number, cy: number): void {
+  const spec = meta.patterns.drops[kind];
+  const drop: Drop = {
+    kind,
+    x: cx - spec.box.w / 2,
+    y: cy - spec.box.h / 2,
+    w: spec.box.w,
+    h: spec.box.h,
+    alive: true,
+  };
+  state.drops.push(drop);
 }
 
 function killBoss(state: RoundState, meta: Meta, atom: string): void {
-  if (state.boss) state.boss.alive = false;
+  if (state.boss) {
+    spawnDrop(
+      state,
+      meta,
+      'lamp',
+      state.boss.x + state.boss.w / 2,
+      state.boss.y + state.boss.h / 2,
+    );
+    state.boss.alive = false;
+  }
   state.boss = null;
   meta.bossDeadFor = atom;
   state.bossKills += 1;
   state.bossDownT = state.t;
+}
+
+function spawnFormationDrop(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
+  if (!meta) return;
+  if (enemy.sprite !== 'grid') return;
+  spawnDrop(state, meta, 'spread', enemy.x + enemy.w / 2, enemy.y + enemy.h / 2);
+}
+
+function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void {
+  if (!meta) return;
+  for (const drop of state.drops) {
+    if (!drop.alive) continue;
+    const spec = meta.patterns.drops[drop.kind];
+    const targetX = state.player.x + state.player.w / 2 - drop.w / 2;
+    const dx = targetX - drop.x;
+    const step = spec.drift * dt;
+    drop.x += Math.abs(dx) <= step ? dx : Math.sign(dx) * step;
+    drop.y += spec.fall * dt;
+    if (drop.y > FIELD.height) {
+      drop.alive = false;
+      continue;
+    }
+    if (!overlaps(drop, state.player)) continue;
+    drop.alive = false;
+    state.dropCatches += 1;
+    if (drop.kind === 'lamp') {
+      state.lives = Math.min(meta.rung.lamps, state.lives + 1);
+    } else {
+      state.spreadT = spec.duration;
+    }
+  }
+  state.drops = state.drops.filter((d) => d.alive);
 }
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
@@ -687,6 +766,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   }
   if (state.playerHitT !== Number.POSITIVE_INFINITY) state.playerHitT += dt;
   if (state.blind > 0) state.blind = Math.max(0, state.blind - dt);
+  state.spreadT = Math.max(0, state.spreadT - dt);
   if (state.caption) {
     state.caption.t -= dt;
     if (state.caption.t <= 0) state.caption = null;
@@ -704,12 +784,12 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   }
 
   if (state.lives <= 0) {
-    endRound(state, 'lamps');
+    endRound(state, 'lamps', meta);
     return state;
   }
   if (state.t >= state.duration) {
     state.t = state.duration;
-    endRound(state, 'time');
+    endRound(state, 'time', meta);
     return state;
   }
 
@@ -719,12 +799,15 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
 
   state.fireCooldown = Math.max(0, state.fireCooldown - dt);
   if (input.fire && state.fireCooldown <= 0) {
-    spawnShot(
-      state.shots,
-      state.player.x + state.player.w / 2,
-      state.player.y - SHOT_H,
-      -PLAYER_SHOT_SPEED,
-    );
+    const cx = state.player.x + state.player.w / 2;
+    const y = state.player.y - SHOT_H;
+    if (state.spreadT > 0) {
+      spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED, -12, -90);
+      spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED);
+      spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED, 12, 90);
+    } else {
+      spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED);
+    }
     state.fireCooldown = player.cooldown;
   }
 
@@ -799,6 +882,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     stepBoss(state, meta, dt);
   }
   stepFog(state, dt);
+  stepDrops(state, meta, dt);
 
   for (const enemy of state.enemies) {
     if (enemy.mode !== 'dive' || !enemy.alive) continue;
@@ -842,6 +926,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         enemy.mode = 'dying';
         enemy.dieAt = state.t + DIE_POP;
       }
+      spawnFormationDrop(state, meta, enemy);
       break;
     }
   }

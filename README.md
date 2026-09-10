@@ -24,10 +24,11 @@
 
 The instrument keeps a **tape** of each bout: which `tools/call` went out, what came back, and the facts it pinned on the wire (a whisper followed, a menu that changed, a ghost tool that was answered). The cabinet reads that tape and arranges it into a round. It never touches the score, never talks to a server, and never tells you who won. A lie is revealed by contact, never pre-labelled: not by look, not by motion, not by timing. Learning to read the round is learning to read the wire.
 
-- **Three lamps.** A boss shot or a diving formation puts one out. All out ends the round early.
-- **Bosses are the experiment, not the lie.** The Whisperer, the Menu and the Doorman show up for every wave of their kind whether or not anything went wrong, so nothing about a boss is an accusation.
+- **Three lamps.** A boss shot or a diving formation puts one out. All out ends the round early. A downed boss drops a lamp that falls toward the ship; catch it to relight one.
+- **Spread.** A cleared formation drops a spread shot. Catch it and the ship's fire fans for a few seconds.
+- **Bosses are the experiment, not the lie.** The Whisperer, the Menu and the Doorman show up for every wave of their kind whether or not anything went wrong, so nothing about a boss is an accusation. A dry line names the experiment at wave open and the creature when the boss enters.
 - **Three difficulties.** As recorded (the tape's own tier), seat, and live. Seat is the default; live is meant to be survived, not cleared.
-- **The end scene** names the tape, the server and the policy. Caught lies stay parked as trophies. Escaped ones sit in their honest paint. No score, no count, no digit, ever.
+- **The end scene** opens with a closing line, then names the tape, the server and the policy. Caught lies stay parked as trophies. Escaped ones sit in their honest paint. No score, no count, no digit, ever.
 
 ## Play
 
@@ -36,7 +37,7 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Left and right to move, space to fire, F for full screen, click the field to restart the same tape, Next tape at the end to walk the fixture list. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field.
+The tape list labels each recording fixture, seat or live from its header and wire shape; hover the **i** for the why. Left and right to move, space to fire, F for full screen, click the field to restart the same tape, Next tape at the end to walk the fixture list. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field.
 
 Every fixture tape ships in the repo, exported from the instrument's golden receipts, its docker fixture, its Ollama seat runs and a live-fire packet. Sixteen tapes, one four-atom catalog.
 
@@ -53,7 +54,7 @@ pnpm sweep
 
 ## The fairness band
 
-Three scripted bots play every tape in CI. **Idle** never moves or fires and must lose every lamp at seat and live. **The sweeper** chases the nearest sprite, always firing, and must survive the recorded tier and find half the lies. **The reader** fires only at the sequence tells and dodges what is coming, and must reveal every lie at the recorded tier and seat. The band also carries the difficulty curve as bars, so a tuning change that makes the game a gallery or a wall fails the build. All of the tuning is data under `packages/ghost-on-the-menu/patterns/`: entry paths, formations, fire rhythms, dives, bosses, the ladder, the wave rhythm.
+Three scripted bots play every tape in CI. **Idle** never moves or fires and must lose every lamp at seat and live. **The sweeper** chases the nearest sprite, always firing, and must survive the recorded tier and find half the lies. **The reader** fires only at the sequence tells and dodges what is coming, and must reveal every lie at the recorded tier and seat. The band also carries the difficulty curve as bars, so a tuning change that makes the game a gallery or a wall fails the build. All of the tuning is data under `packages/ghost-on-the-menu/patterns/`: entry paths, formations, fire rhythms, dives, bosses, the ladder, the wave rhythm, drops, and the voice lines.
 
 ## Trust and threat model
 

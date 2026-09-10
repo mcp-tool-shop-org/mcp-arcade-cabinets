@@ -1,0 +1,15 @@
+{
+  "lamp": {
+    "from": "boss",
+    "fall": 110,
+    "drift": 70,
+    "box": { "w": 14, "h": 14 }
+  },
+  "spread": {
+    "from": "formation",
+    "fall": 100,
+    "drift": 80,
+    "box": { "w": 14, "h": 14 },
+    "duration": 6
+  }
+}
