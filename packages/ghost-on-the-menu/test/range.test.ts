@@ -30,9 +30,11 @@ function wireSignature(tape: Tape): string {
   return tape.rows.map((r) => `${r.atom}|${r.direction}|${r.method}|${r.note}`).join('\n');
 }
 
-/** What the round looks like: class, members and timing of every beat. */
+/** What the round looks like: class, members, timing and column of every beat. */
 function roundSignature(round: Round): string {
-  return round.beats.map((b) => `${b.t.toFixed(2)}:${b.sprite}:${b.members}`).join(',');
+  return round.beats
+    .map((b) => `${b.t.toFixed(2)}:${b.sprite}:${b.members}@${Math.round(b.x)}`)
+    .join(',');
 }
 
 describe('expressive range', () => {
@@ -42,13 +44,12 @@ describe('expressive range', () => {
     expect(all.length).toBeGreaterThanOrEqual(12);
   });
 
-  // HOLE, found 2026-09-10: calibration.docker-fixture.naive and
-  // ollama-intern-mcp.naive-wrap differ on the wire (tool names, server)
-  // yet produce identical rounds, because placement depends only on the
-  // class sequence and the seed defaults to 0. Owner: Grok, prepass — derive
-  // the seed from the tape and let it drive x and the path pick. `fails`
-  // flips this red the day it is fixed, so the assertion then goes live.
-  it.fails('gives tapes with different wire different rounds', () => {
+  // Hole found and closed 2026-09-10: two tapes with different wire used to
+  // produce identical rounds because the seed defaulted to 0. The seed is
+  // now a hash of the tape's header and rows and picks each beat's column.
+  // Timing stays a pure function of the class sequence, so the signature
+  // includes the column.
+  it('gives tapes with different wire different rounds', () => {
     for (let i = 0; i < all.length; i++) {
       for (let j = i + 1; j < all.length; j++) {
         const a = all[i]!;
@@ -59,11 +60,10 @@ describe('expressive range', () => {
     }
   });
 
-  // HOLE, found 2026-09-10: density is 0.25 beats/s on every fixture at
-  // every tier, because the round is always 4 s per beat and no fixture hits
-  // the clamp, so the plot has two points (tier 0 and tier 2). W13 asks for
-  // a density curve per tier. Owner: Grok, prepass — waves.json per tier.
-  it.fails('spreads the fixtures across density and tier, not one point', () => {
+  // Hole found and closed 2026-09-10: every fixture used to sit at 0.25
+  // beats/s because the round was always 4 s per beat. Duration now follows
+  // the tier's density from waves.json (W13).
+  it('spreads the fixtures across density and tier, not one point', () => {
     const points = new Set(
       all.map((f) => `${(f.round.beats.length / f.round.duration).toFixed(3)}@${f.round.tier}`),
     );
