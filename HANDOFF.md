@@ -1,6 +1,6 @@
 # HANDOFF — Ghost on the Menu, v0.3.0 pickup
 
-Read this, then `CLAUDE.md`, then `docs/study-swarm.dispatch.md` (G1, G7, G8, G9, G10). `docs/ghost-wave-3.kickoff.md` is the brief that just shipped — treat it as history, not the next queue.
+Read this, then `CLAUDE.md`, then `docs/ollama-content.kickoff.md`. `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ghost-wave-3.kickoff.md` is history — that wave shipped as v0.3.0.
 
 **This is a pickup after a Grok session that published v0.3.0.** The Director named the next session (2026-09-10): it is **entirely** the Ollama boss seat, then other ways Ollama can add content through the existing levers. Not wave 4. Not House Call. Not Docker MCP Toolkit. Voice drafts still wait on a play reaction; they are not this session.
 
