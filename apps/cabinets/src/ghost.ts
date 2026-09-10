@@ -61,19 +61,27 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   shake.type = 'checkbox';
   shake.checked = true;
   shakeLabel.append(shake, document.createTextNode(' shake'));
-  controls.append(mute, intensity, shakeLabel);
+  const full = document.createElement('button');
+  full.textContent = 'Full screen';
+  controls.append(full, mute, intensity, shakeLabel);
 
   const hint = document.createElement('p');
   hint.className = 'muted';
-  hint.textContent = 'Left, right, space. Click the field to restart the same tape.';
+  hint.textContent =
+    'Left, right, space. F or the button for full screen. Click the field to restart the same tape.';
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
-  // The cabinet frame: the backdrop art around the field, the field in its screen.
-  const cabinet = document.createElement('div');
-  cabinet.className = 'cabinet';
-  cabinet.append(canvas);
-  wrap.append(cabinet, controls, hint, back);
+  wrap.append(canvas, controls, hint, back);
   root.append(wrap);
+  root.classList.add('playing');
+
+  // Full screen is the canvas alone, letterboxed by the browser; keys keep working.
+  const goFull = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void canvas.requestFullscreen();
+    canvas.focus();
+  };
+  full.addEventListener('click', goFull);
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
 
@@ -87,12 +95,6 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
     img.addEventListener('load', () => atlas.set(key, img));
     img.src = `/sprites/${key}.png`;
   }
-  const backdrop = document.createElement('img');
-  backdrop.addEventListener('load', () => {
-    cabinet.style.backgroundImage = `url(${backdrop.src})`;
-  });
-  backdrop.src = '/sprites/backdrop.png';
-
   // The renderer draws through a narrow DrawContext; the canvas fill type is
   // wider (gradients, patterns), so adapt rather than widen the contract.
   const draw: DrawContext = {
@@ -150,6 +152,11 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
     ' ': 'fire',
   };
   const onKey = (down: boolean) => (e: KeyboardEvent) => {
+    if (down && (e.key === 'f' || e.key === 'F')) {
+      goFull();
+      e.preventDefault();
+      return;
+    }
     const k = keys[e.key];
     if (!k) return;
     if (down) ensureAudio();
@@ -206,6 +213,7 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     audio?.close();
+    root.classList.remove('playing');
     onExit();
   });
   canvas.focus();
