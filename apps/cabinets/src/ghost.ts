@@ -68,7 +68,11 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   hint.textContent = 'Left, right, space. Click the field to restart the same tape.';
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
-  wrap.append(canvas, controls, hint, back);
+  // The cabinet frame: the backdrop art around the field, the field in its screen.
+  const cabinet = document.createElement('div');
+  cabinet.className = 'cabinet';
+  cabinet.append(canvas);
+  wrap.append(cabinet, controls, hint, back);
   root.append(wrap);
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
@@ -85,10 +89,7 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   }
   const backdrop = document.createElement('img');
   backdrop.addEventListener('load', () => {
-    document.body.style.backgroundImage = `url(${backdrop.src})`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.imageRendering = 'pixelated';
+    cabinet.style.backgroundImage = `url(${backdrop.src})`;
   });
   backdrop.src = '/sprites/backdrop.png';
 
@@ -205,7 +206,6 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     audio?.close();
-    document.body.style.backgroundImage = '';
     onExit();
   });
   canvas.focus();

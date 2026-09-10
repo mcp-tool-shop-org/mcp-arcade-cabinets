@@ -54,9 +54,24 @@
         opacity: 0.4;
         cursor: default;
       }
-      canvas.field {
+      /* The cabinet: 16:9 backdrop art; the field sits in the screen cut-out
+         (about 18% in from the left, 10% down, 64% wide, 64% tall). Without
+         the art the field is simply a dark screen on a dark frame. */
+      .cabinet {
+        position: relative;
         width: 100%;
         max-width: 960px;
+        aspect-ratio: 16 / 9;
+        background: #181822 center / contain no-repeat;
+        image-rendering: pixelated;
+      }
+      canvas.field {
+        position: absolute;
+        left: 17.6%;
+        top: 9.7%;
+        width: 64%;
+        height: 64%;
+        object-fit: contain;
         image-rendering: pixelated;
         background: #101018;
         outline: none;
