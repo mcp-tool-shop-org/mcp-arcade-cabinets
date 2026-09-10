@@ -57,10 +57,10 @@
 
 ## E. Identity (soft gate — does not block ship)
 
-- [ ] `[all]` Logo in README header
-- [ ] `[all]` Translations (polyglot-mcp, 8 languages)
-- [ ] `[org]` Landing page (@mcptoolshop/site-theme)
-- [ ] `[all]` GitHub repo metadata: description, homepage, topics
+- [x] `[all]` Logo in README header (brand/logos/mcp-arcade-cabinets/readme.png)
+- [x] `[all]` Translations (polyglot-mcp, 8 languages) — ja, zh, es, fr, hi, it, pt-BR on TranslateGemma 27B, 2026-09-10
+- [x] `[org]` Landing page (@mcptoolshop/site-theme) — site/ with the Starlight handbook and the game at /play/, Pages via pages.yml
+- [x] `[all]` GitHub repo metadata: description, homepage, topics
 
 ---
 

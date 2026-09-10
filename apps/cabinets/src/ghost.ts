@@ -123,7 +123,7 @@ export function mountGhost(
     const img = new Image();
     img.decoding = 'async';
     img.addEventListener('load', () => atlas.set(key, img));
-    img.src = `/sprites/${key}.png`;
+    img.src = `${import.meta.env.BASE_URL}sprites/${key}.png`;
   }
   // The renderer draws through a narrow DrawContext; the canvas fill type is
   // wider (gradients, patterns), so adapt rather than widen the contract.

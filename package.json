@@ -17,11 +17,13 @@
     "build": "pnpm -r --if-present build",
     "film": "node scripts/film.mjs",
     "sweep": "node scripts/sweep.mjs",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:play ghost --fixture naive-ndjson"
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:play ghost --fixture naive-ndjson",
+    "build:play": "cross-env PLAY_BASE=/mcp-arcade-cabinets/play/ PLAY_OUT=../../site/public/play pnpm -F @mcp-arcade-cabinets/cabinets build"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@types/node": "^22.10.0",
+    "cross-env": "^10.1.0",
     "esbuild": "^0.25.0",
     "eslint": "^9.20.0",
     "globals": "^15.14.0",

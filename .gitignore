@@ -10,3 +10,7 @@ __pycache__/
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/
+
+# the game built into the landing site by `pnpm build:play` (CI does this)
+site/public/play/
+.polyglot-cache.json
