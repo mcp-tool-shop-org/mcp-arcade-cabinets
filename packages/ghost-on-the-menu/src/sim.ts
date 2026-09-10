@@ -1,4 +1,3 @@
-import { kindOfAtom } from './cues';
 import {
   attachPatterns,
   attachedPatterns,
@@ -18,6 +17,7 @@ import {
   type RoundState,
   type Shot,
   type SpriteClass,
+  kindOfAtom,
 } from './types';
 
 const PLAYER_SHOT_SPEED = 420;
@@ -35,6 +35,9 @@ const BLIND_BEAT = 0.8;
 const SLIT_W = 16;
 
 const labels = new WeakMap<Enemy, string>();
+const diveIndex = new WeakMap<Enemy, number>();
+const nextDive = new WeakMap<Enemy, number>();
+const dives = new WeakMap<Enemy, { phase: 'down' | 'up'; originX: number; originY: number }>();
 
 interface Meta {
   patterns: PatternSet;
@@ -241,6 +244,7 @@ export function createRoundState(round: Round): RoundState {
       dieAt: 0,
     };
     labels.set(enemy, sanitizeCaption(beat.source.note, beat.source.method));
+    diveIndex.set(enemy, i);
     enemies.push(enemy);
   });
   const state: RoundState = {
@@ -269,6 +273,8 @@ export function createRoundState(round: Round): RoundState {
     caption: null,
     ended: null,
     grace: 0,
+    bossKills: 0,
+    playerHitT: Number.POSITIVE_INFINITY,
   };
   const meta: Meta = {
     patterns,
@@ -371,6 +377,7 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
     hp: def.hp,
     alive: true,
     plate: null,
+    hitT: Number.POSITIVE_INFINITY,
   };
   meta.bossPhaseT = 0;
   meta.bossFireAt =
@@ -385,6 +392,7 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
   if (state.boss) state.boss.alive = false;
   state.boss = null;
   meta.bossDeadFor = atom;
+  state.bossKills += 1;
 }
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
@@ -493,6 +501,59 @@ function stepFog(state: RoundState, dt: number): void {
   }
 }
 
+function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
+  if (!meta) return;
+  if (enemy.sprite !== 'grid') return;
+  const spec = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].dive;
+  if (!spec) return;
+  let at = nextDive.get(enemy);
+  if (at === undefined) {
+    const idx = diveIndex.get(enemy) ?? 0;
+    const off = (pickIndex(meta.round.seed, idx, 1000) / 1000) * spec.period;
+    at = state.t + off;
+    nextDive.set(enemy, at);
+  }
+  if (state.t < at) return;
+  enemy.mode = 'dive';
+  dives.set(enemy, { phase: 'down', originX: enemy.x, originY: enemy.y });
+}
+
+function stepDive(state: RoundState, meta: Meta | undefined, enemy: Enemy, dt: number): void {
+  const spec = meta?.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].dive;
+  const d = dives.get(enemy);
+  if (!spec || !d) {
+    enemy.mode = 'hover';
+    return;
+  }
+  const destX = d.phase === 'down' ? state.player.x + state.player.w / 2 - enemy.w / 2 : d.originX;
+  const destY = d.phase === 'down' ? spec.depth * FIELD.height : d.originY;
+  const dx = destX - enemy.x;
+  const dy = destY - enemy.y;
+  const dist = Math.hypot(dx, dy);
+  const step = spec.speed * dt;
+  if (dist <= step) {
+    enemy.x = destX;
+    enemy.y = destY;
+    if (d.phase === 'down') {
+      d.phase = 'up';
+    } else {
+      enemy.mode = 'hover';
+      dives.delete(enemy);
+      nextDive.set(enemy, state.t + spec.period);
+    }
+  } else {
+    enemy.x += (dx / dist) * step;
+    enemy.y += (dy / dist) * step;
+  }
+}
+
+function takeLamp(state: RoundState, grace: number): void {
+  if (state.grace > 0) return;
+  state.lives -= 1;
+  state.grace = grace;
+  state.playerHitT = 0;
+}
+
 function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   if (!meta.rung.formationFires) return;
   const rhythm = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].formation;
@@ -523,6 +584,10 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   state.t += dt;
   state.shake = Math.max(0, state.shake - dt / SHAKE_DECAY);
   state.grace = Math.max(0, state.grace - dt);
+  if (state.boss && state.boss.alive && state.boss.hitT !== Number.POSITIVE_INFINITY) {
+    state.boss.hitT += dt;
+  }
+  if (state.playerHitT !== Number.POSITIVE_INFINITY) state.playerHitT += dt;
   if (state.blind > 0) state.blind = Math.max(0, state.blind - dt);
   if (state.caption) {
     state.caption.t -= dt;
@@ -595,6 +660,10 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       continue;
     }
     // Motion is class motion only. `lie` is not consulted here (G7).
+    if (enemy.mode === 'dive') {
+      stepDive(state, meta, enemy, dt);
+      continue;
+    }
     if (enemy.path.length > 0 && enemy.pathT < 1) {
       enemy.mode = 'enter';
       enemy.pathT = Math.min(1, enemy.pathT + dt * PATH_RATE * speed);
@@ -606,6 +675,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       enemy.mode = 'hover';
       enemy.x += Math.sin(state.t * 1.6 + enemy.x * 0.02) * 36 * dt;
       enemy.x = Math.max(8, Math.min(FIELD.width - enemy.w - 8, enemy.x));
+      maybeStartDive(state, meta, enemy);
     }
     if (meta) stepFormationFire(state, meta, enemy);
   }
@@ -616,11 +686,17 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   }
   stepFog(state, dt);
 
+  for (const enemy of state.enemies) {
+    if (enemy.mode !== 'dive' || !enemy.alive) continue;
+    if (overlaps(enemy, state.player)) takeLamp(state, player.grace);
+  }
+
   const boss = state.boss;
   for (const shot of state.shots) {
     if (shot.dead) continue;
     if (boss && boss.alive && overlaps(shot, boss)) {
       shot.dead = true;
+      boss.hitT = 0;
       boss.hp -= 1;
       if (boss.hp <= 0) {
         const atom = meta?.round.waveBounds[state.wave]?.atom ?? '';
@@ -656,8 +732,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     if (state.grace > 0) continue;
     if (!overlaps(shot, state.player)) continue;
     shot.dead = true;
-    state.lives -= 1;
-    state.grace = player.grace;
+    takeLamp(state, player.grace);
   }
 
   state.shots = state.shots.filter((s: Shot) => !s.dead);

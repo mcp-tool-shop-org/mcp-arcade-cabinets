@@ -311,6 +311,57 @@ describe('stepRound', () => {
     expect(samplesA.some((s) => s.startsWith('whisperer'))).toBe(true);
   });
 
+  it('dive schedule does not read the tape fact', () => {
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Tape;
+    const a = prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier: 1 });
+    const flipped = JSON.parse(JSON.stringify(raw)) as Tape;
+    const rug = flipped.facts.find((f) => f.atom_id === 'temporal.rug_pull');
+    if (rug) rug.fact = rug.fact === 'menu_changed' ? 'menu_stable' : 'menu_changed';
+    const b = prepassRound(loadTape(flipped), { seconds: 150, seed: 0, tier: 1 });
+    const sa = createRoundState(a);
+    const sb = createRoundState(b);
+    const snap = (s: RoundState) =>
+      s.enemies
+        .filter((e) => e.sprite === 'grid')
+        .map((e) => `${e.mode}:${e.x.toFixed(2)}:${e.y.toFixed(2)}`)
+        .join('|');
+    const samplesA: string[] = [];
+    const samplesB: string[] = [];
+    for (let i = 0; i < 720; i++) {
+      stepRound(sa, { left: false, right: false, fire: false }, 1 / 30);
+      stepRound(sb, { left: false, right: false, fire: false }, 1 / 30);
+      samplesA.push(snap(sa));
+      samplesB.push(snap(sb));
+    }
+    expect(samplesA).toEqual(samplesB);
+    expect(samplesA.some((line) => line.includes('dive'))).toBe(true);
+  });
+
+  it('records boss hitT, playerHitT, and bossKills', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_hitT',
+        duration: 8,
+        waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 6 }],
+      }),
+    );
+    expect(state.playerHitT).toBe(Number.POSITIVE_INFINITY);
+    expect(state.bossKills).toBe(0);
+    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    expect(state.boss).not.toBeNull();
+    expect(state.boss!.hitT).toBe(Number.POSITIVE_INFINITY);
+    state.boss!.hp = 1;
+    state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
+    let guard = 0;
+    while (state.boss && guard < 80) {
+      stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+      guard += 1;
+    }
+    expect(state.boss).toBeNull();
+    expect(state.bossKills).toBe(1);
+  });
+
   it('a killed boss stays dead until its wave ends', () => {
     const state = createRoundState(
       roundOf({

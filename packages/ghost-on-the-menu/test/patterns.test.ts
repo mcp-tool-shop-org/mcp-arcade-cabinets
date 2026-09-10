@@ -148,6 +148,19 @@ describe('loadPatterns', () => {
     expect(DEFAULT_PATTERNS.fire.tiers['0'].formation).toBeNull();
   });
 
+  it('keeps dives off at tier 0 and on at 1 and 2', () => {
+    expect(DEFAULT_PATTERNS.fire.tiers['0'].dive).toBeNull();
+    expect(DEFAULT_PATTERNS.fire.tiers['1'].dive).not.toBeNull();
+    expect(DEFAULT_PATTERNS.fire.tiers['2'].dive).not.toBeNull();
+    const raw = clone();
+    (raw.fire as { tiers: Record<string, { dive: unknown }> }).tiers['0']!.dive = {
+      period: 1,
+      speed: 1,
+      depth: 0.5,
+    };
+    expect(() => loadPatterns(raw)).toThrow('patterns/fire.json: dive');
+  });
+
   it('has ladder rungs 0, 1, 2', () => {
     expect(DEFAULT_PATTERNS.ladder.rungs.map((r) => r.tier).sort()).toEqual([0, 1, 2]);
   });

@@ -240,6 +240,7 @@ describe('prepassRound', () => {
     // docker + image_id is live even when seated; this fixture is tier 2, not 1.
     expect(prepassRound(load('calibration.docker-fixture.ollama'), { seconds: 150 }).tier).toBe(2);
     expect(prepassRound(load('livefire.intern.task-only-wrap-on'), { seconds: 150 }).tier).toBe(2);
+    expect(prepassRound(load('naive-ndjson'), { seconds: 150, tier: 2 }).tier).toBe(2);
     const seated: Tape = {
       ...tapeOf([row({ seq: 1, method: 'initialize' })]),
       target_kind: 'docker',

@@ -55,9 +55,16 @@ export interface FireRhythm {
   speed: number;
 }
 
+export interface DiveRhythm {
+  period: number;
+  speed: number;
+  depth: number;
+}
+
 export interface FireTier {
   formation: FireRhythm | null;
   boss: FireRhythm;
+  dive: DiveRhythm | null;
 }
 
 export interface BossPhase {
@@ -246,9 +253,25 @@ function loadFire(raw: unknown): PatternSet['fire'] {
     const formationRaw = req(rec, file, 'formation');
     const formation = formationRaw === null ? null : loadRhythm(formationRaw, file, 'formation');
     if (key === '0' && formation !== null) fail(file, 'formation');
+    const diveRaw = req(rec, file, 'dive');
+    let dive: DiveRhythm | null = null;
+    if (diveRaw === null) {
+      if (key !== '0') fail(file, 'dive');
+    } else {
+      if (key === '0') fail(file, 'dive');
+      const d = asRecord(diveRaw, file, 'dive');
+      const depth = asNumber(req(d, file, 'depth'), file, 'depth');
+      if (depth < 0 || depth > 1) fail(file, 'depth');
+      dive = {
+        period: asNumber(req(d, file, 'period'), file, 'period'),
+        speed: asNumber(req(d, file, 'speed'), file, 'speed'),
+        depth,
+      };
+    }
     tiers[key] = {
       formation,
       boss: loadRhythm(req(rec, file, 'boss'), file, 'boss'),
+      dive,
     };
   }
   return { tiers };

@@ -5,6 +5,16 @@ export type SpriteClass = 'init' | 'menu' | 'grid' | 'answer' | 'fog' | 'obstacl
 
 export type EnemyMode = 'enter' | 'hover' | 'dive' | 'caught' | 'dying' | 'exit';
 
+export type WaveKind = 'inspect' | 'poison' | 'rug' | 'unlisted' | 'breather';
+
+/** Atom id prefix → wave kind. Unknown atoms play as inspect. */
+export function kindOfAtom(atom: string): WaveKind {
+  if (atom.startsWith('poison.')) return 'poison';
+  if (atom.startsWith('temporal.')) return 'rug';
+  if (atom.startsWith('protocol.')) return 'unlisted';
+  return 'inspect';
+}
+
 export const VISIBLE_MIN = 40;
 export const VISIBLE_MAX = 80;
 export const DEFAULT_SECONDS = 150;
@@ -104,6 +114,8 @@ export interface Boss {
   hp: number;
   alive: boolean;
   plate: { x: number; y: number; w: number; h: number } | null;
+  /** Seconds since the last player shot hit this boss. Infinity before any hit. */
+  hitT: number;
 }
 
 export interface Scene {
@@ -141,6 +153,10 @@ export interface RoundState {
   ended: 'time' | 'lamps' | null;
   /** Seconds of post-hit invulnerability. One burst must not take three lamps. */
   grace: number;
+  /** Bosses killed this round. For cues and tests; never drawn as a digit. */
+  bossKills: number;
+  /** Seconds since the player last lost a lamp. Infinity before any hit. */
+  playerHitT: number;
 }
 
 export interface RoundInput {
@@ -167,4 +183,6 @@ export interface PrepassOpts {
   seconds: number;
   seed?: number;
   patterns?: PatternSet;
+  /** Override derived tier so a fixture tape can play at live difficulty. */
+  tier?: 0 | 1 | 2 | undefined;
 }

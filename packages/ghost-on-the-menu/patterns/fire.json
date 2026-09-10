@@ -2,15 +2,18 @@
   "tiers": {
     "0": {
       "formation": null,
-      "boss": { "period": 3.5, "burst": 1, "spread": 0, "speed": 70 }
+      "boss": { "period": 3.5, "burst": 1, "spread": 0, "speed": 70 },
+      "dive": null
     },
     "1": {
       "formation": { "period": 1.8, "burst": 1, "spread": 0.08, "speed": 90 },
-      "boss": { "period": 1.6, "burst": 2, "spread": 0.16, "speed": 100 }
+      "boss": { "period": 1.6, "burst": 2, "spread": 0.16, "speed": 100 },
+      "dive": { "period": 2.8, "speed": 130, "depth": 0.5 }
     },
     "2": {
       "formation": { "period": 1.1, "burst": 2, "spread": 0.12, "speed": 110 },
-      "boss": { "period": 1, "burst": 3, "spread": 0.22, "speed": 130 }
+      "boss": { "period": 1, "burst": 3, "spread": 0.22, "speed": 130 },
+      "dive": { "period": 2, "speed": 170, "depth": 0.62 }
     }
   }
 }
