@@ -68,6 +68,7 @@ export interface Shot {
   y: number;
   w: number;
   h: number;
+  vx: number;
   vy: number;
   dead: boolean;
 }

@@ -215,12 +215,13 @@ function endRound(state: RoundState, why: 'time' | 'lamps'): void {
   state.scene = { tapeId: state.tapeId, cleared: [...state.cleared] };
 }
 
-function spawnShot(shots: Shot[], cx: number, y: number, vy: number, dx = 0): void {
+function spawnShot(shots: Shot[], cx: number, y: number, vy: number, dx = 0, vx = 0): void {
   shots.push({
     x: cx + dx - SHOT_W / 2,
     y,
     w: SHOT_W,
     h: SHOT_H,
+    vx,
     vy,
     dead: false,
   });
@@ -231,7 +232,26 @@ function fireSpread(shots: Shot[], cx: number, y: number, rhythm: FireRhythm): v
   const span = rhythm.spread * FIELD.width;
   for (let i = 0; i < n; i++) {
     const u = n === 1 ? 0 : i / (n - 1) - 0.5;
-    spawnShot(shots, cx, y, rhythm.speed, u * span);
+    spawnShot(shots, cx, y, rhythm.speed, u * span, 0);
+  }
+}
+
+function fireAimed(
+  shots: Shot[],
+  cx: number,
+  y: number,
+  rhythm: FireRhythm,
+  player: { x: number; y: number; w: number; h: number },
+): void {
+  const px = player.x + player.w / 2;
+  const py = player.y + player.h / 2;
+  const base = Math.atan2(py - y, px - cx);
+  const n = Math.max(1, Math.round(rhythm.burst));
+  const fan = rhythm.spread;
+  for (let i = 0; i < n; i++) {
+    const u = n === 1 ? 0 : i / (n - 1) - 0.5;
+    const ang = base + u * 2 * fan;
+    spawnShot(shots, cx, y, rhythm.speed * Math.sin(ang), 0, rhythm.speed * Math.cos(ang));
   }
 }
 
@@ -532,10 +552,10 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (p.cue === 'emit-grid') emitWaveGrids(state, meta);
   if (p.fire === 'drop-fog') {
     spawnFog(state, cx, by, 40 * meta.rung.fog);
-  } else if (p.fire === 'spread') {
-    fireSpread(state.enemyShots, cx, by, rhythm);
-  } else if (p.fire === 'column') {
-    spawnShot(state.enemyShots, cx, by, rhythm.speed);
+  } else if (p.fire === 'spread' || p.fire === 'column') {
+    if (rhythm.aim) fireAimed(state.enemyShots, cx, by, rhythm, state.player);
+    else if (p.fire === 'spread') fireSpread(state.enemyShots, cx, by, rhythm);
+    else spawnShot(state.enemyShots, cx, by, rhythm.speed);
   } else if (p.fire === 'plate-out') {
     boss.plate = { x: boss.x + boss.w, y: boss.y + boss.h / 4, w: 28, h: 10 };
   } else if (p.fire === 'plate-back') {
@@ -709,12 +729,21 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   }
 
   for (const shot of state.shots) {
+    shot.x += shot.vx * dt;
     shot.y += shot.vy * dt;
-    if (shot.y + shot.h < 0) shot.dead = true;
+    if (shot.y + shot.h < 0 || shot.x + shot.w < 0 || shot.x > FIELD.width) shot.dead = true;
   }
   for (const shot of state.enemyShots) {
+    shot.x += shot.vx * dt;
     shot.y += shot.vy * dt;
-    if (shot.y > FIELD.height) shot.dead = true;
+    if (
+      shot.y > FIELD.height ||
+      shot.y + shot.h < 0 ||
+      shot.x + shot.w < 0 ||
+      shot.x > FIELD.width
+    ) {
+      shot.dead = true;
+    }
   }
 
   const speed = meta?.rung.speed ?? 1;

@@ -266,6 +266,7 @@ describe('stepRound', () => {
       y: state.player.y,
       w: 4,
       h: 4,
+      vx: 0,
       vy: 10,
       dead: false,
     };
@@ -278,6 +279,7 @@ describe('stepRound', () => {
       y: state.player.y,
       w: 4,
       h: 4,
+      vx: 0,
       vy: 10,
       dead: false,
     });
@@ -311,6 +313,35 @@ describe('stepRound', () => {
     }
     expect(samplesA).toEqual(samplesB);
     expect(samplesA.some((s) => s.startsWith('whisperer'))).toBe(true);
+  });
+
+  it('aimed boss shot velocities do not read the tape fact', () => {
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Tape;
+    const a = prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier: 1 });
+    const flipped = JSON.parse(JSON.stringify(raw)) as Tape;
+    const rug = flipped.facts.find((f) => f.atom_id === 'temporal.rug_pull');
+    if (rug) rug.fact = rug.fact === 'menu_changed' ? 'menu_stable' : 'menu_changed';
+    const b = prepassRound(loadTape(flipped), { seconds: 150, seed: 0, tier: 1 });
+    const sa = createRoundState(a);
+    const sb = createRoundState(b);
+    sa.player.x = 200;
+    sb.player.x = 200;
+    const vel = (s: RoundState) =>
+      s.enemyShots.map((sh) => `${sh.vx.toFixed(4)},${sh.vy.toFixed(4)}`).join('|');
+    const seenA: string[] = [];
+    const seenB: string[] = [];
+    const poison = a.waveBounds.find((w) => w.atom.startsWith('poison.'));
+    const until = (poison?.t1 ?? 20) + 2;
+    while (sa.t < until && !sa.scene && !sb.scene) {
+      stepRound(sa, { left: false, right: false, fire: false }, 1 / 15);
+      stepRound(sb, { left: false, right: false, fire: false }, 1 / 15);
+      if (sa.enemyShots.length) seenA.push(vel(sa));
+      if (sb.enemyShots.length) seenB.push(vel(sb));
+    }
+    expect(seenA.length).toBeGreaterThan(0);
+    expect(seenA).toEqual(seenB);
+    expect(seenA.some((row) => row.split(',').some((n) => Number(n) !== 0))).toBe(true);
   });
 
   it('dive schedule does not read the tape fact', () => {

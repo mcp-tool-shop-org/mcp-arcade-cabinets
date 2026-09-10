@@ -162,6 +162,15 @@ describe('loadPatterns', () => {
     expect(DEFAULT_PATTERNS.fire.tiers['0'].formation).toBeNull();
   });
 
+  it('aims boss fire only on tiers 1 and 2', () => {
+    expect(DEFAULT_PATTERNS.fire.tiers['0'].boss.aim).toBe(false);
+    expect(DEFAULT_PATTERNS.fire.tiers['1'].boss.aim).toBe(true);
+    expect(DEFAULT_PATTERNS.fire.tiers['2'].boss.aim).toBe(true);
+    const raw = clone();
+    (raw.fire as { tiers: Record<string, { boss: { aim: boolean } }> }).tiers['0']!.boss.aim = true;
+    expect(() => loadPatterns(raw)).toThrow('patterns/fire.json: aim');
+  });
+
   it('keeps dives off at tier 0 and on at 1 and 2', () => {
     expect(DEFAULT_PATTERNS.fire.tiers['0'].dive).toBeNull();
     expect(DEFAULT_PATTERNS.fire.tiers['1'].dive).not.toBeNull();
