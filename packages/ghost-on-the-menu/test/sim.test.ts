@@ -360,6 +360,78 @@ describe('stepRound', () => {
     }
     expect(state.boss).toBeNull();
     expect(state.bossKills).toBe(1);
+    expect(state.bossDownT).toBeGreaterThan(0);
+  });
+
+  it('starts with no boss-down time and stamps it on a kill', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_down',
+        duration: 8,
+        waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 6 }],
+      }),
+    );
+    expect(state.bossDownT).toBe(Number.NEGATIVE_INFINITY);
+    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    state.boss!.hp = 1;
+    state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
+    let guard = 0;
+    while (state.boss && guard < 80) {
+      stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+      guard += 1;
+    }
+    expect(state.bossDownT).toBe(state.t);
+  });
+
+  it('consumes shots with no damage while the doorman holds', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_hold',
+        duration: 8,
+        waveBounds: [{ atom: 'protocol.unlisted_call', t0: 0, t1: 6 }],
+      }),
+    );
+    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    expect(state.boss).not.toBeNull();
+    expect(state.boss!.kind).toBe('doorman');
+    const hp = state.boss!.hp;
+    state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
+    for (let i = 0; i < 20; i++) {
+      stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+    }
+    expect(state.boss).not.toBeNull();
+    expect(state.boss!.hp).toBe(hp);
+    expect(state.boss!.hitT).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  it('shortens boss fire when hp is below half', () => {
+    const period = (half: boolean): number => {
+      const state = createRoundState(
+        roundOf({
+          tapeId: 'bout_rage',
+          duration: 20,
+          waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 18 }],
+        }),
+      );
+      stepRound(state, { left: false, right: false, fire: false }, 1.6);
+      if (half) state.boss!.hp = Math.floor(state.boss!.hp / 2) - 1;
+      const marks: number[] = [];
+      let shots = 0;
+      let fog = false;
+      while (state.t < 12 && marks.length < 3) {
+        stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+        const nowFog = Boolean(state.fog && state.fog.alive);
+        if (state.enemyShots.length > shots || (nowFog && !fog)) marks.push(state.t);
+        shots = state.enemyShots.length;
+        fog = nowFog;
+      }
+      expect(marks.length).toBeGreaterThanOrEqual(2);
+      return marks[1]! - marks[0]!;
+    };
+    const calm = period(false);
+    const mad = period(true);
+    expect(mad).toBeLessThan(calm * 0.85);
+    expect(mad).toBeGreaterThan(calm * 0.4);
   });
 
   it('a killed boss stays dead until its wave ends', () => {

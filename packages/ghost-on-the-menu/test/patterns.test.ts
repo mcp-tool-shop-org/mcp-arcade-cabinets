@@ -201,6 +201,9 @@ describe('loadPatterns', () => {
     for (const kind of ['whisperer', 'menu', 'doorman'] as const) {
       const boss = DEFAULT_PATTERNS.bosses[kind];
       expect(boss.phases.length).toBeGreaterThanOrEqual(2);
+      expect(boss.rage).toBeGreaterThan(0);
+      expect(boss.rage).toBeLessThanOrEqual(1);
+      expect(boss.phases.some((p) => p.motion !== 'slit' && p.motion !== 'hold')).toBe(true);
       for (const phase of boss.phases) {
         expect(phase).not.toHaveProperty('lie');
         expect(phase).not.toHaveProperty('fact');
@@ -208,6 +211,9 @@ describe('loadPatterns', () => {
         expect(phase).not.toHaveProperty('followed');
       }
     }
+    const rawRage = clone();
+    (rawRage.bosses as { whisperer: { rage: number } }).whisperer.rage = 0;
+    expect(() => loadPatterns(rawRage)).toThrow('patterns/bosses.json: rage');
     const raw = clone();
     const whisperer = (raw.bosses as Record<string, { phases: Record<string, unknown>[] }>)
       .whisperer;

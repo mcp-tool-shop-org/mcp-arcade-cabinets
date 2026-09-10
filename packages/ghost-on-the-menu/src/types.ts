@@ -157,6 +157,8 @@ export interface RoundState {
   bossKills: number;
   /** Seconds since the player last lost a lamp. Infinity before any hit. */
   playerHitT: number;
+  /** Round time of the last boss kill. NEGATIVE_INFINITY before any. */
+  bossDownT: number;
 }
 
 export interface RoundInput {

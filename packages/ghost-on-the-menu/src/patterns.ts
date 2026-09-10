@@ -67,6 +67,11 @@ export interface FireTier {
   dive: DiveRhythm | null;
 }
 
+/**
+ * A boss phase. Shots land only when `motion` is not `slit` or `hold`
+ * (Menu squash-to-dodge, Doorman guard). Every kind has at least one
+ * vulnerable phase.
+ */
 export interface BossPhase {
   duration: number;
   motion: string;
@@ -78,6 +83,8 @@ export interface BossDef {
   w: number;
   h: number;
   hp: number;
+  /** Fire-period multiplier when hp is below half. In (0, 1]. */
+  rage: number;
   phases: BossPhase[];
 }
 
@@ -297,10 +304,13 @@ function loadBosses(raw: unknown): PatternSet['bosses'] {
         cue: asString(req(p, file, 'cue'), file, 'cue'),
       };
     });
+    const rage = asNumber(req(rec, file, 'rage'), file, 'rage');
+    if (!(rage > 0 && rage <= 1)) fail(file, 'rage');
     bosses[kind] = {
       w: asNumber(req(rec, file, 'w'), file, 'w'),
       h: asNumber(req(rec, file, 'h'), file, 'h'),
       hp: asNumber(req(rec, file, 'hp'), file, 'hp'),
+      rage,
       phases,
     };
   }

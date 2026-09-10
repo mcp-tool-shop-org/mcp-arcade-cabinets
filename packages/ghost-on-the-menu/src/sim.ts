@@ -275,6 +275,7 @@ export function createRoundState(round: Round): RoundState {
     grace: 0,
     bossKills: 0,
     playerHitT: Number.POSITIVE_INFINITY,
+    bossDownT: Number.NEGATIVE_INFINITY,
   };
   const meta: Meta = {
     patterns,
@@ -393,6 +394,7 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
   state.boss = null;
   meta.bossDeadFor = atom;
   state.bossKills += 1;
+  state.bossDownT = state.t;
 }
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
@@ -460,7 +462,8 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (!meta.rung.bossFires) return;
   const rhythm = meta.patterns.fire.tiers[String(meta.round.tier) as '0' | '1' | '2'].boss;
   if (state.t < meta.bossFireAt) return;
-  meta.bossFireAt = state.t + rhythm.period;
+  const raging = boss.hp < def.hp / 2;
+  meta.bossFireAt = state.t + rhythm.period * (raging ? def.rage : 1);
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
   if (p.cue === 'emit-grid') emitWaveGrids(state, meta);
@@ -696,14 +699,19 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     if (shot.dead) continue;
     if (boss && boss.alive && overlaps(shot, boss)) {
       shot.dead = true;
-      boss.hitT = 0;
-      boss.hp -= 1;
-      if (boss.hp <= 0) {
-        const atom = meta?.round.waveBounds[state.wave]?.atom ?? '';
-        if (meta) killBoss(state, meta, atom);
-        else {
-          boss.alive = false;
-          state.boss = null;
+      // Shots land only when motion is not slit or hold (Menu dodge, Doorman guard).
+      const motion = meta ? (meta.patterns.bosses[boss.kind].phases[boss.phase]?.motion ?? '') : '';
+      const guarded = motion === 'slit' || motion === 'hold';
+      if (!guarded) {
+        boss.hitT = 0;
+        boss.hp -= 1;
+        if (boss.hp <= 0) {
+          const atom = meta?.round.waveBounds[state.wave]?.atom ?? '';
+          if (meta) killBoss(state, meta, atom);
+          else {
+            boss.alive = false;
+            state.boss = null;
+          }
         }
       }
       continue;
