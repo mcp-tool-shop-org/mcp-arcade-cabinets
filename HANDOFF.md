@@ -1,6 +1,6 @@
 # HANDOFF — Ghost on the Menu, wave 2 landed
 
-Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 105 tests, three play-throughs green, identity scan clean).
+Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 110 tests, three play-throughs green, identity scan clean).
 
 ## The one decision that frames everything
 
@@ -45,24 +45,24 @@ Done the same session: the frame is gone, the field takes the page width, F or a
 - **Claude, `pnpm film`:** renders frames of a scripted round to PNG through the renderer (rectangles, no browser); it found the dead tail, the stacked launches and the speck-sized sprites.
 - **Claude:** boss flash on hit, ship blink during grace, boss-hit, boss-down and dive sounds, a boss-down burst, an inspect motif, a difficulty selector (as recorded / seat / live, default seat) and a Next tape button on the end scene that walks the fixture list.
 
-## Balance, measured (`pnpm sweep`, 2026-09-10)
+## Balance, measured (`pnpm sweep`, 2026-09-10, after aimed boss fire and the reader's dodge)
 
-Every fixture at every tier with every bot, the tier forced by the header the way the band does. After the tuning pass (fire.json, bosses.json; one lever at a time, log in the commit message of 0d246f3):
+Every fixture at every tier with every bot, the tier forced by the header the way the band does. The band carries the curve as bars (all sixteen tapes at each tier, each bot measured alone): seat costs the mover at least 0.4 lamps a round and the reader at least 1.0; live is survived by the mover on at least 12 tapes and by the reader on at least 8, each finding at least half the lies; plus the older band (idle dies on tiers 1 and 2 and never on 0; the sweeper survives tier 0 with half the lies; the reader reveals every lie on tiers 0 and 1).
 
 | tier       | bot     | dead rounds of 16 | lamps lost a round | lies revealed of 20 |
 | ---------- | ------- | ----------------- | ------------------ | ------------------- |
 | 0 recorded | idle    | 0                 | 1.00               | 0                   |
 | 0 recorded | sweeper | 0                 | 0.00               | 20                  |
 | 1 seat     | idle    | 16                | 3.00               | 0                   |
-| 1 seat     | sweeper | 0                 | 0.25               | 20                  |
-| 1 seat     | reader  | 7                 | 2.13               | 20                  |
+| 1 seat     | sweeper | 0                 | 1.13               | 20                  |
+| 1 seat     | reader  | 3                 | 1.63               | 20                  |
 | 2 live     | idle    | 16                | 3.00               | 0                   |
-| 2 live     | sweeper | 3                 | 1.56               | 20                  |
-| 2 live     | reader  | 12                | 2.75               | 16                  |
+| 2 live     | sweeper | 0                 | 1.50               | 20                  |
+| 2 live     | reader  | 8                 | 2.44               | 18                  |
 
-What it says: a player who keeps moving under the targets is nearly untouchable by straight-falling fire at any speed; the threat that lands is the boss (aimed spread) and dives that reach the ship's row. The band now carries three curve bars: seat threatens the sweeper and the reader together by at least half a lamp a round; live is survived by the sweeper on at least three tapes in four with half the lies found; live is beatable by the reader for half the lies. Tier 0 ("as recorded") is a gallery with a slow boss by design; the shell defaults to seat.
+What the tuning taught: a mover under its target shoots any diver dead before it lands, and straight-falling shots never catch a mover, so the only thing that touches a mover is boss fire aimed at where the ship is when the shot leaves (fire.json `aim`, tiers 1 and 2). Dives aim, then commit at half depth, so a player who reads one steps out of it. The reader, the ceiling player, dodges by predicting where a shot or a diver will cross the ship's row. Tier 0 ("as recorded") is a gallery with a slow boss by design; the shell defaults to seat.
 
-Levers, all data: `fire.json` per tier (formation and boss rhythms, dives), `bosses.json` (hp, rage), `waves.json` (density, tail), `ladder.json`, `player.json`. Re-run `pnpm sweep` after any change; `pnpm test` is the andon.
+Levers, all data: `fire.json` per tier (formation and boss rhythms with `aim`, dives), `bosses.json` (hp, rage), `waves.json` (density, tail), `ladder.json`, `player.json`. Re-run `pnpm sweep` after any change; `pnpm test` is the andon. The scratch harness that applied variants one lever at a time is described in the commit messages of 0d246f3 and the aimed-fire commit.
 
 ## Order of work, next session
 
