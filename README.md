@@ -1,49 +1,83 @@
-# mcp-arcade-cabinets
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="Ghost on the Menu" width="400" />
+</p>
 
-Games that sit on top of [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), the GameDay testing instrument for MCP servers.
+<p align="center">
+  <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml"><img src="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp-tool-shop-org/mcp-arcade-cabinets" alt="License: MIT" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Landing_Page-live-blue" alt="Landing Page" /></a>
+</p>
 
-The instrument keeps the tape and scores the wire. The cabinets read that tape and make it fun. They produce nothing the oracle or the dataset ever sees.
+<p align="center">
+  <strong>An arcade shooter that replays what your MCP server said on the wire.</strong>
+</p>
 
-## The cabinet
+**Ghost on the Menu** turns a recorded bout between an MCP server and an agent into a round of a retro shooter. Every experiment the [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) instrument ran is a wave: a word names it, then the handshake, the menu, the calls, the answers coming back, with the wave's own boss standing over it. Somewhere in there are the calls the agent should not have made. They look like everything else until you hit one. Then it is yours for the rest of the round.
 
-**Ghost on the Menu** is an arcade shooter that replays a tape. Each atom the instrument ran is a wave, opened by a card naming its kind and staged as the wire ran: the handshake, the menu, the calls, the answers. The whispers the instrument caught are among the sprites, but they look like everything else until you hit one: a lie is revealed by contact, never pre-labelled, and stays parked as a trophy. Each wave has its boss, the atom's own creature, whether or not the lie happened. The end scene names the tape, the server and the policy. It is a spectator view, never where results are read.
+[Play it in the browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Read the handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)
 
-It plays in a browser through the shell in `apps/cabinets` (sound, three feel presets, a shake-off toggle, full screen on F) and from a terminal through the scripted play-through. Enemy paths, fire, bosses, the difficulty ladder and the wave rhythm are data under `packages/ghost-on-the-menu/patterns/`; three scripted bots play every fixture tape in CI as a fairness band (a floor, a ceiling, and a dumb player between). Sprites were generated on Flux 2 Max, glyph-checked and signed off against the lock; provenance and licence are in `docs/art/receipts.json`.
+## What you are shooting at
 
-**House Call**, a turn-based calibration cabinet, was parked on 2026-09-10 because it was not fun. Its last state is commit 152f548. It returns only with a design that plays.
+The instrument keeps a **tape** of each bout: which `tools/call` went out, what came back, and the facts it pinned on the wire (a whisper followed, a menu that changed, a ghost tool that was answered). The cabinet reads that tape and arranges it into a round. It never touches the score, never talks to a server, and never tells you who won. A lie is revealed by contact, never pre-labelled: not by look, not by motion, not by timing. Learning to read the round is learning to read the wire.
 
-## Run them
+- **Three lamps.** A boss shot or a diving formation puts one out. All out ends the round early.
+- **Bosses are the experiment, not the lie.** The Whisperer, the Menu and the Doorman show up for every wave of their kind whether or not anything went wrong, so nothing about a boss is an accusation.
+- **Three difficulties.** As recorded (the tape's own tier), seat, and live. Seat is the default; live is meant to be survived, not cleared.
+- **The end scene** names the tape, the server and the policy. Caught lies stay parked as trophies. Escaped ones sit in their honest paint. No score, no count, no digit, ever.
+
+## Play
 
 ```bash
 pnpm install
-pnpm test
-pnpm test:play ghost --fixture naive-ndjson
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-`test:play` is the acceptance test for a playable slice: a bot walks a whole run against a fixture tape and the transcript is checked for what must and must not appear before the end screen. The last line starts the browser shell. `pnpm film --fixture naive-ndjson --tier 1` writes frames of a scripted round to PNG through the same renderer, for looking at a round without a browser.
+Left and right to move, space to fire, F for full screen, click the field to restart the same tape, Next tape at the end to walk the fixture list. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field.
 
-## What the tapes are
+Every fixture tape ships in the repo, exported from the instrument's golden receipts, its docker fixture, its Ollama seat runs and a live-fire packet. Sixteen tapes, one four-atom catalog.
 
-The contract with the instrument is `mcp-arcade tape`, schema `mcp-arcade.tape/v1`. A tape carries wire facts and the atoms that ran. It never carries scores, verdicts, operator calls or NRP. `tape-core` rejects any tape that does, at any depth. The cabinets cannot leak what they were never given.
+## From a terminal
 
-Fixture tapes live in `fixtures/tapes/`. They were exported from the instrument's golden receipts, the docker fixture, the Ollama seat runs and the live-fire packet.
+```bash
+pnpm test
+pnpm test:play ghost --fixture naive-ndjson
+pnpm film --fixture naive-ndjson --tier 1
+pnpm sweep
+```
 
-## Research grounding
+`test:play` is the acceptance test: a scripted bot plays a whole round and the transcript is checked for what must and must not appear before the end screen. `film` writes frames of a round to PNG through the same renderer the shell uses. `sweep` plays every tape at every tier with every bot and prints the balance table.
 
-The design is locked in `docs/study-swarm.dispatch.md` (G1 to G10) on findings that passed citation verification: proper scoring rules price confidence honestly, immediate right/wrong feedback trains overconfidence, coverage and calibration are different axes, and a shared guess surface turns a belief test into a leaderboard. The dispatch also lists the findings that could not be verified. They shaped nothing.
+## The fairness band
+
+Three scripted bots play every tape in CI. **Idle** never moves or fires and must lose every lamp at seat and live. **The sweeper** chases the nearest sprite, always firing, and must survive the recorded tier and find half the lies. **The reader** fires only at the sequence tells and dodges what is coming, and must reveal every lie at the recorded tier and seat. The band also carries the difficulty curve as bars, so a tuning change that makes the game a gallery or a wall fails the build. All of the tuning is data under `packages/ghost-on-the-menu/patterns/`: entry paths, formations, fire rhythms, dives, bosses, the ladder, the wave rhythm.
+
+## Trust and threat model
+
+The cabinets read tapes and write nothing.
+
+- **Data touched:** the tape files under `fixtures/tapes/` (bundled into the browser build) and the pattern data. A tape carries wire events, atom ids, tool names and the instrument's pinned facts. The loader refuses any tape that carries a score, a verdict, an operator call or NRP, at any depth, so the game cannot show what it was never given.
+- **Data not touched:** no receipts, no proofs, no instrument code, no MCP connections, no filesystem writes from the game.
+- **Permissions:** a browser. The terminal tools run under Node and read the repo's own fixtures.
+- **Network:** none. The shell is static files on one origin.
+- **Telemetry:** none. **Secrets:** none.
+
+The sprites were generated on a partner image API and are committed as files; their provenance and licence terms are in `docs/art/receipts.json`. They are game assets and may not be used to train models. See [SECURITY.md](SECURITY.md).
 
 ## Layout
 
-| Path                         | What                                                                                |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `packages/tape-core`         | Load a tape, refuse forbidden keys, slice by atom, scoring rules, reveal formatting |
-| `packages/ghost-on-the-menu` | Prepass, sim, renderer, scripted play-through                                       |
-| `apps/cabinets`              | The browser shell: pick a tape, play (`pnpm -F @mcp-arcade-cabinets/cabinets dev`)  |
-| `fixtures/tapes`             | Tapes exported from mcp-arcade                                                      |
-| `docs/`                      | Study-swarm dispatch, citations, verification receipts                              |
-| `scripts/play.mjs`           | The `test:play` runner                                                              |
+| Path                         | What                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/tape-core`         | Load a tape, refuse forbidden keys, slice by atom, scoring rules kept for a future cabinet |
+| `packages/ghost-on-the-menu` | Prepass, sim, renderer, cues, sound, bots, the pattern data                                |
+| `apps/cabinets`              | The browser shell                                                                          |
+| `fixtures/tapes`             | Tapes exported from mcp-arcade                                                             |
+| `scripts/`                   | `test:play`, `film`, `sweep`                                                               |
+| `docs/`                      | The design lock and its citation receipts, the art brief and receipts, the wave-2 dispatch |
 
-Built with Grok as a design partner and cross-family verifier: Grok wrote tape-core and Ghost's sim, Claude the shell and presentation, each reviewing the other.
+The design is locked in `docs/study-swarm.dispatch.md` (G1 to G10). House Call, a turn-based calibration cabinet, is parked at commit 152f548 until a design that plays exists.
 
-Version is 0.0.0. Nothing is tagged. MIT.
+Built with Grok as a design partner and cross-family verifier: Grok wrote the tape loader and the sim, Claude the shell and presentation, each reviewing the other's lane.
+
+Node 22 or later. Version 0.2.0. MIT.
+
+<p align="center">Built by <a href="https://mcp-tool-shop.github.io/">MCP Tool Shop</a></p>

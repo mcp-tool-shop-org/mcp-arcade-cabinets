@@ -9,3 +9,4 @@ __pycache__/
 
 # frames from `pnpm film` (a dev tool, not a test)
 film/
+site/.astro/

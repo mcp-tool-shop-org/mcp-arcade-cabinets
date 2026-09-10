@@ -1,6 +1,6 @@
 {
   "name": "mcp-arcade-cabinets",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Games on top of mcp-arcade. They read the tape and never touch the score.",
   "license": "MIT",
@@ -16,17 +16,23 @@
     "test:play": "node scripts/play.mjs",
     "build": "pnpm -r --if-present build",
     "film": "node scripts/film.mjs",
-    "sweep": "node scripts/sweep.mjs"
+    "sweep": "node scripts/sweep.mjs",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:play ghost --fixture naive-ndjson"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
-    "eslint": "^9.20.0",
-    "typescript-eslint": "^8.24.0",
     "@eslint/js": "^9.20.0",
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.20.0",
+    "globals": "^15.14.0",
     "prettier": "^3.5.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
-    "globals": "^15.14.0",
-    "esbuild": "^0.25.0"
-  }
+    "typescript-eslint": "^8.24.0",
+    "vitest": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git"
+  },
+  "homepage": "https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"
 }
