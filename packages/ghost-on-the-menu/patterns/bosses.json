@@ -1,0 +1,30 @@
+{
+  "whisperer": {
+    "w": 96,
+    "h": 40,
+    "hp": 12,
+    "phases": [
+      { "duration": 6, "motion": "pulse", "fire": "drop-fog", "cue": "emit-grid" },
+      { "duration": 8, "motion": "drift", "fire": "spread", "cue": "emit-grid" }
+    ]
+  },
+  "menu": {
+    "w": 72,
+    "h": 48,
+    "hp": 10,
+    "phases": [
+      { "duration": 5, "motion": "squash", "fire": "column", "cue": "flip" },
+      { "duration": 5, "motion": "slit", "fire": "column", "cue": "flip" },
+      { "duration": 6, "motion": "drift-column", "fire": "spread", "cue": "flip" }
+    ]
+  },
+  "doorman": {
+    "w": 36,
+    "h": 88,
+    "hp": 11,
+    "phases": [
+      { "duration": 4, "motion": "hold", "fire": "plate-out", "cue": "flick" },
+      { "duration": 4, "motion": "hold", "fire": "plate-back", "cue": "knock" }
+    ]
+  }
+}

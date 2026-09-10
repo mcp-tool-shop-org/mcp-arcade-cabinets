@@ -28,7 +28,7 @@ function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
 }
 
 function roundOf(over: Partial<Round> & Pick<Round, 'tapeId' | 'duration'>): Round {
-  return { beats: [], seed: 0, waveBounds: [], ...over };
+  return { beats: [], seed: 0, waveBounds: [], tier: 0, ...over };
 }
 
 const FORBIDDEN_CAPTION = /\d|\b(pass|fail|score)\b/i;

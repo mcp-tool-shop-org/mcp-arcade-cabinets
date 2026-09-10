@@ -1,0 +1,62 @@
+{
+  "derive": [
+    { "target_kind": "stdio", "tier": 2 },
+    { "target_kind": "docker", "image": true, "tier": 2 },
+    { "seat": true, "live": false, "tier": 1 },
+    { "target_kind": "fixture", "tier": 0 },
+    { "target_kind": "docker", "image": false, "seat": false, "tier": 0 }
+  ],
+  "rungs": [
+    {
+      "tier": 0,
+      "pools": [
+        "grid-swoop-slow",
+        "menu-drop",
+        "init-handshake",
+        "fog-drift",
+        "obstacle-slide",
+        "stall-hang"
+      ],
+      "bossFires": true,
+      "formationFires": false,
+      "speed": 0.7,
+      "fog": 0.4,
+      "lamps": 3
+    },
+    {
+      "tier": 1,
+      "pools": [
+        "grid-swoop-slow",
+        "grid-swoop-mid",
+        "menu-drop",
+        "init-handshake",
+        "fog-drift",
+        "obstacle-slide",
+        "stall-hang"
+      ],
+      "bossFires": true,
+      "formationFires": true,
+      "speed": 1,
+      "fog": 0.7,
+      "lamps": 3
+    },
+    {
+      "tier": 2,
+      "pools": [
+        "grid-swoop-slow",
+        "grid-swoop-mid",
+        "grid-dive-fast",
+        "menu-drop",
+        "init-handshake",
+        "fog-drift",
+        "obstacle-slide",
+        "stall-hang"
+      ],
+      "bossFires": true,
+      "formationFires": true,
+      "speed": 1.25,
+      "fog": 1,
+      "lamps": 3
+    }
+  ]
+}

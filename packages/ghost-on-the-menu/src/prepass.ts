@@ -1,5 +1,6 @@
 import { factFor, type Tape, type TapeRow } from '@mcp-arcade-cabinets/tape-core';
 
+import { DEFAULT_PATTERNS, deriveTier } from './patterns';
 import {
   DEFAULT_SECONDS,
   FIELD,
@@ -195,6 +196,8 @@ function clamp(n: number, lo: number, hi: number): number {
  */
 export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_SECONDS }): Round {
   const seed = opts.seed ?? 0;
+  const patterns = opts.patterns ?? DEFAULT_PATTERNS;
+  const tier = deriveTier(tape, patterns.ladder);
   const classified = tape.rows.map((row, index) => classify(tape, row, index));
   const visible = collapse(classified.filter((c) => !c.skip));
   const cols = 8;
@@ -219,5 +222,5 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
   const beats = capVisible(raw, VISIBLE_MAX);
   const waveBounds = placeRhythm(beats, tape.atoms);
   const duration = clamp(SECONDS_PER_BEAT * beats.length, MIN_ROUND, MAX_ROUND);
-  return { tapeId: tape.bout_id, duration, beats, seed, waveBounds };
+  return { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
 }

@@ -9,6 +9,7 @@ const round: Round = {
   duration: 30,
   beats: [],
   seed: 0,
+  tier: 0,
   waveBounds: [
     { atom: 'inspect.tools_list', t0: 0, t1: 4 },
     { atom: 'poison.follow_through', t0: 6, t1: 12 },

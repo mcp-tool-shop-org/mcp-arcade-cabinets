@@ -161,4 +161,18 @@ describe('prepassRound', () => {
     expect(task.duration).toBe(Math.min(120, Math.max(45, 4 * task.beats.length)));
     expect(live.duration).toBe(Math.min(120, Math.max(45, 4 * live.beats.length)));
   });
+
+  it('derives tier from the tape header, never facts', () => {
+    expect(prepassRound(load('naive-ndjson'), { seconds: 150 }).tier).toBe(0);
+    // docker + image_id is live even when seated; this fixture is tier 2, not 1.
+    expect(prepassRound(load('calibration.docker-fixture.ollama'), { seconds: 150 }).tier).toBe(2);
+    expect(prepassRound(load('livefire.intern.task-only-wrap-on'), { seconds: 150 }).tier).toBe(2);
+    const seated: Tape = {
+      ...tapeOf([row({ seq: 1, method: 'initialize' })]),
+      target_kind: 'docker',
+      container: { image_id: null, name_prefix: 'arcade-*' },
+      seat: { model: 'qwen2.5:7b-instruct', template_sha256: 'abc' },
+    };
+    expect(prepassRound(seated, { seconds: 150 }).tier).toBe(1);
+  });
 });

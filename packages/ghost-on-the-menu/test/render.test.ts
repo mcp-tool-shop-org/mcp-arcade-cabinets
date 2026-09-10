@@ -37,7 +37,7 @@ function beat(over: Partial<Beat> & Pick<Beat, 'id' | 'lie'>): Beat {
 }
 
 function roundOf(beats: Beat[]): Round {
-  return { tapeId: 'bout_render', duration: 8, beats, seed: 0, waveBounds: [] };
+  return { tapeId: 'bout_render', duration: 8, beats, seed: 0, waveBounds: [], tier: 0 };
 }
 
 const FORBIDDEN = /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared)\b/i;
@@ -102,7 +102,17 @@ describe('renderRound', () => {
   it('veils the lower third while blind and draws a boss rect by kind', () => {
     const state = createRoundState(roundOf([]));
     state.blind = 0.5;
-    state.boss = { kind: 'menu', x: 100, y: 40, w: 120, h: 40, phase: 0, hp: 1, alive: true };
+    state.boss = {
+      kind: 'menu',
+      x: 100,
+      y: 40,
+      w: 120,
+      h: 40,
+      phase: 0,
+      hp: 1,
+      alive: true,
+      plate: null,
+    };
     const ctx = recordingCtx();
     renderRound(ctx, state);
     expect(ctx.calls.some((c) => c.startsWith('rect rgba(52, 52, 82, 0.88) 0 240'))).toBe(true);

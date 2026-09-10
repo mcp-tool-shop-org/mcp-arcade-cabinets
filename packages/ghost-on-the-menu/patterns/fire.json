@@ -1,0 +1,16 @@
+{
+  "tiers": {
+    "0": {
+      "formation": null,
+      "boss": { "period": 2.4, "burst": 1, "spread": 0, "speed": 70 }
+    },
+    "1": {
+      "formation": { "period": 1.8, "burst": 1, "spread": 0.08, "speed": 90 },
+      "boss": { "period": 1.6, "burst": 2, "spread": 0.16, "speed": 100 }
+    },
+    "2": {
+      "formation": { "period": 1.1, "burst": 2, "spread": 0.12, "speed": 110 },
+      "boss": { "period": 1, "burst": 3, "spread": 0.22, "speed": 130 }
+    }
+  }
+}

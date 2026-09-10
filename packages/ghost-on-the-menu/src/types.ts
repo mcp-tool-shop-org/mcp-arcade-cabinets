@@ -41,6 +41,7 @@ export interface Round {
   beats: Beat[];
   seed: number;
   waveBounds: WaveBound[];
+  tier: 0 | 1 | 2;
 }
 
 export interface Player {
@@ -100,6 +101,7 @@ export interface Boss {
   phase: number;
   hp: number;
   alive: boolean;
+  plate: { x: number; y: number; w: number; h: number } | null;
 }
 
 export interface Scene {
@@ -151,4 +153,5 @@ export interface DrawContext {
 export interface PrepassOpts {
   seconds: number;
   seed?: number;
+  patterns?: import('./patterns').PatternSet;
 }
