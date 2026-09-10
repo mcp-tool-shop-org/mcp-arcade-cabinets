@@ -23,6 +23,8 @@ interface Case {
   name: string;
   tape: Tape;
   tier: 0 | 1 | 2;
+  /** A header-only variant made for the curve; the fairness band skips these at tier 2. */
+  variant?: boolean;
 }
 
 function fixtures(): Case[] {
@@ -41,6 +43,15 @@ function fixtures(): Case[] {
     };
     const t1 = prepassRound(seated, { seconds: 150 }).tier;
     if (t1 === 1) out.push({ name: `${name}@seated`, tape: seated, tier: 1 });
+    // The live variant: header only, so the curve is measured on all sixteen
+    // tapes at every tier, the same set `pnpm sweep` prints.
+    const live: Tape = { ...tape, target_kind: 'stdio', container: null, seat: null };
+    if (
+      prepassRound(live, { seconds: 150 }).tier === 2 &&
+      prepassRound(tape, { seconds: 150 }).tier !== 2
+    ) {
+      out.push({ name: `${name}@live`, tape: live, tier: 2, variant: true });
+    }
   }
   return out;
 }
@@ -109,37 +120,43 @@ describe('fairness band', () => {
   });
 });
 
-// The Director's bar: challenging, not impossible. Measured on the whole
-// fixture set with the header-only tier variants (see `pnpm sweep`).
+// The Director's bar: challenging, not impossible. Measured on all sixteen
+// tapes at each tier through the header-only variants, the same set `pnpm
+// sweep` prints. Each bot is measured alone: a blend would hide a player
+// who is never touched (the cross-family review caught that).
 describe('the difficulty curve', () => {
   const byTier = (tier: 0 | 1 | 2) => CASES.filter((c) => c.tier === tier);
+  const meanLamps = (outs: ReturnType<typeof run>[]) =>
+    outs.reduce((s, o) => s + (3 - o.lives), 0) / outs.length;
+  const alive = (outs: ReturnType<typeof run>[]) => outs.filter((o) => o.ended === 'time').length;
+  const halfFound = (outs: ReturnType<typeof run>[]) => {
+    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
+    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
+    return revealed >= Math.ceil(lies / 2);
+  };
 
-  // A player who keeps moving under the targets is nearly untouchable by
-  // straight-falling fire at any speed (measured: 0.19 to 0.25 lamps a round
-  // across the tuning sweep), so the threat is measured over the two players
-  // together: the sweeper who never stops and the reader who waits for tells.
-  it('seat is a real threat: the sweeper and the reader together lose lamps on average', () => {
-    const outs = [
-      ...byTier(1).map((c) => run(c, 'sweeper')),
-      ...byTier(1).map((c) => run(c, 'reader')),
-    ];
-    const lost = outs.reduce((s, o) => s + (3 - o.lives), 0) / outs.length;
-    expect(lost).toBeGreaterThanOrEqual(0.5);
+  it('measures every tier on all sixteen tapes', () => {
+    expect(byTier(1).length).toBe(16);
+    expect(byTier(2).length).toBe(16);
   });
 
-  it('live is survivable by the dumb player on most tapes, and it still finds half the lies', () => {
+  it('seat threatens the mover: the sweeper loses lamps on average', () => {
+    expect(meanLamps(byTier(1).map((c) => run(c, 'sweeper')))).toBeGreaterThanOrEqual(0.4);
+  });
+
+  it('seat threatens the reader who waits for tells', () => {
+    expect(meanLamps(byTier(1).map((c) => run(c, 'reader')))).toBeGreaterThanOrEqual(1.0);
+  });
+
+  it('live is survivable by the mover on most tapes, with half the lies found', () => {
     const outs = byTier(2).map((c) => run(c, 'sweeper'));
-    const alive = outs.filter((o) => o.ended === 'time').length;
-    expect(alive / outs.length).toBeGreaterThanOrEqual(0.75);
-    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
-    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
-    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+    expect(alive(outs)).toBeGreaterThanOrEqual(12);
+    expect(halfFound(outs)).toBe(true);
   });
 
-  it('live is beatable by the reader on most tapes', () => {
+  it('live is survivable by the reader on half the tapes, with half the lies found', () => {
     const outs = byTier(2).map((c) => run(c, 'reader'));
-    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
-    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
-    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+    expect(alive(outs)).toBeGreaterThanOrEqual(8);
+    expect(halfFound(outs)).toBe(true);
   });
 });

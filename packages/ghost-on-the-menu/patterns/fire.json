@@ -6,7 +6,8 @@
         "period": 16,
         "burst": 1,
         "spread": 0,
-        "speed": 50
+        "speed": 50,
+        "aim": false
       },
       "dive": null
     },
@@ -18,10 +19,11 @@
         "speed": 180
       },
       "boss": {
-        "period": 2.4,
+        "period": 5,
         "burst": 1,
         "spread": 0.12,
-        "speed": 90
+        "speed": 80,
+        "aim": true
       },
       "dive": {
         "period": 1.8,
@@ -31,19 +33,20 @@
     },
     "2": {
       "formation": {
-        "period": 2.4,
+        "period": 3,
         "burst": 1,
         "spread": 0.12,
-        "speed": 110
+        "speed": 90
       },
       "boss": {
-        "period": 2.2,
+        "period": 4.5,
         "burst": 1,
         "spread": 0.22,
-        "speed": 130
+        "speed": 100,
+        "aim": true
       },
       "dive": {
-        "period": 2,
+        "period": 3,
         "speed": 170,
         "depth": 0.95
       }
