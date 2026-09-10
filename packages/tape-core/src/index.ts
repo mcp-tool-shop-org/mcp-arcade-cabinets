@@ -20,6 +20,16 @@ export type {
 } from './types';
 export { loadTape } from './load';
 export { factFor, sliceByAtom } from './slice';
-export { brier, coverageKey, reliability } from './calibration';
+export {
+  MAX_CONFIDENCE,
+  MIN_CONFIDENCE,
+  brier,
+  brierMulti,
+  clampConfidence,
+  coverageKey,
+  implied,
+  meanBrier,
+  reliability,
+} from './calibration';
 export type { BinaryCall, ReliabilityBin } from './calibration';
 export { allFactSentences, formatFactForReveal } from './reveal';

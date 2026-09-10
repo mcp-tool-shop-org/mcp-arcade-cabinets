@@ -36,15 +36,15 @@ The design is locked in `docs/study-swarm.dispatch.md` (G1 to G10) on findings t
 
 ## Layout
 
-| Path | What |
-|---|---|
-| `packages/tape-core` | Load a tape, refuse forbidden keys, slice by atom, scoring rules, reveal formatting |
-| `packages/house-call` | Turn engine, run, narrative, campaign director, scripted play-through |
-| `packages/ghost-on-the-menu` | Prepass, sim, renderer, scripted play-through |
-| `apps/cabinets` | Pages shell, not wired yet |
-| `fixtures/tapes` | Tapes exported from mcp-arcade |
-| `docs/` | Study-swarm dispatch, citations, verification receipts |
-| `scripts/play.mjs` | The `test:play` runner |
+| Path                         | What                                                                                |
+| ---------------------------- | ----------------------------------------------------------------------------------- |
+| `packages/tape-core`         | Load a tape, refuse forbidden keys, slice by atom, scoring rules, reveal formatting |
+| `packages/house-call`        | Turn engine, run, narrative, campaign director, scripted play-through               |
+| `packages/ghost-on-the-menu` | Prepass, sim, renderer, scripted play-through                                       |
+| `apps/cabinets`              | Pages shell, not wired yet                                                          |
+| `fixtures/tapes`             | Tapes exported from mcp-arcade                                                      |
+| `docs/`                      | Study-swarm dispatch, citations, verification receipts                              |
+| `scripts/play.mjs`           | The `test:play` runner                                                              |
 
 Built with Grok as a design partner and cross-family verifier: Grok wrote tape-core and Ghost, Claude wrote House Call, each reviewed the other.
 

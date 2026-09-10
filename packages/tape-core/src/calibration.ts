@@ -1,4 +1,74 @@
-import type { Tape } from './types';
+import { TapeError, type Tape } from './types';
+
+export const MIN_CONFIDENCE = 0.5;
+export const MAX_CONFIDENCE = 1;
+
+/** Clamp a stated confidence into [0.5, 1]. Non-finite values become 0.5. */
+export function clampConfidence(p: number): number {
+  if (!Number.isFinite(p)) return MIN_CONFIDENCE;
+  return Math.min(MAX_CONFIDENCE, Math.max(MIN_CONFIDENCE, p));
+}
+
+function round(x: number): number {
+  return Math.round(x * 1e6) / 1e6;
+}
+
+/**
+ * Probability vector implied by a call: clamped confidence on the named
+ * outcome, remaining mass spread evenly over the others.
+ */
+export function implied(
+  call: { outcome: string; confidence: number },
+  outcomes: readonly string[],
+): Map<string, number> {
+  if (outcomes.length < 2) {
+    throw new TapeError('outcomes must have at least two entries');
+  }
+  if (!outcomes.includes(call.outcome)) {
+    throw new TapeError(`call outcome ${call.outcome} is not one of ${outcomes.join(', ')}`);
+  }
+  const p = clampConfidence(call.confidence);
+  const others = outcomes.filter((o) => o !== call.outcome);
+  const rest = (1 - p) / others.length;
+  const m = new Map<string, number>();
+  for (const o of outcomes) m.set(o, o === call.outcome ? p : rest);
+  return m;
+}
+
+/**
+ * Multi-class Brier: sum over outcomes of (implied − one-hot)².
+ * Lower is better; 0 is perfect; worst case at full confidence on a wrong
+ * answer is 2 (any k ≥ 2). Cabinets should use this so 2- and 3-outcome
+ * turns share one scale.
+ *
+ * Worked values: right at 0.8 on two outcomes → 0.08; right at 0.9 on three
+ * → 0.015; wrong at 1.0 on two → 2.
+ *
+ * Does not accept or emit NRP, integrity, or utility.
+ */
+export function brierMulti(
+  call: { outcome: string; confidence: number },
+  truth: string,
+  outcomes: readonly string[],
+): number {
+  if (!outcomes.includes(truth)) {
+    throw new TapeError(`truth ${truth} is not one of ${outcomes.join(', ')}`);
+  }
+  const probs = implied(call, outcomes);
+  let sum = 0;
+  for (const o of outcomes) {
+    const p = probs.get(o) ?? 0;
+    const y = o === truth ? 1 : 0;
+    sum += (p - y) ** 2;
+  }
+  return round(sum);
+}
+
+/** Mean of Brier scores. Empty list is 0. */
+export function meanBrier(scores: readonly number[]): number {
+  if (!scores.length) return 0;
+  return round(scores.reduce((a, b) => a + b, 0) / scores.length);
+}
 
 /**
  * Binary Brier score for a call that names a side with confidence p ∈ [0.5, 1].
@@ -10,6 +80,10 @@ import type { Tape } from './types';
  * Let o = 1 if the named side matches the tape (`outcome` true), else 0.
  * The implied probability on the named side is p; on the other side is 1 − p.
  * The score is (p − o)². Lower is better; 0 is perfect.
+ *
+ * This is exactly half of `brierMulti` for k = 2: the two-class sum is
+ * (p − o)² + ((1 − p) − (1 − o))² = 2(p − o)². Cabinets should use
+ * `brierMulti` so 2- and 3-outcome turns share one scale.
  *
  * Worked values: p=0.8 right → 0.04; p=0.8 wrong → 0.64; p=1 right → 0;
  * p=1 wrong → 1; p=0.5 either way → 0.25.
