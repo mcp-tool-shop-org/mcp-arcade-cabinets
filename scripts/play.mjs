@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `pnpm test:play <cabinet> [--fixture name] [--call held|followed] [--confidence 0.8]`
+// `pnpm test:play ghost [--fixture name]`
 // A scripted play-through is the acceptance test for a playable slice. Each
 // cabinet registers a `play(args)` that returns a transcript; this runner
 // prints it and exits non-zero if the transcript reports a failure or if any
@@ -10,9 +10,7 @@ import path from 'node:path';
 
 const [cabinet, ...rest] = process.argv.slice(2);
 if (!cabinet) {
-  console.error(
-    'usage: pnpm test:play <house-call|ghost> [--fixture name] [--call held|followed] [--confidence 0.8]',
-  );
+  console.error('usage: pnpm test:play ghost [--fixture name]');
   process.exit(2);
 }
 const args = {};

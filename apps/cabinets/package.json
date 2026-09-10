@@ -5,7 +5,6 @@
   "type": "module",
   "dependencies": {
     "@mcp-arcade-cabinets/tape-core": "workspace:*",
-    "@mcp-arcade-cabinets/house-call": "workspace:*",
     "@mcp-arcade-cabinets/ghost-on-the-menu": "workspace:*"
   },
   "devDependencies": {

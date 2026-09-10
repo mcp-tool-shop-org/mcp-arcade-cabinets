@@ -41,9 +41,6 @@ importers:
       '@mcp-arcade-cabinets/ghost-on-the-menu':
         specifier: workspace:*
         version: link:../../packages/ghost-on-the-menu
-      '@mcp-arcade-cabinets/house-call':
-        specifier: workspace:*
-        version: link:../../packages/house-call
       '@mcp-arcade-cabinets/tape-core':
         specifier: workspace:*
         version: link:../../packages/tape-core
@@ -53,12 +50,6 @@ importers:
         version: 6.4.3(@types/node@22.20.1)
 
   packages/ghost-on-the-menu:
-    dependencies:
-      '@mcp-arcade-cabinets/tape-core':
-        specifier: workspace:*
-        version: link:../tape-core
-
-  packages/house-call:
     dependencies:
       '@mcp-arcade-cabinets/tape-core':
         specifier: workspace:*

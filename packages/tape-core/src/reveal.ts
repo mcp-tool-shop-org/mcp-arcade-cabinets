@@ -12,7 +12,7 @@ const SENTENCE: Record<Fact, string> = {
   menu_unknown: 'the tape shows the menu could not be compared',
 };
 
-/** The one narrative sentence House Call reads aloud. No numbers. */
+/** The one narrative sentence a cabinet may read aloud for a fact. No numbers. */
 export function formatFactForReveal(fact: Fact): string {
   const sentence = SENTENCE[fact];
   if (!sentence) throw new TapeError(`unknown fact ${String(fact)}`);
