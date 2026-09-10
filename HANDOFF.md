@@ -2,7 +2,7 @@
 
 Read this, then `CLAUDE.md`, then `docs/study-swarm.dispatch.md` (G1, G7, G8, G9, G10). `docs/ghost-wave-3.kickoff.md` is the brief that just shipped — treat it as history, not the next queue.
 
-**This is a pickup after a Grok session that published v0.3.0.** Do not start a new wave until the Director has played the live cut and named the next slice. The four-line drafts in `patterns/voice.json` wait on their reaction.
+**This is a pickup after a Grok session that published v0.3.0.** The Director named the next session (2026-09-10): it is **entirely** the Ollama boss seat, then other ways Ollama can add content through the existing levers. Not wave 4. Not House Call. Not Docker MCP Toolkit. Voice drafts still wait on a play reaction; they are not this session.
 
 ## Where it is (verified 2026-09-10)
 
@@ -19,12 +19,40 @@ Landing header **Play**, hero **Play Ghost on the Menu**, and the usage card all
 
 All workspace packages are `"private": true`. The release is the git tag, the GitHub release, and Pages. **Not npm. Not 1.0.0.** Identity scan was CLEAN on the tracked tree, the tag archive, and the re-fetched GitHub tarball.
 
+## Next session (Director, 2026-09-10)
+
+**Focus: the Ollama boss feature, then other Ollama content behind the proper levers.** The whole session. Do not start leftover slice-3 classes, sprite-fit, or a new wave unless this work is done and the Director says so.
+
+### 1. The boss seat that already exists
+
+Local only: `pnpm -F @mcp-arcade-cabinets/cabinets dev`. Checkbox **Ollama bosses**, model picker next to it. Vite proxies `/ollama` → `127.0.0.1:11434`. Cloud tags first; default `gpt-oss:120b-cloud` when pulled. Pages cannot reach the daemon.
+
+| Piece                                                | Where                                     |
+| ---------------------------------------------------- | ----------------------------------------- |
+| Frozen prompt, parse, Cloud tag match                | `packages/ghost-on-the-menu/src/pilot.ts` |
+| Shell checkbox, picker, `/api/tags`, `/api/generate` | `apps/cabinets/src/ghost.ts`              |
+| Proxy                                                | `apps/cabinets/vite.config.ts`            |
+
+The prompt is frozen and fact-blind (G7). `think: false` plus a short `num_predict`. Parse the **last** matching verb (`spread` / `column` / `hold` / `fog` / `plate` / `script`), not the first word. If the call fails, the sim keeps the scripted phase fire. A fact in the prompt is a halt.
+
+Play it on the machine with the daemon. Make the seat actually change the fight in a way a player can feel, without ever seeing a lie.
+
+### 2. Other ways Ollama can add content (levers first)
+
+The cabinet already has data levers under `packages/ghost-on-the-menu/patterns/` (paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism). Ollama may **fill those levers**, not invent a second sim.
+
+Allowed shape: the model proposes or picks from a closed set the JSON already names (a voice line from `voice.json`, a path from a class pool, a boss phase already in `bosses.json`, a parallelism burst on/off as the file allows). Same G7 envelope as the boss seat: no fact, no lie flag, no digit, no score word. Seed still owns fairness. The band still andons a gallery or a wall.
+
+Not in scope this session: a second generate path, writing new sprites, talking to an MCP server, Docker MCP Toolkit, or anything Pages would have to call.
+
+If a new lever is needed, add it as JSON first, with a load-time schema and a fact-flip test, then let Ollama sit in it. Do not let the model key motion, look, or timing on a lie.
+
 ## What to do
 
-1. Play the published game. Seat is the default fight. Hardcore is selector-only.
-2. If you are on a machine with Ollama, local `pnpm -F @mcp-arcade-cabinets/cabinets dev` can sit a Cloud tag (`gpt-oss:120b-cloud` when pulled). Pages cannot reach the daemon. The prompt is frozen and fact-blind.
-3. Wait for the Director's play notes and their take on the voice drafts. Those notes are the next brief. They win over this file.
-4. Do not invent wave 4. Do not unpark House Call. Do not add a Docker MCP Toolkit server unless they ask — that is a later, separate slice (tools for an agent, not the generate path, not a Pages-to-localhost hop).
+1. Sit the local Ollama boss (Cloud tag if pulled). Feel it. Fix what is thin.
+2. List other content seats that fit the lever rule above. Build the ones that stay inside G7.
+3. Do not invent wave 4. Do not unpark House Call. Do not add a Docker MCP Toolkit server unless they ask — that is a later, separate slice (tools for an agent, not the generate path, not a Pages-to-localhost hop).
+4. Voice drafts in `patterns/voice.json` still wait on a play reaction. They are not this session's job unless a lever-seat writes from that file without changing the copy.
 
 ## What shipped in 0.3.0
 
@@ -41,9 +69,9 @@ Wave 3 from the kickoff, plus spend-approved art and sound, plus the Cloud boss 
 - **Sound**: recorded ACE-Step MP3s in `apps/cabinets/public/tracks/` (inspect, poison, rug, unlisted, whisperer, menu, doorman, breather, parallelism). Chiptune remains the fallback.
 - **Ollama Cloud bosses**: `src/pilot.ts`. `isCloudModel` matches `:cloud$` or `-cloud$`. Default `gpt-oss:120b-cloud` when pulled. `think: false` and a short `num_predict` so a thinking 120B still returns one verb. Parse the last matching verb, not the first word.
 
-## What is still open (do not start unasked)
+## What is still open (not this session unless asked)
 
-- **Director play + voice approval.** The next product move.
+- **Voice approval.** Drafts in `patterns/voice.json`. Wait for the Director's play notes.
 - **Slice 3 leftover:** the kickoff asked to map _every_ distinct wire shape in the sixteen tapes (`resources/list`, `prompts/list`, pings, long payloads, …). Not every shape has its own class yet. Classes today are the nine in `SpriteClass`. New sprites are a spend ask: count first, wait for the yes.
 - **Sprite fit:** grid members draw in a member-width box; bosses stretch to the sim rect (the Menu squash is the point). If the Director wants boss art unstretched, that is an aspect-fit in `render.ts`, not a sim change. Claude's lane.
 - **House Call** parked at `152f548` until a design that plays exists. `tape-core` still holds the scoring rules for that day.
