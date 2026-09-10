@@ -1,6 +1,6 @@
 # HANDOFF — Ghost on the Menu, wave 2 landed
 
-Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 98 tests, three play-throughs green, identity scan clean).
+Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 102 tests, three play-throughs green, identity scan clean).
 
 ## The one decision that frames everything
 
@@ -40,6 +40,9 @@ Done the same session: the frame is gone, the field takes the page width, F or a
 
 - **A(i), Grok:** dives at tiers 1 and 2 from a dive rhythm in fire.json (a hovering grid formation swoops to the ship's column and back on a seeded schedule; contact costs a lamp under grace), Boss.hitT and RoundState.playerHitT for feedback, RoundState.bossKills, a tier override on the prepass, and kindOfAtom moved into types.ts.
 - **A(j), Grok:** the boss battle arc: hp for a six-to-eight-second fight, no damage in slit or hold phases (Menu dodge, Doorman guard), rage below half hp, RoundState.bossDownT.
+- **A(k), Grok:** the round fits its waves (a per-tier tail in waves.json; the prepass stretches placement to the duration or extends the duration within the clamp), the whisperer launches one sprite per beat instead of a stack, same-class beats never share a time.
+- **A(l), Grok:** hover points spread by class rank so pairs never stack; sprite boxes are data (a sprites block in formations.json); the ship is 24×16.
+- **Claude, `pnpm film`:** renders frames of a scripted round to PNG through the renderer (rectangles, no browser); it found the dead tail, the stacked launches and the speck-sized sprites.
 - **Claude:** boss flash on hit, ship blink during grace, boss-hit, boss-down and dive sounds, a boss-down burst, an inspect motif, a difficulty selector (as recorded / seat / live, default seat) and a Next tape button on the end scene that walks the fixture list.
 
 ## Order of work, next session
