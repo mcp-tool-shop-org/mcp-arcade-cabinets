@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-10
+
+The Ollama seats. Locally, a model sits in the boss and is felt; it picks the boss's own line; it never sees a lie. Play the published cut at [/play/](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/); the seats need the local shell and a daemon.
+
+### Added
+
+- **A felt boss seat.** New lever `patterns/fire.json → tiers.N.boss.pilot { fan, spread, lean }` with a load-time schema. A seat's `spread` is a wide straight fan; `column` slides the boss up to `lean` toward the ship before an aimed shot, then eases home; `hold` is a silent beat that keeps the boss still. Thin on the recorded rung. Fact-flip tests on the seated beat sequence.
+- **The voice seat.** With the seat on, each boss picks which of its own `patterns/voice.json` lines it says at spawn (a letter reply; matched on wave and kind, else the seed's pick). The drafts are unchanged; the seat can only choose, never write.
+- **Seat status** beside the model picker: waiting, thinking, the verb it said, or why it fell back to the script. Words only, never on the field. Retired Cloud tags say so.
+- **`pnpm sit`** (`scripts/sit.mjs`): sits a model in both seats on a scripted round in wall-clock time and prints each beat's verb, what the sim made of it, each boss's line, latency and fallbacks.
+- `docs/ollama-content.md`: the session's decisions and the seats refused (parallelism toggle, path pick, phase pick, asides) with reasons.
+
+### Fixed
+
+- **The Cloud boss was not sitting.** `gpt-oss` on Ollama Cloud ignores `think: false` and spent every token thinking, so the v0.3.0 default seat fell back to the script on every beat. The seat now retries with a low thinking budget and remembers which models need it. Measured: no fallbacks, about half a second a beat.
+- The seat's view carried a constant motion word and named health against the wrong maximum. It now carries the phase's motion word from `bosses.json`, the stick, and health against the boss's real max. The frozen system sentence is unchanged; a digit or a fact word in a prompt still throws.
+- `spread` and `column` were the same aimed shot on tiers 1 to 3. They are distinct now.
+
+### Changed
+
+- The shell asks for a verb once the last one is spent, not on a clock, so a fast tag sits every beat and a slow one is never asked twice for one beat.
+- `Boss` carries `maxHp` and `motion`.
+
 ## [0.3.0] - 2026-09-10
 
 The cabinet grows a fight: more classes, recorded beds, parallelism, a Cloud boss seat. Play it at [the landing page](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/) or straight at [/play/](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/).

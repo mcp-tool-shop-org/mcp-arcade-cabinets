@@ -21,7 +21,7 @@ Somewhere in the wave may be a call the agent should not have made: a whisper it
 
 Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
 
-The published site serves the game at [/play/](/mcp-arcade-cabinets/play/). Seat, live and hardcore also get short **parallelism** bursts. Locally, an Ollama model — including a Cloud tag — can call the boss's shots without ever seeing a lie.
+The published site serves the game at [/play/](/mcp-arcade-cabinets/play/). Seat, live and hardcore also get short **parallelism** bursts. Locally, an Ollama model — including a Cloud tag — can sit in the boss: it calls the boss's shots and picks the line it says, without ever seeing a lie.
 
 The GitHub README is the player-facing front door. This handbook is the rest of the manual.
 

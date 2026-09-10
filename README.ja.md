@@ -16,27 +16,27 @@
   <strong>An arcade shooter made from what an MCP server said on the wire.</strong>
 </p>
 
-**ゴースト・オン・ザ・メニュー**は、レトロなシューティングゲームです。プレイヤーは画面下部を移動する宇宙船を操作します。画面上部には、MCPサーバーとエージェント間の記録された戦闘が、波のように展開されます。ハンドシェイク、メニュー、通信、応答、そして実験そのものであるボスが登場します。
+**ゴースト・オン・ザ・メニュー**は、短いレトロスタイルのシューティングゲームです。プレイヤーは、画面下部を飛行機で移動させます。画面上部には、MCPサーバーとエージェント間の記録された戦闘が、波のように展開されます。ハンドシェイク、メニュー、通信、応答、そして実験そのものであるボスが登場します。
 
 その中に、エージェントが本来行うべきではなかった通信が含まれています。それらは他のものと変わらないように見えますが、一度触れると、ゲームの残り時間、プレイヤーの所有物となります。
 
-[ブラウザでプレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [ラウンドの読み方](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+[ブラウザでプレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) ・ [ラウンドの読み方](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
 ## ゲームの進め方
 
-**テープ**とは、1回の戦闘の記録です。このゲームはテープのみを読み込みます。サーバーとの通信は行わず、スコアも記録せず、勝者が誰であるかも教えてくれません。
+**テープ**は、1回の戦闘の記録です。このゲームは、テープのみを読み込みます。サーバーとの通信は行わず、スコアも記録せず、勝者が誰であるかも教えてくれません。
 
-- **3つのランプ。** ボスの攻撃や、編隊飛行によって1つ消えます。撃破されたボスから**真下に**落ちてくるランプをキャッチすると、ランプが再び点灯します。その下を通過する必要があります。すべてのランプが消えると、ラウンドは終了します。
-- **スプレッド。** 編隊をクリアすると、スプレッドが真下に落ちてきます。キャッチすると、数秒間、攻撃範囲が広がります。
-- **ボスは実験であり、告発ではありません。** ウィスパーラー、メニュー、ドアマンは、何らかの問題が発生したかどうかに関わらず、それぞれの波に登場します。彼らは、エージェントが声に出して考えているかのように、つぶやきます。ハードコアモードでは、ランプが1つしかなく、最初の攻撃から激しい攻撃が始まります。シートモード、ライブモード、ハードコアモードでは、短い**並行処理**が発生し、画面が広がり、音楽が激しくなります。その後、ラウンドが進むにつれて、より長く続きます。ローカル環境では、クラウドタグ（例：`gpt-oss:120b-cloud`）を含むOllamaモデルを使用して、ボスの攻撃を制御できます。ただし、どのスプライトが嘘であるかはわかりません。
-- **手がかりは、その並びの中にあります。** 嘘は、本物のものとは異なって見えることも、動くことも、現れることもありません。嘘を明らかにするのは、その位置です。追加の編隊、2つ目のメニュー、メニューの直後に現れる単独のオブジェクトなどです。
-- **エンディングシーン**では、テープ、サーバー、ポリシーの名前が表示されます。キャッチされた嘘は、トロフィーとして表示されます。逃げられた嘘は、本物の姿で表示されます。スコア、カウント、数字はありません。
+- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
+- **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
+- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot. Seat, live and hardcore get short **parallelism** bursts that multiply the field and heat the music, then hold longer as the round goes on. Locally, you can let an Ollama model — including a Cloud tag like `gpt-oss:120b-cloud` — sit in the boss: it calls each boss’s shots (a fan, a lean and an aimed shot, a held breath, fog, the plate) and picks which of the boss’s own lines it says. It never sees which sprites are lies.
+- **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
+- **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
 
-リストからテープを選択します。各テープには、フィクスチャー、シート、ライブというラベルが付いています。**i**にマウスオーバーすると、その理由が表示されます。シートはデフォルトの戦闘モードです。ライブは、生き残ることを目的としています。ハードコアは、セレクターからのみ選択できる、4番目の難易度です。
+リストからテープを選択してください。それぞれのテープには、「通常」、「ライブ」、「ハードコア」というラベルが付いています。ラベルにマウスオーバーすると、その理由が表示されます。「通常」がデフォルトの戦闘モードです。「ライブ」は、生き残ることを目的としたモードです。「ハードコア」は、セレクターからのみ選択できる、4番目の難易度です。
 
 ## 操作方法
 
-左右キー（またはAとD）で移動、スペースキーで発射、Fキーでフルスクリーン表示。画面をクリックすると、同じテープが再生されます。次のテープに進むと、リストがスクロールします。最初のキーまたはクリックでサウンドが開始されます。ミュート、3つのフィーリングプリセット、およびサウンドオフの切り替えは、画面の下にあります。
+左右（またはAとD）で移動、スペースキーで発射、Fキーでフルスクリーン表示。フィールドをクリックすると、同じテープを再生できます。次のテープに進むと、リストが更新されます。サウンドは、最初のキーを押すか、クリックすると開始されます。ミュート、3つのプリセット、および振動オフの切り替えは、フィールドの下にあります。
 
 ## ローカルでプレイ
 
@@ -53,8 +53,8 @@ Viteが印刷するアドレスを開きます。リポジトリには、16個�
 
 独自のサーバーを記録し、そのテープを再生するには、そこで戦闘を実行し、次に`mcp-arcade tape receipt.json -o your.tape.json`を実行します。
 
-## その他
+## 詳細
 
-[ハンドブック](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)には、ゲームの残りのマニュアルが含まれています。手がかり、ボス、難易度、ゲームの構成方法などです。出荷されたものと、その時期は、[変更ログ](CHANGELOG.md)に記載されています。ゲームが触れるものは、[SECURITY.md](SECURITY.md)に記載されています。
+[ハンドブック](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)には、ゲームの残りのマニュアルが含まれています。手がかり、ボス、難易度、ゲームの構成方法などです。出荷されたものと、その時期は、[変更ログ](CHANGELOG.md)に記載されています。ゲームが扱うものは、[SECURITY.md](SECURITY.md)に記載されています。
 
 MITライセンス。 [MCP Tool Shop](https://mcp-tool-shop.github.io/)によって作成されました。

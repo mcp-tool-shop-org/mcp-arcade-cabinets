@@ -1,10 +1,10 @@
-# HANDOFF — Ghost on the Menu, after the Ollama seats
+# HANDOFF — Ghost on the Menu, v0.4.0
 
-Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from the Ollama session). `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are history — the seats landed on `main` after v0.3.0; wave 3 shipped as v0.3.0.
+Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from the Ollama session). `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are history — the seats shipped as v0.4.0; wave 3 shipped as v0.3.0.
 
-**This is a pickup after the Ollama content session (Claude, 2026-09-10).** What landed is on `main` and is **not tagged**: the tag is still `v0.3.0`. The next thing that matters is the Director's own play of the seat on the local shell; a version is cut only on their word, with translations before the tag.
+**This is a pickup after v0.4.0 (Claude, 2026-09-10, the Ollama seats, full treatment, published on the Director's word).** Tag `v0.4.0`, GitHub release, Pages. Still `0.x`, still not npm. The next thing that matters is the Director's own play of the seat on the local shell.
 
-## What landed after v0.3.0 (on `main`, untagged)
+## What shipped in v0.4.0
 
 - **The Cloud boss now sits.** `gpt-oss` on Ollama Cloud ignores `think: false`; v0.3.0's default seat was the scripted boss every beat. `pilot.ts` retries with `think: 'low'` and remembers. Measured ~550 ms a beat, no fallbacks (`pnpm sit`).
 - **The seat is felt.** `spread` is a wide fan, `column` leans the boss over the ship then aims, `hold` is a silent still beat. New lever `fire.json → tiers.N.boss.pilot { fan, spread, lean }` with schema and fact-flip tests. The view carries the stick and the phase motion word; health is against the real max.
@@ -16,8 +16,8 @@ Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from t
 ## Next (Director's call)
 
 1. Play the seat locally: `pnpm -F @mcp-arcade-cabinets/cabinets dev`, tick **Ollama bosses**, try `gpt-oss:120b-cloud` (fast) and `kimi-k2.6:cloud` (more varied). React to the voice drafts while there.
-2. If a version is cut: translations first (`node E:/AI/polyglot-mcp/scripts/translate-all.mjs README.md`), then tag. Nothing else is owed before a tag.
-3. Everything below this line is the v0.3.0 pickup as it was written, kept for the layout, lanes, lock and gate.
+2. Grok reviews the Ollama-session diff on `sim.ts`, `pilot.ts`, `patterns.ts`, `fire.json` (`git log 6e1b95f..v0.4.0`).
+3. Everything below this line is the v0.3.0 pickup as it was written, kept for the layout, lanes, lock and gate. Where it says `v0.3.0` / `23b5d87`, read `v0.4.0` and the tag.
 
 ---
 

@@ -11,7 +11,7 @@ export const config: SiteConfig = {
     'MIT Licensed — built by <a href="https://mcp-tool-shop.github.io/" style="color:var(--color-muted);text-decoration:underline">MCP Tool Shop</a>',
 
   hero: {
-    badge: 'Arcade shooter · v0.3.0',
+    badge: 'Arcade shooter · v0.4.0',
     headline: 'Shoot the whisper.',
     headlineAccent: 'Read the wire.',
     description:
@@ -42,7 +42,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'Bosses are the experiment',
-          desc: 'The Whisperer, the Menu and the Doorman show up whether or not anything went wrong. A dry line names the creature. Killing a boss reveals nothing.',
+          desc: 'The Whisperer, the Menu and the Doorman show up whether or not anything went wrong. A dry line names the creature. Killing a boss reveals nothing. Locally, an Ollama model can sit in the boss, call its shots and pick its line; it never sees a lie.',
         },
         {
           title: 'Drops fall straight down',

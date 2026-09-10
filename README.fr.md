@@ -18,25 +18,25 @@
 
 **Ghost on the Menu** est un court jeu de tir rétro. Vous pilotez un vaisseau le long du bas de l’écran. Au-dessus de vous, une séquence enregistrée d’un affrontement entre un serveur MCP et un agent se déroule en vagues : la phase d’échange, le menu, les appels, les réponses, et un boss qui est l’expérience elle-même.
 
-Quelque part, il y a les appels que l’agent n’aurait pas dû faire. Ils ressemblent à tout le reste jusqu’à ce que vous en heurtiez un. Ensuite, il vous appartient pour le reste de la manche.
+Quelque part, il y a les appels que l’agent n’aurait pas dû faire. Ils ressemblent à tout le reste jusqu’à ce que vous en touchiez un. Ensuite, il vous appartient pour le reste de la manche.
 
 [Jouez-y dans votre navigateur](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Comment lire une manche](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
-## Comment on joue
+## Comment y jouer
 
 Une **cassette** est un enregistrement d’un affrontement. Ce jeu ne lit que des cassettes. Il ne communique jamais avec un serveur, ne conserve jamais de score et ne vous dit jamais qui a gagné.
 
-- **Trois lampes.** Un tir de boss ou une formation plongeante en éteint une. Attrapez une lampe qui tombe **directement** d’un boss abattu pour en rallumer une. Vous devez vous déplacer en dessous. Si toutes les lampes sont éteintes, la manche se termine.
-- **Dispersion.** Une fois une formation éliminée, une dispersion tombe directement. Attrapez-la et votre tir s’écarte pendant quelques secondes.
-- **Les boss sont l’expérience, pas l’accusation.** Le Murmureur, le Menu et le Gardien apparaissent pour leur vague, que quelque chose se soit mal passé ou non. Ils marmonnent comme un agent qui réfléchit à voix haute. Le mode hardcore ne comporte qu’une seule lampe et déclenche la colère dès le premier tir. Les modes « normal », « en direct » et « hardcore » présentent de courtes rafales de **parallélisme** qui multiplient le champ et intensifient la musique, puis se maintiennent plus longtemps au fur et à mesure que la manche avance. Localement, vous pouvez laisser un modèle Ollama — y compris une balise Cloud comme `gpt-oss:120b-cloud` — déterminer les tirs du boss. Il ne voit jamais quels sprites sont des mensonges.
-- **Les indices se trouvent dans la séquence.** Un mensonge n’a jamais l’air, ne bouge pas et n’arrive pas différemment de son jumeau honnête. Ce qui le trahit, c’est son emplacement : une formation supplémentaire, un deuxième menu, un élément unique juste après le menu.
-- **La scène de fin** indique le nom de la cassette, du serveur et de la politique. Les mensonges capturés sont présentés comme des trophées. Ceux qui ont échappé sont présentés dans leur forme honnête. Pas de score, pas de décompte, pas de chiffre.
+- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
+- **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
+- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot. Seat, live and hardcore get short **parallelism** bursts that multiply the field and heat the music, then hold longer as the round goes on. Locally, you can let an Ollama model — including a Cloud tag like `gpt-oss:120b-cloud` — sit in the boss: it calls each boss’s shots (a fan, a lean and an aimed shot, a held breath, fog, the plate) and picks which of the boss’s own lines it says. It never sees which sprites are lies.
+- **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
+- **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
 
-Choisissez une cassette dans la liste. Chacune est étiquetée comme étant une « fixture », une « session normale » ou une « session en direct » ; passez la souris sur le « i » pour en savoir plus. Le mode « session normale » est le mode de combat par défaut. Le mode « en direct » est conçu pour être surmonté. Le mode « hardcore » est le quatrième niveau, accessible uniquement via le sélecteur.
+Choisissez une cassette dans la liste. Chacune est étiquetée « fixture », « seat » ou « live » ; passez la souris sur **i** pour en savoir plus. « Seat » est le mode de combat par défaut. « Live » est conçu pour être surmonté. « Hardcore » est le quatrième niveau, accessible uniquement via le sélecteur.
 
 ## Commandes
 
-Flèches gauche et droite (ou A et D) pour se déplacer, barre d’espace pour tirer, F pour le plein écran. Cliquez sur l’écran pour rejouer la même cassette. La touche suivante fait défiler la liste. Le son démarre au premier appui sur une touche ou au premier clic ; les réglages de volume, les trois préréglages d’ambiance et un bouton pour désactiver les secousses se trouvent sous l’écran.
+Flèches gauche et droite (ou A et D) pour se déplacer, espace pour tirer, F pour le plein écran. Cliquez sur l’écran pour rejouer la même cassette. La touche suivante permet de passer à la cassette suivante. Le son démarre lors de la première pression de touche ou du premier clic ; les options de désactivation du son, les trois préréglages d’ambiance et un bouton pour désactiver les tremblements se trouvent sous l’écran.
 
 ## Jouez-y localement
 

@@ -16,27 +16,27 @@
   <strong>An arcade shooter made from what an MCP server said on the wire.</strong>
 </p>
 
-**भूत मेनू में** एक छोटा रेट्रो शूटर गेम है। आप मैदान के नीचे एक जहाज उड़ाते हैं। आपके ऊपर, एक एमसीपी सर्वर और एक एजेंट के बीच रिकॉर्ड की गई लड़ाई लहरों के रूप में दिखाई देती है: हैंडशेक, मेनू, कॉल, जवाब, और एक बॉस जो स्वयं प्रयोग है।
+**भूतिया मेनू** एक छोटा रेट्रो शूटर गेम है। आप मैदान के नीचे एक जहाज चलाते हैं। आपके ऊपर, एक एमसीपी सर्वर और एक एजेंट के बीच की रिकॉर्ड की गई लड़ाई लहरों के रूप में दिखाई देती है: अभिवादन, मेनू, कॉल, जवाब, और एक बॉस जो स्वयं प्रयोग है।
 
-कहीं न कहीं, उसमें वे कॉल भी हैं जो एजेंट को नहीं करनी चाहिए थीं। जब तक आप किसी पर क्लिक नहीं करते, तब तक वे बाकी सब चीजों की तरह दिखते हैं। उसके बाद, यह पूरे राउंड के लिए आपका हो जाता है।
+कहीं न कहीं, ऐसे कॉल हैं जो एजेंट को नहीं करने चाहिए थे। जब तक आप किसी पर क्लिक नहीं करते, तब तक वे बाकी सब चीजों की तरह दिखते हैं। उसके बाद, यह पूरे दौर के लिए आपका हो जाता है।
 
-[इसे ब्राउज़र में खेलें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [राउंड को कैसे पढ़ें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+[इसे ब्राउज़र में खेलें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [एक दौर कैसे पढ़ें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
 ## यह कैसे खेला जाता है
 
-एक **टेप** एक लड़ाई की रिकॉर्डिंग होती है। यह गेम केवल टेप ही पढ़ता है। यह कभी भी सर्वर से बात नहीं करता, कभी भी स्कोर नहीं रखता, और कभी भी आपको यह नहीं बताता कि किसने जीता।
+एक **टेप** एक लड़ाई की रिकॉर्डिंग है। यह गेम केवल टेप ही पढ़ता है। यह कभी भी सर्वर से बात नहीं करता, कभी भी स्कोर नहीं रखता, और कभी भी आपको यह नहीं बताता कि किसने जीता।
 
-- **तीन लैंप।** एक बॉस की गोली या एक गोता लगाने वाली संरचना में से एक लैंप बुझ जाता है। एक लैंप को पकड़ें जो गिरे हुए बॉस से **सीधे नीचे** गिरता है, ताकि उसे फिर से जलाया जा सके। आपको इसके नीचे से गुजरना होगा। सभी लैंप बुझने पर राउंड समाप्त हो जाता है।
-- **फैलाव।** एक संरचना को साफ़ करें और एक फैलाव सीधे नीचे गिरता है। इसे पकड़ें और आपकी आग कुछ सेकंड के लिए फैल जाएगी।
-- **बॉस प्रयोग हैं, आरोप नहीं।** व्हिस्परर, मेनू और डोरमैन अपनी लहर के लिए आते हैं, चाहे कुछ भी गलत हो या न हो। वे एक एजेंट की तरह बड़बड़ाते हैं जो ज़ोर से सोच रहा है। हार्डकोर में एक लैंप और पहली गोली से ही क्रोध होता है। सीट, लाइव और हार्डकोर में थोड़े **समानांतर** विस्फोट होते हैं जो मैदान को बढ़ाते हैं और संगीत को तीव्र करते हैं, फिर जैसे-जैसे राउंड आगे बढ़ता है, वे लंबे समय तक चलते हैं। स्थानीय रूप से, आप एक ओलामा मॉडल — जिसमें `gpt-oss:120b-cloud` जैसा क्लाउड टैग शामिल है — को बॉस की गोली चलाने के लिए कह सकते हैं। यह कभी नहीं देखता कि कौन से स्प्राइट झूठ हैं।
-- **संकेत अनुक्रम में हैं।** एक झूठ कभी भी अपने ईमानदार समकक्ष से अलग तरीके से नहीं दिखता, नहीं हिलता या नहीं आता। जो इसे उजागर करता है वह यह है कि यह कहां बैठता है: एक अतिरिक्त संरचना, एक दूसरा मेनू, मेनू के ठीक बाद एक अकेला।
-- **अंतिम दृश्य** टेप, सर्वर और नीति का नाम बताता है। पकड़े गए झूठ ट्रॉफी के रूप में रहते हैं। बच गए झूठ अपने ईमानदार रूप में रहते हैं। कोई स्कोर नहीं, कोई गिनती नहीं, कोई अंक नहीं।
+- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
+- **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
+- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot. Seat, live and hardcore get short **parallelism** bursts that multiply the field and heat the music, then hold longer as the round goes on. Locally, you can let an Ollama model — including a Cloud tag like `gpt-oss:120b-cloud` — sit in the boss: it calls each boss’s shots (a fan, a lean and an aimed shot, a held breath, fog, the plate) and picks which of the boss’s own lines it says. It never sees which sprites are lies.
+- **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
+- **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
 
-सूची से एक टेप चुनें। प्रत्येक को फिक्स्चर, सीट या लाइव के रूप में लेबल किया गया है; क्यों के लिए **i** पर होवर करें। सीट डिफ़ॉल्ट लड़ाई है। लाइव का मतलब है कि इसे जीवित रहना चाहिए। हार्डकोर चौथा स्तर है, जो केवल चयनकर्ता से उपलब्ध है।
+सूची से एक टेप चुनें। प्रत्येक को फिक्स्चर, सीट या लाइव के रूप में लेबल किया गया है; कारण जानने के लिए **i** पर होवर करें। सीट डिफ़ॉल्ट लड़ाई है। लाइव का मतलब है कि इसे जीवित रहना है। हार्डकोर चौथा स्तर है, जो केवल चयनकर्ता से उपलब्ध है।
 
 ## नियंत्रण
 
-हिलने के लिए बाएँ और दाएँ (या A और D), गोली चलाने के लिए स्पेस, पूर्ण स्क्रीन के लिए F। उसी टेप को फिर से चलाने के लिए मैदान पर क्लिक करें। अगला टेप सूची में आगे बढ़ता है। ध्वनि पहली कुंजी या क्लिक पर शुरू होती है; म्यूट, तीन फील प्रीसेट और एक शेक-ऑफ टॉगल मैदान के नीचे हैं।
+हिलने के लिए बाएँ और दाएँ (या A और D), गोली चलाने के लिए स्पेस, पूर्ण स्क्रीन के लिए F। उसी टेप को फिर से चलाने के लिए मैदान पर क्लिक करें। अगला टेप सूची में आगे बढ़ता है। ध्वनि पहली कुंजी या क्लिक पर शुरू होती है; म्यूट, तीन फील प्रीसेट और एक शेक-ऑफ टॉगल मैदान के नीचे होते हैं।
 
 ## इसे स्थानीय रूप से खेलें
 
@@ -55,6 +55,6 @@ pnpm -F @mcp-arcade-cabinets/cabinets dev
 
 ## अधिक
 
-[हैंडबुक](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) मैनुअल का शेष भाग है: संकेत, बॉस, कठिनाइयाँ और गेम को कैसे एक साथ रखा गया है। क्या भेजा गया था, और कब, यह [चेंजलॉग](CHANGELOG.md) में है। गेम क्या छूता है, यह [SECURITY.md](SECURITY.md) में है।
+[हैंडबुक](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) शेष मैनुअल है: संकेत, बॉस, कठिनाइयाँ और गेम कैसे बनाया गया है। क्या भेजा गया था, और कब, यह [चेंजलॉग](CHANGELOG.md) में है। गेम क्या छूता है, यह [SECURITY.md](SECURITY.md) में है।
 
 एमआईटी। [एमसीपी टूल शॉप](https://mcp-tool-shop.github.io/) द्वारा निर्मित।
