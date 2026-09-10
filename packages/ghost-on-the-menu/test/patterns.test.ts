@@ -359,3 +359,39 @@ describe('loadPatterns', () => {
     expect(() => loadPatterns(raw)).toThrow('patterns/parallelism.json: intensity');
   });
 });
+
+describe('the pilot lever in fire.json', () => {
+  type Tiers = Record<
+    string,
+    { boss: { pilot?: { fan: unknown; spread?: unknown; lean: unknown } } }
+  >;
+
+  it('ships a fan, a spread and a lean per tier, thin on the recorded rung', () => {
+    expect(DEFAULT_PATTERNS.fire.tiers['0'].boss.pilot).toEqual({ fan: 1, spread: 0, lean: 0 });
+    for (const tier of ['1', '2', '3'] as const) {
+      const p = DEFAULT_PATTERNS.fire.tiers[tier].boss.pilot;
+      expect(p.fan).toBeGreaterThan(1);
+      // Wider than the scripted burst, so a pilot fan reads as a wall to weave.
+      expect(p.spread).toBeGreaterThan(DEFAULT_PATTERNS.fire.tiers[tier].boss.spread);
+      expect(p.lean).toBeGreaterThan(0);
+    }
+  });
+
+  it('refuses a missing lever, a fan under one, or a negative lean', () => {
+    const raw = clone();
+    delete (raw.fire as { tiers: Tiers }).tiers['1']!.boss.pilot;
+    expect(() => loadPatterns(raw)).toThrow('patterns/fire.json: pilot');
+    const fan = clone();
+    (fan.fire as { tiers: Tiers }).tiers['1']!.boss.pilot = { fan: 0, spread: 0.3, lean: 10 };
+    expect(() => loadPatterns(fan)).toThrow('patterns/fire.json: fan');
+    const half = clone();
+    (half.fire as { tiers: Tiers }).tiers['1']!.boss.pilot = { fan: 1.5, spread: 0.3, lean: 10 };
+    expect(() => loadPatterns(half)).toThrow('patterns/fire.json: fan');
+    const wide = clone();
+    (wide.fire as { tiers: Tiers }).tiers['1']!.boss.pilot = { fan: 3, spread: 1.5, lean: 10 };
+    expect(() => loadPatterns(wide)).toThrow('patterns/fire.json: spread');
+    const lean = clone();
+    (lean.fire as { tiers: Tiers }).tiers['1']!.boss.pilot = { fan: 3, spread: 0.3, lean: -1 };
+    expect(() => loadPatterns(lean)).toThrow('patterns/fire.json: lean');
+  });
+});

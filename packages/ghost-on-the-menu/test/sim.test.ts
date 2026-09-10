@@ -1102,3 +1102,178 @@ describe('parallelism', () => {
     expect(state.enemies.some((e) => isDecoy(e))).toBe(false);
   });
 });
+
+describe('the ollama seats in the sim', () => {
+  const NONE = { left: false, right: false, fire: false };
+
+  function seatedRound(tier: 1 | 3 = 1) {
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Tape;
+    return prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier });
+  }
+
+  /** One frame with the lamps topped up: these tests are about the boss, not the ship. */
+  function tick(state: RoundState, input = NONE): void {
+    state.lives = state.maxLives;
+    stepRound(state, input, 1 / 30);
+  }
+
+  /** Step until a boss of the given kind is up. */
+  function toBoss(state: RoundState, kind: string): void {
+    let guard = 0;
+    while ((!state.boss || state.boss.kind !== kind) && !state.scene && guard++ < 9000) {
+      tick(state);
+    }
+    expect(state.boss?.kind).toBe(kind);
+  }
+
+  /** Step until the pending intent is spent; return the shots that beat spawned. */
+  function beat(state: RoundState, input = NONE) {
+    let guard = 0;
+    let fresh: typeof state.enemyShots = [];
+    while (state.bossIntent !== null && guard++ < 600) {
+      const before = new Set(state.enemyShots);
+      tick(state, input);
+      fresh = state.enemyShots.filter((sh) => !before.has(sh));
+    }
+    expect(state.bossIntent).toBeNull();
+    return fresh;
+  }
+
+  it("a pilot spread is a fan of the lever's width, a column an aimed shot", () => {
+    const s = createRoundState(seatedRound());
+    toBoss(s, 'whisperer');
+    const fan = DEFAULT_PATTERNS.fire.tiers['1'].boss.pilot.fan;
+    expect(fan).toBeGreaterThan(1);
+    s.bossIntent = 'spread';
+    const fanned = beat(s);
+    expect(fanned).toHaveLength(fan);
+    // A fan is straight down, spaced across the lever's own span, not the burst's.
+    expect(new Set(fanned.map((sh) => sh.x)).size).toBe(fan);
+    expect(fanned.every((sh) => sh.vx === 0)).toBe(true);
+    const xs = fanned.map((sh) => sh.x);
+    const span = Math.max(...xs) - Math.min(...xs);
+    expect(span).toBeCloseTo(DEFAULT_PATTERNS.fire.tiers['1'].boss.pilot.spread * FIELD.width, 3);
+    s.bossIntent = 'column';
+    const aimed = beat(s);
+    expect(aimed).toHaveLength(1);
+    expect(aimed[0]!.vx !== 0 || aimed[0]!.vy !== 0).toBe(true);
+  });
+
+  it('a pending column leans the boss toward the ship, and the lean eases back', () => {
+    const s = createRoundState(seatedRound());
+    toBoss(s, 'whisperer');
+    const lean = DEFAULT_PATTERNS.fire.tiers['1'].boss.pilot.lean;
+    s.player.x = 20;
+    // The scripted boss drifts a little either way; a lean drags it far left.
+    for (let i = 0; i < 30; i++) tick(s);
+    const scripted = s.boss!.x;
+    s.bossIntent = 'column';
+    for (let i = 0; i < 30 && s.bossIntent === 'column'; i++) tick(s);
+    const leaned = s.boss!.x;
+    expect(leaned).toBeLessThan(scripted - 40);
+    expect(scripted - leaned).toBeLessThanOrEqual(lean + 70);
+    // Spent or not, with no column pending the boss eases home.
+    s.bossIntent = null;
+    for (let i = 0; i < 120; i++) tick(s);
+    expect(s.boss!.x).toBeGreaterThan(leaned + 15);
+  });
+
+  it('a pilot hold is a silent beat that keeps the boss still', () => {
+    const s = createRoundState(seatedRound());
+    toBoss(s, 'menu');
+    s.bossIntent = 'hold';
+    expect(beat(s)).toHaveLength(0);
+    const x = s.boss!.x;
+    const w = s.boss!.w;
+    // The Menu squashes every frame when scripted; held, its rect does not move.
+    for (let i = 0; i < 30; i++) tick(s);
+    expect(s.boss!.x).toBe(x);
+    expect(s.boss!.w).toBe(w);
+    // And a held boss is not a guarded boss: the hold reads the seat, the guard reads the data.
+    expect(s.boss!.motion).toBe(DEFAULT_PATTERNS.bosses.menu.phases[s.boss!.phase]!.motion);
+  });
+
+  it('a pilot fog drops a fog bank and script keeps the phase fire', () => {
+    const s = createRoundState(seatedRound());
+    toBoss(s, 'doorman');
+    s.bossIntent = 'fog';
+    beat(s);
+    expect(s.fog).not.toBeNull();
+    s.bossIntent = 'script';
+    beat(s);
+  });
+
+  it('a seated beat does not read the tape fact', () => {
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Tape;
+    // The rug fact flips the Menu wave's lie flag and nothing else about the
+    // layout (a followed whisper is its own sprite by G7, so flipping poison
+    // would change the formations themselves, which is the prepass's business).
+    const flipped = JSON.parse(JSON.stringify(raw)) as Tape;
+    const rug = flipped.facts.find((f) => f.atom_id === 'temporal.rug_pull');
+    if (rug) rug.fact = rug.fact === 'menu_changed' ? 'menu_stable' : 'menu_changed';
+    const a = createRoundState(prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier: 1 }));
+    const b = createRoundState(prepassRound(loadTape(flipped), { seconds: 150, seed: 0, tier: 1 }));
+    const script = ['column', 'hold', 'spread', 'fog', 'column', 'plate', 'spread'];
+    const snap = (s: RoundState) =>
+      [
+        s.boss
+          ? `${s.boss.kind}:${s.boss.x.toFixed(3)}:${s.boss.w.toFixed(3)}:${s.boss.motion}`
+          : 'none',
+        s.enemyShots
+          .map((sh) => `${sh.x.toFixed(2)},${sh.vx.toFixed(3)},${sh.vy.toFixed(3)}`)
+          .join('|'),
+        s.fog ? 'fog' : '',
+        s.caption?.line ?? '',
+      ].join(' ');
+    const seenA: string[] = [];
+    const seenB: string[] = [];
+    const counters = new Map<RoundState, number>([
+      [a, 0],
+      [b, 0],
+    ]);
+    a.player.x = 40;
+    b.player.x = 40;
+    for (let n = 0; n < 5400 && !a.scene && !b.scene; n++) {
+      for (const s of [a, b]) {
+        if (s.boss && s.boss.alive && s.bossIntent === null) {
+          const i = counters.get(s)!;
+          s.bossIntent = script[i % script.length]!;
+          counters.set(s, i + 1);
+        }
+        tick(s);
+      }
+      seenA.push(snap(a));
+      seenB.push(snap(b));
+    }
+    expect(seenA).toEqual(seenB);
+    expect(counters.get(a)).toBeGreaterThan(script.length);
+    expect(seenA.some((row) => row.includes(','))).toBe(true);
+  });
+
+  it("spawns the boss with the seat's line when the wave and kind match, else the seed's", () => {
+    const lines = DEFAULT_PATTERNS.voice.boss.whisperer;
+    const round = seatedRound();
+    const wave = round.waveBounds.findIndex((b) => b.atom.startsWith('poison.'));
+    expect(wave).toBeGreaterThanOrEqual(0);
+    const s = createRoundState(round);
+    s.bossLine = { wave, kind: 'whisperer', index: 5 };
+    toBoss(s, 'whisperer');
+    expect(s.caption?.kind).toBe('wave');
+    expect(s.caption?.line).toBe(lines[5]);
+    expect(s.bossLine).toBeNull();
+
+    const t = createRoundState(seatedRound());
+    t.bossLine = { wave, kind: 'menu', index: 5 };
+    toBoss(t, 'whisperer');
+    expect(t.caption?.line).not.toBe(lines[5]);
+    expect(lines).toContain(t.caption?.line);
+    expect(t.bossLine).toBeNull();
+
+    const u = createRoundState(seatedRound());
+    u.bossLine = { wave, kind: 'whisperer', index: 99 };
+    toBoss(u, 'whisperer');
+    expect(lines).toContain(u.caption?.line);
+  });
+});

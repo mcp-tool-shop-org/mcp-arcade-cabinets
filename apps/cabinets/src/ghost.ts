@@ -13,7 +13,10 @@
 
 import {
   askOllama,
+  askOllamaLine,
   attach,
+  attachedPatterns,
+  bossKindFor,
   columnWord,
   createRoundState,
   cues,
@@ -28,6 +31,7 @@ import {
   snapshot,
   SPRITE_KEYS,
   stepRound,
+  stickWord,
   TRACK_KEYS,
   waveKindAt,
   type AudioOut,
@@ -92,7 +96,12 @@ export function mountGhost(
   ollama.checked = false;
   ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
   ollamaLabel.title =
-    'Local daemon or Ollama Cloud. The boss never sees which sprites are lies. Needs the local game, not Pages.';
+    'Local daemon or Ollama Cloud. The boss calls its own shots and picks its own line; it never sees which sprites are lies. Needs the local game, not Pages.';
+  // What the seat is doing, outside the field: never a fact, never a digit.
+  const seat = document.createElement('span');
+  seat.className = 'muted seat';
+  seat.textContent = 'seat off';
+  let daemon: 'unknown' | 'up' | 'down' = 'unknown';
   const pilotModel = document.createElement('select');
   const localDefault = 'qwen2.5:7b-instruct';
   const seedOpt = document.createElement('option');
@@ -116,9 +125,11 @@ export function mountGhost(
         pilotModel.append(o);
       }
       pilotModel.value = pick;
+      daemon = 'up';
     })
     .catch(() => {
       /* local daemon down: keep the 7B default */
+      daemon = 'down';
     });
   const full = document.createElement('button');
   full.textContent = 'Full screen';
@@ -135,7 +146,17 @@ export function mountGhost(
   nextBtn.textContent = 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
-  controls.append(full, difficulty, mute, intensity, shakeLabel, ollamaLabel, pilotModel, nextBtn);
+  controls.append(
+    full,
+    difficulty,
+    mute,
+    intensity,
+    shakeLabel,
+    ollamaLabel,
+    pilotModel,
+    seat,
+    nextBtn,
+  );
 
   const hint = document.createElement('p');
   hint.className = 'muted';
@@ -258,12 +279,55 @@ export function mountGhost(
   let last = performance.now();
   let lastPilot = 0;
   let pilotBusy = false;
+  // Waves whose boss line has been asked for this round, so each is asked once.
+  let linesAsked = new Set<number>();
   let raf = 0;
   const restart = () => {
     round = newRound();
     state = createRoundState(round);
     prev = snapshot(state);
+    linesAsked = new Set();
     nextBtn.disabled = true;
+  };
+  const seatSay = (text: string) => {
+    seat.textContent = text;
+  };
+  const seatFailed = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    seatSay(/retired/i.test(msg) ? 'seat: model retired' : 'seat: no answer, script');
+  };
+  const pilotOpts = () => ({
+    url: '/ollama/api/generate',
+    model: pilotModel.value || localDefault,
+  });
+  ollama.addEventListener('change', () => {
+    seatSay(ollama.checked ? (daemon === 'down' ? 'seat: no daemon' : 'seat waiting') : 'seat off');
+    canvas.focus();
+  });
+  pilotModel.addEventListener('change', () => canvas.focus());
+
+  // The voice seat asks ahead: this wave's boss right away, the next wave's
+  // boss as soon as a wave opens, so the answer lands before the spawn. The
+  // prompt is the kind and its own lines from voice.json; the reply is a
+  // letter. A late or missing answer leaves the seed's line.
+  const askLines = (st: RoundState, rd: Round) => {
+    for (const wave of [st.wave, st.wave + 1]) {
+      if (linesAsked.has(wave)) continue;
+      const bound = rd.waveBounds[wave];
+      if (!bound) continue;
+      const kind = bossKindFor(bound.atom);
+      if (!kind) continue;
+      linesAsked.add(wave);
+      const lines = attachedPatterns(rd).voice.boss[kind];
+      void askOllamaLine(kind, lines, pilotOpts())
+        .then((index) => {
+          if (index === null || st !== state) return;
+          state.bossLine = { wave, kind, index };
+        })
+        .catch(() => {
+          /* the seed's line stays */
+        });
+    }
   };
   difficulty.addEventListener('change', () => {
     restart();
@@ -286,22 +350,39 @@ export function mountGhost(
         audio.tick(state.t, kind);
       }
     }
-    if (ollama.checked && state.boss && state.boss.alive && !pilotBusy && now - lastPilot > 2200) {
+    if (ollama.checked && !state.scene) askLines(state, round);
+    // One verb per beat: ask again once the sim has spent the last answer,
+    // not on a clock, so a fast Cloud tag sits every beat and a slow one is
+    // never asked twice for the same beat.
+    if (
+      ollama.checked &&
+      state.boss &&
+      state.boss.alive &&
+      !pilotBusy &&
+      state.bossIntent === null &&
+      now - lastPilot > 900
+    ) {
       lastPilot = now;
       const boss = state.boss;
       const view = {
         kind: boss.kind,
-        hp: hpWord(boss.hp, 8),
+        hp: hpWord(boss.hp, boss.maxHp),
         column: columnWord(state.player.x, FIELD.width),
-        motion: 'fight',
+        stick: stickWord(input),
+        motion: boss.motion,
       };
       pilotBusy = true;
-      void askOllama(view, { url: '/ollama/api/generate', model: pilotModel.value || localDefault })
+      seatSay('seat thinking');
+      const asked = state;
+      void askOllama(view, pilotOpts())
         .then((intent) => {
-          if (state.boss && state.boss.alive) state.bossIntent = intent;
+          if (asked !== state || !state.boss || !state.boss.alive) return;
+          state.bossIntent = intent;
+          seatSay(intent === 'script' ? 'seat: script' : `seat said ${intent}`);
         })
-        .catch(() => {
+        .catch((err: unknown) => {
           /* scripted fire stays */
+          seatFailed(err);
         })
         .finally(() => {
           pilotBusy = false;

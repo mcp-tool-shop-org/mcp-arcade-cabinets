@@ -10,6 +10,7 @@ export const CABINET = 'ghost-on-the-menu';
 export { DEFAULT_SECONDS, FIELD, VISIBLE_MAX, VISIBLE_MIN } from './types';
 export type {
   Beat,
+  BossLinePick,
   DrawContext,
   Drop,
   DropKind,
@@ -22,8 +23,14 @@ export type {
   SpriteClass,
 } from './types';
 export { prepassRound } from './prepass';
-export { createRoundState, isDecoy, revealOnHit, stepRound } from './sim';
-export { burstActive, pickLine, voiceWaveKey } from './patterns';
+export { bossKindFor, createRoundState, isDecoy, revealOnHit, stepRound } from './sim';
+export {
+  attachedPatterns,
+  burstActive,
+  DEFAULT_PATTERNS,
+  pickLine,
+  voiceWaveKey,
+} from './patterns';
 export type { ParallelismTier, PatternSet } from './patterns';
 export { labelTape } from './label';
 export type { TapeLabel } from './label';
@@ -43,15 +50,22 @@ export type { CueSnapshot, WaveKind } from './cues';
 export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
 export {
   askOllama,
+  askOllamaLine,
   columnWord,
   defaultPilotModel,
   hpWord,
   isCloudModel,
   listPilotModels,
+  needsLowThink,
   parseIntent,
+  parseLetter,
+  PILOT_SYSTEM,
   pilotPrompt,
+  stickWord,
+  VOICE_SYSTEM,
+  voicePrompt,
 } from './pilot';
-export type { BossView, PilotIntent } from './pilot';
+export type { BossView, OllamaOpts, PilotIntent } from './pilot';
 export type { AudioOut, BedLookup, MediaBed, MusicPattern, Note, SfxName, TrackKey } from './audio';
 // The scripted play-through (`./play`) reads fixtures from disk and is built
 // separately into dist/play.js for `pnpm test:play`; it stays off the barrel

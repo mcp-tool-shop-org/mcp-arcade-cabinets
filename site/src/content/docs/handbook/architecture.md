@@ -30,7 +30,7 @@ tape ──prepass──▶ Round ──createRoundState──▶ RoundState ─
 - **`stepRound(state, input, dt)`** is the only sim function: motion on entry paths and at hover, dives, fire, fog, lamps and grace, bosses with phase scripts, the catch (hitstop, shake, caption, trophy), drops, voice lines, parallelism bursts, wave open and close, the end.
 - **`renderRound(ctx, state, opts)`** draws through a narrow `DrawContext` (fill style, font, rect, text, an optional sprite hook). It adds nothing the sim did not decide: no counts, no digits, lamps as rectangles, the caption in words.
 - **`cues`** diffs two snapshots of the state and names the sounds to fire; **`audio`** is pure note data until the shell attaches a WebAudio context. Recorded ACE-Step beds overlay the chiptune when the files are present.
-- **`askOllama`** is the optional boss seat. The prompt is frozen and fact-blind. The local Vite shell proxies `/ollama` to the daemon on this machine, including Cloud tags; GitHub Pages never reaches it.
+- **`askOllama`** and **`askOllamaLine`** are the optional Ollama seats: one verb per boss beat, one letter for the line a boss says at spawn. Both prompts are frozen and fact-blind (the view is the boss kind, a health word, the ship's column, the stick, and the phase's motion word; the voice prompt is the kind and its own lines lettered), and both throw if a digit or a fact word ever gets in. The sim spends a verb through the `pilot` lever in `fire.json`; a letter picks from `voice.json`. A model that spends its whole budget thinking is asked again with a low thinking budget and remembered. The local Vite shell proxies `/ollama` to the daemon on this machine, including Cloud tags; GitHub Pages never reaches it.
 
 ## The contract
 
@@ -50,5 +50,5 @@ Two models built this, each reviewing the other's diff: Grok wrote the tape load
 | `packages/ghost-on-the-menu/test`      | Unit tests, the fairness band, the expressive-range plot                 |
 | `apps/cabinets`                        | The Vite shell: tape picker, canvas, controls, sprite atlas              |
 | `fixtures/tapes`                       | Sixteen tapes from the instrument                                        |
-| `scripts`                              | `play.mjs`, `film.mjs`, `sweep.mjs`                                      |
+| `scripts`                              | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`                           |
 | `docs`                                 | The lock, the wave-2 dispatch, citation receipts, the art brief and receipts |

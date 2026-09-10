@@ -15,6 +15,7 @@ All run from the repo root.
 | `pnpm test:play ghost --fixture <name> [--bot idle\|sweeper\|reader]` | One scripted round; exit 0 on success, 1 on a failed transcript, 2 on usage, 3 when the package is not built |
 | `pnpm film --fixture <name> [--bot b] [--tier 0\|1\|2] [--times 3,8,12] [--out dir]` | Frames of a round to PNG through the renderer |
 | `pnpm sweep` | Every tape at every tier with every bot; prints one line each and a summary table |
+| `pnpm sit [--model tag] [--fixture <name>] [--tier 0\|1\|2\|3] [--bot b] [--speed n] [--lamps keep\|lose]` | Sits an Ollama model in the boss seat and the voice seat on one scripted round in wall-clock time; prints each beat's verb and what the sim made of it, each boss's line, latency and fallbacks. Needs the local daemon |
 | `pnpm verify` | Lint, typecheck, test, build and a play-through, in one command |
 | `pnpm build:play` | Builds the shell under `site/public/play/` with the site's base path (CI does this before the site build) |
 | `pnpm -F @mcp-arcade-cabinets/cabinets dev` | The browser shell on a local port |

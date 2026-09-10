@@ -114,10 +114,25 @@ export interface Boss {
   h: number;
   phase: number;
   hp: number;
+  /** Starting hp from bosses.json, so a seat can name health as a word. */
+  maxHp: number;
+  /** The current phase's motion word from bosses.json. Data, never a fact. */
+  motion: string;
   alive: boolean;
   plate: { x: number; y: number; w: number; h: number } | null;
   /** Seconds since the last player shot hit this boss. Infinity before any hit. */
   hitT: number;
+}
+
+/**
+ * A seat's pick of the line a boss says when it spawns: an index into that
+ * kind's lines in voice.json, for one wave. Consumed at spawn; the seed's
+ * pick stays when it is absent or does not match.
+ */
+export interface BossLinePick {
+  wave: number;
+  kind: Boss['kind'];
+  index: number;
 }
 
 export interface Scene {
@@ -188,6 +203,8 @@ export interface RoundState {
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
   bossIntent: string | null;
+  /** Optional Ollama (or test) pick of the boss's spawn line. Never derived from a fact. */
+  bossLine: BossLinePick | null;
   /**
    * True while a seed-scheduled parallelism burst is on. Extra honest
    * decoys and a hotter soundtrack; never a fact.

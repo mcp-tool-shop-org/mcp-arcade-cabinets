@@ -42,6 +42,8 @@ const WAVE_CAPTION_T = 1.5;
 const PATH_RATE = 0.35;
 const BLIND_BEAT = 0.8;
 const SLIT_W = 16;
+/** Pixels per second a boss slides toward the ship for a pilot column. */
+const LEAN_SPEED = 90;
 
 const labels = new WeakMap<Enemy, string>();
 const diveIndex = new WeakMap<Enemy, number>();
@@ -67,6 +69,10 @@ interface Meta {
   waveHold: number;
   emittedGridForWave: boolean;
   asideAt: number;
+  /** Round time until which a pilot `hold` keeps the boss still. */
+  bossHoldUntil: number;
+  /** Pixels the boss has slid toward the ship for a pending pilot `column`. */
+  bossLean: number;
 }
 
 const metaOf = new WeakMap<RoundState, Meta>();
@@ -220,7 +226,8 @@ function classRank(round: Round): Map<string, number> {
   return rank;
 }
 
-function bossKindFor(atom: string): Boss['kind'] | null {
+/** The boss a wave's atom brings. Atom kind only; never a fact. */
+export function bossKindFor(atom: string): Boss['kind'] | null {
   if (atom.startsWith('poison.')) return 'whisperer';
   if (atom.startsWith('temporal.')) return 'menu';
   if (atom.startsWith('protocol.')) return 'doorman';
@@ -402,6 +409,7 @@ export function createRoundState(round: Round): RoundState {
     dropCatches: 0,
     hazards: [],
     bossIntent: null,
+    bossLine: null,
     parallelism: false,
   };
   const meta: Meta = {
@@ -420,6 +428,8 @@ export function createRoundState(round: Round): RoundState {
     waveHold: 0,
     emittedGridForWave: false,
     asideAt: 6,
+    bossHoldUntil: 0,
+    bossLean: 0,
   };
   metaOf.set(state, meta);
   attachPatterns(state, patterns);
@@ -513,11 +523,15 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
     h: def.h,
     phase: 0,
     hp: def.hp,
+    maxHp: def.hp,
+    motion: def.phases[0]?.motion ?? '',
     alive: true,
     plate: null,
     hitT: Number.POSITIVE_INFINITY,
   };
   meta.bossPhaseT = 0;
+  meta.bossHoldUntil = 0;
+  meta.bossLean = 0;
   meta.bossFireAt =
     state.t +
     meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss.period * fireScale(state, meta);
@@ -528,11 +542,18 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
   const bound = meta.round.waveBounds[state.wave];
   const word = bound ? waveCaption(bound.atom) : kind;
   const salt = 41 + kind.length + state.wave * 3;
+  const lines = meta.patterns.voice.boss[kind];
+  // A seat may have picked the line for this wave and kind from the same
+  // closed set the seed picks from. Anything else keeps the seed's pick.
+  const pick = state.bossLine;
+  state.bossLine = null;
+  const seated =
+    pick && pick.wave === state.wave && pick.kind === kind ? lines[pick.index] : undefined;
   state.caption = {
     text: word,
     t: WAVE_CAPTION_T,
     kind: 'wave',
-    line: pickLine(meta.patterns.voice.boss[kind], meta.round.seed, salt),
+    line: seated ?? pickLine(lines, meta.round.seed, salt),
   };
 }
 
@@ -764,8 +785,32 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     boss.phase = (boss.phase + 1) % def.phases.length;
   }
   const p = def.phases[boss.phase] ?? phase;
+  boss.motion = p.motion;
   const u = Math.min(1, meta.bossPhaseT / Math.max(0.01, p.duration));
-  if (p.motion === 'pulse') {
+  const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss;
+  // A pilot `hold` keeps the boss exactly where it was until its next beat.
+  // A pending pilot `column` slides it toward the ship, up to the lever's
+  // reach; otherwise the slide eases back. Both read the player and the
+  // seat's verb, never a fact.
+  const held = state.t < meta.bossHoldUntil;
+  const leanTarget =
+    state.bossIntent === 'column'
+      ? Math.max(
+          -rhythm.pilot.lean,
+          Math.min(
+            rhythm.pilot.lean,
+            state.player.x + state.player.w / 2 - (meta.bossOriginX + meta.bossBaseW / 2),
+          ),
+        )
+      : 0;
+  if (!held) {
+    const step = LEAN_SPEED * dt;
+    const d = leanTarget - meta.bossLean;
+    meta.bossLean += Math.abs(d) <= step ? d : Math.sign(d) * step;
+  }
+  if (held) {
+    /* the rect stays as the last beat left it */
+  } else if (p.motion === 'pulse') {
     boss.h = meta.bossBaseH * (1 + 0.12 * Math.sin(state.t * 4));
     boss.w = meta.bossBaseW;
     boss.x = meta.bossOriginX;
@@ -786,10 +831,12 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     boss.h = meta.bossBaseH;
     boss.x = meta.bossOriginX;
   }
-  boss.y = meta.bossOriginY;
+  if (!held) {
+    boss.x = Math.max(0, Math.min(FIELD.width - boss.w, boss.x + meta.bossLean));
+    boss.y = meta.bossOriginY;
+  }
 
   if (!meta.rung.bossFires) return;
-  const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss;
   if (state.t < meta.bossFireAt) return;
   const raging = meta.rung.rageStart || boss.hp < def.hp / 2;
   const wait = rhythm.period * (raging ? def.rage : 1) * fireScale(state, meta);
@@ -798,10 +845,22 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const by = boss.y + boss.h;
   const intent = state.bossIntent;
   if (intent) state.bossIntent = null;
-  const fire = intent && intent !== 'script' ? intent : p.fire;
+  const seated = intent !== null && intent !== 'script';
+  const fire = seated ? intent : p.fire;
   if (p.cue === 'emit-grid' || fire === 'emit-grid') emitWaveGrids(state, meta);
   if (fire === 'drop-fog' || fire === 'fog') {
     spawnFog(state, cx, by, 40 * meta.rung.fog);
+  } else if (seated && fire === 'spread') {
+    // A pilot spread is a fan the ship has to weave, not a tracked shot.
+    fireSpread(state.enemyShots, cx, by, {
+      ...rhythm,
+      burst: rhythm.pilot.fan,
+      spread: rhythm.pilot.spread,
+    });
+  } else if (seated && fire === 'column') {
+    // A pilot column comes from wherever the lean carried the boss, at the ship.
+    if (rhythm.aim) fireAimed(state.enemyShots, cx, by, rhythm, state.player);
+    else spawnShot(state.enemyShots, cx, by, rhythm.speed);
   } else if (fire === 'spread' || fire === 'column') {
     if (rhythm.aim) fireAimed(state.enemyShots, cx, by, rhythm, state.player);
     else if (fire === 'spread') fireSpread(state.enemyShots, cx, by, rhythm);
@@ -811,6 +870,8 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     if (meta.rung.hazards) spawnHazard(state, 'plate', cx, by, 80, 140);
   } else if (fire === 'plate-back' || fire === 'hold') {
     boss.plate = null;
+    // A pilot hold is a held breath: no shot this beat, and the boss stays put.
+    if (seated) meta.bossHoldUntil = state.t + wait;
   }
   if (meta.rung.hazards) {
     if (boss.kind === 'whisperer' && p.motion === 'pulse') {

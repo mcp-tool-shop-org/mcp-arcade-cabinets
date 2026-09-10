@@ -1,8 +1,25 @@
-# HANDOFF — Ghost on the Menu, v0.3.0 pickup
+# HANDOFF — Ghost on the Menu, after the Ollama seats
 
-Read this, then `CLAUDE.md`, then `docs/ollama-content.kickoff.md`. `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ghost-wave-3.kickoff.md` is history — that wave shipped as v0.3.0.
+Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from the Ollama session). `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are history — the seats landed on `main` after v0.3.0; wave 3 shipped as v0.3.0.
 
-**This is a pickup after a Grok session that published v0.3.0.** The Director named the next session (2026-09-10): it is **entirely** the Ollama boss seat, then other ways Ollama can add content through the existing levers. Not wave 4. Not House Call. Not Docker MCP Toolkit. Voice drafts still wait on a play reaction; they are not this session.
+**This is a pickup after the Ollama content session (Claude, 2026-09-10).** What landed is on `main` and is **not tagged**: the tag is still `v0.3.0`. The next thing that matters is the Director's own play of the seat on the local shell; a version is cut only on their word, with translations before the tag.
+
+## What landed after v0.3.0 (on `main`, untagged)
+
+- **The Cloud boss now sits.** `gpt-oss` on Ollama Cloud ignores `think: false`; v0.3.0's default seat was the scripted boss every beat. `pilot.ts` retries with `think: 'low'` and remembers. Measured ~550 ms a beat, no fallbacks (`pnpm sit`).
+- **The seat is felt.** `spread` is a wide fan, `column` leans the boss over the ship then aims, `hold` is a silent still beat. New lever `fire.json → tiers.N.boss.pilot { fan, spread, lean }` with schema and fact-flip tests. The view carries the stick and the phase motion word; health is against the real max.
+- **The voice seat.** Each boss picks which of its own `voice.json` lines it says at spawn (a letter reply; `state.bossLine`). Drafts unchanged.
+- **Seat status** beside the picker (words only; never on the field). Retired Cloud tags say so instead of silently scripting.
+- **`pnpm sit`** (`scripts/sit.mjs`): the headless sit that measured all of this.
+- Refused with reasons in `docs/ollama-content.md`: parallelism toggle (seed's fairness), path pick and phase pick (not this session, written up), asides.
+
+## Next (Director's call)
+
+1. Play the seat locally: `pnpm -F @mcp-arcade-cabinets/cabinets dev`, tick **Ollama bosses**, try `gpt-oss:120b-cloud` (fast) and `kimi-k2.6:cloud` (more varied). React to the voice drafts while there.
+2. If a version is cut: translations first (`node E:/AI/polyglot-mcp/scripts/translate-all.mjs README.md`), then tag. Nothing else is owed before a tag.
+3. Everything below this line is the v0.3.0 pickup as it was written, kept for the layout, lanes, lock and gate.
+
+---
 
 ## Where it is (verified 2026-09-10)
 
@@ -19,7 +36,7 @@ Landing header **Play**, hero **Play Ghost on the Menu**, and the usage card all
 
 All workspace packages are `"private": true`. The release is the git tag, the GitHub release, and Pages. **Not npm. Not 1.0.0.** Identity scan was CLEAN on the tracked tree, the tag archive, and the re-fetched GitHub tarball.
 
-## Next session (Director, 2026-09-10)
+## The Ollama session as it was briefed (done; kept for the record)
 
 **Focus: the Ollama boss feature, then other Ollama content behind the proper levers.** The whole session. Do not start leftover slice-3 classes, sprite-fit, or a new wave unless this work is done and the Director says so.
 
@@ -96,6 +113,8 @@ Nothing about a lie may differ before the hit: look, motion, timing, sprite key,
 | Grok   | `tape-core`, `prepass`, `sim`, `patterns/*`, `label`, `pilot` (the frozen prompt and the parse) |
 | Claude | `render`, `cues`, `audio`, `apps/cabinets` shell, bots, fairness band, docs, Pages copy         |
 
+The Ollama session crossed lanes on the Director's brief: Claude edited `sim.ts` (the seat's verbs, the lean, the hold, the line pick), `pilot.ts`, `patterns.ts` and `fire.json`. Grok should review that diff (`git log 6e1b95f..main`).
+
 Each reviews the other's diff. Cloud panel on G7 claims. Neither partner tags; the Director's word cuts a version.
 
 ## Layout
@@ -108,7 +127,7 @@ Each reviews the other's diff. Cloud panel on G7 claims. Neither partner tags; t
 | `apps/cabinets`                       | Vite shell. `pnpm build:play` writes gitignored `site/public/play/` for Pages                                     |
 | `fixtures/tapes`                      | Sixteen tapes. The only input the game gets                                                                       |
 | `site/`                               | site-theme landing + Starlight handbook. `secondaryCta` stays `{ href: 'handbook/', label: 'Read the Handbook' }` |
-| `scripts`                             | `play.mjs`, `film.mjs`, `sweep.mjs`                                                                               |
+| `scripts`                             | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`                                                                    |
 
 Tuning is data. Change a lever, `pnpm sweep`, then `pnpm test` (the band is the andon). A change that makes a gallery or a wall fails the build.
 

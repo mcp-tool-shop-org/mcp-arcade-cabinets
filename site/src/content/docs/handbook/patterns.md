@@ -35,12 +35,13 @@ The shell can override the derived tier (the difficulty selector), and the fairn
 
 - **`fire.json` → tiers.N.formation** `period`, `burst`, `spread`, `speed`: how often a hovering formation fires straight down, how many shots, how wide, how fast. Null at tier 0 by schema.
 - **`fire.json` → tiers.N.boss** the same plus `aim`: with `aim` the burst fans around the line from the boss to the ship as it is when the shot leaves.
+- **`fire.json` → tiers.N.boss.pilot** `fan`, `spread`, `lean`: what an Ollama seat may do beyond the phase script. A seat's `spread` is a fan of `fan` shots across `spread` of the field, straight down; a pending `column` slides the boss up to `lean` pixels toward the ship before an aimed shot; `hold` is a silent beat that keeps the boss still. Thin on the recorded rung. The seat never sees a fact, so none of this can either.
 - **`fire.json` → tiers.N.dive** `period`, `speed`, `depth`: how often a hovering formation dives, how fast, how far down as a fraction of the field. A dive tracks the ship until half its depth, then commits.
 - **`bosses.json` → hp, rage**: health in hits; the fire-period multiplier below half health (in 0..1). Phases whose motion is `slit` or `hold` take no damage.
 - **`waves.json` → density, tail**: seconds per beat is a base over density, so a higher density packs the same beats into a shorter round; the tail is how long the round runs after the last wave closes. Placement is stretched so the last wave ends a tail before time-up.
 - **`ladder.json` → rungs[].speed, fog, lamps**: a multiplier on entry and dive speed, a multiplier on fog drift, and the number of lamps.
 - **`drops.json`**: a downed boss always drops a lamp; a cleared grid formation always drops a spread. Fall speed, drift (0 = straight down), catch box, spread duration. Never keyed on a lie.
-- **`voice.json`**: lines named by atom kind and boss kind, never by fact. The loader rejects a digit or a fact word.
+- **`voice.json`**: lines named by atom kind and boss kind, never by fact. The loader rejects a digit or a fact word. With the Ollama seat on, each boss picks which of its own lines it says at spawn; the seat can only choose from this file, never write to it.
 - **`parallelism.json`**: a seed-placed burst per wave. Off on the recorded rung. First burst is short; later waves hold it longer. Extra copies are always honest, even when they clone a lie's class. The soundtrack switches to the parallelism bed (recorded if present, chiptune if not).
 
 ## Measuring a change

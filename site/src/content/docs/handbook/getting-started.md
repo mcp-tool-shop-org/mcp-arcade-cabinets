@@ -38,8 +38,9 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | feel: calm / medium / loud   | How much the field shakes and how big the pops are         |
 | shake                        | Turn the shake off entirely; hitstop and the trophy stay   |
 | difficulty                   | As recorded, seat, live, or hardcore                       |
-| Ollama bosses                | Local daemon or Ollama Cloud. The boss never sees lies. Pages cannot reach it. |
+| Ollama bosses                | Local daemon or Ollama Cloud. The model calls each boss's shots and picks the line it says. It never sees lies. Pages cannot reach it. |
 | (model list)                 | Cloud tags first when `ollama signin` has pulled `:cloud` models. |
+| (seat status)                | What the seat is doing, beside the picker: waiting, thinking, the verb it said, or why it fell back to the script. Never on the field. |
 
 ### Difficulties
 

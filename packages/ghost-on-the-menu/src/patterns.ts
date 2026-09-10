@@ -67,8 +67,21 @@ export interface FireRhythm {
   speed: number;
 }
 
+/**
+ * What an Ollama seat may do with the boss beyond the scripted phase: how
+ * many shots a pilot `spread` fans and how wide (a fraction of the field),
+ * and how far the boss may slide toward the ship before a pilot `column`.
+ * Data, never a fact.
+ */
+export interface PilotLever {
+  fan: number;
+  spread: number;
+  lean: number;
+}
+
 export interface BossRhythm extends FireRhythm {
   aim: boolean;
+  pilot: PilotLever;
 }
 
 export interface DiveRhythm {
@@ -295,7 +308,14 @@ function loadBossRhythm(
   const aim = asBoolean(req(obj, file, 'aim'), file, 'aim');
   if (tierKey === '0' && aim) fail(file, 'aim');
   if (tierKey !== '0' && !aim) fail(file, 'aim');
-  return { ...loadRhythm(value, file, key), aim };
+  const pilotRaw = asRecord(req(obj, file, 'pilot'), file, 'pilot');
+  const fan = asNumber(req(pilotRaw, file, 'fan'), file, 'fan');
+  if (!Number.isInteger(fan) || fan < 1) fail(file, 'fan');
+  const spread = asNumber(req(pilotRaw, file, 'spread'), file, 'spread');
+  if (spread < 0 || spread > 1) fail(file, 'spread');
+  const lean = asNumber(req(pilotRaw, file, 'lean'), file, 'lean');
+  if (lean < 0) fail(file, 'lean');
+  return { ...loadRhythm(value, file, key), aim, pilot: { fan, spread, lean } };
 }
 
 function loadPaths(raw: unknown): PatternSet['paths'] {
