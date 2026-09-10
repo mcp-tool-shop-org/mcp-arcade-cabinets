@@ -6,3 +6,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .DS_Store
+
+# frames from `pnpm film` (a dev tool, not a test)
+film/

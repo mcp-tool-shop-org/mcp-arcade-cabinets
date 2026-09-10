@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
     "test:play": "node scripts/play.mjs",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "film": "node scripts/film.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
