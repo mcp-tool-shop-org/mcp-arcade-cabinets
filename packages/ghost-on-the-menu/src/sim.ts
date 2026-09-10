@@ -46,6 +46,7 @@ interface Meta {
   bossOriginX: number;
   bossOriginY: number;
   fogBeats: { t: number; x: number }[];
+  bossDeadFor: string | null;
 }
 
 const metaOf = new WeakMap<RoundState, Meta>();
@@ -263,6 +264,7 @@ export function createRoundState(round: Round): RoundState {
     bossOriginX: 0,
     bossOriginY: 0,
     fogBeats,
+    bossDeadFor: null,
   };
   metaOf.set(state, meta);
   attachPatterns(state, patterns);
@@ -301,10 +303,25 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
   meta.bossOriginY = y;
 }
 
+function killBoss(state: RoundState, meta: Meta, atom: string): void {
+  if (state.boss) state.boss.alive = false;
+  state.boss = null;
+  meta.bossDeadFor = atom;
+}
+
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const bound = meta.round.waveBounds[state.wave];
   const kind = bound ? bossKindFor(bound.atom) : null;
-  if (!kind || !bound || state.t < bound.t0 || state.t >= bound.t1) {
+  if (!bound || state.t >= bound.t1) {
+    if (bound && meta.bossDeadFor === bound.atom) meta.bossDeadFor = null;
+    state.boss = null;
+    return;
+  }
+  if (!kind || state.t < bound.t0) {
+    state.boss = null;
+    return;
+  }
+  if (meta.bossDeadFor === bound.atom) {
     state.boss = null;
     return;
   }
@@ -315,8 +332,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const boss = state.boss;
   if (!boss || !boss.alive) return;
   if (boss.hp <= 0) {
-    boss.alive = false;
-    state.boss = null;
+    killBoss(state, meta, bound.atom);
     return;
   }
   const phase = def.phases[boss.phase] ?? def.phases[0]!;
@@ -508,8 +524,12 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       shot.dead = true;
       boss.hp -= 1;
       if (boss.hp <= 0) {
-        boss.alive = false;
-        state.boss = null;
+        const atom = meta?.round.waveBounds[state.wave]?.atom ?? '';
+        if (meta) killBoss(state, meta, atom);
+        else {
+          boss.alive = false;
+          state.boss = null;
+        }
       }
       continue;
     }

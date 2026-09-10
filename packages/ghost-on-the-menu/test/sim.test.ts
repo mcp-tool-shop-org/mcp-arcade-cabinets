@@ -309,4 +309,29 @@ describe('stepRound', () => {
     expect(samplesA).toEqual(samplesB);
     expect(samplesA.some((s) => s.startsWith('whisperer'))).toBe(true);
   });
+
+  it('a killed boss stays dead until its wave ends', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_dead',
+        duration: 8,
+        waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 5 }],
+      }),
+    );
+    stepRound(state, { left: false, right: false, fire: false }, 0.05);
+    expect(state.boss).not.toBeNull();
+    state.boss!.hp = 1;
+    state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
+    let guard = 0;
+    while (state.boss && guard < 80) {
+      stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+      guard += 1;
+    }
+    expect(state.boss).toBeNull();
+    while (state.t < 4.5) {
+      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    }
+    expect(state.t).toBeLessThan(5);
+    expect(state.boss).toBeNull();
+  });
 });

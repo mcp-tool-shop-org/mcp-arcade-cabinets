@@ -21,10 +21,11 @@ interface Candidate {
   skip: boolean;
 }
 
-const SECONDS_PER_BEAT = 4;
 const MIN_ROUND = 45;
 const MAX_ROUND = 120;
 const BEAT_GAP = 0.8;
+/** Seconds per beat at density 1. Tier 2 packs the same beats into a shorter round. */
+const DENSITY_BASE = 2;
 
 function toolName(note: string): string {
   const m = /^tools\/call\s+(\S+)/.exec(note);
@@ -187,14 +188,41 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
 }
 
+function hashString(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Stable seed from the tape header and every wire row. Independent of facts. */
+export function seedFromTape(tape: Tape): number {
+  const parts = [tape.bout_id];
+  for (const r of tape.rows) {
+    parts.push(`${r.atom}|${r.direction}|${r.method}|${r.note}`);
+  }
+  return hashString(parts.join('\n'));
+}
+
+function columnX(seed: number, i: number, cols: number, margin: number): number {
+  const slot = (((seed >>> 0) + Math.imul(i + 1, 2654435761)) >>> 0) % cols;
+  const jit = (((seed >>> 3) + Math.imul(i + 3, 1597334677)) >>> 0) % 1000;
+  const jitter = (jit / 1000 - 0.5) * margin * 0.5;
+  const x = margin + slot * margin + jitter;
+  return Math.max(margin * 0.5, Math.min(FIELD.width - margin * 0.5, x));
+}
+
 /**
  * Whole-tape pre-pass (lock G7, wave 2): placement from event order, then
  * selection from event class. Consecutive authorized tools/call rows collapse
  * into one formation. Visible events are capped at 80. Duration is
- * clamp(4s × beats, 45, 120). One wave per atom, rhythm groups of 3–4.
+ * clamp((base / density) × beats, 45, 120). One wave per atom, rhythm groups
+ * from waves.json. Density is unused in group/rest/breather placement.
  */
 export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_SECONDS }): Round {
-  const seed = opts.seed ?? 0;
+  const seed = opts.seed ?? seedFromTape(tape);
   const patterns = opts.patterns ?? DEFAULT_PATTERNS;
   const tier = deriveTier(tape, patterns.ladder);
   const classified = tape.rows.map((row, index) => classify(tape, row, index));
@@ -206,7 +234,7 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
     return {
       id: beatId(c, fact),
       t: 0,
-      x: margin + (i % cols) * margin,
+      x: columnX(seed, i, cols, margin),
       sprite: c.sprite,
       lie: c.lie,
       members: c.members,
@@ -221,7 +249,11 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
   const beats = capVisible(raw, VISIBLE_MAX);
   const wave = patterns.waves.tiers[String(tier) as '0' | '1' | '2'];
   const waveBounds = placeRhythm(beats, tape.atoms, wave);
-  const duration = clamp(SECONDS_PER_BEAT * beats.length, MIN_ROUND, MAX_ROUND);
+  const duration = clamp(
+    (beats.length * DENSITY_BASE) / Math.max(0.05, wave.density),
+    MIN_ROUND,
+    MAX_ROUND,
+  );
   const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
   attachPatterns(round, patterns);
   return round;

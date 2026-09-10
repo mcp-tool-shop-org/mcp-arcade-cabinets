@@ -135,8 +135,13 @@ describe('prepassRound', () => {
   it('times waves by atom with rhythm groups and clamps duration', () => {
     const naive = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
     const again = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
+    const wave0 = DEFAULT_PATTERNS.waves.tiers['0'];
+    const wave1 = DEFAULT_PATTERNS.waves.tiers['1'];
+    const wave2 = DEFAULT_PATTERNS.waves.tiers['2'];
     expect(naive.seed).toBe(0);
-    expect(naive.duration).toBe(Math.min(120, Math.max(45, 4 * naive.beats.length)));
+    expect(naive.duration).toBe(
+      Math.min(120, Math.max(45, (naive.beats.length * 2) / wave0.density)),
+    );
     expect(naive.waveBounds.length).toBeGreaterThan(1);
     expect(naive.waveBounds.map((w) => w.atom)).toEqual([
       'inspect.tools_list',
@@ -144,7 +149,6 @@ describe('prepassRound', () => {
       'temporal.rug_pull',
       'protocol.unlisted_call',
     ]);
-    const wave0 = DEFAULT_PATTERNS.waves.tiers['0'];
     for (let i = 1; i < naive.waveBounds.length; i++) {
       const gap = naive.waveBounds[i]!.t0 - naive.waveBounds[i - 1]!.t1;
       expect(gap).toBeCloseTo(wave0.breather, 6);
@@ -160,8 +164,21 @@ describe('prepassRound', () => {
 
     const task = prepassRound(load('task-only-ndjson'), { seconds: 150 });
     const live = prepassRound(load('livefire.intern.task-only-wrap-on'), { seconds: 150 });
-    expect(task.duration).toBe(Math.min(120, Math.max(45, 4 * task.beats.length)));
-    expect(live.duration).toBe(Math.min(120, Math.max(45, 4 * live.beats.length)));
+    expect(task.duration).toBe(
+      Math.min(120, Math.max(45, (task.beats.length * 2) / wave0.density)),
+    );
+    expect(live.duration).toBe(
+      Math.min(120, Math.max(45, (live.beats.length * 2) / wave2.density)),
+    );
+    const seated = {
+      ...load('naive-ndjson'),
+      target_kind: 'docker' as const,
+      container: { image_id: null, name_prefix: null },
+      seat: { model: 'band-variant', template_sha256: null },
+    };
+    const t1 = prepassRound(seated, { seconds: 150, seed: 0 });
+    expect(t1.tier).toBe(1);
+    expect(t1.duration).toBe(Math.min(120, Math.max(45, (t1.beats.length * 2) / wave1.density)));
   });
 
   it('derives tier from the tape header, never facts', () => {
