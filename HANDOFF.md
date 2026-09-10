@@ -1,6 +1,6 @@
 # HANDOFF — Ghost on the Menu, wave 2 landed
 
-Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 102 tests, three play-throughs green, identity scan clean).
+Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 105 tests, three play-throughs green, identity scan clean).
 
 ## The one decision that frames everything
 
@@ -44,6 +44,25 @@ Done the same session: the frame is gone, the field takes the page width, F or a
 - **A(l), Grok:** hover points spread by class rank so pairs never stack; sprite boxes are data (a sprites block in formations.json); the ship is 24×16.
 - **Claude, `pnpm film`:** renders frames of a scripted round to PNG through the renderer (rectangles, no browser); it found the dead tail, the stacked launches and the speck-sized sprites.
 - **Claude:** boss flash on hit, ship blink during grace, boss-hit, boss-down and dive sounds, a boss-down burst, an inspect motif, a difficulty selector (as recorded / seat / live, default seat) and a Next tape button on the end scene that walks the fixture list.
+
+## Balance, measured (`pnpm sweep`, 2026-09-10)
+
+Every fixture at every tier with every bot, the tier forced by the header the way the band does. After the tuning pass (fire.json, bosses.json; one lever at a time, log in the commit message of 0d246f3):
+
+| tier       | bot     | dead rounds of 16 | lamps lost a round | lies revealed of 20 |
+| ---------- | ------- | ----------------- | ------------------ | ------------------- |
+| 0 recorded | idle    | 0                 | 1.00               | 0                   |
+| 0 recorded | sweeper | 0                 | 0.00               | 20                  |
+| 1 seat     | idle    | 16                | 3.00               | 0                   |
+| 1 seat     | sweeper | 0                 | 0.25               | 20                  |
+| 1 seat     | reader  | 7                 | 2.13               | 20                  |
+| 2 live     | idle    | 16                | 3.00               | 0                   |
+| 2 live     | sweeper | 3                 | 1.56               | 20                  |
+| 2 live     | reader  | 12                | 2.75               | 16                  |
+
+What it says: a player who keeps moving under the targets is nearly untouchable by straight-falling fire at any speed; the threat that lands is the boss (aimed spread) and dives that reach the ship's row. The band now carries three curve bars: seat threatens the sweeper and the reader together by at least half a lamp a round; live is survived by the sweeper on at least three tapes in four with half the lies found; live is beatable by the reader for half the lies. Tier 0 ("as recorded") is a gallery with a slow boss by design; the shell defaults to seat.
+
+Levers, all data: `fire.json` per tier (formation and boss rhythms, dives), `bosses.json` (hp, rage), `waves.json` (density, tail), `ladder.json`, `player.json`. Re-run `pnpm sweep` after any change; `pnpm test` is the andon.
 
 ## Order of work, next session
 
