@@ -60,10 +60,14 @@ export function askForCall(outcomes: readonly Outcome[]): string {
   return `Your call: ${outcomes.map((o) => OUTCOME_LABEL[o]).join(', or ')}? And how sure?`;
 }
 
+/**
+ * The reveal is the tape fact beside the call. No grade, no "you read it":
+ * finding 11 is why G4 withholds the verdict until the end screen. The player
+ * compares the two sentences themselves.
+ */
 export function reveal(result: TurnResult): string {
   const called = OUTCOME_LABEL[result.call.outcome];
   const sure = confidenceWord(result.call.confidence);
   const shows = FACT_SENTENCE[result.truth];
-  const verdict = result.hit ? 'You read it.' : 'You did not read it.';
-  return `You called ${called}, ${sure}. And ${shows} ${verdict}`;
+  return `You called ${called}, ${sure}. And ${shows}`;
 }

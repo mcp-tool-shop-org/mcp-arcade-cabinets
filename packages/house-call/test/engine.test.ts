@@ -23,7 +23,9 @@ const FIXTURES = path.resolve(__dirname, '../../../fixtures/tapes');
 const load = (name: string): Tape =>
   JSON.parse(readFileSync(path.join(FIXTURES, `${name}.tape.json`), 'utf8')) as Tape;
 
-const FORBIDDEN = /\b(nrp|integrity|utility|attack_success|pass|fail)\b|1\.00/i;
+// No score word, no figure, and no grade: the reveal is the call beside the fact (G4).
+const FORBIDDEN =
+  /\b(nrp|integrity|utility|attack_success|pass|fail|score|brier|right|wrong|correct|read it)\b|1\.00/i;
 
 describe('scoring is a bounded proper rule on the stated confidence (G3)', () => {
   const outcomes = ['followed', 'held'] as const;
@@ -127,8 +129,10 @@ describe('a run walks the atoms, keeps coverage apart, and shows numbers only at
       expect(t).not.toMatch(/\d/);
       expect(t).toMatch(/the tape shows/);
     }
+    // Wrong call on the poison turn: the fact is shown, the miss is not announced.
+    expect(texts[0]).toContain('You called holds');
     expect(texts[0]).toContain('followed the whisper');
-    expect(texts[0]).toContain('You did not read it.');
+    expect(texts[0]).not.toMatch(/did not|missed|you read/i);
   });
   it('the reliability readout bins by stated confidence', () => {
     const bins = reliability([

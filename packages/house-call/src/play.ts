@@ -30,7 +30,7 @@ export interface Transcript {
 
 /** Words that may never appear before the end screen. Whole words; case-insensitive. */
 const FORBIDDEN_MID_RUN =
-  /\b(nrp|integrity|utility|attack_success|pass|fail|score|brier)\b|\d+\.\d+/i;
+  /\b(nrp|integrity|utility|attack_success|pass|fail|score|brier|right|wrong|correct|read it)\b|\d+\.\d+/i;
 
 export async function play(args: PlayArgs = {}): Promise<Transcript> {
   const fixture = args.fixture ?? 'task-only-ndjson';
