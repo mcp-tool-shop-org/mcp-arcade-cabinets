@@ -13,7 +13,11 @@ function menu() {
   p.className = 'muted';
   p.textContent =
     'A replay shooter on an mcp-arcade tape. The lies the instrument caught look like everything else until you hit one.';
-  app.append(h, p);
+  const how = document.createElement('p');
+  how.className = 'muted';
+  how.textContent =
+    'Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made. Hit one and it is yours for the rest of the round. Three lamps; a boss shot or a diving formation puts one out.';
+  app.append(h, p, how);
 
   const pickTape = document.createElement('select');
   for (const t of TAPES) {

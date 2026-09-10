@@ -18,9 +18,10 @@ It plays in a browser through the shell in `apps/cabinets` (sound, three feel pr
 pnpm install
 pnpm test
 pnpm test:play ghost --fixture naive-ndjson
+pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-`test:play` is the acceptance test for a playable slice: a bot walks a whole run against a fixture tape and the transcript is checked for what must and must not appear before the end screen.
+`test:play` is the acceptance test for a playable slice: a bot walks a whole run against a fixture tape and the transcript is checked for what must and must not appear before the end screen. The last line starts the browser shell. `pnpm film --fixture naive-ndjson --tier 1` writes frames of a scripted round to PNG through the same renderer, for looking at a round without a browser.
 
 ## What the tapes are
 
