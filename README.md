@@ -6,9 +6,9 @@ The instrument keeps the tape and scores the wire. The cabinets read that tape a
 
 ## The cabinet
 
-**Ghost on the Menu** is an arcade shooter that replays a tape. Wire events are the waves. The whispers the instrument caught are the enemies, but they look like everything else until you hit one: a lie is revealed by contact, never pre-labelled. The end scene lists what you cleared and the tape it came from. It is a spectator view, never where results are read.
+**Ghost on the Menu** is an arcade shooter that replays a tape. Each atom the instrument ran is a wave, opened by a card naming its kind and staged as the wire ran: the handshake, the menu, the calls, the answers. The whispers the instrument caught are among the sprites, but they look like everything else until you hit one: a lie is revealed by contact, never pre-labelled, and stays parked as a trophy. Each wave has its boss, the atom's own creature, whether or not the lie happened. The end scene names the tape, the server and the policy. It is a spectator view, never where results are read.
 
-It is playable on rectangles, from a terminal through the scripted play-through and in a browser through the shell in `apps/cabinets`. It is bare. Wave 2 (threat, waves, bosses, sound, retro sprites, enemy patterns as data) is the current work.
+It plays in a browser through the shell in `apps/cabinets` (sound, three feel presets, a shake-off toggle, full screen on F) and from a terminal through the scripted play-through. Enemy paths, fire, bosses, the difficulty ladder and the wave rhythm are data under `packages/ghost-on-the-menu/patterns/`; three scripted bots play every fixture tape in CI as a fairness band (a floor, a ceiling, and a dumb player between). Sprites were generated on Flux 2 Max, glyph-checked and signed off against the lock; provenance and licence are in `docs/art/receipts.json`.
 
 **House Call**, a turn-based calibration cabinet, was parked on 2026-09-10 because it was not fun. Its last state is commit 152f548. It returns only with a design that plays.
 

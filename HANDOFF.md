@@ -1,6 +1,6 @@
 # HANDOFF — Ghost on the Menu, wave 2 landed
 
-Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 77 tests, three play-throughs green, identity scan clean).
+Written 2026-09-10 at the end of the session that built wave 2 with Grok. Read this, then `CLAUDE.md`, then `docs/ghost-wave-2.dispatch.md`. Everything below is verified on main at the commit that carries this file (CI green, 87 tests, three play-throughs green, identity scan clean).
 
 ## The one decision that frames everything
 
@@ -30,7 +30,7 @@ The lock still in force is G1, G7, G8, G9, G10 of `docs/study-swarm.dispatch.md`
 
 Played naive-ndjson at tier 0. Verbatim: "The game still needs a lot of work. Not sure why there's the tv frame, that just looks cheap. And the screen is so small, and there should be a full screen option. And there doesn't seem to be any logic to any of it. We have a long way to go."
 
-Done the same session: the frame is gone, the field takes the page width, F or a button goes full screen; Grok closed the pool-fallback risk (an empty pool is a load error).
+Done the same session: the frame is gone, the field takes the page width, F or a button goes full screen; Grok closed the pool-fallback risk (an empty pool is a load error). **Then the wave-card slice landed (A(g), 75e3dc7): protocol order per wave, a wave card in furniture paint with its own two-note cue, the boss held until the card has shown, hovering sprites of a closed wave exiting off the top, the whisperer emitting its grids. And the wire now answers (A(h), 284656e): inbound responses to tools/call are sprites rising from the bottom after the calls.** The cloud panel confirmed the four G7 claims on both (wave text from the atom kind only; exit never reads lie; answers honest by construction; no boss while a card shows).
 
 **Why it reads as noise (Grok, design session, grounded in the sim as it runs):** (1) the field never resets: sprites enter, then wiggle at hover for the rest of the round, so the handshake is still twitching when the Doorman arrives; (2) the wire never answers: every inbound response is skipped and honest grids collapse, so blocks drift in instead of handshake, menu, call, answer; (3) nothing names a beat until a lucky catch: captions fire only on a lie hit, the wave kind drives the soundtrack but never the canvas, and the boss is a second object rather than the source of the sprites. At tier 0 formations do not fire, so shooting is optional scenery.
 
@@ -38,7 +38,7 @@ Done the same session: the frame is gone, the field takes the page width, F or a
 
 ## Order of work, next session
 
-1. **Build the wave-card slice above** (Grok A(g) on prepass/sim/types, Claude on the caption paint), then the Director plays it again.
+1. **The Director plays it again.** What changed since his play: the field resets per wave, a word opens each wave, the calls are answered, the boss is staged. If it still reads as noise, the remaining levers are in the section below and in the sim: last-wave hoverers stay for the end scene by design; the whisperer both drops fog and emits its row on phase one (data in bosses.json); the sim imports kindOfAtom from cues.ts (move it to types or prepass if the dependency bothers you); the answer class has no sprite yet and draws as its rectangle.
 2. **Tuning stays in data.** `patterns/fire.json` (tier-1 period first), `waves.json` (density), `ladder.json` (speeds, fog). The band and the three play-throughs are the andon: a change that kills the sweeper on tier 0 or lets idle survive tier 1 fails the build.
 3. **Sprite fit.** Grid formations draw one sprite per member in a member-width box; bosses stretch to the sim's rect (the Menu squash is the point). If the Director wants the boss art unstretched, add an aspect-fit in `render.ts`, not in the sim.
 4. **A soundtrack track from Comfy Cloud** if the procedural one is not enough; spend-gated.
