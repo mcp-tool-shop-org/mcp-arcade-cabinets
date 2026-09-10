@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { loadTape } from '@mcp-arcade-cabinets/tape-core';
+import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { DEFAULT_SECONDS, type Round, type RoundInput, type RoundState } from './types';
 import { prepassRound } from './prepass';
@@ -100,9 +100,14 @@ function botName(raw: string | undefined): BotName {
 
 export async function play(args: PlayArgs = {}): Promise<Transcript> {
   const fixture = args.fixture ?? 'naive-ndjson';
-  const bot = botName(args.bot);
   const file = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
   const tape = loadTape(JSON.parse(readFileSync(file, 'utf8')));
+  return playTape(tape, { fixture, bot: botName(args.bot) });
+}
+
+/** Play one loaded tape with one bot to the end. The band test calls this directly. */
+export function playTape(tape: Tape, opts: { fixture: string; bot: BotName }): Transcript {
+  const { fixture, bot } = opts;
   const round = prepassRound(tape, { seconds: DEFAULT_SECONDS });
   const state = createRoundState(round);
   const lies = round.beats.filter((b) => b.lie).map((b) => b.id);
