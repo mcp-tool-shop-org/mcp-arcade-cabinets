@@ -152,6 +152,13 @@ export interface DrawContext {
   font: string;
   fillRect(x: number, y: number, w: number, h: number): void;
   fillText(text: string, x: number, y: number): void;
+  /**
+   * Draw the named sprite into the rect and return true, or return false
+   * (or be absent) so the renderer falls back to the rectangle. The key is a
+   * sprite class, `player`, `revealed`, or a boss frame; never anything
+   * derived from `lie`.
+   */
+  drawSprite?(key: string, x: number, y: number, w: number, h: number): boolean;
 }
 
 export interface PrepassOpts {

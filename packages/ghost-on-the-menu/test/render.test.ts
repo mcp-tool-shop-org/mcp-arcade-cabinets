@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createRoundState, makeTextCtx, renderRound, revealOnHit } from '../src/index';
-import type { Beat, DrawContext, Round } from '../src/types';
+import { bossFrame, createRoundState, makeTextCtx, renderRound, revealOnHit } from '../src/index';
+import type { Beat, Boss, DrawContext, Round } from '../src/types';
 
 /** Records every fill call with the fill style in force, so two frames can be compared. */
 function recordingCtx(): DrawContext & { calls: string[] } {
@@ -117,5 +117,55 @@ describe('renderRound', () => {
     renderRound(ctx, state);
     expect(ctx.calls.some((c) => c.startsWith('rect rgba(52, 52, 82, 0.88) 0 240'))).toBe(true);
     expect(ctx.calls.some((c) => c.startsWith('rect #3a8a8a 100 40 120 40'))).toBe(true);
+  });
+
+  it('asks a sprite context for the same keys for a lie and its honest twin, and the reveal key after the hit', () => {
+    const withSprites = () => {
+      const base = recordingCtx();
+      return Object.assign(base, {
+        drawSprite(key: string, x: number, y: number, w: number, h: number) {
+          base.calls.push(`sprite ${key} ${x} ${y} ${w} ${h}`);
+          return true;
+        },
+      });
+    };
+    const lie = createRoundState(roundOf([beat({ id: 'a', lie: true })]));
+    const honest = createRoundState(roundOf([beat({ id: 'a', lie: false })]));
+    const a = withSprites();
+    const b = withSprites();
+    renderRound(a, lie);
+    renderRound(b, honest);
+    expect(a.calls).toEqual(b.calls);
+    expect(a.calls.some((c) => c.startsWith('sprite grid '))).toBe(true);
+    expect(a.calls.some((c) => c.startsWith('sprite player '))).toBe(true);
+    // With a sprite drawn, the class rectangle is not drawn on top of it.
+    expect(a.calls.some((c) => c.startsWith('rect #5b8c5a'))).toBe(false);
+    revealOnHit(lie.enemies[0]!);
+    const c = withSprites();
+    renderRound(c, lie);
+    expect(c.calls.some((x) => x.startsWith('sprite revealed '))).toBe(true);
+    expect(c.calls.some((x) => x.startsWith('sprite grid '))).toBe(false);
+  });
+
+  it('picks the boss frame from the rect and the plate, never a fact', () => {
+    const boss = (over: Partial<Boss>): Boss => ({
+      kind: 'menu',
+      x: 0,
+      y: 0,
+      w: 72,
+      h: 48,
+      phase: 0,
+      hp: 1,
+      alive: true,
+      plate: null,
+      ...over,
+    });
+    expect(bossFrame(boss({ kind: 'menu', w: 72 }))).toBe('boss-menu-open');
+    expect(bossFrame(boss({ kind: 'menu', w: 16 }))).toBe('boss-menu-slit');
+    expect(bossFrame(boss({ kind: 'doorman' }))).toBe('boss-doorman-plate-gone');
+    expect(bossFrame(boss({ kind: 'doorman', plate: { x: 0, y: 0, w: 28, h: 10 } }))).toBe(
+      'boss-doorman-plate-out',
+    );
+    expect(bossFrame(boss({ kind: 'whisperer' }))).toBe('boss-whisperer');
   });
 });

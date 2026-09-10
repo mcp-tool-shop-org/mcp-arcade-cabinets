@@ -40,6 +40,34 @@ export function fillFor(sprite: SpriteClass, revealed: boolean): string {
   return revealed ? REVEALED_FILL : SPRITE_FILL[sprite];
 }
 
+/** Every sprite key the renderer may ask a DrawContext for. Art files carry these names. */
+export const SPRITE_KEYS = [
+  'player',
+  'init',
+  'menu',
+  'grid',
+  'fog',
+  'obstacle',
+  'stall',
+  'revealed',
+  'boss-whisperer',
+  'boss-menu-open',
+  'boss-menu-slit',
+  'boss-doorman-plate-out',
+  'boss-doorman-plate-gone',
+] as const;
+export type SpriteKey = (typeof SPRITE_KEYS)[number];
+
+/** Menu boss narrower than this draws the slit frame. */
+const SLIT_FRAME_W = 40;
+
+/** The boss frame is a function of the boss rect and plate the sim set; never of a fact. */
+export function bossFrame(b: Boss): SpriteKey {
+  if (b.kind === 'menu') return b.w < SLIT_FRAME_W ? 'boss-menu-slit' : 'boss-menu-open';
+  if (b.kind === 'doorman') return b.plate ? 'boss-doorman-plate-out' : 'boss-doorman-plate-gone';
+  return 'boss-whisperer';
+}
+
 /**
  * Three presets, default below the midpoint (W4): hit-feedback preference
  * varies about six-fold and random settings read as excessive nearly half
@@ -85,16 +113,17 @@ function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
 }
 
+type Rect = (x: number, y: number, w: number, h: number) => void;
+type Sprite = (key: SpriteKey, x: number, y: number, w: number, h: number) => boolean;
+
 /** Members draw as segments so a burst reads as a formation; a singleton is one block. */
-function drawFormation(
-  rect: (x: number, y: number, w: number, h: number) => void,
-  enemy: Enemy,
-): void {
+function drawFormation(rect: Rect, sprite: Sprite, enemy: Enemy): void {
   const n = Math.max(1, enemy.members);
   const gap = n > 1 ? 2 : 0;
   const bw = (enemy.w - gap * (n - 1)) / n;
   for (let i = 0; i < n; i++) {
-    rect(enemy.x + i * (bw + gap), enemy.y, bw, enemy.h);
+    const x = enemy.x + i * (bw + gap);
+    if (!sprite(enemy.sprite, x, enemy.y, bw, enemy.h)) rect(x, enemy.y, bw, enemy.h);
   }
 }
 
@@ -133,24 +162,37 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // during hitstop (when the clock is frozen) and settles as shake decays.
   const ox = s * level.shake * Math.sin(s * 53.7);
   const oy = s * level.shake * Math.cos(s * 31.1);
-  const rect = (x: number, y: number, w: number, h: number) => ctx.fillRect(x + ox, y + oy, w, h);
+  const rect: Rect = (x, y, w, h) => ctx.fillRect(x + ox, y + oy, w, h);
+  // Sprites are optional: a context without them, or without the file, gets the rectangle.
+  const sprite: Sprite = (key, x, y, w, h) =>
+    ctx.drawSprite ? ctx.drawSprite(key, x + ox, y + oy, w, h) : false;
 
   ctx.fillStyle = FIELD_FILL;
   ctx.fillRect(0, 0, FIELD.width, FIELD.height);
 
   if (state.fog && state.fog.alive) {
-    ctx.fillStyle = FOG_FILL;
-    rect(state.fog.x, state.fog.y, state.fog.w, state.fog.h);
+    const f = state.fog;
+    if (!sprite('fog', f.x, f.y, f.w, f.h)) {
+      ctx.fillStyle = FOG_FILL;
+      rect(f.x, f.y, f.w, f.h);
+    }
   }
 
   if (state.boss && state.boss.alive) {
     const b = state.boss;
-    ctx.fillStyle = BOSS_FILL[b.kind];
-    rect(b.x, b.y, b.w, b.h);
-    // A darker band so a boss reads as a wall, not a large grid sprite.
-    ctx.fillStyle = FIELD_FILL;
-    const band = Math.max(2, Math.floor(b.h / 5));
-    if (b.w > 8 && b.h > band * 3) rect(b.x + 4, b.y + b.h - band * 2, b.w - 8, band);
+    if (!sprite(bossFrame(b), b.x, b.y, b.w, b.h)) {
+      ctx.fillStyle = BOSS_FILL[b.kind];
+      rect(b.x, b.y, b.w, b.h);
+      // A darker band so a boss reads as a wall, not a large grid sprite.
+      ctx.fillStyle = FIELD_FILL;
+      const band = Math.max(2, Math.floor(b.h / 5));
+      if (b.w > 8 && b.h > band * 3) rect(b.x + 4, b.y + b.h - band * 2, b.w - 8, band);
+      // The plate is part of the Doorman's sprite frame; as a rectangle it is drawn here.
+      if (b.plate) {
+        ctx.fillStyle = BOSS_FILL[b.kind];
+        rect(b.plate.x, b.plate.y, b.plate.w, b.plate.h);
+      }
+    }
   }
 
   for (const enemy of state.enemies) {
@@ -164,12 +206,14 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
       const h = level.halo;
       ctx.fillStyle = REVEALED_HALO;
       rect(enemy.x - h, enemy.y - h + bob, enemy.w + h * 2, enemy.h + h * 2);
-      ctx.fillStyle = REVEALED_FILL;
-      rect(enemy.x, enemy.y + bob, enemy.w, enemy.h);
+      if (!sprite('revealed', enemy.x, enemy.y + bob, enemy.w, enemy.h)) {
+        ctx.fillStyle = REVEALED_FILL;
+        rect(enemy.x, enemy.y + bob, enemy.w, enemy.h);
+      }
       continue;
     }
     ctx.fillStyle = fillFor(enemy.sprite, enemy.revealed);
-    drawFormation(rect, enemy);
+    drawFormation(rect, sprite, enemy);
   }
 
   ctx.fillStyle = ENEMY_SHOT_FILL;
@@ -183,8 +227,11 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     rect(shot.x, shot.y, shot.w, shot.h);
   }
 
-  ctx.fillStyle = PLAYER_FILL;
-  rect(state.player.x, state.player.y, state.player.w, state.player.h);
+  const p = state.player;
+  if (!sprite('player', p.x, p.y, p.w, p.h)) {
+    ctx.fillStyle = PLAYER_FILL;
+    rect(p.x, p.y, p.w, p.h);
+  }
 
   if (state.blind > 0) {
     ctx.fillStyle = VEIL_FILL;

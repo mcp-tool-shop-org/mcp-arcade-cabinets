@@ -20,8 +20,17 @@ export type {
 } from './types';
 export { prepassRound } from './prepass';
 export { botInput, createRoundState, revealOnHit, stepRound } from './sim';
-export { BOSS_FILL, fillFor, makeTextCtx, renderRound, REVEALED_FILL, SPRITE_FILL } from './render';
-export type { Intensity, RenderOpts } from './render';
+export {
+  BOSS_FILL,
+  bossFrame,
+  fillFor,
+  makeTextCtx,
+  renderRound,
+  REVEALED_FILL,
+  SPRITE_FILL,
+  SPRITE_KEYS,
+} from './render';
+export type { Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
 export { attach, bar, barSeconds, DEFAULT_MUSIC, sfx } from './audio';

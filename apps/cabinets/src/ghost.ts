@@ -19,6 +19,7 @@ import {
   prepassRound,
   renderRound,
   snapshot,
+  SPRITE_KEYS,
   stepRound,
   waveKindAt,
   type AudioOut,
@@ -71,9 +72,35 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
   root.append(wrap);
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
+
+  // Sprites are files under /sprites/<key>.png, one per SPRITE_KEY. A key
+  // whose file is missing or not yet loaded draws as its rectangle, so the
+  // game is playable before, without, or during the art.
+  const atlas = new Map<string, HTMLImageElement>();
+  for (const key of SPRITE_KEYS) {
+    const img = new Image();
+    img.decoding = 'async';
+    img.addEventListener('load', () => atlas.set(key, img));
+    img.src = `/sprites/${key}.png`;
+  }
+  const backdrop = document.createElement('img');
+  backdrop.addEventListener('load', () => {
+    document.body.style.backgroundImage = `url(${backdrop.src})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.imageRendering = 'pixelated';
+  });
+  backdrop.src = '/sprites/backdrop.png';
+
   // The renderer draws through a narrow DrawContext; the canvas fill type is
   // wider (gradients, patterns), so adapt rather than widen the contract.
   const draw: DrawContext = {
+    drawSprite(key, x, y, w, h) {
+      const img = atlas.get(key);
+      if (!img) return false;
+      ctx.drawImage(img, x, y, w, h);
+      return true;
+    },
     get fillStyle() {
       return String(ctx.fillStyle);
     },
@@ -178,6 +205,7 @@ export function mountGhost(root: HTMLElement, name: string, tape: Tape, onExit: 
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     audio?.close();
+    document.body.style.backgroundImage = '';
     onExit();
   });
   canvas.focus();
