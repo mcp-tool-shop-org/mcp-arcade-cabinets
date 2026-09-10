@@ -21,5 +21,7 @@ export type {
 export { prepassRound } from './prepass';
 export { botInput, createRoundState, revealOnHit, stepRound } from './sim';
 export { fillFor, makeTextCtx, renderRound, SPRITE_FILL } from './render';
-export { play } from './play';
+// The scripted play-through (`./play`) reads fixtures from disk and is built
+// separately into dist/play.js for `pnpm test:play`; it stays off the barrel
+// so the browser bundle never pulls node:fs.
 export type { PlayArgs, Transcript } from './play';

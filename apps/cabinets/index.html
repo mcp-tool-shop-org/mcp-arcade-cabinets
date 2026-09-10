@@ -16,6 +16,51 @@
         margin: 0 auto;
         padding: 2rem;
       }
+      .column {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-width: 640px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .muted {
+        color: #9a9aa6;
+      }
+      .block {
+        border-top: 1px solid #2a2a36;
+        padding-top: 0.5rem;
+      }
+      button,
+      select {
+        background: #1a1a24;
+        color: #e6e6e6;
+        border: 1px solid #3a3a4a;
+        padding: 0.5rem 0.9rem;
+        font: inherit;
+        cursor: pointer;
+      }
+      button.picked {
+        border-color: #e8a04a;
+        color: #e8a04a;
+      }
+      button.commit {
+        border-color: #5b8c5a;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      canvas.field {
+        width: 100%;
+        max-width: 960px;
+        image-rendering: pixelated;
+        background: #101018;
+        outline: none;
+      }
     </style>
   </head>
   <body>

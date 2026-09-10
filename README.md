@@ -10,7 +10,7 @@ The instrument keeps the tape and scores the wire. The cabinets read that tape a
 
 **Ghost on the Menu** is an arcade shooter that replays a tape. Wire events are the waves. The whispers the instrument caught are the enemies, but they look like everything else until you hit one: a lie is revealed by contact, never pre-labelled. The end scene lists what you cleared and the tape it came from. It is a spectator view, never where results are read.
 
-Both are playable on rectangles from a terminal. No art has been briefed yet; the art gate opened when both play-throughs went green.
+Both are playable on rectangles, from a terminal through the scripted play-throughs and in a browser through the shell in `apps/cabinets`. Art brief 1 is in `docs/art/`; nothing has been generated yet.
 
 ## Run them
 
@@ -36,15 +36,15 @@ The design is locked in `docs/study-swarm.dispatch.md` (G1 to G10) on findings t
 
 ## Layout
 
-| Path                         | What                                                                                |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `packages/tape-core`         | Load a tape, refuse forbidden keys, slice by atom, scoring rules, reveal formatting |
-| `packages/house-call`        | Turn engine, run, narrative, campaign director, scripted play-through               |
-| `packages/ghost-on-the-menu` | Prepass, sim, renderer, scripted play-through                                       |
-| `apps/cabinets`              | Pages shell, not wired yet                                                          |
-| `fixtures/tapes`             | Tapes exported from mcp-arcade                                                      |
-| `docs/`                      | Study-swarm dispatch, citations, verification receipts                              |
-| `scripts/play.mjs`           | The `test:play` runner                                                              |
+| Path                         | What                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `packages/tape-core`         | Load a tape, refuse forbidden keys, slice by atom, scoring rules, reveal formatting               |
+| `packages/house-call`        | Turn engine, run, narrative, campaign director, scripted play-through                             |
+| `packages/ghost-on-the-menu` | Prepass, sim, renderer, scripted play-through                                                     |
+| `apps/cabinets`              | The browser shell: pick a tape, play either cabinet (`pnpm -F @mcp-arcade-cabinets/cabinets dev`) |
+| `fixtures/tapes`             | Tapes exported from mcp-arcade                                                                    |
+| `docs/`                      | Study-swarm dispatch, citations, verification receipts                                            |
+| `scripts/play.mjs`           | The `test:play` runner                                                                            |
 
 Built with Grok as a design partner and cross-family verifier: Grok wrote tape-core and Ghost, Claude wrote House Call, each reviewed the other.
 
