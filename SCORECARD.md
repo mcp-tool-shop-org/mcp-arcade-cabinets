@@ -32,11 +32,11 @@
 
 ## Post-Remediation
 
-| Category            | Before | After                              |
-| ------------------- | ------ | ---------------------------------- |
-| A. Security         | 5/10   | 9/10                               |
-| B. Error Handling   | 8/10   | 8/10                               |
-| C. Operator Docs    | 6/10   | 9/10                               |
-| D. Shipping Hygiene | 5/10   | 9/10                               |
-| E. Identity (soft)  | 0/10   | filled at the end of the treatment |
-| **Overall**         | 24/50  | filled at the end of the treatment |
+| Category            | Before | After                                                                  |
+| ------------------- | ------ | ---------------------------------------------------------------------- |
+| A. Security         | 5/10   | 9/10                                                                   |
+| B. Error Handling   | 8/10   | 8/10                                                                   |
+| C. Operator Docs    | 6/10   | 9/10                                                                   |
+| D. Shipping Hygiene | 5/10   | 9/10                                                                   |
+| E. Identity (soft)  | 0/10   | 10/10 (logo, 7 translations, landing page, handbook, /play/, metadata) |
+| **Overall**         | 24/50  | 45/50                                                                  |
