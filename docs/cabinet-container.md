@@ -47,7 +47,7 @@ The image was rebuilt from the v0.6.0 tree (the shift and the music do not enter
 
 ## The Catalog PR (2026-09-11)
 
-Opened on the Director's decision with the network off: the Catalog cabinet is sealed (`run.disableNetwork: true`, no voice config), since the voice worker is a host GPU stack no Catalog user runs and the cabinet says the voice is silent without one. The voice route stays documented here for a local build. The pin is the v0.6.0 release commit; the icon is the brand logo; `tools.json` is in the registry's `inputSchema` shape.
+Opened on the Director's decision as [docker/mcp-registry#5061](https://github.com/docker/mcp-registry/pull/5061), with the network off: the Catalog cabinet is sealed (`run.disableNetwork: true`, no voice config), since the voice worker is a host GPU stack no Catalog user runs and the cabinet says the voice is silent without one. The voice route stays documented here for a local build. The pin is the v0.6.0 release commit; the icon is the brand logo; `tools.json` is in the registry's `inputSchema` shape. Their `task validate` passes every check (the title had to be title-cased and the icon under five hundred and twelve pixels, so the brand repo gained a small `icon.png`) and their `task build --tools` read the six tools and built the image from the pinned commit, both run here in a Go container before the PR went out.
 
 ## Not done
 
