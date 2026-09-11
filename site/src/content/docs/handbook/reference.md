@@ -15,7 +15,8 @@ All run from the repo root.
 | `pnpm test:play ghost --fixture <name> [--bot idle\|sweeper\|reader]` | One scripted round; exit 0 on success, 1 on a failed transcript, 2 on usage, 3 when the package is not built |
 | `pnpm film --fixture <name> [--bot b] [--tier 0\|1\|2] [--times 3,8,12] [--out dir]` | Frames of a round to PNG through the renderer |
 | `pnpm sweep` | Every tape at every tier with every bot; prints one line each and a summary table |
-| `pnpm sit [--model tag] [--fixture <name>] [--tier 0\|1\|2\|3] [--bot b] [--speed n] [--lamps keep\|lose]` | Sits an Ollama model in the boss seat and the voice seat on one scripted round in wall-clock time; prints each beat's verb and what the sim made of it, each boss's line, latency and fallbacks. Needs the local daemon |
+| `pnpm sit [--model a,b] [--fixture <name>] [--tier 0\|1\|2\|3] [--bot b] [--seat mcp\|prompt] [--constrain on\|off] [--say on\|off] [--speed n] [--lamps keep\|lose]` | Sits a model in the boss seat and the say seat over the cabinet server's tool contract on one scripted round in wall-clock time; prints each beat's call and what the sim made of it, every line and what the gate did with it, and per model: verb collapse, tool suppression, bad verbs, revoked prefetches, late answers. `--seat prompt` is the v0.4.0 bare-prompt path. Needs the local daemon |
+| `pnpm test:play ghost --seat mcp`                                                         | The cabinet server driven in-process by a scripted model (one `fire` a beat, a `say` at each spawn, an `sfx` now and then) with the sweeper as the ship; the transcript footer counts the calls and what the gate refused |
 | `pnpm verify` | Lint, typecheck, test, build and a play-through, in one command |
 | `pnpm build:play` | Builds the shell under `site/public/play/` with the site's base path (CI does this before the site build) |
 | `pnpm -F @mcp-arcade-cabinets/cabinets dev` | The browser shell on a local port |
@@ -43,11 +44,11 @@ Three scripted players live in `packages/ghost-on-the-menu/src/play.ts`. None of
 | The sweeper survives tier 0 and finds at least half the lies | tier-0 tapes |
 | The reader reveals every lie at tiers 0 and 1 | tier-0 tapes and the seat variants |
 | No bot puts a forbidden word or a digit on screen | every tape and bot |
-| Seat costs the sweeper at least 0.4 lamps a round | all sixteen tapes at seat |
-| Seat costs the reader at least 1.0 lamps a round | all sixteen tapes at seat |
-| Live: the sweeper survives 12 of 16 and finds half the lies | all sixteen tapes at live |
-| Live: the reader survives 8 of 16 and finds half the lies | all sixteen tapes at live |
-| Hardcore: idle and the sweeper die every round; the reader still finds a third of the lies | all sixteen tapes at tier 3 |
+| Seat costs the sweeper at least 0.4 lamps a round | every tape on disk at seat |
+| Seat costs the reader at least 1.0 lamps a round | every tape on disk at seat |
+| Live: the sweeper survives three quarters of the roster and finds half the lies | every tape on disk at live |
+| Live: the reader survives half the roster and finds half the lies | every tape on disk at live |
+| Hardcore: idle and the sweeper die every round; the reader still finds a third of the lies | the first sixteen tapes at tier 3 |
 
 A pattern change that turns the game into a gallery or a wall fails the build.
 

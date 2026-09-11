@@ -42,7 +42,8 @@ export interface ChatAnswer {
 /** Frozen system prompt for the boss seat over tools. Same for every tape. */
 export const SEAT_SYSTEM =
   'You are a boss in an arcade cabinet. You do not know which sprites are honest. ' +
-  'Each beat, call fire with one verb: spread, column, hold, fog, plate, or script.';
+  'The lines below are your view of the field for this one beat. ' +
+  'Call fire once, with one verb: spread, column, hold, fog, plate, or script.';
 
 export function seatPrompt(view: SeatView): string {
   const text = [
@@ -168,6 +169,8 @@ export interface FireAnswer {
   intent: PilotIntent | null;
   /** True when the model answered (prose or content JSON) but called no tool. */
   suppressed: boolean;
+  /** True when the model called a tool but not with a verb on the menu. */
+  badCall: boolean;
   ms: number;
   low: boolean;
   raw: ChatAnswer;
@@ -193,8 +196,9 @@ export async function askFire(view: SeatView, opts: AskFireOpts): Promise<FireAn
         : undefined;
     if (typeof v === 'string' && verbs.includes(v)) intent = v as PilotIntent;
   }
-  const suppressed = intent === null && a.content.trim() !== '';
-  return { intent, suppressed, ms: a.ms, low: a.low, raw: a };
+  const badCall = intent === null && a.calls.length > 0;
+  const suppressed = intent === null && !badCall && a.content.trim() !== '';
+  return { intent, suppressed, badCall, ms: a.ms, low: a.low, raw: a };
 }
 
 /** A neutral view for the warm-up call at round start. */
@@ -220,6 +224,8 @@ export interface SeatStats {
   revoked: number;
   late: number;
   suppressed: number;
+  /** Tool calls with a verb not on the menu (finding 7: parseable is not good). */
+  badCalls: number;
   scripted: number;
   errors: number;
   byVerb: Record<string, number>;
@@ -246,15 +252,15 @@ export interface Seat {
   busy(): boolean;
 }
 
+/**
+ * Whether a prefetched answer still stands. The verb was chosen on the
+ * boss's own words (kind, health, motion, wave); those revoke it. The
+ * ship's column and stick are aim inputs the sim reads live at the beat,
+ * and they flip several times a second under a moving player, so they do
+ * not revoke (measured: keying on them revoked two answers in three).
+ */
 export function sameView(a: SeatView, b: SeatView): boolean {
-  return (
-    a.kind === b.kind &&
-    a.hp === b.hp &&
-    a.column === b.column &&
-    a.stick === b.stick &&
-    a.motion === b.motion &&
-    a.wave === b.wave
-  );
+  return a.kind === b.kind && a.hp === b.hp && a.motion === b.motion && a.wave === b.wave;
 }
 
 export function createSeat(opts: SeatOpts): Seat {
@@ -264,6 +270,7 @@ export function createSeat(opts: SeatOpts): Seat {
     revoked: 0,
     late: 0,
     suppressed: 0,
+    badCalls: 0,
     scripted: 0,
     errors: 0,
     byVerb: {},
@@ -309,7 +316,14 @@ export function createSeat(opts: SeatOpts): Seat {
       opts.admit('script');
       stats.scripted += 1;
       if (a.suppressed) stats.suppressed += 1;
-      say(a.suppressed ? 'seat answered, called nothing: script' : 'seat: script');
+      if (a.badCall) stats.badCalls += 1;
+      say(
+        a.suppressed
+          ? 'seat answered, called nothing: script'
+          : a.badCall
+            ? 'seat called fire off the menu: script'
+            : 'seat: script',
+      );
       return;
     }
     opts.admit(a.intent);

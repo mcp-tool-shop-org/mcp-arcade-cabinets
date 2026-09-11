@@ -29,6 +29,7 @@ function answer(intent: FireAnswer['intent'], suppressed = false): FireAnswer {
   return {
     intent,
     suppressed,
+    badCall: false,
     ms: 10,
     low: false,
     raw: { calls: [], content: '', thinking: '', ms: 10, low: false },
@@ -104,8 +105,8 @@ describe('the seat over the fire tool', () => {
     seat.tick(V, 0, true); // prefetch during a held beat
     pending[0]!.resolve(answer('column'));
     await flush();
-    const moved: SeatView = { ...V, column: 'left', stick: 'left' };
-    seat.tick(moved, 0.5, false); // the beat was spent; the view moved: revoke, re-ask
+    const moved: SeatView = { ...V, hp: 'mid', motion: 'slit' };
+    seat.tick(moved, 0.5, false); // the beat was spent; the boss's words moved: revoke, re-ask
     expect(admitted).toEqual([]);
     expect(pending).toHaveLength(2);
     pending[1]!.resolve(answer('hold'));
@@ -115,6 +116,8 @@ describe('the seat over the fire tool', () => {
     expect(seat.stats().revoked).toBe(1);
     expect(sameView(V, moved)).toBe(false);
     expect(sameView(V, { ...V })).toBe(true);
+    // The ship's column and stick are read live by the sim; they do not revoke.
+    expect(sameView(V, { ...V, column: 'left', stick: 'left' })).toBe(true);
   });
 
   it('a late answer counts as late; a missing verb, a suppressed answer and an error are the script', async () => {
@@ -220,6 +223,20 @@ describe('askFire over a daemon', () => {
     const a = await askFire(V, { url: '/x', model: 'kimi-test:cloud', constrain: true });
     expect(a.intent).toBeNull();
     expect(a.suppressed).toBe(true);
+    expect(a.badCall).toBe(false);
+  });
+
+  it('a tool call with a verb off the menu is a bad call, not a verb and not suppression', async () => {
+    stub(() => ({
+      message: {
+        content: '',
+        tool_calls: [{ function: { name: 'fire', arguments: { verb: 'wave' } } }],
+      },
+    }));
+    const a = await askFire(V, { url: '/x', model: 'kimi-test:cloud' });
+    expect(a.intent).toBeNull();
+    expect(a.badCall).toBe(true);
+    expect(a.suppressed).toBe(false);
   });
 
   it('retries with low thinking when a model spent its budget thinking, and remembers', async () => {

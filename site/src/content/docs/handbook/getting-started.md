@@ -38,9 +38,9 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | feel: calm / medium / loud   | How much the field shakes and how big the pops are         |
 | shake                        | Turn the shake off entirely; hitstop and the trophy stay   |
 | difficulty                   | As recorded, seat, live, or hardcore                       |
-| Ollama bosses                | Local daemon or Ollama Cloud. The model calls each boss's shots and picks the line it says. It never sees lies. Pages cannot reach it. |
-| (model list)                 | Cloud tags first when `ollama signin` has pulled `:cloud` models. |
-| (seat status)                | What the seat is doing, beside the picker: waiting, thinking, the verb it said, or why it fell back to the script. Never on the field. |
+| Ollama bosses                | Local daemon or Ollama Cloud. The model sits in the boss through the cabinet server's own tools: it calls each boss's shots and writes the boss's lines behind a gate (twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own). It never sees lies. Pages cannot reach it. |
+| (model list)                 | Cloud tags first when `ollama signin` has pulled `:cloud` models. The say seat sits a Claude agent instead when `ANTHROPIC_API_KEY` is set for the dev server; the key never reaches the browser. |
+| (seat status)                | Two words beside the picker, one per seat: warming, thinking, the tool each called (`seat called fire: spread`, `seat called say (cloud)`), or why it fell back to the script or the boss's own line. Never on the field. |
 
 ### Difficulties
 

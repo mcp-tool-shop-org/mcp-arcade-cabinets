@@ -39,7 +39,7 @@ export type {
   SeatStats,
   ToolCall,
 } from './client';
-export { askSay, CLAUDE_MODEL, SAY_SYSTEM, sayPrompt, sayTier, seedLines } from './say';
+export { askSay, askSayFor, CLAUDE_MODEL, SAY_SYSTEM, sayPrompt, sayTier, seedLines } from './say';
 export type { SayAnswer, SayCall, SayOpts, SayPrompt, SayTier } from './say';
 export { createScriptedSeat, SCRIPTED_LINES } from './scripted';
 export type { ScriptedSeat } from './scripted';

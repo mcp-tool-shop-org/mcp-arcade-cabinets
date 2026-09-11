@@ -6,13 +6,18 @@
 // The prompt throws on a forbidden word, as `pilotPrompt` does.
 
 import Anthropic from '@anthropic-ai/sdk';
-import { isCloudModel, type WaveKind } from '@mcp-arcade-cabinets/ghost-on-the-menu';
+import {
+  DEFAULT_PATTERNS,
+  isCloudModel,
+  type WaveKind,
+} from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
 import type { SeatView } from './cabinet';
 import { toolDef } from './contract';
 import { FORBIDDEN } from './gate';
 import { chatTools, type ChatOpts } from './client';
-import { LEADS, type Lead, type Persona } from './personas';
+import { DEFAULT_PERSONAS, LEADS, type Lead, type Persona } from './personas';
+import { seedLines } from './seeds';
 
 /** Frozen system prompt for the say seat. Same for every tape. */
 export const SAY_SYSTEM =
@@ -52,13 +57,7 @@ export function sayPrompt(
   return { system: SAY_SYSTEM, user };
 }
 
-/** Three register seeds from the kind's own lines, rotated by the say count. */
-export function seedLines(own: readonly string[], n: number): string[] {
-  if (own.length === 0) return [];
-  const out: string[] = [];
-  for (let i = 0; i < Math.min(3, own.length); i++) out.push(own[(n + i) % own.length]!);
-  return out;
-}
+export { seedLines } from './seeds';
 
 export type SayTier = 'claude' | 'cloud' | 'local';
 
@@ -178,6 +177,22 @@ export async function askSay(
   const chat: ChatOpts = { url: opts.ollamaUrl, model: pick.model };
   if (opts.fetchImpl) chat.fetchImpl = opts.fetchImpl;
   return askOllamaSay(prompt, chat, pick.tier);
+}
+
+/**
+ * The shell's ask, on the node side: the persona sheet and three register
+ * seeds come from the shipped data; `says` rotates the seeds. The gate runs
+ * in the browser's cabinet, where the line lands.
+ */
+export async function askSayFor(
+  view: SeatView,
+  recent: readonly string[],
+  says: number,
+  opts: SayOpts,
+): Promise<SayAnswer> {
+  const persona = DEFAULT_PERSONAS.boss[view.kind];
+  const seeds = seedLines(DEFAULT_PATTERNS.voice.boss[view.kind], says);
+  return askSay(view, persona, seeds, recent, opts);
 }
 
 export type { WaveKind };

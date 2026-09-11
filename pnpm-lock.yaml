@@ -41,6 +41,9 @@ importers:
 
   apps/cabinets:
     dependencies:
+      '@mcp-arcade-cabinets/cabinet-server':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-server
       '@mcp-arcade-cabinets/ghost-on-the-menu':
         specifier: workspace:*
         version: link:../../packages/ghost-on-the-menu

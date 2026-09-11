@@ -4,14 +4,15 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@mcp-arcade-cabinets/tape-core": "workspace:*",
-    "@mcp-arcade-cabinets/ghost-on-the-menu": "workspace:*"
+    "@mcp-arcade-cabinets/cabinet-server": "workspace:*",
+    "@mcp-arcade-cabinets/ghost-on-the-menu": "workspace:*",
+    "@mcp-arcade-cabinets/tape-core": "workspace:*"
   },
   "devDependencies": {
     "vite": "^6.1.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm -F @mcp-arcade-cabinets/cabinet-server build && vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   }
