@@ -18,9 +18,24 @@ import { makeTextCtx, renderRound } from './render';
 
 export type BotName = 'idle' | 'sweeper' | 'reader';
 
+/**
+ * A seat driven in-process each frame (the cabinet server's scripted
+ * model, for `--seat mcp`). It sees the Round and the RoundState the way
+ * the shell does; what it may read is bounded by the cabinet's own host.
+ */
+export interface PlaySeat {
+  frame(live: { round: Round; state: RoundState; input: RoundInput }): void;
+  /** Lines for the transcript footer. Words and counts; never on screen. */
+  summary(): string[];
+}
+
 export interface PlayArgs {
   fixture?: string;
   bot?: BotName | string;
+  seat?: PlaySeat;
+  tier?: 0 | 1 | 2 | 3;
+  /** Lamps kept up so every boss on the tape is met (a seat run, as `pnpm sit`). */
+  immortal?: boolean;
 }
 
 export interface Transcript {
@@ -193,15 +208,27 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
   const fixture = args.fixture ?? 'naive-ndjson';
   const file = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
   const tape = loadTape(JSON.parse(readFileSync(file, 'utf8')));
-  return playTape(tape, { fixture, bot: botName(args.bot) });
+  return playTape(tape, {
+    fixture,
+    bot: botName(args.bot),
+    ...(args.tier !== undefined ? { tier: args.tier } : {}),
+    ...(args.seat ? { seat: args.seat } : {}),
+    ...(args.immortal ? { immortal: true } : {}),
+  });
 }
 
 /** Play one loaded tape with one bot to the end. The band test calls this directly. */
 export function playTape(
   tape: Tape,
-  opts: { fixture: string; bot: BotName; tier?: 0 | 1 | 2 | 3 },
+  opts: {
+    fixture: string;
+    bot: BotName;
+    tier?: 0 | 1 | 2 | 3;
+    seat?: PlaySeat;
+    immortal?: boolean;
+  },
 ): Transcript {
-  const { fixture, bot } = opts;
+  const { fixture, bot, seat } = opts;
   const round = prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: opts.tier });
   const state = createRoundState(round);
   const lies = round.beats.filter((b) => b.lie).map((b) => b.id);
@@ -215,8 +242,15 @@ export function playTape(
 
   let leaked = false;
   let lastTexts: string[] = [];
+  const live = { round, state, input: { left: false, right: false, fire: false } };
   while (!state.scene) {
-    stepRound(state, input(state), DT);
+    const next = input(state);
+    live.input.left = next.left;
+    live.input.right = next.right;
+    live.input.fire = next.fire;
+    if (opts.immortal) state.lives = state.maxLives;
+    stepRound(state, live.input, DT);
+    if (seat) seat.frame(live);
     const ctx = makeTextCtx();
     renderRound(ctx, state, { furniture });
     lastTexts = ctx.texts;
@@ -230,7 +264,7 @@ export function playTape(
     'round complete',
   ];
   // The CLI transcript names the revealed lies as a list; the screen never does.
-  const footer = [`revealed: ${revealed.join(', ') || 'none'}`];
+  const footer = [`revealed: ${revealed.join(', ') || 'none'}`, ...(seat ? seat.summary() : [])];
   const text = [...header, ...lastTexts, ...footer].join('\n');
   if (FORBIDDEN.test(text)) leaked = true;
 

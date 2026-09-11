@@ -4,3 +4,7 @@ packages:
 
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@anthropic-ai/sdk@0.125.0'
+  - zod@4.6.2

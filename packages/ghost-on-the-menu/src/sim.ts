@@ -39,6 +39,8 @@ const CAPTION_T = 1.5;
 const CAUGHT_RISE = 220;
 const EXIT_SPEED = 220;
 const WAVE_CAPTION_T = 1.5;
+/** Seconds a seat's line stays on the field. */
+const SAY_CAPTION_T = 2.4;
 const PATH_RATE = 0.35;
 const BLIND_BEAT = 0.8;
 const SLIT_W = 16;
@@ -410,6 +412,7 @@ export function createRoundState(round: Round): RoundState {
     hazards: [],
     bossIntent: null,
     bossLine: null,
+    bossSay: null,
     parallelism: false,
   };
   const meta: Meta = {
@@ -747,7 +750,23 @@ function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void 
   state.drops = state.drops.filter((d) => d.alive);
 }
 
+/**
+ * A seat's gate-passed line lands as an aside once its time has come and no
+ * wave card is up. The sim disposes: a line whose boss is gone is dropped.
+ * Reads the clock and the seat's words, never a fact.
+ */
+function landSay(state: RoundState): void {
+  const say = state.bossSay;
+  if (!say) return;
+  if (state.t < say.at) return;
+  // A wave card or a catch keeps the field; a seed aside gives way.
+  if (state.caption && state.caption.kind !== 'aside') return;
+  state.caption = { text: say.text, t: SAY_CAPTION_T, kind: 'aside' };
+  state.bossSay = null;
+}
+
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
+  if (!state.boss || !state.boss.alive) state.bossSay = null;
   if (meta.waveHold > 0) {
     state.boss = null;
     return;
@@ -778,6 +797,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     killBoss(state, meta, bound.atom);
     return;
   }
+  landSay(state);
   const phase = def.phases[boss.phase] ?? def.phases[0]!;
   meta.bossPhaseT += dt;
   if (meta.bossPhaseT >= phase.duration) {

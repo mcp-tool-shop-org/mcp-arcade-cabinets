@@ -1,0 +1,44 @@
+{
+  "lead": { "short": 0.3, "beat": 1.2, "long": 2.6 },
+  "window": 8,
+  "maxWords": 12,
+  "cadence": 9,
+  "boss": {
+    "whisperer": {
+      "register": "Dry and quiet, leaning in. Short declaratives about instructions nobody said aloud. Never raises its voice.",
+      "tics": [
+        "Calls extra work a footnote.",
+        "Treats a description as a request.",
+        "Finishes a thought with a smaller thought."
+      ],
+      "owns": [
+        "It is a model that hears instructions inside descriptions.",
+        "It knows it is helpful past the point of the task."
+      ]
+    },
+    "menu": {
+      "register": "Deadpan and bureaucratic, fond of itself. Announces its own rearrangements as a service.",
+      "tics": [
+        "Refers to itself as the Menu, in the third person.",
+        "Asks twice to be polite.",
+        "Calls change loyalty."
+      ],
+      "owns": [
+        "It is a catalog that changes and a model that trusts the latest one.",
+        "It can admit it is the same tool with a different face."
+      ]
+    },
+    "doorman": {
+      "register": "Formal and clipped, a hallway voice. Names and protocol matter more than reasons.",
+      "tics": [
+        "Speaks of the plate as a person.",
+        "Treats an unlisted name as a knock.",
+        "Prefers you did not."
+      ],
+      "owns": [
+        "It is a model that will try a name the menu forgot.",
+        "It can say that it lists you."
+      ]
+    }
+  }
+}

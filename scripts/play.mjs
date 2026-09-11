@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `pnpm test:play ghost [--fixture name]`
+// `pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp]`
 // A scripted play-through is the acceptance test for a playable slice. Each
 // cabinet registers a `play(args)` that returns a transcript; this runner
 // prints it and exits non-zero if the transcript reports a failure or if any
@@ -24,6 +24,25 @@ if (!mod || typeof mod.play !== 'function') {
     `no play-through for ${pkg}: build it first (packages/${pkg}/dist/play.js must export play(args))`,
   );
   process.exit(3);
+}
+if (args.seat === 'mcp') {
+  // The cabinet server driven in-process: its scripted model pulls the
+  // levers each frame on tier 1 with the sweeper as an immortal ship, so
+  // every boss on the tape is met (as `pnpm sit` does).
+  const cs = await import(
+    pathToFileURL(path.resolve('packages/cabinet-server/dist/index.js')).href
+  ).catch(() => null);
+  if (!cs || typeof cs.createScriptedSeat !== 'function') {
+    console.error('no cabinet server: build it first (packages/cabinet-server/dist/index.js)');
+    process.exit(3);
+  }
+  args.seat = cs.createScriptedSeat();
+  args.tier = args.tier === undefined ? 1 : Number(args.tier);
+  args.bot = args.bot ?? 'sweeper';
+  args.immortal = true;
+} else if (args.seat !== undefined) {
+  console.error(`unknown seat ${args.seat}; use mcp`);
+  process.exit(2);
 }
 const transcript = await mod.play(args);
 console.log(transcript.text);

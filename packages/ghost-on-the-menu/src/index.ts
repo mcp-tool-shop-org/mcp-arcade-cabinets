@@ -11,6 +11,7 @@ export { DEFAULT_SECONDS, FIELD, VISIBLE_MAX, VISIBLE_MIN } from './types';
 export type {
   Beat,
   BossLinePick,
+  BossSay,
   DrawContext,
   Drop,
   DropKind,
@@ -59,6 +60,7 @@ export {
   needsLowThink,
   parseIntent,
   parseLetter,
+  PILOT_INTENTS,
   PILOT_SYSTEM,
   pilotPrompt,
   stickWord,
@@ -70,4 +72,4 @@ export type { AudioOut, BedLookup, MediaBed, MusicPattern, Note, SfxName, TrackK
 // The scripted play-through (`./play`) reads fixtures from disk and is built
 // separately into dist/play.js for `pnpm test:play`; it stays off the barrel
 // so the browser bundle never pulls node:fs.
-export type { PlayArgs, Transcript } from './play';
+export type { PlayArgs, PlaySeat, Transcript } from './play';

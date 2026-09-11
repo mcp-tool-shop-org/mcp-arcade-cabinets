@@ -1276,4 +1276,33 @@ describe('the ollama seats in the sim', () => {
     toBoss(u, 'whisperer');
     expect(lines).toContain(u.caption?.line);
   });
+
+  it('lands as an aside at its time, gives way to a wave card, and is dropped with the boss', () => {
+    const s = createRoundState(seatedRound());
+    toBoss(s, 'whisperer');
+    expect(s.boss?.alive).toBe(true);
+    // The spawn's wave card is up: the line waits for it.
+    s.bossSay = { text: 'Hush, the plate is listening.', at: s.t };
+    tick(s);
+    expect(s.caption?.kind).toBe('wave');
+    expect(s.bossSay).not.toBeNull();
+    while (s.caption && s.caption.kind === 'wave') tick(s);
+    tick(s);
+    expect(s.caption?.kind).toBe('aside');
+    expect(s.caption?.text).toBe('Hush, the plate is listening.');
+    expect(s.bossSay).toBeNull();
+    // A line for later waits on the clock.
+    s.bossSay = { text: 'Later.', at: s.t + 1 };
+    for (let i = 0; i < 20; i++) tick(s);
+    expect(s.bossSay?.text).toBe('Later.');
+    for (let i = 0; i < 20; i++) tick(s);
+    expect(s.caption?.text).toBe('Later.');
+    // A line whose boss is gone is dropped.
+    s.bossSay = { text: 'Gone.', at: s.t };
+    s.boss!.hp = 0;
+    tick(s);
+    tick(s);
+    expect(s.bossSay).toBeNull();
+    expect(s.caption?.text).not.toBe('Gone.');
+  });
 });

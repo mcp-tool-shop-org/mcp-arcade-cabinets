@@ -135,6 +135,17 @@ export interface BossLinePick {
   index: number;
 }
 
+/**
+ * A seat's line for the boss to say, already through the say gate: the
+ * words and the round time it may land. The sim shows it as an aside once
+ * the field is clear of a wave card and drops it if the boss is gone.
+ * Never derived from a fact.
+ */
+export interface BossSay {
+  text: string;
+  at: number;
+}
+
 export interface Scene {
   tapeId: string;
   cleared: string[];
@@ -205,6 +216,8 @@ export interface RoundState {
   bossIntent: string | null;
   /** Optional Ollama (or test) pick of the boss's spawn line. Never derived from a fact. */
   bossLine: BossLinePick | null;
+  /** Optional seat-written, gate-passed line for the boss. Never derived from a fact. */
+  bossSay: BossSay | null;
   /**
    * True while a seed-scheduled parallelism burst is on. Extra honest
    * decoys and a hotter soundtrack; never a fact.

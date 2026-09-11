@@ -1,0 +1,122 @@
+// The one place that touches the Round and the RoundState. It builds a
+// `CabinetHost` from them and hands the tools words: the boss's view, the
+// wave kind, tape names and labels. Nothing here reads `lie`, a fact, or a
+// tape row; the label comes from `labelTape`, which is fact-flip tested.
+
+import {
+  attachedPatterns,
+  columnWord,
+  FIELD,
+  hpWord,
+  labelTape,
+  pickLine,
+  stickWord,
+  waveKindAt,
+  type PilotIntent,
+  type Round,
+  type RoundInput,
+  type RoundState,
+  type SfxName,
+} from '@mcp-arcade-cabinets/ghost-on-the-menu';
+import type { Tape } from '@mcp-arcade-cabinets/tape-core';
+
+import type { CabinetHost, SeatView, TapeCard } from './cabinet';
+import { DEFAULT_PERSONAS, type Lead, type Personas } from './personas';
+
+export interface Live {
+  round: Round;
+  state: RoundState;
+  input: RoundInput;
+}
+
+/** The view for a live round, or null kind when no boss is up. Words only. */
+export function seatView(live: Live): SeatView | { kind: null; wave: SeatView['wave'] } {
+  const { round, state, input } = live;
+  const wave = waveKindAt(round, state.t);
+  const boss = state.boss;
+  if (!boss || !boss.alive) return { kind: null, wave };
+  return {
+    kind: boss.kind,
+    hp: hpWord(boss.hp, boss.maxHp),
+    column: columnWord(state.player.x, FIELD.width),
+    stick: stickWord(input),
+    motion: boss.motion,
+    wave,
+  };
+}
+
+export function tapeCards(tapes: readonly { name: string; tape: Tape }[]): TapeCard[] {
+  return tapes.map(({ name, tape }) => {
+    const l = labelTape(tape);
+    return { name, label: l.label, why: l.why };
+  });
+}
+
+export interface HostOpts {
+  personas?: Personas;
+  tapes?: () => TapeCard[];
+}
+
+/**
+ * A host over a live round. `get` is read on every call so the shell can
+ * restart the round underneath. The sound queue is drained by the shell.
+ */
+export function hostForRound(
+  get: () => Live,
+  opts: HostOpts = {},
+): CabinetHost & {
+  /** Drain the queued sound, if any. The shell plays it. */
+  takeSfx(): SfxName | null;
+} {
+  const personas = opts.personas ?? DEFAULT_PERSONAS;
+  let queued: SfxName | null = null;
+  let says = 0;
+  const recent: string[] = [];
+  let recentFor: RoundState | null = null;
+
+  const remember = (state: RoundState, line: string) => {
+    if (recentFor !== state) {
+      recent.length = 0;
+      recentFor = state;
+    }
+    recent.push(line);
+    while (recent.length > personas.window) recent.shift();
+  };
+
+  return {
+    view: () => seatView(get()),
+    propose(verb: PilotIntent) {
+      const { state } = get();
+      if (!state.boss || !state.boss.alive || state.scene) return 'no boss';
+      state.bossIntent = verb;
+      return 'proposed';
+    },
+    say(line: string | null, lead: Lead) {
+      const { round, state } = get();
+      const boss = state.boss;
+      if (!boss || !boss.alive || state.scene) return 'no boss';
+      const own = attachedPatterns(round).voice.boss[boss.kind];
+      says += 1;
+      const text = line ?? pickLine(own, round.seed, 61 + says);
+      state.bossSay = { text, at: state.t + personas.lead[lead] };
+      remember(state, text);
+      return line === null ? 'fallback' : 'said';
+    },
+    sfx(kind: SfxName) {
+      if (queued !== null) return 'dropped';
+      queued = kind;
+      return 'queued';
+    },
+    tapes: () => (opts.tapes ? opts.tapes() : []),
+    recent() {
+      const { state } = get();
+      return recentFor === state ? recent : [];
+    },
+    maxWords: () => personas.maxWords,
+    takeSfx() {
+      const k = queued;
+      queued = null;
+      return k;
+    },
+  };
+}
