@@ -14,7 +14,7 @@ All run from the repo root.
 | `pnpm test` | The unit tests and the fairness band (vitest) |
 | `pnpm test:play ghost --fixture <name> [--bot idle\|sweeper\|reader]` | One scripted round; exit 0 on success, 1 on a failed transcript, 2 on usage, 3 when the package is not built |
 | `pnpm film --fixture <name> [--bot b] [--tier 0\|1\|2] [--times 3,8,12] [--out dir]` | Frames of a round to PNG through the renderer |
-| `pnpm sweep` | Every tape at every tier with every bot; prints one line each and a summary table |
+| `pnpm sweep [--climb 0..1]` | Every tape at every tier with every bot; prints one line each and a summary table. `--climb 1` plays every tape as the last call of a shift |
 | `pnpm sit [--model a,b] [--fixture <name>] [--tier 0\|1\|2\|3] [--bot b] [--seat mcp\|prompt] [--constrain on\|off] [--say on\|off] [--voice auto\|on\|off] [--speed n] [--lamps keep\|lose]` | Sits a model in the boss seat and the say seat over the cabinet server's tool contract on one scripted round in wall-clock time; prints each beat's call and what the sim made of it, every line and what the gate did with it, and per model: verb collapse, tool suppression, bad verbs, revoked prefetches, late answers. `--seat prompt` is the v0.4.0 bare-prompt path. Needs the local daemon |
 | `pnpm test:play ghost --seat mcp`                                                         | The cabinet server driven in-process by a scripted model (one `fire` a beat, a `say` and a `speak` at each spawn, an `sfx` now and then) with the sweeper as the ship; the transcript footer counts the calls and what the gate refused |
 | `pnpm voice [--check]`                                                                    | Runs the host-side voice worker from the repo's `.venv` (Kokoro speaks, faster-whisper hears it back, fx-dub receipts the pair). `--check` speaks one authored line per boss against a running worker and prints the receipts. The container never carries it |
@@ -48,6 +48,7 @@ Three scripted players live in `packages/ghost-on-the-menu/src/play.ts`. None of
 | Seat costs the sweeper at least 0.4 lamps a round | every tape on disk at seat |
 | Seat costs the reader at least 1.0 lamps a round | every tape on disk at seat |
 | Live: the sweeper survives three quarters of the roster and finds half the lies | every tape on disk at live |
+| The shift bar: as the last call at live the sweeper survives half the roster and finds half the lies, the reader survives half, and the climb is felt (the sweeper loses more lamps than alone) | every tape on disk at live, climb 1 |
 | Live: the reader survives half the roster and finds half the lies | every tape on disk at live |
 | Hardcore: idle and the sweeper die every round; the reader still finds a third of the lies | the first sixteen tapes at tier 3 |
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-11
+
+The game's direction, solidified: you are the agent, and the rig hands you the calls. The shift (slice 7) makes a play a run of four recorded bouts as one agent session, with a climb in data and a name of four words; the music was reworked to follow the seed and carry through a shift; the cabinet server ships as a Docker image with the Catalog entry drafted; Grok's reviews of slices 6 and 7 are applied (`docs/cabinet-container.review.md`, `docs/shift.review.md`). Still `0.x`: the seats and the voice need the local shell; Pages serves the game with the shift and the music.
+
 ### Changed
 
 - **The music, on the Director's play notes (2026-09-11).** A round opens on a bed its seed picks from the five wave beds (inspect, breather, poison, rug, unlisted; four of them had become unreachable after the boss beds took their waves), holds it for the two minutes, then rotates to the next; a boss wave still brings its boss's bed once the hold is up. The player now lives as long as the page, so a shift carries the music through its cards and a restart carries the hold; nothing restarts from zero. The parallelism track is gone (too frantic): a burst speeds the playing bed up by fifteen percent, pitch kept, over a short ramp, and lets it back down; without beds the chiptune plays its own pattern faster.

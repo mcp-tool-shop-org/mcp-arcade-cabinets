@@ -41,6 +41,10 @@ Measured: with the worker bound to the host and a token set, a container started
 
 No halt. Two changes, both applied the same day: `speak` now says "the voice is silent: no worker answers" when a worker is configured but does not answer, decided by a liveness probe with a two-hundred-millisecond abort that runs at start and every fifteen seconds and by every take's outcome, never on the beat; and the worker's `/health` is a liveness word (`ok`, the engine) with the voice list, cache size and counters moved to `/stats` behind the bearer. Held as advised: no ajv copied into the image; `source.commit` moved only because the server code the image is built from changed. For the Director, Grok's paragraph: check the pin, the icon and `disableNetwork` before the PR; stop the waves at fifteen percent; a fourth lamp is a new lever with its own band pass, never a silent extra.
 
+## v0.6.0
+
+The image was rebuilt from the v0.6.0 tree (the shift and the music do not enter the server; the fix from Grok's review does) and pushed as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0`; the catalog's `source.commit` is re-pinned to the release commit. The exported filesystem's `/app` layer scans clean; the base image's own files (Node's contributor list, Yarn's example path, Alpine's copyright line) trip the scanner's generic patterns and carry nothing of the operator.
+
 ## Not done
 
 - The Catalog PR (the Director), then Docker's build, signing and listing.

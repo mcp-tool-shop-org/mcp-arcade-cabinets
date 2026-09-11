@@ -1,7 +1,7 @@
 # Scorecard
 
 **Repo:** mcp-arcade-cabinets
-**Date:** 2026-09-11
+**Date:** 2026-09-11 (v0.6.0)
 **Type tags:** [all] (a browser game and its terminal tools; no published package)
 
 ## Pre-Remediation Assessment

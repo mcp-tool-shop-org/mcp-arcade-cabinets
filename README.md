@@ -13,14 +13,22 @@
 </p>
 
 <p align="center">
-  <strong>An arcade shooter made from what an MCP server said on the wire.</strong>
+  <strong>You are the agent. The rig hands you the calls.</strong>
 </p>
 
-**Ghost on the Menu** is a short retro shooter. You fly a ship along the bottom of the field. Above you, a recorded bout between an MCP server and an agent plays out as waves: the handshake, the menu, the calls, the answers coming back, and a boss that is the experiment itself.
+**Ghost on the Menu** is a short retro shooter made from what MCP servers said on the wire. You are the model, sent down into the guts of the rig with a task list. Every call is a recorded bout between an MCP server and an agent, and it plays out above your ship as waves: the handshake, the menu, the calls, the answers coming back, and a boss that is the experiment itself.
 
 Somewhere in there are the calls the agent should not have made. They look like everything else until you hit one. Then it is yours for the rest of the round.
 
 [Play it in the browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [How to read a round](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+
+## Take a shift
+
+Press **Shift** and the rig hands you four calls in a row, drawn from the roster and never the same four twice running. Each one is a server the agent was sent to. A card between calls names the next server, the policy the agent ran, and the tools it was asked to run. The lamps refill at every call, and the fire climbs call by call, so the last call starts where the first one ended.
+
+At the end the shift has a name of four words, like `frost robin chalk garden`. Type it on the menu to take the same shift again, or hand it to someone. No digit, no count, no ranking: a shift is a task list, not a scoreboard.
+
+Or pick one tape from the list and play it alone. Each is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only.
 
 ## How it plays
 
@@ -29,21 +37,24 @@ A **tape** is a recording of one bout. This game only reads tapes. It never talk
 - **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
 - **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
 - **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot.
-- **Parallelism bursts.** Seat, live and hardcore get bursts that multiply the field with honest copies and heat the fire, and the music speeds up under them. They start short and climb wave by wave: more copies, hotter fire, longer bursts.
+- **Parallelism bursts.** Seat, live and hardcore get bursts that multiply the field with honest copies and heat the fire, and the music speeds up under them. They start short and climb wave by wave, and across a shift call by call. The climb is data, tuned on a band of scripted players, never on you.
 - **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
+- **The music** opens on a song the round's seed picks, holds it for a couple of minutes, then fades into the next; a boss brings its own, and a shift carries the music through its cards.
 - **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
-
-Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only. A round opens on a song its seed picks; a song plays for a couple of minutes before it fades into the next, a boss brings its own, and a shift carries the music through its cards.
-
-Or take a **shift**: the rig hands you four calls in a row, drawn from the roster and never the same four twice running, each one a server the agent was sent to, with a card between them naming the next server and what the agent was asked to run. The lamps refill at every call and the bursts climb call by call, so the last call starts where the first one ended. At the end the shift has a name of four words, like `frost robin chalk garden`: type it on the menu to take the same shift again, or hand it to someone. No digit, no count, no ranking.
 
 ## The boss can be a model
 
-Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
+Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), `speak`, and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
 
 With a voice worker running, every boss speaks: its authored line when it arrives, and the lines the model writes. Every take is heard back by a speech recogniser and receipted by [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) before it plays, so the words spoken are the words the gate admitted, no invented speech, no hole. A take that fails its receipt stays silent.
 
-The cabinet is itself an MCP server over stdio, with the same six tools, so the instrument can play the Ghost's own menu; four of the recordings in the repo are the cabinet recording itself.
+The cabinet is itself an MCP server over stdio, with the same six tools, so the instrument can play the Ghost's own menu; four of the recordings in the repo are the cabinet recording itself. It ships as a Docker image too:
+
+```bash
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0
+```
+
+One bundled file on `node:22-alpine` with the tool contract and the tapes baked in; it lists its tools within a fraction of a second under one CPU and two gigabytes and needs no network to play. The Docker MCP Catalog entry is drafted under `catalog/`.
 
 ## Controls
 
@@ -68,6 +79,6 @@ To record your own server and play that tape, run a bout over there, then `mcp-a
 
 ## More
 
-The [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) is the rest of the manual: the tells, the bosses, the difficulties, the cabinet server and its tools, and how the game is put together. What shipped, and when, is in the [changelog](CHANGELOG.md). What the game touches is in [SECURITY.md](SECURITY.md).
+The [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) is the rest of the manual: the shift, the tells, the bosses, the difficulties, the cabinet server and its tools, and how the game is put together. What shipped, and when, is in the [changelog](CHANGELOG.md). What the game touches is in [SECURITY.md](SECURITY.md).
 
 MIT. Built by [MCP Tool Shop](https://mcp-tool-shop.github.io/).

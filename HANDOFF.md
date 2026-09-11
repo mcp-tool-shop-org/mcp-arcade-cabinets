@@ -1,8 +1,10 @@
-# HANDOFF — Ghost on the Menu, v0.5.0
+# HANDOFF — Ghost on the Menu, v0.6.0
 
 Read this, then `CLAUDE.md`, then `docs/shift.dispatch.md` (slice 7, the shift: the research, the lock G19–G22, the numbers), `docs/cabinet-container.md` (slice 6), `docs/cabinet-server.md` (slices 1–3) and `docs/cabinet-voice.md` (slice 4), then `docs/ollama-content.md` (the v0.4.0 seats). The lock is G1, G7–G10 in `docs/study-swarm.dispatch.md`, G11–G18 in `docs/cabinet-server.dispatch.md`, and G19–G22 in `docs/shift.dispatch.md`. `docs/cabinet-server.kickoff.md` is history (slices 1–3 landed on `main`, untagged); `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are older history.
 
-**This is a pickup after v0.5.0 (Claude, 2026-09-11, full treatment, published on the Director's word): slices 1–4 of `docs/cabinet-server.dispatch.md`, the music rework and the tuning, reviewed by Grok (`docs/cabinet-server.review.md`, `docs/cabinet-voice.review.md`).** Tag `v0.5.0`, GitHub release, Pages. Still `0.x`, still not npm. The tuning diff (`git log fe47dae..b4c5a33`: `patterns.ts`, `sim.ts`, the pattern files) shipped before Grok's review of it; that review is still owed.
+**This is a pickup after v0.6.0 (Claude, 2026-09-11, full treatment, published on the Director's word): the shift (slice 7, `docs/shift.dispatch.md`), the music rework, the container (slice 6), and Grok's reviews of both applied.** The direction is set: the player is the agent and the rig hands them the calls; a shift is the play. Tag `v0.6.0`, GitHub release, Pages, the image on GHCR. Still `0.x`, still not npm. The v0.5.0 pickup below stands as history.
+
+**The v0.5.0 pickup (Claude, 2026-09-11): slices 1–4 of `docs/cabinet-server.dispatch.md`, the music rework and the tuning, reviewed by Grok (`docs/cabinet-server.review.md`, `docs/cabinet-voice.review.md`).** Tag `v0.5.0`, GitHub release, Pages. The tuning diff (`git log fe47dae..b4c5a33`: `patterns.ts`, `sim.ts`, the pattern files) shipped before Grok's review of it; that review is still owed.
 
 ## What landed after v0.4.0 (untagged, on `main`)
 

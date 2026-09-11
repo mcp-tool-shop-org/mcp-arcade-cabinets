@@ -20,7 +20,7 @@ RUN pnpm -F @mcp-arcade-cabinets/cabinet-server build
 
 FROM node:22-alpine
 LABEL org.opencontainers.image.title="Ghost on the Menu" \
-      org.opencontainers.image.description="An arcade cabinet as an MCP server: six tools a model pulls to sit in the boss of a replay shooter built from an MCP server's own wire." \
+      org.opencontainers.image.description="Ghost on the Menu as an MCP server: six tools a model pulls to sit in the boss of an arcade shooter where the player is the agent, built from MCP servers' own wire." \
       org.opencontainers.image.source="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="MCP Tool Shop"

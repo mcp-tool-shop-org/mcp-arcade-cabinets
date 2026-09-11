@@ -13,34 +13,48 @@
 </p>
 
 <p align="center">
-  <strong>An arcade shooter made from what an MCP server said on the wire.</strong>
+  <strong>You are the agent. The rig hands you the calls.</strong>
 </p>
 
-**Ghost on the Menu** é um jogo de tiro retrô. Você pilota uma nave ao longo da parte inferior da tela. Acima, uma gravação de um confronto entre um servidor MCP e um agente é reproduzida em ondas: o aperto de mão, o menu, as comunicações, as respostas e um chefe que é o próprio experimento.
+**Ghost on the Menu** é um pequeno jogo de tiro retro criado com base nas informações que os servidores MCP transmitiam. Você é o agente, enviado para o interior da instalação com uma lista de tarefas. Cada comunicação é uma gravação de uma interação entre um servidor MCP e um agente, e ela se desenrola acima da sua nave em ondas: o contato inicial, o menu, as comunicações, as respostas que chegam e um chefe que é o próprio experimento.
 
 Em algum lugar, estão as comunicações que o agente não deveria ter feito. Elas parecem ser como as outras até que você as atinja. Então, elas serão suas pelo resto da rodada.
 
 [Jogue no navegador](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Como entender uma rodada](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
 
+## Comece um turno
+
+Pressione **Shift** e a instalação fornecerá quatro comunicações consecutivas, selecionadas aleatoriamente e nunca repetidas. Cada uma delas é um servidor para o qual o agente foi enviado. Um cartão entre as comunicações indica o próximo servidor, a política que o agente seguiu e as ferramentas que foram solicitadas. As luzes são reabastecidas a cada comunicação, e o fogo aumenta a cada comunicação, de modo que a última comunicação começa onde a primeira terminou.
+
+No final, o turno terá um nome composto por quatro palavras, como `frost robin chalk garden`. Digite-o no menu para repetir o mesmo turno ou passe-o para outra pessoa. Sem números, sem contagem, sem classificação: um turno é uma lista de tarefas, não uma tabela de pontuação.
+
+Escolha uma gravação da lista. Cada uma é rotulada como "fixa", "aleatória" ou "ao vivo"; passe o mouse sobre o **i** para saber o porquê. "Aleatória" é a luta padrão. "Ao vivo" é para ser superada. Hardcore é o quarto nível, acessível apenas pelo seletor.
+
 ## Como jogar
 
 Uma **fita** é uma gravação de um confronto. Este jogo lê apenas fitas. Ele nunca se comunica com um servidor, nunca registra uma pontuação e nunca diz quem venceu.
 
-- **Três lâmpadas.** Um ataque certeiro ou uma formação de mergulho apaga uma delas. Pegue uma lâmpada que cai **diretamente para baixo** de um chefe derrotado para reacender outra. Você precisa se mover por baixo dela. Quando todas as lâmpadas se apagam, a rodada termina.
-- **Dispersão.** Limpe uma formação e uma dispersão cai diretamente para baixo. Pegue-a e seu poder de fogo aumenta por alguns segundos.
-- **Os chefes são o experimento, não a acusação.** O Sussurrador, o Menu e o Porteiro aparecem em sua onda, independentemente de algo ter dado errado ou não. Eles murmuram como um agente que está pensando em voz alta. No modo Hardcore, há apenas uma lâmpada e fúria a partir do primeiro ataque. Localmente, você pode deixar um modelo Ollama determinar os ataques do chefe — ele nunca sabe quais sprites são falsos.
+- **Três luzes.** Um tiro de chefe ou uma formação de mergulho apaga uma delas. Pegue uma luz que cai **diretamente** de um chefe abatido para reacender uma. Você precisa se mover sob ela. Todas apagadas encerram a rodada.
+- **Dispersão.** Limpe uma formação e uma dispersão cai diretamente. Pegue-a e seu fogo se intensifica por alguns segundos.
+- **Os chefes são o experimento, não a acusação.** O Sussurrador, o Menu e o Porteiro aparecem em suas ondas, independentemente de algo ter dado errado ou não. Eles murmuram como um agente pensando em voz alta. No modo hardcore, há apenas uma luz e fúria desde o primeiro tiro.
+- **Paralelismo em surto.** Os modos Seat, Live e Hardcore têm surtos que multiplicam o campo com cópias e aumentam o fogo, e a música acelera sob eles. Eles começam curtos e aumentam a cada onda e a cada comunicação em um turno. O aumento é um dado, ajustado em um grupo de jogadores programados, nunca em você.
 - **As pistas estão na sequência.** Uma mentira nunca parece, se move ou chega de forma diferente de sua contraparte honesta. O que a denuncia é onde ela se encontra: uma formação extra, um segundo menu, um elemento único logo após o menu.
-- **A cena final** indica o nome da gravação, o servidor e a política. As mentiras capturadas ficam como troféus. As que escapam ficam em sua forma honesta. Sem pontuação, sem contagem, sem número.
-
-Escolha uma faixa da lista. Cada uma está etiquetada como "luta", "pausa" ou "ao vivo"; passe o cursor sobre o **i** para saber o porquê. "Pausa" é a configuração padrão da luta. "Ao vivo" significa que deve ser superada. "Hardcore" é o quarto nível, acessível apenas através do seletor. Uma música é reproduzida por alguns minutos antes de desaparecer e dar lugar à seguinte.
+- **A música** começa com uma música que a semente da rodada seleciona, mantém por alguns minutos e, em seguida, desaparece na próxima; um chefe traz a sua própria, e um turno leva a música através de seus cartões.
+- **A cena final** indica o nome da gravação, o servidor e a política. As mentiras detectadas ficam como troféus. As que escaparam ficam em sua forma original. Sem pontuação, sem contagem, sem números.
 
 ## O chefe pode ser um modelo
 
-Localmente, um modelo Ollama, incluindo uma etiqueta de nuvem como `gpt-oss:120b-cloud`, pode ser usado como chefe. Ele não recebe um comando para atuar livremente. Ele recebe as próprias ferramentas do sistema: `fire` (um verbo por ação: um ataque, um desvio e um tiro certeiro, uma respiração contida, névoa, a placa), `say` (uma linha própria, através de uma barreira: doze palavras, uma frase, sem números, sem palavras factuais, sem nomes de ferramentas ou modelos; uma linha rejeitada reproduz uma das linhas do chefe) e `view` e `tapes`, apenas para leitura. O modelo propõe; o jogo decide. Ele nunca vê quais sprites são falsos, e nada no campo o identifica.
+Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), `speak`, and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
 
 Com um sistema de voz em execução, cada chefe fala: a linha que ele criou quando chegou e as linhas que o modelo escreveu. Cada reprodução é ouvida por um sistema de reconhecimento de voz e registrada por [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) antes de ser reproduzida, para que as palavras faladas sejam as palavras que o sistema aceitou, sem discurso inventado, sem falha. Uma reprodução que falha no registro permanece em silêncio.
 
 O sistema é, em si, um servidor MCP sobre stdio, com as mesmas seis ferramentas, para que o instrumento possa reproduzir o próprio menu do "Fantasma"; quatro dos arquivos de áudio no repositório são o próprio sistema gravando.
+
+```bash
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0
+```
+
+Um arquivo único em `node:22-alpine` com o contrato da ferramenta e as gravações incluídas; ele lista suas ferramentas em uma fração de segundo, usando um único CPU e dois gigabytes, e não precisa de rede para ser executado. A entrada do Docker MCP Catalog está sendo elaborada em `catalog/`.
 
 ## Controles
 
