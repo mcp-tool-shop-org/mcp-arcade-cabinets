@@ -41,5 +41,6 @@ export type {
 } from './client';
 export { askSay, askSayFor, CLAUDE_MODEL, SAY_SYSTEM, sayPrompt, sayTier, seedLines } from './say';
 export type { SayAnswer, SayCall, SayOpts, SayPrompt, SayTier } from './say';
+export { seedPool } from './seeds';
 export { createScriptedSeat, SCRIPTED_LINES } from './scripted';
 export type { ScriptedSeat } from './scripted';

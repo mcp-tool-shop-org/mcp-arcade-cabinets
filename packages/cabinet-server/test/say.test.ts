@@ -3,9 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PATTERNS } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
 import type { SeatView } from '../src/cabinet';
-import { FORBIDDEN } from '../src/gate';
+import { FORBIDDEN, gateLine } from '../src/gate';
 import { DEFAULT_PERSONAS } from '../src/personas';
 import { askSay, sayPrompt, sayTier, seedLines } from '../src/say';
+import { seedPool } from '../src/seeds';
 
 const KINDS = ['whisperer', 'menu', 'doorman'] as const;
 
@@ -54,11 +55,23 @@ describe('the say prompt', () => {
     expect(() => sayPrompt(view, p, seeds, ['I revealed it.'])).toThrow(/forbidden/);
   });
 
-  it("rotates three seeds from the kind's own lines", () => {
+  it("rotates three seeds from the kind's one-sentence lines only", () => {
     const own = DEFAULT_PATTERNS.voice.boss.doorman;
-    expect(seedLines(own, 0)).toEqual(own.slice(0, 3));
-    expect(seedLines(own, own.length - 1)).toEqual([own[own.length - 1], own[0], own[1]]);
+    const pool = seedPool(own);
+    expect(pool.length).toBeGreaterThan(0);
+    expect(pool.length).toBeLessThan(own.length);
+    for (const line of pool) expect(gateLine(line).ok).toBe(true);
+    const k = Math.min(3, pool.length);
+    expect(seedLines(own, 0)).toEqual(pool.slice(0, k));
+    const rotated = seedLines(own, pool.length - 1);
+    expect(rotated).toHaveLength(k);
+    expect(rotated[0]).toBe(pool[pool.length - 1]);
+    expect(rotated[1]).toBe(pool[0]);
+    expect(seedLines(['One. Two.'], 0)).toEqual([]);
     expect(seedLines([], 3)).toEqual([]);
+    // Every kind still has seeds to give.
+    for (const kind of KINDS)
+      expect(seedPool(DEFAULT_PATTERNS.voice.boss[kind]).length).toBeGreaterThan(0);
   });
 });
 

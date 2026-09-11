@@ -15,4 +15,4 @@ export { hostForRound, seatView, tapeCards } from './host';
 export type { Live } from './host';
 export { askFire, createSeat, sameView, warmUp } from './client';
 export type { AskFireOpts, FireAnswer, Seat, SeatStats } from './client';
-export { seedLines } from './seeds';
+export { seedLines, seedPool } from './seeds';

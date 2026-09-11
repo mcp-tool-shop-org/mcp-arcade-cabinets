@@ -45,6 +45,11 @@ export function lineKey(line: string): string {
   return line.toLowerCase().replace(/[^a-z]/g, '');
 }
 
+/** One sentence by the gate's own count: what a seed line must be. */
+export function isOneSentence(line: string): boolean {
+  return sentenceCount(normalizeLine(line)) === 1;
+}
+
 function sentenceCount(line: string): number {
   // An ellipsis is a pause, not a full stop.
   return line
