@@ -1,7 +1,7 @@
 # Scorecard
 
 **Repo:** mcp-arcade-cabinets
-**Date:** 2026-09-10
+**Date:** 2026-09-11
 **Type tags:** [all] (a browser game and its terminal tools; no published package)
 
 ## Pre-Remediation Assessment
@@ -42,3 +42,5 @@
 | **Overall**         | 24/50  | 45/50                                                                  |
 
 v0.3.0 (2026-09-10) re-ran the full treatment on the same score: shipcheck A–D pass, landing header **Play** into `/play/`, translations refreshed, GitHub metadata already set, no npm (all packages private).
+
+v0.5.0 (2026-09-11) re-ran the full treatment with the cabinet server and the voice: the `[mcp]` rows are real attestations now (a private stdio server, six tools, structured errors, graceful silence without the voice worker), a handbook page for the server, README and landing refreshed, translations refreshed before the tag, metadata updated (`mcp-server`, `voice`, `kokoro`). Still no npm. Overall stays 45/50; B rises to 9/10 with the server's structured tool errors under test.

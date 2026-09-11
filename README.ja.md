@@ -26,17 +26,25 @@
 
 **テープ**は、1回の戦闘の記録です。このゲームは、テープのみを読み込みます。サーバーとの通信は行わず、スコアも記録せず、勝者が誰であるかも教えてくれません。
 
-- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
-- **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
-- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot. Seat, live and hardcore get short **parallelism** bursts that multiply the field and heat the music, then hold longer as the round goes on. Locally, you can let an Ollama model — including a Cloud tag like `gpt-oss:120b-cloud` — sit in the boss: it calls each boss’s shots (a fan, a lean and an aimed shot, a held breath, fog, the plate) and picks which of the boss’s own lines it says. It never sees which sprites are lies.
-- **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
-- **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
+- **ランプが3つあります。** ボスが攻撃されたり、特定の隊形になったりすると、1つ消えます。倒されたボスから真下に落ちてくるランプをキャッチして、もう1つのランプを再び点灯させます。その下を移動する必要があります。すべてのランプが消えると、ラウンドが終了します。
+- **隊形を広げる。** 隊形をクリアすると、隊形が真下に落ちてきます。それをキャッチすると、数秒間、攻撃範囲が広がります。
+- **ボスは実験であり、非難の対象ではありません。** 「囁き人（The Whisperer）」、「メニュー（The Menu）」、「ドアマン（The Doorman）」は、何らかの問題が発生したかどうかに関わらず、それぞれの波で登場します。彼らは、まるで思考を声に出しているエージェントのように、つぶやきます。ハードコアモードでは、ランプが1つだけで、最初の攻撃から怒りが生じます。通常、ライブ、ハードコアのモードでは、短い間隔で平行な攻撃が繰り出され、攻撃範囲が広がり、音楽が盛り上がります。その後、ラウンドが進むにつれて、攻撃の間隔が長くなります。ローカル環境では、Ollamaモデルを使ってボスの攻撃を制御できます。ただし、どのスプライトが嘘であるかは表示されません。
+- **嘘を見破る手がかりは、その並び方にあります。** 嘘は、正直なものと見た目、動き、出現の仕方が異なります。嘘を見破る手がかりは、その位置にあります。それは、追加の隊形、2つ目のメニュー、メニューの直後に現れる単独のオブジェクトです。
+- **最後のシーン**では、テープ、サーバー、ポリシーの名前が表示されます。キャッチされた嘘は、トロフィーとして表示されます。逃げ出した嘘は、正直な姿で表示されます。スコア、カウント、数字は表示されません。
 
-リストからテープを選択してください。それぞれのテープには、「通常」、「ライブ」、「ハードコア」というラベルが付いています。ラベルにマウスオーバーすると、その理由が表示されます。「通常」がデフォルトの戦闘モードです。「ライブ」は、生き残ることを目的としたモードです。「ハードコア」は、セレクターからのみ選択できる、4番目の難易度です。
+リストからテープを選択してください。それぞれのテープには、「フィクスチャー」「シート」「ライブ」というラベルが付けられています。**i**にカーソルを合わせると、その理由が表示されます。「シート」はデフォルトの戦闘モードです。「ライブ」は、最後まで生き残ることを目的としています。「ハードコア」は、セレクターからのみアクセスできる4番目のモードです。曲は数分間再生され、その後次の曲に移行します。
+
+## ボスはモデルとして機能します
+
+ローカルでは、クラウドタグ（例：`gpt-oss:120b-cloud`）を含むOllamaモデルをボスに設定できます。これにより、自由に動作するよう指示する必要はありません。代わりに、ボスは独自のツールを使用します。それは、`fire`（1回の動作につき1つの動詞：扇動、身を乗り出し、狙いを定めた射撃、息を止める、霧、プレート）、`say`（独自のセリフで、ゲートを通過：12語、1文、数字を含まず、事実やツール、モデル名を含まない。拒否されたセリフは、ボスのセリフの1つを再生する）、および読み取り専用の`view`と`tapes`です。モデルが提案し、ゲームが決定します。モデルは、どのスプライトが偽物であるかを知ることはありません。また、フィールド上のどの要素も、それを識別することはありません。
+
+音声処理プログラムが実行されている場合、すべてのボスは話します。それは、ボスが登場したときの作成されたセリフと、モデルが作成したセリフです。すべてのセリフは、音声認識エンジンによって再生され、[fx-dub](https://github.com/mcp-tool-shop-org/fx-dub)によって確認された後、再生されます。そのため、実際に発せられる言葉は、ゲートが許可した言葉であり、即興のセリフや矛盾はありません。確認に失敗したセリフは、沈黙します。
+
+キャビネット自体は、stdio経由で動作するMCPサーバーであり、同じ6つのツールを備えているため、楽器はゴースト自身のメニューを再生できます。リポジトリにある4つの録音のうち、1つはキャビネット自体が録音したものです。
 
 ## 操作方法
 
-左右（またはAとD）で移動、スペースキーで発射、Fキーでフルスクリーン表示。フィールドをクリックすると、同じテープを再生できます。次のテープに進むと、リストが更新されます。サウンドは、最初のキーを押すか、クリックすると開始されます。ミュート、3つのプリセット、および振動オフの切り替えは、フィールドの下にあります。
+左右（またはAとD）で移動、スペースキーで発射、Fキーでフルスクリーン表示。フィールドをクリックすると、同じテープが再生されます。次のテープに進むと、リストが更新されます。サウンドは、最初のキーを押すか、クリックすると開始されます。ミュート、3つのプリセット、およびシェイクオフの切り替えは、フィールドの下に配置されています。**Ollamaボス**と**Voice**は、その隣に配置され、モデルの選択ツールと、各シートが何をしているかを示すテキストが表示されます。
 
 ## ローカルでプレイ
 
@@ -50,6 +58,8 @@ pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
 Viteが印刷するアドレスを開きます。リポジトリには、16個の録音が含まれており、サーバーと通信し、テープを記録するツールである[mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade)からエクスポートされています。
+
+ボスのシートを使用するには、同じマシンでOllamaデーモンを実行し、**Ollamaボス**にチェックを入れてください。音声を使用するには、`.venv`にPython 3.12の仮想環境を作成し、`kokoro-onnx`、`faster-whisper`、および`fx-dub`をインストールし、`KOKORO_DIR`をKokoro ONNXの重みにポイントし、別のターミナルで`pnpm voice`を実行します。**Voice**ボックスは、音声処理プログラムが応答すると有効になります。どちらも再生には必要ありません。公開されているサイトには、どちらも含まれていません。
 
 独自のサーバーを記録し、そのテープを再生するには、そこで戦闘を実行し、次に`mcp-arcade tape receipt.json -o your.tape.json`を実行します。
 

@@ -1,6 +1,6 @@
 {
   "name": "mcp-arcade-cabinets",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Games on top of mcp-arcade. They read the tape and never touch the score.",
   "license": "MIT",

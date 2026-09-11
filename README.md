@@ -28,15 +28,24 @@ A **tape** is a recording of one bout. This game only reads tapes. It never talk
 
 - **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
 - **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
-- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot. Seat, live and hardcore get short **parallelism** bursts that multiply the field and heat the music, then hold longer as the round goes on. Locally, you can let an Ollama model — including a Cloud tag like `gpt-oss:120b-cloud` — sit in the boss: it calls each boss’s shots (a fan, a lean and an aimed shot, a held breath, fog, the plate) and picks which of the boss’s own lines it says. It never sees which sprites are lies.
+- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot.
+- **Parallelism bursts.** Seat, live and hardcore get bursts that multiply the field with honest copies and heat the fire, laid over the music. They start short and climb wave by wave: more copies, hotter fire, longer bursts.
 - **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
 - **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
 
-Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only.
+Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only. A song plays for a couple of minutes before it fades into the next.
+
+## The boss can be a model
+
+Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
+
+With a voice worker running, every boss speaks: its authored line when it arrives, and the lines the model writes. Every take is heard back by a speech recogniser and receipted by [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) before it plays, so the words spoken are the words the gate admitted, no invented speech, no hole. A take that fails its receipt stays silent.
+
+The cabinet is itself an MCP server over stdio, with the same six tools, so the instrument can play the Ghost's own menu; four of the recordings in the repo are the cabinet recording itself.
 
 ## Controls
 
-Left and right (or A and D) to move, space to fire, F for full screen. Click the field to replay the same tape. Next tape walks the list. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field.
+Left and right (or A and D) to move, space to fire, F for full screen. Click the field to replay the same tape. Next tape walks the list. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field. **Ollama bosses** and **Voice** sit beside them, with a model picker and words that say what each seat is doing.
 
 ## Play it locally
 
@@ -49,12 +58,14 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Open the address Vite prints. Sixteen recordings ship in the repo, exported from [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), the instrument that talks to the server and keeps the tape.
+Open the address Vite prints. Twenty recordings ship in the repo, exported from [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), the instrument that talks to the server and keeps the tape.
+
+For the boss seat, run an Ollama daemon on the same machine and tick **Ollama bosses**. For the voice, make a Python 3.12 venv at `.venv` with `kokoro-onnx`, `faster-whisper` and `fx-dub`, point `KOKORO_DIR` at the Kokoro ONNX weights, and run `pnpm voice` in a second terminal; the **Voice** box enables when the worker answers. Neither is needed to play; the published site has neither.
 
 To record your own server and play that tape, run a bout over there, then `mcp-arcade tape receipt.json -o your.tape.json`.
 
 ## More
 
-The [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) is the rest of the manual: the tells, the bosses, the difficulties, and how the game is put together. What shipped, and when, is in the [changelog](CHANGELOG.md). What the game touches is in [SECURITY.md](SECURITY.md).
+The [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) is the rest of the manual: the tells, the bosses, the difficulties, the cabinet server and its tools, and how the game is put together. What shipped, and when, is in the [changelog](CHANGELOG.md). What the game touches is in [SECURITY.md](SECURITY.md).
 
 MIT. Built by [MCP Tool Shop](https://mcp-tool-shop.github.io/).

@@ -1,8 +1,8 @@
-# HANDOFF — Ghost on the Menu, v0.4.0 + the cabinet server (slices 1–4)
+# HANDOFF — Ghost on the Menu, v0.5.0
 
 Read this, then `CLAUDE.md`, then `docs/cabinet-server.md` (slices 1–3: the decisions and the numbers) and `docs/cabinet-voice.md` (slice 4: the voice), then `docs/ollama-content.md` (the v0.4.0 seats). The lock is G1, G7–G10 in `docs/study-swarm.dispatch.md` and G11–G18 in `docs/cabinet-server.dispatch.md`. `docs/cabinet-server.kickoff.md` is history (slices 1–3 landed on `main`, untagged); `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are older history.
 
-**This is a pickup after the cabinet-server session (Claude, 2026-09-10/11): slices 1–4 of `docs/cabinet-server.dispatch.md` on `main`, reviewed by Grok (`docs/cabinet-server.review.md`), not tagged, still `0.4.0`, still not npm.** Tag `v0.4.0` is the last release. Pages serves the game unchanged.
+**This is a pickup after v0.5.0 (Claude, 2026-09-11, full treatment, published on the Director's word): slices 1–4 of `docs/cabinet-server.dispatch.md`, the music rework and the tuning, reviewed by Grok (`docs/cabinet-server.review.md`, `docs/cabinet-voice.review.md`).** Tag `v0.5.0`, GitHub release, Pages. Still `0.x`, still not npm. The tuning diff (`git log fe47dae..b4c5a33`: `patterns.ts`, `sim.ts`, the pattern files) shipped before Grok's review of it; that review is still owed.
 
 ## What landed after v0.4.0 (untagged, on `main`)
 

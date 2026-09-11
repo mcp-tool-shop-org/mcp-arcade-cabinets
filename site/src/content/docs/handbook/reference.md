@@ -2,7 +2,7 @@
 title: Reference
 description: The scripts, the bots, the tapes, and the fairness band.
 sidebar:
-  order: 4
+  order: 5
 ---
 
 ## Scripts

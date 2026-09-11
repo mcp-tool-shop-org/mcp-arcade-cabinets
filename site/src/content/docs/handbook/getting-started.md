@@ -23,7 +23,7 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Open the address Vite prints. The tape list shows a difficulty label (fixture, seat, or live) derived from the tape's header and wire shape. Hover the **i** for the why: how the server was reached, how many waves and bosses, how dense the wire is. The why never mentions a fact. Press **Play**. The published site also serves the game at [Play Ghost on the Menu](/mcp-arcade-cabinets/play/) with every fixture tape bundled. The landing page header **Play** link goes there too.
+Open the address Vite prints. The tape list shows a difficulty label (fixture, seat, or live) derived from the tape's header and wire shape. Hover the **i** for the why: how the server was reached, how many waves and bosses, how dense the wire is. The why never mentions a fact. Press **Play**. The published site also serves the game at [Play Ghost on the Menu](/mcp-arcade-cabinets/play/) with every tape bundled. The landing page header **Play** link goes there too.
 
 ### Controls
 

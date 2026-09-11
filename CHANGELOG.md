@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-The cabinet server, slices one to three of `docs/cabinet-server.dispatch.md`: the cabinet as an MCP server whose tools are the levers a model pulls, the shell's seats moved behind that contract, and the Ghost's own menu put through the instrument. Not tagged. The seats still need the local shell and a daemon; Pages serves the game unchanged.
+## [0.5.0] - 2026-09-11
+
+The cabinet server and the voice: slices one to four of `docs/cabinet-server.dispatch.md`. The cabinet is an MCP server whose tools are the levers a model pulls; the shell's seats sit behind that contract; the boss writes its lines through a gate and speaks them through a receipted voice; the Ghost's own menu went through the instrument. Reviewed by Grok (`docs/cabinet-server.review.md`, `docs/cabinet-voice.review.md`). The seats and the voice need the local shell, a daemon and the voice worker; Pages serves the game unchanged, with the music and the tuning below.
 
 ### Added
 

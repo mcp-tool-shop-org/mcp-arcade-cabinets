@@ -2,7 +2,7 @@
 title: Architecture
 description: The lock, the contract between the sim and the renderer, and how the two lanes met.
 sidebar:
-  order: 5
+  order: 6
 ---
 
 ## The lock
@@ -30,7 +30,7 @@ tape ──prepass──▶ Round ──createRoundState──▶ RoundState ─
 - **`stepRound(state, input, dt)`** is the only sim function: motion on entry paths and at hover, dives, fire, fog, lamps and grace, bosses with phase scripts, the catch (hitstop, shake, caption, trophy), drops, voice lines, parallelism bursts, wave open and close, the end.
 - **`renderRound(ctx, state, opts)`** draws through a narrow `DrawContext` (fill style, font, rect, text, an optional sprite hook). It adds nothing the sim did not decide: no counts, no digits, lamps as rectangles, the caption in words.
 - **`cues`** diffs two snapshots of the state and names the sounds to fire; **`audio`** is pure note data until the shell attaches a WebAudio context. Recorded ACE-Step beds overlay the chiptune when the files are present.
-- **`askOllama`** and **`askOllamaLine`** are the optional Ollama seats: one verb per boss beat, one letter for the line a boss says at spawn. Both prompts are frozen and fact-blind (the view is the boss kind, a health word, the ship's column, the stick, and the phase's motion word; the voice prompt is the kind and its own lines lettered), and both throw if a digit or a fact word ever gets in. The sim spends a verb through the `pilot` lever in `fire.json`; a letter picks from `voice.json`. A model that spends its whole budget thinking is asked again with a low thinking budget and remembered. The local Vite shell proxies `/ollama` to the daemon on this machine, including Cloud tags; GitHub Pages never reaches it.
+- **The cabinet server** (`packages/cabinet-server`) is the seats' contract and a stdio MCP server in its own right: six tools with closed enums over a host of words, the say gate, the persona sheets, the beat machine that prefetches and revokes, the voicer. The sim reads two levers from it, `bossIntent` (a verb spent at the boss's next beat through `fire.json`) and `bossSay` (a gate-passed line landing as an aside), and nothing else. Every prompt is frozen and fact-blind and throws if a digit or a fact word ever gets in. The local Vite shell proxies `/ollama` to the daemon on this machine and `/voice` to the voice worker, and answers `/cabinet/say` on the node side; GitHub Pages reaches none of them. See [The cabinet server](../cabinet-server/).
 
 ## The contract
 
@@ -47,8 +47,10 @@ Two models built this, each reviewing the other's diff: Grok wrote the tape load
 | `packages/tape-core`                   | Load a tape, refuse forbidden keys, slice by atom, scoring rules kept for a future cabinet |
 | `packages/ghost-on-the-menu/src`       | `prepass`, `sim`, `patterns` (the loader), `render`, `cues`, `audio`, `play` (the bots) |
 | `packages/ghost-on-the-menu/patterns`  | The ten data files (paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism) |
+| `packages/cabinet-server`              | The stdio MCP server: `tools.json`, `personas.json`, the gate, the boundary, the seat machine, the say tiers, the voicer |
+| `voice/`                               | The host-side voice worker (Kokoro, faster-whisper, fx-dub); `pnpm voice`                              |
 | `packages/ghost-on-the-menu/test`      | Unit tests, the fairness band, the expressive-range plot                 |
 | `apps/cabinets`                        | The Vite shell: tape picker, canvas, controls, sprite atlas              |
-| `fixtures/tapes`                       | Sixteen tapes from the instrument                                        |
-| `scripts`                              | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`                           |
-| `docs`                                 | The lock, the wave-2 dispatch, citation receipts, the art brief and receipts |
+| `fixtures/tapes`                       | Twenty tapes: sixteen from the instrument, four the cabinet recorded of itself |
+| `scripts`                              | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`, `voice.mjs`              |
+| `docs`                                 | The lock, the dispatches, citation receipts, the panel and review records, the art brief and receipts |

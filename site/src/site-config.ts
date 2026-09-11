@@ -11,7 +11,7 @@ export const config: SiteConfig = {
     'MIT Licensed — built by <a href="https://mcp-tool-shop.github.io/" style="color:var(--color-muted);text-decoration:underline">MCP Tool Shop</a>',
 
   hero: {
-    badge: 'Arcade shooter · v0.4.0',
+    badge: 'Arcade shooter · v0.5.0',
     headline: 'Shoot the whisper.',
     headlineAccent: 'Read the wire.',
     description:
@@ -42,7 +42,15 @@ export const config: SiteConfig = {
         },
         {
           title: 'Bosses are the experiment',
-          desc: 'The Whisperer, the Menu and the Doorman show up whether or not anything went wrong. A dry line names the creature. Killing a boss reveals nothing. Locally, an Ollama model can sit in the boss, call its shots and pick its line; it never sees a lie.',
+          desc: 'The Whisperer, the Menu and the Doorman show up whether or not anything went wrong. A dry line names the creature. Killing a boss reveals nothing.',
+        },
+        {
+          title: 'The boss can be a model',
+          desc: 'Locally, an Ollama model sits in the boss through the cabinet’s own tools: one verb a beat, a line of its own through a gate. The model proposes; the game decides. It never sees a lie, and nothing on the field names it.',
+        },
+        {
+          title: 'It speaks, and every take is receipted',
+          desc: 'With the voice worker running, every boss speaks its lines in its own voice. Each take is heard back and receipted by fx-dub before it plays: the words spoken are the words the gate admitted. A take that fails stays silent.',
         },
         {
           title: 'Drops fall straight down',
@@ -54,7 +62,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'Fixture, seat, live, hardcore',
-          desc: 'Each tape on the list carries a difficulty word. Hover i for why. Seat is the default fight. Live is meant to be survived. Hardcore is one lamp, from the selector only.',
+          desc: 'Each tape on the list carries a difficulty word. Hover i for why. Seat is the default fight. Live is meant to be survived. Hardcore is one lamp, from the selector only. Bursts climb wave by wave; a song plays for a couple of minutes before it fades.',
         },
       ],
     },
@@ -69,7 +77,11 @@ export const config: SiteConfig = {
         },
         {
           title: 'On your machine',
-          code: 'pnpm install\npnpm -F @mcp-arcade-cabinets/cabinets dev\n\n# left, right, space; F for full screen',
+          code: 'pnpm install\npnpm -F @mcp-arcade-cabinets/cabinets dev\n\n# an Ollama daemon for the boss seat\n# pnpm voice, in a second terminal, for the voice',
+        },
+        {
+          title: 'The Ghost plays its own menu',
+          code: 'pnpm build\nmcp-arcade bout --target stdio --allow-live \\\n  --cmd node --cmd packages/cabinet-server/dist/server.js --task view',
         },
       ],
     },

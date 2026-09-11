@@ -26,17 +26,25 @@ En algún lugar de esa secuencia se encuentran las comunicaciones que el agente 
 
 Una **cinta** es una grabación de un enfrentamiento. Este juego solo reproduce cintas. Nunca se comunica con un servidor, nunca guarda una puntuación y nunca te dice quién ganó.
 
-- **Tres lámparas.** Un disparo del jefe o una formación de buceo apaga una de ellas. Recoge una lámpara que cae **directamente hacia abajo** desde un jefe derrotado para volver a encender una. Tienes que moverte debajo de ella. Si se apagan todas, termina la ronda.
-- **Dispersión.** Elimina una formación y una dispersión cae directamente hacia abajo. Recógela y tu fuego se extenderá durante unos segundos.
-- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Murmuran como un agente que piensa en voz alta. En el modo difícil, hay una lámpara y furia desde el primer disparo. Los modos de asiento, en vivo y difícil tienen ráfagas cortas de **paralelismo** que multiplican el campo y calientan la música, y luego se mantienen más tiempo a medida que avanza la ronda. Localmente, puedes dejar que un modelo de Ollama (incluida una etiqueta de nube como `gpt-oss:120b-cloud`) esté en el jefe: este indica los disparos de cada jefe (un abanico, una inclinación y un disparo dirigido, una respiración contenida, niebla, la placa) y elige cuál de las propias líneas del jefe dice. Nunca ve qué sprites son mentiras.
+- **Tres lámparas.** Un disparo al jefe o una formación de buceo apaga una de ellas. Recoge una lámpara que cae **directamente hacia abajo** desde un jefe derrotado para volver a encender una. Debes moverte debajo de ella. Si se apagan todas, termina la ronda.
+- **Dispersión.** Elimina una formación y una dispersión caerá directamente hacia abajo. Recógela y tu fuego se intensificará durante unos segundos.
+- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Murmuran como un agente que piensa en voz alta. En el modo difícil, hay una lámpara y la ira se activa desde el primer disparo. Localmente, puedes dejar que un modelo Ollama determine los movimientos del jefe; nunca sabrá cuáles de los sprites son falsos.
 - **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de manera diferente a su gemelo honesto. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú.
-- **La escena final** nombra la cinta, el servidor y la política. Las mentiras capturadas se muestran como trofeos. Las que escapan se muestran con su apariencia honesta. Sin puntuación, sin recuento, sin dígito.
+- **La escena final** indica el nombre de la grabación, el servidor y la política. Las mentiras capturadas se muestran como trofeos. Las que escapan se muestran con su apariencia original. Sin puntuación, sin conteo, sin dígitos.
 
-Elige una grabación de la lista. Cada una está etiquetada como "fijo", "asiento" o "en vivo"; pasa el cursor sobre la **i** para ver la razón. "Asiento" es la configuración predeterminada para la pelea. "En vivo" está diseñada para ser superada. "Difícil" es el cuarto nivel, accesible solo desde el selector.
+Elige una pista de la lista. Cada una está etiquetada como "fixture", "seat" o "live"; pasa el cursor sobre la **i** para ver la explicación. "Seat" es la configuración predeterminada para la pelea. "Live" está diseñada para que se sobreviva. "Hardcore" es el cuarto nivel, solo accesible desde el selector. Una canción suena durante un par de minutos antes de desvanecerse y dar paso a la siguiente.
+
+## El jefe puede ser un modelo
+
+Localmente, un modelo de Ollama, que incluye una etiqueta de Cloud como `gpt-oss:120b-cloud`, puede estar en el jefe. No recibe una instrucción para improvisar. Recibe las propias herramientas del gabinete: `fire` (un verbo por compás: un ventilador, un movimiento y un disparo dirigido, una respiración contenida, niebla, la placa), `say` (una línea propia, a través de una puerta: doce palabras, una frase, sin números, sin palabras que indiquen hechos, sin nombres de herramientas o modelos; una línea rechazada reproduce una de las propias del jefe) y `view` y `tapes`, que son de solo lectura. El modelo propone; el juego decide. Nunca ve cuáles de los sprites son falsos, y nada en el campo los identifica.
+
+Con un programa de voz en funcionamiento, cada jefe habla: su línea original cuando llega y las líneas que escribe el modelo. Cada toma se reproduce y se registra mediante [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) antes de reproducirse, por lo que las palabras que se dicen son las palabras que la puerta admitió, sin discursos inventados, sin errores. Una toma que no pasa la verificación permanece en silencio.
+
+El gabinete es en sí mismo un servidor MCP a través de stdio, con las mismas seis herramientas, por lo que el instrumento puede reproducir el propio menú del Fantasma; cuatro de las grabaciones en el repositorio son del propio gabinete grabando.
 
 ## Controles
 
-Flechas izquierda y derecha (o A y D) para moverse, barra espaciadora para disparar, F para pantalla completa. Haz clic en la pantalla para reproducir la misma cinta. La siguiente cinta recorre la lista. El sonido se inicia con la primera tecla o clic; los controles de silencio, tres preajustes de sensación y un interruptor de vibración se encuentran debajo de la pantalla.
+Izquierda y derecha (o A y D) para moverse, espacio para disparar, F para pantalla completa. Haz clic en el campo para reproducir la misma pista. La siguiente pista recorre la lista. El sonido comienza con la primera tecla o clic; los controles de silencio, tres preajustes de sonido y un interruptor de vibración están debajo del campo. Los **jefes de Ollama** y la opción **Voz** están a su lado, con un selector de modelos y palabras que indican qué está haciendo cada "seat".
 
 ## Juega localmente
 
@@ -50,6 +58,8 @@ pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
 Abre la dirección que imprime Vite. Dieciséis grabaciones se incluyen en el repositorio, exportadas de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), el instrumento que se comunica con el servidor y guarda la cinta.
+
+Para el "seat" del jefe, ejecuta un demonio de Ollama en la misma máquina y marca la casilla **Jefes de Ollama**. Para la voz, crea un entorno virtual de Python 3.12 en `.venv` con `kokoro-onnx`, `faster-whisper` y `fx-dub`, apunta `KOKORO_DIR` a los pesos ONNX de Kokoro y ejecuta `pnpm voice` en una segunda terminal; la casilla **Voz** se activa cuando el programa responde. Ninguno de los dos es necesario para jugar; el sitio publicado no los tiene.
 
 Para grabar tu propio servidor y reproducir esa cinta, ejecuta un enfrentamiento allí y luego `mcp-arcade tape receipt.json -o your.tape.json`.
 

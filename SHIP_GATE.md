@@ -16,18 +16,18 @@
 
 ### Default safety posture
 
-- [ ] `[cli|mcp|desktop]` SKIP: the game performs no destructive action; the terminal tools only read fixtures and write PNG frames to film/ — Dangerous actions (kill, delete, restart) require explicit `--allow-*` flag
-- [ ] `[cli|mcp|desktop]` SKIP: reads fixtures/tapes and patterns; writes only film/ from the dev tools — File operations constrained to known directories
-- [ ] `[mcp]` SKIP: not an MCP server; the shell is static files with no egress — Network egress off by default
-- [ ] `[mcp]` SKIP: not an MCP server — Stack traces never exposed — structured error results only
+- [x] `[cli|mcp|desktop]` 2026-09-11: no tool of the cabinet server and no terminal tool performs a destructive action; the six tools propose a verb, a line, a sound, or read words; the voice worker writes only under film/ — Dangerous actions (kill, delete, restart) require explicit `--allow-*` flag
+- [x] `[cli|mcp|desktop]` 2026-09-11: reads fixtures/tapes and the pattern files; the dev tools and the voice worker write only under film/ — File operations constrained to known directories
+- [x] `[mcp]` 2026-09-11: the stdio server's only egress is the voice worker on the host (`VOICE_URL`, off with an empty value); the published shell is static files with no egress — Network egress off by default
+- [x] `[mcp]` 2026-09-11: a bad enum answers `isError` with a words-only message; an unknown tool is the SDK's protocol error; the server never writes a stack to the transport — Stack traces never exposed — structured error results only
 
 ## B. Error Handling
 
 - [x] `[all]` Errors follow the Structured Error Shape — 2026-09-10: the pattern loader throws a plain Error whose message names file and key (patterns/<file>: <key>); tape-core throws TapeError with a message; play exits 1/2/3 by cause: `code`, `message`, `hint`, `cause?`, `retryable?`
 - [x] `[cli]` Exit codes — 2026-09-10: scripts/play.mjs exits 0 ok, 1 transcript failed, 2 usage, 3 no build: 0 ok · 1 user error · 2 runtime error · 3 partial success
 - [x] `[cli]` No raw stack traces — 2026-09-10: the play runner prints the transcript, not a stack; the loaders throw plain messages without `--debug`
-- [ ] `[mcp]` SKIP: not an MCP server — Tool errors return structured results — server never crashes on bad input
-- [ ] `[mcp]` SKIP: not an MCP server; a corrupt pattern set is a load error by design — State/config corruption degrades gracefully (stale data over crash)
+- [x] `[mcp]` 2026-09-11: the stdio test calls every tool, a bad enum and an unlisted name and lists again after — Tool errors return structured results — server never crashes on bad input
+- [x] `[mcp]` 2026-09-11: a tape that does not load is left off the menu; a missing voice worker is silence; a corrupt pattern or persona file is a load error by design, before the transport connects — State/config corruption degrades gracefully (stale data over crash)
 - [ ] `[desktop]` SKIP: browser shell; no error surfaces beyond the console — Errors shown as user-friendly messages — no raw exceptions in UI
 - [ ] `[vscode]` SKIP: not a VS Code extension — Errors surface via VS Code notification API — no silent failures
 
@@ -38,7 +38,7 @@
 - [x] `[all]` LICENSE file present — 2026-09-10: MIT; support status in SECURITY.md (0.3.x) and repo states support status
 - [x] `[cli]` `--help` output accurate — 2026-09-10: scripts/play.mjs prints usage on a missing cabinet; film and sweep document their flags in their headers for all commands and flags
 - [ ] `[cli|mcp|desktop]` SKIP: the tools print a transcript or a table; nothing logs secrets because nothing holds any — Logging levels defined: silent / normal / verbose / debug — secrets redacted at all levels
-- [ ] `[mcp]` SKIP: not an MCP server — All tools documented with description + parameters
+- [x] `[mcp]` 2026-09-11: `packages/cabinet-server/tools.json` carries every tool's description, schema and annotations; the handbook page "The cabinet server" documents them — All tools documented with description + parameters
 - [ ] `[complex]` SKIP: the handbook is the Starlight site (Phase 3); HANDOFF.md is the operator pick-up — HANDBOOK.md: daily ops, warn/critical response, recovery procedures
 
 ## D. Shipping Hygiene
