@@ -16,7 +16,7 @@ Read this, then `CLAUDE.md`, then `docs/cabinet-server.md` (the decisions and th
 
 1. **The Director plays the seat on the local shell** (`pnpm -F @mcp-arcade-cabinets/cabinets dev`, the checkbox, a Cloud tag) and reads the generated lines. Set `ANTHROPIC_API_KEY` in the dev server's environment to sit the Claude tier; it was built, not measured live.
 2. **The one-sentence bound vs the two-sentence register**: fourteen of the twenty-four authored boss lines are two sentences, and "sentences" is the gate's dominant refusal. The Director decides: allow two short sentences within twelve words, or seed one-sentence lines only. Numbers in `docs/cabinet-server.md`.
-3. **Grok reviews** the cabinet-server diff (`git log v0.4.0..main`): `sim.ts` (`bossSay`, `landSay`), `types.ts`, `play.ts`, the band's roster arithmetic, and `packages/cabinet-server` whole. Also still open: the v0.4.0 diff (`git log 6e1b95f..v0.4.0`).
+3. **Grok reviews** the cabinet-server diff (`git log v0.4.0..main`): `sim.ts` (`bossSay`, `landSay`), `types.ts`, `play.ts`, the band's roster arithmetic, and `packages/cabinet-server` whole. Also still open: the v0.4.0 diff (`git log 6e1b95f..v0.4.0`). Paste `docs/cabinet-server.review.kickoff.md`; the report lands as `docs/cabinet-server.review.md`.
 4. **Slices 4–6** (voice with fx-dub, stingers and backdrops, the container and the Catalog PR) wait on the Director's word. Slice 6 will have to revisit `SHIP_GATE.md`, whose `[mcp]` rows still say "not an MCP server".
 5. Translations before any later tag, not before.
 
