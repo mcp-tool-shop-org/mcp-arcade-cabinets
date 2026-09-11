@@ -37,6 +37,10 @@ Measured: with the worker bound to the host and a token set, a container started
 - **Baking the venv or the weights into any image.** The worker is a host tool; its weights are licence-clean but large and belong to the host.
 - **Opening the Catalog PR from here.** The dispatch names the Director as the owner of that irreversible action.
 
+## Grok's review (2026-09-11, `docs/cabinet-container.review.md`)
+
+No halt. Two changes, both applied the same day: `speak` now says "the voice is silent: no worker answers" when a worker is configured but does not answer, decided by a liveness probe with a two-hundred-millisecond abort that runs at start and every fifteen seconds and by every take's outcome, never on the beat; and the worker's `/health` is a liveness word (`ok`, the engine) with the voice list, cache size and counters moved to `/stats` behind the bearer. Held as advised: no ajv copied into the image; `source.commit` moved only because the server code the image is built from changed. For the Director, Grok's paragraph: check the pin, the icon and `disableNetwork` before the PR; stop the waves at fifteen percent; a fourth lamp is a new lever with its own band pass, never a silent extra.
+
 ## Not done
 
 - The Catalog PR (the Director), then Docker's build, signing and listing.

@@ -20,7 +20,17 @@ if (args.has('--check')) {
     process.exit(1);
   }
   const h = await res.json();
-  console.log(`${h.engine} on ${h.device}, ${h.voices.length} voices, ${h.cached} lines cached`);
+  const auth = process.env.VOICE_TOKEN
+    ? { authorization: `Bearer ${process.env.VOICE_TOKEN}` }
+    : {};
+  const stats = await fetch(`${url}/stats`, { headers: auth })
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+  console.log(
+    stats
+      ? `${stats.engine} on ${stats.device}, ${stats.voices.length} voices, ${stats.cached} lines cached`
+      : `${h.engine} answers; stats need the worker's token`,
+  );
   const personas = JSON.parse(
     (await import('node:fs')).readFileSync(
       path.resolve('packages/cabinet-server/personas.json'),
@@ -40,7 +50,7 @@ if (args.has('--check')) {
     const r = await (
       await fetch(`${url}/speak`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...auth },
         body: JSON.stringify({ text, kind, preset: v.preset, rate: v.rate, loudness: v.loudness }),
       })
     ).json();

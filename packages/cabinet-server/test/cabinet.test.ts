@@ -247,7 +247,15 @@ describe('the boundary', () => {
     const host = hostForRound(() => l);
     const cab = createCabinet(host);
     expect(cab.call('say', { text: 'Early.', lead: 'short' }).content[0]!.text).toMatch(/no boss/);
-    expect(cab.call('speak', {}).content[0]!.text).toMatch(/silent/);
+    expect(cab.call('speak', {}).content[0]!.text).toMatch(/silent on this cabinet/);
+    // A worker configured but not answering: silent, and said so (G18).
+    let up = false;
+    const guarded = createCabinet(hostForRound(() => l, { voice: () => {}, voiceReady: () => up }));
+    expect(guarded.call('speak', {}).content[0]!.text).toBe(
+      'the voice is silent: no worker answers',
+    );
+    up = true;
+    expect(guarded.call('speak', {}).content[0]!.text).toMatch(/no line to speak/);
     expect(cab.call('fire', { verb: 'fog' }).content[0]!.text).toMatch(/no boss/);
     let guard = 0;
     while (!(l.state.boss && l.state.boss.alive) && guard++ < 9000) {

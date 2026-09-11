@@ -27,7 +27,10 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 import { createCabinet, type Cabinet } from './cabinet';
 import { CONTRACT, type ToolDef } from './contract';
 import { hostForRound, tapeCards, type Live } from './host';
-import { speakLine } from './voice';
+import { speakLine, voiceHealth } from './voice';
+
+/** Seconds between liveness probes of the voice worker, off the beat. */
+export const VOICE_PROBE_S = 15;
 
 /** The host-side voice worker; in the Catalog container, host.docker.internal. */
 export const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
@@ -94,21 +97,35 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   const live: Live = { round, state, input };
   const voiced = { asked: 0, ok: 0, failed: 0, noWorker: 0 };
   const voiceUrl = opts.voiceUrl === undefined ? DEFAULT_VOICE_URL : opts.voiceUrl;
+  // Whether the worker answered lately. Probed with a short abort at start
+  // and on a cadence, and set by every take's outcome; never on the beat.
+  let workerUp = false;
+  const voiceOpts = voiceUrl
+    ? { url: voiceUrl, ...(opts.voiceToken ? { token: opts.voiceToken } : {}) }
+    : null;
+  const probe = () => {
+    if (!voiceOpts) return;
+    void voiceHealth(voiceOpts).then((h) => {
+      workerUp = h !== null;
+    });
+  };
+  probe();
   const host = hostForRound(() => live, {
     tapes: () => tapeCards(tapes),
-    ...(voiceUrl
+    ...(voiceOpts
       ? {
           // The server has no speaker: a take is spoken, receipted and cached
-          // by the worker; the receipt is the artifact. Silent when no worker.
+          // by the worker; the receipt is the artifact. Silent, and said so,
+          // when no worker answers (G18).
+          voiceReady: () => workerUp,
           voice: (job) => {
             voiced.asked += 1;
-            void speakLine(job, {
-              url: voiceUrl,
-              ...(opts.voiceToken ? { token: opts.voiceToken } : {}),
-            }).then((a) => {
+            void speakLine(job, voiceOpts).then((a) => {
               if (a.status === 'voiced') voiced.ok += 1;
               else if (a.status === 'receipt failed') voiced.failed += 1;
               else voiced.noWorker += 1;
+              if (a.status === 'no worker') workerUp = false;
+              else workerUp = true;
             });
           },
         }
@@ -131,7 +148,7 @@ export function headlessRound(opts: HeadlessOpts = {}) {
     stepRound(live.state, input, dt);
     host.takeSfx();
   };
-  return { cabinet, host, live, step, tapes, fixture: found.name, voiced };
+  return { cabinet, host, live, step, tapes, fixture: found.name, voiced, probe };
 }
 
 export function buildServer(cabinet: Cabinet): McpServer {
@@ -169,6 +186,8 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
     h.step(dt);
   }, 33);
   timer.unref();
+  const probeTimer = setInterval(h.probe, VOICE_PROBE_S * 1000);
+  probeTimer.unref();
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write(`${SERVER_NAME} ${SERVER_VERSION}: ${h.fixture}, tools listed\n`);

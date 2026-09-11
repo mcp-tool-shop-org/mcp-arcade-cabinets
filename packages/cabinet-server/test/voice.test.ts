@@ -206,15 +206,7 @@ describe('the worker client', () => {
     vi.stubGlobal('fetch', async (url: string, init?: { body?: string }) => {
       sent.push({ url, ...(init?.body ? { body: init.body } : {}) });
       if (url.endsWith('/health')) {
-        return {
-          ok: true,
-          json: async () => ({
-            ok: true,
-            engine: 'kokoro-onnx',
-            device: 'cuda',
-            voices: ['bm_george'],
-          }),
-        };
+        return { ok: true, json: async () => ({ ok: true, engine: 'kokoro-onnx' }) };
       }
       return {
         ok: true,
@@ -238,11 +230,25 @@ describe('the worker client', () => {
     });
   });
 
-  it('a worker that is down is silence; a refused line is refused', async () => {
+  it('a worker that is down is silence; a refused line is refused; a slow probe aborts', async () => {
     vi.stubGlobal('fetch', async () => {
       throw new Error('ECONNREFUSED');
     });
     expect(await voiceHealth({ url: '/voice' })).toBeNull();
+    // A probe that never answers is aborted after its budget, not awaited on the beat.
+    vi.stubGlobal(
+      'fetch',
+      (_url: string, init?: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+        }),
+    );
+    const t0 = Date.now();
+    expect(await voiceHealth({ url: '/voice', timeoutMs: 50 })).toBeNull();
+    expect(Date.now() - t0).toBeLessThan(1000);
+    vi.stubGlobal('fetch', async () => {
+      throw new Error('ECONNREFUSED');
+    });
     expect((await speakLine(JOB, { url: '/voice' })).status).toBe('no worker');
     vi.stubGlobal('fetch', async () => ({
       ok: false,

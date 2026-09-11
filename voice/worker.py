@@ -19,7 +19,8 @@ For a container to reach the worker, bind the host's Docker interface (or
 `Authorization: Bearer <token>`. /health stays open and carries no take.
 
 Endpoints, all JSON:
-    GET  /health                   engine, asr device, voices, lines cached
+    GET  /health                   liveness: {ok, engine}, nothing more
+    GET  /stats                    engine, asr device, voices, lines cached, counters (bearer when a token is set)
     POST /speak {text, preset, rate, loudness, kind, max_gap_s} -> {ok, id, duration_s, receipt, url}
     GET  /audio/<id>.wav           the take (only when its receipt passed)
 
@@ -236,6 +237,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == '/health':
+            # Liveness only, on an open port (Grok, slice-6 review): no voice
+            # list, no cache size, no counters. The engine word is the whole answer.
+            return self._json(200, {'ok': True, 'engine': 'kokoro-onnx'})
+        if path == '/stats':
+            if not self._allowed():
+                return self._json(401, {'error': 'a bearer token is required'})
             return self._json(200, {
                 'ok': True,
                 'engine': 'kokoro-onnx',

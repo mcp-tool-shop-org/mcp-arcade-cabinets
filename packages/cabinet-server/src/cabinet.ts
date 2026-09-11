@@ -38,9 +38,11 @@ export interface CabinetHost {
   sfx(kind: SfxName): 'queued' | 'dropped';
   /**
    * Voice the pending line (G15). The host hands it to the voicer, which
-   * speaks it one beat ahead and receipts it; `silent` when no voice is on.
+   * speaks it one beat ahead and receipts it; `silent` when no voice is on,
+   * `no worker` when one is configured but does not answer (G18: silent,
+   * and says so, without waiting on the beat).
    */
-  speak(): 'queued' | 'no line' | 'silent';
+  speak(): 'queued' | 'no line' | 'silent' | 'no worker';
   tapes(): TapeCard[];
   /** The round's recent lines, for the no-repeat window. */
   recent(): readonly string[];
@@ -155,7 +157,9 @@ export function createCabinet(host: CabinetHost): Cabinet {
         ? 'the boss will speak its line'
         : r === 'no line'
           ? 'no line to speak; give the boss one first'
-          : 'the voice is silent on this cabinet',
+          : r === 'no worker'
+            ? 'the voice is silent: no worker answers'
+            : 'the voice is silent on this cabinet',
     );
   }
 

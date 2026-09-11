@@ -74,6 +74,12 @@ export interface HostOpts {
   tapes?: () => TapeCard[];
   /** The voicer (the shell's player or the server's cache). Absent means silent. */
   voice?: (job: VoiceJob) => void;
+  /**
+   * Whether the worker behind the voicer answered lately. False makes
+   * `speak` say so instead of queueing into silence; the probe that sets it
+   * runs off the beat, never on it.
+   */
+  voiceReady?: () => boolean;
 }
 
 /**
@@ -134,6 +140,7 @@ export function hostForRound(
     },
     speak() {
       if (!opts.voice) return 'silent';
+      if (opts.voiceReady && !opts.voiceReady()) return 'no worker';
       const { state } = get();
       const say = state.bossSay;
       const boss = state.boss;

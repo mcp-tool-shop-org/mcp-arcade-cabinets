@@ -261,7 +261,7 @@ async function sitMcp(model) {
   }
 
   console.log(
-    `\nsit ${model} on ${fixture} tier ${round.tier} bot ${botName} seat mcp constrain ${constrain ? 'on' : 'off'} say ${sayOn ? 'on' : 'off'} voice ${voiceOn ? `on (${health ? health.engine + ' ' + health.device : 'forced'})` : 'off'} lamps ${lamps}`,
+    `\nsit ${model} on ${fixture} tier ${round.tier} bot ${botName} seat mcp constrain ${constrain ? 'on' : 'off'} say ${sayOn ? 'on' : 'off'} voice ${voiceOn ? `on (${health ? health.engine : 'forced'})` : 'off'} lamps ${lamps}`,
   );
   const w0 = Date.now();
   const warm = await cs.warmUp(fireOpts).catch((err) => ({ error: String(err.message ?? err) }));

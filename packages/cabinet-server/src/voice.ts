@@ -44,28 +44,29 @@ function headersFor(opts: VoiceOpts, json = false): Record<string, string> {
   return h;
 }
 
-/** Whether a worker answers, and with which engine. Null when none. */
+/** Milliseconds a liveness probe may take before the worker counts as absent. */
+export const PROBE_MS = 200;
+
+/**
+ * Whether a worker answers, and with which engine. Null when none. The
+ * probe aborts after PROBE_MS so it can run beside the beat, never on it.
+ */
 export async function voiceHealth(
-  opts: VoiceOpts,
-): Promise<{ engine: string; device: string; voices: string[] } | null> {
+  opts: VoiceOpts & { timeoutMs?: number },
+): Promise<{ engine: string } | null> {
   const f = opts.fetchImpl ?? fetch;
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = ctl ? setTimeout(() => ctl.abort(), opts.timeoutMs ?? PROBE_MS) : null;
   try {
-    const res = await f(`${opts.url}/health`);
+    const res = await f(`${opts.url}/health`, ctl ? { signal: ctl.signal } : {});
     if (!res.ok) return null;
-    const j = (await res.json()) as {
-      ok?: boolean;
-      engine?: string;
-      device?: string;
-      voices?: string[];
-    };
+    const j = (await res.json()) as { ok?: boolean; engine?: string };
     if (!j.ok) return null;
-    return {
-      engine: String(j.engine ?? ''),
-      device: String(j.device ?? ''),
-      voices: j.voices ?? [],
-    };
+    return { engine: String(j.engine ?? '') };
   } catch {
     return null;
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 

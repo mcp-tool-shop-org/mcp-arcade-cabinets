@@ -145,8 +145,10 @@ export function mountGhost(
   // Probe for the worker until it answers, so starting `pnpm voice` after
   // the page opened still enables the box, and say plainly when it is missing.
   let voiceProbe = 0;
+  let workerUp = false;
   const probeVoice = () => {
-    void voiceHealth({ url: '/voice' }).then((h) => {
+    void voiceHealth({ url: '/voice', timeoutMs: 2000 }).then((h) => {
+      workerUp = h !== null;
       if (h) {
         voice.disabled = false;
         if (!voice.checked) voiceStat.textContent = 'voice ready';
@@ -378,6 +380,7 @@ export function mountGhost(
   const live: Live = { round, state, input };
   const host = hostForRound(() => live, {
     tapes: () => tapeCards(TAPES),
+    voiceReady: () => voice.checked && workerUp,
     voice: (job) => {
       if (voice.checked) voicer.job(job);
     },
