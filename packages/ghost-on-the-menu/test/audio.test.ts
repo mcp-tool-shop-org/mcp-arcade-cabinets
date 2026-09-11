@@ -187,11 +187,29 @@ describe('recorded beds', () => {
     return b;
   }
 
+  it('holds a bed for at least a minute, then gives way to the wave that is playing', () => {
+    const inspect = bed();
+    const whisperer = bed();
+    const menu = bed();
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer, menu };
+    const out = attach(silentCtx(), undefined, (k) => beds[k]); // the real minute
+    out.tick(0, 'inspect');
+    for (let t = 1; t < 59; t += 1) out.tick(t, t < 18 ? 'inspect' : 'whisperer');
+    expect(whisperer.playing).toBe(false); // wanted since 18 s, held
+    expect(inspect.playing).toBe(true);
+    out.tick(61, 'menu'); // the hold is up: the bed that is wanted now comes in
+    expect(menu.playing).toBe(true);
+    expect(whisperer.playing).toBe(false);
+    for (let t = 61.05; t < 62.5; t += 0.05) out.tick(t, 'menu');
+    expect(inspect.playing).toBe(false);
+    expect(menu.volume).toBe(1);
+  });
+
   it('crossfades between beds and resumes a bed where it left off, never from zero', () => {
     const inspect = bed();
     const whisperer = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
-    const out = attach(silentCtx(), undefined, (k) => beds[k]);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
     out.tick(0, 'inspect');
     expect(inspect.playing).toBe(true);
     expect(inspect.volume).toBe(1);
@@ -216,7 +234,7 @@ describe('recorded beds', () => {
     const menu = bed();
     const parallelism = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { menu, parallelism };
-    const out = attach(silentCtx(), undefined, (k) => beds[k]);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
     out.tick(0, 'menu');
     out.tick(1, 'menu', true);
     expect(menu.playing).toBe(true); // never swapped out
@@ -236,7 +254,7 @@ describe('recorded beds', () => {
     const doorman = bed();
     const parallelism = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { menu, doorman, parallelism };
-    const out = attach(silentCtx(), undefined, (k) => beds[k]);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
     out.tick(0, 'menu');
     out.tick(1, 'menu', true);
     out.tick(2, 'doorman', true);

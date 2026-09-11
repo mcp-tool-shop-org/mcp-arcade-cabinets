@@ -54,7 +54,7 @@ No halt. Three changes, all applied the same day: the shell played a take at the
 
 ## Not done
 
-- The Director hears it: `pnpm voice`, then the local shell with **Voice** on. Until the proxy fix above, nothing had played.
+- The Director hears it: `pnpm voice`, then the local shell with **Voice** on. Until the proxy fix above, nothing had played; the end-to-end path (health, a receipted take, the audio file as `audio/wav`, a Cloud say line) was then verified through the dev proxy with curl. The browser pane in the desktop app runs no animation frames, so the round itself was not driven there. With Voice on, every boss also speaks its authored spawn line, so there is a voice to hear before any seat answers.
 - `voice.maxGap` is the Director's call; the first cast (`bf_emma`, `am_michael`, `bm_george`) is a first cast.
 - A clone per boss kind, on a consented recording.
 - Grok's review of slice 4.

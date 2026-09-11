@@ -109,7 +109,7 @@ export interface Voicer {
    */
   tick(
     t: number,
-    caption: { kind: string; text: string } | null,
+    caption: { kind: string; text: string; line?: string } | null,
     breather: boolean,
     ended: boolean,
   ): void;
@@ -201,8 +201,11 @@ export function createVoicer(opts: VoicerOpts): Voicer {
       if (ready) {
         // Its own line is on the field, or the field is clear and its time
         // is within the caption window: play now. Never over a catch or a card.
+        // Its own line: a seat's aside, or the boss's spawn line under its wave card.
         const ownLine =
-          caption !== null && caption.kind === 'aside' && caption.text === ready.job.text;
+          caption !== null &&
+          ((caption.kind === 'aside' && caption.text === ready.job.text) ||
+            (caption.kind === 'wave' && caption.line === ready.job.text));
         const clearWindow = caption === null && now < ready.job.at + opts.captionSeconds;
         if (ownLine || clearWindow) {
           opts.play(ready.url, ready.job);

@@ -125,6 +125,19 @@ describe('the voicer', () => {
     v.tick(10.6, { kind: 'aside', text: 'I have a list. Lists make me calm.' }, false, false);
     expect(played).toEqual([]);
     expect(v.status()).toBe('voice: held for the breather');
+    // The boss's own spawn line under its wave card is its line.
+    const s = deferred<SpeakAnswer>();
+    const u = createVoicer({
+      speak: () => s.promise,
+      play: (url) => played.push(url),
+      captionSeconds: 2.4,
+    });
+    u.job(JOB);
+    s.resolve(receipt(true));
+    await flush();
+    u.tick(10.5, { kind: 'wave', text: 'unlisted', line: JOB.text }, false, false);
+    expect(played).toEqual(['/audio/abc.wav']);
+    played.length = 0;
     // A newer line arrives before the breather: the held take is dropped, not played later.
     const e = deferred<SpeakAnswer>();
     const w = createVoicer({

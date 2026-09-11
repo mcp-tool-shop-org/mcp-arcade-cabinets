@@ -177,6 +177,7 @@ async function sitMcp(model) {
   const health = voiceArg === 'off' ? null : await cs.voiceHealth({ url: voiceUrl });
   const voiceOn = voiceArg === 'on' || (voiceArg === 'auto' && health !== null);
   const takes = [];
+  let spokenSpawn = '';
   const voicer = cs.createVoicer({
     speak: async (job) => {
       const a = await cs.speakLine(job, { url: voiceUrl });
@@ -299,9 +300,28 @@ async function sitMcp(model) {
       }
     }
     host.takeSfx();
+    if (voiceOn && state.boss && state.boss.alive) {
+      const spawnKey = `${state.wave}:${state.boss.kind}`;
+      if (spawnKey !== spokenSpawn && state.caption?.kind === 'wave' && state.caption.line) {
+        spokenSpawn = spawnKey;
+        voicer.job({
+          text: state.caption.line,
+          kind: state.boss.kind,
+          voice: cs.DEFAULT_PERSONAS.boss[state.boss.kind].voice,
+          maxGap: cs.DEFAULT_PERSONAS.voice.maxGap,
+          at: state.t,
+        });
+      }
+    }
     voicer.tick(
       state.t,
-      state.caption ? { kind: state.caption.kind ?? 'wave', text: state.caption.text } : null,
+      state.caption
+        ? {
+            kind: state.caption.kind ?? 'wave',
+            text: state.caption.text,
+            ...(state.caption.line ? { line: state.caption.line } : {}),
+          }
+        : null,
       !state.boss && g.waveKindAt(round, state.t) === 'breather',
       state.scene !== null,
     );

@@ -142,11 +142,23 @@ export function mountGhost(
   const voiceStat = document.createElement('span');
   voiceStat.className = 'muted seat';
   voiceStat.textContent = '';
-  void voiceHealth({ url: '/voice' }).then((h) => {
-    if (!h) return;
-    voice.disabled = false;
-    voiceStat.textContent = 'voice ready';
-  });
+  // Probe for the worker until it answers, so starting `pnpm voice` after
+  // the page opened still enables the box, and say plainly when it is missing.
+  let voiceProbe = 0;
+  const probeVoice = () => {
+    void voiceHealth({ url: '/voice' }).then((h) => {
+      if (h) {
+        voice.disabled = false;
+        if (!voice.checked) voiceStat.textContent = 'voice ready';
+        return;
+      }
+      voice.disabled = true;
+      voice.checked = false;
+      voiceStat.textContent = 'voice: no worker (pnpm voice)';
+      voiceProbe = window.setTimeout(probeVoice, 5000);
+    });
+  };
+  probeVoice();
   let daemon: 'unknown' | 'up' | 'down' = 'unknown';
   let listedModels: string[] = [];
   const pilotModel = document.createElement('select');
@@ -330,6 +342,7 @@ export function mountGhost(
   let last = performance.now();
   let raf = 0;
   let musicEnded = false;
+  let spokenSpawn = '';
   const seatSay = (text: string) => {
     seat.textContent = text;
   };
@@ -468,6 +481,7 @@ export function mountGhost(
     fireSeat = newSeat();
     sayKey = '';
     sayAt = Number.NEGATIVE_INFINITY;
+    spokenSpawn = '';
     nextBtn.disabled = true;
     warm();
   };
@@ -531,9 +545,30 @@ export function mountGhost(
       const k = host.takeSfx();
       if (k && audio) audio.play(k);
     }
+    // With Voice on, every boss speaks its authored spawn line (synthesised
+    // once and cached, G15), so the voice is heard with or without a seat.
+    if (voice.checked && !state.scene && state.boss && state.boss.alive) {
+      const spawnKey = `${state.wave}:${state.boss.kind}`;
+      if (spawnKey !== spokenSpawn && state.caption?.kind === 'wave' && state.caption.line) {
+        spokenSpawn = spawnKey;
+        voicer.job({
+          text: state.caption.line,
+          kind: state.boss.kind,
+          voice: DEFAULT_PERSONAS.boss[state.boss.kind].voice,
+          maxGap: DEFAULT_PERSONAS.voice.maxGap,
+          at: state.t,
+        });
+      }
+    }
     voicer.tick(
       state.t,
-      state.caption ? { kind: state.caption.kind ?? 'wave', text: state.caption.text } : null,
+      state.caption
+        ? {
+            kind: state.caption.kind ?? 'wave',
+            text: state.caption.text,
+            ...(state.caption.line ? { line: state.caption.line } : {}),
+          }
+        : null,
       !state.boss && waveKindAt(round, state.t) === 'breather',
       state.scene !== null,
     );
@@ -561,6 +596,7 @@ export function mountGhost(
   });
   const leave = () => {
     cancelAnimationFrame(raf);
+    window.clearTimeout(voiceProbe);
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     audio?.close();

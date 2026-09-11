@@ -168,6 +168,13 @@ export const BED_DUCK = 0.45;
 export const BURST_LEVEL = 0.85;
 /** Seconds the music takes to leave at the scene. */
 export const END_FADE_S = 1.5;
+/**
+ * Seconds a bed plays before it may give way to the wave's bed (the
+ * Director's word, 2026-09-11: a song plays for at least a minute, then
+ * fades into another). A wanted change before that is remembered and
+ * made when the hold is up.
+ */
+export const BED_MIN_S = 60;
 
 export type BedLookup = (key: string) => MediaBed | undefined;
 
@@ -324,7 +331,9 @@ export function attach(
   ctx: CtxLike,
   pattern: MusicPattern = DEFAULT_MUSIC,
   bed?: BedLookup,
+  opts: { minBedSeconds?: number } = {},
 ): AudioOut {
+  const minBed = opts.minBedSeconds ?? BED_MIN_S;
   let muted = false;
   let nextBar = 0;
   let lastKind = '';
@@ -332,6 +341,9 @@ export function attach(
   // paused where it is, so it resumes from there when its kind comes back;
   // nothing restarts from zero mid-round.
   let currentBed: MediaBed | undefined;
+  let currentKind = '';
+  /** Round time the current bed came in; the hold runs from here. */
+  let bedSince = 0;
   let overlay: MediaBed | undefined;
   let burstOn = false;
   let lastT = 0;
@@ -390,11 +402,16 @@ export function attach(
       osc.stop(t0 + n.dur + 0.02);
     }
   };
-  const switchBed = (waveKind: string) => {
+  const switchBed = (waveKind: string, t: number) => {
+    if (t < bedSince) bedSince = t; // the round restarted
     const next = bed?.(waveKind);
     if (next === currentBed) return Boolean(next);
+    // A bed that is playing holds for the minimum before it gives way.
+    if (currentBed && next && t - bedSince < minBed) return true;
     const leaving = currentBed;
     currentBed = next;
+    currentKind = waveKind;
+    bedSince = t;
     if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
     if (next) bringIn(next, burstOn ? BED_DUCK : 1, leaving ? BED_FADE_S : 0);
     return Boolean(next);
@@ -422,7 +439,7 @@ export function attach(
       lastT = t;
       // A recorded bed, when present, replaces the chiptune for that kind.
       // The burst is an overlay on the wave's bed, never a swap.
-      const hasBed = switchBed(waveKind);
+      const hasBed = switchBed(waveKind, t);
       setBurst(burst);
       if (hasBed) return;
       const chipKind = burst ? 'parallelism' : waveKind;
@@ -445,6 +462,7 @@ export function attach(
       // The round clock has stopped; step the fade on the wall clock.
       const beds = [currentBed, overlay].filter((b): b is MediaBed => Boolean(b));
       currentBed = undefined;
+      currentKind = '';
       overlay = undefined;
       burstOn = false;
       fades = [];
@@ -474,6 +492,7 @@ export function attach(
       currentBed?.pause();
       overlay?.pause();
       currentBed = undefined;
+      currentKind = '';
       overlay = undefined;
       fades = [];
       void ctx.close?.();
