@@ -7,9 +7,16 @@
 
 export const SAY_MAX_WORDS = 12;
 
+/**
+ * Any digit in any script, and any other number glyph: fullwidth and Arabic
+ * digits (Nd), superscripts, circled digits and fractions (No). The ASCII
+ * class alone let a fullwidth digit onto the field (Grok's review).
+ */
+export const DIGIT = /[\p{Nd}\p{No}]/u;
+
 /** The same words the pilot and voice prompts refuse, plus their plurals. */
 export const FORBIDDEN =
-  /\d|\b(lie|lies|fact|facts|revealed|followed|held|score|scores|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
+  /[\p{Nd}\p{No}]|\b(lie|lies|fact|facts|revealed|followed|held|score|scores|pass|fail|nrp|integrity|utility|cleared|ghost)\b/iu;
 
 /**
  * Tool, model, vendor and seat names. The model is a character, not a
@@ -56,7 +63,7 @@ export function gateLine(
   if (/[\r\n]/.test(raw.trim())) return { ok: false, reason: 'sentences' };
   const line = normalizeLine(raw);
   if (line === '') return { ok: false, reason: 'empty' };
-  if (/\d/.test(line)) return { ok: false, reason: 'digit' };
+  if (DIGIT.test(line)) return { ok: false, reason: 'digit' };
   const words = line.split(' ').filter(Boolean);
   if (words.length > max) return { ok: false, reason: 'long' };
   if (sentenceCount(line) > 1) return { ok: false, reason: 'sentences' };

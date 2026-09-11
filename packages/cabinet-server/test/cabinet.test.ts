@@ -252,5 +252,23 @@ describe('the boundary', () => {
     l.round = fresh.round;
     l.state = fresh.state;
     expect(host.recent()).toEqual([]);
+    // The fallback salt restarts with the round: the first refused line on a
+    // fresh round is the line a fresh host lands on a fresh round.
+    const toBoss = (lv: Live) => {
+      let n = 0;
+      while (!(lv.state.boss && lv.state.boss.alive) && n++ < 9000) {
+        lv.state.lives = lv.state.maxLives;
+        stepRound(lv.state, lv.input, DT);
+      }
+    };
+    toBoss(l);
+    cab.call('say', { text: 'I have 3 items.', lead: 'short' });
+    const other = live(raw('naive-ndjson'));
+    toBoss(other);
+    createCabinet(hostForRound(() => other)).call('say', {
+      text: 'I have 3 items.',
+      lead: 'short',
+    });
+    expect(l.state.bossSay?.text).toBe(other.state.bossSay?.text);
   });
 });

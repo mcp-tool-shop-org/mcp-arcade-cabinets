@@ -74,11 +74,16 @@ export function hostForRound(
   const recent: string[] = [];
   let recentFor: RoundState | null = null;
 
+  // A new round under the host forgets the lines and restarts the fallback
+  // salt, so the same call sequence on the same tape lands the same lines.
+  const forget = (state: RoundState) => {
+    if (recentFor === state) return;
+    recent.length = 0;
+    says = 0;
+    recentFor = state;
+  };
   const remember = (state: RoundState, line: string) => {
-    if (recentFor !== state) {
-      recent.length = 0;
-      recentFor = state;
-    }
+    forget(state);
     recent.push(line);
     while (recent.length > personas.window) recent.shift();
   };
@@ -96,6 +101,7 @@ export function hostForRound(
       const boss = state.boss;
       if (!boss || !boss.alive || state.scene) return 'no boss';
       const own = attachedPatterns(round).voice.boss[boss.kind];
+      forget(state);
       says += 1;
       const text = line ?? pickLine(own, round.seed, 61 + says);
       state.bossSay = { text, at: state.t + personas.lead[lead] };

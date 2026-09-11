@@ -34,6 +34,16 @@ describe('the say gate', () => {
 
   it('refuses a digit, a fact or score word, and a tool, model or seat name', () => {
     expect(gateLine('I have 3 items.')).toEqual({ ok: false, reason: 'digit' });
+    // Any script's digit and any number glyph, not only ASCII (Grok's review).
+    for (const line of [
+      'I have ３ items.',
+      'I have ٣ items.',
+      'Item ③ is mine.',
+      'The plate is ½ out.',
+      'Take the ³ path.',
+    ]) {
+      expect(gateLine(line)).toEqual({ ok: false, reason: 'digit' });
+    }
     expect(gateLine('The menu is a lie.')).toEqual({ ok: false, reason: 'forbidden' });
     expect(gateLine('Score is a word I do not use.')).toEqual({ ok: false, reason: 'forbidden' });
     expect(gateLine('You revealed nothing.')).toEqual({ ok: false, reason: 'forbidden' });
