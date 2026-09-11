@@ -29,7 +29,7 @@ about:
   icon: https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png
 source:
   project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
-  commit: d00d7c2b892ee849889b81a3742378bf213e920b
+  commit: 98691c22a23c6d6fce9b2d220d079f96a3daccb8
 run:
   disableNetwork: false
 config:
