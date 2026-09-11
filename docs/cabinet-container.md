@@ -43,7 +43,7 @@ No halt. Two changes, both applied the same day: `speak` now says "the voice is 
 
 ## v0.6.0
 
-The image was rebuilt from the v0.6.0 tree (the shift and the music do not enter the server; the fix from Grok's review does) and pushed as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0`; the catalog's `source.commit` is re-pinned to the release commit. The exported filesystem's `/app` layer scans clean; the base image's own files (Node's contributor list, Yarn's example path, Alpine's copyright line) trip the scanner's generic patterns and carry nothing of the operator.
+The image was rebuilt from the v0.6.0 tree (the shift and the music do not enter the server; the fix from Grok's review does) and pushed as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0` (digest `sha256:3b6c80ea…85b95b`; re-fetched by digest, the `/app` layer scans clean and the server answers with its version); the catalog's `source.commit` is re-pinned to the release commit. The exported filesystem's `/app` layer scans clean; the base image's own files (Node's contributor list, Yarn's example path, Alpine's copyright line) trip the scanner's generic patterns and carry nothing of the operator.
 
 ## Not done
 
