@@ -17,7 +17,7 @@ Read this, then `CLAUDE.md`, then `docs/cabinet-server.md` (slices 1–3: the de
 
 1. **The Director plays the seat on the local shell**: `pnpm voice` in one terminal, `pnpm -F @mcp-arcade-cabinets/cabinets dev` in another, the **Ollama bosses** and **Voice** checkboxes, a Cloud tag. Hears the lines. Set `ANTHROPIC_API_KEY` in the dev server's environment to sit the Claude tier; it was built, not measured live.
 2. **The voice pass on `voice.json`** is the Director's: the seed pools are thin (whisperer three, menu five, doorman two one-sentence lines of eight each), and the three preset voices (`bf_emma`, `am_michael`, `bm_george`) are a first cast. A clone per boss kind waits on a consented recording; `personas.json → boss.<kind>.voice.clone` is the slot.
-3. **Grok reviews slice 4** (`git log 3304718..main`): `voice/worker.py`, `voice.ts`, the `speak` tool, the voice sheets, the shell's voicer. Nothing in the sim changed.
+3. **Grok reviews slice 4** (`git log 3304718..main`): `voice/worker.py`, `voice.ts`, the `speak` tool, the voice sheets, the shell's voicer. Nothing in the sim changed. Paste `docs/cabinet-voice.review.kickoff.md`; the report lands as `docs/cabinet-voice.review.md`.
 4. **Slices 5–6** (stingers and backdrops; the container and the Catalog PR) wait on the Director's word. Slice 6 will have to revisit `SHIP_GATE.md`, whose `[mcp]` rows still say "not an MCP server", and bake the tapes and `tools.json` into the image; the voice stays on the host.
 5. Translations before any later tag, not before.
 
