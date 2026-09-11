@@ -21,14 +21,14 @@ Measured: with the worker bound to the host and a token set, a container started
 
 ## What was measured, in numbers
 
-| Check                                                  | Result                                                                                                                                                           |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Image                                                  | built and tagged `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0`, `node:22-alpine`, one bundled file; the push to GHCR waits on the packages scope (below) |
-| Connect over stdio, one CPU, two gigabytes, no network | ~0.4 s                                                                                                                                                           |
-| `tools/list`                                           | 8 ms, six tools                                                                                                                                                  |
-| `mcp-arcade bout --target docker`                      | four experiments pass, digest pinned                                                                                                                             |
-| Worker without bearer                                  | 401 on `/speak` and `/audio`; 200 on `/health`                                                                                                                   |
-| Container to host worker with bearer                   | one take spoken and receipted                                                                                                                                    |
+| Check                                                  | Result                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Image                                                  | `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0`, digest `sha256:743a9eda…3bca75`, `node:22-alpine`, one bundled file; pushed by the Director after refreshing the token's packages scope; the published filesystem re-fetched by digest scans clean |
+| Connect over stdio, one CPU, two gigabytes, no network | ~0.4 s                                                                                                                                                                                                                                                    |
+| `tools/list`                                           | 8 ms, six tools                                                                                                                                                                                                                                           |
+| `mcp-arcade bout --target docker`                      | four experiments pass, digest pinned                                                                                                                                                                                                                      |
+| Worker without bearer                                  | 401 on `/speak` and `/audio`; 200 on `/health`                                                                                                                                                                                                            |
+| Container to host worker with bearer                   | one take spoken and receipted                                                                                                                                                                                                                             |
 
 ## What was refused, and why
 
@@ -39,7 +39,6 @@ Measured: with the worker bound to the host and a token set, a container started
 
 ## Not done
 
-- **The push to GHCR.** `docker login ghcr.io` with the `gh` token succeeded but the push was refused: the token carries `read:packages` and `delete:packages`, not `write:packages`. The Director refreshes the token (`gh auth refresh -h github.com -s write:packages`, a browser device flow) and the push is one command; the compensator in the dispatch table stands.
 - The Catalog PR (the Director), then Docker's build, signing and listing.
 - Multi-arch (`linux/arm64`) if the Catalog asks for it; the Dockerfile has nothing arch-specific.
 - Grok's review of slice 6.

@@ -66,7 +66,7 @@ KOKORO_DIR=/path/to/kokoro VOICE_TOKEN=<token> VOICE_HOST=0.0.0.0 pnpm voice
 docker run -i --rm -e VOICE_URL=http://host.docker.internal:7788 -e VOICE_TOKEN=<token> mcp-arcade-cabinets
 ```
 
-Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo; the image publishes as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets`.
+Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo; the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0`.
 
 ## Not in this layer
 
