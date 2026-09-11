@@ -94,7 +94,28 @@ export interface MountExtra {
   furniture?: string[];
   nextLabel?: string;
   hint?: string;
+  /** True on a shift call that is not the last: the music carries through the card. */
+  holdMusic?: boolean;
 }
+
+// The music lives as long as the page (the Director's word, 2026-09-11): a
+// shift hears a run of beds through its cards rather than four openings,
+// and a bed never restarts from zero. Beds load once; the context is built
+// on the first gesture, as browsers require.
+const BEDS = new Map<string, HTMLAudioElement>();
+let bedsRequested = false;
+const loadBeds = () => {
+  if (bedsRequested) return;
+  bedsRequested = true;
+  for (const key of TRACK_KEYS) {
+    const el = new Audio();
+    el.preload = 'auto';
+    el.loop = true;
+    el.addEventListener('canplaythrough', () => BEDS.set(key, el), { once: true });
+    el.src = `${import.meta.env.BASE_URL}tracks/${key}.mp3`;
+  }
+};
+const music: { audio: AudioOut | null; muted: boolean } = { audio: null, muted: false };
 
 export function mountGhost(
   root: HTMLElement,
@@ -309,23 +330,19 @@ export function mountGhost(
     ...(extra.furniture ?? []),
   ];
 
-  let audio: AudioOut | null = null;
-  let muted = false;
-  const beds = new Map<string, HTMLAudioElement>();
-  for (const key of TRACK_KEYS) {
-    const el = new Audio();
-    el.preload = 'auto';
-    el.loop = true;
-    el.addEventListener('canplaythrough', () => beds.set(key, el), { once: true });
-    el.src = `${import.meta.env.BASE_URL}tracks/${key}.mp3`;
-  }
+  loadBeds();
+  let audio: AudioOut | null = music.audio;
+  let muted = music.muted;
+  mute.textContent = muted ? 'Sound off' : 'Sound on';
   const ensureAudio = () => {
     if (audio || typeof AudioContext === 'undefined') return;
-    audio = attach(new AudioContext(), undefined, (k) => beds.get(k));
+    audio = attach(new AudioContext(), undefined, (k) => BEDS.get(k), { seed: round.seed });
     audio.setMuted(muted);
+    music.audio = audio;
   };
   mute.addEventListener('click', () => {
     muted = !muted;
+    music.muted = muted;
     mute.textContent = muted ? 'Sound off' : 'Sound on';
     ensureAudio();
     audio?.setMuted(muted);
@@ -365,6 +382,8 @@ export function mountGhost(
     prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor(), climb: extra.climb ?? 0 });
   let round: Round = newRound();
   let state: RoundState = createRoundState(round);
+  // The opening bed follows the round's seed; a bed already playing keeps its run.
+  audio?.seed(round.seed);
   // Seeded from the fresh state, not null, so the first wave card's cue fires.
   let prev: CueSnapshot | null = snapshot(state);
   let last = performance.now();
@@ -504,6 +523,7 @@ export function mountGhost(
   const restart = () => {
     round = newRound();
     state = createRoundState(round);
+    audio?.seed(round.seed);
     prev = snapshot(state);
     live.round = round;
     live.state = state;
@@ -541,19 +561,20 @@ export function mountGhost(
     if (audio) {
       for (const c of cues(prev, next)) audio.play(c);
       if (!state.scene) {
-        // One bed per wave: a boss wave plays its boss's bed from the card
-        // on; the bed stays through the breather and the tail. A burst is
-        // an overlay, never a swap. Measured before this rule: twenty bed
-        // switches in a ninety-second round, most stretches under four
-        // seconds, every one a restart from zero.
+        // The wave's bed: a boss wave names its boss's bed; any other wave
+        // asks for the pool, which the player rotates through at each hold.
+        // A burst speeds the playing bed up, never a swap. Measured before
+        // the hold: twenty bed switches in a ninety-second round, most
+        // stretches under four seconds, every one a restart from zero.
         const bound = round.waveBounds[state.wave];
         const waveKind = bound ? kindOfAtom(bound.atom) : 'inspect';
         const bedKind = bound ? (bossKindFor(bound.atom) ?? waveKind) : 'inspect';
-        audio.tick(state.t, bedKind === 'breather' ? 'inspect' : bedKind, state.parallelism);
+        audio.tick(state.t, bedKind, state.parallelism);
         musicEnded = false;
       } else if (!musicEnded) {
         musicEnded = true;
-        audio.end();
+        // In a shift the bed plays on through the card to the next call.
+        if (!extra.holdMusic) audio.end();
       }
     }
     if (ollama.checked && !state.scene) {
@@ -628,11 +649,12 @@ export function mountGhost(
     window.clearTimeout(voiceProbe);
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
-    audio?.close();
     root.classList.remove('playing');
   };
   back.addEventListener('click', () => {
     leave();
+    // Back to the cabinets: the music leaves; the player stays for the next round.
+    if (audio && (!state.scene || extra.holdMusic)) audio.end();
     onExit();
   });
   nextBtn.addEventListener('click', () => {

@@ -125,15 +125,6 @@ export const TRACKS: Record<string, MusicPattern> = {
       doorman: [5, -1, 5, 7, 10, 7, 5, -1, 2, 0, 2, -1, 5, -1, -1, -1],
     },
   },
-  parallelism: {
-    scale: [0, 2, 3, 5, 7, 8, 10, 12],
-    rootHz: 146,
-    bpm: 168,
-    bass: [0, 0, 7, 7, 3, 3, 10, 10],
-    lead: {
-      parallelism: [7, 4, 7, 12, 7, 4, 0, 7, 10, 7, 4, 0, 7, 12, 7, -1],
-    },
-  },
 };
 
 /** Recorded beds the cabinet may overlay. Missing files keep the chiptune. */
@@ -146,9 +137,13 @@ export const TRACK_KEYS = [
   'whisperer',
   'menu',
   'doorman',
-  'parallelism',
 ] as const;
 export type TrackKey = (typeof TRACK_KEYS)[number];
+/**
+ * The wave beds a round opens on and rotates through (the seed picks the
+ * opening); a boss wave brings its own bed instead.
+ */
+export const BED_POOL: readonly string[] = ['inspect', 'breather', 'poison', 'rug', 'unlisted'];
 
 /** Enough of an HTMLAudioElement for the recorded overlay. */
 export interface MediaBed {
@@ -156,16 +151,23 @@ export interface MediaBed {
   muted: boolean;
   volume: number;
   currentTime: number;
+  /** 1 is as recorded; a burst pushes it up and lets it back down. */
+  playbackRate: number;
+  /** Set true where the browser has it, so a faster bed keeps its key. */
+  preservesPitch?: boolean;
   play(): Promise<void> | void;
   pause(): void;
 }
 
-/** Seconds a bed takes to come in or go out; the burst overlay is quicker. */
+/** Seconds a bed takes to come in or go out. */
 export const BED_FADE_S = 0.8;
-export const BURST_FADE_S = 0.35;
-/** The wave's bed under a burst, and the burst bed over it. */
-export const BED_DUCK = 0.45;
-export const BURST_LEVEL = 0.85;
+/**
+ * A burst speeds the playing bed up by this much, pitch kept, and ramps
+ * there and back over BURST_RAMP_S (the Director's word, 2026-09-11: no
+ * burst track, it was too frantic; the normal music, faster).
+ */
+export const BURST_RATE = 1.15;
+export const BURST_RAMP_S = 0.6;
 /** Seconds the music takes to leave at the scene. */
 export const END_FADE_S = 1.5;
 /**
@@ -311,6 +313,8 @@ export interface AudioOut {
   tick(t: number, waveKind: string, burst?: boolean): void;
   /** The round ended with a scene: the music leaves over END_FADE_S, wall clock. */
   end(): void;
+  /** Seed the opening bed for a round about to start; ignored while a bed plays. */
+  seed(seed: number): void;
   setMuted(muted: boolean): void;
   close(): void;
 }
@@ -326,24 +330,39 @@ interface CtxLike {
 /**
  * Attach the score to an AudioContext. The shell constructs the context on
  * the first user gesture (browsers require it); tests never call this.
+ *
+ * Beds (the Director's decisions, 2026-09-11): a round opens on a bed the
+ * seed picks from the pool of wave beds, holds it for `minBedSeconds`, then
+ * rotates to the next pool bed; a boss wave brings its own bed when the
+ * hold is up. The hold carries across a restart or the next call of a
+ * shift, so a shift hears a run of beds rather than four openings. A burst
+ * speeds the playing bed up (`burstRate`) instead of laying a track over it.
  */
 export function attach(
   ctx: CtxLike,
   pattern: MusicPattern = DEFAULT_MUSIC,
   bed?: BedLookup,
-  opts: { minBedSeconds?: number } = {},
+  opts: {
+    minBedSeconds?: number;
+    seed?: number;
+    pool?: readonly string[];
+    burstRate?: number;
+  } = {},
 ): AudioOut {
   const minBed = opts.minBedSeconds ?? BED_MIN_S;
+  const pool = opts.pool ?? BED_POOL;
+  const burstRate = opts.burstRate ?? BURST_RATE;
   let muted = false;
   let nextBar = 0;
   let lastKind = '';
-  // The wave's bed and the burst overlay. A bed that leaves is faded and
-  // paused where it is, so it resumes from there when its kind comes back;
-  // nothing restarts from zero mid-round.
+  // The wave's bed. A bed that leaves is faded and paused where it is, so
+  // it resumes from there when its turn comes back; nothing restarts from
+  // zero mid-round.
   let currentBed: MediaBed | undefined;
   /** Round time the current bed came in; the hold runs from here. */
   let bedSince = 0;
-  let overlay: MediaBed | undefined;
+  /** Where the pool rotation stands; the seed sets the opening. */
+  let poolAt = pool.length ? Math.abs(opts.seed ?? 0) % pool.length : 0;
   let burstOn = false;
   let lastT = 0;
   interface Fade {
@@ -365,7 +384,16 @@ export function attach(
     fades.push({ bed, from: bed.volume, to, left: dur, dur, pauseAtEnd });
   };
   const runFades = (dt: number) => {
-    if (dt <= 0 || fades.length === 0) return;
+    if (dt <= 0) return;
+    // The burst ramps the playing bed's rate up and back over BURST_RAMP_S.
+    if (currentBed) {
+      const target = burstOn ? burstRate : 1;
+      const step = ((burstRate - 1) * dt) / BURST_RAMP_S;
+      const rate = currentBed.playbackRate;
+      currentBed.playbackRate =
+        rate < target ? Math.min(target, rate + step) : Math.max(target, rate - step);
+    }
+    if (fades.length === 0) return;
     const keep: Fade[] = [];
     for (const f of fades) {
       f.left = Math.max(0, f.left - dt);
@@ -376,9 +404,11 @@ export function attach(
     }
     fades = keep;
   };
-  const bringIn = (bed: MediaBed, level: number, dur: number) => {
+  const bringIn = (bed: MediaBed, level: number, dur: number, rate: number) => {
     bed.loop = true;
     bed.muted = muted;
+    if ('preservesPitch' in bed) bed.preservesPitch = true;
+    bed.playbackRate = rate;
     // A bed comes in from silence when there is a fade to come in on.
     bed.volume = dur > 0 ? 0 : level;
     void bed.play();
@@ -401,50 +431,62 @@ export function attach(
       osc.stop(t0 + n.dur + 0.02);
     }
   };
+  /** The pool bed at the rotation, skipping keys with no file; undefined when the pool has none. */
+  const poolBed = (): MediaBed | undefined => {
+    for (let i = 0; i < pool.length; i++) {
+      const b = bed?.(pool[(poolAt + i) % pool.length]!);
+      if (b) {
+        poolAt = (poolAt + i) % pool.length;
+        return b;
+      }
+    }
+    return undefined;
+  };
   const switchBed = (waveKind: string, t: number) => {
-    if (t < bedSince) bedSince = t; // the round restarted
-    const next = bed?.(waveKind);
-    if (next === currentBed) return Boolean(next);
+    const fromPool = pool.includes(waveKind) || !bed?.(waveKind);
     // A bed that is playing holds for the minimum before it gives way.
-    if (currentBed && next && t - bedSince < minBed) return true;
+    if (currentBed && t - bedSince < minBed) return true;
+    let next: MediaBed | undefined;
+    if (fromPool) {
+      // The hold is up and no boss is on: rotate to the next pool bed.
+      if (currentBed) poolAt = (poolAt + 1) % Math.max(1, pool.length);
+      next = poolBed();
+    } else {
+      next = bed?.(waveKind);
+    }
+    if (next === currentBed) return Boolean(next);
     const leaving = currentBed;
+    const rate = leaving?.playbackRate ?? 1;
     currentBed = next;
     bedSince = t;
-    if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
-    if (next) bringIn(next, burstOn ? BED_DUCK : 1, leaving ? BED_FADE_S : 0);
-    return Boolean(next);
-  };
-  const setBurst = (on: boolean) => {
-    if (on === burstOn) return;
-    burstOn = on;
-    const burstBed = bed?.('parallelism');
-    if (on) {
-      if (burstBed && burstBed !== currentBed) bringIn(burstBed, BURST_LEVEL, BURST_FADE_S);
-      overlay = burstBed;
-      if (currentBed && currentBed !== burstBed) fadeTo(currentBed, BED_DUCK, BURST_FADE_S);
-    } else {
-      if (overlay && overlay !== currentBed) fadeTo(overlay, 0, BURST_FADE_S, true);
-      overlay = undefined;
-      if (currentBed) fadeTo(currentBed, 1, BURST_FADE_S);
+    if (leaving) {
+      fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
     }
+    if (next) bringIn(next, 1, leaving ? BED_FADE_S : 0, rate);
+    if (leaving) leaving.playbackRate = 1;
+    return Boolean(next);
   };
   return {
     play(name) {
       schedule(sfx(name), ctx.currentTime);
     },
     tick(t, waveKind, burst = false) {
+      burstOn = burst;
+      // A new round on the same player (a restart, the next call of a
+      // shift): the round clock went back to zero; the hold carries.
+      if (t < lastT) bedSince = t - Math.max(0, lastT - bedSince);
       runFades(Math.max(0, Math.min(0.1, t - lastT)));
       lastT = t;
       // A recorded bed, when present, replaces the chiptune for that kind.
-      // The burst is an overlay on the wave's bed, never a swap.
       const hasBed = switchBed(waveKind, t);
-      setBurst(burst);
       if (hasBed) return;
-      const chipKind = burst ? 'parallelism' : waveKind;
-      // Bars are scheduled by the round clock so the music follows hitstop and the end.
-      const pat = TRACKS[chipKind] ?? pattern;
-      if (waveKind !== lastKind) {
-        lastKind = waveKind;
+      // Bars are scheduled by the round clock so the music follows hitstop
+      // and the end; a burst plays the same pattern faster.
+      const base = TRACKS[waveKind] ?? pattern;
+      const pat = burst ? { ...base, bpm: base.bpm * burstRate } : base;
+      const key = `${waveKind}:${burst ? 'burst' : ''}`;
+      if (key !== lastKind) {
+        lastKind = key;
         nextBar = Math.floor(t / barSeconds(pat));
       }
       const kindBs = barSeconds(pat);
@@ -452,15 +494,19 @@ export function attach(
       if (barIndex < nextBar - 1) nextBar = barIndex;
       if (barIndex >= nextBar) {
         const lead = ctx.currentTime + 0.05;
-        schedule(bar(pat, chipKind, barIndex), lead);
+        schedule(bar(pat, waveKind, barIndex), lead);
         nextBar = barIndex + 1;
       }
     },
+    seed(seed) {
+      // Only an opening is seeded; a bed that is playing keeps its rotation.
+      if (currentBed || pool.length === 0) return;
+      poolAt = Math.abs(seed) % pool.length;
+    },
     end() {
       // The round clock has stopped; step the fade on the wall clock.
-      const beds = [currentBed, overlay].filter((b): b is MediaBed => Boolean(b));
+      const beds = [currentBed].filter((b): b is MediaBed => Boolean(b));
       currentBed = undefined;
-      overlay = undefined;
       burstOn = false;
       fades = [];
       if (beds.length === 0) return;
@@ -473,7 +519,10 @@ export function attach(
           b.volume = Math.max(0, (start[k] ?? 1) * (1 - i / steps));
         });
         if (i >= steps) {
-          for (const b of beds) b.pause();
+          for (const b of beds) {
+            b.pause();
+            b.playbackRate = 1;
+          }
           return;
         }
         setTimeout(step, (END_FADE_S * 1000) / steps);
@@ -483,13 +532,13 @@ export function attach(
     setMuted(m) {
       muted = m;
       if (currentBed) currentBed.muted = m;
-      if (overlay) overlay.muted = m;
     },
     close() {
-      currentBed?.pause();
-      overlay?.pause();
+      if (currentBed) {
+        currentBed.pause();
+        currentBed.playbackRate = 1;
+      }
       currentBed = undefined;
-      overlay = undefined;
       fades = [];
       void ctx.close?.();
     },

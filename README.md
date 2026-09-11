@@ -29,11 +29,11 @@ A **tape** is a recording of one bout. This game only reads tapes. It never talk
 - **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
 - **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
 - **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot.
-- **Parallelism bursts.** Seat, live and hardcore get bursts that multiply the field with honest copies and heat the fire, laid over the music. They start short and climb wave by wave: more copies, hotter fire, longer bursts.
+- **Parallelism bursts.** Seat, live and hardcore get bursts that multiply the field with honest copies and heat the fire, and the music speeds up under them. They start short and climb wave by wave: more copies, hotter fire, longer bursts.
 - **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu.
 - **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
 
-Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only. A song plays for a couple of minutes before it fades into the next.
+Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only. A round opens on a song its seed picks; a song plays for a couple of minutes before it fades into the next, a boss brings its own, and a shift carries the music through its cards.
 
 Or take a **shift**: the rig hands you four calls in a row, drawn from the roster and never the same four twice running, each one a server the agent was sent to, with a card between them naming the next server and what the agent was asked to run. The lamps refill at every call and the bursts climb call by call, so the last call starts where the first one ended. At the end the shift has a name of four words, like `frost robin chalk garden`: type it on the menu to take the same shift again, or hand it to someone. No digit, no count, no ranking.
 

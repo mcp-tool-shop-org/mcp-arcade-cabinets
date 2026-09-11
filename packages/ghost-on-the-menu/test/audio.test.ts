@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { attach, bar, barSeconds, DEFAULT_MUSIC, TRACKS, sfx, type Note } from '../src/audio';
+import {
+  attach,
+  bar,
+  barSeconds,
+  BED_POOL,
+  BURST_RATE,
+  DEFAULT_MUSIC,
+  TRACK_KEYS,
+  TRACKS,
+  sfx,
+  type Note,
+} from '../src/audio';
 
 describe('the score is pure data (no assets, no sim)', () => {
   it('every effect is a short list of notes with sane gains', () => {
@@ -47,8 +58,10 @@ describe('the score is pure data (no assets, no sim)', () => {
     expect(bar(DEFAULT_MUSIC, 'nonsense', 3).length).toBeGreaterThan(0); // falls back to the breather
     expect(TRACKS.poison).not.toEqual(TRACKS.inspect);
     expect(TRACKS.whisperer!.rootHz).not.toBe(TRACKS.doorman!.rootHz);
-    expect(TRACKS.parallelism!.bpm).toBeGreaterThan(TRACKS.inspect!.bpm);
-    expect(bar(TRACKS.parallelism!, 'parallelism', 0).length).toBeGreaterThan(0);
+    // No burst track (the Director's word): a burst is the wave's own music, faster.
+    expect(TRACKS.parallelism).toBeUndefined();
+    expect(TRACK_KEYS).not.toContain('parallelism');
+    for (const k of BED_POOL) expect(TRACK_KEYS).toContain(k);
   });
   it('the player schedules bars by the round clock, so hitstop and the end hold the music', () => {
     const started: number[] = [];
@@ -174,6 +187,7 @@ describe('recorded beds', () => {
       muted: false,
       volume: 1,
       currentTime: 0,
+      playbackRate: 1,
       playing: false,
       plays: 0,
       play() {
@@ -230,7 +244,7 @@ describe('recorded beds', () => {
     expect(inspect.plays).toBe(2);
   });
 
-  it('keeps the bed through a burst and overlays the burst bed, ducked and undone', () => {
+  it('a burst speeds the playing bed up over a ramp and lets it back down; nothing else plays', () => {
     const menu = bed();
     const parallelism = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { menu, parallelism };
@@ -238,29 +252,80 @@ describe('recorded beds', () => {
     out.tick(0, 'menu');
     out.tick(1, 'menu', true);
     expect(menu.playing).toBe(true); // never swapped out
-    expect(parallelism.playing).toBe(true);
-    for (let t = 1.05; t < 1.6; t += 0.05) out.tick(t, 'menu', true);
-    expect(menu.volume).toBeCloseTo(0.45, 2);
-    expect(parallelism.volume).toBeCloseTo(0.85, 2);
-    out.tick(3, 'menu', false);
-    for (let t = 3.05; t < 3.6; t += 0.05) out.tick(t, 'menu', false);
-    expect(parallelism.playing).toBe(false);
+    expect(parallelism.playing).toBe(false); // the old overlay is never asked for
+    for (let t = 1.05; t < 1.4; t += 0.05) out.tick(t, 'menu', true);
+    expect(menu.playbackRate).toBeGreaterThan(1);
+    expect(menu.playbackRate).toBeLessThan(BURST_RATE);
+    for (let t = 1.4; t < 2.2; t += 0.05) out.tick(t, 'menu', true);
+    expect(menu.playbackRate).toBeCloseTo(BURST_RATE, 5);
     expect(menu.volume).toBe(1);
+    out.tick(3, 'menu', false);
+    for (let t = 3.05; t < 4.2; t += 0.05) out.tick(t, 'menu', false);
+    expect(menu.playbackRate).toBe(1);
     expect(menu.plays).toBe(1);
   });
 
-  it('a wave change during a burst brings the new bed in ducked', () => {
+  it('a wave change during a burst brings the new bed in at the burst rate', () => {
     const menu = bed();
     const doorman = bed();
-    const parallelism = bed();
-    const beds: Record<string, ReturnType<typeof bed>> = { menu, doorman, parallelism };
+    const beds: Record<string, ReturnType<typeof bed>> = { menu, doorman };
     const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
     out.tick(0, 'menu');
-    out.tick(1, 'menu', true);
+    for (let t = 0.05; t < 1.5; t += 0.05) out.tick(t, 'menu', true);
     out.tick(2, 'doorman', true);
+    expect(doorman.playbackRate).toBeCloseTo(BURST_RATE, 5);
     for (let t = 2.05; t < 3.2; t += 0.05) out.tick(t, 'doorman', true);
-    expect(doorman.volume).toBeCloseTo(0.45, 2);
-    expect(parallelism.playing).toBe(true);
+    expect(menu.playing).toBe(false);
+    expect(menu.playbackRate).toBe(1);
+  });
+
+  it('opens on the bed the seed picks from the pool, and skips a bed with no file', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of ['inspect', 'poison', 'rug', 'unlisted']) beds[k] = bed();
+    // seed 1 is 'breather', which has no file here: the next pool bed opens.
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 1 });
+    out.tick(0, 'inspect');
+    expect(beds.poison!.playing).toBe(true);
+    expect(beds.inspect!.playing).toBe(false);
+    const other = attach(silentCtx(), undefined, (k) => beds[k], { seed: 4 });
+    other.tick(0, 'inspect');
+    expect(beds.unlisted!.plays).toBe(1);
+  });
+
+  it('rotates to the next pool bed at each hold, and a boss wave brings its own once the hold is up', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 10, seed: 0 });
+    out.tick(0, 'inspect');
+    expect(beds.inspect!.playing).toBe(true);
+    for (let t = 1; t < 10; t += 1) out.tick(t, 'inspect');
+    expect(beds.breather!.playing).toBe(false); // held
+    out.tick(10.5, 'inspect');
+    expect(beds.breather!.playing).toBe(true); // the same wave kind, the next bed
+    out.tick(15, 'whisperer'); // a boss during the hold waits
+    expect(beds.whisperer!.playing).toBe(false);
+    out.tick(21, 'whisperer');
+    expect(beds.whisperer!.playing).toBe(true);
+    out.tick(32, 'inspect'); // the boss is down and the hold is up: the pool goes on from where it was
+    expect(beds.poison!.playing).toBe(true);
+  });
+
+  it('carries the hold across a restart or the next call, and a seed only sets an opening', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of BED_POOL) beds[k] = bed();
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 10, seed: 0 });
+    out.tick(0, 'inspect');
+    for (let t = 1; t < 7; t += 1) out.tick(t, 'inspect');
+    out.seed(3); // a bed is playing: ignored
+    // The next call: the round clock goes back to zero, six seconds already held.
+    out.tick(0, 'inspect');
+    expect(beds.inspect!.playing).toBe(true);
+    expect(beds.inspect!.plays).toBe(1);
+    for (let t = 1; t < 4; t += 1) out.tick(t, 'inspect');
+    expect(beds.breather!.playing).toBe(false);
+    out.tick(4.5, 'inspect'); // ten and a half seconds in all
+    expect(beds.breather!.playing).toBe(true);
+    expect(beds.unlisted!.playing).toBe(false);
   });
 
   it('fades the music out at the scene on the wall clock, and a restart brings it back', () => {

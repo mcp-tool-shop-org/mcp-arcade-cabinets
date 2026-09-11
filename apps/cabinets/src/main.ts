@@ -250,6 +250,7 @@ function callCard(shift: Shift, i: number) {
         lockDifficulty: true,
         furniture: [`shift ${shift.code}`, `the ${ordinalWord(i, names.length)} call`],
         nextLabel: last ? 'End the shift' : 'Next call',
+        holdMusic: !last,
         hint: 'Left, right, space. F or the button for full screen. Click the field to retake this call.',
       },
     );
