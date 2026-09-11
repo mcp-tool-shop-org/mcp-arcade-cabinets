@@ -45,4 +45,3 @@ No halt. Two changes, both applied the same day: `speak` now says "the voice is 
 
 - The Catalog PR (the Director), then Docker's build, signing and listing.
 - Multi-arch (`linux/arm64`) if the Catalog asks for it; the Dockerfile has nothing arch-specific.
-- Grok's review of slice 6.
