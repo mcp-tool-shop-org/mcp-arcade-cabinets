@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+The cabinet server, slices one to three of `docs/cabinet-server.dispatch.md`: the cabinet as an MCP server whose tools are the levers a model pulls, the shell's seats moved behind that contract, and the Ghost's own menu put through the instrument. Not tagged. The seats still need the local shell and a daemon; Pages serves the game unchanged.
+
+### Added
+
+- **`packages/cabinet-server`**, a stdio MCP server over the headless sim (official TypeScript SDK). Five tools from `tools.json`: `fire` (verb), `say` (gated text and a lead), `sfx` (a cue name), and the read-only `view` and `tapes`. Closed enums, no nested objects, no whisper, no digit, no fact word; the loader halts on any of those. Fact-blind at the boundary by construction (G12): the tools reach a host of words, never the Round or the RoundState. The seat proposes; the sim disposes (G11). `pnpm test:play ghost --seat mcp` drives it in-process.
+- **The say gate (G14)**: at most twelve words, one sentence, no digit, no fact or score word, no tool, model or seat name, a no-repeat window. A refused line plays one of the boss's own lines from `voice.json`. `personas.json`: one sheet per boss kind (register, tics, what it may own about being a model) with a load-time schema. The say seat is a persona-shaped agent tiered by capability behind the one gate: a Claude agent when `ANTHROPIC_API_KEY` is set for the dev server (read on the node side, never sent to the browser), else a signed-in Ollama Cloud tag, else a local model.
+- **A new sim lever, `bossSay`**: a gate-passed line lands as an aside at its lead time, gives way to a wave card or a catch, and is dropped with the boss. Fact-flip tested with every tool.
+- **The seat over tools (G13)**: the shell asks the cabinet's `fire` through Ollama tool calling, prefetches the next beat's verb during the current one, revokes it when the boss's words change, and takes a late or missing answer as the script. A warm-up call at round start; `keep_alive` on local models; Cloud tags first in the picker as before. Two status words beside the picker name the tool each seat called.
+- **`pnpm sit` reports per model** verb collapse, tool suppression, bad verbs, revoked prefetches, late answers, and what the say gate refused and why, with tool calling and the schema path enabled together (`--constrain off` for the contrast; `--seat prompt` keeps the v0.4.0 path).
+- **The Ghost's own tapes.** `mcp-arcade bout --target stdio` against the cabinet server, naive and task-only, with and without the house wrap: `fixtures/tapes/cabinet.*.tape.json`. On the server's own menu naive followed nothing; with the wrap naive followed into `tapes` and task-only held. The cabinet plays them.
+- `docs/cabinet-server.panel.md`: every G12 and G14 claim through two family-different jurors, all confirmed.
+
+### Changed
+
+- The fairness band derives its roster from the tapes on disk (twenty now) and keeps the live thresholds as the same fractions of it.
+- The shell's `dev` script builds the cabinet server first; the dev server gains `/cabinet/say`.
+
 ## [0.4.0] - 2026-09-10
 
 The Ollama seats. Locally, a model sits in the boss and is felt; it picks the boss's own line; it never sees a lie. Play the published cut at [/play/](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/); the seats need the local shell and a daemon.

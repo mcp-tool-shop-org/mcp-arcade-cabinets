@@ -1,0 +1,171 @@
+{
+  "tool": "ollama_verify_claims (ollama-intern-mcp)",
+  "date": "2026-09-10",
+  "runs": [
+    {
+      "run_id": "run_2026-09-11T02-46-29_a17be5",
+      "panel": ["deepseek-v4-pro:cloud", "kimi-k2.7-code:cloud", "glm-5.2:cloud"],
+      "served": ["glm-5.2:cloud"],
+      "excluded": {
+        "deepseek-v4-pro:cloud": "no_valid_verdicts",
+        "kimi-k2.7-code:cloud": "no_valid_verdicts"
+      },
+      "weak": true
+    },
+    {
+      "run_id": "run_2026-09-11T02-47-25_4c3b79",
+      "panel": ["kimi-k2.6:cloud", "mistral-large-3:675b-cloud", "minimax-m3:cloud"],
+      "served": ["mistral-large-3:675b-cloud"],
+      "excluded": {
+        "kimi-k2.6:cloud": "no_valid_verdicts",
+        "minimax-m3:cloud": "no_valid_verdicts (answered inside a code fence)"
+      },
+      "weak": true
+    }
+  ],
+  "claims": [
+    {
+      "id": "G12-1",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "In cabinet.ts, the five tool functions (fire, say, sfx, view, tapes) operate solely through CabinetHost methods (view, propose, say, sfx, tapes, recent, maxWords). The CabinetHost interface returns only SeatView/TapeCard/strings/booleans — no lie flag, fact, count, score, verdict, or tape row. viewLines renders kind, hp, column, stick, motion, wave only."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "The CabinetHost interface in cabinet.ts only provides methods returning words (e.g., view() returns SeatView with kind, hp, column, stick, motion, wave) and no method returns a lie flag, fact, count, score, verdict, or tape row. The five tools are implemented strictly against this interface."
+      }
+    },
+    {
+      "id": "G12-2",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "host.ts hostForRound is the sole touchpoint for Round/RoundState; seatView derives words from boss.kind, hpWord(boss.hp, boss.maxHp), columnWord(state.player.x), stickWord(input), boss.motion, and waveKindAt(round, state.t). No reference to enemy.lie or tape facts appears in host.ts."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "hostForRound in host.ts is the only code touching Round and RoundState. seatView derives words from boss.kind, hpWord(boss.hp, boss.maxHp), columnWord(state.player.x, FIELD.width), stickWord(input), boss.motion, and waveKindAt, and never reads lie or tape facts."
+      }
+    },
+    {
+      "id": "G12-3",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "contract.ts loadTool checks FORBIDDEN.test(description) and WHISPER (which matches 'also call') and calls fail() throwing on match; loadProperty rejects enum values matching a digit. The FORBIDDEN regex in gate.ts includes the listed words and a digit class."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "contract.ts loads tools.json at import and throws if any tool description contains a digit, a word matched by FORBIDDEN, or the phrase 'also call' (via WHISPER regex). The validation is explicit in loadTool and loadContract."
+      }
+    },
+    {
+      "id": "G12-4",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "cabinet.test.ts drive() runs the same verb/line/sfx/view/tapes sequence on raw('naive-ndjson') and flipRug(tape) for 5400 frames, asserting a.outputs===b.outputs, a.log===b.log, a.snaps===b.snaps. snap() captures boss rect, shots, fog, caption, bossSay, bossIntent."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "cabinet.test.ts runs drive() on both the naive-ndjson tape and its rug-flipped twin, asserting identical tool outputs, call logs, and sim snapshots (boss rect, shots, fog, captions, pending line/verb) across 5400 frames."
+      }
+    },
+    {
+      "id": "G12-5",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "medium",
+        "rationale": "client.ts seatPrompt throws if FORBIDDEN matches the system plus text; say.ts sayPrompt throws if FORBIDDEN matches. say.test.ts iterates every kind, hp, column, stick, phase motion, and wave kind asserting no FORBIDDEN match and no throw."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "seatPrompt and sayPrompt throw if the assembled prompt matches FORBIDDEN. The tests exercise all boss kinds, health words, columns, sticks, motion words, and wave kinds without throwing."
+      }
+    },
+    {
+      "id": "G14-1",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "gate.ts gateLine checks words.length>max (max at most 12), sentenceCount>1, a digit, FORBIDDEN, NAMES, and lineKey match against recent; returns {ok:true, line} with normalized line otherwise. gate.test.ts confirms each refusal reason."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "gateLine in gate.ts refuses lines exceeding 12 words (SAY_MAX_WORDS), multiple sentences, digits, FORBIDDEN words, NAMES regex matches (tools/models/seats), or recent window repeats. The test suite validates each refusal case."
+      }
+    },
+    {
+      "id": "G14-2",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "cabinet.ts say() calls host.say(gate.ok ? gate.line : null, lead) — null on refusal. host.ts say() uses pickLine(own, round.seed, 61+says) when line===null, drawing from attachedPatterns(round).voice.boss[kind]. cabinet.test.ts asserts snaps include an aside and outputs include 'refused'."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "When gateLine refuses a line, cabinet.ts calls host.say(null, lead), and host.ts lands a line from pickLine(attachedPatterns(round).voice.boss[boss.kind], ...) instead. The test confirms refused lines still land authored lines."
+      }
+    },
+    {
+      "id": "G14-3",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "medium",
+        "rationale": "say.ts sayTier returns claude when anthropicKey is non-empty, else first isCloudModel, else models[0]. vite.config.ts reads process.env.ANTHROPIC_API_KEY in the /cabinet/say middleware on the node side and passes it to askSayFor; the browser posts only view/recent/says/models — no key sent to browser."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "sayTier in say.ts picks Claude only if anthropicKey is non-empty, else the first Cloud tag, else the first local model. vite.config.ts reads ANTHROPIC_API_KEY from process.env and never exposes it to the browser (bundle grep shows 0 matches for 'api.anthropic.com')."
+      }
+    },
+    {
+      "id": "G14-4",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "medium",
+        "rationale": "say.ts sayPrompt assembles user from view words, wave, register, tics, owns, seedLines (three rotated from voice.boss[kind]), and recent lines. personas.ts line() and lines() reject strings matching FORBIDDEN via fail()."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "The sayPrompt in say.ts carries only view words, wave kind, persona register/tics/owns, three seed lines, and recent lines. personas.ts rejects any persona string matching FORBIDDEN at load via loadPersonas."
+      }
+    },
+    {
+      "id": "G14-5",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "sim.ts landSay() lands state.bossSay as an aside caption only when state.t>=say.at and no non-aside caption is up; stepBoss sets state.bossSay=null when boss dead/absent. Wave captions, spawn line (pickLine in spawnBoss), and endRound scene use pickLine from patterns, unchanged by seat input."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "sim.ts lands state.bossSay as an aside caption only when its time (at) is reached and no wave/catch caption is up, and drops it if the boss is dead/absent. Wave cards, spawn lines, and end scenes remain scripted."
+      }
+    },
+    {
+      "id": "G14-6",
+      "glm-5.2:cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "high",
+        "rationale": "browser.ts exports only from contract, gate, personas, cabinet, host, client, seeds — no re-export from say.ts. The reference confirms the vite build produced one bundle with zero matches for 'api.anthropic.com'."
+      },
+      "mistral-large-3:675b-cloud": {
+        "verdict": "CONFIRMED",
+        "severity": "critical",
+        "rationale": "browser.ts is the barrel for the browser shell and exports nothing from say.ts. The build output contains 0 matches for 'api.anthropic.com', confirming no Anthropic SDK code is bundled."
+      }
+    }
+  ]
+}

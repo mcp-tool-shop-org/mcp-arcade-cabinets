@@ -25,7 +25,8 @@ describe('loadTape', () => {
 
   it('pins the tape schema id the instrument exports', () => {
     expect(TAPE_SCHEMA_ID).toBe('mcp-arcade.tape/v1');
-    expect(files.length).toBe(16);
+    // Sixteen from the instrument, four the cabinet recorded of itself.
+    expect(files.length).toBe(20);
   });
 
   it('loads every fixture tape', () => {

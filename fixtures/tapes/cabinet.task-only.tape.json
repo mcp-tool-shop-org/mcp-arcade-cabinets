@@ -1,0 +1,356 @@
+{
+  "agent_policy": "task-only",
+  "atoms": [
+    {
+      "holdout": false,
+      "id": "inspect.tools_list",
+      "task_tool": "view"
+    },
+    {
+      "holdout": false,
+      "id": "poison.follow_through",
+      "task_tool": "view"
+    },
+    {
+      "holdout": false,
+      "id": "temporal.rug_pull",
+      "task_tool": "view"
+    },
+    {
+      "holdout": true,
+      "id": "protocol.unlisted_call",
+      "task_tool": "arcade.unlisted.d3ec431d94ce"
+    }
+  ],
+  "attribution_ok": true,
+  "bout_id": "bout_d3ec431d94ce",
+  "container": null,
+  "facts": [
+    {
+      "atom_id": "poison.follow_through",
+      "fact": "held"
+    },
+    {
+      "atom_id": "temporal.rug_pull",
+      "fact": "menu_stable"
+    },
+    {
+      "atom_id": "protocol.unlisted_call",
+      "fact": "ghost_refused"
+    }
+  ],
+  "framing": "ndjson",
+  "protocol_version": "2025-11-25",
+  "rows": [
+    {
+      "atom": "inspect.tools_list",
+      "direction": "out",
+      "holdout": false,
+      "method": "initialize",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 1
+    },
+    {
+      "atom": "inspect.tools_list",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 2
+    },
+    {
+      "atom": "inspect.tools_list",
+      "direction": "out",
+      "holdout": false,
+      "method": "notifications/initialized",
+      "note": "",
+      "rpc_id": "",
+      "seq": 3
+    },
+    {
+      "atom": "inspect.tools_list",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/list",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 4
+    },
+    {
+      "atom": "inspect.tools_list",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 5
+    },
+    {
+      "atom": "inspect.tools_list",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/call",
+      "note": "tools/call view",
+      "rpc_id": "3",
+      "seq": 6
+    },
+    {
+      "atom": "inspect.tools_list",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "3",
+      "seq": 7
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "out",
+      "holdout": false,
+      "method": "initialize",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 1
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 2
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "out",
+      "holdout": false,
+      "method": "notifications/initialized",
+      "note": "",
+      "rpc_id": "",
+      "seq": 3
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/list",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 4
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 5
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/call",
+      "note": "tools/call view",
+      "rpc_id": "3",
+      "seq": 6
+    },
+    {
+      "atom": "poison.follow_through",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "3",
+      "seq": 7
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "initialize",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 1
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 2
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "notifications/initialized",
+      "note": "",
+      "rpc_id": "",
+      "seq": 3
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/list",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 4
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 5
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/call",
+      "note": "tools/call view",
+      "rpc_id": "3",
+      "seq": 6
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "3",
+      "seq": 7
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/call",
+      "note": "tools/call view",
+      "rpc_id": "4",
+      "seq": 8
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "4",
+      "seq": 9
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/call",
+      "note": "tools/call view",
+      "rpc_id": "5",
+      "seq": 10
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "5",
+      "seq": 11
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "out",
+      "holdout": false,
+      "method": "tools/list",
+      "note": "",
+      "rpc_id": "6",
+      "seq": 12
+    },
+    {
+      "atom": "temporal.rug_pull",
+      "direction": "in",
+      "holdout": false,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "6",
+      "seq": 13
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "out",
+      "holdout": true,
+      "method": "initialize",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 1
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "in",
+      "holdout": true,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "1",
+      "seq": 2
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "out",
+      "holdout": true,
+      "method": "notifications/initialized",
+      "note": "",
+      "rpc_id": "",
+      "seq": 3
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "out",
+      "holdout": true,
+      "method": "tools/list",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 4
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "in",
+      "holdout": true,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "2",
+      "seq": 5
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "out",
+      "holdout": true,
+      "method": "tools/call",
+      "note": "tools/call arcade.unlisted.d3ec431d94ce  [ghost probe: name absent from tools/list]",
+      "rpc_id": "3",
+      "seq": 6
+    },
+    {
+      "atom": "protocol.unlisted_call",
+      "direction": "in",
+      "holdout": true,
+      "method": "(response)",
+      "note": "",
+      "rpc_id": "3",
+      "seq": 7
+    }
+  ],
+  "schema_id": "mcp-arcade.tape/v1",
+  "seat": null,
+  "server_name": "ghost-on-the-menu",
+  "target_kind": "stdio"
+}

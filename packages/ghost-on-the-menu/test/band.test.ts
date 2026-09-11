@@ -57,6 +57,8 @@ function fixtures(): Case[] {
 }
 
 const CASES = fixtures();
+/** Tapes on disk. The curve's thresholds are fractions of this roster. */
+const ROSTER = readdirSync(DIR).filter((f) => f.endsWith('.tape.json')).length;
 
 function run(c: Case, bot: BotName) {
   return playTape(c.tape, { fixture: c.name, bot });
@@ -135,9 +137,10 @@ describe('the difficulty curve', () => {
     return revealed >= Math.ceil(lies / 2);
   };
 
-  it('measures every tier on all sixteen tapes', () => {
-    expect(byTier(1).length).toBe(16);
-    expect(byTier(2).length).toBe(16);
+  it('measures every tier on every tape on disk', () => {
+    expect(ROSTER).toBeGreaterThanOrEqual(16);
+    expect(byTier(1).length).toBe(ROSTER);
+    expect(byTier(2).length).toBe(ROSTER);
   });
 
   it('seat threatens the mover: the sweeper loses lamps on average', () => {
@@ -150,13 +153,15 @@ describe('the difficulty curve', () => {
 
   it('live is survivable by the mover on most tapes, with half the lies found', () => {
     const outs = byTier(2).map((c) => run(c, 'sweeper'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(12);
+    // Three quarters of the roster (twelve of the original sixteen).
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.75));
     expect(halfFound(outs)).toBe(true);
   });
 
   it('live is survivable by the reader on half the tapes, with half the lies found', () => {
     const outs = byTier(2).map((c) => run(c, 'reader'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(8);
+    // Half the roster (eight of the original sixteen).
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
     expect(halfFound(outs)).toBe(true);
   });
 });

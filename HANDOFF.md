@@ -1,4 +1,28 @@
-# HANDOFF — Ghost on the Menu, v0.4.0
+# HANDOFF — Ghost on the Menu, v0.4.0 + the cabinet server (slices 1–3)
+
+Read this, then `CLAUDE.md`, then `docs/cabinet-server.md` (the decisions and the numbers from the cabinet-server session), then `docs/ollama-content.md` (the v0.4.0 seats). The lock is G1, G7–G10 in `docs/study-swarm.dispatch.md` and G11–G18 in `docs/cabinet-server.dispatch.md`. `docs/cabinet-server.kickoff.md` is history (slices 1–3 landed on `main`, untagged); `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are older history.
+
+**This is a pickup after the cabinet-server session (Claude, 2026-09-10): slices 1–3 of `docs/cabinet-server.dispatch.md` on `main`, not tagged, still `0.4.0`, still not npm.** Tag `v0.4.0` is the last release. Pages serves the game unchanged.
+
+## What landed after v0.4.0 (untagged, on `main`)
+
+- **`packages/cabinet-server`**: the cabinet as a stdio MCP server (official SDK). Tools `fire`, `say`, `sfx`, `view`, `tapes` from `tools.json`; fact-blind at the boundary (`CabinetHost` of words; fact-flip test per tool); the say gate and `personas.json`; the say seat tiered by capability (Claude agent by `ANTHROPIC_API_KEY` on the node side, else Cloud tag, else local). `pnpm test:play ghost --seat mcp`. New sim lever `state.bossSay` (a gate-passed line lands as an aside).
+- **The shell's seats moved behind the contract** (`apps/cabinets/src/ghost.ts`): the fire seat through Ollama tool calling with prefetch, revoke on the boss's words, warm-up, `keep_alive`; the say seat through the dev server's `/cabinet/say`. Two status words beside the picker name the tool each seat called. The schema path is off in the shell (measured: it silences local models).
+- **`pnpm sit`** reports per model: verb collapse, tool suppression, bad verbs, revoked, late, and what the gate refused. `--constrain on|off`, `--say on|off`, `--seat mcp|prompt`.
+- **The Ghost's own tapes**: `fixtures/tapes/cabinet.*.tape.json` from `mcp-arcade bout --target stdio` against the server (naive and task-only, wrap off and on). On its own menu the naive policy followed nothing. The band's roster is derived from disk now (twenty tapes).
+- **The panel**: `docs/cabinet-server.panel.md`, every G12 and G14 claim confirmed by two family-different jurors.
+
+## Next
+
+1. **The Director plays the seat on the local shell** (`pnpm -F @mcp-arcade-cabinets/cabinets dev`, the checkbox, a Cloud tag) and reads the generated lines. Set `ANTHROPIC_API_KEY` in the dev server's environment to sit the Claude tier; it was built, not measured live.
+2. **The one-sentence bound vs the two-sentence register**: fourteen of the twenty-four authored boss lines are two sentences, and "sentences" is the gate's dominant refusal. The Director decides: allow two short sentences within twelve words, or seed one-sentence lines only. Numbers in `docs/cabinet-server.md`.
+3. **Grok reviews** the cabinet-server diff (`git log v0.4.0..main`): `sim.ts` (`bossSay`, `landSay`), `types.ts`, `play.ts`, the band's roster arithmetic, and `packages/cabinet-server` whole. Also still open: the v0.4.0 diff (`git log 6e1b95f..v0.4.0`).
+4. **Slices 4–6** (voice with fx-dub, stingers and backdrops, the container and the Catalog PR) wait on the Director's word. Slice 6 will have to revisit `SHIP_GATE.md`, whose `[mcp]` rows still say "not an MCP server".
+5. Translations before any later tag, not before.
+
+---
+
+## The v0.4.0 pickup as it was written
 
 Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from the Ollama session). `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are history — the seats shipped as v0.4.0; wave 3 shipped as v0.3.0.
 
@@ -121,15 +145,16 @@ Each reviews the other's diff. Cloud panel on G7 claims. Neither partner tags; t
 
 ## Layout
 
-| Path                                  | What                                                                                                              |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `packages/tape-core`                  | Load a tape, refuse forbidden keys at any depth, slice by atom                                                    |
-| `packages/ghost-on-the-menu/src`      | `prepass`, `sim`, `patterns`, `render`, `cues`, `audio`, `play`, `label`, `pilot`                                 |
-| `packages/ghost-on-the-menu/patterns` | Ten JSON files: paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism                 |
-| `apps/cabinets`                       | Vite shell. `pnpm build:play` writes gitignored `site/public/play/` for Pages                                     |
-| `fixtures/tapes`                      | Sixteen tapes. The only input the game gets                                                                       |
-| `site/`                               | site-theme landing + Starlight handbook. `secondaryCta` stays `{ href: 'handbook/', label: 'Read the Handbook' }` |
-| `scripts`                             | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`                                                                    |
+| Path                                  | What                                                                                                                      |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `packages/cabinet-server`             | The cabinet as a stdio MCP server: `tools.json`, `personas.json`, the gate, the boundary, the seat machine, the say tiers |
+| `packages/tape-core`                  | Load a tape, refuse forbidden keys at any depth, slice by atom                                                            |
+| `packages/ghost-on-the-menu/src`      | `prepass`, `sim`, `patterns`, `render`, `cues`, `audio`, `play`, `label`, `pilot`                                         |
+| `packages/ghost-on-the-menu/patterns` | Ten JSON files: paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism                         |
+| `apps/cabinets`                       | Vite shell. `pnpm build:play` writes gitignored `site/public/play/` for Pages                                             |
+| `fixtures/tapes`                      | Twenty tapes (sixteen from the instrument, four the cabinet recorded of itself). The only input the game gets             |
+| `site/`                               | site-theme landing + Starlight handbook. `secondaryCta` stays `{ href: 'handbook/', label: 'Read the Handbook' }`         |
+| `scripts`                             | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`                                                                            |
 
 Tuning is data. Change a lever, `pnpm sweep`, then `pnpm test` (the band is the andon). A change that makes a gallery or a wall fails the build.
 
