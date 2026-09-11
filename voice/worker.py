@@ -13,7 +13,7 @@ lines are synthesised once and generated lines once each.
 
 Endpoints, all JSON:
     GET  /health                   engine, asr device, voices, lines cached
-    POST /speak {text, preset, rate, loudness, kind}   -> {ok, id, duration_s, receipt, url}
+    POST /speak {text, preset, rate, loudness, kind, max_gap_s} -> {ok, id, duration_s, receipt, url}
     GET  /audio/<id>.wav           the take (only when its receipt passed)
 
 Never inside the Catalog container: the container reaches it at
@@ -89,12 +89,15 @@ class Voice:
         raise RuntimeError('no ASR device')
 
     @staticmethod
-    def line_id(preset: str, rate: float, loudness: float, text: str) -> str:
-        key = f'{preset}|{rate:.3f}|{loudness:.2f}|{text}'
+    def line_id(preset: str, rate: float, loudness: float, text: str, max_gap: float = 0.5) -> str:
+        # The budget is part of the key: a take receipted under one budget is
+        # never served under another.
+        key = f'{preset}|{rate:.3f}|{loudness:.2f}|{max_gap:.2f}|{text}'
         return hashlib.sha256(key.encode('utf-8')).hexdigest()[:20]
 
-    def speak(self, text: str, preset: str, rate: float, loudness: float, kind: str) -> dict:
-        lid = self.line_id(preset, rate, loudness, text)
+    def speak(self, text: str, preset: str, rate: float, loudness: float, kind: str,
+              max_gap: float = 0.5) -> dict:
+        lid = self.line_id(preset, rate, loudness, text, max_gap)
         wav = self.cache / f'{lid}.wav'
         rec = self.cache / f'{lid}.receipt.json'
         if wav.exists() and rec.exists():
@@ -106,9 +109,10 @@ class Voice:
                 receipt = json.loads(rec.read_text(encoding='utf-8'))
                 receipt['cached'] = True
                 return receipt
-            return self._render(text, preset, rate, loudness, kind, lid, wav, rec)
+            return self._render(text, preset, rate, loudness, kind, lid, wav, rec, max_gap)
 
-    def _render(self, text, preset, rate, loudness, kind, lid, wav: Path, rec: Path) -> dict:
+    def _render(self, text, preset, rate, loudness, kind, lid, wav: Path, rec: Path,
+                max_gap: float) -> dict:
         from fxdub.dialogue_receipt import check_dialogue
 
         t0 = time.time()
@@ -138,7 +142,9 @@ class Voice:
         scene = {
             'name': kind,
             'clip_duration_s': round(duration + 0.05, 3),
-            'max_gap_within_line_s': 0.5,
+            # The bark's timing budget is authored data (personas.json → voice.maxGap);
+            # the caller sends it, the worker never tunes it.
+            'max_gap_within_line_s': float(max_gap),
             'cast': {'BOSS': {'description': kind, 'on_frame': True}},
             'lines': [{'speaker': 'BOSS', 'text': text}],
         }
@@ -153,6 +159,7 @@ class Voice:
             'rate': rate,
             'loudness': loudness,
             'text': text,
+            'max_gap_s': float(max_gap),
             'heard': ' '.join(w['text'] for w in words),
             'duration_s': duration,
             'tts_s': tts_s,
@@ -227,13 +234,16 @@ class Handler(BaseHTTPRequestHandler):
             rate = float(body.get('rate', 1.0))
             loudness = float(body.get('loudness', 0.0))
             kind = str(body.get('kind', 'boss'))
+            max_gap = float(body.get('max_gap_s', 0.5))
+            if not (0.1 <= max_gap <= 3.0):
+                return self._json(400, {'error': 'max_gap_s out of range'})
             if not text or len(text) > 200:
                 return self._json(400, {'error': 'text must be one short line'})
             if preset not in VOICE.voices:
                 return self._json(400, {'error': 'no such voice'})
             if not (0.5 <= rate <= 2.0) or not (-24.0 <= loudness <= 12.0):
                 return self._json(400, {'error': 'rate or loudness out of range'})
-            receipt = VOICE.speak(text, preset, rate, loudness, kind)
+            receipt = VOICE.speak(text, preset, rate, loudness, kind, max_gap)
             if receipt.get('cached'):
                 STATS['cached'] += 1
             else:

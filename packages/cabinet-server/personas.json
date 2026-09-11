@@ -65,6 +65,7 @@
   },
   "voice": {
     "engine": "kokoro",
-    "sampleRate": 24000
+    "sampleRate": 24000,
+    "maxGap": 0.5
   }
 }

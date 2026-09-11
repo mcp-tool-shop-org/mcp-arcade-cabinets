@@ -42,8 +42,13 @@ export interface Personas {
   maxWords: number;
   /** Seconds between unprompted lines while a boss is up. */
   cadence: number;
-  /** The host-side engine the voice sheets are written for. */
-  voice: { engine: string; sampleRate: number };
+  /**
+   * The host-side engine the voice sheets are written for, and the bark's
+   * timing budget: the longest pause a take may hold mid-line before the
+   * receipt calls it a hole. fx-dub's default is half a second; direction
+   * lives here as data, never as a tuned threshold in the worker.
+   */
+  voice: { engine: string; sampleRate: number; maxGap: number };
   boss: Record<BossKind, Persona>;
 }
 
@@ -105,6 +110,8 @@ export function loadPersonas(raw: unknown): Personas {
   if (typeof engine !== 'string' || engine.trim() === '') fail('voice.engine');
   const sampleRate = num(voiceRaw.sampleRate, 'voice.sampleRate');
   if (!(sampleRate > 0)) fail('voice.sampleRate');
+  const maxGap = num(voiceRaw.maxGap, 'voice.maxGap');
+  if (!(maxGap > 0 && maxGap <= 3)) fail('voice.maxGap');
   const bossRaw = rec(obj.boss, 'boss');
   const boss = {} as Record<BossKind, Persona>;
   for (const kind of KINDS) {
@@ -116,7 +123,7 @@ export function loadPersonas(raw: unknown): Personas {
       voice: loadVoice(p.voice, `boss.${kind}.voice`),
     };
   }
-  return { lead, window, maxWords, cadence, voice: { engine, sampleRate }, boss };
+  return { lead, window, maxWords, cadence, voice: { engine, sampleRate, maxGap }, boss };
 }
 
 export const DEFAULT_PERSONAS: Personas = loadPersonas(personasJson);

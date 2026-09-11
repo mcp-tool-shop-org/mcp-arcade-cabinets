@@ -63,6 +63,8 @@ export interface VoiceJob {
   text: string;
   kind: BossKind;
   voice: VoiceSheet;
+  /** The longest mid-line pause the receipt allows, seconds (authored data). */
+  maxGap: number;
   /** Round time the line lands on the field. */
   at: number;
 }
@@ -140,6 +142,7 @@ export function hostForRound(
         text: say.text,
         kind: boss.kind,
         voice: personas.boss[boss.kind].voice,
+        maxGap: personas.voice.maxGap,
         at: say.at,
       });
       return 'queued';

@@ -13,6 +13,7 @@ const JOB: VoiceJob = {
   text: 'The plate is out, and the plate has opinions.',
   kind: 'doorman',
   voice: DEFAULT_PERSONAS.boss.doorman.voice,
+  maxGap: DEFAULT_PERSONAS.voice.maxGap,
   at: 10,
 };
 
@@ -183,6 +184,7 @@ describe('the worker client', () => {
       preset: 'bm_george',
       rate: 1.1,
       loudness: 2,
+      max_gap_s: 0.5,
     });
   });
 

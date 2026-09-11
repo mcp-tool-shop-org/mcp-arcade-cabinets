@@ -41,6 +41,8 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | Ollama bosses                | Local daemon or Ollama Cloud. The model sits in the boss through the cabinet server's own tools: it calls each boss's shots and writes the boss's lines behind a gate (twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own). It never sees lies. Pages cannot reach it. |
 | (model list)                 | Cloud tags first when `ollama signin` has pulled `:cloud` models. The say seat sits a Claude agent instead when `ANTHROPIC_API_KEY` is set for the dev server; the key never reaches the browser. |
 | (seat status)                | Two words beside the picker, one per seat: warming, thinking, the tool each called (`seat called fire: spread`, `seat called say (cloud)`), or why it fell back to the script or the boss's own line. Never on the field. |
+| Voice                        | The boss speaks its lines in its own preset voice through the local voice worker (`pnpm voice` in another terminal). Every take is heard back and receipted by fx-dub before it plays; a failed receipt is never played; a take that misses its beat waits for the breather. Enabled only when the worker answers; Pages never has one. |
+| (voice status)               | `voice ready`, `voice speaking ahead`, `voice: receipt ok`, `voice: spoke on the beat`, `voice: held for the breather`, `voice: receipt failed, not played`, `voice: no worker`. Words only. |
 
 ### Difficulties
 

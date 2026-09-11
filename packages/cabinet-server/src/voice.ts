@@ -74,6 +74,7 @@ export async function speakLine(job: VoiceJob, opts: VoiceOpts): Promise<SpeakAn
         preset: job.voice.preset,
         rate: job.voice.rate,
         loudness: job.voice.loudness,
+        max_gap_s: job.maxGap,
       }),
     });
     const ms = Date.now() - t0;

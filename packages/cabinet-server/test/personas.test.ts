@@ -23,6 +23,7 @@ describe('personas.json', () => {
     expect(p.maxWords).toBeLessThanOrEqual(12);
     expect(p.window).toBeGreaterThanOrEqual(1);
     expect(p.voice.engine).toBe('kokoro');
+    expect(p.voice.maxGap).toBe(0.5);
     const presets = new Set(Object.values(p.boss).map((b) => b.voice.preset));
     expect(presets.size).toBe(3);
     for (const b of Object.values(p.boss)) {
@@ -55,6 +56,10 @@ describe('personas.json', () => {
     const empty = clone();
     (empty.boss as Record<string, Record<string, unknown>>).whisperer!.owns = [];
     expect(() => loadPersonas(empty)).toThrow('boss.whisperer.owns');
+
+    const gap = clone();
+    (gap.voice as Record<string, unknown>).maxGap = 9;
+    expect(() => loadPersonas(gap)).toThrow('voice.maxGap');
 
     const loud = clone();
     (
