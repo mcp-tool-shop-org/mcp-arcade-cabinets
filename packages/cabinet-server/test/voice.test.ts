@@ -56,12 +56,13 @@ describe('the voicer', () => {
       captionSeconds: 2.4,
       onStatus: (s) => status.push(s),
     });
+    const own = { kind: 'aside', text: JOB.text };
     v.job(JOB);
-    v.tick(10.0, true, false, false);
+    v.tick(10.0, own, false, false);
     expect(played).toEqual([]);
     d.resolve(receipt(true));
     await flush();
-    v.tick(10.9, true, false, false);
+    v.tick(10.9, own, false, false);
     expect(played).toEqual(['/audio/abc.wav']);
     expect(status).toEqual([
       'voice speaking ahead',
@@ -83,12 +84,12 @@ describe('the voicer', () => {
     v.job(JOB);
     d.resolve(receipt(true));
     await flush();
-    v.tick(14, false, false, false); // the line left the field a while ago
+    v.tick(14, null, false, false); // the line left the field a while ago
     expect(played).toEqual([]);
     expect(v.status()).toBe('voice: held for the breather');
-    v.tick(15, false, false, false);
+    v.tick(15, null, false, false);
     expect(played).toEqual([]);
-    v.tick(20, false, true, false); // the breather
+    v.tick(20, null, true, false); // the breather
     expect(played).toEqual(['/audio/abc.wav']);
     expect(v.stats().playedInBreather).toBe(1);
 
@@ -101,8 +102,44 @@ describe('the voicer', () => {
     w.job(JOB);
     e.resolve(receipt(true));
     await flush();
-    w.tick(30, false, false, true); // the scene
+    w.tick(30, null, false, true); // the scene
     expect(played).toHaveLength(1);
+    expect(w.stats().dropped).toBe(1);
+  });
+
+  it('never plays over a catch or a wave card, and a new line drops a held take (Grok, slice-4 review)', async () => {
+    const d = deferred<SpeakAnswer>();
+    const played: string[] = [];
+    const v = createVoicer({
+      speak: () => d.promise,
+      play: (url) => played.push(url),
+      captionSeconds: 2.4,
+    });
+    v.job(JOB);
+    d.resolve(receipt(true));
+    await flush();
+    // Within the window, but a catch is on the field: the take waits.
+    v.tick(10.5, { kind: 'catch', text: 'poison.follow_through: followed' }, false, false);
+    expect(played).toEqual([]);
+    // A seed aside is not this line: still waits.
+    v.tick(10.6, { kind: 'aside', text: 'I have a list. Lists make me calm.' }, false, false);
+    expect(played).toEqual([]);
+    expect(v.status()).toBe('voice: held for the breather');
+    // A newer line arrives before the breather: the held take is dropped, not played later.
+    const e = deferred<SpeakAnswer>();
+    const w = createVoicer({
+      speak: () => e.promise,
+      play: (url) => played.push(url),
+      captionSeconds: 2.4,
+    });
+    w.job(JOB);
+    e.resolve(receipt(true));
+    await flush();
+    w.tick(14, null, false, false);
+    expect(w.status()).toBe('voice: held for the breather');
+    w.job({ ...JOB, text: 'Name and protocol.', at: 15 });
+    w.tick(20, null, true, false);
+    expect(played).toEqual([]);
     expect(w.stats().dropped).toBe(1);
   });
 
@@ -117,7 +154,7 @@ describe('the voicer', () => {
     v.job(JOB);
     d.resolve(receipt(false));
     await flush();
-    v.tick(10.5, true, false, false);
+    v.tick(10.5, { kind: 'aside', text: JOB.text }, false, false);
     expect(played).toEqual([]);
     expect(v.status()).toBe('voice: receipt failed, not played');
     expect(v.stats().receiptFailed).toBe(1);
@@ -137,11 +174,11 @@ describe('the voicer', () => {
     v.job({ ...JOB, text: 'Name and protocol.', at: 12 });
     first.resolve(receipt(true));
     await flush();
-    v.tick(11, true, false, false);
+    v.tick(11, { kind: 'aside', text: JOB.text }, false, false);
     expect(played).toEqual([]); // the stale take is ignored
     second.resolve({ status: 'no worker', ms: 5, receipt: null });
     await flush();
-    v.tick(12, true, false, false);
+    v.tick(12, { kind: 'aside', text: 'Name and protocol.' }, false, false);
     expect(played).toEqual([]);
     expect(v.status()).toBe('voice: no worker');
     expect(v.stats().noWorker).toBe(1);

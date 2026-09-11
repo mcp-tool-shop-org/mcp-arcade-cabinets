@@ -39,12 +39,14 @@ import {
 import {
   attach,
   attachedPatterns,
+  bossKindFor,
   createRoundState,
   cues,
   DEFAULT_SECONDS,
   defaultPilotModel,
   FIELD,
   isCloudModel,
+  kindOfAtom,
   listPilotModels,
   prepassRound,
   renderRound,
@@ -327,6 +329,7 @@ export function mountGhost(
   let prev: CueSnapshot | null = snapshot(state);
   let last = performance.now();
   let raf = 0;
+  let musicEnded = false;
   const seatSay = (text: string) => {
     seat.textContent = text;
   };
@@ -345,7 +348,8 @@ export function mountGhost(
     speak: (job) => speakLine(job, { url: '/voice' }),
     play: (url) => {
       if (muted) return;
-      const el = new Audio(url);
+      // The worker's url is relative to the worker; the dev proxy mounts it at /voice.
+      const el = new Audio(`/voice${url}`);
       el.volume = 0.9;
       void el.play().catch(() => {
         /* the take is not the game */
@@ -494,12 +498,19 @@ export function mountGhost(
     if (audio) {
       for (const c of cues(prev, next)) audio.play(c);
       if (!state.scene) {
-        const kind = state.parallelism
-          ? 'parallelism'
-          : state.boss && state.boss.alive
-            ? state.boss.kind
-            : waveKindAt(round, state.t);
-        audio.tick(state.t, kind);
+        // One bed per wave: a boss wave plays its boss's bed from the card
+        // on; the bed stays through the breather and the tail. A burst is
+        // an overlay, never a swap. Measured before this rule: twenty bed
+        // switches in a ninety-second round, most stretches under four
+        // seconds, every one a restart from zero.
+        const bound = round.waveBounds[state.wave];
+        const waveKind = bound ? kindOfAtom(bound.atom) : 'inspect';
+        const bedKind = bound ? (bossKindFor(bound.atom) ?? waveKind) : 'inspect';
+        audio.tick(state.t, bedKind === 'breather' ? 'inspect' : bedKind, state.parallelism);
+        musicEnded = false;
+      } else if (!musicEnded) {
+        musicEnded = true;
+        audio.end();
       }
     }
     if (ollama.checked && !state.scene) {
@@ -522,7 +533,7 @@ export function mountGhost(
     }
     voicer.tick(
       state.t,
-      state.caption?.kind === 'aside',
+      state.caption ? { kind: state.caption.kind ?? 'wave', text: state.caption.text } : null,
       !state.boss && waveKindAt(round, state.t) === 'breather',
       state.scene !== null,
     );

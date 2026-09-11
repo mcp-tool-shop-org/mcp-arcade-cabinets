@@ -154,10 +154,20 @@ export type TrackKey = (typeof TRACK_KEYS)[number];
 export interface MediaBed {
   loop: boolean;
   muted: boolean;
+  volume: number;
   currentTime: number;
   play(): Promise<void> | void;
   pause(): void;
 }
+
+/** Seconds a bed takes to come in or go out; the burst overlay is quicker. */
+export const BED_FADE_S = 0.8;
+export const BURST_FADE_S = 0.35;
+/** The wave's bed under a burst, and the burst bed over it. */
+export const BED_DUCK = 0.45;
+export const BURST_LEVEL = 0.85;
+/** Seconds the music takes to leave at the scene. */
+export const END_FADE_S = 1.5;
 
 export type BedLookup = (key: string) => MediaBed | undefined;
 
@@ -287,8 +297,13 @@ export function barSeconds(pattern: MusicPattern): number {
 /** What the shell needs: a thin WebAudio player over the pure score. */
 export interface AudioOut {
   play(name: SfxName): void;
-  /** Call every frame with the round clock and the current wave kind. */
-  tick(t: number, waveKind: string): void;
+  /**
+   * Call every frame with the round clock, the bed the wave plays (one per
+   * wave; the shell keeps it through breathers), and whether a burst is on.
+   */
+  tick(t: number, waveKind: string, burst?: boolean): void;
+  /** The round ended with a scene: the music leaves over END_FADE_S, wall clock. */
+  end(): void;
   setMuted(muted: boolean): void;
   close(): void;
 }
@@ -313,7 +328,51 @@ export function attach(
   let muted = false;
   let nextBar = 0;
   let lastKind = '';
+  // The wave's bed and the burst overlay. A bed that leaves is faded and
+  // paused where it is, so it resumes from there when its kind comes back;
+  // nothing restarts from zero mid-round.
   let currentBed: MediaBed | undefined;
+  let overlay: MediaBed | undefined;
+  let burstOn = false;
+  let lastT = 0;
+  interface Fade {
+    bed: MediaBed;
+    from: number;
+    to: number;
+    left: number;
+    dur: number;
+    pauseAtEnd: boolean;
+  }
+  let fades: Fade[] = [];
+  const fadeTo = (bed: MediaBed, to: number, dur: number, pauseAtEnd = false) => {
+    fades = fades.filter((f) => f.bed !== bed);
+    if (dur <= 0) {
+      bed.volume = to;
+      if (pauseAtEnd) bed.pause();
+      return;
+    }
+    fades.push({ bed, from: bed.volume, to, left: dur, dur, pauseAtEnd });
+  };
+  const runFades = (dt: number) => {
+    if (dt <= 0 || fades.length === 0) return;
+    const keep: Fade[] = [];
+    for (const f of fades) {
+      f.left = Math.max(0, f.left - dt);
+      const u = 1 - f.left / f.dur;
+      f.bed.volume = f.from + (f.to - f.from) * u;
+      if (f.left > 0) keep.push(f);
+      else if (f.pauseAtEnd) f.bed.pause();
+    }
+    fades = keep;
+  };
+  const bringIn = (bed: MediaBed, level: number, dur: number) => {
+    bed.loop = true;
+    bed.muted = muted;
+    // A bed comes in from silence when there is a fade to come in on.
+    bed.volume = dur > 0 ? 0 : level;
+    void bed.play();
+    fadeTo(bed, level, dur);
+  };
   const schedule = (notes: Note[], base: number) => {
     if (muted) return;
     for (const n of notes) {
@@ -334,29 +393,41 @@ export function attach(
   const switchBed = (waveKind: string) => {
     const next = bed?.(waveKind);
     if (next === currentBed) return Boolean(next);
-    currentBed?.pause();
+    const leaving = currentBed;
     currentBed = next;
-    if (next) {
-      next.loop = true;
-      next.muted = muted;
-      try {
-        next.currentTime = 0;
-      } catch {
-        /* some test doubles have no currentTime setter */
-      }
-      void next.play();
-    }
+    if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
+    if (next) bringIn(next, burstOn ? BED_DUCK : 1, leaving ? BED_FADE_S : 0);
     return Boolean(next);
+  };
+  const setBurst = (on: boolean) => {
+    if (on === burstOn) return;
+    burstOn = on;
+    const burstBed = bed?.('parallelism');
+    if (on) {
+      if (burstBed && burstBed !== currentBed) bringIn(burstBed, BURST_LEVEL, BURST_FADE_S);
+      overlay = burstBed;
+      if (currentBed && currentBed !== burstBed) fadeTo(currentBed, BED_DUCK, BURST_FADE_S);
+    } else {
+      if (overlay && overlay !== currentBed) fadeTo(overlay, 0, BURST_FADE_S, true);
+      overlay = undefined;
+      if (currentBed) fadeTo(currentBed, 1, BURST_FADE_S);
+    }
   };
   return {
     play(name) {
       schedule(sfx(name), ctx.currentTime);
     },
-    tick(t, waveKind) {
+    tick(t, waveKind, burst = false) {
+      runFades(Math.max(0, Math.min(0.1, t - lastT)));
+      lastT = t;
       // A recorded bed, when present, replaces the chiptune for that kind.
-      if (switchBed(waveKind)) return;
+      // The burst is an overlay on the wave's bed, never a swap.
+      const hasBed = switchBed(waveKind);
+      setBurst(burst);
+      if (hasBed) return;
+      const chipKind = burst ? 'parallelism' : waveKind;
       // Bars are scheduled by the round clock so the music follows hitstop and the end.
-      const pat = TRACKS[waveKind] ?? pattern;
+      const pat = TRACKS[chipKind] ?? pattern;
       if (waveKind !== lastKind) {
         lastKind = waveKind;
         nextBar = Math.floor(t / barSeconds(pat));
@@ -366,17 +437,45 @@ export function attach(
       if (barIndex < nextBar - 1) nextBar = barIndex;
       if (barIndex >= nextBar) {
         const lead = ctx.currentTime + 0.05;
-        schedule(bar(pat, waveKind, barIndex), lead);
+        schedule(bar(pat, chipKind, barIndex), lead);
         nextBar = barIndex + 1;
       }
+    },
+    end() {
+      // The round clock has stopped; step the fade on the wall clock.
+      const beds = [currentBed, overlay].filter((b): b is MediaBed => Boolean(b));
+      currentBed = undefined;
+      overlay = undefined;
+      burstOn = false;
+      fades = [];
+      if (beds.length === 0) return;
+      const steps = 20;
+      const start = beds.map((b) => b.volume);
+      let i = 0;
+      const step = () => {
+        i += 1;
+        beds.forEach((b, k) => {
+          b.volume = Math.max(0, (start[k] ?? 1) * (1 - i / steps));
+        });
+        if (i >= steps) {
+          for (const b of beds) b.pause();
+          return;
+        }
+        setTimeout(step, (END_FADE_S * 1000) / steps);
+      };
+      setTimeout(step, (END_FADE_S * 1000) / steps);
     },
     setMuted(m) {
       muted = m;
       if (currentBed) currentBed.muted = m;
+      if (overlay) overlay.muted = m;
     },
     close() {
       currentBed?.pause();
+      overlay?.pause();
       currentBed = undefined;
+      overlay = undefined;
+      fades = [];
       void ctx.close?.();
     },
   };

@@ -22,6 +22,11 @@ The cabinet server, slices one to three of `docs/cabinet-server.dispatch.md`: th
 - **The Ghost's own tapes.** `mcp-arcade bout --target stdio` against the cabinet server, naive and task-only, with and without the house wrap: `fixtures/tapes/cabinet.*.tape.json`. On the server's own menu naive followed nothing; with the wrap naive followed into `tapes` and task-only held. The cabinet plays them.
 - `docs/cabinet-server.panel.md`: every G12 and G14 claim through two family-different jurors, all confirmed.
 
+### Fixed
+
+- **The music.** The Director's play (2026-09-11): sporadic, never one song for long, cut off for no reason. Measured: twenty bed switches in a ninety-second round, every one a hard restart from zero (the wave bed at the card, the boss bed at spawn, the wave bed again at the kill, the burst bed for each two-second burst, the breather bed for each three-second breather). Now one bed per wave: a boss wave plays its boss's bed from the card on; the bed stays through the breather and the tail; a burst overlays the burst bed on the wave's bed and ducks it; a switch crossfades and a returning bed resumes where it left off; the round's end fades the music out. Tested with fake beds.
+- **The voice never reached the speakers.** The shell played takes at the worker's own path instead of behind the dev proxy, so every take was a missing file (Grok's slice-4 review). The worker's audio route also serves a take only when its receipt exists and passed; a take never plays over a catch or a wave card; a newer line drops a take held for the breather.
+
 ### Changed
 
 - The fairness band derives its roster from the tapes on disk (twenty now) and keeps the live thresholds as the same fractions of it.

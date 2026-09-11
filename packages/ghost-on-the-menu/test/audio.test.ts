@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { attach, bar, barSeconds, DEFAULT_MUSIC, TRACKS, sfx, type Note } from '../src/audio';
 
@@ -138,5 +138,150 @@ describe('restart', () => {
     expect(late).toBeGreaterThan(0);
     out.tick(0, 'inspect');
     expect(started.length).toBeGreaterThan(late);
+  });
+});
+
+// The recorded beds (the Director's play, 2026-09-11: "sporadic, doesn't stay
+// one song long enough, cut off for no reason"). Measured before the rule:
+// twenty switches in a ninety-second round, every one a restart from zero.
+describe('recorded beds', () => {
+  const silentCtx = () =>
+    ({
+      currentTime: 0,
+      destination: {} as AudioNode,
+      createOscillator: () =>
+        ({
+          type: 'sine',
+          frequency: { value: 0 },
+          connect() {},
+          start() {},
+          stop() {},
+        }) as unknown as OscillatorNode,
+      createGain: () =>
+        ({
+          gain: {
+            setValueAtTime() {},
+            linearRampToValueAtTime() {},
+            exponentialRampToValueAtTime() {},
+          },
+          connect() {},
+        }) as unknown as GainNode,
+    }) as unknown as Parameters<typeof attach>[0];
+
+  function bed() {
+    const b = {
+      loop: false,
+      muted: false,
+      volume: 1,
+      currentTime: 0,
+      playing: false,
+      plays: 0,
+      play() {
+        this.playing = true;
+        this.plays += 1;
+      },
+      pause() {
+        this.playing = false;
+      },
+    };
+    return b;
+  }
+
+  it('crossfades between beds and resumes a bed where it left off, never from zero', () => {
+    const inspect = bed();
+    const whisperer = bed();
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(silentCtx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    expect(inspect.playing).toBe(true);
+    expect(inspect.volume).toBe(1);
+    inspect.currentTime = 7.5; // seven seconds in
+    out.tick(8, 'whisperer');
+    // Both play through the crossfade; the leaving bed is not paused yet.
+    expect(whisperer.playing).toBe(true);
+    expect(inspect.playing).toBe(true);
+    expect(whisperer.volume).toBeLessThan(1);
+    for (let t = 8.05; t < 9.2; t += 0.05) out.tick(t, 'whisperer');
+    expect(inspect.playing).toBe(false);
+    expect(inspect.volume).toBe(0);
+    expect(whisperer.volume).toBe(1);
+    // Back to inspect: it resumes from where it was, not from zero.
+    out.tick(20, 'inspect');
+    expect(inspect.playing).toBe(true);
+    expect(inspect.currentTime).toBe(7.5);
+    expect(inspect.plays).toBe(2);
+  });
+
+  it('keeps the bed through a burst and overlays the burst bed, ducked and undone', () => {
+    const menu = bed();
+    const parallelism = bed();
+    const beds: Record<string, ReturnType<typeof bed>> = { menu, parallelism };
+    const out = attach(silentCtx(), undefined, (k) => beds[k]);
+    out.tick(0, 'menu');
+    out.tick(1, 'menu', true);
+    expect(menu.playing).toBe(true); // never swapped out
+    expect(parallelism.playing).toBe(true);
+    for (let t = 1.05; t < 1.6; t += 0.05) out.tick(t, 'menu', true);
+    expect(menu.volume).toBeCloseTo(0.45, 2);
+    expect(parallelism.volume).toBeCloseTo(0.85, 2);
+    out.tick(3, 'menu', false);
+    for (let t = 3.05; t < 3.6; t += 0.05) out.tick(t, 'menu', false);
+    expect(parallelism.playing).toBe(false);
+    expect(menu.volume).toBe(1);
+    expect(menu.plays).toBe(1);
+  });
+
+  it('a wave change during a burst brings the new bed in ducked', () => {
+    const menu = bed();
+    const doorman = bed();
+    const parallelism = bed();
+    const beds: Record<string, ReturnType<typeof bed>> = { menu, doorman, parallelism };
+    const out = attach(silentCtx(), undefined, (k) => beds[k]);
+    out.tick(0, 'menu');
+    out.tick(1, 'menu', true);
+    out.tick(2, 'doorman', true);
+    for (let t = 2.05; t < 3.2; t += 0.05) out.tick(t, 'doorman', true);
+    expect(doorman.volume).toBeCloseTo(0.45, 2);
+    expect(parallelism.playing).toBe(true);
+  });
+
+  it('fades the music out at the scene on the wall clock, and a restart brings it back', () => {
+    vi.useFakeTimers();
+    try {
+      const inspect = bed();
+      const beds: Record<string, ReturnType<typeof bed>> = { inspect };
+      const out = attach(silentCtx(), undefined, (k) => beds[k]);
+      out.tick(0, 'inspect');
+      out.end();
+      expect(inspect.playing).toBe(true);
+      vi.advanceTimersByTime(800);
+      expect(inspect.volume).toBeLessThan(1);
+      expect(inspect.volume).toBeGreaterThan(0);
+      vi.advanceTimersByTime(1000);
+      expect(inspect.playing).toBe(false);
+      expect(inspect.volume).toBe(0);
+      out.tick(0, 'inspect');
+      expect(inspect.playing).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('with no beds the chiptune plays the burst pattern during a burst', () => {
+    const started: number[] = [];
+    const ctx = silentCtx() as unknown as { createOscillator: () => OscillatorNode };
+    ctx.createOscillator = () =>
+      ({
+        type: 'sine',
+        frequency: { value: 0 },
+        connect() {},
+        start(t: number) {
+          started.push(t);
+        },
+        stop() {},
+      }) as unknown as OscillatorNode;
+    const out = attach(ctx as unknown as Parameters<typeof attach>[0]);
+    out.tick(0, 'menu', true);
+    expect(started.length).toBeGreaterThan(0);
   });
 });

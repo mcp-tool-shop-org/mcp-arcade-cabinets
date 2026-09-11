@@ -103,10 +103,16 @@ export interface Voicer {
   /** The host's voice hook: hand a job in. */
   job(job: VoiceJob): void;
   /**
-   * Call every frame with the round clock, whether the line's caption is
-   * on the field, whether the round is in a breather, and whether it ended.
+   * Call every frame with the round clock, the caption on the field (kind
+   * and text, or null), whether the round is in a breather, and whether it
+   * ended.
    */
-  tick(t: number, lineUp: boolean, breather: boolean, ended: boolean): void;
+  tick(
+    t: number,
+    caption: { kind: string; text: string } | null,
+    breather: boolean,
+    ended: boolean,
+  ): void;
   stats(): VoicerStats;
   status(): string;
 }
@@ -122,8 +128,10 @@ export interface VoicerOpts {
 
 /**
  * The timing rule. One take in flight at a time; a new job while one is
- * pending replaces it (the boss says the newer thing). The take plays at
- * once if its line is still up, else at the next breather, else never.
+ * pending replaces it, and drops a take held for the breather (the boss
+ * says the newer thing). The take plays at once if its own line is on the
+ * field, or within the caption window on a clear field; never over a
+ * catch or a wave card; else at the next breather; else never.
  */
 export function createVoicer(opts: VoicerOpts): Voicer {
   const stats: VoicerStats = {
@@ -152,6 +160,10 @@ export function createVoicer(opts: VoicerOpts): Voicer {
     job(job) {
       const mine = ++token;
       pending = { job, token: mine };
+      if (held) {
+        held = null;
+        stats.dropped += 1;
+      }
       stats.asked += 1;
       say('voice speaking ahead');
       void opts.speak(job).then((a) => {
@@ -178,7 +190,7 @@ export function createVoicer(opts: VoicerOpts): Voicer {
         say('voice: refused');
       });
     },
-    tick(t, lineUp, breather, ended) {
+    tick(t, caption, breather, ended) {
       now = t;
       if (ended) {
         if (ready || held) stats.dropped += 1;
@@ -187,8 +199,12 @@ export function createVoicer(opts: VoicerOpts): Voicer {
         return;
       }
       if (ready) {
-        // Its line is still up, or its time is within the caption window: play now.
-        if (lineUp || now < ready.job.at + opts.captionSeconds) {
+        // Its own line is on the field, or the field is clear and its time
+        // is within the caption window: play now. Never over a catch or a card.
+        const ownLine =
+          caption !== null && caption.kind === 'aside' && caption.text === ready.job.text;
+        const clearWindow = caption === null && now < ready.job.at + opts.captionSeconds;
+        if (ownLine || clearWindow) {
           opts.play(ready.url, ready.job);
           stats.playedOnBeat += 1;
           say('voice: spoke on the beat');

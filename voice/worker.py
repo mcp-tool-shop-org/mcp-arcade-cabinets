@@ -210,7 +210,16 @@ class Handler(BaseHTTPRequestHandler):
             if not lid.isalnum():
                 return self._json(404, {'error': 'no such take'})
             wav = VOICE.cache / f'{lid}.wav'
-            if not wav.exists():
+            rec = VOICE.cache / f'{lid}.receipt.json'
+            # A take is served only with its receipt beside it, and only when
+            # the receipt passed (Grok, slice-4 review): the file on disk is
+            # not the proof, the receipt is.
+            if not wav.exists() or not rec.exists():
+                return self._json(404, {'error': 'no such take'})
+            try:
+                if not json.loads(rec.read_text(encoding='utf-8')).get('ok'):
+                    return self._json(404, {'error': 'no such take'})
+            except (OSError, ValueError):
                 return self._json(404, {'error': 'no such take'})
             data = wav.read_bytes()
             self.send_response(200)

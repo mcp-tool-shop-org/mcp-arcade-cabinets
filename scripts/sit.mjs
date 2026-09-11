@@ -301,7 +301,7 @@ async function sitMcp(model) {
     host.takeSfx();
     voicer.tick(
       state.t,
-      state.caption?.kind === 'aside',
+      state.caption ? { kind: state.caption.kind ?? 'wave', text: state.caption.text } : null,
       !state.boss && g.waveKindAt(round, state.t) === 'breather',
       state.scene !== null,
     );

@@ -48,9 +48,13 @@ The first two are the same finding: Kokoro's sentence and clause pauses run over
 - The band is untouched; the sim did not change in this slice.
 - The model is a character: the preset voice is the boss's, and nothing on the field names the engine.
 
+## Grok's review (2026-09-11, `docs/cabinet-voice.review.md`)
+
+No halt. Three changes, all applied the same day: the shell played a take at the worker's own `/audio/…` while the dev proxy mounts the worker at `/voice`, so on the Director's rig no take ever reached the speakers (the numbers above are from `pnpm sit`, which does not play); the worker's audio route now serves a take only when its receipt exists beside it and passed; the voicer never plays over a catch or a wave card, and a newer line drops a take held for the breather. Held for slice 6: bind for the container, a secret on the hook, a cache cap, no rig path default. On the budget, Grok's paragraph for the Director: keep it as data, hear the refusals, start at one second.
+
 ## Not done
 
-- The Director hears it: `pnpm voice`, then the local shell with **Voice** on.
+- The Director hears it: `pnpm voice`, then the local shell with **Voice** on. Until the proxy fix above, nothing had played.
 - `voice.maxGap` is the Director's call; the first cast (`bf_emma`, `am_michael`, `bm_george`) is a first cast.
 - A clone per boss kind, on a consented recording.
 - Grok's review of slice 4.
