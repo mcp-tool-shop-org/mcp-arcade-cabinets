@@ -8,6 +8,6 @@ One cabinet in focus: **Ghost on the Menu** (replay shooter), published **v0.4.0
 
 Cabinet lock: G1, G7, G8, G9, G10 in `docs/study-swarm.dispatch.md`. Version stays `0.x` until the Director says otherwise. Do not promote to 1.0.0 because it is a release. All packages are private: git tag + GitHub release + Pages, never npm.
 
-v0.4.0 (2026-09-10) is the Ollama seats: the Cloud boss sits (think-low retry), a felt seat through `fire.json → boss.pilot`, the voice seat, `pnpm sit`. Decisions and refusals in `docs/ollama-content.md`. Next is the Director's play. Not a new wave. Details in `HANDOFF.md`.
+v0.4.0 (2026-09-10) is the Ollama seats: the Cloud boss sits (think-low retry), a felt seat through `fire.json → boss.pilot`, the voice seat, `pnpm sit`. Decisions and refusals in `docs/ollama-content.md`. Next layer (Director, 2026-09-10): the cabinet server — MCP tools as levers, Docker MCP Catalog. Lock G11–G18 and the grounding in `docs/cabinet-server.dispatch.md`; paste `docs/cabinet-server.kickoff.md` for slices 1–3. Details in `HANDOFF.md`.
 
 `pnpm verify` is the gate. `pnpm test:play ghost` is the acceptance play-through. `apps/cabinets` is the browser shell; Pages serves it at `/play/`. Identity scan the git-tracked tree from this repo before every push.

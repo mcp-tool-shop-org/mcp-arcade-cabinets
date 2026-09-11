@@ -1,0 +1,130 @@
+[
+  {
+    "id": "D1",
+    "claim": "A Docker MCP Registry submission is a pull request adding servers/<name>/server.yaml; the licence must permit consumption, local servers need a Dockerfile in the source repo, source.commit pins a commit, CI must pass and a Docker-team review is required.",
+    "title": "Contributing to the Docker MCP Registry",
+    "authors": "Docker",
+    "year": 2026,
+    "identifier": "https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md"
+  },
+  {
+    "id": "D2",
+    "claim": "Registry configuration is declarative: config.parameters as JSON-schema inputs, config.env with templating, config.secrets stored outside env-var config, and run.volumes, run.command, run.user and run.disableNetwork for container behaviour.",
+    "title": "docker/mcp-registry docs/configuration.md",
+    "authors": "Docker",
+    "year": 2026,
+    "identifier": "https://github.com/docker/mcp-registry/blob/main/docs/configuration.md"
+  },
+  {
+    "id": "D3",
+    "claim": "The registry has two tiers: Docker-built images that Docker builds, signs and publishes with provenance and SBOMs, and community-built images that get container isolation only.",
+    "title": "docker/mcp-registry README",
+    "authors": "Docker",
+    "year": 2026,
+    "identifier": "https://github.com/docker/mcp-registry"
+  },
+  {
+    "id": "D4",
+    "claim": "The MCP gateway supports stdio, SSE and streaming transports, with a port for HTTP listeners, a localhost auth token, a long-lived mode for stateful servers, and network blocking and signature verification flags.",
+    "title": "docker mcp gateway run",
+    "authors": "Docker Docs",
+    "year": 2026,
+    "identifier": "https://docs.docker.com/reference/cli/docker/mcp/gateway/run/"
+  },
+  {
+    "id": "D5",
+    "claim": "Each MCP Toolkit tool runs in its own container restricted to one CPU and two gigabytes of memory with no host filesystem access by default.",
+    "title": "MCP Toolkit",
+    "authors": "Docker Docs",
+    "year": 2026,
+    "identifier": "https://docs.docker.com/ai/mcp-catalog-and-toolkit/toolkit/"
+  },
+  {
+    "id": "D6",
+    "claim": "A container on Docker Desktop reaches a service on the host through the special DNS name host.docker.internal.",
+    "title": "Explore networking how-tos",
+    "authors": "Docker Docs",
+    "year": 2026,
+    "identifier": "https://docs.docker.com/desktop/features/networking/networking-how-tos/"
+  },
+  {
+    "id": "D7",
+    "claim": "GPU passthrough in Docker Desktop works only on Windows with the WSL2 backend.",
+    "title": "GPU support in Docker Desktop for Windows",
+    "authors": "Docker Docs",
+    "year": 2026,
+    "identifier": "https://docs.docker.com/desktop/features/gpu/"
+  },
+  {
+    "id": "D8",
+    "claim": "MCP tool annotations are hints, not guarantees; destructiveHint and openWorldHint default to true, clients must treat annotations as untrusted unless the server is trusted, and servers must validate inputs, rate-limit invocations and sanitise outputs.",
+    "title": "Model Context Protocol specification 2025-06-18, Tools",
+    "authors": "Model Context Protocol",
+    "year": 2025,
+    "identifier": "https://modelcontextprotocol.io/specification/2025-06-18/server/tools"
+  },
+  {
+    "id": "T1",
+    "claim": "The Left 4 Dead AI Director estimates each player's emotional intensity and drives a build-up, sustain, fade and relax loop, with boss encounters deliberately exempt from adaptive pacing.",
+    "title": "The AI Systems of Left 4 Dead",
+    "authors": "Booth",
+    "year": 2009,
+    "identifier": "https://steamcdn-a.akamaihd.net/apps/valve/2009/ai_systems_of_l4d_mike_booth.pdf"
+  },
+  {
+    "id": "T2",
+    "claim": "Every utterance is a query of world-state facts against a writer-authored rule database where the most specific matching rule wins, variation comes from groups of hand-written alternates, and repetition is suppressed by facts with expiry times.",
+    "title": "AI-driven Dynamic Dialog through Fuzzy Pattern Matching",
+    "authors": "Ruskin",
+    "year": 2012,
+    "identifier": "https://cdn.akamai.steamstatic.com/apps/valve/2012/GDC2012_Ruskin_Elan_DynamicDialog.pdf"
+  },
+  {
+    "id": "T3",
+    "claim": "Firewatch's interrupt-heavy bark system desynced internal state when interrupted threads did not finish, so the character could know things the player did not, which forced explicit uninterruptible brackets around critical conversations.",
+    "title": "Do You Copy? Dialog System and Tools in Firewatch",
+    "authors": "Ewing, Armstrong",
+    "year": 2017,
+    "identifier": "https://media.gdcvault.com/gdc2017/Presentations/Armstrong_Do_you_copy.pdf"
+  },
+  {
+    "id": "E1",
+    "claim": "Kokoro-82M is an 82-million-parameter text-to-speech model released under Apache-2.0 including the weights.",
+    "title": "Kokoro-82M model card",
+    "authors": "hexgrad",
+    "year": 2025,
+    "identifier": "https://huggingface.co/hexgrad/Kokoro-82M"
+  },
+  {
+    "id": "E2",
+    "claim": "Chatterbox is MIT-licensed, exposes exaggeration and cfg_weight controls, and every output carries a neural watermark.",
+    "title": "resemble-ai/chatterbox README",
+    "authors": "Resemble AI",
+    "year": 2025,
+    "identifier": "https://github.com/resemble-ai/chatterbox"
+  },
+  {
+    "id": "E3",
+    "claim": "Piper's maintained line moved to GPL-3.0 while the archived original repository is MIT.",
+    "title": "OHF-Voice/piper1-gpl README",
+    "authors": "Open Home Foundation",
+    "year": 2025,
+    "identifier": "https://github.com/OHF-Voice/piper1-gpl"
+  },
+  {
+    "id": "E4",
+    "claim": "Orpheus-TTS code is Apache-2.0 but its weights are under the Llama 3.2 Community License, and it streams with roughly 200 ms time to first audio.",
+    "title": "canopyai/Orpheus-TTS README",
+    "authors": "Canopy Labs",
+    "year": 2025,
+    "identifier": "https://github.com/canopyai/Orpheus-TTS"
+  },
+  {
+    "id": "E5",
+    "claim": "F5-TTS code is MIT but its pre-trained models are CC-BY-NC because of the Emilia training data.",
+    "title": "SWivid/F5-TTS README",
+    "authors": "SWivid",
+    "year": 2025,
+    "identifier": "https://github.com/SWivid/F5-TTS"
+  }
+]

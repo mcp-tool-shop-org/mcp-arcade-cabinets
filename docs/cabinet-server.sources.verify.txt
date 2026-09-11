@@ -1,0 +1,350 @@
+{
+  "verdict": "escalate",
+  "confidence": 1.0,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "D1",
+      "identifier": "https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D2",
+      "identifier": "https://github.com/docker/mcp-registry/blob/main/docs/configuration.md",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/docker/mcp-registry/blob/main/docs/configuration.md' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D3",
+      "identifier": "https://github.com/docker/mcp-registry",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/docker/mcp-registry' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D4",
+      "identifier": "https://docs.docker.com/reference/cli/docker/mcp/gateway/run/",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://docs.docker.com/reference/cli/docker/mcp/gateway/run/' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D5",
+      "identifier": "https://docs.docker.com/ai/mcp-catalog-and-toolkit/toolkit/",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://docs.docker.com/ai/mcp-catalog-and-toolkit/toolkit/' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D6",
+      "identifier": "https://docs.docker.com/desktop/features/networking/networking-how-tos/",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://docs.docker.com/desktop/features/networking/networking-how-tos/' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D7",
+      "identifier": "https://docs.docker.com/desktop/features/gpu/",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://docs.docker.com/desktop/features/gpu/' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "D8",
+      "identifier": "https://modelcontextprotocol.io/specification/2025-06-18/server/tools",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://modelcontextprotocol.io/specification/2025-06-18/server/tools' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "T1",
+      "identifier": "https://steamcdn-a.akamaihd.net/apps/valve/2009/ai_systems_of_l4d_mike_booth.pdf",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://steamcdn-a.akamaihd.net/apps/valve/2009/ai_systems_of_l4d_mike_booth.pdf' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "T2",
+      "identifier": "https://cdn.akamai.steamstatic.com/apps/valve/2012/GDC2012_Ruskin_Elan_DynamicDialog.pdf",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://cdn.akamai.steamstatic.com/apps/valve/2012/GDC2012_Ruskin_Elan_DynamicDialog.pdf' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "T3",
+      "identifier": "https://media.gdcvault.com/gdc2017/Presentations/Armstrong_Do_you_copy.pdf",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://media.gdcvault.com/gdc2017/Presentations/Armstrong_Do_you_copy.pdf' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "E1",
+      "identifier": "https://huggingface.co/hexgrad/Kokoro-82M",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://huggingface.co/hexgrad/Kokoro-82M' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "E2",
+      "identifier": "https://github.com/resemble-ai/chatterbox",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/resemble-ai/chatterbox' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "E3",
+      "identifier": "https://github.com/OHF-Voice/piper1-gpl",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/OHF-Voice/piper1-gpl' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "E4",
+      "identifier": "https://github.com/canopyai/Orpheus-TTS",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/canopyai/Orpheus-TTS' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "E5",
+      "identifier": "https://github.com/SWivid/F5-TTS",
+      "existence": "unresolvable",
+      "finding_match": "unchecked",
+      "verdict": "escalate",
+      "action": "RETRIEVE MANUALLY",
+      "detail": "identifier 'https://github.com/SWivid/F5-TTS' is neither an arXiv id nor a DOI",
+      "source_title": null,
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m271jwrr0m7g4kz71dsx3jgm",
+    "pre_strip_hash": "ba3f1879694d0816635c024e342b1bcf14d7aed1f448e232af5bcca38e4cd21e",
+    "post_strip_hash": "ba3f1879694d0816635c024e342b1bcf14d7aed1f448e232af5bcca38e4cd21e",
+    "timestamp": "2026-09-11 01:33:47.672234+00:00",
+    "verifier_models": [
+      "mistral-large-3:675b-cloud"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {},
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "D1",
+        "identifier": "https://github.com/docker/mcp-registry/blob/main/CONTRIBUTING.md",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D2",
+        "identifier": "https://github.com/docker/mcp-registry/blob/main/docs/configuration.md",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D3",
+        "identifier": "https://github.com/docker/mcp-registry",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D4",
+        "identifier": "https://docs.docker.com/reference/cli/docker/mcp/gateway/run/",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D5",
+        "identifier": "https://docs.docker.com/ai/mcp-catalog-and-toolkit/toolkit/",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D6",
+        "identifier": "https://docs.docker.com/desktop/features/networking/networking-how-tos/",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D7",
+        "identifier": "https://docs.docker.com/desktop/features/gpu/",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "D8",
+        "identifier": "https://modelcontextprotocol.io/specification/2025-06-18/server/tools",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "T1",
+        "identifier": "https://steamcdn-a.akamaihd.net/apps/valve/2009/ai_systems_of_l4d_mike_booth.pdf",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "T2",
+        "identifier": "https://cdn.akamai.steamstatic.com/apps/valve/2012/GDC2012_Ruskin_Elan_DynamicDialog.pdf",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "T3",
+        "identifier": "https://media.gdcvault.com/gdc2017/Presentations/Armstrong_Do_you_copy.pdf",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "E1",
+        "identifier": "https://huggingface.co/hexgrad/Kokoro-82M",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "E2",
+        "identifier": "https://github.com/resemble-ai/chatterbox",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "E3",
+        "identifier": "https://github.com/OHF-Voice/piper1-gpl",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "E4",
+        "identifier": "https://github.com/canopyai/Orpheus-TTS",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      },
+      {
+        "id": "E5",
+        "identifier": "https://github.com/SWivid/F5-TTS",
+        "query": "",
+        "source_sha256": "",
+        "existence": "unresolvable"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-91914c8d4e99814a",
+    "schema_version": 5,
+    "signature": "70dac302919c1e6c7e81092031898530321e62332469cc33c19d562675ad5a654e093ad13140a84da55bff1329793201347068f491684bb80110d4b7bb3bc50f",
+    "replayable": true
+  }
+}

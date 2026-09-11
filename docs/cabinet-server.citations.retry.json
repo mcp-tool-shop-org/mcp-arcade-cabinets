@@ -1,0 +1,50 @@
+[
+  {
+    "id": "F2",
+    "claim": "A 1.3-million-parameter task-specific model deciding in about 31 ms far outscored every large language model tested at playing DOOM.",
+    "title": "Playing DOOM with 1.3M Parameters: Specialized Small Models vs Large Language Models for Real-Time Game Control",
+    "authors": "Golchinfar, Vaziri, Marquardt",
+    "year": 2026,
+    "identifier": "arXiv:2604.07385"
+  },
+  {
+    "id": "F6",
+    "claim": "Decoupling the reasoning thread from I/O and issuing speculative tool calls that are revoked if state diverges gave measurable speedups for interactive agents on both cloud APIs and small edge models.",
+    "title": "Speculative Interaction Agents: Building Real-Time Agents with Asynchronous I/O and Speculative Tool Calling",
+    "authors": "Hooper, Kang, Moon, Lee, Wen, Wawrzynek, Mahoney, Shao, Gholami, Keutzer",
+    "year": 2026,
+    "identifier": "arXiv:2605.13360"
+  },
+  {
+    "id": "F8",
+    "claim": "Hard schema constraints on small models raised output validity to 100% while lowering answer accuracy and raising the share of wrong-but-valid outputs.",
+    "title": "The Constraint Tax: Measuring Validity-Correctness Tradeoffs in Structured Outputs for Small Language Models",
+    "authors": "Ray",
+    "year": 2026,
+    "identifier": "arXiv:2605.26128"
+  },
+  {
+    "id": "F22",
+    "claim": "In a randomised between-subjects study, LLM-driven NPCs raised players' cognitive load without a significant gain in overall game experience, and hurt usability and trust.",
+    "title": "The Double-Edged Sword of Open-Ended Interaction: How LLM-Driven NPCs Affect Players' Cognitive Load and Gaming Experience",
+    "authors": "Hsu, Chen, Lin, Qin, Zhang",
+    "year": 2026,
+    "identifier": "arXiv:2604.10107"
+  },
+  {
+    "id": "F26",
+    "claim": "An agentic multi-agent game master improved immersion and curiosity over static prompt-engineered play in a turn-taking tabletop-style setting.",
+    "title": "Static Vs. Agentic Game Master AI for Facilitating Solo Role-Playing Experiences",
+    "authors": "J\u00f8rgensen et al.",
+    "year": 2025,
+    "identifier": "arXiv:2502.19519"
+  },
+  {
+    "id": "F25",
+    "claim": "A survey of AI-native games finds that successful titles bound generation with authored goals, hidden state, scenario constraints and engine validation rather than relying on unrestricted generation alone.",
+    "title": "AI Native Games: A Survey and Roadmap",
+    "authors": "unknown",
+    "year": 2026,
+    "identifier": "arXiv:2607.00527"
+  }
+]

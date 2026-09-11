@@ -13,10 +13,12 @@ Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from t
 - **`pnpm sit`** (`scripts/sit.mjs`): the headless sit that measured all of this.
 - Refused with reasons in `docs/ollama-content.md`: parallelism toggle (seed's fairness), path pick and phase pick (not this session, written up), asides.
 
-## Next (Director's call)
+## Next (Director, 2026-09-10): the cabinet server
 
-1. Play the seat locally: `pnpm -F @mcp-arcade-cabinets/cabinets dev`, tick **Ollama bosses**, try `gpt-oss:120b-cloud` (fast) and `kimi-k2.6:cloud` (more varied). React to the voice drafts while there.
-2. Grok reviews the Ollama-session diff on `sim.ts`, `pilot.ts`, `patterns.ts`, `fire.json` (`git log 6e1b95f..v0.4.0`).
+The Director authorised a study-swarm for the next layer: the cabinet as an MCP server in a Docker container, listed in the Docker MCP Catalog, whose tools are the levers a model uses (fire, say, sfx, stinger, voice, backdrop). The dispatch is `docs/cabinet-server.dispatch.md`: 24 verified findings, the lock extended G11–G18, the tool list as levers, a six-slice build plan. The paste-ready brief for slices 1–3 is `docs/cabinet-server.kickoff.md`.
+
+1. Next session: paste `docs/cabinet-server.kickoff.md` (server, seat over tools, self-bout). Not voice, stingers, backdrops or the container yet.
+2. Still open from v0.4.0: play the seat locally and react to the voice drafts; Grok reviews the Ollama-session diff (`git log 6e1b95f..v0.4.0`).
 3. Everything below this line is the v0.3.0 pickup as it was written, kept for the layout, lanes, lock and gate. Where it says `v0.3.0` / `23b5d87`, read `v0.4.0` and the tag.
 
 ---

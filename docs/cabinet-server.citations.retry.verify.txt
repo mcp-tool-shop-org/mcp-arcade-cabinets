@@ -1,0 +1,230 @@
+{
+  "verdict": "accept",
+  "confidence": 0.95,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:0:F2",
+      "model_family": "local",
+      "model_id": "mistral-large-3:675b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.98,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "294cabe9449ef39e127263ec025e308bb39379d6d11e99d8e36cfeb7faca9c93"
+    },
+    {
+      "lens": "citation_groundedness:1:F6",
+      "model_family": "local",
+      "model_id": "mistral-large-3:675b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.95,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "e7cd4c48c6e18a1eb8485e47f27938d466953b430f082bfb0909fd00578ab2c5"
+    },
+    {
+      "lens": "citation_groundedness:2:F8",
+      "model_family": "local",
+      "model_id": "mistral-large-3:675b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.99,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "082212fb7f877940ad5498cb269d85d5f07c9dd80edf505e75a2adf147951793"
+    },
+    {
+      "lens": "citation_groundedness:3:F22",
+      "model_family": "local",
+      "model_id": "mistral-large-3:675b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.98,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "25de2e22c023ea774e1b69553c6b1c98be69cbb315dcf54d45ed772e1afcf2c6"
+    },
+    {
+      "lens": "citation_groundedness:4:F26",
+      "model_family": "local",
+      "model_id": "mistral-large-3:675b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.95,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "fbe6ec5725bfe276e79697933db5dba34d5bb7c4d8c29485027ed2bb03f24c52"
+    },
+    {
+      "lens": "citation_groundedness:5:F25",
+      "model_family": "local",
+      "model_id": "mistral-large-3:675b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.95,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "b641eb50142cc6a97148d6b270e52233d001488a4a3f8441c850a267ba4a81e6"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "F2",
+      "identifier": "arXiv:2604.07385",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Playing DOOM with 1.3M Parameters: Specialized Small Models vs Large Language Models for Real-Time Game Control",
+      "source_abstract": "We present SauerkrautLM-Doom-MultiVec, a 1.3 million parameter model that plays the classic first-person shooter DOOM in real time, outperforming large language models up to 92,000x its size, including Nemotron-120B, Qwen3.5-27B, and GPT-4o-mini. Our model combines a ModernBERT encoder with hash embeddings, depth-aware token representations, and an attention pooling classification head to select game actions from ASCII frame representations at 31ms per decision. Trained on just 31,000 human gameplay demonstrations, it achieves 178 frags in 10 episodes (17.8 per episode) in the defend_the_center scenario, more than all tested LLMs combined (13 frags total). All agents receive equivalent input: ASCII frames and depth maps. Despite having 92,000x fewer parameters than Nemotron-120B, our model is the only agent that actively engages enemies rather than purely evading them. These results demonstrate that small, task-specific models trained on domain-appropriate data can decisively outperform general-purpose LLMs at real-time control tasks, at a fraction of the inference cost, with deployment capability on consumer hardware.",
+      "supporting_span": "Our model combines a ModernBERT encoder with hash embeddings, depth-aware token representations, and an attention pooling classification head to select game actions from ASCII frame representations at 31ms per decision. [...] it achieves 178 frags in 10 episodes (17.8 per episode) in the defend_the_center scenario, more than all tested LLMs combined (13 frags total).",
+      "confidence": 0.98
+    },
+    {
+      "citation_id": "F6",
+      "identifier": "arXiv:2605.13360",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Speculative Interaction Agents: Building Real-Time Agents with Asynchronous I/O and Speculative Tool Calling",
+      "source_abstract": "There is a growing demand for agentic AI technologies for a range of downstream applications like customer service and personal assistants. For applications where the agent needs to interact with a person, real-time low-latency responsiveness is required; for example, with voice-controlled applications, under 1 second of latency is typically required for the interaction to feel seamless. However, if we want the LLM to reason and execute an agentic workflow with tool calling, this can add several seconds or more of latency, which is prohibitive for real-time latency-sensitive applications. In our work, we propose Speculative Interaction Agents to enable real-time interaction even for agents with complex multi-turn tool calling. We propose Asynchronous I/O, which decouples the core agent reason-and-act thread from waiting for additional information from either the user or environment, thereby allowing for overlapping agentic processing while waiting on external delays. We also propose Speculative Tool Calling as a method to manage task execution when the agent is still unsure if it has received the full information or if additional user information may later be provided. For strong cloud models, our method can be applied out-of-the-box to existing real-time cloud APIs, providing 1.3-1.7$\\times$ speedups with minor accuracy loss. To enable real-time interaction with small edge-scale models, we also present a clock-based training methodology that adapts the model to handle streaming inputs and asynchronous responses, and demonstrate a synthetic data generation strategy for SFT. Altogether, this approach provides 1.6-2.2$\\times$ speedups with the Qwen2.5-3B-Instruct and Llama-3.2-3B-Instruct models across multiple tool calling benchmarks.",
+      "supporting_span": "We propose Asynchronous I/O, which decouples the core agent reason-and-act thread from waiting for additional information from either the user or environment, thereby allowing for overlapping agentic processing while waiting on external delays. We also propose Speculative Tool Calling as a method to manage task execution when the agent is still unsure if it has received the full information or if additional user information may later be provided.",
+      "confidence": 0.95
+    },
+    {
+      "citation_id": "F8",
+      "identifier": "arXiv:2605.26128",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "The Constraint Tax: Measuring Validity-Correctness Tradeoffs in Structured Outputs for Small Language Models",
+      "source_abstract": "Production LLM systems increasingly require machine-readable outputs: JSON objects, typed traces, regex-constrained fields, and tool-call schemas. This paper targets on-device and low-cost small language model (SLM) deployments, where sub-3B models are attractive for privacy, latency, and commodity hardware but have limited capacity to satisfy schemas while solving tasks. The usual engineering assumption is that hard output constraints improve reliability without changing the underlying answer. We show that this assumption is unsafe for small models. We introduce \\emph{constraint tax}, a measurement protocol for isolating the answer and executable-accuracy loss caused by structured-output constraints at fixed model, fixed task distribution, and fixed problem instances. Across 15,000 commodity-GPU generations with Qwen2.5-0.5B, Qwen2.5-1.5B, and SmolLM2-1.7B, hard answer-only schema decoding raises schema validity from 61.5\\% to 100.0\\%, but lowers answer accuracy from 19.7\\% to 11.0\\% and increases wrong-valid-schema outputs from 49.5\\% to 88.9\\%. The strongest industry analogue is a deterministic calendar tool-call task: Qwen2.5-1.5B achieves 91.5\\% executable accuracy with prompt-only JSON but only 48.0\\% under the same hard tool-call schema, while both modes are 100.0\\% schema-valid. The error is semantic, not structural. We also show that the 3B boundary still pays a direct-schema tax and that delayed packaging supports a constructive design pattern: reason free, constrain late. The practical conclusion is direct: production systems should report schema validity, answer accuracy, executable accuracy, and wrong-valid-schema rate separately.",
+      "supporting_span": "Across 15,000 commodity-GPU generations with Qwen2.5-0.5B, Qwen2.5-1.5B, and SmolLM2-1.7B, hard answer-only schema decoding raises schema validity from 61.5% to 100.0%, but lowers answer accuracy from 19.7% to 11.0% and increases wrong-valid-schema outputs from 49.5% to 88.9%.",
+      "confidence": 0.99
+    },
+    {
+      "citation_id": "F22",
+      "identifier": "arXiv:2604.10107",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "The Double-Edged Sword of Open-Ended Interaction: How LLM-Driven NPCs Affect Players' Cognitive Load and Gaming Experience",
+      "source_abstract": "This study examines how large language model-driven non-player characters (LLM-NPCs) affect players' cognitive load and gaming experience, with a particular focus on the underlying psychological mechanisms, differences across task scenarios, and the role of individual traits. Conducting a randomized between-subject experiment (N=130) in a self-developed game prototype \"Campus Culture Week\", we compared player interactions with LLM-NPCs and traditional pre-scripted NPCs across multiple interactive modules. The results showed that LLM-NPCs significantly increased players' cognitive load (p < .001), an effect mediated by factors such as expressive effort and response uncertainty. However, LLM-NPCs did not yield a statistically significant improvement in overall gaming experience (p = .195); while they positively influenced players' perceived autonomy, they exerted a negative influence on system usability and trust. The effects of LLM-NPCs also significantly varied across task scenarios (p < .001), with stronger increases in cognitive load in more open-ended modules such as content creation and relationship building. The influence of individual differences was generally limited, although the personality traits of extraversion (p = .031) and neuroticism (p = .047) demonstrated some predictive power regarding cognitive load. This study provides empirical evidence for understanding the \"double-edged sword\" effect of LLM-NPCs on player experience, and highlight the importance of scenario-sensitive and user-sensitive design in intelligent NPC systems.",
+      "supporting_span": "The results showed that LLM-NPCs significantly increased players' cognitive load (p < .001), an effect mediated by factors such as expressive effort and response uncertainty. However, LLM-NPCs did not yield a statistically significant improvement in overall gaming experience (p = .195); while they positively influenced players' perceived autonomy, they exerted a negative influence on system usability and trust.",
+      "confidence": 0.98
+    },
+    {
+      "citation_id": "F26",
+      "identifier": "arXiv:2502.19519",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Static Vs. Agentic Game Master AI for Facilitating Solo Role-Playing Experiences",
+      "source_abstract": "This paper presents a game master AI for single-player role-playing games. The AI is designed to deliver interactive text-based narratives and experiences typically associated with multiplayer tabletop games like Dungeons & Dragons. We report on the design process and the series of experiments to improve the functionality and experience design, resulting in two functional versions of the system. While v1 of our system uses simplified prompt engineering, v2 leverages a multi-agent architecture and the ReAct framework to include reasoning and action. A comparative evaluation demonstrates that v2 as an agentic system maintains play while significantly improving modularity and game experience, including immersion and curiosity. Our findings contribute to the evolution of AI-driven interactive fiction, highlighting new avenues for enhancing solo role-playing experiences.",
+      "supporting_span": "A comparative evaluation demonstrates that v2 as an agentic system maintains play while significantly improving modularity and game experience, including immersion and curiosity.",
+      "confidence": 0.95
+    },
+    {
+      "citation_id": "F25",
+      "identifier": "arXiv:2607.00527",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "AI Native Games: A Survey and Roadmap",
+      "source_abstract": "Generative AI now enables games to produce dialogue, quests, characters, images, and worlds at runtime. Yet generation alone does not make a game AI-native, nor does it guarantee playability. This paper defines AI-native games by whether runtime generative AI is constitutive of the core loop: if the AI component were removed or trivially replaced, the central form of play would collapse or become fundamentally different. This counterfactual criterion separates AI-native games from AI-augmented games and adjacent boundary artifacts. Using this definition, we screen candidate artifacts and analyze 53 publicly available AI-native games and prototypes. We introduce a dual-axis G/N taxonomy: the G-axis captures player-facing game type, while the N-axis captures the dominant AI mechanic that makes generative AI indispensable to play. The corpus is concentrated around language-forward designs, especially narrative adventure, epistemic interaction, and generative narrative, while categories such as semantic adjudication, multi-agent simulation, generative construction, and relationship/companion play remain less represented. We argue that the central design problem is organizing semantic openness into stable gameplay. AI-native design depends on mechanical invariants: goals, rules, state, feedback, pacing, and player agency that make open-ended AI outputs interpretable and consequential. We conclude with a roadmap for controllable generation, AI-as-mechanic design, multimodal and multi-agent systems, inference economics, evaluation, safety, and regulation.",
+      "supporting_span": "AI-native design depends on mechanical invariants: goals, rules, state, feedback, pacing, and player agency that make open-ended AI outputs interpretable and consequential.",
+      "confidence": 0.95
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m271qep39crdq4fgbff9tt97",
+    "pre_strip_hash": "b7894080819d6f27494d557fec7e21121d8eef727959e1fd41b8195d49bc8bb2",
+    "post_strip_hash": "b7894080819d6f27494d557fec7e21121d8eef727959e1fd41b8195d49bc8bb2",
+    "timestamp": "2026-09-11 01:36:17.091764+00:00",
+    "verifier_models": [
+      "mistral-large-3:675b-cloud"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:0:F2": "294cabe9449ef39e127263ec025e308bb39379d6d11e99d8e36cfeb7faca9c93",
+      "citation_groundedness:1:F6": "e7cd4c48c6e18a1eb8485e47f27938d466953b430f082bfb0909fd00578ab2c5",
+      "citation_groundedness:2:F8": "082212fb7f877940ad5498cb269d85d5f07c9dd80edf505e75a2adf147951793",
+      "citation_groundedness:3:F22": "25de2e22c023ea774e1b69553c6b1c98be69cbb315dcf54d45ed772e1afcf2c6",
+      "citation_groundedness:4:F26": "fbe6ec5725bfe276e79697933db5dba34d5bb7c4d8c29485027ed2bb03f24c52",
+      "citation_groundedness:5:F25": "b641eb50142cc6a97148d6b270e52233d001488a4a3f8441c850a267ba4a81e6"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "F2",
+        "identifier": "arXiv:2604.07385",
+        "query": "https://export.arxiv.org/api/query?id_list=2604.07385",
+        "source_sha256": "298c4380b24bb048bfe85171f3c71aa3bec72b2b0759588313ff4bd462804cad",
+        "existence": "resolved"
+      },
+      {
+        "id": "F6",
+        "identifier": "arXiv:2605.13360",
+        "query": "https://export.arxiv.org/api/query?id_list=2605.13360",
+        "source_sha256": "aff8c9094d0a6280b131e19ebb085a8c13443493c1c4e299867a91cc9f86d063",
+        "existence": "resolved"
+      },
+      {
+        "id": "F8",
+        "identifier": "arXiv:2605.26128",
+        "query": "https://export.arxiv.org/api/query?id_list=2605.26128",
+        "source_sha256": "6eb8de08468a861f806a49571775984df5894010e47f606d2f5af401496b3d33",
+        "existence": "resolved"
+      },
+      {
+        "id": "F22",
+        "identifier": "arXiv:2604.10107",
+        "query": "https://export.arxiv.org/api/query?id_list=2604.10107",
+        "source_sha256": "9c4767518fe39cbfd75c9be33bcdc5a74e593c5334aee971e39c7eccfe422114",
+        "existence": "resolved"
+      },
+      {
+        "id": "F26",
+        "identifier": "arXiv:2502.19519",
+        "query": "https://export.arxiv.org/api/query?id_list=2502.19519",
+        "source_sha256": "3ebbcedb8419865fdd3d242c3c0d6949b9b03bbb6e9e4d852f9d67792b90e7cc",
+        "existence": "resolved"
+      },
+      {
+        "id": "F25",
+        "identifier": "arXiv:2607.00527",
+        "query": "https://export.arxiv.org/api/query?id_list=2607.00527",
+        "source_sha256": "28ebc7b0fa5c902a9609fa745578764daf9d81299f9f34f88ff580f950da940a",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-91914c8d4e99814a",
+    "schema_version": 5,
+    "signature": "ff7810ce71cb2090bfdfa20d55e03d86a56b49e2cb09429778c20ea42052fc01d1051d5481d2991af75dd71d9dcc909f21dcde78213e86cb3540cfa910428903",
+    "replayable": true
+  }
+}

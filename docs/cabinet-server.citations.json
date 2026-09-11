@@ -1,0 +1,210 @@
+[
+  {
+    "id": "F1",
+    "claim": "A local 7B model on Ollama reading game state every five seconds and emitting one of four tactical tags to steer a pre-trained reinforcement-learning policy raised win rate against a tactic-shifting opponent, but it chose the same tag most of the time regardless of opponent.",
+    "title": "LLM-Guided Reinforcement Learning for Adaptive NPC Behavior in Multi-Agent Combat Games",
+    "authors": "Nair, Karim",
+    "year": 2026,
+    "identifier": "arXiv:2609.02931"
+  },
+  {
+    "id": "F2",
+    "claim": "A 1.3-million-parameter task-specific model deciding in about 31 ms far outscored every large language model tested at playing DOOM.",
+    "title": "Playing DOOM with 1.3M Parameters",
+    "authors": "Golchinfar, Vaziri, Marquardt",
+    "year": 2026,
+    "identifier": "arXiv:2604.07385"
+  },
+  {
+    "id": "F3",
+    "claim": "Splitting a capable LLM for intent, a lightweight LLM for macro-actions and a reactive executor for atomic behaviours improved both cooperation quality and response speed in real-time Overcooked human studies.",
+    "title": "LLM-Powered Hierarchical Language Agent for Real-time Human-AI Coordination",
+    "authors": "Liu, Yu, Gao, Xie, Liao, Wu, Wang",
+    "year": 2023,
+    "identifier": "arXiv:2312.15224"
+  },
+  {
+    "id": "F4",
+    "claim": "Pairing a slow reasoner with a fast reactor through a continuous channel improved real-time game agents, but only where slow reasoning already outperforms fast reaction.",
+    "title": "The Latent Bridge: A Continuous Slow-Fast Channel for Real-Time Game Agents",
+    "authors": "Li, Shi",
+    "year": 2026,
+    "identifier": "arXiv:2606.24470"
+  },
+  {
+    "id": "F5",
+    "claim": "Dynamically trading model quality for speed under latency pressure improved win rate in a latency-sensitive fighting game, so a faster, less capable decision-maker can beat a slower, more capable one.",
+    "title": "Win Fast or Lose Slow: Balancing Speed and Accuracy in Latency-Sensitive Decisions of LLMs",
+    "authors": "Kang, Zhang, Cai, Xu, Krishna, Du, Weissman",
+    "year": 2025,
+    "identifier": "arXiv:2505.19481"
+  },
+  {
+    "id": "F6",
+    "claim": "Decoupling the reasoning thread from I/O and issuing speculative tool calls that are revoked if state diverges gave measurable speedups for interactive agents on both cloud APIs and small edge models.",
+    "title": "Speculative Interaction Agents",
+    "authors": "Hooper, Kang, Moon, Lee, Wen, Wawrzynek, Mahoney, Shao, Gholami, Keutzer",
+    "year": 2026,
+    "identifier": "arXiv:2605.13360"
+  },
+  {
+    "id": "F7",
+    "claim": "Constant delays in character responsiveness up to about 300 ms did not harm player experience, but adding jitter to a 200 ms delay made lag noticeable and degraded performance and perceived quality.",
+    "title": "Player Perception of Delays and Jitter in Character Responsiveness",
+    "authors": "Normoyle, Guerrero, J\u00f6rg",
+    "year": 2014,
+    "identifier": "10.1145/2628257.2628263"
+  },
+  {
+    "id": "F8",
+    "claim": "Hard schema constraints on small models raised output validity to 100% while lowering answer accuracy and raising the share of wrong-but-valid outputs.",
+    "title": "The Constraint Tax",
+    "authors": "Ray",
+    "year": 2026,
+    "identifier": "arXiv:2605.26128"
+  },
+  {
+    "id": "F31",
+    "claim": "Cloned voices were judged human about as often as real recordings, while generic non-cloned synthetic voices were judged human far less often.",
+    "title": "Voice clones sound realistic but not (yet) hyperrealistic",
+    "authors": "Lavan, Irvine, Rosi, McGettigan",
+    "year": 2025,
+    "identifier": "10.1371/journal.pone.0332692"
+  },
+  {
+    "id": "F32",
+    "claim": "When speech rate, pitch variation and loudness were manipulated independently in neural text-to-speech, loudness primarily drove listeners' perception of sarcasm.",
+    "title": "What Makes Synthetic Speech Sound Sarcastic? A Prosody-Controlled Perception Study",
+    "authors": "Li, Nayak, Coler",
+    "year": 2026,
+    "identifier": "arXiv:2606.09717"
+  },
+  {
+    "id": "F33",
+    "claim": "Participants rated AI-powered NPCs in VR as moderately believable, strongest on behaviour and intelligence and weakest on emotion and personality, with response latency flagged as the main optimisation target.",
+    "title": "An Empirical Evaluation of AI-Powered NPCs' Perceived Realism and Performance in VR",
+    "authors": "Korkiakoski et al.",
+    "year": 2025,
+    "identifier": "arXiv:2507.10469"
+  },
+  {
+    "id": "F21",
+    "claim": "In a study substituting GPT-4-generated dialogue into a commercial narrative game, players significantly preferred the designers' authored dialogue, citing logical flow and grounding in game state.",
+    "title": "A Framework for Exploring Player Perceptions of LLM-Generated Dialogue in Commercial Video Games",
+    "authors": "Akoury, Yang, Iyyer",
+    "year": 2023,
+    "identifier": "10.18653/v1/2023.findings-emnlp.151"
+  },
+  {
+    "id": "F22",
+    "claim": "In a randomised between-subjects study, LLM-driven NPCs raised players' cognitive load without a significant gain in overall game experience, and hurt usability and trust.",
+    "title": "The Double-Edged Sword of Open-Ended Interaction",
+    "authors": "Hsu, Chen, Lin, Qin, Zhang",
+    "year": 2026,
+    "identifier": "arXiv:2604.10107"
+  },
+  {
+    "id": "F23",
+    "claim": "Across hundreds of professional stand-up performances, temporal features such as the pause before a high-surprise line predicted audience appreciation better than semantic incongruity.",
+    "title": "Timing is Everything: Temporal Scaffolding of Semantic Surprise in Humor",
+    "authors": "Ma, Peng, Lyu, Zhang, Zhu",
+    "year": 2026,
+    "identifier": "arXiv:2605.00143"
+  },
+  {
+    "id": "F24",
+    "claim": "An AI stand-up agent that made its machine nature the material of its jokes was rated funnier by audiences than a baseline agent trying to pass as human.",
+    "title": "Not Human, Funnier: How Machine Identity Shapes Humor Perception in Online AI Stand-up Comedy",
+    "authors": "Huang, Wang, Hao, Yang, LC",
+    "year": 2026,
+    "identifier": "arXiv:2602.12763"
+  },
+  {
+    "id": "F25",
+    "claim": "A survey of AI-native games finds that few successful titles rely on unrestricted generation alone; the shipped pattern bounds generation with authored goals, cached outputs and engine validation, and names unpredictable generation latency as a harm to real-time play.",
+    "title": "AI-Native Games: A Survey and Roadmap",
+    "authors": "unknown",
+    "year": 2026,
+    "identifier": "arXiv:2607.00527"
+  },
+  {
+    "id": "F26",
+    "claim": "An agentic multi-agent game master improved immersion and curiosity over static prompt-engineered play in a turn-taking tabletop-style setting.",
+    "title": "Static Vs. Agentic Game Master AI",
+    "authors": "J\u00f8rgensen et al.",
+    "year": 2025,
+    "identifier": "arXiv:2502.19519"
+  },
+  {
+    "id": "F41",
+    "claim": "Compiling a JSON schema or grammar into per-token masks makes structured generation essentially free at serving time, up to 100x faster than prior engines.",
+    "title": "XGrammar: Flexible and Efficient Structured Generation Engine for Large Language Models",
+    "authors": "Dong, Ruan, Cai, Lai, Xu, Zhao, Chen",
+    "year": 2024,
+    "identifier": "arXiv:2411.15100"
+  },
+  {
+    "id": "F42",
+    "claim": "Restricting model output to a fixed format such as JSON measurably degrades reasoning performance, and stricter constraints degrade it more.",
+    "title": "Let Me Speak Freely? A Study on the Impact of Format Restrictions on Performance of Large Language Models",
+    "authors": "Tam, Wu, Tsai, Lin, Lee, Chen",
+    "year": 2024,
+    "identifier": "arXiv:2408.02442"
+  },
+  {
+    "id": "F43",
+    "claim": "Several open-weight models stop invoking tools entirely when JSON-schema output constraints and tool calling are enabled together, although each works alone.",
+    "title": "Constraint Tax in Open-Weight LLMs: Tool Calling Suppression Under Structured Output Constraints",
+    "authors": "unknown",
+    "year": 2026,
+    "identifier": "arXiv:2606.25605"
+  },
+  {
+    "id": "F44",
+    "claim": "Extracting control and data flow from the trusted query and enforcing capability policies at the tool-call boundary gives provable prompt-injection security at a modest cost in task completion on AgentDojo.",
+    "title": "Defeating Prompt Injections by Design",
+    "authors": "Debenedetti, Shumailov, Fan, Hayes, Carlini et al.",
+    "year": 2025,
+    "identifier": "arXiv:2503.18813"
+  },
+  {
+    "id": "F45",
+    "claim": "Tool poisoning attacks against real MCP servers succeed at high rates, with refusal rates below a few percent, and more capable models are more vulnerable because they follow instructions better.",
+    "title": "MCPTox: A Benchmark for Tool Poisoning Attack on Real-World MCP Servers",
+    "authors": "Wang, Gao, Wang, Liu, Sun, Cheng, Shi, Du, Li",
+    "year": 2025,
+    "identifier": "arXiv:2508.14925"
+  },
+  {
+    "id": "F46",
+    "claim": "Across pooled studies, players report less enjoyment against computer opponents than against human ones, attributed to perceiving the opponent as artificial.",
+    "title": "Game AI Not Fun? A Scoping Review and Meta-Analysis on the Differences in Enjoyment between Human and Computer Opponents",
+    "authors": "Ito",
+    "year": 2026,
+    "identifier": "arXiv:2607.24749"
+  },
+  {
+    "id": "F47",
+    "claim": "In a pre-registered study with AI-controlled difficulty, steering the win margin did not change enjoyment or behavioural engagement.",
+    "title": "Difficulty-skill balance does not affect engagement and enjoyment: a pre-registered study using AI-controlled difficulty",
+    "authors": "Cutting, Deterding, Demediuk, Sephton",
+    "year": 2023,
+    "identifier": "10.1098/rsos.220274"
+  },
+  {
+    "id": "F48",
+    "claim": "Multimodal LLMs used zero-shot as low-level frame-by-frame policies in Atari games underperform reinforcement-learning agents and humans.",
+    "title": "Atari-GPT: Benchmarking Multimodal LLMs as Low-Level Policies in Atari Games",
+    "authors": "Waytowich, White, Sunbeam, Goecks",
+    "year": 2024,
+    "identifier": "arXiv:2408.15950"
+  },
+  {
+    "id": "F49",
+    "claim": "Orak is a benchmark of twelve video games, including a fighting game, that evaluates LLM agents' skill and behaviour with leaderboards and battle arenas.",
+    "title": "Orak: A Foundational Benchmark for Training and Evaluating LLM Agents on Diverse Video Games",
+    "authors": "Park et al.",
+    "year": 2025,
+    "identifier": "arXiv:2506.03610"
+  }
+]
