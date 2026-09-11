@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+**/dist
+.venv
+film
+site
+docs
+apps/cabinets/public
+apps/cabinets/src
+.git
+.github
+*.md
+!packages/**/*.md

@@ -1,0 +1,50 @@
+# Docker MCP Registry entry for Ghost on the Menu, the cabinet as an MCP server.
+# Copy this file and tools.json into servers/mcp-arcade-cabinets/ in a fork of
+# docker/mcp-registry and open the PR (the Director's action, per
+# docs/cabinet-server.dispatch.md). source.commit pins the commit that carries
+# the Dockerfile; the registry's CI builds the image from it.
+name: mcp-arcade-cabinets
+image: mcp/mcp-arcade-cabinets
+type: server
+meta:
+  category: productivity
+  tags:
+    - game
+    - arcade
+    - mcp-arcade
+    - replay
+    - voice
+about:
+  title: Ghost on the Menu
+  description: |
+    An arcade cabinet as an MCP server. Ghost on the Menu is a short retro shooter
+    built from what an MCP server said on the wire: a recorded bout plays out as
+    waves, and the calls the agent should not have made look like everything else
+    until you hit one. The six tools are the levers a model pulls to sit in the boss:
+    fire (one verb a beat), say (a line of its own, through a gate), speak (voice it,
+    through a host-side worker with a receipt per take), sfx, and the read-only view
+    and tapes. The model proposes; the game decides. No tool returns a fact, a score,
+    or a tape row; nothing on the field names the model. Twenty recordings are baked
+    in, four of them the cabinet recording itself.
+  icon: https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png
+source:
+  project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
+  commit: PIN_AFTER_COMMIT
+run:
+  disableNetwork: false
+config:
+  description: The voice is optional and stays on the host. Give the container the worker's route and, when the worker binds beyond loopback, its token.
+  secrets:
+    - name: mcp-arcade-cabinets.voice_token
+      env: VOICE_TOKEN
+      example: a-long-random-string
+  parameters:
+    type: object
+    properties:
+      voice_url:
+        type: string
+        default: http://host.docker.internal:7788
+  env:
+    - name: VOICE_URL
+      example: http://host.docker.internal:7788
+      value: '{{mcp-arcade-cabinets.voice_url}}'

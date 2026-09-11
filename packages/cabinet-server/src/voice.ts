@@ -32,7 +32,16 @@ export interface SpeakAnswer {
 export interface VoiceOpts {
   /** The worker's base, e.g. `/voice` behind the dev proxy or `http://127.0.0.1:7788`. */
   url: string;
+  /** The worker's bearer token, when it binds beyond loopback (VOICE_TOKEN). */
+  token?: string;
   fetchImpl?: typeof fetch;
+}
+
+function headersFor(opts: VoiceOpts, json = false): Record<string, string> {
+  const h: Record<string, string> = {};
+  if (json) h['content-type'] = 'application/json';
+  if (opts.token) h.authorization = `Bearer ${opts.token}`;
+  return h;
 }
 
 /** Whether a worker answers, and with which engine. Null when none. */
@@ -67,7 +76,7 @@ export async function speakLine(job: VoiceJob, opts: VoiceOpts): Promise<SpeakAn
   try {
     const res = await f(`${opts.url}/speak`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: headersFor(opts, true),
       body: JSON.stringify({
         text: job.text,
         kind: job.kind,
@@ -78,7 +87,7 @@ export async function speakLine(job: VoiceJob, opts: VoiceOpts): Promise<SpeakAn
       }),
     });
     const ms = Date.now() - t0;
-    if (res.status === 400) return { receipt: null, status: 'refused', ms };
+    if (res.status === 400 || res.status === 401) return { receipt: null, status: 'refused', ms };
     if (!res.ok) return { receipt: null, status: 'no worker', ms };
     const r = (await res.json()) as VoiceReceipt;
     return { receipt: r, status: r.ok ? 'voiced' : 'receipt failed', ms };

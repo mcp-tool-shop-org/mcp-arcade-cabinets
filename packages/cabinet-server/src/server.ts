@@ -69,6 +69,8 @@ export interface HeadlessOpts {
   seed?: number;
   /** The voice worker's base url; null keeps the cabinet silent. */
   voiceUrl?: string | null;
+  /** The worker's bearer token (VOICE_TOKEN), when it binds beyond loopback. */
+  voiceToken?: string;
 }
 
 /** A headless round the tools act on. Stepped by `step(dt)`; restarts at the scene. */
@@ -100,7 +102,10 @@ export function headlessRound(opts: HeadlessOpts = {}) {
           // by the worker; the receipt is the artifact. Silent when no worker.
           voice: (job) => {
             voiced.asked += 1;
-            void speakLine(job, { url: voiceUrl }).then((a) => {
+            void speakLine(job, {
+              url: voiceUrl,
+              ...(opts.voiceToken ? { token: opts.voiceToken } : {}),
+            }).then((a) => {
               if (a.status === 'voiced') voiced.ok += 1;
               else if (a.status === 'receipt failed') voiced.failed += 1;
               else voiced.noWorker += 1;
@@ -152,6 +157,7 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
     ...(process.env.VOICE_URL !== undefined
       ? { voiceUrl: process.env.VOICE_URL === '' ? null : process.env.VOICE_URL }
       : {}),
+    ...(process.env.VOICE_TOKEN ? { voiceToken: process.env.VOICE_TOKEN } : {}),
     ...opts,
   });
   const server = buildServer(h.cabinet);

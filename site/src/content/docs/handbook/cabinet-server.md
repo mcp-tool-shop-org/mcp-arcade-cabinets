@@ -48,6 +48,26 @@ A take plays the moment its receipt is back if its line is still on the field, w
 
 `mcp-arcade bout --target stdio` against the built server (`packages/cabinet-server/dist/server.js`, task `view`) puts the cabinet's own menu through the instrument's four experiments. On its own menu the naive policy follows nothing; with the instrument's house whisper it follows into `tapes` and task-only holds. The four recordings are in `fixtures/tapes/cabinet.*.tape.json`, and the cabinet plays them.
 
+## Run it in Docker
+
+The repo's root `Dockerfile` builds the server into one file on `node:22-alpine` with the tool contract and the twenty tapes baked in. It lists its six tools within a fraction of a second under the Docker MCP Toolkit's budget of one CPU and two gigabytes, and needs no network to list or to play.
+
+```bash
+docker build -t mcp-arcade-cabinets .
+docker run -i --rm --cpus 1 --memory 2g mcp-arcade-cabinets
+```
+
+The voice stays on the host. Run the worker bound to an interface the container can reach and give it a token, then hand the container the route and the token:
+
+```bash
+# on the host
+KOKORO_DIR=/path/to/kokoro VOICE_TOKEN=<token> VOICE_HOST=0.0.0.0 pnpm voice
+# the container
+docker run -i --rm -e VOICE_URL=http://host.docker.internal:7788 -e VOICE_TOKEN=<token> mcp-arcade-cabinets
+```
+
+Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo; the image publishes as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets`.
+
 ## Not in this layer
 
 House Call, a second sim, per-frame control, any tool that reads a tape row, any ranking on screen, and a boss phase pick (a guarded phase makes an unhittable boss).

@@ -101,6 +101,11 @@ export default defineConfig({
         target: process.env.VOICE_URL ?? 'http://127.0.0.1:7788',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/voice/, ''),
+        // The worker's bearer, when it has one, is added here on the node
+        // side; the browser never holds it.
+        ...(process.env.VOICE_TOKEN
+          ? { headers: { authorization: `Bearer ${process.env.VOICE_TOKEN}` } }
+          : {}),
       },
     },
   },

@@ -54,5 +54,12 @@ if (args.has('--check')) {
 
 const venv = path.resolve('.venv/Scripts/python.exe');
 const py = process.env.VOICE_PYTHON ?? (existsSync(venv) ? venv : 'python');
+if (!process.env.KOKORO_DIR) {
+  console.error(
+    'set KOKORO_DIR to the folder holding kokoro-v1.0.onnx and voices-v1.0.bin (the Kokoro ONNX weights)',
+  );
+  process.exit(2);
+}
+// VOICE_HOST, VOICE_TOKEN, VOICE_CACHE_TAKES and the rest pass through the environment.
 const child = spawn(py, [path.resolve('voice/worker.py'), '--port', port], { stdio: 'inherit' });
 child.on('exit', (code) => process.exit(code ?? 0));

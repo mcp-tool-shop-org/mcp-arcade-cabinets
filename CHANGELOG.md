@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **The container (slice 6, G18).** A root `Dockerfile` builds the cabinet server into one file on `node:22-alpine` with `tools.json` and the twenty tapes baked in, running as `node` over stdio; `.dockerignore` keeps everything else out. Measured under the Toolkit's budget (one CPU, two gigabytes, no network): connect in about half a second, `tools/list` in eight milliseconds, every tool in words, a bad enum and an unlisted name refused; the instrument's four experiments pass against the image with its digest pinned. Built and tagged as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0`; the push to GHCR waits on the token's packages scope. The Docker MCP Catalog entry is drafted under `catalog/` (`server.yaml`, `tools.json`); the PR to `docker/mcp-registry` is the Director's to open.
+- **The voice worker, hardened for the container route** (Grok's slice-4 list): `VOICE_TOKEN` makes `/speak` and `/audio` require a bearer (the stdio server and the dev proxy send it on the node side; the browser never holds it), the worker refuses to bind beyond loopback without one, the cache is capped (`--cache-takes`, oldest first), and the weights come from `KOKORO_DIR` or `--model` with a clear exit when missing. Measured: a container reached the token-guarded worker at `host.docker.internal` and spoke one receipted take; without the bearer, 401.
+
 ## [0.5.0] - 2026-09-11
 
 The cabinet server and the voice: slices one to four of `docs/cabinet-server.dispatch.md`. The cabinet is an MCP server whose tools are the levers a model pulls; the shell's seats sit behind that contract; the boss writes its lines through a gate and speaks them through a receipted voice; the Ghost's own menu went through the instrument. Reviewed by Grok (`docs/cabinet-server.review.md`, `docs/cabinet-voice.review.md`). The seats and the voice need the local shell, a daemon and the voice worker; Pages serves the game unchanged, with the music and the tuning below.

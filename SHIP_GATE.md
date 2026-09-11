@@ -54,6 +54,7 @@
 - [ ] `[npm]` SKIP: pnpm-lock.yaml is committed (shipcheck manifest: passed); no pypi — Lockfile committed · `[pypi]` Clean wheel + sdist build — lockfile executed by `npx @mcptoolshop/shipcheck manifest` (D7); the pypi wheel/sdist build is not yet executed
 - [ ] `[vsix]` SKIP: not an extension — `vsce package` produces clean .vsix with correct metadata
 - [ ] `[desktop]` SKIP: not a desktop app — Installer/package builds and runs on stated platforms
+- [x] `[container]` 2026-09-11: `docker build` from the root Dockerfile produces `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0` (node:22-alpine, one bundled file, the tapes and tools.json baked in, runs as `node`); driven over stdio under one CPU, two gigabytes and no network it lists six tools in eight milliseconds and answers every call; `mcp-arcade bout --target docker` passes all four experiments against it — Container image builds and runs under the target runtime's limits
 
 ## E. Identity (soft gate — does not block ship)
 

@@ -9,7 +9,14 @@ words. Every line is cached by its voice and text, so the authored fallback
 lines are synthesised once and generated lines once each.
 
     python voice/worker.py [--host 127.0.0.1] [--port 7788] [--cache film/voice]
-                           [--model E:/AI-Models/kokoro] [--asr small.en] [--device auto]
+                           --model <dir with kokoro-v1.0.onnx and voices-v1.0.bin>
+                           [--asr small.en] [--device auto] [--cache-takes 400]
+
+Environment: KOKORO_DIR (the model dir; required unless --model), VOICE_HOST,
+VOICE_PORT, VOICE_CACHE, VOICE_ASR, VOICE_DEVICE, VOICE_TOKEN, VOICE_CACHE_TAKES.
+For a container to reach the worker, bind the host's Docker interface (or
+0.0.0.0) AND set VOICE_TOKEN: every /speak and /audio then needs
+`Authorization: Bearer <token>`. /health stays open and carries no take.
 
 Endpoints, all JSON:
     GET  /health                   engine, asr device, voices, lines cached
@@ -19,6 +26,10 @@ Endpoints, all JSON:
 Never inside the Catalog container: the container reaches it at
 host.docker.internal and degrades to silence when it is not there. Nothing
 here sees a fact; the worker never sees the tape, only the line.
+
+Hardened on Grok's slice-4 review: a bearer token on the hook, a cap on the
+cache (oldest takes evicted), no rig path default for the weights, and a
+take served only with a passed receipt beside it.
 """
 
 from __future__ import annotations
@@ -57,11 +68,20 @@ def _cuda_dirs():
 
 
 class Voice:
-    def __init__(self, model_dir: Path, asr_name: str, device: str, cache: Path):
+    def __init__(self, model_dir: Path, asr_name: str, device: str, cache: Path,
+                 cache_takes: int = 400):
         from kokoro_onnx import Kokoro
 
+        onnx = model_dir / 'kokoro-v1.0.onnx'
+        voices = model_dir / 'voices-v1.0.bin'
+        if not onnx.is_file() or not voices.is_file():
+            raise RuntimeError(
+                f'no Kokoro weights under {model_dir}: expected kokoro-v1.0.onnx and voices-v1.0.bin '
+                '(set KOKORO_DIR or pass --model)'
+            )
         t0 = time.time()
-        self.kokoro = Kokoro(str(model_dir / 'kokoro-v1.0.onnx'), str(model_dir / 'voices-v1.0.bin'))
+        self.cache_takes = max(1, int(cache_takes))
+        self.kokoro = Kokoro(str(onnx), str(voices))
         self.voices = sorted(self.kokoro.get_voices())
         self.tts_load_s = round(time.time() - t0, 2)
         self.cache = cache
@@ -174,10 +194,23 @@ class Voice:
         if not ok:
             # A failed receipt is a finding: the take is kept for the record and never served.
             wav.rename(wav.with_suffix('.failed.wav'))
+        self._evict()
         return receipt
+
+    def _evict(self) -> None:
+        """Keep the cache to `cache_takes` receipts; the oldest take goes first, with its audio."""
+        recs = sorted(self.cache.glob('*.receipt.json'), key=lambda p: p.stat().st_mtime)
+        for old in recs[:-self.cache_takes] if len(recs) > self.cache_takes else []:
+            lid = old.name[: -len('.receipt.json')]
+            for f in (old, self.cache / f'{lid}.wav', self.cache / f'{lid}.failed.wav'):
+                try:
+                    f.unlink()
+                except FileNotFoundError:
+                    pass
 
 
 VOICE: Voice | None = None
+TOKEN: str | None = None
 STATS = {'spoken': 0, 'cached': 0, 'refused': 0, 'started': time.time()}
 
 
@@ -193,6 +226,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _allowed(self) -> bool:
+        """With VOICE_TOKEN set, /speak and /audio need the bearer; /health never does."""
+        if TOKEN is None:
+            return True
+        got = self.headers.get('authorization', '')
+        return got == f'Bearer {TOKEN}'
+
     def do_GET(self):
         path = urlparse(self.path).path
         if path == '/health':
@@ -206,6 +246,8 @@ class Handler(BaseHTTPRequestHandler):
                 'stats': {k: v for k, v in STATS.items() if k != 'started'},
             })
         if path.startswith('/audio/') and path.endswith('.wav'):
+            if not self._allowed():
+                return self._json(401, {'error': 'a bearer token is required'})
             lid = path[len('/audio/'):-4]
             if not lid.isalnum():
                 return self._json(404, {'error': 'no such take'})
@@ -235,6 +277,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path != '/speak':
             return self._json(404, {'error': 'no such path'})
+        if not self._allowed():
+            return self._json(401, {'error': 'a bearer token is required'})
         try:
             n = int(self.headers.get('content-length', '0'))
             body = json.loads(self.rfile.read(n) or b'{}')
@@ -271,17 +315,27 @@ def main() -> int:
     ap.add_argument('--host', default=os.environ.get('VOICE_HOST', '127.0.0.1'))
     ap.add_argument('--port', type=int, default=int(os.environ.get('VOICE_PORT', '7788')))
     ap.add_argument('--cache', default=os.environ.get('VOICE_CACHE', str(HERE.parent / 'film' / 'voice')))
-    ap.add_argument('--model', default=os.environ.get('KOKORO_DIR', 'E:/AI-Models/kokoro'))
+    ap.add_argument('--model', default=os.environ.get('KOKORO_DIR'))
     ap.add_argument('--asr', default=os.environ.get('VOICE_ASR', 'small.en'))
     ap.add_argument('--device', default=os.environ.get('VOICE_DEVICE', 'auto'))
+    ap.add_argument('--cache-takes', type=int, default=int(os.environ.get('VOICE_CACHE_TAKES', '400')))
+    ap.add_argument('--token', default=os.environ.get('VOICE_TOKEN'))
     args = ap.parse_args()
+    if not args.model:
+        sys.stderr.write('voice: no model dir; set KOKORO_DIR or pass --model <dir>\n')
+        return 2
     _cuda_dirs()
-    global VOICE
+    global VOICE, TOKEN
+    TOKEN = args.token.strip() if args.token and args.token.strip() else None
+    if args.host not in ('127.0.0.1', 'localhost', '::1') and TOKEN is None:
+        sys.stderr.write('voice: binding beyond loopback needs VOICE_TOKEN set\n')
+        return 2
     t0 = time.time()
-    VOICE = Voice(Path(args.model), args.asr, args.device, Path(args.cache))
+    VOICE = Voice(Path(args.model), args.asr, args.device, Path(args.cache), args.cache_takes)
     sys.stderr.write(
         f'voice: kokoro-onnx ({len(VOICE.voices)} voices) + faster-whisper {args.asr} on {VOICE.device}, '
-        f'ready in {time.time() - t0:.1f}s, http://{args.host}:{args.port}\n'
+        f'ready in {time.time() - t0:.1f}s, http://{args.host}:{args.port}'
+        f'{" (bearer token required)" if TOKEN else ""}, cache {VOICE.cache_takes} takes\n'
     )
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     try:
