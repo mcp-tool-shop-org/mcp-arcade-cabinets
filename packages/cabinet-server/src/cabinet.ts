@@ -36,6 +36,11 @@ export interface CabinetHost {
   say(line: string | null, lead: Lead): 'said' | 'fallback' | 'no boss';
   /** Queue one sound for the shell to play. */
   sfx(kind: SfxName): 'queued' | 'dropped';
+  /**
+   * Voice the pending line (G15). The host hands it to the voicer, which
+   * speaks it one beat ahead and receipts it; `silent` when no voice is on.
+   */
+  speak(): 'queued' | 'no line' | 'silent';
   tapes(): TapeCard[];
   /** The round's recent lines, for the no-repeat window. */
   recent(): readonly string[];
@@ -142,6 +147,18 @@ export function createCabinet(host: CabinetHost): Cabinet {
     return text(r === 'queued' ? `${kind} queued` : 'a sound is already queued; dropped');
   }
 
+  function speak(): ToolResult {
+    const r = host.speak();
+    log.push({ name: 'speak', ok: r === 'queued' });
+    return text(
+      r === 'queued'
+        ? 'the boss will speak its line'
+        : r === 'no line'
+          ? 'no line to speak; give the boss one first'
+          : 'the voice is silent on this cabinet',
+    );
+  }
+
   function view(): ToolResult {
     log.push({ name: 'view', ok: true });
     return text(viewLines(host.view()));
@@ -164,6 +181,8 @@ export function createCabinet(host: CabinetHost): Cabinet {
           return say(args);
         case 'sfx':
           return sfx(args);
+        case 'speak':
+          return speak();
         case 'view':
           return view();
         case 'tapes':

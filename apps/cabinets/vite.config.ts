@@ -96,6 +96,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ollama/, ''),
       },
+      // The host-side voice worker (`pnpm voice`). Pages never has one.
+      '/voice': {
+        target: process.env.VOICE_URL ?? 'http://127.0.0.1:7788',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/voice/, ''),
+      },
     },
   },
 });

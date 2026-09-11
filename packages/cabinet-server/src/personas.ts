@@ -12,10 +12,25 @@ export type Lead = 'short' | 'beat' | 'long';
 export const LEADS = ['short', 'beat', 'long'] as const;
 const KINDS: readonly BossKind[] = ['whisperer', 'menu', 'doorman'];
 
+/**
+ * Delivery, authored per persona (finding 14: loudness carries the dry
+ * read; the engine infers nothing from the text). A clone is a consented
+ * recording the Director supplies; null means the preset.
+ */
+export interface VoiceSheet {
+  preset: string;
+  /** Speech rate multiplier. */
+  rate: number;
+  /** Gain in decibels around the preset's own level. */
+  loudness: number;
+  clone: string | null;
+}
+
 export interface Persona {
   register: string;
   tics: string[];
   owns: string[];
+  voice: VoiceSheet;
 }
 
 export interface Personas {
@@ -27,6 +42,8 @@ export interface Personas {
   maxWords: number;
   /** Seconds between unprompted lines while a boss is up. */
   cadence: number;
+  /** The host-side engine the voice sheets are written for. */
+  voice: { engine: string; sampleRate: number };
   boss: Record<BossKind, Persona>;
 }
 
@@ -54,6 +71,19 @@ function lines(v: unknown, key: string): string[] {
   return v.map((x, i) => line(x, `${key}.${i}`));
 }
 
+function loadVoice(v: unknown, key: string): VoiceSheet {
+  const r = rec(v, key);
+  const preset = r.preset;
+  if (typeof preset !== 'string' || !/^[a-z]{2}_[a-z]+$/.test(preset)) fail(`${key}.preset`);
+  const rate = num(r.rate, `${key}.rate`);
+  if (!(rate >= 0.5 && rate <= 2)) fail(`${key}.rate`);
+  const loudness = num(r.loudness, `${key}.loudness`);
+  if (!(loudness >= -24 && loudness <= 12)) fail(`${key}.loudness`);
+  const clone = r.clone;
+  if (clone !== null && (typeof clone !== 'string' || clone.trim() === '')) fail(`${key}.clone`);
+  return { preset, rate, loudness, clone: clone === null ? null : String(clone) };
+}
+
 export function loadPersonas(raw: unknown): Personas {
   const obj = rec(raw, 'root');
   const leadRaw = rec(obj.lead, 'lead');
@@ -70,6 +100,11 @@ export function loadPersonas(raw: unknown): Personas {
   if (!Number.isInteger(maxWords) || maxWords < 1 || maxWords > SAY_MAX_WORDS) fail('maxWords');
   const cadence = num(obj.cadence, 'cadence');
   if (!(cadence > 0)) fail('cadence');
+  const voiceRaw = rec(obj.voice, 'voice');
+  const engine = voiceRaw.engine;
+  if (typeof engine !== 'string' || engine.trim() === '') fail('voice.engine');
+  const sampleRate = num(voiceRaw.sampleRate, 'voice.sampleRate');
+  if (!(sampleRate > 0)) fail('voice.sampleRate');
   const bossRaw = rec(obj.boss, 'boss');
   const boss = {} as Record<BossKind, Persona>;
   for (const kind of KINDS) {
@@ -78,9 +113,10 @@ export function loadPersonas(raw: unknown): Personas {
       register: line(p.register, `boss.${kind}.register`),
       tics: lines(p.tics, `boss.${kind}.tics`),
       owns: lines(p.owns, `boss.${kind}.owns`),
+      voice: loadVoice(p.voice, `boss.${kind}.voice`),
     };
   }
-  return { lead, window, maxWords, cadence, boss };
+  return { lead, window, maxWords, cadence, voice: { engine, sampleRate }, boss };
 }
 
 export const DEFAULT_PERSONAS: Personas = loadPersonas(personasJson);

@@ -3,3 +3,5 @@ node_modules/
 fixtures/
 pnpm-lock.yaml
 site/
+.venv/
+voice/

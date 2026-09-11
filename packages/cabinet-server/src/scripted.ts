@@ -66,6 +66,7 @@ export function createScriptedSeat(): ScriptedSeat {
         const pick = SCRIPTED_LINES[line % SCRIPTED_LINES.length]!;
         line += 1;
         cabinet.call('say', { text: pick.text, lead: pick.lead });
+        cabinet.call('speak', {});
       }
       if (state.bossIntent === null) {
         cabinet.call('fire', { verb: VERBS[verb % VERBS.length] });
@@ -91,7 +92,7 @@ export function createScriptedSeat(): ScriptedSeat {
       return [
         `seat mcp: fire ${count('fire')} (admitted ${fired}), say ${count('say')} (gate ok ${said}, refused ${refused.length}${
           refused.length ? ': ' + [...byReason].map(([k, n]) => `${k} ${n}`).join(', ') : ''
-        }), sfx ${count('sfx')} (queued ${sfxQueued}), view ${count('view')}`,
+        }), speak ${count('speak')} (${log.filter((r) => r.name === 'speak' && r.ok).length} voiced), sfx ${count('sfx')} (queued ${sfxQueued}), view ${count('view')}`,
         ...[...views].map((v) => `seat view: ${v.replace(/\n/g, ' / ')}`),
       ];
     },

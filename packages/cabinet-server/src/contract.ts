@@ -6,7 +6,7 @@ import toolsJson from '../tools.json';
 
 import { FORBIDDEN } from './gate';
 
-export const TOOL_NAMES = ['fire', 'say', 'sfx', 'view', 'tapes'] as const;
+export const TOOL_NAMES = ['fire', 'say', 'speak', 'sfx', 'view', 'tapes'] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 
 /** The instrument's naive policy follows this phrase; our copy never carries it. */

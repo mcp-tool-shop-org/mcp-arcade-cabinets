@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // `pnpm sit [--model a:cloud,b:cloud] [--fixture naive-ndjson] [--tier 1] [--bot sweeper]
-//           [--seat mcp|prompt] [--constrain on|off] [--say on|off]
+//           [--seat mcp|prompt] [--constrain on|off] [--say on|off] [--voice auto|on|off]
 //           [--ollama http://127.0.0.1:11434] [--speed 1] [--lamps keep|lose]`
 // Sits a model in the boss seat (and the say seat) on a scripted round, in
 // wall-clock time so a Cloud tag's latency counts, and prints what the seat
@@ -31,6 +31,8 @@ const speed = Number(args.speed ?? 1);
 const seatKind = args.seat ?? 'mcp';
 const constrain = (args.constrain ?? 'on') !== 'off';
 const sayOn = (args.say ?? 'on') !== 'off';
+const voiceArg = args.voice ?? 'auto';
+const voiceUrl = (args['voice-url'] ?? 'http://127.0.0.1:7788').replace(/\/$/, '');
 // `keep` tops the lamps up every frame so every boss on the tape is sat;
 // `lose` lets the bot die the way a player would.
 const lamps = args.lamps ?? 'keep';
@@ -170,7 +172,26 @@ async function sitPrompt(model) {
 async function sitMcp(model) {
   const { round, state, bot, patterns } = fresh();
   const live = { round, state, input: { left: false, right: false, fire: false } };
-  const host = cs.hostForRound(() => live);
+  // The voice (G15): the worker speaks and receipts each line one beat
+  // ahead; here nothing plays, the voicer only records when it would have.
+  const health = voiceArg === 'off' ? null : await cs.voiceHealth({ url: voiceUrl });
+  const voiceOn = voiceArg === 'on' || (voiceArg === 'auto' && health !== null);
+  const takes = [];
+  const voicer = cs.createVoicer({
+    speak: async (job) => {
+      const a = await cs.speakLine(job, { url: voiceUrl });
+      takes.push({ job, a, at: state.t });
+      return a;
+    },
+    play: (url, job) => {
+      const t = takes.find((x) => x.job === job);
+      if (t) t.playedAt = state.t;
+    },
+    captionSeconds: 2.4,
+  });
+  const host = cs.hostForRound(() => live, {
+    ...(voiceOn ? { voice: (job) => voicer.job(job) } : {}),
+  });
   const cabinet = cs.createCabinet(host);
   const fireOpts = { url: `${ollama}/api/chat`, model, constrain };
   const beats = [];
@@ -227,6 +248,7 @@ async function sitMcp(model) {
         const r = cabinet.call('say', a.call);
         const m = /refused it \((\w+)\)/.exec(r.content[0].text);
         rec.gate = m ? m[1] : 'ok';
+        if (voiceOn) cabinet.call('speak', {});
       })
       .catch((err) => {
         rec.ms = Date.now() - t0;
@@ -238,7 +260,7 @@ async function sitMcp(model) {
   }
 
   console.log(
-    `\nsit ${model} on ${fixture} tier ${round.tier} bot ${botName} seat mcp constrain ${constrain ? 'on' : 'off'} say ${sayOn ? 'on' : 'off'} lamps ${lamps}`,
+    `\nsit ${model} on ${fixture} tier ${round.tier} bot ${botName} seat mcp constrain ${constrain ? 'on' : 'off'} say ${sayOn ? 'on' : 'off'} voice ${voiceOn ? `on (${health ? health.engine + ' ' + health.device : 'forced'})` : 'off'} lamps ${lamps}`,
   );
   const w0 = Date.now();
   const warm = await cs.warmUp(fireOpts).catch((err) => ({ error: String(err.message ?? err) }));
@@ -277,6 +299,12 @@ async function sitMcp(model) {
       }
     }
     host.takeSfx();
+    voicer.tick(
+      state.t,
+      state.caption?.kind === 'aside',
+      !state.boss && g.waveKindAt(round, state.t) === 'breather',
+      state.scene !== null,
+    );
     await sleep((DT * 1000) / speed);
   }
   const wall = ((Date.now() - wall0) / 1000).toFixed(0);
@@ -343,6 +371,25 @@ async function sitMcp(model) {
     const smean = sms.length ? (sms.reduce((a, b) => a + b, 0) / sms.length).toFixed(0) : '-';
     console.log(
       `${says.length} asked: ${called} called say, ${ok} gate ok, ${refused.length} refused${refused.length ? ' (' + [...by].map(([k, n]) => `${k} ${n}`).join(', ') + ')' : ''}, ${sup} suppressed, ${errs} errors; mean ${smean}ms; gate rejection ${pct(refused.length, called)} of called`,
+    );
+  }
+  if (voiceOn) {
+    console.log('\nvoice (per take: kind, ms to receipt, the receipt, when it played)');
+    for (const t of takes) {
+      const r = t.a.receipt;
+      const when =
+        t.playedAt === undefined
+          ? 'not played'
+          : t.playedAt - t.job.at < 2.4
+            ? `on the beat (+${(t.playedAt - t.job.at).toFixed(1)}s)`
+            : `in the breather (+${(t.playedAt - t.job.at).toFixed(1)}s)`;
+      console.log(
+        `  ${pad(t.job.kind, 10)} ${pad(t.a.ms + 'ms', 8)} ${pad(t.a.status, 15)} ${r ? `${r.cached ? 'cached' : `tts ${r.tts_s}s asr ${r.asr_s}s`} ${r.checks.filter((c) => c.ok).length}/${r.checks.length} checks` : ''} ${when}${r && !r.ok ? ' heard: ' + JSON.stringify(r.heard) : ''}`,
+      );
+    }
+    const vs = voicer.stats();
+    console.log(
+      `${vs.asked} lines to voice: ${vs.voiced} receipted ok (${vs.cached} cached), ${vs.receiptFailed} receipt failed, ${vs.noWorker} no worker; played ${vs.playedOnBeat} on the beat, ${vs.playedInBreather} in the breather, ${vs.dropped} dropped; mean ${vs.asked ? (vs.msSum / vs.asked).toFixed(0) : '-'}ms to receipt`,
     );
   }
 }

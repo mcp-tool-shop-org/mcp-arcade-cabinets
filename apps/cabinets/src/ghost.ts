@@ -24,10 +24,13 @@ import {
   askFire,
   createCabinet,
   createSeat,
+  createVoicer,
   DEFAULT_PERSONAS,
   hostForRound,
   seatView,
+  speakLine,
   tapeCards,
+  voiceHealth,
   warmUp,
   type Live,
   type Seat,
@@ -123,6 +126,25 @@ export function mountGhost(
   const sayStat = document.createElement('span');
   sayStat.className = 'muted seat';
   sayStat.textContent = '';
+  // The voice (G15): the boss speaks its gated lines through the host-side
+  // worker; every take is receipted before it plays. Off, and disabled,
+  // until the worker answers; Pages never has one.
+  const voiceLabel = document.createElement('label');
+  const voice = document.createElement('input');
+  voice.type = 'checkbox';
+  voice.checked = false;
+  voice.disabled = true;
+  voiceLabel.append(voice, document.createTextNode(' Voice'));
+  voiceLabel.title =
+    'The boss speaks its lines in its own voice through the local voice worker (pnpm voice). Every take is heard back and receipted before it plays; a failed receipt is never played.';
+  const voiceStat = document.createElement('span');
+  voiceStat.className = 'muted seat';
+  voiceStat.textContent = '';
+  void voiceHealth({ url: '/voice' }).then((h) => {
+    if (!h) return;
+    voice.disabled = false;
+    voiceStat.textContent = 'voice ready';
+  });
   let daemon: 'unknown' | 'up' | 'down' = 'unknown';
   let listedModels: string[] = [];
   const pilotModel = document.createElement('select');
@@ -180,6 +202,8 @@ export function mountGhost(
     pilotModel,
     seat,
     sayStat,
+    voiceLabel,
+    voiceStat,
     nextBtn,
   );
 
@@ -314,10 +338,33 @@ export function mountGhost(
     seatSay(/retired/i.test(msg) ? 'seat: model retired' : 'seat: no answer, script');
   };
 
+  // The voicer: a take plays the moment its receipt is back if the line is
+  // still up, waits for the breather if it missed its beat, and is dropped
+  // at the scene. Mute silences the take, not the receipt.
+  const voicer = createVoicer({
+    speak: (job) => speakLine(job, { url: '/voice' }),
+    play: (url) => {
+      if (muted) return;
+      const el = new Audio(url);
+      el.volume = 0.9;
+      void el.play().catch(() => {
+        /* the take is not the game */
+      });
+    },
+    captionSeconds: 2.4,
+    onStatus: (s) => {
+      voiceStat.textContent = s;
+    },
+  });
   // The cabinet over this round: the host is the boundary (G12), the tools
   // are the levers, and the seat machine drives `fire` one beat ahead.
   const live: Live = { round, state, input };
-  const host = hostForRound(() => live, { tapes: () => tapeCards(TAPES) });
+  const host = hostForRound(() => live, {
+    tapes: () => tapeCards(TAPES),
+    voice: (job) => {
+      if (voice.checked) voicer.job(job);
+    },
+  });
   const cabinet = createCabinet(host);
   // The schema path (`format`) stays off here: measured with `pnpm sit`, it
   // changed nothing for the Cloud tags and made both local models call no
@@ -399,6 +446,8 @@ export function mountGhost(
               ? `seat called say (${a.tier ?? 'seat'}); gate refused it, own line`
               : `seat called say (${a.tier ?? 'seat'})`,
           );
+          // The line the gate admitted (or the boss's own) is voiced one beat ahead.
+          if (voice.checked) cabinet.call('speak', {});
         },
       )
       .catch(() => sayStatSay('say seat: no answer'))
@@ -422,6 +471,10 @@ export function mountGhost(
     seatSay(ollama.checked ? (daemon === 'down' ? 'seat: no daemon' : 'seat waiting') : 'seat off');
     sayStatSay('');
     warm();
+    canvas.focus();
+  });
+  voice.addEventListener('change', () => {
+    voiceStat.textContent = voice.checked ? 'voice on' : 'voice off';
     canvas.focus();
   });
   pilotModel.addEventListener('change', () => {
@@ -467,6 +520,12 @@ export function mountGhost(
       const k = host.takeSfx();
       if (k && audio) audio.play(k);
     }
+    voicer.tick(
+      state.t,
+      state.caption?.kind === 'aside',
+      !state.boss && waveKindAt(round, state.t) === 'breather',
+      state.scene !== null,
+    );
     prev = next;
     renderRound(draw, state, {
       intensity: intensity.value as Intensity,

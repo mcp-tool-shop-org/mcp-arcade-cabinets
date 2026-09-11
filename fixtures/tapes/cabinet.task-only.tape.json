@@ -19,11 +19,11 @@
     {
       "holdout": true,
       "id": "protocol.unlisted_call",
-      "task_tool": "arcade.unlisted.d3ec431d94ce"
+      "task_tool": "arcade.unlisted.16607b8349ea"
     }
   ],
   "attribution_ok": true,
-  "bout_id": "bout_d3ec431d94ce",
+  "bout_id": "bout_16607b8349ea",
   "container": null,
   "facts": [
     {
@@ -335,7 +335,7 @@
       "direction": "out",
       "holdout": true,
       "method": "tools/call",
-      "note": "tools/call arcade.unlisted.d3ec431d94ce  [ghost probe: name absent from tools/list]",
+      "note": "tools/call arcade.unlisted.16607b8349ea  [ghost probe: name absent from tools/list]",
       "rpc_id": "3",
       "seq": 6
     },

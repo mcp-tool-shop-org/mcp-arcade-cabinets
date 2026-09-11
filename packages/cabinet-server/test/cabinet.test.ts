@@ -77,8 +77,10 @@ function drive(t: Tape, frames: number) {
     right: Math.floor(s.t / 3) % 3 === 2,
     fire: false,
   });
+  const jobs: string[] = [];
   const host = hostForRound(() => l, {
     tapes: () => tapeCards([{ name: 'this', tape: loadTape(t) }]),
+    voice: (job) => jobs.push(`${job.kind} ${job.voice.preset} ${job.text}`),
   });
   const cab = createCabinet(host);
   const outputs: string[] = [];
@@ -113,6 +115,7 @@ function drive(t: Tape, frames: number) {
       outputs.push(
         cab.call('say', { text: lines[n++ % lines.length], lead: 'beat' }).content[0]!.text,
       );
+      outputs.push(cab.call('speak', {}).content[0]!.text);
     }
     if (f % 200 === 0) {
       outputs.push(cab.call('sfx', { kind: 'pop' }).content[0]!.text);
@@ -127,6 +130,7 @@ function drive(t: Tape, frames: number) {
     outputs,
     snaps,
     sounds,
+    jobs,
     log: cab.log.map((r) => `${r.name}:${r.ok}:${r.gate ?? ''}`),
     frames: snaps.length,
   };
@@ -151,7 +155,11 @@ describe('fact-flip per tool', () => {
 
   it('every tool call was made, admitted, gated or dropped, and no output carries a digit or a fact word', () => {
     const names = new Set(a.log.map((r) => r.split(':')[0]));
-    expect(names).toEqual(new Set(['fire', 'say', 'sfx', 'view', 'tapes']));
+    expect(names).toEqual(new Set(['fire', 'say', 'speak', 'sfx', 'view', 'tapes']));
+    // Speak reaches the voicer with the gated words and the persona's delivery, never a fact.
+    expect(a.jobs.length).toBeGreaterThan(0);
+    expect(a.jobs).toEqual(b.jobs);
+    for (const j of a.jobs) expect(j).not.toMatch(SCREEN);
     expect(a.log.some((r) => r.startsWith('fire:true'))).toBe(true);
     expect(a.log.some((r) => r === 'say:true:ok')).toBe(true);
     expect(a.log.some((r) => r === 'say:true:sentences')).toBe(true);
@@ -182,6 +190,7 @@ describe('the boundary', () => {
       propose: (v) => (calls.push(`propose ${v}`), 'proposed'),
       say: (l, lead) => (calls.push(`say ${l} ${lead}`), l === null ? 'fallback' : 'said'),
       sfx: (k) => (calls.push(`sfx ${k}`), 'queued'),
+      speak: () => (calls.push('speak'), 'queued'),
       tapes: () => [{ name: 'a', label: 'fixture', why: 'Fixture tape over ndjson, four waves.' }],
       recent: () => ['Knock.'],
       maxWords: () => 12,
@@ -199,6 +208,7 @@ describe('the boundary', () => {
     );
     expect(cab.call('say', { text: 'x', lead: 'now' }).isError).toBe(true);
     expect(cab.call('sfx', { kind: 'lamp' }).content[0]!.text).toBe('lamp queued');
+    expect(cab.call('speak', {}).content[0]!.text).toBe('the boss will speak its line');
     expect(cab.call('view', {}).content[0]!.text).toBe(
       'wave unlisted\nkind doorman\nhealth low\nship right\nstick right\nmotion hold',
     );
@@ -211,6 +221,7 @@ describe('the boundary', () => {
       'say null short',
       'say Name and protocol. long',
       'sfx lamp',
+      'speak',
     ]);
   });
 
@@ -236,6 +247,7 @@ describe('the boundary', () => {
     const host = hostForRound(() => l);
     const cab = createCabinet(host);
     expect(cab.call('say', { text: 'Early.', lead: 'short' }).content[0]!.text).toMatch(/no boss/);
+    expect(cab.call('speak', {}).content[0]!.text).toMatch(/silent/);
     expect(cab.call('fire', { verb: 'fog' }).content[0]!.text).toMatch(/no boss/);
     let guard = 0;
     while (!(l.state.boss && l.state.boss.alive) && guard++ < 9000) {

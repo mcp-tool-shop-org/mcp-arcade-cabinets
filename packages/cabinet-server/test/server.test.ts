@@ -64,7 +64,7 @@ describe('the stdio server', () => {
     await client.close();
   });
 
-  it("lists the five tools, with the contract's words, within two seconds", async () => {
+  it("lists the six tools, with the contract's words, within two seconds", async () => {
     const t0 = Date.now();
     const { tools } = await client.listTools();
     expect(Date.now() - t0).toBeLessThan(2000);
@@ -104,8 +104,10 @@ describe('the stdio server', () => {
     expect(text(say)).toMatch(/will say it|no boss/);
     const bad = await client.callTool({ name: 'fire', arguments: { verb: 'nuke' } });
     expect((bad as { isError?: boolean }).isError).toBe(true);
+    const speak = await client.callTool({ name: 'speak', arguments: {} });
+    expect(text(speak)).toMatch(/silent|no line|speak its line/);
     const again = await client.listTools();
-    expect(again.tools).toHaveLength(5);
+    expect(again.tools).toHaveLength(6);
   });
 
   it('refuses a name that was never on the menu (a protocol error or isError), and stays up', async () => {

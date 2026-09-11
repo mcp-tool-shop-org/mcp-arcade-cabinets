@@ -11,11 +11,13 @@ export type { ToolAnnotations, ToolDef, ToolName, ToolSchema } from './contract'
 export { FORBIDDEN, gateLine, lineKey, NAMES, normalizeLine, SAY_MAX_WORDS } from './gate';
 export type { GateReason, GateResult } from './gate';
 export { DEFAULT_PERSONAS, LEADS, loadPersonas } from './personas';
-export type { BossKind, Lead, Persona, Personas } from './personas';
+export type { BossKind, Lead, Persona, Personas, VoiceSheet } from './personas';
 export { createCabinet, viewLines } from './cabinet';
 export type { Cabinet, CabinetHost, CallRecord, SeatView, TapeCard, ToolResult } from './cabinet';
 export { hostForRound, seatView, tapeCards } from './host';
-export type { HostOpts, Live } from './host';
+export type { HostOpts, Live, VoiceJob } from './host';
+export { speakLine, voiceHealth, createVoicer } from './voice';
+export type { SpeakAnswer, VoiceOpts, VoiceReceipt, Voicer, VoicerStats } from './voice';
 export {
   askFire,
   chatTools,

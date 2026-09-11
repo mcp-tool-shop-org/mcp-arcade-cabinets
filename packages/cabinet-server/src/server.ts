@@ -27,6 +27,10 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 import { createCabinet, type Cabinet } from './cabinet';
 import { CONTRACT, type ToolDef } from './contract';
 import { hostForRound, tapeCards, type Live } from './host';
+import { speakLine } from './voice';
+
+/** The host-side voice worker; in the Catalog container, host.docker.internal. */
+export const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
 
 export const SERVER_NAME = 'ghost-on-the-menu';
 export const SERVER_VERSION = '0.4.0';
@@ -63,6 +67,8 @@ export interface HeadlessOpts {
   fixture?: string;
   tier?: 0 | 1 | 2 | 3;
   seed?: number;
+  /** The voice worker's base url; null keeps the cabinet silent. */
+  voiceUrl?: string | null;
 }
 
 /** A headless round the tools act on. Stepped by `step(dt)`; restarts at the scene. */
@@ -84,7 +90,25 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   let bot = botFor('sweeper', round);
   const input: RoundInput = { left: false, right: false, fire: false };
   const live: Live = { round, state, input };
-  const host = hostForRound(() => live, { tapes: () => tapeCards(tapes) });
+  const voiced = { asked: 0, ok: 0, failed: 0, noWorker: 0 };
+  const voiceUrl = opts.voiceUrl === undefined ? DEFAULT_VOICE_URL : opts.voiceUrl;
+  const host = hostForRound(() => live, {
+    tapes: () => tapeCards(tapes),
+    ...(voiceUrl
+      ? {
+          // The server has no speaker: a take is spoken, receipted and cached
+          // by the worker; the receipt is the artifact. Silent when no worker.
+          voice: (job) => {
+            voiced.asked += 1;
+            void speakLine(job, { url: voiceUrl }).then((a) => {
+              if (a.status === 'voiced') voiced.ok += 1;
+              else if (a.status === 'receipt failed') voiced.failed += 1;
+              else voiced.noWorker += 1;
+            });
+          },
+        }
+      : {}),
+  });
   const cabinet: Cabinet = createCabinet(host);
   const step = (dt: number) => {
     if (live.state.scene) {
@@ -102,7 +126,7 @@ export function headlessRound(opts: HeadlessOpts = {}) {
     stepRound(live.state, input, dt);
     host.takeSfx();
   };
-  return { cabinet, host, live, step, tapes, fixture: found.name };
+  return { cabinet, host, live, step, tapes, fixture: found.name, voiced };
 }
 
 export function buildServer(cabinet: Cabinet): McpServer {
@@ -125,6 +149,9 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   const h = headlessRound({
     ...(process.env.CABINET_FIXTURE ? { fixture: process.env.CABINET_FIXTURE } : {}),
     ...(process.env.CABINET_TAPES ? { tapesDir: process.env.CABINET_TAPES } : {}),
+    ...(process.env.VOICE_URL !== undefined
+      ? { voiceUrl: process.env.VOICE_URL === '' ? null : process.env.VOICE_URL }
+      : {}),
     ...opts,
   });
   const server = buildServer(h.cabinet);

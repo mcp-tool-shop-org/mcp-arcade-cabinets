@@ -22,6 +22,13 @@ describe('personas.json', () => {
     expect(p.lead.beat).toBeLessThan(p.lead.long);
     expect(p.maxWords).toBeLessThanOrEqual(12);
     expect(p.window).toBeGreaterThanOrEqual(1);
+    expect(p.voice.engine).toBe('kokoro');
+    const presets = new Set(Object.values(p.boss).map((b) => b.voice.preset));
+    expect(presets.size).toBe(3);
+    for (const b of Object.values(p.boss)) {
+      expect(b.voice.rate).toBeGreaterThanOrEqual(0.5);
+      expect(b.voice.clone).toBeNull();
+    }
   });
 
   it('halts on a bad key, a fact word, a digit, or a lead out of order', () => {
@@ -48,5 +55,20 @@ describe('personas.json', () => {
     const empty = clone();
     (empty.boss as Record<string, Record<string, unknown>>).whisperer!.owns = [];
     expect(() => loadPersonas(empty)).toThrow('boss.whisperer.owns');
+
+    const loud = clone();
+    (
+      (loud.boss as Record<string, Record<string, unknown>>).menu!.voice as Record<string, unknown>
+    ).loudness = 40;
+    expect(() => loadPersonas(loud)).toThrow('boss.menu.voice.loudness');
+
+    const preset = clone();
+    (
+      (preset.boss as Record<string, Record<string, unknown>>).doorman!.voice as Record<
+        string,
+        unknown
+      >
+    ).preset = 'Robot 9';
+    expect(() => loadPersonas(preset)).toThrow('boss.doorman.voice.preset');
   });
 });

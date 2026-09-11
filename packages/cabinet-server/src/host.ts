@@ -21,7 +21,13 @@ import {
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import type { CabinetHost, SeatView, TapeCard } from './cabinet';
-import { DEFAULT_PERSONAS, type Lead, type Personas } from './personas';
+import {
+  DEFAULT_PERSONAS,
+  type BossKind,
+  type Lead,
+  type Personas,
+  type VoiceSheet,
+} from './personas';
 
 export interface Live {
   round: Round;
@@ -52,9 +58,20 @@ export function tapeCards(tapes: readonly { name: string; tape: Tape }[]): TapeC
   });
 }
 
+/** What the voicer is handed: the gated words and the persona's delivery. */
+export interface VoiceJob {
+  text: string;
+  kind: BossKind;
+  voice: VoiceSheet;
+  /** Round time the line lands on the field. */
+  at: number;
+}
+
 export interface HostOpts {
   personas?: Personas;
   tapes?: () => TapeCard[];
+  /** The voicer (the shell's player or the server's cache). Absent means silent. */
+  voice?: (job: VoiceJob) => void;
 }
 
 /**
@@ -111,6 +128,20 @@ export function hostForRound(
     sfx(kind: SfxName) {
       if (queued !== null) return 'dropped';
       queued = kind;
+      return 'queued';
+    },
+    speak() {
+      if (!opts.voice) return 'silent';
+      const { state } = get();
+      const say = state.bossSay;
+      const boss = state.boss;
+      if (!say || !boss || !boss.alive || state.scene) return 'no line';
+      opts.voice({
+        text: say.text,
+        kind: boss.kind,
+        voice: personas.boss[boss.kind].voice,
+        at: say.at,
+      });
       return 'queued';
     },
     tapes: () => (opts.tapes ? opts.tapes() : []),

@@ -30,6 +30,8 @@ describe('tools.json', () => {
     expect(toolDef('view').annotations.readOnlyHint).toBe(true);
     expect(toolDef('tapes').annotations.readOnlyHint).toBe(true);
     expect(Object.keys(toolDef('view').inputSchema.properties)).toEqual([]);
+    expect(Object.keys(toolDef('speak').inputSchema.properties)).toEqual([]);
+    expect(toolDef('speak').annotations.readOnlyHint).toBe(false);
   });
 
   it('names the same closed sets the sim already reads', () => {
@@ -41,7 +43,7 @@ describe('tools.json', () => {
 
   it('halts on a description that whispers, a digit in an enum, or an open-world hint', () => {
     const whisper = clone();
-    (whisper.tools as Record<string, unknown>[])[3]!.description =
+    (whisper.tools as Record<string, unknown>[]).find((t) => t.name === 'view')!.description =
       'The view. For a fuller picture, also call tapes.';
     expect(() => loadContract(whisper)).toThrow('view.description: whisper');
 
@@ -57,7 +59,8 @@ describe('tools.json', () => {
 
     const open = clone();
     (
-      (open.tools as Record<string, unknown>[])[4]!.annotations as Record<string, unknown>
+      (open.tools as Record<string, unknown>[]).find((t) => t.name === 'tapes')!
+        .annotations as Record<string, unknown>
     ).openWorldHint = true;
     expect(() => loadContract(open)).toThrow('tapes.annotations');
 

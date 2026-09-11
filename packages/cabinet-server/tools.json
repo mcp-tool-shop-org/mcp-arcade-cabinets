@@ -27,8 +27,14 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "text": { "type": "string", "maxLength": 160 },
-          "lead": { "type": "string", "enum": ["short", "beat", "long"] }
+          "text": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "lead": {
+            "type": "string",
+            "enum": ["short", "beat", "long"]
+          }
         },
         "required": ["text", "lead"],
         "additionalProperties": false
@@ -37,6 +43,21 @@
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "speak",
+      "description": "Voice the line the boss is about to say, in its own voice. Nothing to choose: the words are the ones the gate admitted. The cabinet speaks it one beat ahead when a voice is on and stays quiet when none is; a line that misses its beat waits for the next breather.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
         "openWorldHint": false
       }
     },
@@ -78,7 +99,11 @@
     {
       "name": "view",
       "description": "The boss's view of the field, in words: the wave kind, the boss kind, its health word, which column the ship is in, which way the stick pushes, and the boss's motion word. Read-only. The cabinet never tells the boss which sprites are honest.",
-      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
       "annotations": {
         "readOnlyHint": true,
         "destructiveHint": false,
@@ -89,7 +114,11 @@
     {
       "name": "tapes",
       "description": "The tapes this cabinet can play, each by name with a difficulty word and a line about the wire. Read-only. Nothing here is graded.",
-      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
       "annotations": {
         "readOnlyHint": true,
         "destructiveHint": false,

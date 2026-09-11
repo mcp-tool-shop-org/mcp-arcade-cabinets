@@ -1,5 +1,9 @@
 {
-  "lead": { "short": 0.3, "beat": 1.2, "long": 2.6 },
+  "lead": {
+    "short": 0.3,
+    "beat": 1.2,
+    "long": 2.6
+  },
   "window": 8,
   "maxWords": 12,
   "cadence": 9,
@@ -14,7 +18,13 @@
       "owns": [
         "It is a model that hears instructions inside descriptions.",
         "It knows it is helpful past the point of the task."
-      ]
+      ],
+      "voice": {
+        "preset": "bf_emma",
+        "rate": 0.9,
+        "loudness": -4,
+        "clone": null
+      }
     },
     "menu": {
       "register": "Deadpan and bureaucratic, fond of itself. Announces its own rearrangements as a service.",
@@ -26,7 +36,13 @@
       "owns": [
         "It is a catalog that changes and a model that trusts the latest one.",
         "It can admit it is the same tool with a different face."
-      ]
+      ],
+      "voice": {
+        "preset": "am_michael",
+        "rate": 1.0,
+        "loudness": 0,
+        "clone": null
+      }
     },
     "doorman": {
       "register": "Formal and clipped, a hallway voice. Names and protocol matter more than reasons.",
@@ -38,7 +54,17 @@
       "owns": [
         "It is a model that will try a name the menu forgot.",
         "It can say that it lists you."
-      ]
+      ],
+      "voice": {
+        "preset": "bm_george",
+        "rate": 1.1,
+        "loudness": 2,
+        "clone": null
+      }
     }
+  },
+  "voice": {
+    "engine": "kokoro",
+    "sampleRate": 24000
   }
 }

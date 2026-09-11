@@ -19,7 +19,8 @@
     "sweep": "node scripts/sweep.mjs",
     "sit": "node scripts/sit.mjs",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:play ghost --fixture naive-ndjson",
-    "build:play": "cross-env PLAY_BASE=/mcp-arcade-cabinets/play/ PLAY_OUT=../../site/public/play pnpm -F @mcp-arcade-cabinets/cabinets build"
+    "build:play": "cross-env PLAY_BASE=/mcp-arcade-cabinets/play/ PLAY_OUT=../../site/public/play pnpm -F @mcp-arcade-cabinets/cabinets build",
+    "voice": "node scripts/voice.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
