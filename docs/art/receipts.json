@@ -327,6 +327,17 @@
       "size": "1024x768",
       "status": "accepted",
       "note": "one empty ochre rounded slab, near-black field"
+    },
+    {
+      "id": "readme-logo-v2",
+      "role": "brand logo: mcp-tool-shop-org/brand/logos/mcp-arcade-cabinets/readme.png (replaces the flat pixel ghost, brand 8355437)",
+      "batch": "retro-modern logos, 2026-09-10",
+      "job_id": "585f05b3-318e-4801-b144-f144b5df46a7",
+      "seed": 9201,
+      "size": "1024x768 rendered; cropped to 669x669, corners transparent",
+      "prompt": "Modern flat vector app icon for a retro arcade game called Ghost on the Menu. A rounded-square badge with a deep navy to near-black gradient and a faint CRT scanline texture. Centered: a bold amber (#e8a04a) ghost glyph with clean stepped pixel edges, smooth and geometric, a retro sprite redrawn by a modern brand studio, two dark eyes, a thin cream (#e8e0c8) halo ring behind it. Soft inner glow, high contrast, crisp edges, generous margins. No letters, no numbers, no text of any kind.",
+      "status": "accepted",
+      "note": "Director: retro and modern at once; picked A from six on the contact sheet. Glyph check 0.0000019. Siblings rejected: 708a0b4d (neon outline, faceless), 56da295e (hexagon ghost on cassette)."
     }
   ],
   "tracks": [
