@@ -341,7 +341,6 @@ export function attach(
   // paused where it is, so it resumes from there when its kind comes back;
   // nothing restarts from zero mid-round.
   let currentBed: MediaBed | undefined;
-  let currentKind = '';
   /** Round time the current bed came in; the hold runs from here. */
   let bedSince = 0;
   let overlay: MediaBed | undefined;
@@ -410,7 +409,6 @@ export function attach(
     if (currentBed && next && t - bedSince < minBed) return true;
     const leaving = currentBed;
     currentBed = next;
-    currentKind = waveKind;
     bedSince = t;
     if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
     if (next) bringIn(next, burstOn ? BED_DUCK : 1, leaving ? BED_FADE_S : 0);
@@ -462,7 +460,6 @@ export function attach(
       // The round clock has stopped; step the fade on the wall clock.
       const beds = [currentBed, overlay].filter((b): b is MediaBed => Boolean(b));
       currentBed = undefined;
-      currentKind = '';
       overlay = undefined;
       burstOn = false;
       fades = [];
@@ -492,7 +489,6 @@ export function attach(
       currentBed?.pause();
       overlay?.pause();
       currentBed = undefined;
-      currentKind = '';
       overlay = undefined;
       fades = [];
       void ctx.close?.();
