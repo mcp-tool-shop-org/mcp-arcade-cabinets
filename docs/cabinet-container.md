@@ -45,7 +45,11 @@ No halt. Two changes, both applied the same day: `speak` now says "the voice is 
 
 The image was rebuilt from the v0.6.0 tree (the shift and the music do not enter the server; the fix from Grok's review does) and pushed as `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0` (digest `sha256:3b6c80ea…85b95b`; re-fetched by digest, the `/app` layer scans clean and the server answers with its version); the catalog's `source.commit` is re-pinned to the release commit. The exported filesystem's `/app` layer scans clean; the base image's own files (Node's contributor list, Yarn's example path, Alpine's copyright line) trip the scanner's generic patterns and carry nothing of the operator.
 
+## The Catalog PR (2026-09-11)
+
+Opened on the Director's decision with the network off: the Catalog cabinet is sealed (`run.disableNetwork: true`, no voice config), since the voice worker is a host GPU stack no Catalog user runs and the cabinet says the voice is silent without one. The voice route stays documented here for a local build. The pin is the v0.6.0 release commit; the icon is the brand logo; `tools.json` is in the registry's `inputSchema` shape.
+
 ## Not done
 
-- The Catalog PR (the Director), then Docker's build, signing and listing.
+- Docker's review of the Catalog PR, then their build, signing and listing.
 - Multi-arch (`linux/arm64`) if the Catalog asks for it; the Dockerfile has nothing arch-specific.

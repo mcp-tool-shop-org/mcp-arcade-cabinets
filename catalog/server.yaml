@@ -1,8 +1,7 @@
 # Docker MCP Registry entry for Ghost on the Menu, the cabinet as an MCP server.
-# Copy this file and tools.json into servers/mcp-arcade-cabinets/ in a fork of
-# docker/mcp-registry and open the PR (the Director's action, per
-# docs/cabinet-server.dispatch.md). source.commit pins the commit that carries
-# the Dockerfile; the registry's CI builds the image from it.
+# This file and tools.json are what servers/mcp-arcade-cabinets/ carries in
+# docker/mcp-registry (PR opened 2026-09-11 on the Director's word). source.commit
+# pins the commit that carries the Dockerfile; the registry's CI builds the image from it.
 name: mcp-arcade-cabinets
 image: mcp/mcp-arcade-cabinets
 type: server
@@ -31,20 +30,7 @@ source:
   project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
   commit: 99b434f8943ebf52331a2d0b0d5503e2121fd655
 run:
-  disableNetwork: false
-config:
-  description: The voice is optional and stays on the host. Give the container the worker's route and, when the worker binds beyond loopback, its token.
-  secrets:
-    - name: mcp-arcade-cabinets.voice_token
-      env: VOICE_TOKEN
-      example: a-long-random-string
-  parameters:
-    type: object
-    properties:
-      voice_url:
-        type: string
-        default: http://host.docker.internal:7788
-  env:
-    - name: VOICE_URL
-      example: http://host.docker.internal:7788
-      value: '{{mcp-arcade-cabinets.voice_url}}'
+  # The Catalog cabinet is sealed: the voice worker is a host GPU stack no Catalog
+  # user runs, and without one the cabinet says the voice is silent and plays on.
+  # The voice route (VOICE_URL, VOICE_TOKEN) is documented in the repo for a local build.
+  disableNetwork: true
