@@ -43,6 +43,11 @@ const HEADERS = [
   { target_kind: 'stdio', container: null, seat: null },
 ];
 const BOTS = ['idle', 'sweeper', 'reader'];
+// `--climb 1` measures every tape as the last call of a shift (slice 7).
+const climbArg = process.argv.indexOf('--climb');
+const climb =
+  climbArg === -1 ? 0 : Math.min(1, Math.max(0, Number(process.argv[climbArg + 1]) || 0));
+if (climb > 0) console.log(`climb ${climb}`);
 const dir = path.resolve('fixtures/tapes');
 const rows = [];
 for (const f of readdirSync(dir)) {
@@ -51,7 +56,7 @@ for (const f of readdirSync(dir)) {
   const name = f.replace(/\.tape\.json$/, '');
   HEADERS.forEach((hdr, tier) => {
     for (const bot of BOTS) {
-      const r = g.playTape({ ...tape, ...hdr }, { fixture: name, bot });
+      const r = g.playTape({ ...tape, ...hdr }, { fixture: name, bot, climb });
       rows.push({
         name,
         tier,

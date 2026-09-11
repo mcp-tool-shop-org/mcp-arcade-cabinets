@@ -36,6 +36,8 @@ export interface PlayArgs {
   tier?: 0 | 1 | 2 | 3;
   /** Lamps kept up so every boss on the tape is met (a seat run, as `pnpm sit`). */
   immortal?: boolean;
+  /** The shift's climb, 0..1; the band measures the last call at 1. */
+  climb?: number;
 }
 
 export interface Transcript {
@@ -226,10 +228,15 @@ export function playTape(
     tier?: 0 | 1 | 2 | 3;
     seat?: PlaySeat;
     immortal?: boolean;
+    climb?: number;
   },
 ): Transcript {
   const { fixture, bot, seat } = opts;
-  const round = prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: opts.tier });
+  const round = prepassRound(tape, {
+    seconds: DEFAULT_SECONDS,
+    tier: opts.tier,
+    climb: opts.climb ?? 0,
+  });
   const state = createRoundState(round);
   const lies = round.beats.filter((b) => b.lie).map((b) => b.id);
   const input = botFor(bot, round);

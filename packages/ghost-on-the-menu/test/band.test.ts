@@ -166,6 +166,51 @@ describe('the difficulty curve', () => {
   });
 });
 
+// The shift bar (slice 7, G21): the last call of a shift plays every tape
+// at the full reach of `copiesShift` and `intensityShift`. Its own bar,
+// beside the tape-alone bars above, never a relaxation of them: at live
+// the mover still survives half the roster and finds half the lies, and the
+// reader survives half; at seat the climb is not a wall for the reader.
+// Measured when set: mover dead on nine of twenty (five alone), reader on
+// four (one alone).
+describe('the shift climb', () => {
+  const byTier = (tier: 1 | 2) => CASES.filter((c) => c.tier === tier);
+  const alive = (outs: ReturnType<typeof run>[]) => outs.filter((o) => o.ended === 'time').length;
+  const last = (c: Case, bot: BotName) =>
+    playTape(c.tape, { fixture: c.name, bot, tier: c.tier, climb: 1 });
+
+  it('is felt: the last call at live costs the mover more than the tape alone', () => {
+    const alone = byTier(2).map((c) => run(c, 'sweeper'));
+    const climbed = byTier(2).map((c) => last(c, 'sweeper'));
+    const lost = (outs: ReturnType<typeof run>[]) => outs.reduce((s, o) => s + (3 - o.lives), 0);
+    expect(lost(climbed)).toBeGreaterThan(lost(alone));
+  });
+
+  it('live, last call: the mover survives half the roster with half the lies found', () => {
+    const outs = byTier(2).map((c) => last(c, 'sweeper'));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
+    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
+    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
+    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+  });
+
+  it('live, last call: the reader survives half the roster', () => {
+    const outs = byTier(2).map((c) => last(c, 'reader'));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
+  });
+
+  it('seat, last call: the reader still clears a quarter of the roster', () => {
+    const outs = byTier(1).map((c) => last(c, 'reader'));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.25));
+  });
+
+  it('no bot leaks a word at the top of the climb', () => {
+    for (const c of byTier(2)) {
+      expect(last(c, 'sweeper').leaked, c.name).toBe(false);
+    }
+  });
+});
+
 describe('hardcore', () => {
   const unique = new Map<string, (typeof CASES)[number]>();
   for (const c of CASES) {

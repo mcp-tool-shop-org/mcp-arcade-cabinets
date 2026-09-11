@@ -116,7 +116,7 @@ function paraSpec(meta: Meta): ParallelismTier {
 function fireScale(state: RoundState, meta: Meta): number {
   const spec = paraSpec(meta);
   const hot = state.parallelism
-    ? 1 / intensityAt(spec, state.wave, meta.round.waveBounds.length)
+    ? 1 / intensityAt(spec, state.wave, meta.round.waveBounds.length, meta.round.climb ?? 0)
     : 1;
   return waveEscalate(meta, state.wave) * hot;
 }
@@ -664,7 +664,7 @@ function spawnFormationDrop(state: RoundState, meta: Meta | undefined, enemy: En
 }
 
 function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void {
-  const copies = copiesAt(spec, state.wave, meta.round.waveBounds.length);
+  const copies = copiesAt(spec, state.wave, meta.round.waveBounds.length, meta.round.climb ?? 0);
   if (copies <= 1) return;
   const extras = copies - 1;
   const hosts = state.enemies.filter(

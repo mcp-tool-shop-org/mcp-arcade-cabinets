@@ -34,6 +34,9 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | F, or the Full screen button | The field alone, letterboxed, full screen                  |
 | Click the field              | Restart the same tape once the round has ended             |
 | Next tape                    | On the end scene, play the next fixture tape in the list   |
+| Shift                        | Four calls drawn from the roster, back to back, with a card between them; the lamps refill at every call and the bursts climb call by call. Its own difficulty select beside it. |
+| (shift code)                 | Four words the closing scene spells, like `frost robin chalk garden`. Type them in the box and press **Replay** to take the same shift again, or hand them to someone. A code from another menu of tapes says so. |
+| Next call / End the shift    | On a call's end scene, the next card, or the closing scene after the last call |
 | Sound on / off               | Mute; sound starts on the first key or click               |
 | feel: calm / medium / loud   | How much the field shakes and how big the pops are         |
 | shake                        | Turn the shake off entirely; hitstop and the trophy stay   |
@@ -56,6 +59,12 @@ A tape carries the tier it was recorded at: a fixture is tier 0, a seated run on
 Seat, live and hardcore also get **parallelism** bursts: extra honest copies and hotter music. The first burst is a blink; later waves hold it longer. Recorded tapes stay a gallery.
 
 A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. The wave card carries a dry line in the voice of an agent, and the boss enters with another. Short asides keep talking during the wave.
+
+### The shift
+
+A shift is a run of four tapes as one agent session: the rig has a task list and you are the one it sends. The draw is seeded from the clock, never from anything on a tape, and it stays fresh against the last two shifts your browser took. Between calls a card names the next tape, its server, its policy and the tools the agent was asked to run, in header words only. The difficulty is the shift's, fixed by its code. The climb is data (`patterns/shift.json` says how far up each call sits; `copiesShift` and `intensityShift` in `parallelism.json` are the reach the last call ends on): the last call's bursts start where a tape played alone would end. Measured on the band: as the last call at live, the scripted mover dies on nine tapes of twenty against five alone, and still survives half the roster with half the lies found.
+
+The closing scene lists the four calls and spells the code. Nothing is ranked, counted or scored; the code carries the draw, the difficulty and a check of the roster, and nothing else.
 
 ## Prove a round from the terminal
 

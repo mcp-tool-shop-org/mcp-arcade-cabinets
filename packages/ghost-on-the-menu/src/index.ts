@@ -32,7 +32,21 @@ export {
   pickLine,
   voiceWaveKey,
 } from './patterns';
-export type { ParallelismTier, PatternSet } from './patterns';
+export type { ParallelismTier, PatternSet, ShiftSet } from './patterns';
+export {
+  climbAt,
+  decodeShift,
+  drawShift,
+  encodeShift,
+  hashWords,
+  lengthWord,
+  ordinalWord,
+  rosterCheck,
+  rosterFits,
+  seededRandom,
+  shiftCard,
+} from './shift';
+export type { ShiftDecode, ShiftDraw } from './shift';
 export { labelTape } from './label';
 export type { TapeLabel } from './label';
 export {

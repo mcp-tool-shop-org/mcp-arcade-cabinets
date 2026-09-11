@@ -35,6 +35,8 @@ A **tape** is a recording of one bout. This game only reads tapes. It never talk
 
 Pick a tape from the list. Each one is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only. A song plays for a couple of minutes before it fades into the next.
 
+Or take a **shift**: the rig hands you four calls in a row, drawn from the roster and never the same four twice running, each one a server the agent was sent to, with a card between them naming the next server and what the agent was asked to run. The lamps refill at every call and the bursts climb call by call, so the last call starts where the first one ended. At the end the shift has a name of four words, like `frost robin chalk garden`: type it on the menu to take the same shift again, or hand it to someone. No digit, no count, no ranking.
+
 ## The boss can be a model
 
 Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
@@ -45,7 +47,7 @@ The cabinet is itself an MCP server over stdio, with the same six tools, so the 
 
 ## Controls
 
-Left and right (or A and D) to move, space to fire, F for full screen. Click the field to replay the same tape. Next tape walks the list. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field. **Ollama bosses** and **Voice** sit beside them, with a model picker and words that say what each seat is doing.
+Left and right (or A and D) to move, space to fire, F for full screen. Click the field to replay the same tape. Next tape walks the list; in a shift, Next call takes the next card. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field. **Ollama bosses** and **Voice** sit beside them, with a model picker and words that say what each seat is doing.
 
 ## Play it locally
 

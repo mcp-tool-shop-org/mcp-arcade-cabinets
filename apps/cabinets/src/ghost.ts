@@ -71,12 +71,30 @@ const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
 /** The tier the round plays at: as the tape's header derives it, or forced. */
 export type Difficulty = 'recorded' | 'seat' | 'live' | 'hardcore';
-const DIFFICULTIES: { value: Difficulty; label: string; tier: 0 | 1 | 2 | 3 | undefined }[] = [
+export const DIFFICULTIES: {
+  value: Difficulty;
+  label: string;
+  tier: 0 | 1 | 2 | 3 | undefined;
+}[] = [
   { value: 'recorded', label: 'difficulty: as recorded', tier: undefined },
   { value: 'seat', label: 'difficulty: seat', tier: 1 },
   { value: 'live', label: 'difficulty: live', tier: 2 },
   { value: 'hardcore', label: 'difficulty: hardcore', tier: 3 },
 ];
+
+/** What a shift (slice 7) sets on a mount; a tape played alone sets none of it. */
+export interface MountExtra {
+  /** The shift's climb for this call, 0..1; the parallelism levers read it. */
+  climb?: number;
+  /** The difficulty the shift was drawn at. */
+  difficulty?: Difficulty;
+  /** True in a shift: the code names the difficulty, so the select is fixed. */
+  lockDifficulty?: boolean;
+  /** Extra end-scene furniture lines: the shift code, the call's place. Words only. */
+  furniture?: string[];
+  nextLabel?: string;
+  hint?: string;
+}
 
 export function mountGhost(
   root: HTMLElement,
@@ -86,6 +104,7 @@ export function mountGhost(
   onNext?: () => void,
   /** True when the mount follows a click (Next tape), so the sound can start at once. */
   startAudio = false,
+  extra: MountExtra = {},
 ) {
   root.replaceChildren();
   const wrap = document.createElement('section');
@@ -203,9 +222,13 @@ export function mountGhost(
     difficulty.append(o);
   }
   // Fixture tapes derive to tier 0, where formations neither fire nor dive; seat is the fun default.
-  difficulty.value = 'seat';
+  difficulty.value = extra.difficulty ?? 'seat';
+  if (extra.lockDifficulty) {
+    difficulty.disabled = true;
+    difficulty.title = 'A shift plays at the difficulty its code names.';
+  }
   const nextBtn = document.createElement('button');
-  nextBtn.textContent = 'Next tape';
+  nextBtn.textContent = extra.nextLabel ?? 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
   controls.append(
@@ -226,6 +249,7 @@ export function mountGhost(
   const hint = document.createElement('p');
   hint.className = 'muted';
   hint.textContent =
+    extra.hint ??
     'Left, right, space. F or the button for full screen. Click the field to restart the same tape.';
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
@@ -282,6 +306,7 @@ export function mountGhost(
     name,
     `server ${tape.server_name ?? tape.target_kind}`,
     `policy ${tape.agent_policy}`,
+    ...(extra.furniture ?? []),
   ];
 
   let audio: AudioOut | null = null;
@@ -336,7 +361,8 @@ export function mountGhost(
 
   const tierFor = (): 0 | 1 | 2 | 3 | undefined =>
     DIFFICULTIES.find((d) => d.value === difficulty.value)?.tier;
-  const newRound = () => prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor() });
+  const newRound = () =>
+    prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor(), climb: extra.climb ?? 0 });
   let round: Round = newRound();
   let state: RoundState = createRoundState(round);
   // Seeded from the fresh state, not null, so the first wave card's cue fires.

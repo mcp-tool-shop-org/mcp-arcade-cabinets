@@ -346,7 +346,8 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_
     wave.max,
   );
   duration = fitSpan(beats, waveBounds, duration, wave.tail, wave.min, wave.max);
-  const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier };
+  const climb = Math.min(1, Math.max(0, opts.climb ?? 0));
+  const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier, climb };
   attachPatterns(round, patterns);
   return round;
 }

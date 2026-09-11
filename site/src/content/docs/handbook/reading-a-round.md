@@ -53,4 +53,4 @@ A wave opens with a word naming the experiment (inspect, poison, rug, unlisted) 
 
 ## The end scene
 
-When the last wave closes or the lamps are out, the field freezes. The trophies you caught sit on the parking line. A lie you missed sits where it hovered, in its honest paint; you can see what got away, but the game does not name it. Furniture: a closing line, then the tape's name, the server, the policy. Click to play the same tape again, or take the next one.
+When the last wave closes or the lamps are out, the field freezes. The trophies you caught sit on the parking line. A lie you missed sits where it hovered, in its honest paint; you can see what got away, but the game does not name it. Furniture: a closing line, then the tape's name, the server, the policy. Click to play the same tape again, or take the next one. In a shift two more lines sit under them, the shift's code and the call's place (the second call, the last call), and **Next call** takes the next card; after the last call the closing scene lists the four calls and the code.

@@ -6,6 +6,7 @@ import fireJson from '../patterns/fire.json';
 import formationsJson from '../patterns/formations.json';
 import ladderJson from '../patterns/ladder.json';
 import parallelismJson from '../patterns/parallelism.json';
+import shiftJson from '../patterns/shift.json';
 import pathsJson from '../patterns/paths.json';
 import playerJson from '../patterns/player.json';
 import voiceJson from '../patterns/voice.json';
@@ -167,6 +168,8 @@ export interface ParallelismTier {
   copies: number;
   /** Copies on the last wave; the count climbs from `copies` by wave (the difficulty multiplier). */
   copiesLater: number;
+  /** Copies the last call of a shift ends on; the shift's climb lifts both ends toward it. */
+  copiesShift: number;
   firstBurst: number;
   laterBurst: number;
   /** Minimum quiet seconds around a burst inside a wave. */
@@ -175,6 +178,8 @@ export interface ParallelismTier {
   intensity: number;
   /** Intensity on the last wave; climbs from `intensity` by wave. */
   intensityLater: number;
+  /** Intensity the last call of a shift ends on. */
+  intensityShift: number;
   decoysFire: boolean;
 }
 
@@ -222,6 +227,18 @@ export interface PatternSet {
   drops: Record<DropKind, DropSpec>;
   voice: VoiceSet;
   parallelism: { tiers: Record<'0' | '1' | '2' | '3', ParallelismTier> };
+  shift: ShiftSet;
+}
+
+/**
+ * The shift (slice 7): how many calls, how far up the climb each one sits
+ * (0 is the tape as played alone, 1 is the full reach of `copiesShift` and
+ * `intensityShift`), and the two word lists that spell a code.
+ */
+export interface ShiftSet {
+  length: number;
+  climb: number[];
+  words: { even: string[]; odd: string[] };
 }
 
 export interface TapeHeader {
@@ -605,19 +622,64 @@ function loadParallelism(raw: unknown): PatternSet['parallelism'] {
     if (!(intensity >= 1)) fail(file, 'intensity');
     const intensityLater = asNumber(req(rec, file, 'intensityLater'), file, 'intensityLater');
     if (!(intensityLater >= intensity)) fail(file, 'intensityLater');
+    const copiesShift = asNumber(req(rec, file, 'copiesShift'), file, 'copiesShift');
+    if (!(copiesShift >= copiesLater) || copiesShift !== Math.floor(copiesShift)) {
+      fail(file, 'copiesShift');
+    }
+    const intensityShift = asNumber(req(rec, file, 'intensityShift'), file, 'intensityShift');
+    if (!(intensityShift >= intensityLater)) fail(file, 'intensityShift');
     tiers[key] = {
       enabled: asBoolean(req(rec, file, 'enabled'), file, 'enabled'),
       copies,
       copiesLater,
+      copiesShift,
       firstBurst,
       laterBurst,
       gap,
       intensity,
       intensityLater,
+      intensityShift,
       decoysFire: asBoolean(req(rec, file, 'decoysFire'), file, 'decoysFire'),
     };
   }
   return { tiers };
+}
+
+const SHIFT_WORDS = 64;
+const SHIFT_WORD = /^[a-z]{3,7}$/;
+
+function loadShiftWords(raw: unknown, file: string, key: string, seen: Set<string>): string[] {
+  if (!Array.isArray(raw) || raw.length !== SHIFT_WORDS) fail(file, key);
+  const out: string[] = [];
+  for (const w of raw) {
+    if (typeof w !== 'string' || !SHIFT_WORD.test(w) || seen.has(w)) fail(file, key);
+    seen.add(w);
+    out.push(w);
+  }
+  return out;
+}
+
+function loadShift(raw: unknown): ShiftSet {
+  const file = 'shift.json';
+  const obj = asRecord(raw, file, 'length');
+  const length = asNumber(req(obj, file, 'length'), file, 'length');
+  if (!(length >= 1 && length <= 8) || length !== Math.floor(length)) fail(file, 'length');
+  const climbRaw = req(obj, file, 'climb');
+  if (!Array.isArray(climbRaw) || climbRaw.length !== length) fail(file, 'climb');
+  const climb = climbRaw.map((c) => {
+    if (typeof c !== 'number' || !(c >= 0 && c <= 1)) fail(file, 'climb');
+    return c;
+  });
+  const words = asRecord(req(obj, file, 'words'), file, 'words');
+  const seen = new Set<string>();
+  return {
+    length,
+    climb,
+    words: {
+      even: loadShiftWords(req(words, file, 'even'), file, 'even', seen),
+      odd: loadShiftWords(req(words, file, 'odd'), file, 'odd', seen),
+    },
+  };
 }
 
 /** How far through the round's waves this one is, 0 on the first, 1 on the last. */
@@ -626,14 +688,29 @@ export function waveProgress(wave: number, waves: number): number {
   return Math.min(1, Math.max(0, wave / last));
 }
 
-/** Honest copies for this wave: climbs from `copies` to `copiesLater` by wave. */
-export function copiesAt(spec: ParallelismTier, wave: number, waves: number): number {
-  return Math.round(spec.copies + (spec.copiesLater - spec.copies) * waveProgress(wave, waves));
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
 }
 
-/** Fire intensity for this wave: climbs from `intensity` to `intensityLater` by wave. */
-export function intensityAt(spec: ParallelismTier, wave: number, waves: number): number {
-  return spec.intensity + (spec.intensityLater - spec.intensity) * waveProgress(wave, waves);
+/**
+ * Honest copies for this wave: climbs from `copies` to `copiesLater` by
+ * wave. Up a shift (`climb` in 0..1) the wave's start is lifted toward
+ * `copiesLater` and its end toward `copiesShift`, so the last call starts
+ * where the first one ended. A multiplier on the schedule, never a fact.
+ */
+export function copiesAt(spec: ParallelismTier, wave: number, waves: number, climb = 0): number {
+  const c = Math.min(1, Math.max(0, climb));
+  const start = lerp(spec.copies, spec.copiesLater, c);
+  const end = lerp(spec.copiesLater, spec.copiesShift, c);
+  return Math.round(lerp(start, end, waveProgress(wave, waves)));
+}
+
+/** Fire intensity for this wave: climbs from `intensity` to `intensityLater` by wave, lifted by the shift's climb. */
+export function intensityAt(spec: ParallelismTier, wave: number, waves: number, climb = 0): number {
+  const c = Math.min(1, Math.max(0, climb));
+  const start = lerp(spec.intensity, spec.intensityLater, c);
+  const end = lerp(spec.intensityLater, spec.intensityShift, c);
+  return lerp(start, end, waveProgress(wave, waves));
 }
 
 /**
@@ -708,6 +785,7 @@ const FILES = [
   'drops',
   'voice',
   'parallelism',
+  'shift',
 ] as const;
 
 /** Validate every pattern file. Message is `patterns/<file>: <key>` for the first bad key. */
@@ -737,6 +815,7 @@ export function loadPatterns(raw: unknown): PatternSet {
     drops: loadDrops(obj.drops),
     voice: loadVoice(obj.voice),
     parallelism: loadParallelism(obj.parallelism),
+    shift: loadShift(obj.shift),
   };
 }
 
@@ -781,4 +860,5 @@ export const DEFAULT_PATTERNS: PatternSet = loadPatterns({
   drops: dropsJson,
   voice: voiceJson,
   parallelism: parallelismJson,
+  shift: shiftJson,
 });

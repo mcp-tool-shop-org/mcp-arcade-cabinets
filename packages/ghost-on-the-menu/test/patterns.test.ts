@@ -155,6 +155,20 @@ describe('loadPatterns', () => {
           return raw;
         },
       },
+      {
+        file: 'shift.json',
+        key: 'climb',
+        drop: () => {
+          const raw = clone();
+          delete (raw.shift as Record<string, unknown>).climb;
+          return raw;
+        },
+        mistype: () => {
+          const raw = clone();
+          (raw.shift as Record<string, unknown>).climb = [0, 0.5];
+          return raw;
+        },
+      },
     ];
     for (const c of cases) {
       expect(() => loadPatterns(c.drop()), c.file + ' missing').toThrow(
@@ -321,6 +335,33 @@ describe('loadPatterns', () => {
       'a lie on the wire',
     ];
     expect(() => loadPatterns(fact)).toThrow('patterns/voice.json: inspect');
+  });
+
+  it('refuses a shift reach below the wave reach, and a word list that is short, odd or repeated', () => {
+    const tier = (raw: Record<string, unknown>) =>
+      (
+        (raw.parallelism as Record<string, unknown>).tiers as Record<
+          string,
+          Record<string, unknown>
+        >
+      )['2']!;
+    let raw = clone();
+    tier(raw).copiesShift = 2;
+    expect(() => loadPatterns(raw)).toThrow('patterns/parallelism.json: copiesShift');
+    raw = clone();
+    tier(raw).intensityShift = 1;
+    expect(() => loadPatterns(raw)).toThrow('patterns/parallelism.json: intensityShift');
+    const words = (raw: Record<string, unknown>) =>
+      (raw.shift as Record<string, unknown>).words as Record<string, string[]>;
+    raw = clone();
+    words(raw).even = words(raw).even!.slice(0, 63);
+    expect(() => loadPatterns(raw)).toThrow('patterns/shift.json: even');
+    raw = clone();
+    words(raw).odd![3] = 'sev7n';
+    expect(() => loadPatterns(raw)).toThrow('patterns/shift.json: odd');
+    raw = clone();
+    words(raw).odd![0] = words(raw).even![0]!;
+    expect(() => loadPatterns(raw)).toThrow('patterns/shift.json: odd');
   });
 
   it('loads parallelism rails: off on recorded, longer later, placed by seed', () => {
