@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   burstActive,
+  copiesAt,
   DEFAULT_PATTERNS,
+  intensityAt,
   loadPatterns,
   pickLine,
   voiceWaveKey,
@@ -357,6 +359,24 @@ describe('loadPatterns', () => {
     (raw.parallelism as { tiers: Record<string, { intensity: number }> }).tiers['1']!.intensity =
       0.5;
     expect(() => loadPatterns(raw)).toThrow('patterns/parallelism.json: intensity');
+    const later = clone();
+    (later.parallelism as { tiers: Record<string, { copiesLater: number }> }).tiers[
+      '1'
+    ]!.copiesLater = 1;
+    expect(() => loadPatterns(later)).toThrow('patterns/parallelism.json: copiesLater');
+    const hot = clone();
+    (hot.parallelism as { tiers: Record<string, { intensityLater: number }> }).tiers[
+      '2'
+    ]!.intensityLater = 0.5;
+    expect(() => loadPatterns(hot)).toThrow('patterns/parallelism.json: intensityLater');
+    // The multipliers climb by wave: none on the first, all on the last.
+    const t1 = DEFAULT_PATTERNS.parallelism.tiers['1'];
+    expect(copiesAt(t1, 0, 4)).toBe(t1.copies);
+    expect(copiesAt(t1, 3, 4)).toBe(t1.copiesLater);
+    expect(intensityAt(t1, 0, 4)).toBe(t1.intensity);
+    expect(intensityAt(t1, 3, 4)).toBeCloseTo(t1.intensityLater, 6);
+    expect(intensityAt(t1, 1, 4)).toBeGreaterThan(t1.intensity);
+    expect(intensityAt(t1, 1, 4)).toBeLessThan(t1.intensityLater);
   });
 });
 

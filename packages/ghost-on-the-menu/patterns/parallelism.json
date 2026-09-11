@@ -3,37 +3,45 @@
     "0": {
       "enabled": false,
       "copies": 1,
+      "copiesLater": 1,
       "firstBurst": 1.2,
       "laterBurst": 2.4,
       "gap": 10,
       "intensity": 1,
+      "intensityLater": 1,
       "decoysFire": false
     },
     "1": {
       "enabled": true,
       "copies": 2,
-      "firstBurst": 1.6,
-      "laterBurst": 3.6,
-      "gap": 8,
+      "copiesLater": 3,
+      "firstBurst": 4,
+      "laterBurst": 9,
+      "gap": 6,
       "intensity": 1.15,
+      "intensityLater": 1.4,
       "decoysFire": false
     },
     "2": {
       "enabled": true,
       "copies": 2,
-      "firstBurst": 1.8,
-      "laterBurst": 4,
-      "gap": 8,
-      "intensity": 1,
+      "copiesLater": 3,
+      "firstBurst": 4,
+      "laterBurst": 9,
+      "gap": 6,
+      "intensity": 1.0,
+      "intensityLater": 1.25,
       "decoysFire": false
     },
     "3": {
       "enabled": true,
       "copies": 3,
-      "firstBurst": 2.4,
-      "laterBurst": 6.5,
+      "copiesLater": 4,
+      "firstBurst": 7,
+      "laterBurst": 18,
       "gap": 5,
       "intensity": 1.35,
+      "intensityLater": 1.8,
       "decoysFire": true
     }
   }

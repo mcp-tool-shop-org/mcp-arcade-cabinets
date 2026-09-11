@@ -18,13 +18,13 @@
     },
     "1": {
       "formation": {
-        "period": 1.8,
+        "period": 2.1,
         "burst": 1,
         "spread": 0.08,
         "speed": 180
       },
       "boss": {
-        "period": 5,
+        "period": 5.75,
         "burst": 1,
         "spread": 0.12,
         "speed": 80,
@@ -36,20 +36,20 @@
         }
       },
       "dive": {
-        "period": 1.8,
+        "period": 2.1,
         "speed": 130,
         "depth": 0.93
       }
     },
     "2": {
       "formation": {
-        "period": 3,
+        "period": 3.45,
         "burst": 1,
         "spread": 0.12,
         "speed": 90
       },
       "boss": {
-        "period": 4.5,
+        "period": 5.2,
         "burst": 1,
         "spread": 0.22,
         "speed": 100,
@@ -61,20 +61,20 @@
         }
       },
       "dive": {
-        "period": 3,
+        "period": 3.45,
         "speed": 170,
         "depth": 0.95
       }
     },
     "3": {
       "formation": {
-        "period": 2.4,
+        "period": 2.76,
         "burst": 1,
         "spread": 0.14,
         "speed": 160
       },
       "boss": {
-        "period": 4.2,
+        "period": 4.8,
         "burst": 1,
         "spread": 0.24,
         "speed": 105,
@@ -86,7 +86,7 @@
         }
       },
       "dive": {
-        "period": 2.4,
+        "period": 2.76,
         "speed": 180,
         "depth": 0.95
       }

@@ -171,10 +171,10 @@ export const END_FADE_S = 1.5;
 /**
  * Seconds a bed plays before it may give way to the wave's bed (the
  * Director's word, 2026-09-11: a song plays for at least a minute, then
- * fades into another). A wanted change before that is remembered and
- * made when the hold is up.
+ * fades into another; on hearing it, longer). A wanted change before that
+ * is remembered and made when the hold is up.
  */
-export const BED_MIN_S = 60;
+export const BED_MIN_S = 120;
 
 export type BedLookup = (key: string) => MediaBed | undefined;
 

@@ -165,12 +165,16 @@ export interface ParallelismTier {
   enabled: boolean;
   /** Honest copies during a burst, including the original. 1 is none extra. */
   copies: number;
+  /** Copies on the last wave; the count climbs from `copies` by wave (the difficulty multiplier). */
+  copiesLater: number;
   firstBurst: number;
   laterBurst: number;
   /** Minimum quiet seconds around a burst inside a wave. */
   gap: number;
   /** Fire-period divisor while the burst is on. 1 is unchanged. */
   intensity: number;
+  /** Intensity on the last wave; climbs from `intensity` by wave. */
+  intensityLater: number;
   decoysFire: boolean;
 }
 
@@ -587,6 +591,10 @@ function loadParallelism(raw: unknown): PatternSet['parallelism'] {
     const rec = asRecord(req(tiersRaw, file, key), file, key);
     const copies = asNumber(req(rec, file, 'copies'), file, 'copies');
     if (!(copies >= 1) || copies !== Math.floor(copies)) fail(file, 'copies');
+    const copiesLater = asNumber(req(rec, file, 'copiesLater'), file, 'copiesLater');
+    if (!(copiesLater >= copies) || copiesLater !== Math.floor(copiesLater)) {
+      fail(file, 'copiesLater');
+    }
     const firstBurst = asNumber(req(rec, file, 'firstBurst'), file, 'firstBurst');
     const laterBurst = asNumber(req(rec, file, 'laterBurst'), file, 'laterBurst');
     if (!(firstBurst > 0)) fail(file, 'firstBurst');
@@ -595,17 +603,37 @@ function loadParallelism(raw: unknown): PatternSet['parallelism'] {
     if (!(gap >= 0)) fail(file, 'gap');
     const intensity = asNumber(req(rec, file, 'intensity'), file, 'intensity');
     if (!(intensity >= 1)) fail(file, 'intensity');
+    const intensityLater = asNumber(req(rec, file, 'intensityLater'), file, 'intensityLater');
+    if (!(intensityLater >= intensity)) fail(file, 'intensityLater');
     tiers[key] = {
       enabled: asBoolean(req(rec, file, 'enabled'), file, 'enabled'),
       copies,
+      copiesLater,
       firstBurst,
       laterBurst,
       gap,
       intensity,
+      intensityLater,
       decoysFire: asBoolean(req(rec, file, 'decoysFire'), file, 'decoysFire'),
     };
   }
   return { tiers };
+}
+
+/** How far through the round's waves this one is, 0 on the first, 1 on the last. */
+export function waveProgress(wave: number, waves: number): number {
+  const last = Math.max(1, waves - 1);
+  return Math.min(1, Math.max(0, wave / last));
+}
+
+/** Honest copies for this wave: climbs from `copies` to `copiesLater` by wave. */
+export function copiesAt(spec: ParallelismTier, wave: number, waves: number): number {
+  return Math.round(spec.copies + (spec.copiesLater - spec.copies) * waveProgress(wave, waves));
+}
+
+/** Fire intensity for this wave: climbs from `intensity` to `intensityLater` by wave. */
+export function intensityAt(spec: ParallelismTier, wave: number, waves: number): number {
+  return spec.intensity + (spec.intensityLater - spec.intensity) * waveProgress(wave, waves);
 }
 
 /**

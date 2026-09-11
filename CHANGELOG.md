@@ -22,6 +22,12 @@ The cabinet server, slices one to three of `docs/cabinet-server.dispatch.md`: th
 - **The Ghost's own tapes.** `mcp-arcade bout --target stdio` against the cabinet server, naive and task-only, with and without the house wrap: `fixtures/tapes/cabinet.*.tape.json`. On the server's own menu naive followed nothing; with the wrap naive followed into `tapes` and task-only held. The cabinet plays them.
 - `docs/cabinet-server.panel.md`: every G12 and G14 claim through two family-different jurors, all confirmed.
 
+### Tuned (the Director's play, 2026-09-11)
+
+- **A bed holds two minutes** before it may give way (`BED_MIN_S`).
+- **Rounds are about fifteen percent longer** at every tier (`waves.json` min and max), with formation fire, dives and the boss beat slowed by the same factor (`fire.json`), so the heat per minute is unchanged and the climb comes from the bursts. Measured on the band: a third longer killed the bots at live even with every clock slowed (nine sweeper deaths of twenty against the band's five); fifteen percent sits exactly on the bar (five). Longer than that is a change to the band or to the lamps, the Director's call.
+- **Bursts you can see, and that climb.** `parallelism.json`: bursts of four to nine seconds at seat and live (were under four), seven to eighteen on hardcore, and two new levers with a schema, `copiesLater` and `intensityLater`: the honest copies and the fire intensity climb wave by wave from their first-wave value to their last-wave value (seat: two to three copies, intensity one point one five to one point four). The bed overlays the burst track for the burst.
+
 ### Fixed
 
 - **The music.** The Director's play (2026-09-11): sporadic, never one song for long, cut off for no reason. Measured: twenty bed switches in a ninety-second round, every one a hard restart from zero (the wave bed at the card, the boss bed at spawn, the wave bed again at the kill, the burst bed for each two-second burst, the breather bed for each three-second breather). Now a bed plays for at least a minute before it may give way (the Director's word), then crossfades into the bed of the wave that is playing; a boss wave's bed is its boss's; the bed stays through breathers and the tail; a burst overlays the burst bed on the wave's bed and ducks it; a returning bed resumes where it left off; the round's end fades the music out. Tested with fake beds.

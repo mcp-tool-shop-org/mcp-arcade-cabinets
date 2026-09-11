@@ -192,7 +192,7 @@ describe('recorded beds', () => {
     const whisperer = bed();
     const menu = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer, menu };
-    const out = attach(silentCtx(), undefined, (k) => beds[k]); // the real minute
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60 });
     out.tick(0, 'inspect');
     for (let t = 1; t < 59; t += 1) out.tick(t, t < 18 ? 'inspect' : 'whisperer');
     expect(whisperer.playing).toBe(false); // wanted since 18 s, held

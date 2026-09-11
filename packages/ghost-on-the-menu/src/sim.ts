@@ -1,7 +1,9 @@
 import {
-  attachPatterns,
   attachedPatterns,
+  attachPatterns,
   burstActive,
+  copiesAt,
+  intensityAt,
   pickLine,
   voiceWaveKey,
   type BossDef,
@@ -113,7 +115,9 @@ function paraSpec(meta: Meta): ParallelismTier {
 
 function fireScale(state: RoundState, meta: Meta): number {
   const spec = paraSpec(meta);
-  const hot = state.parallelism ? 1 / spec.intensity : 1;
+  const hot = state.parallelism
+    ? 1 / intensityAt(spec, state.wave, meta.round.waveBounds.length)
+    : 1;
   return waveEscalate(meta, state.wave) * hot;
 }
 
@@ -660,8 +664,9 @@ function spawnFormationDrop(state: RoundState, meta: Meta | undefined, enemy: En
 }
 
 function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void {
-  if (spec.copies <= 1) return;
-  const extras = spec.copies - 1;
+  const copies = copiesAt(spec, state.wave, meta.round.waveBounds.length);
+  if (copies <= 1) return;
+  const extras = copies - 1;
   const hosts = state.enemies.filter(
     (e) =>
       e.alive &&

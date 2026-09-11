@@ -18,7 +18,7 @@ Tuning never changes code. The sim reads a **pattern set** of ten JSON files, va
 | `player.json`     | The ship's speed, cooldown, hitbox, row and grace                                                         |
 | `drops.json`      | What a downed boss and a cleared formation drop, how fast it falls and drifts, the catch box, and how long a spread lasts |
 | `voice.json`      | Four dry lines per wave kind, boss kind, and the end scene, picked by the round seed                      |
-| `parallelism.json` | Per tier: whether a burst is on, how many honest extra copies, how long the first burst vs later ones, the quiet gap, fire intensity, whether the extras shoot |
+| `parallelism.json` | Per tier: whether a burst is on, how many honest extra copies on the first wave and on the last (`copies`, `copiesLater`), how long the first burst vs later ones, the quiet gap, fire intensity on the first wave and on the last (`intensity`, `intensityLater`), whether the extras shoot. The copies and the intensity climb by wave |
 
 ## Tiers
 
@@ -42,7 +42,7 @@ The shell can override the derived tier (the difficulty selector), and the fairn
 - **`ladder.json` → rungs[].speed, fog, lamps**: a multiplier on entry and dive speed, a multiplier on fog drift, and the number of lamps.
 - **`drops.json`**: a downed boss always drops a lamp; a cleared grid formation always drops a spread. Fall speed, drift (0 = straight down), catch box, spread duration. Never keyed on a lie.
 - **`voice.json`**: lines named by atom kind and boss kind, never by fact. The loader rejects a digit or a fact word. With the Ollama seat on, each boss picks which of its own lines it says at spawn; the seat can only choose from this file, never write to it.
-- **`parallelism.json`**: a seed-placed burst per wave. Off on the recorded rung. First burst is short; later waves hold it longer. Extra copies are always honest, even when they clone a lie's class. The soundtrack switches to the parallelism bed (recorded if present, chiptune if not).
+- **`parallelism.json`**: a seed-placed burst per wave. Off on the recorded rung. First burst is short; later waves hold it longer. Extra copies are always honest, even when they clone a lie's class. The soundtrack lays the parallelism bed over the wave's bed for the burst and ducks the wave's, then lifts it off; it never swaps songs. Copies and intensity climb wave by wave from their first-wave values to their last-wave values.
 
 ## Measuring a change
 
