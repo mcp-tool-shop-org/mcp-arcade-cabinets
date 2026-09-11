@@ -78,8 +78,11 @@ The shell was walked in the browser: the menu's Shift button, the first card (th
 - **Adapting the climb to the player.** G1's seeded sim and the band; Hunicke and Denisova say the felt curve carries the effect anyway.
 - **A shift in the cabinet server.** The MCP tools play one tape; `climb` is a `prepassRound` option the server does not set yet. A `shift` lever for the server is Grok's and the Director's call.
 
+## Grok's review (2026-09-11, `docs/shift.review.md`)
+
+No halt. G21 holds: the climb is data, the tape-alone bars still run, the last-call bar sits beside them; the rug-flip snap at climb 1 covers both levers; the lever reaches seat, whose mover is already at its ceiling alone. Two changes, applied the same day: `ribbon` left the odd list (a near-homophone of `robin`; `walnut` took its slot), and a note on the code: a swap of the two even-position words leaves the roster check untouched and can read as a different valid shift about half the time, while an even-odd swap still fails; a check mixed across the words is a later lever, not recoded from this review. Held: five copies and 2.0 at live is the stop; the ramp stays until the Director plays a shift, and if the third call feels like a slog the lever is `shift.json` (0.7 toward 0.4, Booth's trough), not a harder last call.
+
 ## Not done
 
-- Grok's review of the climb lever (his lane: `patterns.ts`, `sim.ts`, the band) and of the code's word lists (`docs/shift.review.kickoff.md`).
 - The Director plays a shift and says whether the climb list wants a trough (Booth) and whether four is the length.
 - Translations before the next tag.
