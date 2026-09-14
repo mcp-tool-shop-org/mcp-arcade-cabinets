@@ -378,6 +378,11 @@ describe('prepassRound', () => {
         for (const [sprite, ts] of byClass) {
           expect(new Set(ts.map((t) => t.toFixed(6))).size, `${name} ${sprite}`).toBe(ts.length);
         }
+        for (const sprite of ['probe', 'shelf', 'ledger'] as const) {
+          const ts = byClass.get(sprite);
+          if (!ts) continue;
+          expect(new Set(ts.map((t) => t.toFixed(6))).size, `${name} ${sprite}`).toBe(ts.length);
+        }
       }
     }
   });

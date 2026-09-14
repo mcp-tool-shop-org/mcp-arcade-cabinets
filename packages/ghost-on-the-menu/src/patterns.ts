@@ -1,5 +1,5 @@
 import { VOICE_MAX_LINES } from './pilot';
-import type { SpriteClass, WaveKind } from './types';
+import type { Flavor, FlavorRole, SpriteClass, WaveKind } from './types';
 
 import bossesJson from '../patterns/bosses.json';
 import dropsJson from '../patterns/drops.json';
@@ -23,6 +23,9 @@ const SPRITE_CLASSES: readonly SpriteClass[] = [
   'obstacle',
   'stall',
   'error',
+  'probe',
+  'shelf',
+  'ledger',
 ];
 /** Classes that spawn as enemies. Fog becomes a FogBank, never a path. */
 const SPAWN_CLASSES: readonly SpriteClass[] = [
@@ -34,10 +37,13 @@ const SPAWN_CLASSES: readonly SpriteClass[] = [
   'obstacle',
   'stall',
   'error',
+  'probe',
+  'shelf',
+  'ledger',
 ];
 
 const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
-const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
+const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const TIER_KEYS = ['0', '1', '2', '3'] as const;
 const WAVE_VOICE_KEYS = ['inspect', 'poison', 'rug', 'unlisted'] as const;
 const DROP_KINDS = ['lamp', 'spread'] as const;
@@ -243,6 +249,7 @@ export interface PatternSet {
 export interface ShiftSet {
   length: number;
   climb: number[];
+  flavors: Flavor[];
   words: { even: string[]; odd: string[] };
 }
 
@@ -392,12 +399,17 @@ function loadFormations(raw: unknown): PatternSet['formations'] {
   }
   const spritesRaw = asRecord(req(obj, file, 'sprites'), file, 'sprites');
   const sprites = {} as PatternSet['formations']['sprites'];
+  const boxes = new Map<string, string>();
   for (const cls of SPAWN_CLASSES) {
     const rec = asRecord(req(spritesRaw, file, cls), file, cls);
     const w = asNumber(req(rec, file, 'w'), file, 'w');
     const h = asNumber(req(rec, file, 'h'), file, 'h');
     if (!(w > 0 && h > 0)) fail(file, cls);
     sprites[cls] = { w, h };
+    const key = `${w}x${h}`;
+    const other = boxes.get(key);
+    if (other && (cls === 'probe' || cls === 'shelf' || cls === 'ledger')) fail(file, cls);
+    boxes.set(key, cls);
   }
   return { layouts, sprites };
 }
@@ -437,7 +449,15 @@ function loadFire(raw: unknown): PatternSet['fire'] {
 }
 
 /** Motions stepBoss animates (else idle). hold is Doorman's guard pose. */
-const BOSS_MOTIONS = new Set(['pulse', 'drift', 'drift-column', 'squash', 'slit', 'hold']);
+const BOSS_MOTIONS = new Set([
+  'pulse',
+  'drift',
+  'drift-column',
+  'squash',
+  'slit',
+  'hold',
+  'catalog',
+]);
 /** Fire verbs stepBoss actually spawns. Anything else is a silent no-op. */
 const BOSS_FIRES = new Set([
   'drop-fog',
@@ -678,6 +698,34 @@ function loadParallelism(raw: unknown): PatternSet['parallelism'] {
 
 const SHIFT_WORDS = 64;
 const SHIFT_WORD = /^[a-z]{3,7}$/;
+const FLAVOR_ROLES: readonly FlavorRole[] = ['pressure', 'area-deny', 'trough', 'peak'];
+
+function loadFlavors(raw: unknown, file: string, length: number): Flavor[] {
+  const list = asArray(raw, file, 'flavors');
+  if (list.length !== length) fail(file, 'flavors');
+  const seen = new Set<string>();
+  return list.map((item) => {
+    const rec = asRecord(item, file, 'flavors');
+    const role = asString(req(rec, file, 'role'), file, 'role');
+    if (!(FLAVOR_ROLES as readonly string[]).includes(role)) fail(file, 'role');
+    if (seen.has(role)) fail(file, 'role');
+    seen.add(role);
+    const biome = asString(req(rec, file, 'biome'), file, 'biome');
+    if (biome.trim() === '' || /\d/.test(biome)) fail(file, 'biome');
+    const verbs = asArray(req(rec, file, 'verbs'), file, 'verbs').map((v) =>
+      asString(v, file, 'verbs'),
+    );
+    if (verbs.length < 1 || verbs.length > 2) fail(file, 'verbs');
+    for (const v of verbs) {
+      if (v.trim() === '' || /\d/.test(v)) fail(file, 'verbs');
+    }
+    const midboss = asBoolean(req(rec, file, 'midboss'), file, 'midboss');
+    const telegraph = asString(req(rec, file, 'telegraph'), file, 'telegraph');
+    if (telegraph.trim() === '' || /\d/.test(telegraph)) fail(file, 'telegraph');
+    if (role === 'trough' && midboss) fail(file, 'role');
+    return { role: role as FlavorRole, biome, verbs, midboss, telegraph };
+  });
+}
 
 function loadShiftWords(raw: unknown, file: string, key: string, seen: Set<string>): string[] {
   if (!Array.isArray(raw) || raw.length !== SHIFT_WORDS) fail(file, key);
@@ -706,6 +754,7 @@ function loadShift(raw: unknown): ShiftSet {
   return {
     length,
     climb,
+    flavors: loadFlavors(req(obj, file, 'flavors'), file, length),
     words: {
       even: loadShiftWords(req(words, file, 'even'), file, 'even', seen),
       odd: loadShiftWords(req(words, file, 'odd'), file, 'odd', seen),

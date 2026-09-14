@@ -5,7 +5,7 @@
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { DEFAULT_PATTERNS, deriveTier, type PatternSet } from './patterns';
-import { kindOfAtom } from './types';
+import { bossKindFor } from './sim';
 
 export interface TapeLabel {
   /** Short word on the picker: fixture, seat, or live. */
@@ -39,8 +39,7 @@ function word(n: number): string {
 }
 
 function hasBoss(atomId: string): boolean {
-  const kind = kindOfAtom(atomId);
-  return kind === 'poison' || kind === 'rug' || kind === 'unlisted';
+  return bossKindFor(atomId) !== null;
 }
 
 function place(tape: Tape): string {

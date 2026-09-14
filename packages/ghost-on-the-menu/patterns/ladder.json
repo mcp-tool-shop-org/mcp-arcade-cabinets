@@ -18,7 +18,10 @@
         "obstacle-slide",
         "stall-hang",
         "answer-return",
-        "error-drop"
+        "error-drop",
+        "probe-dart",
+        "shelf-ledge",
+        "ledger-dump"
       ],
       "bossFires": true,
       "formationFires": false,
@@ -41,7 +44,10 @@
         "obstacle-slide",
         "stall-hang",
         "answer-return",
-        "error-drop"
+        "error-drop",
+        "probe-dart",
+        "shelf-ledge",
+        "ledger-dump"
       ],
       "bossFires": true,
       "formationFires": true,
@@ -65,7 +71,10 @@
         "obstacle-slide",
         "stall-hang",
         "answer-return",
-        "error-drop"
+        "error-drop",
+        "probe-dart",
+        "shelf-ledge",
+        "ledger-dump"
       ],
       "bossFires": true,
       "formationFires": true,
@@ -89,7 +98,10 @@
         "obstacle-slide",
         "stall-hang",
         "answer-return",
-        "error-drop"
+        "error-drop",
+        "probe-dart",
+        "shelf-ledge",
+        "ledger-dump"
       ],
       "bossFires": true,
       "formationFires": true,

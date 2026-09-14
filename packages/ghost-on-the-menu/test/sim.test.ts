@@ -4,7 +4,15 @@ import { describe, expect, it } from 'vitest';
 
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import { createRoundState, isDecoy, prepassRound, revealOnHit, stepRound } from '../src/index';
+import {
+  bossKindFor,
+  createRoundState,
+  fillFor,
+  isDecoy,
+  prepassRound,
+  revealOnHit,
+  stepRound,
+} from '../src/index';
 import {
   attachPatterns,
   burstActive,
@@ -12,6 +20,7 @@ import {
   DEFAULT_PATTERNS,
   type PatternSet,
 } from '../src/patterns';
+import { flavorAt } from '../src/shift';
 import { FIELD, PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
 
 function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
@@ -1382,5 +1391,179 @@ describe('the ollama seats in the sim', () => {
     tick(s);
     expect(s.bossSay).toBeNull();
     expect(s.caption?.text).not.toBe('Gone.');
+  });
+});
+
+const NEW_HULLS = ['probe', 'shelf', 'ledger'] as const;
+
+function hullSprite(sprite: string): Round['beats'][number]['sprite'] {
+  return sprite as Round['beats'][number]['sprite'];
+}
+
+function hpOf(e: Enemy): number {
+  const rec = e as Enemy & { hp?: number };
+  return typeof rec.hp === 'number' ? rec.hp : 1;
+}
+
+function hullRound(sprite: string, over: Partial<Round> & { lie?: boolean } = {}): RoundState {
+  const { lie = false, ...rest } = over;
+  return createRoundState(
+    roundOf({
+      tapeId: `bout_${sprite}`,
+      duration: 20,
+      tier: 1,
+      waveBounds: [{ atom: 'inspect.tools_list', t0: 0, t1: 18 }],
+      beats: [
+        {
+          id: `inspect.tools_list:${sprite}:0`,
+          t: 0,
+          x: 240,
+          sprite: hullSprite(sprite),
+          lie,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/call',
+            note: 'tools/call echo',
+            index: 0,
+          },
+        },
+      ],
+      ...rest,
+    }),
+  );
+}
+
+describe('the new hulls', () => {
+  it('lets a shot connect on probe, shelf, and ledger, and none of them is a decoy', () => {
+    for (const sprite of NEW_HULLS) {
+      const state = hullRound(sprite);
+      const target = state.enemies[0];
+      if (sprite === 'shelf' && !target) {
+        const lives0 = state.lives;
+        let guard = 0;
+        while (state.lives === lives0 && guard++ < 240) {
+          const bank = state.hazards.find((h) => h.alive);
+          if (bank) {
+            state.player.x = bank.x;
+            state.player.y = bank.y;
+          }
+          stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+        }
+        expect(state.lives, 'shelf contact').toBeLessThan(lives0);
+        continue;
+      }
+      expect(target, sprite).toBeDefined();
+      expect(isDecoy(target!), sprite).toBe(false);
+      park(state, target!);
+      let guard = 0;
+      let connected = false;
+      while (target!.alive && guard < 400) {
+        stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+        guard += 1;
+        if (!target!.alive || target!.mode === 'dying' || target!.revealed) {
+          connected = true;
+          break;
+        }
+      }
+      if (sprite === 'shelf' && !connected) {
+        const lives = state.lives;
+        state.player.x = target!.x;
+        state.player.y = target!.y;
+        stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+        expect(state.lives, 'shelf contact').toBeLessThan(lives);
+      } else {
+        expect(connected, sprite).toBe(true);
+      }
+    }
+  });
+
+  it('probe dives', () => {
+    const state = hullRound('probe');
+    const target = state.enemies[0]!;
+    park(state, target);
+    let guard = 0;
+    while (target.mode !== 'dive' && guard++ < 400) {
+      stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+    }
+    expect(target.mode).toBe('dive');
+  });
+
+  it('ledger takes more than one hit', () => {
+    const state = hullRound('ledger');
+    const target = state.enemies[0]!;
+    expect(hpOf(target)).toBeGreaterThan(1);
+    park(state, target);
+    let hits = 0;
+    let prev = hpOf(target);
+    let guard = 0;
+    while (target.alive && guard < 600) {
+      stepRound(state, { left: false, right: false, fire: true }, 1 / 30);
+      guard += 1;
+      const now = hpOf(target);
+      if (now < prev || !target.alive || target.mode === 'dying') {
+        hits += 1;
+        prev = now;
+      }
+    }
+    expect(hits).toBeGreaterThan(1);
+    expect(target.alive).toBe(false);
+  });
+
+  it('a lie of a new class shares the honest sprite until revealOnHit (G7)', () => {
+    for (const sprite of NEW_HULLS) {
+      const lie = hullRound(sprite, { lie: true });
+      const honest = hullRound(sprite, { lie: false });
+      const a = lie.enemies[0]!;
+      const b = honest.enemies[0]!;
+      expect(a.sprite, sprite).toBe(b.sprite);
+      expect(a.w, sprite).toBe(b.w);
+      expect(a.h, sprite).toBe(b.h);
+      expect(fillFor(a.sprite, false), sprite).toBe(fillFor(b.sprite, false));
+      expect(a.revealed).toBe(false);
+      revealOnHit(a);
+      revealOnHit(b);
+      expect(a.revealed, sprite).toBe(true);
+      expect(b.revealed, sprite).toBe(false);
+    }
+  });
+});
+
+describe('the archivist', () => {
+  it('closes inspect waves; poison still brings the whisperer', () => {
+    expect(bossKindFor('inspect.anything')).toBe('archivist');
+    expect(bossKindFor('inspect.tools_list')).toBe('archivist');
+    expect(bossKindFor('poison.follow_through')).toBe('whisperer');
+    expect(bossKindFor('temporal.rug_pull')).toBe('menu');
+    expect(bossKindFor('protocol.unlisted_call')).toBe('doorman');
+  });
+
+  it('never leaves two bosses alive, even when a peak midboss can spawn', () => {
+    expect(flavorAt(3).role).toBe('peak');
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Tape;
+    const round = prepassRound(loadTape(raw), {
+      seconds: 150,
+      seed: 0,
+      tier: 2,
+      climb: 1,
+    });
+    (round as Round & { flavor?: unknown }).flavor = flavorAt(3);
+    const state = createRoundState(round);
+    const idle = { left: false, right: false, fire: false };
+    const bossBoxes = new Set(Object.values(DEFAULT_PATTERNS.bosses).map((b) => `${b.w}x${b.h}`));
+    while (!state.scene && state.t < state.duration) {
+      state.lives = state.maxLives;
+      stepRound(state, idle, 1 / 30);
+      const hulls: string[] = [];
+      if (state.boss?.alive) hulls.push(`boss:${state.boss.kind}`);
+      for (const e of state.enemies) {
+        if (!e.alive || state.t < e.tEnter) continue;
+        if (e.id.includes('midboss') || bossBoxes.has(`${e.w}x${e.h}`)) {
+          hulls.push(`enemy:${e.id}`);
+        }
+      }
+      expect(hulls.length, `t=${state.t.toFixed(2)} ${hulls.join(',')}`).toBeLessThanOrEqual(1);
+    }
   });
 });

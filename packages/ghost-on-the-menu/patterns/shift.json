@@ -1,6 +1,36 @@
 {
   "length": 4,
   "climb": [0, 0.35, 0.7, 1],
+  "flavors": [
+    {
+      "role": "pressure",
+      "biome": "steel",
+      "verbs": ["dive", "probe"],
+      "midboss": false,
+      "telegraph": "a steel handshake and a darting probe"
+    },
+    {
+      "role": "area-deny",
+      "biome": "slate",
+      "verbs": ["bank", "shelf"],
+      "midboss": false,
+      "telegraph": "slate fog and a shelf across the lane"
+    },
+    {
+      "role": "trough",
+      "biome": "teal",
+      "verbs": ["script"],
+      "midboss": false,
+      "telegraph": "a rest between peaks"
+    },
+    {
+      "role": "peak",
+      "biome": "ochre",
+      "verbs": ["dive", "rain"],
+      "midboss": true,
+      "telegraph": "an ochre peak and a catalog wall"
+    }
+  ],
   "words": {
     "even": [
       "ash",

@@ -71,6 +71,16 @@
       "The server can hear a name I can think.",
       "Protocol is a hallway. I am walking down it.",
       "The Doorman's list is short. My curiosity is not."
+    ],
+    "archivist": [
+      "The Archivist keeps a catalog and a wall.",
+      "A drawer opens. The catalog remembers.",
+      "The Archivist would like you to wait.",
+      "Names live in the catalog. I am listing.",
+      "The catalog wall is the Archivist.",
+      "I file the names. The Archivist files me.",
+      "A catalog is a promise I will reread.",
+      "The Archivist does not shout. It shelves."
     ]
   },
   "aside": {

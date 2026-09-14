@@ -134,37 +134,96 @@ jobs:
             echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
-          sprite_count=$(find site/dist/play/sprites -type f 2>/dev/null | wc -l | tr -d ' ')
-          if [ "${sprite_count:-0}" -lt 1 ]; then
-            echo "site/dist/play/sprites/ is missing or empty"
+          # Roster is derived from export const SPRITE_KEYS / TRACK_KEYS
+          # (quoted string literals). Fail if either array is empty.
+          # test:play is not proof of the uploaded Pages tree.
+          # Do not hardcode the next class list here.
+          # Current TRACK_KEYS (comment only; gate follows src/audio.ts):
+          # inspect poison rug unlisted breather whisperer menu doorman
+          sprite_src=packages/ghost-on-the-menu/src/render.ts
+          track_src=packages/ghost-on-the-menu/src/audio.ts
+          keys_js=$(mktemp --suffix=.mjs)
+          cat > "$keys_js" <<'EOF'
+          import { readFileSync } from 'node:fs';
+          const name = process.argv[2];
+          const file = process.argv[3];
+          const src = readFileSync(file, 'utf8');
+          const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const m = src.match(
+            new RegExp('export\\s+const\\s+' + escaped + '\\s*=\\s*\\[([\\s\\S]*?)\\]'),
+          );
+          const keys = m
+            ? [...m[1].matchAll(/['"]([^'"]+)['"]/g)].map((x) => x[1])
+            : [];
+          if (keys.length === 0) {
+            console.error('empty or missing export const ' + name + ' in ' + file);
+            process.exit(1);
+          }
+          process.stdout.write(keys.join('\n') + '\n');
+          EOF
+          sprite_keys=$(node "$keys_js" SPRITE_KEYS "$sprite_src") || {
+            echo "failed to parse export const SPRITE_KEYS from $sprite_src"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          }
+          track_keys=$(node "$keys_js" TRACK_KEYS "$track_src") || {
+            echo "failed to parse export const TRACK_KEYS from $track_src"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          }
+          if [ -z "$sprite_keys" ]; then
+            echo "SPRITE_KEYS parsed empty from $sprite_src"
             echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
-          # TRACK_KEYS beds (inspect poison rug unlisted breather whisperer menu doorman).
-          # test:play is not proof of the uploaded Pages tree.
-          track_keys="inspect poison rug unlisted breather whisperer menu doorman"
-          missing_tracks=0
+          if [ -z "$track_keys" ]; then
+            echo "TRACK_KEYS parsed empty from $track_src"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
+          missing_assets=0
+          sprite_count=0
           track_count=0
-          sample_track=
-          for key in $track_keys; do
-            f="site/dist/play/tracks/$key.mp3"
+          sample=
+          sample_bytes=
+          while IFS= read -r key; do
+            [ -z "$key" ] && continue
+            f="site/dist/play/sprites/${key}.png"
             if [ ! -s "$f" ]; then
-              echo "site/dist/play/tracks/$key.mp3 is missing or empty"
-              missing_tracks=1
+              echo "site/dist/play/sprites/${key}.png is missing or empty"
+              missing_assets=1
             else
-              track_count=$((track_count + 1))
-              if [ -z "$sample_track" ]; then
-                sample_track=$f
+              sprite_count=$((sprite_count + 1))
+              if [ -z "$sample" ]; then
+                sample=$f
+                sample_bytes=$(wc -c < "$f" | tr -d ' ')
               fi
             fi
-          done
+          done <<< "$sprite_keys"
+          while IFS= read -r key; do
+            [ -z "$key" ] && continue
+            f="site/dist/play/tracks/${key}.mp3"
+            if [ ! -s "$f" ]; then
+              echo "site/dist/play/tracks/${key}.mp3 is missing or empty"
+              missing_assets=1
+            else
+              track_count=$((track_count + 1))
+              if [ -z "$sample" ]; then
+                sample=$f
+                sample_bytes=$(wc -c < "$f" | tr -d ' ')
+              fi
+            fi
+          done <<< "$track_keys"
+          echo "sprites=${sprite_count}" >> "$GITHUB_OUTPUT"
           echo "tracks=${track_count}" >> "$GITHUB_OUTPUT"
-          if [ -n "$sample_track" ]; then
-            echo "play track: $sample_track ($(wc -c < "$sample_track" | tr -d ' ') bytes); tracks=$track_count"
+          if [ -n "$sample" ]; then
+            echo "sample=${sample}" >> "$GITHUB_OUTPUT"
+            echo "sample_bytes=${sample_bytes}" >> "$GITHUB_OUTPUT"
+            echo "play sample: $sample ($sample_bytes bytes); sprites=$sprite_count; tracks=$track_count"
           else
-            echo "play tracks: 0"
+            echo "play sample: missing; sprites=$sprite_count; tracks=$track_count"
           fi
-          if [ "$missing_tracks" -ne 0 ]; then
+          if [ "$missing_assets" -ne 0 ]; then
             echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
@@ -237,22 +296,29 @@ jobs:
               else
                 echo "- play asset: missing"
               fi
-              sc=$(find site/dist/play/sprites -type f 2>/dev/null | wc -l | tr -d ' ')
+              sc="${{ steps.play_index.outputs.sprites }}"
               tc="${{ steps.play_index.outputs.tracks }}"
-              if [ -z "$tc" ]; then
-                tc=0
-                for key in inspect poison rug unlisted breather whisperer menu doorman; do
-                  if [ -s "site/dist/play/tracks/$key.mp3" ]; then
-                    tc=$((tc + 1))
-                  fi
-                done
+              if [ -z "$sc" ]; then
+                sc=$(find site/dist/play/sprites -type f -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
               fi
-              echo "- play sprites: ${sc:-0} files; play tracks: ${tc:-0} files"
-              trk=$(ls site/dist/play/tracks/*.mp3 2>/dev/null | head -n 1 || true)
-              if [ -n "$trk" ] && [ -s "$trk" ]; then
-                echo "- play track: \`$trk\` ($(wc -c < "$trk" | tr -d ' ') bytes)"
+              if [ -z "$tc" ]; then
+                tc=$(find site/dist/play/tracks -type f -name '*.mp3' 2>/dev/null | wc -l | tr -d ' ')
+              fi
+              echo "- play sprites: ${sc:-0} files (derived SPRITE_KEYS); play tracks: ${tc:-0} files (derived TRACK_KEYS)"
+              sample="${{ steps.play_index.outputs.sample }}"
+              sample_bytes="${{ steps.play_index.outputs.sample_bytes }}"
+              if [ -z "$sample" ] || [ ! -s "$sample" ]; then
+                sample=$(find site/dist/play/sprites site/dist/play/tracks -type f \( -name '*.png' -o -name '*.mp3' \) 2>/dev/null | head -n 1 || true)
+                if [ -n "$sample" ] && [ -s "$sample" ]; then
+                  sample_bytes=$(wc -c < "$sample" | tr -d ' ')
+                else
+                  sample=
+                fi
+              fi
+              if [ -n "$sample" ]; then
+                echo "- play sample: \`$sample\` (${sample_bytes} bytes)"
               else
-                echo "- play track: missing"
+                echo "- play sample: missing"
               fi
             elif [ -e site/dist/play/index.html ]; then
               echo "- play index: empty"

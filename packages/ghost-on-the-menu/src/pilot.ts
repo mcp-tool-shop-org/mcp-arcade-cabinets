@@ -10,7 +10,7 @@
 // it says when it spawns; the copy is never the model's.
 
 export interface BossView {
-  kind: 'whisperer' | 'menu' | 'doorman';
+  kind: 'whisperer' | 'menu' | 'doorman' | 'archivist';
   hp: 'high' | 'mid' | 'low';
   column: 'left' | 'center' | 'right';
   /** Which way the player is pushing. Reads the stick, never a fact. */

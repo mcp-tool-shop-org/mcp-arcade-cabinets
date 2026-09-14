@@ -64,5 +64,25 @@
         "cue": "knock"
       }
     ]
+  },
+  "archivist": {
+    "w": 80,
+    "h": 48,
+    "hp": 54,
+    "rage": 0.65,
+    "phases": [
+      {
+        "duration": 5,
+        "motion": "catalog",
+        "fire": "hold",
+        "cue": "open"
+      },
+      {
+        "duration": 7,
+        "motion": "drift",
+        "fire": "column",
+        "cue": "dump"
+      }
+    ]
   }
 }

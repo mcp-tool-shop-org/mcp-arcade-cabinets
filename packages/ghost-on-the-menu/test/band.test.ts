@@ -16,6 +16,7 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { playTape, type BotName } from '../src/play';
 import { prepassRound } from '../src/prepass';
+import { flavorAt } from '../src/shift';
 
 const DIR = path.resolve(__dirname, '../../../fixtures/tapes');
 
@@ -57,8 +58,8 @@ function fixtures(): Case[] {
 }
 
 const CASES = fixtures();
-/** Tapes on disk. The curve's thresholds are fractions of this roster. */
-const ROSTER = readdirSync(DIR).filter((f) => f.endsWith('.tape.json')).length;
+/** Unique disk tapes (no @seated / @live header variants). */
+const ROSTER = new Set(CASES.filter((c) => !c.variant).map((c) => c.name.replace(/@.*$/, ''))).size;
 
 function run(c: Case, bot: BotName) {
   return playTape(c.tape, { fixture: c.name, bot });
@@ -242,6 +243,15 @@ describe('the shift climb', () => {
     for (const c of byTier(2)) {
       expect(last(c, 'sweeper').leaked, c.name).toBe(false);
     }
+  });
+});
+
+describe('the shift flavor', () => {
+  it('gives each call a distinct role, not a hotter copy of the same loop', () => {
+    const roles = [0, 1, 2, 3].map((i) => flavorAt(i).role);
+    expect(new Set(roles).size).toBe(4);
+    expect(roles[2]).toBe('trough');
+    expect(roles[3]).toBe('peak');
   });
 });
 

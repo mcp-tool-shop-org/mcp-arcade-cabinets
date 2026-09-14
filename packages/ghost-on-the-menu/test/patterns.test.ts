@@ -256,20 +256,85 @@ describe('loadPatterns', () => {
     expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: pools');
   });
 
-  it('has three bosses with at least two phases and no fact keys', () => {
-    for (const kind of ['whisperer', 'menu', 'doorman'] as const) {
-      const boss = DEFAULT_PATTERNS.bosses[kind];
-      expect(boss.phases.length).toBeGreaterThanOrEqual(2);
+  it('gives every spawn class a unique formations.json box', () => {
+    const sprites = DEFAULT_PATTERNS.formations.sprites as Record<string, { w: number; h: number }>;
+    const shipped = ['init', 'ready', 'menu', 'grid', 'answer', 'obstacle', 'stall', 'error'];
+    const neu = ['probe', 'shelf', 'ledger'];
+    for (const cls of neu) expect(sprites[cls], cls).toBeDefined();
+    const extra = Object.keys(sprites).filter((k) => !shipped.includes(k));
+    expect(extra.sort()).toEqual(expect.arrayContaining([...neu].sort()));
+    expect(extra.length, extra.join(', ')).toBeLessThanOrEqual(4);
+    const byBox = new Map<string, string[]>();
+    for (const [cls, box] of Object.entries(sprites)) {
+      const sig = `${box.w}x${box.h}`;
+      byBox.set(sig, [...(byBox.get(sig) ?? []), cls]);
+    }
+    for (const cls of neu) {
+      const box = sprites[cls]!;
+      const sig = `${box.w}x${box.h}`;
+      expect(byBox.get(sig), `${cls} shares ${sig}`).toEqual([cls]);
+    }
+    const gridSig = `${sprites.grid!.w}x${sprites.grid!.h}`;
+    expect(
+      neu.some((c) => `${sprites[c]!.w}x${sprites[c]!.h}` === gridSig),
+      'new class shares the grid box',
+    ).toBe(false);
+  });
+
+  it('covers probe, shelf, and ledger in every rung pool', () => {
+    for (const cls of ['probe', 'shelf', 'ledger'] as const) {
+      for (const rung of DEFAULT_PATTERNS.ladder.rungs) {
+        const hit = DEFAULT_PATTERNS.paths.paths.some(
+          (p) =>
+            rung.pools.includes(p.id) &&
+            (p.classes as string[]).includes(cls) &&
+            p.tiers.includes(rung.tier),
+        );
+        expect(hit, `${cls} tier ${rung.tier}`).toBe(true);
+      }
+    }
+  });
+
+  it('has every boss kind with two phases, a vulnerable phase, unique fire+cue, and a body twice fodder', () => {
+    const bosses = DEFAULT_PATTERNS.bosses as Record<
+      string,
+      (typeof DEFAULT_PATTERNS.bosses)['whisperer']
+    >;
+    const kinds = Object.keys(bosses);
+    expect(kinds).toContain('archivist');
+    const fodder = DEFAULT_PATTERNS.formations.sprites.grid;
+    const windups: string[] = [];
+    const fireCue: string[] = [];
+    for (const kind of kinds) {
+      const boss = bosses[kind]!;
+      expect(boss.phases.length, kind).toBeGreaterThanOrEqual(2);
       expect(boss.rage).toBeGreaterThan(0);
       expect(boss.rage).toBeLessThanOrEqual(1);
-      expect(boss.phases.some((p) => p.motion !== 'slit' && p.motion !== 'hold')).toBe(true);
+      expect(
+        boss.phases.some((p) => p.motion !== 'slit' && p.motion !== 'hold'),
+        `${kind} vulnerable`,
+      ).toBe(true);
+      expect(boss.w * boss.h, kind).toBeGreaterThanOrEqual(2 * fodder.w * fodder.h);
       for (const phase of boss.phases) {
         expect(phase).not.toHaveProperty('lie');
         expect(phase).not.toHaveProperty('fact');
         expect(phase).not.toHaveProperty('revealed');
         expect(phase).not.toHaveProperty('followed');
       }
+      const first = boss.phases[0]!;
+      windups.push(`${first.motion}:${first.fire}:${first.cue}`);
+      fireCue.push(
+        boss.phases
+          .map((p) => `${p.fire}+${p.cue}`)
+          .sort()
+          .join(';'),
+      );
     }
+    expect(new Set(windups).size, windups.join(' | ')).toBe(kinds.length);
+    expect(new Set(fireCue).size, fireCue.join(' | ')).toBe(kinds.length);
+    const archivist = bosses.archivist!;
+    expect(archivist.w).toBeGreaterThanOrEqual(2 * fodder.w);
+    expect(archivist.h).toBeGreaterThanOrEqual(2 * fodder.h);
     const rawRage = clone();
     (rawRage.bosses as { whisperer: { rage: number } }).whisperer.rage = 0;
     expect(() => loadPatterns(rawRage)).toThrow('patterns/bosses.json: rage');
@@ -305,9 +370,10 @@ describe('loadPatterns', () => {
     for (const key of ['inspect', 'poison', 'rug', 'unlisted'] as const) {
       expect(voice.wave[key].length).toBeGreaterThanOrEqual(4);
     }
-    for (const key of ['whisperer', 'menu', 'doorman'] as const) {
-      expect(voice.boss[key].length).toBeGreaterThanOrEqual(4);
+    for (const key of Object.keys(voice.boss) as (keyof typeof voice.boss)[]) {
+      expect(voice.boss[key].length, String(key)).toBeGreaterThanOrEqual(4);
     }
+    expect(Object.keys(voice.boss)).toContain('archivist');
     expect(voice.end.length).toBeGreaterThanOrEqual(4);
     const forbidden =
       /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
@@ -362,6 +428,34 @@ describe('loadPatterns', () => {
     raw = clone();
     words(raw).odd![0] = words(raw).even![0]!;
     expect(() => loadPatterns(raw)).toThrow('patterns/shift.json: odd');
+  });
+
+  it('loads four flavors with unique roles and refuses a missing, repeated, or trough-as-peak role', () => {
+    const flavors = (
+      DEFAULT_PATTERNS.shift as typeof DEFAULT_PATTERNS.shift & {
+        flavors: { role: string }[];
+      }
+    ).flavors;
+    expect(flavors).toHaveLength(DEFAULT_PATTERNS.shift.length);
+    const roles = flavors.map((f) => f.role);
+    expect(new Set(roles).size).toBe(roles.length);
+    expect(roles[2]).toBe('trough');
+    expect(roles[3]).toBe('peak');
+    const missing = clone();
+    delete (missing.shift as Record<string, unknown>).flavors;
+    expect(() => loadPatterns(missing)).toThrow('patterns/shift.json: flavors');
+    const noRole = clone();
+    const noRoleFlavors = (noRole.shift as { flavors: Record<string, unknown>[] }).flavors;
+    delete noRoleFlavors[0]!.role;
+    expect(() => loadPatterns(noRole)).toThrow('patterns/shift.json: role');
+    const repeated = clone();
+    const repeatedFlavors = (repeated.shift as { flavors: { role: string }[] }).flavors;
+    repeatedFlavors[1]!.role = repeatedFlavors[0]!.role;
+    expect(() => loadPatterns(repeated)).toThrow('patterns/shift.json: role');
+    const troughPeak = clone();
+    const troughFlavors = (troughPeak.shift as { flavors: { role: string }[] }).flavors;
+    troughFlavors[2]!.role = 'peak';
+    expect(() => loadPatterns(troughPeak)).toThrow('patterns/shift.json: role');
   });
 
   it('loads parallelism rails: off on recorded, longer later, placed by seed', () => {

@@ -77,6 +77,10 @@ interface Meta {
   bossHoldUntil: number;
   /** Pixels the boss has slid toward the ship for a pending pilot `column`. */
   bossLean: number;
+  /** Peak extra archivist is on the field. Never a tape atom. */
+  midboss: boolean;
+  /** Flavor extras for this call have been seeded. */
+  flavorExtras: boolean;
 }
 
 const metaOf = new WeakMap<RoundState, Meta>();
@@ -245,14 +249,39 @@ export function bossKindFor(atom: string): Boss['kind'] | null {
   if (atom.startsWith('poison.')) return 'whisperer';
   if (atom.startsWith('temporal.')) return 'menu';
   if (atom.startsWith('protocol.')) return 'doorman';
+  if (atom.startsWith('inspect.')) return 'archivist';
   return null;
+}
+
+function lastBossWave(round: Round): number {
+  let last = -1;
+  for (let i = 0; i < round.waveBounds.length; i++) {
+    if (bossKindFor(round.waveBounds[i]!.atom)) last = i;
+  }
+  return last;
+}
+
+function isTrough(meta: Meta): boolean {
+  return meta.round.flavor?.role === 'trough';
+}
+
+function flavorAllows(meta: Meta, verb: string): boolean {
+  const verbs = meta.round.flavor?.verbs;
+  if (!verbs) return true;
+  return verbs.includes(verb);
+}
+
+function decoysMayFire(meta: Meta): boolean {
+  if (!paraSpec(meta).decoysFire) return false;
+  if (isTrough(meta)) return false;
+  return true;
 }
 
 function hittable(state: RoundState, enemy: Enemy): boolean {
   if (enemy.sprite === 'fog') return false;
   if (isDecoy(enemy)) {
     const meta = metaOf.get(state);
-    if (!meta || !paraSpec(meta).decoysFire) return false;
+    if (!meta || !decoysMayFire(meta)) return false;
   }
   return (
     enemy.alive &&
@@ -404,6 +433,7 @@ export function createRoundState(round: Round): RoundState {
       caughtY: PARKING_Y,
       fireAt: Number.POSITIVE_INFINITY,
       dieAt: 0,
+      ...(beat.sprite === 'ledger' ? { hp: 3 } : {}),
     };
     diveIndex.set(enemy, i);
     enemies.push(enemy);
@@ -465,6 +495,8 @@ export function createRoundState(round: Round): RoundState {
     asideAt: 6,
     bossHoldUntil: 0,
     bossLean: 0,
+    midboss: false,
+    flavorExtras: false,
   };
   metaOf.set(state, meta);
   attachPatterns(state, patterns);
@@ -620,7 +652,8 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
   }
   state.boss = null;
   state.bossIntent = null;
-  meta.bossDeadFor = atom;
+  meta.bossDeadFor = meta.midboss ? 'flavor:archivist' : atom;
+  meta.midboss = false;
   state.bossKills += 1;
   state.bossDownT = state.t;
 }
@@ -739,6 +772,7 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
         caughtY: PARKING_Y,
         fireAt: Number.POSITIVE_INFINITY,
         dieAt: 0,
+        ...(host.hp !== undefined ? { hp: host.hp } : {}),
       };
       hoverHome.set(decoy, decoy.x);
       diveIndex.set(decoy, ((diveIndex.get(host) ?? 0) + 1) * extras + i);
@@ -746,6 +780,69 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
     }
   }
   if (born.length > 0) state.enemies.push(...born);
+}
+
+function spawnFlavorEnemy(
+  state: RoundState,
+  meta: Meta,
+  sprite: 'probe' | 'shelf' | 'ledger',
+  salt: number,
+): void {
+  const box = spriteBox(sprite, meta.patterns);
+  const def = pickPath(meta.patterns, meta.round.tier, sprite, meta.round.seed, salt);
+  const path = scalePath(def);
+  const start = path[0] ?? { x: FIELD.width / 2, y: 0 };
+  const hover = path[path.length - 1] ?? { x: start.x, y: 80 };
+  const enemy: Enemy = {
+    id: `flavor:${sprite}:${salt}`,
+    x: start.x - box.w / 2,
+    y: start.y - box.h / 2,
+    w: box.w,
+    h: box.h,
+    vx: 0,
+    vy: 0,
+    hoverY: hover.y,
+    sprite,
+    lie: false,
+    revealed: false,
+    alive: true,
+    tEnter: state.t,
+    members: 1,
+    mode: 'enter',
+    pathT: 0,
+    path,
+    caughtY: PARKING_Y,
+    fireAt: Number.POSITIVE_INFINITY,
+    dieAt: 0,
+    ...(sprite === 'ledger' ? { hp: 3 } : {}),
+  };
+  diveIndex.set(enemy, salt);
+  state.enemies.push(enemy);
+}
+
+/** Honest extras from the call's verbs. Never a lie. One new hull per beat. */
+function spawnFlavorExtras(state: RoundState, meta: Meta): void {
+  if (meta.flavorExtras) return;
+  if (meta.waveHold > 0) return;
+  const flavor = meta.round.flavor;
+  if (!flavor || flavor.role === 'trough') {
+    meta.flavorExtras = true;
+    return;
+  }
+  meta.flavorExtras = true;
+  const want = flavor.verbs.includes('probe')
+    ? ('probe' as const)
+    : flavor.verbs.includes('shelf') || flavor.verbs.includes('bank')
+      ? ('shelf' as const)
+      : null;
+  if (!want) return;
+  if (
+    state.enemies.some((e) => e.sprite === want && e.id.startsWith('flavor:')) ||
+    meta.round.beats.some((b) => b.sprite === want && b.id.startsWith('flavor:'))
+  ) {
+    return;
+  }
+  spawnFlavorEnemy(state, meta, want, want === 'probe' ? 11 : 13);
 }
 
 function despawnDecoys(state: RoundState): void {
@@ -830,9 +927,33 @@ function catchCaption(state: RoundState, meta: Meta | undefined, enemy: Enemy): 
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (!state.boss || !state.boss.alive) state.bossSay = null;
-  if (meta.waveHold > 0) {
+  const peakMid = Boolean(meta.round.flavor?.midboss);
+  const last = lastBossWave(meta.round);
+  const onLast = last >= 0 && state.wave >= last;
+  if (peakMid && onLast && meta.midboss) {
+    // Despawn the extra so the tape last-boss can take the field.
     state.boss = null;
     state.bossIntent = null;
+    meta.midboss = false;
+  }
+  if (peakMid && !onLast) {
+    if (meta.waveHold > 0 && !meta.midboss) {
+      state.bossIntent = null;
+      return;
+    }
+    const def = meta.patterns.bosses.archivist;
+    if (!state.boss || state.boss.kind !== 'archivist' || !state.boss.alive) {
+      spawnBoss(state, meta, 'archivist', def);
+      meta.midboss = true;
+    }
+    driveBoss(state, meta, dt, def, 'flavor:archivist');
+    return;
+  }
+  if (meta.waveHold > 0) {
+    if (!meta.midboss) {
+      state.boss = null;
+      state.bossIntent = null;
+    }
     return;
   }
   const bound = meta.round.waveBounds[state.wave];
@@ -858,14 +979,25 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     return;
   }
   const def = meta.patterns.bosses[kind];
+  // Inspect closer (archivist) is a shift-flavor landmark. Picker-alone
+  // inspect waves keep the old empty hover so the tape-alone band holds.
+  if (kind === 'archivist' && !meta.round.flavor) {
+    state.boss = null;
+    state.bossIntent = null;
+    return;
+  }
   if (!state.boss || state.boss.kind !== kind || !state.boss.alive) {
     spawnBoss(state, meta, kind, def);
     if (kind === 'whisperer') emitWaveGrids(state, meta);
   }
+  driveBoss(state, meta, dt, def, bound.atom);
+}
+
+function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom: string): void {
   const boss = state.boss;
   if (!boss || !boss.alive) return;
   if (boss.hp <= 0) {
-    killBoss(state, meta, bound.atom);
+    killBoss(state, meta, atom);
     return;
   }
   landSay(state);
@@ -917,6 +1049,11 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     boss.w = SLIT_W + (meta.bossBaseW - SLIT_W) * u;
     boss.h = meta.bossBaseH;
     boss.x = meta.bossOriginX + (meta.bossBaseW - boss.w) / 2;
+  } else if (p.motion === 'catalog') {
+    const open = 0.55 + 0.45 * u;
+    boss.w = meta.bossBaseW * open;
+    boss.h = meta.bossBaseH;
+    boss.x = meta.bossOriginX + (meta.bossBaseW - boss.w) / 2;
   } else {
     boss.w = meta.bossBaseW;
     boss.h = meta.bossBaseH;
@@ -935,7 +1072,14 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   // empties the lamps. Keep the body hittable; do not spawn new shots after t1.
   // Drop a late verb so it cannot arm the next wave's first fire. A pending
   // column still leans while t < bossFireAt.
-  if (state.t >= bound.t1) {
+  const bound = meta.round.waveBounds[state.wave];
+  const last = lastBossWave(meta.round);
+  const fireUntil = meta.midboss
+    ? last >= 0
+      ? (meta.round.waveBounds[last]?.t0 ?? state.duration)
+      : state.duration
+    : (bound?.t1 ?? state.duration);
+  if (state.t >= fireUntil) {
     state.bossIntent = null;
     return;
   }
@@ -949,8 +1093,24 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (intent !== null) state.bossIntent = null;
   const seatedVerb = seatedFire(intent);
   const seated = seatedVerb !== null;
-  const fire = seatedVerb ?? p.fire;
-  if (p.cue === 'emit-grid' || fire === 'emit-grid') emitWaveGrids(state, meta);
+  let fire = seatedVerb ?? p.fire;
+  if (isTrough(meta)) {
+    // Seat proposes; sim disposes: trough is hold-heavy.
+    if (
+      fire === 'spread' ||
+      fire === 'column' ||
+      fire === 'drop-fog' ||
+      fire === 'fog' ||
+      fire === 'plate' ||
+      fire === 'plate-out' ||
+      fire === 'emit-grid'
+    ) {
+      fire = 'hold';
+    }
+  }
+  if (!isTrough(meta) && (p.cue === 'emit-grid' || fire === 'emit-grid')) {
+    emitWaveGrids(state, meta);
+  }
   if (fire === 'drop-fog' || fire === 'fog') {
     spawnFog(state, cx, by, 40 * meta.rung.fog);
   } else if (seated && fire === 'spread') {
@@ -976,7 +1136,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     // A pilot hold is a held breath: no shot this beat, and the boss stays put.
     if (seated) meta.bossHoldUntil = state.t + wait;
   }
-  if (meta.rung.hazards) {
+  if (meta.rung.hazards && !isTrough(meta)) {
     if (boss.kind === 'whisperer' && p.motion === 'pulse') {
       spawnHazard(state, 'echo', cx, by, 0, 75);
     }
@@ -1010,9 +1170,19 @@ function stepFog(state: RoundState, dt: number): void {
 
 function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
   if (!meta) return;
-  if (enemy.sprite !== 'grid') return;
+  if (enemy.sprite !== 'grid' && enemy.sprite !== 'probe') return;
+  if (isTrough(meta)) return;
+  if (enemy.sprite === 'grid' && meta.round.flavor && !flavorAllows(meta, 'dive')) return;
+  if (
+    enemy.sprite === 'probe' &&
+    meta.round.flavor &&
+    !flavorAllows(meta, 'probe') &&
+    !flavorAllows(meta, 'dive')
+  ) {
+    return;
+  }
   // Copies that cannot fire and cannot be shot must not dive into the ship.
-  if (isDecoy(enemy) && !paraSpec(meta).decoysFire) return;
+  if (isDecoy(enemy) && !decoysMayFire(meta)) return;
   const spec = meta.patterns.fire.tiers[fireKey(meta.round.tier)].dive;
   if (!spec) return;
   let at = nextDive.get(enemy);
@@ -1077,8 +1247,14 @@ function takeLamp(state: RoundState, grace: number): void {
 
 function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   if (!meta.rung.formationFires) return;
+  if (isTrough(meta)) return;
+  if (enemy.sprite === 'ledger') {
+    maybeLedgerDump(state, meta, enemy);
+    return;
+  }
   if (enemy.sprite !== 'grid' && enemy.sprite !== 'menu') return;
-  if (isDecoy(enemy) && !paraSpec(meta).decoysFire) return;
+  if (meta.round.flavor && !flavorAllows(meta, 'rain')) return;
+  if (isDecoy(enemy) && !decoysMayFire(meta)) return;
   const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].formation;
   if (!rhythm) return;
   if (enemy.mode !== 'hover') return;
@@ -1087,6 +1263,23 @@ function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   if (state.t < enemy.fireAt) return;
   enemy.fireAt = state.t + period;
   fireSpread(state.enemyShots, enemy.x + enemy.w / 2, enemy.y + enemy.h, rhythm);
+}
+
+/** Ledger telegraphs, then dumps a column/spread. Reuses formation fire, not a new LLM. */
+function maybeLedgerDump(state: RoundState, meta: Meta, enemy: Enemy): void {
+  if (isTrough(meta)) return;
+  if (enemy.mode !== 'hover') return;
+  const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].formation;
+  if (!rhythm) return;
+  const period = rhythm.period * 1.6 * fireScale(state, meta);
+  if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + period;
+  if (state.t < enemy.fireAt) return;
+  enemy.fireAt = state.t + period;
+  const cx = enemy.x + enemy.w / 2;
+  const by = enemy.y + enemy.h;
+  const boss = meta.patterns.fire.tiers[fireKey(meta.round.tier)].boss;
+  if (boss.aim) fireAimed(state.enemyShots, cx, by, rhythm, state.player);
+  else fireSpread(state.enemyShots, cx, by, rhythm);
 }
 
 /**
@@ -1130,6 +1323,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     meta.waveHold = Math.max(0, meta.waveHold - dt);
     maybeAside(state, meta);
     stepParallelism(state, meta);
+    spawnFlavorExtras(state, meta);
   }
 
   if (state.lives <= 0) {
@@ -1220,7 +1414,9 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         home = enemy.x;
         hoverHome.set(enemy, home);
       }
-      enemy.x = wrapX(home + Math.sin(state.t * 1.6 + home * 0.02) * 6, enemy.w);
+      if (enemy.sprite !== 'shelf') {
+        enemy.x = wrapX(home + Math.sin(state.t * 1.6 + home * 0.02) * 6, enemy.w);
+      }
       maybeStartDive(state, meta, enemy);
     }
     if (meta) stepFormationFire(state, meta, enemy);
@@ -1234,8 +1430,13 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   stepDrops(state, meta, dt);
 
   for (const enemy of state.enemies) {
-    if (enemy.mode !== 'dive' || !enemy.alive) continue;
-    if (overlaps(enemy, state.player)) takeLamp(state, meta?.rung.grace ?? player.grace);
+    if (!enemy.alive || state.t < enemy.tEnter) continue;
+    if (enemy.mode === 'caught' || enemy.mode === 'dying' || enemy.mode === 'exit') continue;
+    if (enemy.mode === 'dive' && overlaps(enemy, state.player)) {
+      takeLamp(state, meta?.rung.grace ?? player.grace);
+    } else if (enemy.sprite === 'shelf' && overlaps(enemy, state.player)) {
+      takeLamp(state, meta?.rung.grace ?? player.grace);
+    }
   }
 
   const boss = state.boss;
@@ -1264,6 +1465,11 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       if (!hittable(state, enemy)) continue;
       if (!overlaps(shot, enemy)) continue;
       shot.dead = true;
+      const hp = enemy.hp ?? 1;
+      if (hp > 1) {
+        enemy.hp = hp - 1;
+        break;
+      }
       revealOnHit(enemy);
       if (enemy.lie && enemy.revealed) {
         if (!state.cleared.includes(enemy.id)) state.cleared.push(enemy.id);

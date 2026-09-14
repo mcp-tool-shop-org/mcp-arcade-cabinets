@@ -67,7 +67,7 @@ describe('sprite art contract', () => {
       expect(files.has(key), key).toBe(true);
       expect(existsSync(path.join(dir, `${key}.png`)), key).toBe(true);
     }
-    const classes: SpriteClass[] = [
+    const classes = [
       'init',
       'ready',
       'menu',
@@ -77,20 +77,36 @@ describe('sprite art contract', () => {
       'obstacle',
       'stall',
       'error',
+      'probe',
+      'shelf',
+      'ledger',
     ];
     expect(Object.keys(SPRITE_FILL).sort()).toEqual([...classes].sort());
+    for (const key of [
+      'probe',
+      'shelf',
+      'ledger',
+      'boss-archivist',
+      'boss-archivist-open',
+    ] as const) {
+      expect((SPRITE_KEYS as readonly string[]).includes(key), key).toBe(true);
+      expect(existsSync(path.join(dir, `${key}.png`)), key).toBe(true);
+    }
   });
 });
 
 describe('renderRound', () => {
   it('draws a lie and an honest sprite identically before the hit (G7)', () => {
-    const lie = createRoundState(roundOf([beat({ id: 'a', lie: true })]));
-    const honest = createRoundState(roundOf([beat({ id: 'a', lie: false })]));
-    const a = recordingCtx();
-    const b = recordingCtx();
-    renderRound(a, lie);
-    renderRound(b, honest);
-    expect(a.calls).toEqual(b.calls);
+    const classes = Object.keys(SPRITE_FILL) as SpriteClass[];
+    for (const sprite of classes) {
+      const lie = createRoundState(roundOf([beat({ id: 'a', lie: true, sprite })]));
+      const honest = createRoundState(roundOf([beat({ id: 'a', lie: false, sprite })]));
+      const a = recordingCtx();
+      const b = recordingCtx();
+      renderRound(a, lie);
+      renderRound(b, honest);
+      expect(a.calls, sprite).toEqual(b.calls);
+    }
   });
 
   it('draws the trophy in the reveal paint after the hit and never a cleared line', () => {

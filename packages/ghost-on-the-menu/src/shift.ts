@@ -14,6 +14,7 @@
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { DEFAULT_PATTERNS, type PatternSet } from './patterns';
+import type { Flavor } from './types';
 
 export interface ShiftDraw {
   /** Roster names in play order. */
@@ -74,6 +75,17 @@ export function rosterFits(roster: readonly string[], set: PatternSet = DEFAULT_
 export function climbAt(index: number, set: PatternSet = DEFAULT_PATTERNS): number {
   const climb = set.shift.climb;
   return climb[Math.min(climb.length - 1, Math.max(0, index))] ?? 0;
+}
+
+/** Authored flavor at this call index. Same index, same flavor; never a fact. */
+export function flavorAt(index: number, set: PatternSet = DEFAULT_PATTERNS): Flavor {
+  const flavors = set.shift.flavors;
+  return flavors[Math.min(flavors.length - 1, Math.max(0, index))] ?? flavors[0]!;
+}
+
+/** Telegraph words for the call card. No climb number, no digit. */
+export function flavorTelegraph(index: number, set: PatternSet = DEFAULT_PATTERNS): string {
+  return flavorAt(index, set).telegraph;
 }
 
 const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth'];
@@ -209,13 +221,19 @@ export function decodeShift(
 /**
  * The card between calls: header words only (the server, the policy, the
  * tools the agent was asked to run), never a fact, a count or a digit (G10).
+ * An index appends that call's flavor telegraph; picker-alone omits it.
  */
-export function shiftCard(tape: Tape): string[] {
+export function shiftCard(
+  tape: Tape,
+  index?: number,
+  set: PatternSet = DEFAULT_PATTERNS,
+): string[] {
   // A tool name that carries a digit stays off the card rather than being mangled.
   const tools = [
     ...new Set(tape.atoms.map((a) => a.task_tool).filter((t): t is string => !!t && !/\d/.test(t))),
   ];
   const lines = [`server ${tape.server_name ?? tape.target_kind}`, `policy ${tape.agent_policy}`];
   if (tools.length) lines.push(`asked to run ${tools.slice(0, 4).join(', ')}`);
+  if (index !== undefined) lines.push(flavorTelegraph(index, set));
   return lines.map((l) => l.replace(/\d/g, ''));
 }

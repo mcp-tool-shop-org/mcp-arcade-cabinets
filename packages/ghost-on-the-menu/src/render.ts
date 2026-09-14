@@ -6,6 +6,7 @@ import {
   type HazardKind,
   type RoundState,
   type SpriteClass,
+  type WaveKind,
 } from './types';
 
 export const SPRITE_FILL: Record<SpriteClass, string> = {
@@ -18,6 +19,9 @@ export const SPRITE_FILL: Record<SpriteClass, string> = {
   obstacle: '#8a6a3a',
   stall: '#5a5a5a',
   error: '#8a4a4a',
+  probe: '#6a8aaa',
+  shelf: '#5a4a6a',
+  ledger: '#2a5a5a',
 };
 
 export const REVEALED_FILL = '#e8a04a';
@@ -37,15 +41,44 @@ const FURNITURE = '#c8d0dc';
 /** Furniture line budget: 16px inset on each side of the 480 field. */
 const TEXT_MAX = FIELD.width - 32;
 
-export const BOSS_FILL: Record<Boss['kind'], string> = {
+/** Combat hulls the sim may name; SPRITE_FILL stays the handshake set. */
+export const COMBAT_FILL = {
+  probe: '#6a8aaa',
+  shelf: '#5a4a6a',
+  ledger: '#2a5a5a',
+} as const;
+export type CombatClass = keyof typeof COMBAT_FILL;
+
+export const BOSS_FILL: Record<Boss['kind'] | 'archivist', string> = {
   whisperer: '#5a5a7a',
   menu: '#3a8a8a',
   doorman: '#a08040',
+  archivist: '#3d5a80',
+};
+
+/**
+ * Dark rooms, one per wave or named boss. Not one #101018 box for every
+ * experiment. Bezel furniture keeps FIELD_FILL.
+ */
+export type FieldKind = WaveKind | Boss['kind'] | 'archivist';
+export const WAVE_FIELD: Record<FieldKind, string> = {
+  inspect: '#10141c',
+  poison: '#16121a',
+  rug: '#0c1414',
+  unlisted: '#18140c',
+  breather: '#12121a',
+  whisperer: '#1a1822',
+  menu: '#0a1818',
+  doorman: '#1c160a',
+  archivist: '#0e1820',
 };
 
 /** Pre-hit colour depends only on sprite class, never on `lie`. */
-export function fillFor(sprite: SpriteClass, revealed: boolean): string {
-  return revealed ? REVEALED_FILL : SPRITE_FILL[sprite];
+export function fillFor(sprite: SpriteClass | CombatClass | string, revealed: boolean): string {
+  if (revealed) return REVEALED_FILL;
+  if (sprite in COMBAT_FILL) return COMBAT_FILL[sprite as CombatClass];
+  if (sprite in SPRITE_FILL) return SPRITE_FILL[sprite as SpriteClass];
+  return SPRITE_FILL.grid;
 }
 
 /** Every sprite key the renderer may ask a DrawContext for. Art files carry these names. */
@@ -71,6 +104,11 @@ export const SPRITE_KEYS = [
   'boss-doorman-plate-gone',
   'drop-lamp',
   'drop-spread',
+  'probe',
+  'shelf',
+  'ledger',
+  'boss-archivist',
+  'boss-archivist-open',
 ] as const;
 export type SpriteKey = (typeof SPRITE_KEYS)[number];
 
@@ -87,19 +125,28 @@ const SPRITE_NATIVE: Partial<Record<SpriteKey, { w: number; h: number }>> = {
   'drop-lamp': { w: 73, h: 112 },
   'drop-spread': { w: 112, h: 97 },
   'hazard-band': { w: 111, h: 26 },
+  probe: { w: 35, h: 79 },
+  shelf: { w: 167, h: 33 },
+  ledger: { w: 93, h: 57 },
+  'boss-archivist': { w: 127, h: 91 },
+  'boss-archivist-open': { w: 181, h: 91 },
 };
 
 /** The boss frame is a function of the boss rect and plate the sim set; never of a fact. */
 export function bossFrame(b: Boss): SpriteKey {
-  switch (b.kind) {
+  const kind = b.kind as Boss['kind'] | 'archivist';
+  switch (kind) {
     case 'menu':
       return b.w < SLIT_FRAME_W ? 'boss-menu-slit' : 'boss-menu-open';
     case 'doorman':
       return b.plate ? 'boss-doorman-plate-out' : 'boss-doorman-plate-gone';
     case 'whisperer':
       return 'boss-whisperer';
+    case 'archivist':
+      // Idle catalog while unhurt; open-drawer once wounded or in a later phase.
+      return b.hp < b.maxHp || b.phase > 0 ? 'boss-archivist-open' : 'boss-archivist';
     default: {
-      const _exhaustive: never = b.kind;
+      const _exhaustive: never = kind;
       return _exhaustive;
     }
   }
@@ -120,6 +167,8 @@ export interface RenderOpts {
   furniture?: readonly string[];
   /** Wall clock in seconds for the end-scene parade; the round clock is frozen there. */
   clock?: number;
+  /** Same wave/boss key the shell ticks into audio; picks WAVE_FIELD. */
+  bedKind?: string;
 }
 
 const INTENSITY: Record<Intensity, { shake: number; pop: number; halo: number }> = {
@@ -239,9 +288,13 @@ function drawFormation(rect: Rect, sprite: Sprite, enemy: Enemy): void {
   const n = Math.max(1, enemy.members);
   const gap = n > 1 ? 2 : 0;
   const bw = (enemy.w - gap * (n - 1)) / n;
+  const native = SPRITE_NATIVE[enemy.sprite as SpriteKey];
   for (let i = 0; i < n; i++) {
     const x = enemy.x + i * (bw + gap);
-    if (!sprite(enemy.sprite, x, enemy.y, bw, enemy.h)) rect(x, enemy.y, bw, enemy.h);
+    const dest = nativeDest({ x, y: enemy.y, w: bw, h: enemy.h }, native);
+    if (!sprite(enemy.sprite as SpriteKey, dest.x, dest.y, dest.w, dest.h)) {
+      rect(x, enemy.y, bw, enemy.h);
+    }
   }
 }
 
@@ -286,7 +339,8 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   const sprite: Sprite = (key, x, y, w, h) =>
     ctx.drawSprite ? ctx.drawSprite(key, x + ox, y + oy, w, h) : false;
 
-  ctx.fillStyle = FIELD_FILL;
+  const room = (opts.bedKind && WAVE_FIELD[opts.bedKind as FieldKind]) || FIELD_FILL;
+  ctx.fillStyle = room;
   ctx.fillRect(0, 0, FIELD.width, FIELD.height);
 
   if (state.fog && state.fog.alive) {
@@ -303,15 +357,15 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     const dest = bossSpriteRect(b);
     const drew = sprite(bossFrame(b), dest.x, dest.y, dest.w, dest.h);
     if (!drew) {
-      ctx.fillStyle = BOSS_FILL[b.kind];
+      ctx.fillStyle = BOSS_FILL[b.kind as keyof typeof BOSS_FILL];
       rect(b.x, b.y, b.w, b.h);
       // A darker band so a boss reads as a wall, not a large grid sprite.
-      ctx.fillStyle = FIELD_FILL;
+      ctx.fillStyle = room;
       const band = Math.max(2, Math.floor(b.h / 5));
       if (b.w > 8 && b.h > band * 3) rect(b.x + 4, b.y + b.h - band * 2, b.w - 8, band);
       // The plate is part of the Doorman's sprite frame; as a rectangle it is drawn here.
       if (b.plate) {
-        ctx.fillStyle = BOSS_FILL[b.kind];
+        ctx.fillStyle = BOSS_FILL[b.kind as keyof typeof BOSS_FILL];
         rect(b.plate.x, b.plate.y, b.plate.w, b.plate.h);
       }
     }

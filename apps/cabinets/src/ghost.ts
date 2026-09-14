@@ -84,6 +84,8 @@ export const DIFFICULTIES: {
 export interface MountExtra {
   /** The shift's climb for this call, 0..1; the parallelism levers read it. */
   climb?: number;
+  /** Call index 0..3; the sim reads flavor from it when shift.ts has flavors. */
+  flavorIndex?: number;
   /** The difficulty the shift was drawn at. */
   difficulty?: Difficulty;
   /** True in a shift: the code names the difficulty, so the select is fixed. */
@@ -678,8 +680,20 @@ export function mountGhost(
 
   const tierFor = (): 0 | 1 | 2 | 3 | undefined =>
     DIFFICULTIES.find((d) => d.value === difficulty.value)?.tier;
-  const newRound = () =>
-    prepassRound(tape, { seconds: DEFAULT_SECONDS, tier: tierFor(), climb: extra.climb ?? 0 });
+  const newRound = () => {
+    const opts: {
+      seconds: number;
+      tier: 0 | 1 | 2 | 3 | undefined;
+      climb: number;
+      flavorIndex?: number;
+    } = {
+      seconds: DEFAULT_SECONDS,
+      tier: tierFor(),
+      climb: extra.climb ?? 0,
+    };
+    if (extra.flavorIndex !== undefined) opts.flavorIndex = extra.flavorIndex;
+    return prepassRound(tape, opts);
+  };
   let round: Round = newRound();
   let state: RoundState = createRoundState(round);
   // The opening bed follows the round's seed; a bed already playing keeps its run.
@@ -981,13 +995,13 @@ export function mountGhost(
     last = now;
     state = stepRound(state, input, dt);
     const next = snapshot(state);
+    // Named boss bed while a boss is up; otherwise the wave kind,
+    // including 'breather' in the t1→next-t0 gap. Same key ticks audio
+    // and paints WAVE_FIELD.
+    const bedKind = state.boss && state.boss.alive ? state.boss.kind : waveKindAt(round, state.t);
     if (audio) {
       for (const c of cues(prev, next)) audio.play(c);
       if (!state.scene) {
-        // Named boss bed while a boss is up; otherwise the wave kind,
-        // including 'breather' in the t1→next-t0 gap.
-        const bedKind =
-          state.boss && state.boss.alive ? state.boss.kind : waveKindAt(round, state.t);
         audio.tick(state.t, bedKind, state.parallelism);
         musicEnded = false;
       } else if (!musicEnded) {
@@ -1027,13 +1041,20 @@ export function mountGhost(
         // Drop spawn when a seat speak is already asked for this boss.
         const seatOwns = ollama.checked && sayBusy && sayKey === spawnKey;
         if (!seatOwns) {
-          voicer.job({
-            text: state.caption.line,
-            kind: state.boss.kind,
-            voice: DEFAULT_PERSONAS.boss[state.boss.kind].voice,
-            maxGap: DEFAULT_PERSONAS.voice.maxGap,
-            at: state.t,
-          });
+          const personas = DEFAULT_PERSONAS.boss as Record<
+            string,
+            (typeof DEFAULT_PERSONAS.boss)[keyof typeof DEFAULT_PERSONAS.boss] | undefined
+          >;
+          const persona = personas[state.boss.kind];
+          if (persona) {
+            voicer.job({
+              text: state.caption.line,
+              kind: state.boss.kind as 'whisperer' | 'menu' | 'doorman',
+              voice: persona.voice,
+              maxGap: DEFAULT_PERSONAS.voice.maxGap,
+              at: state.t,
+            });
+          }
         }
       }
     }
@@ -1055,6 +1076,7 @@ export function mountGhost(
       shake: shake.checked,
       furniture,
       clock: now / 1000,
+      bedKind,
     });
     if (state.scene) {
       // A frame, so the end reads as a scene and not a pause.

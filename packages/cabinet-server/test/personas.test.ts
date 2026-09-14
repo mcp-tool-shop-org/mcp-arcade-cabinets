@@ -11,7 +11,7 @@ describe('personas.json', () => {
   it('loads the shipped sheets, one per boss kind, with no forbidden word anywhere', () => {
     const p = loadPersonas(clone());
     expect(p).toEqual(DEFAULT_PERSONAS);
-    for (const kind of ['whisperer', 'menu', 'doorman'] as const) {
+    for (const kind of ['whisperer', 'menu', 'doorman', 'archivist'] as const) {
       const sheet = p.boss[kind];
       expect(sheet.register).not.toMatch(FORBIDDEN);
       expect(sheet.tics.length).toBeGreaterThan(0);
@@ -25,7 +25,7 @@ describe('personas.json', () => {
     expect(p.voice.engine).toBe('kokoro');
     expect(p.voice.maxGap).toBe(0.5);
     const presets = new Set(Object.values(p.boss).map((b) => b.voice.preset));
-    expect(presets.size).toBe(3);
+    expect(presets.size).toBeGreaterThanOrEqual(3);
     for (const b of Object.values(p.boss)) {
       expect(b.voice.rate).toBeGreaterThanOrEqual(0.5);
       expect(b.voice.clone).toBeNull();

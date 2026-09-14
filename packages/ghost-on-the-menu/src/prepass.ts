@@ -1,6 +1,7 @@
 import { factFor, type Tape, type TapeRow } from '@mcp-arcade-cabinets/tape-core';
 
 import { attachPatterns, DEFAULT_PATTERNS, deriveTier, type WaveTier } from './patterns';
+import { flavorAt } from './shift';
 import {
   FIELD,
   VISIBLE_MAX,
@@ -175,10 +176,11 @@ function protocolRank(sprite: Beat['sprite']): number {
   if (sprite === 'init') return 0;
   if (sprite === 'ready') return 1;
   if (sprite === 'menu') return 2;
-  if (sprite === 'grid') return 3;
+  if (sprite === 'grid' || sprite === 'probe' || sprite === 'ledger') return 3;
   if (sprite === 'answer') return 4;
   if (sprite === 'error') return 5;
-  return 6;
+  if (sprite === 'shelf') return 6;
+  return 7;
 }
 
 /** Handshake, then menu, then calls, then the rest. Stable within a class. */
@@ -346,6 +348,31 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = {}): Round {
     };
   });
   const beats = capVisible(raw, VISIBLE_MAX);
+  if (opts.flavorIndex !== undefined) {
+    const flavor = flavorAt(opts.flavorIndex, patterns);
+    const extraSprite = flavor.verbs.includes('probe')
+      ? ('probe' as const)
+      : flavor.verbs.includes('shelf') || flavor.verbs.includes('bank')
+        ? ('shelf' as const)
+        : null;
+    if (extraSprite && flavor.role !== 'trough') {
+      const host = beats[0];
+      beats.push({
+        id: `flavor:${extraSprite}:0`,
+        t: 0,
+        x: columnX(seed, beats.length, cols, margin),
+        sprite: extraSprite,
+        lie: false,
+        members: 1,
+        source: {
+          atom: host?.source.atom ?? tape.atoms[0]?.id ?? 'inspect.tools_list',
+          method: extraSprite,
+          note: extraSprite,
+          index: beats.length,
+        },
+      });
+    }
+  }
   const wave = patterns.waves.tiers[String(tier) as '0' | '1' | '2' | '3'];
   const waveBounds = placeRhythm(beats, tape.atoms, wave);
   let duration = clamp(
@@ -356,6 +383,9 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = {}): Round {
   duration = fitSpan(beats, waveBounds, duration, wave.tail, wave.min, wave.max);
   const climb = Math.min(1, Math.max(0, opts.climb ?? 0));
   const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier, climb };
+  if (opts.flavorIndex !== undefined) {
+    round.flavor = flavorAt(opts.flavorIndex, patterns);
+  }
   attachPatterns(round, patterns);
   return round;
 }

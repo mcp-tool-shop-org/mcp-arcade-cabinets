@@ -3,7 +3,29 @@ import type { PilotIntent } from './pilot';
 
 /** Decoration / enemy class. Lies share a class with their honest counterpart. */
 export type SpriteClass =
-  'init' | 'ready' | 'menu' | 'grid' | 'answer' | 'fog' | 'obstacle' | 'stall' | 'error';
+  | 'init'
+  | 'ready'
+  | 'menu'
+  | 'grid'
+  | 'answer'
+  | 'fog'
+  | 'obstacle'
+  | 'stall'
+  | 'error'
+  | 'probe'
+  | 'shelf'
+  | 'ledger';
+
+/** Authored call role. Index-aligned with shift.json climb; never a fact. */
+export type FlavorRole = 'pressure' | 'area-deny' | 'trough' | 'peak';
+
+export interface Flavor {
+  role: FlavorRole;
+  biome: string;
+  verbs: string[];
+  midboss: boolean;
+  telegraph: string;
+}
 
 export type EnemyMode = 'enter' | 'hover' | 'dive' | 'caught' | 'dying' | 'exit';
 
@@ -59,6 +81,8 @@ export interface Round {
   tier: 0 | 1 | 2 | 3;
   /** How far up a shift's climb this round sits, 0 alone, 1 on the last call. Absent is 0. */
   climb?: number;
+  /** Authored call flavor. Absent on picker-alone (no flavorIndex). */
+  flavor?: Flavor;
 }
 
 export interface Player {
@@ -99,6 +123,8 @@ export interface Enemy {
   caughtY: number;
   fireAt: number;
   dieAt: number;
+  /** Hits left. Absent on one-shot popcorn (default 1). Ledger ships at 3. */
+  hp?: number;
 }
 
 export interface FogBank {
@@ -111,7 +137,7 @@ export interface FogBank {
 }
 
 export interface Boss {
-  kind: 'whisperer' | 'menu' | 'doorman';
+  kind: 'whisperer' | 'menu' | 'doorman' | 'archivist';
   x: number;
   y: number;
   w: number;
@@ -274,4 +300,6 @@ export interface PrepassOpts {
   tier?: 0 | 1 | 2 | 3 | undefined;
   /** The shift's climb for this call, 0..1; the parallelism levers read it. */
   climb?: number;
+  /** Index into shift.json flavors. Absent is picker-alone: no extras. */
+  flavorIndex?: number;
 }

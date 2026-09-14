@@ -42,6 +42,8 @@ export interface PlayArgs {
   immortal?: boolean;
   /** The shift's climb, 0..1; the band measures the last call at 1. */
   climb?: number;
+  /** Index into shift.json flavors. Absent is picker-alone: no extras. */
+  flavorIndex?: number;
 }
 
 export interface Transcript {
@@ -269,6 +271,7 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
     ...(args.seat ? { seat: args.seat } : {}),
     ...(args.immortal ? { immortal: true } : {}),
     ...(args.climb !== undefined ? { climb: args.climb } : {}),
+    ...(args.flavorIndex !== undefined ? { flavorIndex: args.flavorIndex } : {}),
   });
 }
 
@@ -282,12 +285,14 @@ export function playTape(
     seat?: PlaySeat;
     immortal?: boolean;
     climb?: number;
+    flavorIndex?: number;
   },
 ): Transcript {
   const { fixture, bot, seat } = opts;
   const round = prepassRound(tape, {
     tier: opts.tier,
     climb: opts.climb ?? 0,
+    ...(opts.flavorIndex !== undefined ? { flavorIndex: opts.flavorIndex } : {}),
   });
   const state = createRoundState(round);
   const lies = round.beats.filter((b) => b.lie).map((b) => b.id);

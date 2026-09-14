@@ -125,6 +125,15 @@ export const TRACKS: Record<string, MusicPattern> = {
       doorman: [5, -1, 5, 7, 10, 7, 5, -1, 2, 0, 2, -1, 5, -1, -1, -1],
     },
   },
+  archivist: {
+    scale: [0, 2, 3, 5, 7, 8, 10],
+    rootHz: 73,
+    bpm: 108,
+    bass: [0, 3, 0, 5, 0, 3, 7, 5],
+    lead: {
+      archivist: [0, -1, 3, 5, 7, -1, 5, 3, 0, 2, 3, -1, 5, -1, -1, -1],
+    },
+  },
 };
 
 /** Recorded beds the cabinet may overlay. Missing files keep the chiptune. */
@@ -341,7 +350,7 @@ interface CtxLike {
  * Beds: if a recorded file exists for the asked wave or boss key, that
  * named bed plays and a change of key crossfades. The 120s hold only
  * gates same-kind pool rotation when no named file exists. Boss keys
- * (whisperer/menu/doorman) skip the hold. The seed still picks the
+ * (whisperer/menu/doorman/archivist) skip the hold. The seed still picks the
  * opening pool bed when the asked key has no file. A burst speeds the
  * playing bed up (`burstRate`) instead of laying a track over it.
  */
@@ -569,7 +578,11 @@ export function attach(
   };
   const switchBed = (waveKind: string, t: number) => {
     const named = bed?.(waveKind);
-    const isBoss = waveKind === 'whisperer' || waveKind === 'menu' || waveKind === 'doorman';
+    const isBoss =
+      waveKind === 'whisperer' ||
+      waveKind === 'menu' ||
+      waveKind === 'doorman' ||
+      waveKind === 'archivist';
     // A named file for this key always plays; pool membership is not a rotate.
     if (named) return adopt(named, t);
     if (isBoss) {

@@ -16,12 +16,14 @@ import {
   decodeShift,
   drawShift,
   encodeShift,
+  flavorAt,
+  flavorTelegraph,
   lengthWord,
   ordinalWord,
   rosterFits,
   shiftCard,
 } from '../src/shift';
-import type { RoundState } from '../src/types';
+import type { Round, RoundState } from '../src/types';
 
 const DIR = path.resolve(__dirname, '../../../fixtures/tapes');
 const ROSTER = readdirSync(DIR)
@@ -126,6 +128,7 @@ describe('the code', () => {
 
 describe('the climb', () => {
   it('is data: the first call is the tape alone, the last is the full reach', () => {
+    expect(DEFAULT_PATTERNS.shift.climb).toEqual([0, 0.35, 0.7, 1]);
     expect(climbAt(0)).toBe(0);
     expect(climbAt(DEFAULT_PATTERNS.shift.length - 1)).toBe(1);
     for (let i = 1; i < DEFAULT_PATTERNS.shift.length; i++) {
@@ -173,6 +176,60 @@ describe('the climb', () => {
     }
     expect(seenA).toEqual(seenB);
     expect(seenA.some((s) => s.endsWith('burst'))).toBe(true);
+  });
+});
+
+describe('the flavor', () => {
+  const flavors = DEFAULT_PATTERNS.shift.flavors;
+
+  function telegraphText(index: number): string {
+    const raw = flavorTelegraph(index);
+    return Array.isArray(raw) ? raw.join('\n') : String(raw ?? '');
+  }
+
+  it('authors four unique roles, trough on the third call, peak on the last', () => {
+    expect(flavorAt).toEqual(expect.any(Function));
+    expect(flavorTelegraph).toEqual(expect.any(Function));
+    expect(flavors).toHaveLength(4);
+    expect(flavors).toHaveLength(DEFAULT_PATTERNS.shift.length);
+    const roles = flavors.map((f) => f.role);
+    expect(new Set(roles).size).toBe(4);
+    expect(roles[2]).toBe('trough');
+    expect(roles[3]).toBe('peak');
+    for (let i = 0; i < flavors.length; i++) {
+      expect(flavorAt(i).role).toBe(roles[i]);
+    }
+  });
+
+  it('telegraphs in words with no digit', () => {
+    for (let i = 0; i < flavors.length; i++) {
+      const text = telegraphText(i);
+      expect(text.length, `call ${i}`).toBeGreaterThan(0);
+      expect(text, `call ${i}`).not.toMatch(FORBIDDEN);
+    }
+  });
+
+  it('a rug-flipped twin still draws the same flavor at the same index', () => {
+    const file = path.resolve(DIR, 'naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as {
+      facts: { atom_id: string; fact: string }[];
+    };
+    const flipped = JSON.parse(JSON.stringify(raw)) as typeof raw;
+    const rug = flipped.facts.find((f) => f.atom_id === 'temporal.rug_pull');
+    if (rug) rug.fact = rug.fact === 'menu_changed' ? 'menu_stable' : 'menu_changed';
+    const a = prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier: 2, climb: climbAt(2) });
+    const b = prepassRound(loadTape(flipped), {
+      seconds: 150,
+      seed: 0,
+      tier: 2,
+      climb: climbAt(2),
+    });
+    expect(flavorAt(2).role).toBe('trough');
+    expect(flavorAt(2)).toEqual(flavorAt(2));
+    const flavorOf = (round: Round) =>
+      (round as Round & { flavor?: unknown }).flavor ?? flavorAt(2);
+    expect(flavorOf(a)).toEqual(flavorOf(b));
+    expect(a.climb).toBe(b.climb);
   });
 });
 

@@ -7,10 +7,10 @@ import personasJson from '../personas.json';
 
 import { FORBIDDEN, SAY_MAX_WORDS } from './gate';
 
-export type BossKind = 'whisperer' | 'menu' | 'doorman';
+export type BossKind = 'whisperer' | 'menu' | 'doorman' | 'archivist';
 export type Lead = 'short' | 'beat' | 'long';
 export const LEADS = ['short', 'beat', 'long'] as const;
-const KINDS: readonly BossKind[] = ['whisperer', 'menu', 'doorman'];
+const KINDS: readonly BossKind[] = ['whisperer', 'menu', 'doorman', 'archivist'];
 
 /**
  * Delivery, authored per persona (finding 14: loudness carries the dry

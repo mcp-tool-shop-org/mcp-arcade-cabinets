@@ -6,17 +6,20 @@
 // replays the same shift. No digit, no count, no ranking anywhere (G8, G10).
 
 import {
+  bossKindFor,
   climbAt,
   decodeShift,
   drawShift,
   encodeShift,
   hashWords,
+  kindOfAtom,
   labelTape,
   lengthWord,
   ordinalWord,
   shiftCard,
   type ShiftDraw,
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
+import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { DIFFICULTIES, mountGhost, readPrefs, writePrefs, type Difficulty } from './ghost';
 import { TAPES } from './tapes';
@@ -249,6 +252,45 @@ interface Shift {
   code: string;
 }
 
+/** Four shift flavours, keyed by call index 0..3. Local until shift.ts exports flavorTelegraph. */
+const FLAVOR_AT = [
+  { role: 'pressure', biome: 'steel' },
+  { role: 'area-deny', biome: 'slate' },
+  { role: 'trough', biome: 'teal' },
+  { role: 'peak', biome: 'ochre' },
+] as const;
+
+function flavorAt(index: number) {
+  return FLAVOR_AT[Math.max(0, Math.min(FLAVOR_AT.length - 1, index))]!;
+}
+
+function flavorTelegraph(index: number): string[] {
+  const f = flavorAt(index);
+  return [f.role, f.biome];
+}
+
+function silhouetteWords(tape: Tape): string[] {
+  const seen = new Set<string>();
+  const lines: string[] = [];
+  for (const atom of tape.atoms) {
+    const boss = bossKindFor(atom.id);
+    const word =
+      boss === 'whisperer'
+        ? 'a wide wall'
+        : boss === 'menu'
+          ? 'a teal tablet'
+          : boss === 'doorman'
+            ? 'an ochre coat'
+            : kindOfAtom(atom.id) === 'inspect'
+              ? 'a steel catalog'
+              : '';
+    if (!word || seen.has(word)) continue;
+    seen.add(word);
+    lines.push(word);
+  }
+  return lines;
+}
+
 function startShift(draw: ShiftDraw) {
   const shift: Shift = { draw, code: encodeShift(ROSTER, draw) };
   rememberShift(draw.names);
@@ -280,12 +322,19 @@ function callCard(shift: Shift, i: number) {
         : 'The last call is closed. The rig hands you the next one.',
     ),
   );
+  const flavor = flavorAt(i);
   const card = document.createElement('ul');
-  card.className = 'tape-list';
-  for (const line of [entry.name, ...shiftCard(entry.tape)]) {
+  card.className = `tape-list call-card biome-${flavor.biome}`;
+  const cardLines = [
+    entry.name,
+    ...shiftCard(entry.tape),
+    ...flavorTelegraph(i),
+    ...silhouetteWords(entry.tape),
+  ];
+  for (const line of cardLines) {
     const li = document.createElement('li');
     li.className = 'tape-row';
-    li.textContent = line;
+    li.textContent = line.replace(/\d/g, '');
     card.append(li);
   }
   const level = DIFFICULTIES[shift.draw.difficulty]!;
@@ -309,6 +358,7 @@ function callCard(shift: Shift, i: number) {
       true,
       {
         climb: climbAt(i),
+        flavorIndex: i,
         difficulty: level.value,
         lockDifficulty: true,
         furniture: [`shift ${shift.code}`, `the ${ordinalWord(i, names.length)} call`],
