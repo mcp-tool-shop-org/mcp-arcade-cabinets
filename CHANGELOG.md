@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Owed on a follow-up commit, not a retag of `v0.7.0`: README translations (GPU was busy); Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag.
+
 ## [0.7.0] - 2026-09-14
 
 Dogfood swarm after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README, landing, and handbook are current. Translations skipped for this tag (GPU in use). No npm.

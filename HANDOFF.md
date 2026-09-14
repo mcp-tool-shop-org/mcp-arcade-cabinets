@@ -1,6 +1,32 @@
-# HANDOFF — Ghost on the Menu, v0.6.0
+# HANDOFF — Ghost on the Menu, v0.7.0
 
-Read this, then `CLAUDE.md`, then `docs/shift.dispatch.md` (slice 7, the shift: the research, the lock G19–G22, the numbers), `docs/cabinet-container.md` (slice 6), `docs/cabinet-server.md` (slices 1–3) and `docs/cabinet-voice.md` (slice 4), then `docs/ollama-content.md` (the v0.4.0 seats). The lock is G1, G7–G10 in `docs/study-swarm.dispatch.md`, G11–G18 in `docs/cabinet-server.dispatch.md`, and G19–G22 in `docs/shift.dispatch.md`. `docs/cabinet-server.kickoff.md` is history (slices 1–3 landed on `main`, untagged); `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are older history.
+Read this, then `CLAUDE.md`, then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`, still not npm.
+
+**Pickup after v0.7.0 (Grok, 2026-09-14, dogfood swarm + full treatment, published on the Director's word).** Tag `v0.7.0` at `34433f5`. GitHub release, Pages, GHCR `:0.7.0` (`linux/amd64`+`linux/arm64`, digest `sha256:162480aa60565d6c629b82ef58dc158151f9490d3a669c5f579b53a7af16314d`). Catalog PR docker/mcp-registry#5061 still sealed (network off, no voice), awaiting Docker. The player is the agent; a shift is four flavored calls.
+
+## What shipped in v0.7.0
+
+- Shift flavors (pressure / area-deny / trough / peak) on climb `[0, 0.35, 0.7, 1]`. Card telegraph in words. Field rooms follow the named bed.
+- Cast: probe, shelf, ledger. Archivist closes inspect on a shift. Picker-alone inspect has no Archivist (band).
+- Named beds, ducked mix, 36s hold (one loop) before a switch.
+- Offline gated aside bag (24 per room, no replacement). Not an Ollama seat.
+- Ollama `askNextIntents` / `bossQueue`. Timeout is script. Pages omits local seats.
+- Catalog user-tape overlay, multi-arch CI, host compose at `voice/compose.host.yaml`.
+
+## Next (cover in a few days)
+
+1. **Translations.** GPU was busy; this tag shipped English-only. `v0.7.0` is immutable — do not retag. On a follow-up commit: `node E:/AI/polyglot-mcp/scripts/translate-all.mjs E:/AI/mcp-arcade-cabinets/README.md` then `git add README.md README.*.md`.
+2. **Comfy Cloud polish** of `probe.png`, `shelf.png`, `ledger.png`, `boss-archivist.png`, `boss-archivist-open.png` (graphic hulls shipped).
+3. **`archivist.mp3`** then add `archivist` to `TRACK_KEYS` so Pages fail-closes.
+4. **Health leftovers:** `feel: loud` as a real mix preset; silent `takeEl.play()`; mix-overlap unasserted; `pnpm film` default never captures the end scene; Catalog `source.commit` often trails HEAD (rebuild lever).
+5. **Still parked:** House Call; slice 5 stingers/backdrops; no MCP shift/climb tool; no next-verb MCP tools.
+6. **Director play** of asides + 36s beds when eyes allow.
+
+---
+
+# History — pickup after v0.6.0
+
+Read this as history, then `CLAUDE.md`, then `docs/shift.dispatch.md` (slice 7, the shift: the research, the lock G19–G22, the numbers), `docs/cabinet-container.md` (slice 6), `docs/cabinet-server.md` (slices 1–3) and `docs/cabinet-voice.md` (slice 4), then `docs/ollama-content.md` (the v0.4.0 seats). The lock is G1, G7–G10 in `docs/study-swarm.dispatch.md`, G11–G18 in `docs/cabinet-server.dispatch.md`, and G19–G22 in `docs/shift.dispatch.md`. `docs/cabinet-server.kickoff.md` is history (slices 1–3 landed on `main`, untagged); `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are older history.
 
 **This is a pickup after v0.6.0 (Claude, 2026-09-11, full treatment, published on the Director's word): the shift (slice 7, `docs/shift.dispatch.md`), the music rework, the container (slice 6), and Grok's reviews of both applied.** The direction is set: the player is the agent and the rig hands them the calls; a shift is the play. Tag `v0.6.0`, GitHub release, Pages, the image on GHCR (`:0.6.0`, digest `sha256:3b6c80ea…85b95b`; the package is public since 2026-09-11). The Docker MCP Catalog PR is open as docker/mcp-registry#5061 (sealed entry, network off), awaiting Docker's review. Still `0.x`, still not npm. The v0.5.0 pickup below stands as history.
 
