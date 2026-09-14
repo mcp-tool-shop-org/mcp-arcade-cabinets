@@ -522,7 +522,13 @@ describe('the pilot lever in fire.json', () => {
   >;
 
   it('ships a fan, a spread and a lean per tier, thin on the recorded rung', () => {
-    expect(DEFAULT_PATTERNS.fire.tiers['0'].boss.pilot).toEqual({ fan: 1, spread: 0, lean: 0 });
+    expect(DEFAULT_PATTERNS.fire.tiers['0'].boss.pilot).toMatchObject({
+      fan: 1,
+      spread: 0,
+      lean: 0,
+    });
+    expect(DEFAULT_PATTERNS.fire.tiers['0'].boss.pilot.cadence).toBeGreaterThanOrEqual(1);
+    expect(DEFAULT_PATTERNS.fire.tiers['0'].boss.pilot.lookAhead).toBeGreaterThanOrEqual(1);
     for (const tier of ['1', '2', '3'] as const) {
       const p = DEFAULT_PATTERNS.fire.tiers[tier].boss.pilot;
       expect(p.fan).toBeGreaterThan(1);

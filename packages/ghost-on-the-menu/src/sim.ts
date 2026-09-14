@@ -298,6 +298,26 @@ function atomOf(enemy: Enemy): string {
   return i === -1 ? id : id.slice(0, i);
 }
 
+/** Drop leftover next-N verbs so they cannot arm the next spawn. */
+function dropBossVerbs(state: RoundState): void {
+  state.bossIntent = null;
+  state.bossQueue = [];
+}
+
+function pendingBossVerb(state: RoundState): PilotIntent | null {
+  return state.bossIntent ?? state.bossQueue[0] ?? null;
+}
+
+/** One verb at the fire beat: the one-shot seat, else the next queued verb. */
+function takeBossVerb(state: RoundState): PilotIntent | null {
+  if (state.bossIntent !== null) {
+    const intent = state.bossIntent;
+    state.bossIntent = null;
+    return intent;
+  }
+  return state.bossQueue.length > 0 ? (state.bossQueue.shift() ?? null) : null;
+}
+
 /** Seated fire verbs wired in stepBoss. Anything else (including script) keeps p.fire. */
 function seatedFire(intent: PilotIntent | null): Exclude<PilotIntent, 'script'> | null {
   switch (intent) {
@@ -473,6 +493,7 @@ export function createRoundState(round: Round): RoundState {
     dropCatches: 0,
     hazards: [],
     bossIntent: null,
+    bossQueue: [],
     bossLine: null,
     bossSay: null,
     parallelism: false,
@@ -581,7 +602,7 @@ function emitWaveGrids(state: RoundState, meta: Meta): void {
 
 function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossDef): void {
   // A leftover verb from the previous wave must not arm this spawn.
-  state.bossIntent = null;
+  dropBossVerbs(state);
   const x = FIELD.width / 2 - def.w / 2;
   const y = 24;
   state.boss = {
@@ -651,7 +672,7 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
     state.boss.alive = false;
   }
   state.boss = null;
-  state.bossIntent = null;
+  dropBossVerbs(state);
   meta.bossDeadFor = meta.midboss ? 'flavor:archivist' : atom;
   meta.midboss = false;
   state.bossKills += 1;
@@ -933,12 +954,12 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (peakMid && onLast && meta.midboss) {
     // Despawn the extra so the tape last-boss can take the field.
     state.boss = null;
-    state.bossIntent = null;
+    dropBossVerbs(state);
     meta.midboss = false;
   }
   if (peakMid && !onLast) {
     if (meta.waveHold > 0 && !meta.midboss) {
-      state.bossIntent = null;
+      dropBossVerbs(state);
       return;
     }
     const def = meta.patterns.bosses.archivist;
@@ -952,7 +973,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (meta.waveHold > 0) {
     if (!meta.midboss) {
       state.boss = null;
-      state.bossIntent = null;
+      dropBossVerbs(state);
     }
     return;
   }
@@ -960,7 +981,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const kind = bound ? bossKindFor(bound.atom) : null;
   if (!bound || !kind || state.t < bound.t0) {
     state.boss = null;
-    state.bossIntent = null;
+    dropBossVerbs(state);
     return;
   }
   // t1 is the last beat, not a despawn. Keep this wave's boss until the
@@ -970,12 +991,12 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const until = next ? next.t0 : state.duration;
   if (state.t >= until) {
     state.boss = null;
-    state.bossIntent = null;
+    dropBossVerbs(state);
     return;
   }
   if (meta.bossDeadFor === bound.atom) {
     state.boss = null;
-    state.bossIntent = null;
+    dropBossVerbs(state);
     return;
   }
   const def = meta.patterns.bosses[kind];
@@ -983,7 +1004,7 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   // inspect waves keep the old empty hover so the tape-alone band holds.
   if (kind === 'archivist' && !meta.round.flavor) {
     state.boss = null;
-    state.bossIntent = null;
+    dropBossVerbs(state);
     return;
   }
   if (!state.boss || state.boss.kind !== kind || !state.boss.alive) {
@@ -1017,7 +1038,7 @@ function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom
   // seat's verb, never a fact.
   const held = state.t < meta.bossHoldUntil;
   const leanTarget =
-    state.bossIntent === 'column'
+    pendingBossVerb(state) === 'column'
       ? Math.max(
           -rhythm.pilot.lean,
           Math.min(
@@ -1065,7 +1086,7 @@ function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom
   }
 
   if (!meta.rung.bossFires) {
-    state.bossIntent = null;
+    dropBossVerbs(state);
     return;
   }
   // The reserved tail is time to finish the boss, not a second volley that
@@ -1080,7 +1101,7 @@ function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom
       : state.duration
     : (bound?.t1 ?? state.duration);
   if (state.t >= fireUntil) {
-    state.bossIntent = null;
+    dropBossVerbs(state);
     return;
   }
   if (state.t < meta.bossFireAt) return;
@@ -1089,8 +1110,7 @@ function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom
   meta.bossFireAt = state.t + wait;
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
-  const intent = state.bossIntent;
-  if (intent !== null) state.bossIntent = null;
+  const intent = takeBossVerb(state);
   const seatedVerb = seatedFire(intent);
   const seated = seatedVerb !== null;
   let fire = seatedVerb ?? p.fire;

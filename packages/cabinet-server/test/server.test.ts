@@ -2,6 +2,8 @@
 // stdio lists the tools within two seconds, calls each, and asks for a name
 // that was never on the menu. The headless round underneath is the real sim.
 
+import { cpSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -11,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONTRACT } from '../src/contract';
 import { FORBIDDEN } from '../src/gate';
-import { headlessRound } from '../src/server';
+import { headlessRound, type HeadlessOpts } from '../src/server';
 
 const PKG = path.resolve(__dirname, '..');
 const OUT = path.join(PKG, 'dist', 'server.test-build.js');
@@ -34,6 +36,87 @@ describe('the headless round', () => {
     const tapes = h.cabinet.call('tapes', {}).content[0]!.text;
     expect(tapes).toContain('naive-ndjson: ');
     expect(tapes).not.toMatch(FORBIDDEN);
+  });
+});
+
+const BAKED_TAPES = path.resolve(__dirname, '../../../fixtures/tapes');
+
+function copyBaked(dest: string) {
+  for (const f of readdirSync(BAKED_TAPES)) {
+    if (f.endsWith('.tape.json')) cpSync(path.join(BAKED_TAPES, f), path.join(dest, f));
+  }
+}
+
+describe('user-tape volume overlay (F-b088d4c9)', () => {
+  it('baked copy plus one legal user tape is twenty-one, receipt.json is not on the menu', () => {
+    const tmp = mkdtempSync(path.join(os.tmpdir(), 'tapes-overlay-'));
+    copyBaked(tmp);
+    cpSync(
+      path.join(BAKED_TAPES, 'naive-ndjson.tape.json'),
+      path.join(tmp, 'operator-export.tape.json'),
+    );
+    writeFileSync(
+      path.join(tmp, 'receipt.json'),
+      JSON.stringify({
+        schema_id: 'mcp-arcade.bout/v1',
+        bout_id: 'bout_x',
+        scores: { nrp: 1, integrity: 'pass', utility: 'pass', attack_success: false },
+      }),
+    );
+    writeFileSync(
+      path.join(tmp, 'scores-object.tape.json'),
+      JSON.stringify({ schema_id: 'mcp-arcade.tape/v1', scores: { nrp: 1 } }),
+    );
+    const h = headlessRound({ fixture: 'naive-ndjson', seed: 0, tapesDir: tmp, voiceUrl: null });
+    expect(h.tapes.map((t) => t.name)).toContain('operator-export');
+    expect(h.tapes).toHaveLength(21);
+    const menu = h.cabinet.call('tapes', {}).content[0]!.text;
+    expect(menu).toMatch(/operator-export:/);
+    expect(menu).not.toMatch(FORBIDDEN);
+    expect(menu).not.toMatch(/receipt\.json/);
+    expect(menu).not.toMatch(/scores-object/);
+    expect(() => headlessRound({ fixture: 'nope', tapesDir: tmp, voiceUrl: null })).toThrow(
+      /fixture nope is not on the menu \(loaded: /,
+    );
+  });
+
+  it('empty overlay still lists the baked twenty', () => {
+    const empty = mkdtempSync(path.join(os.tmpdir(), 'tapes-empty-'));
+    const h = headlessRound({
+      fixture: 'naive-ndjson',
+      seed: 0,
+      voiceUrl: null,
+      tapesUserDir: empty,
+    } as HeadlessOpts & { tapesUserDir?: string });
+    expect(h.tapes).toHaveLength(20);
+    expect(h.tapes.map((t) => t.name)).toContain('naive-ndjson');
+    const menu = h.cabinet.call('tapes', {}).content[0]!.text;
+    expect(menu).toContain('naive-ndjson: ');
+    expect(menu).not.toMatch(FORBIDDEN);
+  });
+
+  it('tapesUserDir overlays one legal tape on the baked twenty', () => {
+    const user = mkdtempSync(path.join(os.tmpdir(), 'tapes-user-only-'));
+    cpSync(
+      path.join(BAKED_TAPES, 'naive-ndjson.tape.json'),
+      path.join(user, 'operator-export.tape.json'),
+    );
+    writeFileSync(
+      path.join(user, 'receipt.json'),
+      JSON.stringify({ schema_id: 'mcp-arcade.bout/v1', scores: { nrp: 1 } }),
+    );
+    const h = headlessRound({
+      fixture: 'naive-ndjson',
+      seed: 0,
+      voiceUrl: null,
+      tapesUserDir: user,
+    } as HeadlessOpts & { tapesUserDir?: string });
+    expect(h.tapes.map((t) => t.name)).toContain('operator-export');
+    expect(h.tapes).toHaveLength(21);
+    const menu = h.cabinet.call('tapes', {}).content[0]!.text;
+    expect(menu).toMatch(/operator-export:/);
+    expect(menu).not.toMatch(FORBIDDEN);
+    expect(menu).not.toMatch(/receipt\.json/);
   });
 });
 

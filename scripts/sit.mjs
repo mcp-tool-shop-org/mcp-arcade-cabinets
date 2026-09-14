@@ -21,7 +21,7 @@ import { build } from 'esbuild';
 const USAGE = `usage: pnpm sit [--model a:cloud,b:cloud] [--fixture name] [--tier 0|1|2|3] [--bot idle|sweeper|reader]
           [--seat mcp|prompt] [--constrain on|off] [--say on|off] [--voice auto|on|off]
           [--ollama http://127.0.0.1:11434] [--voice-url http://127.0.0.1:7788]
-          [--speed 1] [--lamps keep|lose]`;
+          [--speed 1] [--lamps keep|lose] [--tapes dir]`;
 const BOTS = ['idle', 'sweeper', 'reader'];
 const FLAGS = new Set([
   'model',
@@ -36,7 +36,10 @@ const FLAGS = new Set([
   'speed',
   'lamps',
   'voice-url',
+  'tapes',
 ]);
+/** Same needles as ghost-on-the-menu listPilotModels. Never POST these. */
+export const SKIP_MODEL = /embed|nomic|translategemma|jam-ft|grader|aya-expanse|qwen3\.6:latest/i;
 
 function die(msg, code = 2) {
   console.error(msg);
@@ -77,15 +80,36 @@ function parseArgv(argv, known) {
   return { positional, flags };
 }
 
-function tapeRoster() {
+function listTapeNames(dir) {
   try {
-    return readdirSync(path.resolve('fixtures/tapes'))
+    return readdirSync(dir)
       .filter((f) => f.endsWith('.tape.json'))
-      .map((f) => f.replace(/\.tape\.json$/, ''))
-      .sort();
+      .map((f) => f.replace(/\.tape\.json$/, ''));
   } catch {
     return [];
   }
+}
+
+/** `--tapes` wins; else `CABINET_TAPES_USER`. Overlay adds to the baked twenty. */
+export function overlayDir(flags = {}, env = process.env) {
+  if (flags && flags.tapes) return String(flags.tapes);
+  return env.CABINET_TAPES_USER ? String(env.CABINET_TAPES_USER) : '';
+}
+
+export function tapeRoster(overlay) {
+  const names = new Set(listTapeNames(path.resolve('fixtures/tapes')));
+  if (overlay) for (const n of listTapeNames(overlay)) names.add(n);
+  return [...names].sort();
+}
+
+export function resolveTapeFile(name, overlay) {
+  if (overlay) {
+    const p = path.join(overlay, `${name}.tape.json`);
+    if (existsSync(p)) return p;
+  }
+  const baked = path.resolve('fixtures/tapes', `${name}.tape.json`);
+  if (existsSync(baked)) return baked;
+  return null;
 }
 
 function isMain() {
@@ -126,6 +150,47 @@ export function parseTapeFile(file, name) {
   }
 }
 
+export function isCloudTag(name) {
+  return /:cloud$|-cloud$/.test(String(name ?? ''));
+}
+
+/** Cloud tags first. SKIP_MODEL never listed, so it is never POSTed. */
+export function sitModels(names) {
+  const keep = [...(names ?? [])].filter((n) => String(n).trim() !== '' && !SKIP_MODEL.test(n));
+  keep.sort((a, b) => {
+    const ac = isCloudTag(a) ? 0 : 1;
+    const bc = isCloudTag(b) ? 0 : 1;
+    if (ac !== bc) return ac - bc;
+    return String(a).localeCompare(String(b));
+  });
+  return keep;
+}
+
+export function nextVerbLine(prefetchAdmitted, thisBeatAsked) {
+  return `next-verb: ${Number(prefetchAdmitted) || 0} prefetch-admitted / ${Number(thisBeatAsked) || 0} this-beat-asked`;
+}
+
+export function timeoutToScriptLine(timeout, asked) {
+  void asked;
+  return `timeout-to-script: ${Number(timeout) || 0} of asked`;
+}
+
+export function cloudLine(listed) {
+  const names = Array.isArray(listed) ? listed : [];
+  if (names.length === 0) {
+    return 'cloud: listed Cloud tags first, SKIP_MODEL never POSTed, empty roster is no-seat';
+  }
+  return 'cloud: listed Cloud tags first, SKIP_MODEL never POSTed';
+}
+
+export function skipSentence(name) {
+  return `${name} is SKIP_MODEL, never POSTed`;
+}
+
+export function emptyRosterSentence() {
+  return 'empty roster is no-seat';
+}
+
 async function main() {
   const { positional, flags: args } = parseArgv(process.argv.slice(2), FLAGS);
   if (args.help) {
@@ -164,10 +229,24 @@ async function main() {
   if (!Number.isFinite(speed) || speed <= 0) {
     die(`speed must be a positive number (got ${args.speed})`);
   }
+  const rawModels = String(args.model ?? 'gpt-oss:120b-cloud')
+    .split(',')
+    .map((m) => m.trim())
+    .filter((m) => m !== '');
+  for (const m of rawModels) {
+    if (SKIP_MODEL.test(m)) console.log(skipSentence(m));
+  }
+  const models = sitModels(rawModels);
+  console.log(cloudLine(models));
+  if (models.length === 0) {
+    console.log(emptyRosterSentence());
+    process.exit(0);
+  }
+  const overlay = overlayDir(args);
   const fixture = args.fixture ?? 'naive-ndjson';
-  const tapeFile = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
-  if (!existsSync(tapeFile)) {
-    console.error(`unknown fixture ${fixture}; have: ${tapeRoster().join(', ')}`);
+  const tapeFile = resolveTapeFile(fixture, overlay);
+  if (!tapeFile) {
+    console.error(`unknown fixture ${fixture}; have: ${tapeRoster(overlay).join(', ')}`);
     process.exit(2);
   }
   let tapeJson;
@@ -179,9 +258,6 @@ async function main() {
   }
   const botName = args.bot ?? 'sweeper';
   const tier = args.tier === undefined ? 1 : Number(args.tier);
-  const models = String(args.model ?? 'gpt-oss:120b-cloud')
-    .split(',')
-    .map((m) => m.trim());
   const ollama = (args.ollama ?? 'http://127.0.0.1:11434').replace(/\/$/, '');
   const constrain = constrainRaw !== 'off';
   const sayOn = sayRaw !== 'off';
@@ -351,8 +427,12 @@ async function main() {
     const cabinet = cs.createCabinet(host);
     const fireOpts = { url: `${ollama}/api/chat`, model, constrain };
     const beats = [];
+    const nextVerb = { prefetchAdmitted: 0, thisBeatAsked: 0 };
+    let askWasPrefetch = false;
     const seat = cs.createSeat({
       ask: async (view) => {
+        askWasPrefetch = state.bossIntent !== null;
+        if (!askWasPrefetch) nextVerb.thisBeatAsked += 1;
         const t0 = Date.now();
         const askedAt = state.t;
         const a = await cs.askFire(view, fireOpts);
@@ -360,6 +440,7 @@ async function main() {
         return a;
       },
       admit: (verb) => {
+        if (askWasPrefetch) nextVerb.prefetchAdmitted += 1;
         cabinet.call('fire', { verb });
       },
       beatSeconds: patterns.fire.tiers[String(round.tier)].boss.period,
@@ -519,6 +600,8 @@ async function main() {
     console.log(
       `\n${st.asked} beats asked: ${st.admitted} admitted, ${st.scripted} scripted (${st.suppressed} suppressed, ${st.badCalls} bad verb, ${st.errors} errors), ${st.revoked} revoked, ${st.late} late; mean ${mean}ms, p90 ${p90}ms, low-think ${cs.needsLowThinkChat(model) ? 'yes' : 'no'}`,
     );
+    console.log(nextVerbLine(nextVerb.prefetchAdmitted, nextVerb.thisBeatAsked));
+    console.log(timeoutToScriptLine(st.timeout ?? 0, st.asked));
     console.log(`verbs: ${verbs.map(([v, n]) => `${v} ${n}`).join(', ') || 'none'}`);
     console.log(
       `verb collapse: ${pct(top[1], st.admitted)} of admitted beats on ${top[0]} (${top[1]}/${st.admitted}); ${pct(top[1], st.asked)} of asked`,

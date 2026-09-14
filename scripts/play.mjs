@@ -8,11 +8,11 @@ import { existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
-const USAGE = `usage: pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1]
+const USAGE = `usage: pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1] [--tapes dir]
 exit: 0 ok · 1 play-through failed · 2 usage · 3 no build`;
 
 const BOTS = ['idle', 'sweeper', 'reader'];
-const FLAGS = new Set(['fixture', 'bot', 'seat', 'tier', 'climb']);
+const FLAGS = new Set(['fixture', 'bot', 'seat', 'tier', 'climb', 'tapes']);
 // Copied from play.ts: the screen may not carry a digit or these words.
 const SCREEN_FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
@@ -87,20 +87,41 @@ function requireClimb(raw) {
   return n;
 }
 
-function tapeRoster() {
+function listTapeNames(dir) {
   try {
-    return readdirSync(path.resolve('fixtures/tapes'))
+    return readdirSync(dir)
       .filter((f) => f.endsWith('.tape.json'))
-      .map((f) => f.replace(/\.tape\.json$/, ''))
-      .sort();
+      .map((f) => f.replace(/\.tape\.json$/, ''));
   } catch {
     return [];
   }
 }
 
-function requireFixture(name) {
-  if (existsSync(path.resolve('fixtures/tapes', `${name}.tape.json`))) return;
-  console.error(`unknown fixture ${name}; have: ${tapeRoster().join(', ')}`);
+/** `--tapes` wins; else `CABINET_TAPES_USER`. Overlay adds to the baked twenty. */
+export function overlayDir(flags = {}, env = process.env) {
+  if (flags && flags.tapes) return String(flags.tapes);
+  return env.CABINET_TAPES_USER ? String(env.CABINET_TAPES_USER) : '';
+}
+
+export function tapeRoster(overlay) {
+  const names = new Set(listTapeNames(path.resolve('fixtures/tapes')));
+  if (overlay) for (const n of listTapeNames(overlay)) names.add(n);
+  return [...names].sort();
+}
+
+export function resolveTapeFile(name, overlay) {
+  if (overlay) {
+    const p = path.join(overlay, `${name}.tape.json`);
+    if (existsSync(p)) return p;
+  }
+  const baked = path.resolve('fixtures/tapes', `${name}.tape.json`);
+  if (existsSync(baked)) return baked;
+  return null;
+}
+
+function requireFixture(name, overlay) {
+  if (resolveTapeFile(name, overlay)) return;
+  console.error(`unknown fixture ${name}; have: ${tapeRoster(overlay).join(', ')}`);
   process.exit(2);
 }
 
@@ -181,7 +202,8 @@ async function main() {
     die(`unknown seat ${flags.seat}; use mcp`);
   }
 
-  requireFixture(flags.fixture ?? 'naive-ndjson');
+  const overlay = overlayDir(flags);
+  requireFixture(flags.fixture ?? 'naive-ndjson', overlay);
 
   const pkg = 'ghost-on-the-menu';
   const mod = await import(pathToFileURL(path.resolve(`packages/${pkg}/dist/play.js`)).href).catch(

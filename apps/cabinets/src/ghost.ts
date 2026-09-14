@@ -37,8 +37,10 @@ import {
   type SeatView,
 } from '@mcp-arcade-cabinets/cabinet-server/src/browser';
 import {
+  askNextIntents,
   attach,
   attachedPatterns,
+  cadenceAt,
   createRoundState,
   cues,
   DEFAULT_SECONDS,
@@ -207,6 +209,16 @@ function sayFailLine(err: unknown): string {
   return 'say seat: no answer';
 }
 
+/** Closed library line after fire succeeds. Beside the picker, never on the field (G17). */
+const FIRE_LINE: Record<string, string> = {
+  spread: 'a wide fan',
+  column: 'a lean over the ship',
+  hold: 'a held breath',
+  fog: 'a fog bank',
+  plate: 'a plate',
+  script: 'the script',
+};
+
 // The music lives as long as the page (the Director's word, 2026-09-11): a
 // shift hears a run of beds through its cards rather than four openings,
 // and a bed never restarts from zero. Beds load once; the context is built
@@ -295,12 +307,13 @@ export function mountGhost(
   ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
   ollamaLabel.title =
     'Local daemon or Ollama Cloud. The boss calls its own shots through the cabinet tools and writes its own lines behind a gate; it never sees which sprites are lies. Needs the local game, not Pages.';
-  // What the seats are doing, outside the field: the tool each called, in
-  // words; never a fact, never a digit.
+  // What the seats are doing, outside the field: a closed library line after
+  // fire, 'seat thinking' only while the ask is in flight. Never a fact,
+  // never a digit, never a model name (G17).
   const seat = document.createElement('span');
   seat.className = 'muted seat';
   liveStatus(seat, 'seat');
-  seat.textContent = 'seat: looking for a daemon';
+  seat.textContent = import.meta.env.PROD ? '' : 'seat: looking for a daemon';
   const sayStat = document.createElement('span');
   sayStat.className = 'muted seat';
   liveStatus(sayStat, 'say seat');
@@ -390,7 +403,7 @@ export function mountGhost(
         voiceProbe = window.setTimeout(probeVoice, 5000);
       });
   };
-  probeVoice();
+  if (!import.meta.env.PROD) probeVoice();
   let daemon: 'unknown' | 'up' | 'down' = 'unknown';
   let daemonWasUp = false;
   let listedModels: string[] = [];
@@ -423,17 +436,9 @@ export function mountGhost(
   nextBtn.textContent = extra.nextLabel ?? 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
-  controls.append(
-    full,
-    difficulty,
-    mute,
-    intensity,
-    shakeLabel,
-    ollamaLabel,
-    voiceLabel,
-    pilotModel,
-    nextBtn,
-  );
+  controls.append(full, difficulty, mute, intensity, shakeLabel);
+  if (!import.meta.env.PROD) controls.append(ollamaLabel, voiceLabel, pilotModel);
+  controls.append(nextBtn);
   const statusRow = document.createElement('div');
   statusRow.className = 'row';
   statusRow.append(seat, sayStat, voiceStat, chrome);
@@ -772,20 +777,34 @@ export function mountGhost(
   const newSeat = (): Seat => {
     const gen = fireGen;
     const liveState = state;
+    let closedFire = false;
     return createSeat({
       ask: (v) => askFire(v, { ...fireOpts(), fetchImpl: fireFetch }),
       admit: (verb) => {
         if (left || gen !== fireGen || liveState !== state) return;
-        cabinet.call('fire', { verb });
+        const r = cabinet.call('fire', { verb });
+        if (r.isError) return;
+        const last = cabinet.log[cabinet.log.length - 1];
+        if (!last?.ok) return;
+        const line = FIRE_LINE[verb];
+        if (line) {
+          seatSay(line);
+          closedFire = true;
+        }
       },
       beatSeconds: beatSeconds(round),
       onStatus: (s) => {
-        if (left || daemon !== 'up') return;
-        seatSay(s);
+        if (left) return;
+        if (s === 'seat: view changed, asking again') closedFire = false;
+        // Prefetch asks while the last verb is still held; keep the library
+        // line until that verb is spent. Thinking is only before a close.
+        if (s === 'seat thinking' && !closedFire) seatSay(s);
       },
     });
   };
   let fireSeat = newSeat();
+  let queueBusy = false;
+  let lastQueueAsk = Number.NEGATIVE_INFINITY;
   // Keep the seat warm (G13): one real ask per model before it is needed.
   const warmed = new Set<string>();
   const warm = () => {
@@ -988,7 +1007,7 @@ export function mountGhost(
         tagsProbe = window.setTimeout(probeTags, 5000);
       });
   };
-  probeTags();
+  if (!import.meta.env.PROD) probeTags();
 
   function frame(now: number) {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -1021,6 +1040,27 @@ export function mountGhost(
         fireSeat.tick(v, state.t, state.bossIntent !== null);
         const k = host.takeSfx();
         if (k && audio) audio.play(k);
+        if (v.kind !== null && !queueBusy) {
+          const tier = String(round.tier) as '0' | '1' | '2' | '3';
+          const lever = attachedPatterns(round).fire.tiers[tier].boss.pilot;
+          const look = lever.lookAhead;
+          const period = beatSeconds(round);
+          const wait = cadenceAt(lever, state.parallelism ? 1.5 : 1) * period;
+          const need = look - state.bossQueue.length;
+          if (need > 0 && state.t - lastQueueAsk >= wait) {
+            queueBusy = true;
+            lastQueueAsk = state.t;
+            void askNextIntents(
+              { url: '/ollama/api/generate', model: fireOpts().model },
+              v,
+              need,
+            ).then((verbs) => {
+              queueBusy = false;
+              if (left) return;
+              state.bossQueue.push(...verbs);
+            });
+          }
+        }
       }
       if (v.kind !== null && !sayBusy) {
         const key = `${state.wave}:${v.kind}`;

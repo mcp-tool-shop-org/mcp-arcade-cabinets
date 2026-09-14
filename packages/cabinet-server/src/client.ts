@@ -287,6 +287,8 @@ export interface SeatStats {
   badCalls: number;
   scripted: number;
   errors: number;
+  /** Hard timeout distinct from late/errors; admits script. */
+  timeout: number;
   byVerb: Record<string, number>;
   msSum: number;
 }
@@ -332,6 +334,7 @@ export function createSeat(opts: SeatOpts): Seat {
     badCalls: 0,
     scripted: 0,
     errors: 0,
+    timeout: 0,
     byVerb: {},
     msSum: 0,
   };
@@ -357,8 +360,10 @@ export function createSeat(opts: SeatOpts): Seat {
       })
       .catch((err: unknown) => {
         if (!pending || pending.token !== mine) return;
-        stats.errors += 1;
-        ready = { view, answer: null, error: err instanceof Error ? err.message : String(err) };
+        const msg = err instanceof Error ? err.message : String(err);
+        if (/ollama timeout/i.test(msg)) stats.timeout += 1;
+        else stats.errors += 1;
+        ready = { view, answer: null, error: msg };
         pending = null;
       });
   }
@@ -372,7 +377,9 @@ export function createSeat(opts: SeatOpts): Seat {
           ? 'seat: model retired'
           : /ollama down/i.test(r.error)
             ? 'seat: ollama down, script'
-            : 'seat: no answer, script',
+            : /ollama timeout/i.test(r.error)
+              ? 'ollama timeout'
+              : 'seat: no answer, script',
       );
       return;
     }

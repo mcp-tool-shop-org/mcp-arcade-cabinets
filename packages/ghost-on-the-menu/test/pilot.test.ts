@@ -18,6 +18,8 @@ import {
   type BossView,
 } from '../src/pilot';
 
+const SKIP_MODEL = /embed|nomic|translategemma|jam-ft|grader|aya-expanse|qwen3\.6:latest/i;
+
 const FORBIDDEN =
   /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
 
@@ -103,6 +105,19 @@ describe('ollama boss pilot', () => {
     expect(defaultPilotModel(['qwen2.5:7b-instruct'])).toBe('qwen2.5:7b-instruct');
     expect(defaultPilotModel([])).toBe('');
     expect(defaultPilotModel(['nomic-embed-text:latest'])).toBe('');
+    const skip = [
+      'nomic-embed-text:latest',
+      'translategemma:27b',
+      'jam-ft-b2-qwen25:seed42',
+      'ai-jam-grader-7b:latest',
+      'aya-expanse:latest',
+      'qwen3.6:latest',
+    ];
+    expect(defaultPilotModel(skip)).toBe('');
+    expect(skip).not.toContain(defaultPilotModel([...skip, 'qwen2.5:7b-instruct']));
+    expect(defaultPilotModel([...skip, 'qwen2.5:7b-instruct'])).toBe('qwen2.5:7b-instruct');
+    expect(defaultPilotModel([...skip, 'minimax-m3:cloud'])).toBe('minimax-m3:cloud');
+    expect(SKIP_MODEL.test(defaultPilotModel([...skip, 'minimax-m3:cloud']))).toBe(false);
   });
 
   it('names hp, column and stick without digits', () => {
@@ -234,6 +249,36 @@ describe('askOllama over a daemon', () => {
     await expect(askOllama(view, { url: '/x', model: 'kimi-test:cloud' })).rejects.toThrow(
       /ollama timeout/,
     );
+    expect(sawSignal).toBe(true);
+  }, 10_000);
+
+  it('askNextIntents times out to script of length n, never a this-beat wait', async () => {
+    const mod = await import('../src/pilot');
+    const askNext = (
+      mod as {
+        askNextIntents?: (
+          opts: { url: string; model: string },
+          v: BossView,
+          n: number,
+        ) => Promise<string[]>;
+      }
+    ).askNextIntents;
+    expect(typeof askNext).toBe('function');
+    let sawSignal = false;
+    vi.stubGlobal('fetch', (_url: string, init?: { signal?: AbortSignal }) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+      sawSignal = true;
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          const err = new Error('The operation was aborted');
+          err.name = 'TimeoutError';
+          reject(err);
+        });
+      });
+    });
+    const out = await askNext!({ url: '/x', model: 'kimi-test:cloud' }, view, 2);
+    expect(out).toEqual(['script', 'script']);
+    expect(out).toHaveLength(2);
     expect(sawSignal).toBe(true);
   }, 10_000);
 

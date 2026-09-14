@@ -4,10 +4,11 @@
 // does. If a seat is off or the call fails, the sim keeps the scripted phase
 // fire and the seed's line.
 //
-// Two seats. The boss seat answers one verb per beat; the sim turns it into
-// fire and motion (a fan, a lean and an aimed shot, a held breath, fog, the
-// plate). The voice seat picks which of the boss's own lines from voice.json
-// it says when it spawns; the copy is never the model's.
+// Two seats. The boss seat answers closed-set verbs (one this-view, or next-N
+// via askNextIntents); the sim dequeues at the fire beat. Late, missing, or
+// timed-out is script — askNextIntents never throws. The voice seat picks
+// which of the boss's own lines from voice.json it says when it spawns; the
+// copy is never the model's.
 
 export interface BossView {
   kind: 'whisperer' | 'menu' | 'doorman' | 'archivist';
@@ -266,6 +267,78 @@ async function ask(opts: OllamaOpts, prompt: string): Promise<string> {
 
 export async function askOllama(view: BossView, opts: OllamaOpts): Promise<PilotIntent> {
   return parseIntent(await ask(opts, pilotPrompt(view)));
+}
+
+/** Digit-free count words so a next-N prompt never carries a numeral. */
+const COUNT_WORDS = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+] as const;
+
+function scripts(n: number): PilotIntent[] {
+  const out: PilotIntent[] = [];
+  for (let i = 0; i < n; i++) out.push('script');
+  return out;
+}
+
+/**
+ * Last n matching verbs, else script. Same legality floor as parseIntent:
+ * thinking preambles lose to the last closed-set words.
+ */
+function parseIntents(raw: string, n: number): PilotIntent[] {
+  const want = Math.max(0, Math.floor(n));
+  if (want === 0) return [];
+  const found: PilotIntent[] = [];
+  const words = raw
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-z]/g, ''))
+    .filter(Boolean);
+  for (const w of words) {
+    if ((PILOT_INTENTS as readonly string[]).includes(w)) found.push(w as PilotIntent);
+  }
+  const slice = found.slice(-want);
+  const out: PilotIntent[] = [];
+  for (let i = 0; i < want; i++) out.push(slice[i] ?? 'script');
+  return out;
+}
+
+function nextPrompt(view: BossView, n: number): string {
+  const k = Math.max(1, Math.min(Math.floor(n) || 1, COUNT_WORDS.length));
+  const text = `${pilotPrompt(view)}\nnext ${COUNT_WORDS[k - 1]!}`;
+  if (FORBIDDEN.test(text)) throw new Error('pilot prompt leaked a forbidden word');
+  return text;
+}
+
+/**
+ * Prefetch n closed-set verbs for the sim queue. Length is always n (empty
+ * when n < 1). Abort, timeout, retired, down, or any other ask failure
+ * returns n copies of `script` — never throws, so stepRound never depends
+ * on a catch. askOllama still throws for callers that already catch.
+ */
+export async function askNextIntents(
+  opts: OllamaOpts,
+  view: BossView,
+  n: number,
+): Promise<PilotIntent[]> {
+  const want = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+  if (want === 0) return [];
+  try {
+    const prompt = want === 1 ? pilotPrompt(view) : nextPrompt(view, want);
+    return parseIntents(await ask(opts, prompt), want);
+  } catch {
+    return scripts(want);
+  }
 }
 
 /** The voice seat: which of the kind's own lines the boss says at spawn, or null. */

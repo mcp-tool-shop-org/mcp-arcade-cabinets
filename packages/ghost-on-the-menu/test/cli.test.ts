@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -35,6 +35,12 @@ type SitCli = {
   endLabel: (ended: 'time' | 'lamps' | null) => string;
   gateFromSay: (text: string) => string;
   parseTapeFile: (file: string, name: string) => unknown;
+  nextVerbLine: (prefetchAdmitted: number, thisBeatAsked: number) => string;
+  timeoutToScriptLine: (timeout: number, asked: number) => string;
+  cloudLine: (listed: readonly string[]) => string;
+  skipSentence: (name: string) => string;
+  emptyRosterSentence: () => string;
+  sitModels: (names: readonly string[]) => string[];
 };
 
 type FilmCli = {
@@ -81,6 +87,7 @@ describe('CLI --help (F-755a4733)', () => {
     expect(r.stdout).toMatch(/--seat mcp/);
     expect(r.stdout).toMatch(/--tier/);
     expect(r.stdout).toMatch(/--climb/);
+    expect(r.stdout).toMatch(/--tapes/);
     expect(r.stdout + r.stderr).not.toMatch(/build it first/);
     expect(r.stdout + r.stderr).not.toMatch(/dist\/play\.js/);
   });
@@ -119,6 +126,7 @@ describe('CLI --help (F-755a4733)', () => {
     expect(r.stdout).toMatch(/--lamps/);
     expect(r.stdout).toMatch(/--ollama/);
     expect(r.stdout).toMatch(/--voice-url/);
+    expect(r.stdout).toMatch(/--tapes/);
     expect(r.stdout).not.toMatch(/\nsit /);
   });
 
@@ -437,5 +445,81 @@ describe('film last frame and empty times (F-94a60d0e)', () => {
       expect(r.status, r.stderr).toBe(0);
       expect(pngs.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('sit seat metrics (F-6046dbbc)', () => {
+  it('pins next-verb, timeout-to-script, and cloud labels without sitting a model', async () => {
+    const {
+      nextVerbLine,
+      timeoutToScriptLine,
+      cloudLine,
+      skipSentence,
+      emptyRosterSentence,
+      sitModels,
+    } = await sitCli();
+    expect(nextVerbLine(3, 1)).toBe('next-verb: 3 prefetch-admitted / 1 this-beat-asked');
+    expect(timeoutToScriptLine(2, 9)).toBe('timeout-to-script: 2 of asked');
+    expect(timeoutToScriptLine(2, 9)).not.toMatch(/late|suppressed|retired|down/);
+    expect(cloudLine(['gpt-oss:120b-cloud', 'qwen2.5:7b-instruct'])).toBe(
+      'cloud: listed Cloud tags first, SKIP_MODEL never POSTed',
+    );
+    expect(cloudLine([])).toBe(
+      'cloud: listed Cloud tags first, SKIP_MODEL never POSTed, empty roster is no-seat',
+    );
+    expect(skipSentence('nomic-embed-text:latest')).toBe(
+      'nomic-embed-text:latest is SKIP_MODEL, never POSTed',
+    );
+    expect(emptyRosterSentence()).toBe('empty roster is no-seat');
+    expect(sitModels(['nomic-embed-text:latest', 'gpt-oss:120b-cloud'])).toEqual([
+      'gpt-oss:120b-cloud',
+    ]);
+    expect(sitModels(['nomic-embed-text:latest', 'translategemma:27b'])).toEqual([]);
+    expect(sitModels(['qwen2.5:7b-instruct', 'minimax-m3:cloud'])[0]).toBe('minimax-m3:cloud');
+    const src = readFileSync(path.join(ROOT, 'scripts', 'sit.mjs'), 'utf8');
+    expect(src).toMatch(/nextVerbLine\(/);
+    expect(src).toMatch(/timeoutToScriptLine\(/);
+    expect(src).toMatch(/cloudLine\(/);
+    expect(src).toMatch(/sitModels\(/);
+  });
+
+  it('SKIP_MODEL and empty roster exit 0 without sitting or POSTing', () => {
+    const skip = run('sit.mjs', ['--model', 'nomic-embed-text:latest']);
+    expect(skip.status, skip.stderr).toBe(0);
+    expect(skip.stdout).toMatch(/SKIP_MODEL never POSTed/);
+    expect(skip.stdout).toMatch(/empty roster is no-seat/);
+    expect(skip.stdout).not.toMatch(/\nsit /);
+    expect(skip.stdout).not.toMatch(/warm-up/);
+    expect(skip.stdout + skip.stderr).not.toMatch(/\/api\/chat/);
+    const empty = run('sit.mjs', ['--model', '']);
+    expect(empty.status, empty.stderr).toBe(0);
+    expect(empty.stdout).toMatch(/empty roster is no-seat/);
+    expect(empty.stdout).not.toMatch(/\nsit /);
+  });
+});
+
+describe('user-tape overlay miss (F-b088d4c9)', () => {
+  it('unknown user-tape names the overlay roster, exit 2, no dist, no stack', () => {
+    const overlay = mkdtempSync(path.join(os.tmpdir(), 'tapes-user-'));
+    cpSync(
+      path.join(ROOT, 'fixtures/tapes/naive-ndjson.tape.json'),
+      path.join(overlay, 'operator-export.tape.json'),
+    );
+    const play = run('play.mjs', ['ghost', '--tapes', overlay, '--fixture', 'nope']);
+    expect(play.status).toBe(2);
+    expect(play.stderr).toMatch(/unknown fixture nope; have:/);
+    expect(play.stderr).toMatch(/operator-export/);
+    expect(play.stderr).toMatch(/naive-ndjson/);
+    expect(play.stderr).not.toMatch(/dist\/play\.js/);
+    expect(play.stderr).not.toMatch(/build it first/);
+    expect(play.stderr).not.toMatch(/TypeError/);
+    expect(play.stderr).not.toMatch(/at /);
+    const sit = run('sit.mjs', ['--tapes', overlay, '--fixture', 'nope']);
+    expect(sit.status).toBe(2);
+    expect(sit.stderr).toMatch(/unknown fixture nope; have:/);
+    expect(sit.stderr).toMatch(/operator-export/);
+    expect(sit.stderr).not.toMatch(/TypeError/);
+    expect(sit.stderr).not.toMatch(/at /);
+    expect(sit.stdout + sit.stderr).not.toMatch(/\nsit /);
   });
 });

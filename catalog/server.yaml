@@ -3,7 +3,7 @@
 # docker/mcp-registry (PR opened 2026-09-11 on the Director's word). source.commit
 # pins the commit whose bundled server.js the registry CI builds. esbuild
 # inlines src/; a later server.ts change is a pin bump even when Dockerfile
-# bytes do not move.
+# bytes do not move. Coordinator bumps this pin to the landing SHA after collect.
 name: mcp-arcade-cabinets
 image: mcp/mcp-arcade-cabinets
 type: server
@@ -22,17 +22,31 @@ about:
     waves, and the calls the agent should not have made look like everything else
     until you hit one. The six tools are the levers a model pulls to sit in the boss:
     fire (one verb a beat), say (a line of its own, through a gate), speak (the gated
-    line, when a voice is on), sfx, and the read-only view and tapes. This listing is
-    silent; a local build can attach a worker. The model proposes; the game decides.
-    No tool returns a fact, a score, or a tape row; nothing on the field names the
-    model. Twenty recordings are baked in, four of them the cabinet recording itself.
+    line), sfx, view, and tapes. This listing is silent. The model proposes; the game
+    decides. No tool returns a fact, a score, or a tape row; nothing on the field names
+    the model. Twenty recordings are baked in, four of them the cabinet recording itself.
   icon: https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/icon.png
 source:
   project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
-  commit: e27be57e4baf2f4a6a8272bb333642ce948516d2
+  commit: 60d44aa1c71feec7b17c0f9b3b0652bbf633dcaf
 run:
   # The Catalog cabinet is sealed: the voice worker is a host GPU stack no Catalog
   # user runs, and without one the cabinet says the voice is silent and plays on.
   # The voice route (VOICE_URL, VOICE_TOKEN) is documented in the repo for a local build.
   # Local image with a host worker: VOICE_URL=http://host.docker.internal:7788
+  # Optional operator tapes: mount beside /app/tapes, never over it. Empty = baked twenty.
+  volumes:
+    - '{{mcp-arcade-cabinets.tapes}}:/tapes-user:ro'
   disableNetwork: true
+config:
+  description: Optional host directory of extra .tape.json files, merged beside the baked twenty. Leave empty for the baked menu.
+  env:
+    - name: CABINET_TAPES_USER
+      example: /tapes-user
+      value: /tapes-user
+  parameters:
+    type: object
+    properties:
+      tapes:
+        type: string
+        description: Host directory of operator tapes, mounted read-only at /tapes-user. Leave empty for the baked twenty.

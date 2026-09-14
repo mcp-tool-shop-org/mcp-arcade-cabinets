@@ -180,6 +180,40 @@ describe('the seat over the fire tool', () => {
     expect(admitted).toEqual([]);
     expect(pending).toHaveLength(2);
   });
+
+  it('ollama timeout admits script, counts timeout not errors/late, pending not stuck', async () => {
+    const pending: ReturnType<typeof deferred<FireAnswer>>[] = [];
+    const admitted: string[] = [];
+    const status: string[] = [];
+    const asks: SeatView[] = [];
+    const seat = createSeat({
+      ask: (v) => {
+        asks.push(v);
+        const d = deferred<FireAnswer>();
+        pending.push(d);
+        return d.promise;
+      },
+      admit: (verb) => admitted.push(verb),
+      beatSeconds: 1,
+      onStatus: (s) => status.push(s),
+    });
+    seat.tick(V, 0, false);
+    expect(seat.busy()).toBe(true);
+    pending[0]!.reject(new Error('ollama timeout'));
+    await flush();
+    seat.tick(V, 0.1, false);
+    expect(admitted).toEqual(['script']);
+    const st = seat.stats() as ReturnType<typeof seat.stats> & { timeout?: number };
+    expect(st.timeout).toBe(1);
+    expect(st.errors).toBe(0);
+    expect(st.late).toBe(0);
+    expect(st.scripted).toBe(1);
+    expect(status.some((s) => /ollama timeout/.test(s))).toBe(true);
+    expect(status.join(' ')).not.toMatch(/\d/);
+    // Admit on this tick, then G13 prefetch starts immediately.
+    expect(asks).toHaveLength(2);
+    expect(seat.busy()).toBe(true);
+  });
 });
 
 describe('askFire over a daemon', () => {
@@ -266,4 +300,56 @@ describe('askFire over a daemon', () => {
     stub(() => ({ error: 'some-tag was retired' }));
     await expect(askFire(V, { url: '/x', model: 'old:cloud' })).rejects.toThrow(/retired/);
   });
+
+  it('hanging fetch honors init.signal, admits script, counts timeout, prefetches next', async () => {
+    let sawSignal = false;
+    vi.stubGlobal('fetch', (_url: string, init?: { signal?: AbortSignal }) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+      sawSignal = true;
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          const err = new Error('The operation was aborted');
+          err.name = 'TimeoutError';
+          reject(err);
+        });
+      });
+    });
+    const admitted: string[] = [];
+    const status: string[] = [];
+    const seat = createSeat({
+      ask: (v) => askFire(v, { url: '/x', model: 'kimi-test:cloud' }),
+      admit: (verb) => admitted.push(verb),
+      beatSeconds: 1,
+      onStatus: (s) => status.push(s),
+    });
+    seat.tick(V, 0, false);
+    expect(seat.busy()).toBe(true);
+    await new Promise((r) => setTimeout(r, 3500));
+    await flush();
+    vi.stubGlobal('fetch', async (_url: string, init?: { signal?: AbortSignal }) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+      return {
+        ok: true,
+        json: async () => ({
+          message: {
+            content: '',
+            tool_calls: [{ function: { name: 'fire', arguments: { verb: 'fog' } } }],
+          },
+        }),
+      };
+    });
+    seat.tick(V, 0.1, false);
+    expect(admitted).toEqual(['script']);
+    expect(sawSignal).toBe(true);
+    const st = seat.stats() as ReturnType<typeof seat.stats> & { timeout?: number };
+    expect(st.timeout).toBe(1);
+    expect(st.errors).toBe(0);
+    expect(st.late).toBe(0);
+    expect(status.some((s) => /ollama timeout/.test(s))).toBe(true);
+    expect(status.join(' ')).not.toMatch(/\d/);
+    expect(seat.busy()).toBe(true);
+    await flush();
+    seat.tick(V, 1.2, false);
+    expect(admitted).toEqual(['script', 'fog']);
+  }, 10_000);
 });

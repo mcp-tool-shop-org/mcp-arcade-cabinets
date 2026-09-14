@@ -11,7 +11,9 @@
         "pilot": {
           "fan": 1,
           "lean": 0,
-          "spread": 0
+          "spread": 0,
+          "cadence": 3,
+          "lookAhead": 2
         }
       },
       "dive": null
@@ -32,7 +34,9 @@
         "pilot": {
           "fan": 3,
           "lean": 110,
-          "spread": 0.36
+          "spread": 0.36,
+          "cadence": 2,
+          "lookAhead": 2
         }
       },
       "dive": {
@@ -57,7 +61,9 @@
         "pilot": {
           "fan": 3,
           "lean": 120,
-          "spread": 0.4
+          "spread": 0.4,
+          "cadence": 2,
+          "lookAhead": 2
         }
       },
       "dive": {
@@ -82,7 +88,9 @@
         "pilot": {
           "fan": 4,
           "lean": 130,
-          "spread": 0.44
+          "spread": 0.44,
+          "cadence": 2,
+          "lookAhead": 2
         }
       },
       "dive": {

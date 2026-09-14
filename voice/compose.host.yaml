@@ -1,0 +1,31 @@
+# Host-only compose for the local cabinet image.
+# Gateway and the voice worker stay on the host — do not add them as services.
+# Not copied into catalog/. Catalog stays stdio, network off, silent, no secrets.
+#
+#   docker compose -f voice/compose.host.yaml run --rm cabinet
+#
+# Host gateway (not this file): docker mcp gateway run
+# Host voice (not this file):   pnpm voice
+#   # VOICE_URL=http://host.docker.internal:7788
+#   # VOICE_TOKEN=<token>
+
+services:
+  cabinet:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: mcp-arcade-cabinets:host
+    stdin_open: true
+    cpus: '1.0'
+    mem_limit: 2g
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    # Optional operator tapes (read-only). Leave unset for the baked twenty.
+    # volumes:
+    #   - ${TAPES_USER}:/tapes-user:ro
+    # environment:
+    #   CABINET_TAPES_USER: /tapes-user
+    # Local voice (host worker). Uncomment only on a host run, never Catalog:
+    # environment:
+    #   VOICE_URL: http://host.docker.internal:7788
+    #   VOICE_TOKEN: ${VOICE_TOKEN}

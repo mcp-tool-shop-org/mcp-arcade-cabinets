@@ -30,11 +30,13 @@ export { bossKindFor, createRoundState, isDecoy, revealOnHit, stepRound } from '
 export {
   attachedPatterns,
   burstActive,
+  cadenceAt,
   DEFAULT_PATTERNS,
+  intensityAt,
   pickLine,
   voiceWaveKey,
 } from './patterns';
-export type { ParallelismTier, PatternSet, ShiftSet } from './patterns';
+export type { ParallelismTier, PatternSet, PilotLever, ShiftSet } from './patterns';
 export {
   climbAt,
   decodeShift,
@@ -68,6 +70,7 @@ export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
 export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
 export {
+  askNextIntents,
   askOllama,
   askOllamaLine,
   columnWord,

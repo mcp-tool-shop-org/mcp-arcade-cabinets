@@ -244,6 +244,11 @@ export interface RoundState {
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
   bossIntent: PilotIntent | null;
+  /**
+   * Prefetched next-N verbs. Dequeued at the fire beat; leftover dropped on
+   * spawn/kill/hold. Never a fact, never waited on inside stepRound.
+   */
+  bossQueue: PilotIntent[];
   /** Optional Ollama (or test) pick of the boss's spawn line. Never derived from a fact. */
   bossLine: BossLinePick | null;
   /** Optional seat-written, gate-passed line for the boss. Never derived from a fact. */

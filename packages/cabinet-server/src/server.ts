@@ -45,13 +45,13 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 /** `packages/cabinet-server/{src,dist}` → the repo's fixtures. Baked into the image later. */
 export const DEFAULT_TAPES_DIR = path.resolve(here, '..', '..', '..', 'fixtures', 'tapes');
 
-export function listTapes(dir: string): { name: string; tape: Tape }[] {
+function listTapesDir(dir: string, warnMissing: boolean): { name: string; tape: Tape }[] {
   let names: string[];
   try {
     names = readdirSync(dir).sort();
   } catch {
     // Menu-shaped miss: never dump ENOENT/EACCES with a machine path.
-    process.stderr.write('tapes dir did not load (unreadable)\n');
+    if (warnMissing) process.stderr.write('tapes dir did not load (unreadable)\n');
     return [];
   }
   const out: { name: string; tape: Tape }[] = [];
@@ -77,6 +77,22 @@ export function listTapes(dir: string): { name: string; tape: Tape }[] {
   return out;
 }
 
+/** Baked dir plus an optional overlay. Overlay miss is empty, not a replace of `dir`. */
+export function listTapes(dir: string, overlayDir?: string): { name: string; tape: Tape }[] {
+  const baked = listTapesDir(dir, true);
+  const overlay = overlayDir?.trim();
+  if (!overlay) return baked;
+  const extra = listTapesDir(overlay, false);
+  const seen = new Set(baked.map((t) => t.name));
+  for (const t of extra) {
+    if (seen.has(t.name)) continue;
+    baked.push(t);
+    seen.add(t.name);
+  }
+  baked.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  return baked;
+}
+
 /** Catalog listing must match CONTRACT. Missing file (the image) is not a mismatch. */
 function checkCatalogListing(): void {
   const catalog = path.resolve(here, '..', '..', '..', 'catalog', 'tools.json');
@@ -99,6 +115,8 @@ function zodShape(def: ToolDef) {
 
 export interface HeadlessOpts {
   tapesDir?: string;
+  /** Optional overlay of operator `.tape.json` files, beside the baked dir. */
+  tapesUserDir?: string;
   /** Fixture name the round plays. */
   fixture?: string;
   tier?: 0 | 1 | 2 | 3;
@@ -112,7 +130,7 @@ export interface HeadlessOpts {
 /** A headless round the tools act on. Stepped by `step(dt)`; restarts at the scene. */
 export function headlessRound(opts: HeadlessOpts = {}) {
   const dir = opts.tapesDir ?? DEFAULT_TAPES_DIR;
-  const tapes = listTapes(dir);
+  const tapes = listTapes(dir, opts.tapesUserDir);
   const fixture = opts.fixture ?? 'naive-ndjson';
   const found = tapes.find((t) => t.name === fixture);
   if (!found) {
@@ -250,6 +268,7 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   const h = headlessRound({
     ...(process.env.CABINET_FIXTURE ? { fixture: process.env.CABINET_FIXTURE } : {}),
     ...(process.env.CABINET_TAPES ? { tapesDir: process.env.CABINET_TAPES } : {}),
+    ...(process.env.CABINET_TAPES_USER ? { tapesUserDir: process.env.CABINET_TAPES_USER } : {}),
     ...(process.env.VOICE_URL !== undefined
       ? { voiceUrl: process.env.VOICE_URL === '' ? null : process.env.VOICE_URL }
       : {}),

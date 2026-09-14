@@ -81,12 +81,18 @@ export interface FireRhythm {
  * What an Ollama seat may do with the boss beyond the scripted phase: how
  * many shots a pilot `spread` fans and how wide (a fraction of the field),
  * and how far the boss may slide toward the ship before a pilot `column`.
- * Data, never a fact.
+ * cadence is beats between next-verb asks; lookAhead is how many verbs one
+ * ask fills. Intensity may shrink cadence (frequency only); never fan, lean,
+ * or spread. Data, never a fact.
  */
 export interface PilotLever {
   fan: number;
   spread: number;
   lean: number;
+  /** Beats between next-verb asks. Integer >= 1. */
+  cadence: number;
+  /** How many verbs one ask fills. Default 2. */
+  lookAhead: number;
 }
 
 export interface BossRhythm extends FireRhythm {
@@ -348,7 +354,14 @@ function loadBossRhythm(
   if (spread < 0 || spread > 1) fail(file, 'spread');
   const lean = asNumber(req(pilotRaw, file, 'lean'), file, 'lean');
   if (lean < 0) fail(file, 'lean');
-  return { ...loadRhythm(value, file, key), aim, pilot: { fan, spread, lean } };
+  const cadence = asNumber(req(pilotRaw, file, 'cadence'), file, 'cadence');
+  if (!Number.isInteger(cadence) || cadence < 1) fail(file, 'cadence');
+  let lookAhead = 2;
+  if (Object.prototype.hasOwnProperty.call(pilotRaw, 'lookAhead')) {
+    lookAhead = asNumber(pilotRaw.lookAhead, file, 'lookAhead');
+    if (!Number.isInteger(lookAhead) || lookAhead < 1) fail(file, 'lookAhead');
+  }
+  return { ...loadRhythm(value, file, key), aim, pilot: { fan, spread, lean, cadence, lookAhead } };
 }
 
 function loadPaths(raw: unknown): PatternSet['paths'] {
@@ -791,6 +804,16 @@ export function intensityAt(spec: ParallelismTier, wave: number, waves: number, 
   const start = lerp(spec.intensity, spec.intensityLater, c);
   const end = lerp(spec.intensityLater, spec.intensityShift, c);
   return lerp(start, end, waveProgress(wave, waves));
+}
+
+/**
+ * Beats between next-verb asks. Burst intensity shrinks this (frequency
+ * only); never fan, lean, or spread. Floor is 1. Pass 1 when the burst is off.
+ */
+export function cadenceAt(lever: PilotLever, intensity = 1): number {
+  const c = lever.cadence;
+  if (!(intensity > 1)) return c;
+  return Math.max(1, Math.round(c / intensity));
 }
 
 /**

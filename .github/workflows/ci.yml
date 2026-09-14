@@ -148,7 +148,7 @@ jobs:
   catalog:
     name: Catalog
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -163,6 +163,17 @@ jobs:
             exit 1
           fi
           echo "disableNetwork: true"
+          image=$(awk '/^image:/{print $2; exit}' catalog/server.yaml)
+          image=${image#\"}
+          image=${image%\"}
+          image=${image#\'}
+          image=${image%\'}
+          echo "image=$image"
+          if printf '%s\n' "$image" | grep -qE ':latest(@|$)'; then
+            echo "catalog/server.yaml image: must not use :latest ($image)"
+            echo "next: pin catalog/server.yaml image by digest, not :latest"
+            exit 1
+          fi
           pin=$(grep -A2 '^source:' catalog/server.yaml | awk '/commit:/{print $2; exit}')
           echo "source.commit=$pin"
           echo "github.sha=${{ github.sha }}"
@@ -189,20 +200,90 @@ jobs:
               sys.exit(1)
           print("tool names match:", ",".join(sorted(cat)))
           '
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
+        with:
+          platforms: arm64
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - name: Hub digest pin
+        id: hub_digest
+        run: |
+          echo "hub_digest=skipped" >> "$GITHUB_OUTPUT"
+          echo "ghcr_digest=skipped" >> "$GITHUB_OUTPUT"
+          set +e
+          inspect_out=$(docker buildx imagetools inspect mcp/mcp-arcade-cabinets 2>/tmp/hub-inspect.err)
+          inspect_status=$?
+          set -e
+          if [ "$inspect_status" -ne 0 ]; then
+            echo "Hub listing not present; skip digest compare"
+            if [ -s /tmp/hub-inspect.err ]; then
+              cat /tmp/hub-inspect.err >&2
+            fi
+          else
+            hub_digest=$(printf '%s\n' "$inspect_out" | awk '/^Digest:/{print $2; exit}')
+            if [ -z "$hub_digest" ]; then
+              echo "docker buildx imagetools inspect mcp/mcp-arcade-cabinets succeeded but Digest is empty"
+              echo "next: pin catalog/server.yaml image to mcp/mcp-arcade-cabinets@sha256:<Hub digest>"
+              exit 1
+            fi
+            echo "hub_digest=$hub_digest" >> "$GITHUB_OUTPUT"
+            echo "Hub digest: $hub_digest"
+            image=$(awk '/^image:/{print $2; exit}' catalog/server.yaml)
+            image=${image#\"}
+            image=${image%\"}
+            image=${image#\'}
+            image=${image%\'}
+            if ! printf '%s\n' "$image" | grep -q '@sha256:'; then
+              echo "catalog/server.yaml image: must contain @sha256: now that Hub lists mcp/mcp-arcade-cabinets (got $image)"
+              echo "local docker image id is not the Hub pin"
+              echo "next: pin catalog/server.yaml image to mcp/mcp-arcade-cabinets@$hub_digest"
+              exit 1
+            fi
+            yaml_digest=${image##*@}
+            if [ "$yaml_digest" != "$hub_digest" ]; then
+              echo "catalog/server.yaml image digest $yaml_digest != Hub digest $hub_digest"
+              echo "local docker image id is not the Hub pin"
+              echo "next: pin catalog/server.yaml image to mcp/mcp-arcade-cabinets@$hub_digest"
+              exit 1
+            fi
+            echo "catalog/server.yaml image digest matches Hub"
+          fi
+          set +e
+          ghcr_out=$(docker buildx imagetools inspect ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0 2>/tmp/ghcr-inspect.err)
+          ghcr_status=$?
+          set -e
+          if [ "$ghcr_status" -eq 0 ]; then
+            ghcr_digest=$(printf '%s\n' "$ghcr_out" | awk '/^Digest:/{print $2; exit}')
+            if [ -n "$ghcr_digest" ]; then
+              echo "ghcr_digest=$ghcr_digest" >> "$GITHUB_OUTPUT"
+              echo "GHCR digest: $ghcr_digest"
+            else
+              echo "GHCR inspect skipped"
+            fi
+          else
+            echo "GHCR inspect skipped"
+          fi
       - name: Build Catalog image
         id: docker_build
         run: |
           if ! command -v docker >/dev/null 2>&1; then
             echo "docker=missing" >> "$GITHUB_OUTPUT"
             echo "docker is required on ubuntu-latest; Catalog image was not built"
-            echo "next: docker build -t mcp-arcade-cabinets:ci ."
+            echo "next: docker buildx build --platform linux/amd64,linux/arm64 -t mcp-arcade-cabinets:ci ."
             exit 1
           fi
           echo "docker=present" >> "$GITHUB_OUTPUT"
-          docker build -t mcp-arcade-cabinets:ci .
+          echo "platforms=linux/amd64,linux/arm64" >> "$GITHUB_OUTPUT"
+          # buildx cannot --load a multi-platform image; prove both, load amd64 only
+          docker buildx build --platform linux/amd64,linux/arm64 -t mcp-arcade-cabinets:ci --output=type=cacheonly .
+          docker buildx build --platform linux/amd64 -t mcp-arcade-cabinets:ci --load .
           id=$(docker image inspect -f '{{.Id}}' mcp-arcade-cabinets:ci)
           echo "image_id=$id" >> "$GITHUB_OUTPUT"
           echo "image id: $id"
+          echo "platforms built: linux/amd64,linux/arm64"
       - name: Run Catalog image over stdio
         id: docker_run
         run: |
@@ -257,8 +338,22 @@ jobs:
             echo "## CI / Catalog"
             echo "- sha: \`${{ github.sha }}\`"
             echo "- docker: ${{ steps.docker_build.outputs.docker }}"
-            echo "- image id: \`${{ steps.docker_build.outputs.image_id }}\`"
+            plats="${{ steps.docker_build.outputs.platforms }}"
+            [ -z "$plats" ] && plats=not-built
+            echo "- platforms built: $plats"
+            host_id="${{ steps.docker_build.outputs.image_id }}"
+            [ -z "$host_id" ] && host_id=not-built
+            echo "- host-arch image id: \`$host_id\`"
+            hub="${{ steps.hub_digest.outputs.hub_digest }}"
+            [ -z "$hub" ] && hub=skipped
+            echo "- Hub digest: \`$hub\`"
+            ghcr="${{ steps.hub_digest.outputs.ghcr_digest }}"
+            [ -z "$ghcr" ] && ghcr=skipped
+            echo "- GHCR digest: \`$ghcr\`"
             echo "- contract: ${{ steps.catalog_contract.outcome }}"
+            echo "- qemu: ${{ steps.qemu.outcome }}"
+            echo "- buildx: ${{ steps.buildx.outcome }}"
+            echo "- hub digest: ${{ steps.hub_digest.outcome }}"
             echo "- docker build: ${{ steps.docker_build.outcome }}"
             echo "- docker run (stdio tools/list, --network none): ${{ steps.docker_run.outcome }}"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -268,7 +363,10 @@ jobs:
           {
             echo "## CI / Catalog failed"
             echo "Re-run the failing gate locally:"
-            [ "${{ steps.catalog_contract.outcome }}" = "failure" ] && echo "- next: check catalog/server.yaml disableNetwork: true, source.commit, and catalog/tools.json names"
-            [ "${{ steps.docker_build.outcome }}" = "failure" ] && echo "- next: docker build -t mcp-arcade-cabinets:ci ."
-            [ "${{ steps.docker_run.outcome }}" = "failure" ] && echo "- next: docker run --rm -i --network=none mcp-arcade-cabinets:ci"
+            [ "${{ steps.catalog_contract.outcome }}" = "failure" ] && echo "- next: check catalog/server.yaml disableNetwork: true, refuse :latest, source.commit, and catalog/tools.json names"
+            [ "${{ steps.qemu.outcome }}" = "failure" ] && echo "- next: docker/setup-qemu-action (linux/arm64)"
+            [ "${{ steps.buildx.outcome }}" = "failure" ] && echo "- next: docker/setup-buildx-action"
+            [ "${{ steps.hub_digest.outcome }}" = "failure" ] && echo "- next: pin catalog/server.yaml image to mcp/mcp-arcade-cabinets@sha256 matching docker buildx imagetools inspect mcp/mcp-arcade-cabinets"
+            [ "${{ steps.docker_build.outcome }}" = "failure" ] && echo "- next: docker buildx build --platform linux/amd64,linux/arm64 && docker buildx build --platform linux/amd64 -t mcp-arcade-cabinets:ci --load ."
+            [ "${{ steps.docker_run.outcome }}" = "failure" ] && echo "- next: docker run --rm -i --network=none --cpus 1 --memory 2g mcp-arcade-cabinets:ci"
           } >> "$GITHUB_STEP_SUMMARY"
