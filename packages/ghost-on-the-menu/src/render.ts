@@ -3,6 +3,7 @@ import {
   type Boss,
   type DrawContext,
   type Enemy,
+  type HazardKind,
   type RoundState,
   type SpriteClass,
 } from './types';
@@ -76,9 +77,18 @@ const SLIT_FRAME_W = 40;
 
 /** The boss frame is a function of the boss rect and plate the sim set; never of a fact. */
 export function bossFrame(b: Boss): SpriteKey {
-  if (b.kind === 'menu') return b.w < SLIT_FRAME_W ? 'boss-menu-slit' : 'boss-menu-open';
-  if (b.kind === 'doorman') return b.plate ? 'boss-doorman-plate-out' : 'boss-doorman-plate-gone';
-  return 'boss-whisperer';
+  switch (b.kind) {
+    case 'menu':
+      return b.w < SLIT_FRAME_W ? 'boss-menu-slit' : 'boss-menu-open';
+    case 'doorman':
+      return b.plate ? 'boss-doorman-plate-out' : 'boss-doorman-plate-gone';
+    case 'whisperer':
+      return 'boss-whisperer';
+    default: {
+      const _exhaustive: never = b.kind;
+      return _exhaustive;
+    }
+  }
 }
 
 /**
@@ -269,16 +279,16 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     rect(shot.x, shot.y, shot.w, shot.h);
   }
 
-  const HAZARD_FILL: Record<string, string> = {
+  const HAZARD_FILL: Record<HazardKind, string> = {
     echo: '#7a7a9a',
     band: '#3a8a8a',
     plate: '#a08040',
   };
   for (const h of state.hazards) {
     if (!h.alive) continue;
-    const key = `hazard-${h.kind}`;
-    if (!sprite(key as SpriteKey, h.x, h.y, h.w, h.h)) {
-      ctx.fillStyle = HAZARD_FILL[h.kind] ?? '#888';
+    const key = `hazard-${h.kind}` satisfies SpriteKey;
+    if (!sprite(key, h.x, h.y, h.w, h.h)) {
+      ctx.fillStyle = HAZARD_FILL[h.kind];
       rect(h.x, h.y, h.w, h.h);
     }
   }

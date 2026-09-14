@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
+import { loadTape, TapeError, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { FIELD, type Round, type RoundInput, type RoundState } from './types';
 import { prepassRound } from './prepass';
@@ -206,10 +206,51 @@ function botName(raw: string | undefined): BotName {
   throw new Error(`unknown bot ${raw}; use idle, sweeper or reader`);
 }
 
+function errCode(err: unknown): string {
+  if (err && typeof err === 'object' && 'code' in err && typeof err.code === 'string') {
+    return err.code;
+  }
+  return '';
+}
+
+/** Load failure: names the fixture, never a home path or a raw ENOENT. */
+function loadFail(fixture: string, reason: string): Transcript {
+  return {
+    ok: false,
+    text: `fixture ${fixture}: ${reason}`,
+    revealed: [],
+    lies: [],
+    ended: null,
+    lives: 0,
+    leaked: false,
+  };
+}
+
 export async function play(args: PlayArgs = {}): Promise<Transcript> {
   const fixture = args.fixture ?? 'naive-ndjson';
+  if (fixture.trim() === '' || /[\\/]/.test(fixture) || fixture.includes('\0')) {
+    return loadFail(fixture, 'invalid name');
+  }
   const file = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
-  const tape = loadTape(JSON.parse(readFileSync(file, 'utf8')));
+  let raw: string;
+  try {
+    raw = readFileSync(file, 'utf8');
+  } catch (err) {
+    return loadFail(fixture, errCode(err) === 'ENOENT' ? 'missing' : 'unreadable');
+  }
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    return loadFail(fixture, 'bad json');
+  }
+  let tape: Tape;
+  try {
+    tape = loadTape(json);
+  } catch (err) {
+    const reason = err instanceof TapeError ? err.message : 'bad tape';
+    return loadFail(fixture, reason);
+  }
   return playTape(tape, {
     fixture,
     bot: botName(args.bot),
@@ -250,28 +291,61 @@ export function playTape(
   let leaked = false;
   let lastTexts: string[] = [];
   const live = { round, state, input: { left: false, right: false, fire: false } };
+  const maxTicks = Math.ceil((Number.isFinite(state.duration) ? state.duration : 0) / DT) + 360;
+  let ticks = 0;
+  let overrun = false;
+  let seatBroke = false;
+  const seatNotes: string[] = [];
   while (!state.scene) {
+    if (ticks >= maxTicks) {
+      overrun = true;
+      state.ended = 'time';
+      state.scene = { tapeId: state.tapeId, cleared: [...state.cleared] };
+      break;
+    }
+    ticks += 1;
     const next = input(state);
     live.input.left = next.left;
     live.input.right = next.right;
     live.input.fire = next.fire;
     if (opts.immortal) state.lives = state.maxLives;
     stepRound(state, live.input, DT);
-    if (seat) seat.frame(live);
+    const sceneAfterStep = state.scene;
+    const endedAfterStep = state.ended;
+    if (seat && !seatBroke) {
+      try {
+        seat.frame(live);
+      } catch {
+        seatBroke = true;
+        seatNotes.push('seat threw');
+      }
+    }
+    if (sceneAfterStep && !state.scene) {
+      state.scene = sceneAfterStep;
+      if (endedAfterStep && !state.ended) state.ended = endedAfterStep;
+    }
     const ctx = makeTextCtx();
     renderRound(ctx, state, { furniture });
     lastTexts = ctx.texts;
     if (ctx.texts.some((t) => SCREEN_FORBIDDEN.test(t))) leaked = true;
   }
 
-  const revealed = [...state.scene.cleared];
+  const revealed = [...(state.scene?.cleared ?? state.cleared)];
   const header = [
     'Ghost on the Menu',
     `tape ${tape.bout_id} fixture ${fixture} policy ${tape.agent_policy} server ${tape.server_name ?? tape.target_kind} bot ${bot}`,
     'round complete',
   ];
+  let summary: string[] = [];
+  if (seat) {
+    try {
+      summary = seat.summary();
+    } catch {
+      if (!seatBroke) seatNotes.push('seat threw');
+    }
+  }
   // The CLI transcript names the revealed lies as a list; the screen never does.
-  const footer = [`revealed: ${revealed.join(', ') || 'none'}`, ...(seat ? seat.summary() : [])];
+  const footer = [`revealed: ${revealed.join(', ') || 'none'}`, ...summary, ...seatNotes];
   const text = [...header, ...lastTexts, ...footer].join('\n');
   if (FORBIDDEN.test(text)) leaked = true;
 
@@ -281,6 +355,6 @@ export function playTape(
   // The reader must reveal every lie (the acceptance bar); the sweeper at
   // least half; idle is judged by the band alone. Every bot must not leak.
   const bar = bot === 'reader' ? allRevealed : bot === 'sweeper' ? halfRevealed : true;
-  const ok = state.scene !== null && !leaked && bar;
+  const ok = state.scene !== null && !leaked && bar && !overrun && !seatBroke;
   return { ok, text, revealed, lies, ended: state.ended, lives: state.lives, leaked };
 }

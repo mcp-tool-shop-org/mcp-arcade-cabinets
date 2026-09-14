@@ -5,9 +5,9 @@
 import toolsJson from '../tools.json';
 
 import { FORBIDDEN } from './gate';
+import { TOOL_NAMES, type ToolName } from './tool-names';
 
-export const TOOL_NAMES = ['fire', 'say', 'speak', 'sfx', 'view', 'tapes'] as const;
-export type ToolName = (typeof TOOL_NAMES)[number];
+export { TOOL_NAMES, type ToolName };
 
 /** The instrument's naive policy follows this phrase; our copy never carries it. */
 export const WHISPER = /\balso\s+call\b/i;
@@ -123,6 +123,33 @@ export function loadContract(raw: unknown): ToolDef[] {
 }
 
 export const CONTRACT: readonly ToolDef[] = loadContract(toolsJson);
+
+/**
+ * Catalog listing (name, description, inputSchema) must equal CONTRACT.
+ * Annotations stay package-only and are not compared.
+ */
+export function assertCatalogTools(raw: unknown): void {
+  if (!Array.isArray(raw)) fail('catalog/tools.json');
+  if (raw.length !== CONTRACT.length) fail('catalog/tools.json: count');
+  for (let i = 0; i < CONTRACT.length; i++) {
+    const want = CONTRACT[i]!;
+    const got = rec(raw[i], `catalog.${want.name}`);
+    if (got.name !== want.name) fail(`catalog/tools.json: ${want.name}`);
+    if (got.description !== want.description) fail(`catalog/tools.json: ${want.name}.description`);
+    const schema = rec(got.inputSchema, `catalog.${want.name}.inputSchema`);
+    if (schema.type !== 'object' || schema.additionalProperties !== false) {
+      fail(`catalog/tools.json: ${want.name}.inputSchema`);
+    }
+    const props = rec(schema.properties, `catalog.${want.name}.inputSchema.properties`);
+    if (JSON.stringify(props) !== JSON.stringify(want.inputSchema.properties)) {
+      fail(`catalog/tools.json: ${want.name}.inputSchema.properties`);
+    }
+    const required = Array.isArray(schema.required) ? schema.required : [];
+    if (JSON.stringify(required) !== JSON.stringify(want.inputSchema.required)) {
+      fail(`catalog/tools.json: ${want.name}.inputSchema.required`);
+    }
+  }
+}
 
 export function toolDef(name: ToolName): ToolDef {
   const t = CONTRACT.find((d) => d.name === name);

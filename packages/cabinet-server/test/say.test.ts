@@ -48,7 +48,10 @@ describe('the say prompt', () => {
     };
     const p = DEFAULT_PERSONAS.boss.menu;
     const seeds = seedLines(DEFAULT_PATTERNS.voice.boss.menu, 0);
-    expect(sayPrompt(view, p, seeds, [])).toEqual(sayPrompt({ ...view }, { ...p }, [...seeds], []));
+    // A tape twin: lie/fact fields a prompt must ignore. Copy-equals-copy of
+    // the same view would still match if those flags were interpolated.
+    const twin = { ...view, lie: true, fact: 'followed', revealed: true } as SeatView;
+    expect(sayPrompt(view, p, seeds, [])).toEqual(sayPrompt(twin, p, seeds, []));
     expect(() => sayPrompt({ ...view, motion: 'phase 2' }, p, seeds, [])).toThrow(/forbidden/);
     expect(() => sayPrompt(view, { ...p, register: 'It lies.' }, seeds, [])).toThrow(/forbidden/);
     expect(() => sayPrompt(view, p, ['The score is high.'], [])).toThrow(/forbidden/);

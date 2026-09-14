@@ -217,6 +217,47 @@ describe('prepassRound', () => {
     expect(round.beats.filter((b) => b.sprite === 'fog')).toHaveLength(1);
   });
 
+  it('classifies stall, error, and obstacle from wire notes', () => {
+    const stall = prepassRound(
+      tapeOf([row({ seq: 1, method: 'tools/call', note: 'tools/call echo [no response]' })]),
+      { seconds: 150 },
+    );
+    expect(stall.beats.map((b) => b.sprite)).toContain('stall');
+
+    const err = prepassRound(
+      tapeOf([
+        row({
+          seq: 1,
+          direction: 'in',
+          method: 'error',
+          note: 'jsonrpc error',
+        }),
+      ]),
+      { seconds: 150 },
+    );
+    expect(err.beats.map((b) => b.sprite)).toContain('error');
+
+    const obstacle = prepassRound(
+      tapeOf([
+        row({
+          seq: 1,
+          direction: 'in',
+          method: 'ping',
+          note: 'server request',
+          rpc_id: '1',
+        }),
+      ]),
+      { seconds: 150 },
+    );
+    expect(obstacle.beats.map((b) => b.sprite)).toContain('obstacle');
+
+    const fog = prepassRound(
+      tapeOf([row({ seq: 1, method: 'notifications/message', note: 'SUT says: "hi"' })]),
+      { seconds: 150 },
+    );
+    expect(fog.beats.map((b) => b.sprite)).toContain('fog');
+  });
+
   it('times waves by atom with rhythm groups and clamps duration', () => {
     const naive = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
     const again = prepassRound(load('naive-ndjson'), { seconds: 150, seed: 0 });
@@ -310,7 +351,7 @@ describe('prepassRound', () => {
 
   it('fills the round so the last wave ends within tail of duration', () => {
     const files = readdirSync(FIXTURES).filter((f) => f.endsWith('.tape.json'));
-    expect(files.length).toBeGreaterThan(0);
+    expect(files.length, files.map((f) => f.replace(/\.tape\.json$/, '')).join(', ')).toBe(20);
     for (const file of files) {
       const name = file.replace(/\.tape\.json$/, '');
       const round = prepassRound(load(name), { seconds: 150 });
@@ -334,8 +375,8 @@ describe('prepassRound', () => {
           ts.push(b.t);
           byClass.set(b.sprite, ts);
         }
-        for (const ts of byClass.values()) {
-          expect(new Set(ts.map((t) => t.toFixed(6))).size).toBe(ts.length);
+        for (const [sprite, ts] of byClass) {
+          expect(new Set(ts.map((t) => t.toFixed(6))).size, `${name} ${sprite}`).toBe(ts.length);
         }
       }
     }

@@ -25,12 +25,15 @@ import { botFor } from '@mcp-arcade-cabinets/ghost-on-the-menu/src/play';
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createCabinet, type Cabinet } from './cabinet';
-import { CONTRACT, type ToolDef } from './contract';
+import { assertCatalogTools, CONTRACT, type ToolDef } from './contract';
 import { hostForRound, tapeCards, type Live } from './host';
 import { speakLine, voiceHealth } from './voice';
 
 /** Seconds between liveness probes of the voice worker, off the beat. */
 export const VOICE_PROBE_S = 15;
+
+/** A probe older than this is not a promise the worker will speak. */
+export const VOICE_AUTH_FRESH_MS = 1000;
 
 /** The host-side voice worker; in the Catalog container, host.docker.internal. */
 export const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
@@ -49,11 +52,33 @@ export function listTapes(dir: string): { name: string; tape: Tape }[] {
     const name = f.replace(/\.tape\.json$/, '');
     try {
       out.push({ name, tape: loadTape(JSON.parse(readFileSync(path.join(dir, f), 'utf8'))) });
-    } catch {
-      /* a tape that does not load is not on the menu */
+    } catch (err) {
+      const code =
+        err && typeof err === 'object' && 'code' in err
+          ? String((err as { code: unknown }).code)
+          : '';
+      const why =
+        code === 'ENOENT' || code === 'EACCES'
+          ? 'unreadable'
+          : err instanceof Error
+            ? err.message
+            : 'did not load';
+      process.stderr.write(`tape ${name}: ${why}\n`);
     }
   }
   return out;
+}
+
+/** Catalog listing must match CONTRACT. Missing file (the image) is not a mismatch. */
+function checkCatalogListing(): void {
+  const catalog = path.resolve(here, '..', '..', '..', 'catalog', 'tools.json');
+  let raw: string;
+  try {
+    raw = readFileSync(catalog, 'utf8');
+  } catch {
+    return;
+  }
+  assertCatalogTools(JSON.parse(raw) as unknown);
 }
 
 function zodShape(def: ToolDef) {
@@ -81,8 +106,11 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   const dir = opts.tapesDir ?? DEFAULT_TAPES_DIR;
   const tapes = listTapes(dir);
   const fixture = opts.fixture ?? 'naive-ndjson';
-  const found = tapes.find((t) => t.name === fixture) ?? tapes[0];
-  if (!found) throw new Error(`no tapes under ${dir}`);
+  const found = tapes.find((t) => t.name === fixture);
+  if (!found) {
+    const loaded = tapes.map((t) => t.name).join(', ') || 'none';
+    throw new Error(`fixture ${fixture} is not on the menu (loaded: ${loaded})`);
+  }
   const tier = opts.tier ?? 1;
   const makeRound = (): Round =>
     prepassRound(found.tape, {
@@ -100,14 +128,32 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   // Whether the worker will speak for us. Probed via authenticated GET /stats
   // (bearer when set) with a short abort at start and on a cadence, and set
   // by every take's outcome; never on the beat. Open GET /health is not this.
+  // probeGen drops a late voiceHealth so a success started while up cannot
+  // resurrect workerUp after a 401. A 400 (bad job) leaves the worker up.
   let workerUp = false;
+  let probeGen = 0;
+  let lastAuthMs = 0;
   const voiceOpts = voiceUrl
     ? { url: voiceUrl, ...(opts.voiceToken ? { token: opts.voiceToken } : {}) }
     : null;
+  const dropWorker = () => {
+    workerUp = false;
+    probeGen += 1;
+  };
+  const markLive = () => {
+    workerUp = true;
+    lastAuthMs = Date.now();
+  };
   const probe = () => {
     if (!voiceOpts) return;
+    const gen = ++probeGen;
     void voiceHealth(voiceOpts).then((h) => {
-      workerUp = h !== null;
+      if (gen !== probeGen) return;
+      if (h === null) {
+        workerUp = false;
+        return;
+      }
+      markLive();
     });
   };
   probe();
@@ -117,23 +163,31 @@ export function headlessRound(opts: HeadlessOpts = {}) {
       ? {
           // The server has no speaker: a take is spoken, receipted and cached
           // by the worker; the receipt is the artifact. Silent, and said so,
-          // when no worker answers or the bearer is refused (G18).
-          voiceReady: () => workerUp,
+          // when no worker answers or the bearer is refused (G18). A 15s-old
+          // probe is not a promise; fail-closed and refresh off the beat.
+          voiceReady: () => {
+            if (workerUp && Date.now() - lastAuthMs <= VOICE_AUTH_FRESH_MS) return true;
+            probe();
+            return false;
+          },
           voice: (job) => {
             voiced.asked += 1;
             void speakLine(job, voiceOpts).then((a) => {
               if (a.status === 'voiced') {
                 voiced.ok += 1;
-                workerUp = true;
+                markLive();
               } else if (a.status === 'receipt failed') {
                 voiced.failed += 1;
-                workerUp = true;
+                markLive();
+              } else if (a.status === 'refused' && a.refused !== 'auth') {
+                voiced.refused += 1;
+                markLive();
               } else if (a.status === 'refused') {
                 voiced.refused += 1;
-                workerUp = false;
+                dropWorker();
               } else {
                 voiced.noWorker += 1;
-                workerUp = false;
+                dropWorker();
               }
             });
           },
@@ -177,6 +231,7 @@ export function buildServer(cabinet: Cabinet): McpServer {
 }
 
 export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
+  checkCatalogListing();
   const h = headlessRound({
     ...(process.env.CABINET_FIXTURE ? { fixture: process.env.CABINET_FIXTURE } : {}),
     ...(process.env.CABINET_TAPES ? { tapesDir: process.env.CABINET_TAPES } : {}),

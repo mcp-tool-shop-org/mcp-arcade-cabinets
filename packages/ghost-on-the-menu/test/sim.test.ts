@@ -5,7 +5,13 @@ import { describe, expect, it } from 'vitest';
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createRoundState, isDecoy, prepassRound, revealOnHit, stepRound } from '../src/index';
-import { attachPatterns, burstActive, DEFAULT_PATTERNS, type PatternSet } from '../src/patterns';
+import {
+  attachPatterns,
+  burstActive,
+  copiesAt,
+  DEFAULT_PATTERNS,
+  type PatternSet,
+} from '../src/patterns';
 import { FIELD, PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
 
 function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
@@ -1055,22 +1061,31 @@ describe('voice', () => {
 
 describe('parallelism', () => {
   it('spawns honest decoys during a burst and never copies a lie as a lie', () => {
-    const spec = DEFAULT_PATTERNS.parallelism.tiers['2'];
-    const bounds = [{ atom: 'inspect.tools_list', t0: 0, t1: 24 }];
+    const spec = DEFAULT_PATTERNS.parallelism.tiers['1'];
+    const bounds = [{ atom: 'inspect.tools_list', t0: 0, t1: 10 }];
+    // PATH_RATE 0.35 * tier-1 speed 1 ≈ 2.86s of enter. Pick a seed whose
+    // burst opens while hosts are still on the path, not after parking them.
+    let seed = 0;
     let tOn = -1;
-    for (let t = 0; t < 24; t += 0.05) {
-      if (burstActive(t, 0, bounds, 11, spec)) {
-        tOn = t;
-        break;
+    for (let s = 0; s < 400 && tOn < 0; s++) {
+      for (let t = 0.05; t < 2.8; t += 0.05) {
+        if (burstActive(t, 0, bounds, s, spec)) {
+          seed = s;
+          tOn = t;
+          break;
+        }
       }
     }
     expect(tOn).toBeGreaterThan(0);
+    expect(tOn).toBeLessThan(2.8);
+    const extras = copiesAt(spec, 0, 1, 0) - 1;
+    expect(extras).toBeGreaterThan(0);
     const state = createRoundState(
       roundOf({
         tapeId: 'bout_para',
         duration: 30,
-        seed: 11,
-        tier: 2,
+        seed,
+        tier: 1,
         waveBounds: bounds,
         beats: [
           {
@@ -1104,13 +1119,27 @@ describe('parallelism', () => {
         ],
       }),
     );
-    for (const e of state.enemies) park(state, e);
     state.lives = 99;
     const idle = { left: false, right: false, fire: false };
-    while (state.t < tOn + 0.2 && !state.scene) stepRound(state, idle, 1 / 30);
+    let enteredDuringBurst = false;
+    while (state.t < 8 && !state.scene) {
+      stepRound(state, idle, 1 / 30);
+      const hosts = state.enemies.filter(
+        (e) => !isDecoy(e) && !e.lie && e.alive && state.t >= e.tEnter,
+      );
+      if (state.parallelism && hosts.some((h) => h.mode === 'enter' || h.pathT < 1)) {
+        enteredDuringBurst = true;
+      }
+      const hovering = hosts.filter((h) => h.mode === 'hover');
+      const decoys = state.enemies.filter((e) => isDecoy(e) && e.alive);
+      if (state.parallelism && hovering.length > 0 && decoys.length >= extras * hovering.length) {
+        break;
+      }
+    }
+    expect(enteredDuringBurst).toBe(true);
     expect(state.parallelism).toBe(true);
     const decoys = state.enemies.filter((e) => isDecoy(e) && e.alive);
-    expect(decoys.length).toBeGreaterThan(0);
+    expect(decoys.length).toBeGreaterThanOrEqual(extras);
     expect(decoys.every((d) => d.lie === false)).toBe(true);
     const lies = state.enemies.filter((e) => e.lie);
     expect(lies).toHaveLength(1);
@@ -1264,7 +1293,7 @@ describe('the ollama seats in the sim', () => {
     if (rug) rug.fact = rug.fact === 'menu_changed' ? 'menu_stable' : 'menu_changed';
     const a = createRoundState(prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier: 1 }));
     const b = createRoundState(prepassRound(loadTape(flipped), { seconds: 150, seed: 0, tier: 1 }));
-    const script = ['column', 'hold', 'spread', 'fog', 'column', 'plate', 'spread'];
+    const script = ['column', 'hold', 'spread', 'fog', 'column', 'plate', 'spread'] as const;
     const snap = (s: RoundState) =>
       [
         s.boss

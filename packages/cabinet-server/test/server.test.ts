@@ -19,7 +19,7 @@ const OUT = path.join(PKG, 'dist', 'server.test-build.js');
 describe('the headless round', () => {
   it('runs the real sim under the tools and restarts at the scene', () => {
     const h = headlessRound({ fixture: 'naive-ndjson', seed: 0 });
-    expect(h.tapes.length).toBeGreaterThanOrEqual(16);
+    expect(h.tapes.length, h.tapes.map((t) => t.name).join(', ')).toBe(20);
     let bossSeen = false;
     for (let i = 0; i < 6000; i++) {
       h.step(1 / 30);

@@ -433,7 +433,9 @@ export function attach(
     fadeTo(bed, level, dur);
   };
   let musicGain: GainNode | undefined;
+  let sfxGain: GainNode | undefined;
   let barOscs: OscillatorNode[] = [];
+  let sfxOscs: OscillatorNode[] = [];
   const musicBus = (): GainNode => {
     if (!musicGain) {
       musicGain = ctx.createGain();
@@ -441,17 +443,24 @@ export function attach(
     }
     return musicGain;
   };
-  const silenceBar = () => {
+  const sfxBus = (): GainNode => {
+    if (!sfxGain) {
+      sfxGain = ctx.createGain();
+      sfxGain.connect(ctx.destination);
+    }
+    return sfxGain;
+  };
+  const silenceOscs = (gain: GainNode | undefined, oscs: OscillatorNode[]): OscillatorNode[] => {
     const now = ctx.currentTime;
-    if (musicGain) {
+    if (gain) {
       try {
-        musicGain.gain.setValueAtTime(0.0001, now);
+        gain.gain.setValueAtTime(0.0001, now);
       } catch {
         /* tests stub AudioParam */
       }
-      musicGain.gain.value = 0;
+      gain.gain.value = 0;
     }
-    for (const osc of barOscs) {
+    for (const osc of oscs) {
       try {
         osc.stop(now);
       } catch {
@@ -463,19 +472,34 @@ export function attach(
         /* tests stub OscillatorNode */
       }
     }
-    barOscs = [];
+    return [];
   };
-  const schedule = (notes: Note[], base: number, bus?: GainNode) => {
-    if (muted) return;
-    if (bus) {
+  const silenceBar = () => {
+    barOscs = silenceOscs(musicGain, barOscs);
+  };
+  const silenceSfx = () => {
+    sfxOscs = silenceOscs(sfxGain, sfxOscs);
+  };
+  const restoreBuses = () => {
+    const now = ctx.currentTime;
+    for (const gain of [musicGain, sfxGain]) {
+      if (!gain) continue;
       try {
-        bus.gain.setValueAtTime(1, ctx.currentTime);
+        gain.gain.setValueAtTime(1, now);
       } catch {
         /* tests stub AudioParam */
       }
-      bus.gain.value = 1;
+      gain.gain.value = 1;
     }
-    const dest: AudioNode = bus ?? ctx.destination;
+  };
+  const schedule = (notes: Note[], base: number, bus: GainNode, oscs: OscillatorNode[]) => {
+    if (muted) return;
+    try {
+      bus.gain.setValueAtTime(1, ctx.currentTime);
+    } catch {
+      /* tests stub AudioParam */
+    }
+    bus.gain.value = 1;
     for (const n of notes) {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
@@ -486,10 +510,10 @@ export function attach(
       g.gain.linearRampToValueAtTime(n.gain, t0 + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + n.dur);
       osc.connect(g);
-      g.connect(dest);
+      g.connect(bus);
       osc.start(t0);
       osc.stop(t0 + n.dur + 0.02);
-      if (bus) barOscs.push(osc);
+      oscs.push(osc);
     }
   };
   const collectLive = (): MediaBed[] => {
@@ -549,7 +573,7 @@ export function attach(
   };
   return {
     play(name) {
-      schedule(sfx(name), ctx.currentTime);
+      schedule(sfx(name), ctx.currentTime, sfxBus(), sfxOscs);
     },
     tick(t, waveKind, burst = false) {
       burstOn = burst;
@@ -583,7 +607,7 @@ export function attach(
       if (barIndex < nextBar - 1) nextBar = barIndex;
       if (barIndex >= nextBar) {
         const lead = ctx.currentTime + 0.05;
-        schedule(bar(pat, waveKind, barIndex), lead, musicBus());
+        schedule(bar(pat, waveKind, barIndex), lead, musicBus(), barOscs);
         nextBar = barIndex + 1;
       }
     },
@@ -627,10 +651,17 @@ export function attach(
       muted = m;
       for (const b of live) b.muted = m;
       if (currentBed) currentBed.muted = m;
+      if (m) {
+        silenceBar();
+        silenceSfx();
+      } else {
+        restoreBuses();
+      }
     },
     close() {
       cancelEndFade();
       silenceBar();
+      silenceSfx();
       for (const b of collectLive()) pauseBed(b);
       currentBed = undefined;
       fades = [];

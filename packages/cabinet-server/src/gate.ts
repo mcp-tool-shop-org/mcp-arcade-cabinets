@@ -5,6 +5,8 @@
 // A line that fails is dropped by the caller, and the seed's authored line
 // plays instead, so the scripted floor never leaves.
 
+import { TOOL_NAMES } from './tool-names';
+
 export const SAY_MAX_WORDS = 12;
 
 /**
@@ -19,12 +21,41 @@ export const FORBIDDEN =
   /[\p{Nd}\p{No}]|\b(lie|lies|fact|facts|revealed|followed|held|score|scores|pass|fail|nrp|integrity|utility|cleared|ghost)\b/iu;
 
 /**
+ * Vendor, model and seat words the say gate also refuses. Tool names come
+ * from TOOL_NAMES so a new lever is gated without a third hardcoded list.
+ */
+const VENDOR_NAMES = [
+  'stinger',
+  'paint',
+  'seat',
+  'ollama',
+  'claude',
+  'anthropic',
+  'openai',
+  'chatgpt',
+  'gpt',
+  'kimi',
+  'qwen',
+  'llama',
+  'mistral',
+  'gemini',
+  'gemma',
+  'deepseek',
+  'minimax',
+  'glm',
+  'hermes',
+  'grok',
+  'phi',
+  'llm',
+  'mcp',
+] as const;
+
+/**
  * Tool, model, vendor and seat names. The model is a character, not a
  * feature (G17): nothing on the field may name it. The word `model` itself
  * is allowed: the persona may own being one.
  */
-export const NAMES =
-  /\b(fire|say|sfx|speak|stinger|paint|view|tapes|seat|ollama|claude|anthropic|openai|chatgpt|gpt|kimi|qwen|llama|mistral|gemini|gemma|deepseek|minimax|glm|hermes|grok|phi|llm|mcp)\b/i;
+export const NAMES = new RegExp(`\\b(${[...TOOL_NAMES, ...VENDOR_NAMES].join('|')})\\b`, 'i');
 
 export type GateReason = 'empty' | 'long' | 'sentences' | 'digit' | 'forbidden' | 'name' | 'repeat';
 

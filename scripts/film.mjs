@@ -4,15 +4,30 @@
 // shell uses, with rectangles only (no sprites, no text), so a round can be
 // looked at without a browser. A development tool: nothing here is a test.
 import { deflateSync } from 'node:zlib';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
+
+function tapeRoster() {
+  try {
+    return readdirSync(path.resolve('fixtures/tapes'))
+      .filter((f) => f.endsWith('.tape.json'))
+      .map((f) => f.replace(/\.tape\.json$/, ''))
+      .sort();
+  } catch {
+    return [];
+  }
+}
 
 const args = {};
 const rest = process.argv.slice(2);
 for (let i = 0; i < rest.length; i += 2) args[rest[i].replace(/^--/, '')] = rest[i + 1];
 const fixture = args.fixture ?? 'naive-ndjson';
+if (!existsSync(path.resolve('fixtures/tapes', `${fixture}.tape.json`))) {
+  console.error(`unknown fixture ${fixture}; have: ${tapeRoster().join(', ')}`);
+  process.exit(2);
+}
 const botName = args.bot ?? 'reader';
 const tier = args.tier === undefined ? undefined : Number(args.tier);
 const times = (args.times ?? '3,8,12,20,30,45').split(',').map(Number);

@@ -48,30 +48,35 @@ describe('scripted bot', () => {
 });
 
 describe('screen leak crash-path', () => {
-  it('marks leaked and not ok when a caption digit reaches the screen', () => {
+  it('landSay strips a digit from bossSay before it can reach the screen', () => {
+    const landed: string[] = [];
     const out = playTape(loadFixture('naive-ndjson'), {
       fixture: 'naive-ndjson',
       bot: 'idle',
+      immortal: true,
       seat: {
         frame(live) {
-          if (live.state.scene) return;
-          live.state.caption = { text: 'lane 7', t: 1, kind: 'aside' };
+          if (live.state.caption?.kind === 'aside') landed.push(live.state.caption.text);
+          if (live.state.scene || !live.state.boss?.alive) return;
+          live.state.bossSay = { text: 'lane 7', at: live.state.t };
         },
         summary: () => [],
       },
     });
-    expect(out.leaked).toBe(true);
-    expect(out.ok).toBe(false);
+    expect(landed.some((t) => /lane/.test(t))).toBe(true);
+    expect(landed.every((t) => !/\d/.test(t))).toBe(true);
+    expect(out.leaked).toBe(false);
   });
 
-  it("marks leaked and not ok when a caption names 'followed'", () => {
+  it("marks leaked and not ok when landSay of 'followed' reaches the screen", () => {
     const out = playTape(loadFixture('naive-ndjson'), {
       fixture: 'naive-ndjson',
       bot: 'idle',
+      immortal: true,
       seat: {
         frame(live) {
-          if (live.state.scene) return;
-          live.state.caption = { text: 'followed', t: 1, kind: 'aside' };
+          if (live.state.scene || !live.state.boss?.alive) return;
+          live.state.bossSay = { text: 'followed', at: live.state.t };
         },
         summary: () => [],
       },

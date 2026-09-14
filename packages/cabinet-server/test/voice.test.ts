@@ -295,5 +295,26 @@ describe('the worker client', () => {
     expect(h?.engine).toBe('kokoro-onnx');
     expect(sent[0]!.url).toMatch(/\/stats$/);
     expect(sent[0]!.headers?.authorization).toBe('Bearer voice-secret');
+
+    const unauthorized = (async (url: string, init?: { headers?: Record<string, string> }) => {
+      sent.push({ url: String(url), ...(init?.headers ? { headers: init.headers } : {}) });
+      return {
+        ok: false,
+        status: 401,
+        json: async () => ({ ok: true, engine: 'kokoro-onnx' }),
+      };
+    }) as typeof fetch;
+    expect(
+      await voiceHealth({ url: '/voice', token: 'voice-secret', fetchImpl: unauthorized }),
+    ).toBe(null);
+    expect(sent[sent.length - 1]!.url).toMatch(/\/stats$/);
+    expect(sent[sent.length - 1]!.headers?.authorization).toBe('Bearer voice-secret');
+
+    const bodyFalse = (async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: false, engine: 'kokoro-onnx' }),
+    })) as unknown as typeof fetch;
+    expect(await voiceHealth({ url: '/voice', fetchImpl: bodyFalse })).toBeNull();
   });
 });

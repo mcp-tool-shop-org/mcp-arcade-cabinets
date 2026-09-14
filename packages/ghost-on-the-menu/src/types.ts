@@ -1,4 +1,5 @@
 import type { PatternSet } from './patterns';
+import type { PilotIntent } from './pilot';
 
 /** Decoration / enemy class. Lies share a class with their honest counterpart. */
 export type SpriteClass =
@@ -216,7 +217,7 @@ export interface RoundState {
   /** Boss-emitted hazards. Class motion, never fact motion. */
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
-  bossIntent: string | null;
+  bossIntent: PilotIntent | null;
   /** Optional Ollama (or test) pick of the boss's spawn line. Never derived from a fact. */
   bossLine: BossLinePick | null;
   /** Optional seat-written, gate-passed line for the boss. Never derived from a fact. */

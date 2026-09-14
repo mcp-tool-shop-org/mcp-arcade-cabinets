@@ -1,7 +1,9 @@
 # Docker MCP Registry entry for Ghost on the Menu, the cabinet as an MCP server.
 # This file and tools.json are what servers/mcp-arcade-cabinets/ carries in
 # docker/mcp-registry (PR opened 2026-09-11 on the Director's word). source.commit
-# pins the commit that carries the Dockerfile; the registry's CI builds the image from it.
+# pins the commit whose bundled server.js the registry CI builds. esbuild
+# inlines src/; a later server.ts change is a pin bump even when Dockerfile
+# bytes do not move.
 name: mcp-arcade-cabinets
 image: mcp/mcp-arcade-cabinets
 type: server
@@ -28,7 +30,7 @@ about:
   icon: https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/icon.png
 source:
   project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
-  commit: 99b434f8943ebf52331a2d0b0d5503e2121fd655
+  commit: 927c21ddc9d5ce4128225cacccf46d109fe5f38a
 run:
   # The Catalog cabinet is sealed: the voice worker is a host GPU stack no Catalog
   # user runs, and without one the cabinet says the voice is silent and plays on.

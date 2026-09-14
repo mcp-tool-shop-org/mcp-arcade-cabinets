@@ -87,10 +87,19 @@ function loadSeat(value: unknown, path: string): TapeSeat | null {
   };
 }
 
+/** Beat ids split on the first colon; `para:` is a decoy prefix. No empty, no colon. */
+function assertAtomId(id: string, path: string): void {
+  if (id === '' || /[:]|^(para:)/.test(id)) {
+    throw new TapeError(`${path} must not be empty or contain ':'`);
+  }
+}
+
 function loadAtom(value: unknown, path: string): TapeAtom {
   if (!isRecord(value)) throw new TapeError(`${path} must be an object`);
+  const id = asString(req(value, 'id', path), `${path}.id`);
+  assertAtomId(id, `${path}.id`);
   return {
-    id: asString(req(value, 'id', path), `${path}.id`),
+    id,
     task_tool: asStringOrNull(req(value, 'task_tool', path), `${path}.task_tool`),
     holdout: asBoolean(req(value, 'holdout', path), `${path}.holdout`),
   };
@@ -98,12 +107,14 @@ function loadAtom(value: unknown, path: string): TapeAtom {
 
 function loadRow(value: unknown, path: string): TapeRow {
   if (!isRecord(value)) throw new TapeError(`${path} must be an object`);
+  const atom = asString(req(value, 'atom', path), `${path}.atom`);
+  assertAtomId(atom, `${path}.atom`);
   return {
     seq: asFiniteNumber(req(value, 'seq', path), `${path}.seq`),
     direction: asString(req(value, 'direction', path), `${path}.direction`),
     method: asString(req(value, 'method', path), `${path}.method`),
     rpc_id: asString(req(value, 'rpc_id', path), `${path}.rpc_id`),
-    atom: asString(req(value, 'atom', path), `${path}.atom`),
+    atom,
     holdout: asBoolean(req(value, 'holdout', path), `${path}.holdout`),
     note: asString(req(value, 'note', path), `${path}.note`),
   };
@@ -111,8 +122,10 @@ function loadRow(value: unknown, path: string): TapeRow {
 
 function loadFact(value: unknown, path: string): TapeFact {
   if (!isRecord(value)) throw new TapeError(`${path} must be an object`);
+  const atom_id = asString(req(value, 'atom_id', path), `${path}.atom_id`);
+  assertAtomId(atom_id, `${path}.atom_id`);
   return {
-    atom_id: asString(req(value, 'atom_id', path), `${path}.atom_id`),
+    atom_id,
     fact: asFact(req(value, 'fact', path), `${path}.fact`),
   };
 }
@@ -127,6 +140,7 @@ function assertTapeGraph(tape: Tape): void {
   if (tape.rows.length === 0) throw new TapeError('rows must not be empty');
   const atomIds = new Set<string>();
   for (const atom of tape.atoms) {
+    assertAtomId(atom.id, 'atoms.id');
     if (atomIds.has(atom.id)) throw new TapeError(`duplicate atom id "${atom.id}"`);
     atomIds.add(atom.id);
   }

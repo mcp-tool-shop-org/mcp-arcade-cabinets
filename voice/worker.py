@@ -116,20 +116,42 @@ class Voice:
         key = f'{preset}|{rate:.3f}|{loudness:.2f}|{max_gap:.2f}|{text}'
         return hashlib.sha256(key.encode('utf-8')).hexdigest()[:20]
 
+    def _cached(self, wav: Path, rec: Path) -> dict | None:
+        """Return a stored receipt without rendering.
+
+        A passed take needs the wav beside it. A failed receipt is itself
+        the sentinel: do not take the render lock or run Kokoro/ASR again,
+        and never treat it as audio to serve.
+        """
+        if not rec.exists():
+            return None
+        try:
+            receipt = json.loads(rec.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            return None
+        if not isinstance(receipt, dict):
+            return None
+        if receipt.get('ok'):
+            if not wav.exists():
+                return None
+            receipt['cached'] = True
+            return receipt
+        receipt['cached'] = True
+        receipt['ok'] = False
+        return receipt
+
     def speak(self, text: str, preset: str, rate: float, loudness: float, kind: str,
               max_gap: float = 0.5) -> dict:
         lid = self.line_id(preset, rate, loudness, text, max_gap)
         wav = self.cache / f'{lid}.wav'
         rec = self.cache / f'{lid}.receipt.json'
-        if wav.exists() and rec.exists():
-            receipt = json.loads(rec.read_text(encoding='utf-8'))
-            receipt['cached'] = True
-            return receipt
+        hit = self._cached(wav, rec)
+        if hit is not None:
+            return hit
         with self.lock:
-            if wav.exists() and rec.exists():
-                receipt = json.loads(rec.read_text(encoding='utf-8'))
-                receipt['cached'] = True
-                return receipt
+            hit = self._cached(wav, rec)
+            if hit is not None:
+                return hit
             return self._render(text, preset, rate, loudness, kind, lid, wav, rec, max_gap)
 
     def _render(self, text, preset, rate, loudness, kind, lid, wav: Path, rec: Path,

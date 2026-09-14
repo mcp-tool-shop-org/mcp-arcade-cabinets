@@ -7,6 +7,7 @@ import {
   BED_POOL,
   BURST_RATE,
   DEFAULT_MUSIC,
+  END_FADE_S,
   TRACK_KEYS,
   TRACKS,
   sfx,
@@ -345,6 +346,28 @@ describe('recorded beds', () => {
       expect(inspect.volume).toBe(0);
       out.tick(0, 'inspect');
       expect(inspect.playing).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a restart during END_FADE_S keeps the new bed playing when leftover end timers fire', () => {
+    vi.useFakeTimers();
+    try {
+      const inspect = bed();
+      const beds: Record<string, ReturnType<typeof bed>> = { inspect };
+      const out = attach(silentCtx(), undefined, (k) => beds[k]);
+      out.tick(0, 'inspect');
+      out.end();
+      expect(inspect.playing).toBe(true);
+      // During the fade, not after END_FADE_S has finished.
+      vi.advanceTimersByTime((END_FADE_S * 1000) / 2);
+      expect(inspect.playing).toBe(true);
+      out.tick(0, 'inspect');
+      expect(inspect.playing).toBe(true);
+      vi.advanceTimersByTime(END_FADE_S * 1000);
+      expect(inspect.playing).toBe(true);
+      expect(inspect.volume).toBe(1);
     } finally {
       vi.useRealTimers();
     }

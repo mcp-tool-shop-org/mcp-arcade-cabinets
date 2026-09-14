@@ -1,7 +1,18 @@
+import { existsSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { bossFrame, createRoundState, makeTextCtx, renderRound, revealOnHit } from '../src/index';
-import type { Beat, Boss, DrawContext, Round } from '../src/types';
+import {
+  bossFrame,
+  createRoundState,
+  makeTextCtx,
+  renderRound,
+  revealOnHit,
+  SPRITE_FILL,
+  SPRITE_KEYS,
+} from '../src/index';
+import type { Beat, Boss, DrawContext, Round, SpriteClass } from '../src/types';
 
 /** Records every fill call with the fill style in force, so two frames can be compared. */
 function recordingCtx(): DrawContext & { calls: string[] } {
@@ -43,6 +54,33 @@ function roundOf(beats: Beat[]): Round {
 /** Same needle play.ts SCREEN_FORBIDDEN uses on canvas text. */
 const FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
+
+describe('sprite art contract', () => {
+  it('every SPRITE_KEYS has a file under apps/cabinets/public/sprites', () => {
+    const dir = path.resolve(__dirname, '../../../apps/cabinets/public/sprites');
+    const files = new Set(
+      readdirSync(dir)
+        .filter((f) => f.endsWith('.png'))
+        .map((f) => f.replace(/\.png$/, '')),
+    );
+    for (const key of SPRITE_KEYS) {
+      expect(files.has(key), key).toBe(true);
+      expect(existsSync(path.join(dir, `${key}.png`)), key).toBe(true);
+    }
+    const classes: SpriteClass[] = [
+      'init',
+      'ready',
+      'menu',
+      'grid',
+      'answer',
+      'fog',
+      'obstacle',
+      'stall',
+      'error',
+    ];
+    expect(Object.keys(SPRITE_FILL).sort()).toEqual([...classes].sort());
+  });
+});
 
 describe('renderRound', () => {
   it('draws a lie and an honest sprite identically before the hit (G7)', () => {

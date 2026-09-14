@@ -140,13 +140,17 @@ export function listPilotModels(names: readonly string[]): string[] {
   return keep;
 }
 
+/**
+ * Preferred roster tag. Empty string when the list is empty or SKIP-only —
+ * no seat, keep the scripted beat. Never invents a tag that was not listed.
+ */
 export function defaultPilotModel(names: readonly string[]): string {
   const listed = listPilotModels(names);
   const preferred =
     listed.find((n) => n === 'gpt-oss:120b-cloud') ?? listed.find((n) => isCloudModel(n));
   if (preferred) return preferred;
   if (listed.includes('qwen2.5:7b-instruct')) return 'qwen2.5:7b-instruct';
-  return listed[0] ?? 'qwen2.5:7b-instruct';
+  return listed[0] ?? '';
 }
 
 export interface OllamaOpts {
@@ -169,9 +173,35 @@ export function needsLowThink(model: string): boolean {
 const SHORT = { think: false as const, num_predict: 16, timeoutMs: 3_000 };
 const LOW = { think: 'low' as const, num_predict: 96, timeoutMs: 8_000 };
 
+function errName(err: unknown): string {
+  if (err instanceof Error) return err.name;
+  if (err && typeof err === 'object' && 'name' in err && typeof err.name === 'string') {
+    return err.name;
+  }
+  return '';
+}
+
+function errCause(err: unknown): unknown {
+  return err && typeof err === 'object' && 'cause' in err ? err.cause : undefined;
+}
+
+function errCode(err: unknown): string {
+  let cur: unknown = err;
+  for (let i = 0; i < 4 && cur && typeof cur === 'object'; i++) {
+    if ('code' in cur && typeof cur.code === 'string') return cur.code;
+    cur = errCause(cur);
+  }
+  return '';
+}
+
 function isAbort(err: unknown): boolean {
-  const name = err instanceof Error ? err.name : '';
-  return name === 'TimeoutError' || name === 'AbortError';
+  let cur: unknown = err;
+  for (let i = 0; i < 4 && cur; i++) {
+    const name = errName(cur);
+    if (name === 'TimeoutError' || name === 'AbortError') return true;
+    cur = errCause(cur);
+  }
+  return false;
 }
 
 /**
@@ -200,10 +230,19 @@ async function generate(
     });
   } catch (err) {
     if (isAbort(err)) throw new Error('ollama timeout');
+    const code = errCode(err);
+    if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || err instanceof TypeError) {
+      throw new Error('ollama down');
+    }
     throw err;
   }
   if (!res.ok) throw new Error(`ollama ${res.status}`);
-  const body = (await res.json()) as { response?: string; thinking?: string; error?: string };
+  let body: { response?: string; thinking?: string; error?: string };
+  try {
+    body = (await res.json()) as { response?: string; thinking?: string; error?: string };
+  } catch {
+    throw new Error('ollama bad payload');
+  }
   if (body.error) throw new Error(body.error);
   return { response: String(body.response ?? ''), thinking: String(body.thinking ?? '') };
 }

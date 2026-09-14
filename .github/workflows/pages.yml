@@ -10,6 +10,13 @@ on:
       - 'fixtures/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'eslint.config.js'
+      - '.prettierrc'
+      - '.prettierignore'
+      - 'tsconfig.base.json'
+      - 'vitest.config.ts'
+      - '.gitignore'
       - '.github/workflows/pages.yml'
   pull_request:
     branches: [main]
@@ -20,12 +27,19 @@ on:
       - 'fixtures/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'eslint.config.js'
+      - '.prettierrc'
+      - '.prettierignore'
+      - 'tsconfig.base.json'
+      - 'vitest.config.ts'
+      - '.gitignore'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -47,23 +61,42 @@ jobs:
           cache: pnpm
 
       - name: Install the workspace
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
-      # Main only: a red product suite must not upload Pages. PRs are gated by ci.yml.
-      - name: Product tests
+      - name: Product verify
         if: github.ref == 'refs/heads/main'
-        run: pnpm test
+        run: pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
       - name: Build the game into the site at /play/
         run: pnpm build:play
 
+      - name: Play-through
+        if: github.ref == 'refs/heads/main'
+        run: pnpm test:play ghost --fixture naive-ndjson
+
       - name: Install site dependencies
         working-directory: site
-        run: npm ci
+        run: npm ci --ignore-scripts
+
+      - name: Audit site lockfile
+        working-directory: site
+        run: npm audit --audit-level=high
 
       - name: Build site
         working-directory: site
         run: npm run build
+
+      - name: Require /play/ in the dist
+        run: |
+          if [ ! -s site/dist/play/index.html ]; then
+            echo "site/dist/play/index.html is missing or empty"
+            exit 1
+          fi
+          {
+            echo "## Pages build"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- play: site/dist/play/index.html present ($(wc -c < site/dist/play/index.html) bytes)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         if: github.ref == 'refs/heads/main'
@@ -74,6 +107,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       pages: write
       id-token: write
@@ -83,3 +117,10 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
+      - name: Record deploy
+        run: |
+          {
+            echo "## Pages deploy"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- url: ${{ steps.deployment.outputs.page_url }}"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -7,7 +7,7 @@
 
 import type { PilotIntent, SfxName, WaveKind } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
-import { enumOf, toolDef, type ToolName } from './contract';
+import { enumOf, toolDef, TOOL_NAMES, type ToolName } from './contract';
 import { gateLine, type GateReason } from './gate';
 import type { BossKind, Lead } from './personas';
 
@@ -175,25 +175,28 @@ export function createCabinet(host: CabinetHost): Cabinet {
     return text(cards.map((c) => `${c.name}: ${c.label}. ${c.why}`).join('\n'));
   }
 
+  // One closed list: a tools.json name with no handler here fails at
+  // create time. Adding a lever needs tools.json and a handler; a name
+  // only in tools.json already fails loadContract (not in TOOL_NAMES).
+  const handlers: Record<ToolName, (args: unknown) => ToolResult> = {
+    fire,
+    say,
+    speak: () => speak(),
+    sfx,
+    view: () => view(),
+    tapes: () => tapes(),
+  };
+  for (const n of TOOL_NAMES) {
+    if (typeof handlers[n] !== 'function') throw new Error(`tools.json: no dispatch for ${n}`);
+  }
+
   return {
     log,
     call(name: string, args: unknown): ToolResult {
-      switch (name) {
-        case 'fire':
-          return fire(args);
-        case 'say':
-          return say(args);
-        case 'sfx':
-          return sfx(args);
-        case 'speak':
-          return speak();
-        case 'view':
-          return view();
-        case 'tapes':
-          return tapes();
-        default:
-          throw new Error(`no such tool: ${name}`);
+      if (!(TOOL_NAMES as readonly string[]).includes(name)) {
+        throw new Error(`no such tool: ${name}`);
       }
+      return handlers[name as ToolName](args);
     },
   };
 }

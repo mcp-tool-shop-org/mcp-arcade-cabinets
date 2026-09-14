@@ -32,10 +32,14 @@ describe('ollama boss pilot', () => {
       stick: 'still',
       motion: 'pulse',
     };
+    // A tape twin: extra lie/fact fields a prompt must ignore. A shallow copy
+    // of the same object would still match if those flags were interpolated.
+    const twin = { ...view, lie: true, fact: 'followed', revealed: true } as BossView;
     const a = pilotPrompt(view);
-    const b = pilotPrompt({ ...view });
+    const b = pilotPrompt(twin);
     expect(a).toBe(b);
     expect(a).not.toMatch(FORBIDDEN);
+    expect(a).not.toMatch(/followed/);
     expect(a).toMatch(/whisperer/);
     expect(a).toMatch(/one word/);
     expect(a).toMatch(/stick still/);
@@ -211,6 +215,25 @@ describe('askOllama over a daemon', () => {
     stub(() => ({ error: 'some-tag was retired at a date' }));
     await expect(askOllama(view, { url: '/x', model: 'old:cloud' })).rejects.toThrow(/retired/);
   });
+
+  it('throws ollama timeout when the daemon never answers, and reads init.signal', async () => {
+    let sawSignal = false;
+    vi.stubGlobal('fetch', (_url: string, init?: { signal?: AbortSignal }) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+      sawSignal = true;
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          const err = new Error('The operation was aborted');
+          err.name = 'TimeoutError';
+          reject(err);
+        });
+      });
+    });
+    await expect(askOllama(view, { url: '/x', model: 'kimi-test:cloud' })).rejects.toThrow(
+      /ollama timeout/,
+    );
+    expect(sawSignal).toBe(true);
+  }, 10_000);
 
   it('asks the voice seat for a letter and returns a line index', async () => {
     const sent = stub(() => ({ response: 'd' }));

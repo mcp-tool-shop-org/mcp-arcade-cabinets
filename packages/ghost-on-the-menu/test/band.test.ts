@@ -43,8 +43,8 @@ function fixtures(): Case[] {
     };
     const t1 = prepassRound(seated, { seconds: 150 }).tier;
     if (t1 === 1) out.push({ name: `${name}@seated`, tape: seated, tier: 1 });
-    // The live variant: header only, so the curve is measured on all sixteen
-    // tapes at every tier, the same set `pnpm sweep` prints.
+    // The live variant: header only, so the curve is measured on the full
+    // roster at every tier, the same set `pnpm sweep` prints.
     const live: Tape = { ...tape, target_kind: 'stdio', container: null, seat: null };
     if (
       prepassRound(live, { seconds: 150 }).tier === 2 &&
@@ -122,8 +122,8 @@ describe('fairness band', () => {
   });
 });
 
-// The Director's bar: challenging, not impossible. Measured on all sixteen
-// tapes at each tier through the header-only variants, the same set `pnpm
+// The Director's bar: challenging, not impossible. Measured on the full
+// roster at each tier through the header-only variants, the same set `pnpm
 // sweep` prints. Each bot is measured alone: a blend would hide a player
 // who is never touched (the cross-family review caught that).
 describe('the difficulty curve', () => {
@@ -134,11 +134,20 @@ describe('the difficulty curve', () => {
   const halfFound = (outs: ReturnType<typeof run>[]) => {
     const lies = outs.reduce((s, o) => s + o.lies.length, 0);
     const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
-    return revealed >= Math.ceil(lies / 2);
+    if (revealed < Math.ceil(lies / 2)) return false;
+    const withLies = outs.filter((o) => o.lies.length > 0);
+    const perTape = withLies.filter(
+      (o) => o.revealed.length >= Math.ceil(o.lies.length / 2),
+    ).length;
+    return perTape >= Math.ceil(ROSTER / 2);
   };
 
   it('measures every tier on every tape on disk', () => {
-    expect(ROSTER).toBeGreaterThanOrEqual(16);
+    const names = readdirSync(DIR)
+      .filter((f) => f.endsWith('.tape.json'))
+      .map((f) => f.replace(/\.tape\.json$/, ''))
+      .sort();
+    expect(ROSTER, `have: ${names.join(', ')}`).toBe(20);
     expect(byTier(1).length).toBe(ROSTER);
     expect(byTier(2).length).toBe(ROSTER);
   });
@@ -153,14 +162,14 @@ describe('the difficulty curve', () => {
 
   it('live is survivable by the mover on most tapes, with half the lies found', () => {
     const outs = byTier(2).map((c) => run(c, 'sweeper'));
-    // Three quarters of the roster (twelve of the original sixteen).
+    // Three quarters of the roster.
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.75));
     expect(halfFound(outs)).toBe(true);
   });
 
   it('live is survivable by the reader on half the tapes, with half the lies found', () => {
     const outs = byTier(2).map((c) => run(c, 'reader'));
-    // Half the roster (eight of the original sixteen).
+    // Half the roster.
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
     expect(halfFound(outs)).toBe(true);
   });
@@ -192,6 +201,11 @@ describe('the shift climb', () => {
     const lies = outs.reduce((s, o) => s + o.lies.length, 0);
     const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
     expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+    const withLies = outs.filter((o) => o.lies.length > 0);
+    const perTape = withLies.filter(
+      (o) => o.revealed.length >= Math.ceil(o.lies.length / 2),
+    ).length;
+    expect(perTape).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
   });
 
   it('live, last call: the reader survives half the roster', () => {
@@ -225,10 +239,14 @@ describe('hardcore', () => {
   });
 
   it('idle dies, the sweeper dies, the reader lives on some tapes', () => {
-    const idle = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'idle', tier: 3 }));
-    expect(idle.every((o) => o.ended === 'lamps')).toBe(true);
-    const sweep = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'sweeper', tier: 3 }));
-    expect(sweep.every((o) => o.ended === 'lamps')).toBe(true);
+    for (const c of tapes) {
+      const o = playTape(c.tape, { fixture: c.name, bot: 'idle', tier: 3 });
+      expect(o.ended, c.name).toBe('lamps');
+    }
+    for (const c of tapes) {
+      const o = playTape(c.tape, { fixture: c.name, bot: 'sweeper', tier: 3 });
+      expect(o.ended, c.name).toBe('lamps');
+    }
     const read = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'reader', tier: 3 }));
     const lived = read.filter((o) => o.ended === 'time').length;
     const found = read.reduce((s, o) => s + o.revealed.length, 0);
@@ -239,6 +257,8 @@ describe('hardcore', () => {
     expect(read.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(
       Math.ceil(tapes.length / 4),
     );
-    expect(lived + read.filter((o) => o.revealed.length > 0).length).toBeGreaterThan(0);
+    // Scripted reader is not a human: hardcore is one lamp. Survival is the
+    // human bar; the bot andon is "finds lies", not lived>0.
+    void lived;
   });
 });

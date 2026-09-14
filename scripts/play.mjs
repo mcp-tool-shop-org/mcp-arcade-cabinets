@@ -5,8 +5,26 @@
 // prints it and exits non-zero if the transcript reports a failure, if the
 // screen leaked (`transcript.leaked`), or if any forbidden score chrome
 // (nrp, integrity, pass/fail, attack_success) appears before the run's end screen.
+import { existsSync, readdirSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
+
+function tapeRoster() {
+  try {
+    return readdirSync(path.resolve('fixtures/tapes'))
+      .filter((f) => f.endsWith('.tape.json'))
+      .map((f) => f.replace(/\.tape\.json$/, ''))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+function requireFixture(name) {
+  if (existsSync(path.resolve('fixtures/tapes', `${name}.tape.json`))) return;
+  console.error(`unknown fixture ${name}; have: ${tapeRoster().join(', ')}`);
+  process.exit(2);
+}
 
 const [cabinet, ...rest] = process.argv.slice(2);
 if (!cabinet) {
@@ -46,6 +64,7 @@ if (args.seat === 'mcp') {
   console.error(`unknown seat ${args.seat}; use mcp`);
   process.exit(2);
 }
+requireFixture(args.fixture ?? 'naive-ndjson');
 const transcript = await mod.play(args);
 console.log(transcript.text);
 process.exit(transcript.ok && !transcript.leaked ? 0 : 1);

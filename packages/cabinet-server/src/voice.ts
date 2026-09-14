@@ -27,6 +27,10 @@ export interface SpeakAnswer {
   /** Words for the status line. */
   status: 'voiced' | 'receipt failed' | 'no worker' | 'refused';
   ms: number;
+  /** 400 is a bad job on a live worker; 401 is not ready. */
+  refused?: 'payload' | 'auth';
+  /** Set when the speak POST was aborted. */
+  why?: 'timeout';
 }
 
 export interface VoiceOpts {
@@ -46,6 +50,9 @@ function headersFor(opts: VoiceOpts, json = false): Record<string, string> {
 
 /** Milliseconds a liveness probe may take before the worker counts as absent. */
 export const PROBE_MS = 200;
+
+/** Milliseconds a speak POST may take before the worker counts as absent. */
+export const SPEAK_MS = 20_000;
 
 /**
  * Whether a worker will speak for us. Open GET /health is not enough: it
@@ -77,9 +84,14 @@ export async function voiceHealth(
 }
 
 /** Ask the worker to speak one gated line in the persona's voice and receipt it. */
-export async function speakLine(job: VoiceJob, opts: VoiceOpts): Promise<SpeakAnswer> {
+export async function speakLine(
+  job: VoiceJob,
+  opts: VoiceOpts & { timeoutMs?: number },
+): Promise<SpeakAnswer> {
   const f = opts.fetchImpl ?? fetch;
   const t0 = Date.now();
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = ctl ? setTimeout(() => ctl.abort(), opts.timeoutMs ?? SPEAK_MS) : null;
   try {
     const res = await f(`${opts.url}/speak`, {
       method: 'POST',
@@ -92,14 +104,30 @@ export async function speakLine(job: VoiceJob, opts: VoiceOpts): Promise<SpeakAn
         loudness: job.voice.loudness,
         max_gap_s: job.maxGap,
       }),
+      ...(ctl ? { signal: ctl.signal } : {}),
     });
     const ms = Date.now() - t0;
-    if (res.status === 400 || res.status === 401) return { receipt: null, status: 'refused', ms };
+    if (res.status === 400) {
+      return { receipt: null, status: 'refused', ms, refused: 'payload' };
+    }
+    if (res.status === 401) {
+      return { receipt: null, status: 'refused', ms, refused: 'auth' };
+    }
     if (!res.ok) return { receipt: null, status: 'no worker', ms };
     const r = (await res.json()) as VoiceReceipt;
     return { receipt: r, status: r.ok ? 'voiced' : 'receipt failed', ms };
-  } catch {
-    return { receipt: null, status: 'no worker', ms: Date.now() - t0 };
+  } catch (err) {
+    const ms = Date.now() - t0;
+    const timedOut =
+      ctl?.signal.aborted === true || (err instanceof Error && err.name === 'AbortError');
+    return {
+      receipt: null,
+      status: 'no worker',
+      ms,
+      ...(timedOut ? { why: 'timeout' as const } : {}),
+    };
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -209,7 +237,9 @@ export function createVoicer(opts: VoicerOpts): Voicer {
         }
         if (a.status === 'no worker') {
           stats.noWorker += 1;
-          say('voice: no worker');
+          say(
+            a.why === 'timeout' ? 'voice: the worker did not answer in time' : 'voice: no worker',
+          );
           return;
         }
         say('voice: refused');

@@ -41,8 +41,14 @@ function roundSignature(round: Round): string {
 describe('expressive range', () => {
   const all = fixtures().map((f) => ({ ...f, round: prepassRound(f.tape, { seconds: 150 }) }));
 
-  it('has at least a dozen fixtures to plot', () => {
-    expect(all.length).toBeGreaterThanOrEqual(12);
+  it('plots every disk tape', () => {
+    expect(
+      all.length,
+      all
+        .map((f) => f.name)
+        .sort()
+        .join(', '),
+    ).toBe(20);
   });
 
   // Hole found and closed 2026-09-10: two tapes with different wire used to

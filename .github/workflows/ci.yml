@@ -16,23 +16,15 @@ on:
       - '.prettierignore'
       - 'tsconfig.base.json'
       - 'vitest.config.ts'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'catalog/**'
+      - 'voice/**'
       - '.github/workflows/**'
   pull_request:
     branches: [main]
-    paths:
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - 'packages/**'
-      - 'apps/**'
-      - 'fixtures/**'
-      - 'scripts/**'
-      - 'eslint.config.js'
-      - '.prettierrc'
-      - '.prettierignore'
-      - 'tsconfig.base.json'
-      - 'vitest.config.ts'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 concurrency:
@@ -56,6 +48,15 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Env files stay ignored
+        run: |
+          git check-ignore -q .env
+          git check-ignore -q .env.local
+          git check-ignore -q -- '*.pem'
+          if git check-ignore -q .env.example; then
+            echo ".env.example must not be ignored"
+            exit 1
+          fi
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit --audit-level=high
       - run: pnpm lint
@@ -63,3 +64,20 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm test:play ghost --fixture naive-ndjson
+      - name: Voice worker syntax
+        run: python3 -m py_compile voice/worker.py
+
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build Catalog image
+        run: |
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "docker not available; skipping Catalog image build"
+            exit 0
+          fi
+          docker build -t mcp-arcade-cabinets:ci .

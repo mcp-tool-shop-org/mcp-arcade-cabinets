@@ -75,9 +75,9 @@ export interface HostOpts {
   /** The voicer (the shell's player or the server's cache). Absent means silent. */
   voice?: (job: VoiceJob) => void;
   /**
-   * Whether the worker behind the voicer will speak (authenticated probe,
-   * not open GET /health). False makes `speak` say so instead of queueing
-   * into a 401; the probe that sets it runs off the beat, never on it.
+   * Whether the worker behind the voicer will speak now (authenticated
+   * probe, not open GET /health, not a 15s-old bit). False makes `speak`
+   * say so instead of promising a take; the probe runs off the beat.
    */
   voiceReady?: () => boolean;
 }

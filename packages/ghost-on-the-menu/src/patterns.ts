@@ -431,6 +431,21 @@ function loadFire(raw: unknown): PatternSet['fire'] {
   return { tiers };
 }
 
+/** Motions stepBoss animates (else idle). hold is Doorman's guard pose. */
+const BOSS_MOTIONS = new Set(['pulse', 'drift', 'drift-column', 'squash', 'slit', 'hold']);
+/** Fire verbs stepBoss actually spawns. Anything else is a silent no-op. */
+const BOSS_FIRES = new Set([
+  'drop-fog',
+  'fog',
+  'spread',
+  'column',
+  'plate-out',
+  'plate',
+  'plate-back',
+  'hold',
+  'emit-grid',
+]);
+
 function loadBosses(raw: unknown): PatternSet['bosses'] {
   const file = 'bosses.json';
   const obj = asRecord(raw, file, 'whisperer');
@@ -444,19 +459,28 @@ function loadBosses(raw: unknown): PatternSet['bosses'] {
       for (const key of Object.keys(p)) {
         if (PHASE_FORBIDDEN.has(key)) fail(file, key);
       }
+      const duration = asNumber(req(p, file, 'duration'), file, 'duration');
+      if (!(duration > 0)) fail(file, 'duration');
+      const motion = asString(req(p, file, 'motion'), file, 'motion');
+      if (!BOSS_MOTIONS.has(motion)) fail(file, 'motion');
+      const fire = asString(req(p, file, 'fire'), file, 'fire');
+      if (!BOSS_FIRES.has(fire)) fail(file, 'fire');
       return {
-        duration: asNumber(req(p, file, 'duration'), file, 'duration'),
-        motion: asString(req(p, file, 'motion'), file, 'motion'),
-        fire: asString(req(p, file, 'fire'), file, 'fire'),
+        duration,
+        motion,
+        fire,
         cue: asString(req(p, file, 'cue'), file, 'cue'),
       };
     });
+    if (!phases.some((p) => p.motion !== 'slit' && p.motion !== 'hold')) fail(file, 'phases');
     const rage = asNumber(req(rec, file, 'rage'), file, 'rage');
     if (!(rage > 0 && rage <= 1)) fail(file, 'rage');
+    const hp = asNumber(req(rec, file, 'hp'), file, 'hp');
+    if (!(hp > 0)) fail(file, 'hp');
     bosses[kind] = {
       w: asNumber(req(rec, file, 'w'), file, 'w'),
       h: asNumber(req(rec, file, 'h'), file, 'h'),
-      hp: asNumber(req(rec, file, 'hp'), file, 'hp'),
+      hp,
       rage,
       phases,
     };

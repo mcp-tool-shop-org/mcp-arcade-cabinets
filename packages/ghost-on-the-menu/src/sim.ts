@@ -29,6 +29,7 @@ import {
   type SpriteClass,
   kindOfAtom,
 } from './types';
+import { type PilotIntent } from './pilot';
 import { BEAT_GAP } from './prepass';
 
 const PLAYER_SHOT_SPEED = 420;
@@ -260,8 +261,29 @@ function hittable(state: RoundState, enemy: Enemy): boolean {
 }
 
 function atomOf(enemy: Enemy): string {
-  const i = enemy.id.indexOf(':');
-  return i === -1 ? enemy.id : enemy.id.slice(0, i);
+  const id = isDecoy(enemy) ? enemy.id.slice('para:'.length) : enemy.id;
+  const i = id.indexOf(':');
+  return i === -1 ? id : id.slice(0, i);
+}
+
+/** Seated fire verbs wired in stepBoss. Anything else (including script) keeps p.fire. */
+function seatedFire(intent: PilotIntent | null): Exclude<PilotIntent, 'script'> | null {
+  switch (intent) {
+    case 'spread':
+    case 'column':
+    case 'hold':
+    case 'fog':
+    case 'plate':
+      return intent;
+    case 'script':
+    case null:
+      return null;
+    default: {
+      const _unwired: never = intent;
+      void _unwired;
+      return null;
+    }
+  }
 }
 
 function endRound(state: RoundState, why: 'time' | 'lamps', meta?: Meta): void {
@@ -714,6 +736,7 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
         dieAt: 0,
       };
       hoverHome.set(decoy, decoy.x);
+      diveIndex.set(decoy, ((diveIndex.get(host) ?? 0) + 1) * extras + i);
       born.push(decoy);
     }
   }
@@ -893,9 +916,10 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const cx = boss.x + boss.w / 2;
   const by = boss.y + boss.h;
   const intent = state.bossIntent;
-  if (intent) state.bossIntent = null;
-  const seated = intent !== null && intent !== 'script';
-  const fire = seated ? intent : p.fire;
+  if (intent !== null) state.bossIntent = null;
+  const seatedVerb = seatedFire(intent);
+  const seated = seatedVerb !== null;
+  const fire = seatedVerb ?? p.fire;
   if (p.cue === 'emit-grid' || fire === 'emit-grid') emitWaveGrids(state, meta);
   if (fire === 'drop-fog' || fire === 'fog') {
     spawnFog(state, cx, by, 40 * meta.rung.fog);

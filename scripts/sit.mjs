@@ -13,14 +13,29 @@
 // prompt path, kept so the old numbers stay reproducible. Nothing here sees
 // a fact. A development tool: nothing here is a test, nothing is on screen.
 import path from 'node:path';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
+
+function tapeRoster() {
+  try {
+    return readdirSync(path.resolve('fixtures/tapes'))
+      .filter((f) => f.endsWith('.tape.json'))
+      .map((f) => f.replace(/\.tape\.json$/, ''))
+      .sort();
+  } catch {
+    return [];
+  }
+}
 
 const args = {};
 const rest = process.argv.slice(2);
 for (let i = 0; i < rest.length; i += 2) args[rest[i].replace(/^--/, '')] = rest[i + 1];
 const fixture = args.fixture ?? 'naive-ndjson';
+if (!existsSync(path.resolve('fixtures/tapes', `${fixture}.tape.json`))) {
+  console.error(`unknown fixture ${fixture}; have: ${tapeRoster().join(', ')}`);
+  process.exit(2);
+}
 const botName = args.bot ?? 'sweeper';
 const tier = args.tier === undefined ? 1 : Number(args.tier);
 const models = String(args.model ?? 'gpt-oss:120b-cloud')

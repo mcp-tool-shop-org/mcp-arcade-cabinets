@@ -49,9 +49,18 @@ const climb =
   climbArg === -1 ? 0 : Math.min(1, Math.max(0, Number(process.argv[climbArg + 1]) || 0));
 if (climb > 0) console.log(`climb ${climb}`);
 const dir = path.resolve('fixtures/tapes');
+let files = [];
+try {
+  files = readdirSync(dir).filter((f) => f.endsWith('.tape.json'));
+} catch {
+  files = [];
+}
+if (files.length === 0) {
+  console.error('no tapes under fixtures/tapes');
+  process.exit(2);
+}
 const rows = [];
-for (const f of readdirSync(dir)) {
-  if (!f.endsWith('.tape.json')) continue;
+for (const f of files) {
   const tape = loadTape(JSON.parse(readFileSync(path.join(dir, f), 'utf8')));
   const name = f.replace(/\.tape\.json$/, '');
   HEADERS.forEach((hdr, tier) => {

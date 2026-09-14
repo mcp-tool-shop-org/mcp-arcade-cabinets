@@ -157,6 +157,7 @@ export function mountGhost(
   const ollama = document.createElement('input');
   ollama.type = 'checkbox';
   ollama.checked = false;
+  ollama.disabled = true;
   ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
   ollamaLabel.title =
     'Local daemon or Ollama Cloud. The boss calls its own shots through the cabinet tools and writes its own lines behind a gate; it never sees which sprites are lies. Needs the local game, not Pages.';
@@ -185,6 +186,7 @@ export function mountGhost(
   // Probe for the worker until it answers, so starting `pnpm voice` after
   // the page opened still enables the box, and say plainly when it is missing.
   let voiceProbe = 0;
+  let tagsProbe = 0;
   let workerUp = false;
   let left = false;
   const tagsCtl = new AbortController();
@@ -194,20 +196,34 @@ export function mountGhost(
     takeEl.pause();
     takeEl.src = '';
   };
+  const markVoiceDown = () => {
+    const wasOn = voice.checked;
+    workerUp = false;
+    voice.disabled = true;
+    voice.checked = false;
+    if (wasOn) stopTake();
+    voiceStat.textContent = 'voice: no worker (pnpm voice)';
+  };
   const probeVoice = () => {
-    void voiceHealth({ url: '/voice', timeoutMs: 2000 }).then((h) => {
-      if (left) return;
-      workerUp = h !== null;
-      if (h) {
-        voice.disabled = false;
-        if (!voice.checked) voiceStat.textContent = 'voice ready';
-        return;
-      }
-      voice.disabled = true;
-      voice.checked = false;
-      voiceStat.textContent = 'voice: no worker (pnpm voice)';
-      voiceProbe = window.setTimeout(probeVoice, 5000);
-    });
+    void voiceHealth({ url: '/voice', timeoutMs: 2000 })
+      .then((h) => {
+        if (left) return;
+        if (h) {
+          workerUp = true;
+          voice.disabled = false;
+          if (!voice.checked) voiceStat.textContent = 'voice ready';
+          return;
+        }
+        markVoiceDown();
+      })
+      .catch(() => {
+        if (left) return;
+        markVoiceDown();
+      })
+      .finally(() => {
+        if (left) return;
+        voiceProbe = window.setTimeout(probeVoice, 5000);
+      });
   };
   probeVoice();
   let daemon: 'unknown' | 'up' | 'down' = 'unknown';
@@ -220,30 +236,6 @@ export function mountGhost(
   pilotModel.append(seedOpt);
   pilotModel.value = localDefault;
   pilotModel.title = 'Cloud tags first when the local daemon has signed in.';
-  void fetch('/ollama/api/tags', { signal: tagsCtl.signal })
-    .then((r) => (r.ok ? r.json() : Promise.reject()))
-    .then((body: { models?: { name?: string }[] }) => {
-      if (left) return;
-      const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
-      const listed = listPilotModels(names);
-      if (listed.length === 0) return;
-      listedModels = listed;
-      const pick = defaultPilotModel(listed);
-      pilotModel.replaceChildren();
-      for (const name of listed) {
-        const o = document.createElement('option');
-        o.value = name;
-        o.textContent = isCloudModel(name) ? `${name} (cloud)` : name;
-        pilotModel.append(o);
-      }
-      pilotModel.value = pick;
-      daemon = 'up';
-    })
-    .catch(() => {
-      if (left) return;
-      /* local daemon down: keep the 7B default */
-      daemon = 'down';
-    });
   const full = document.createElement('button');
   full.textContent = 'Full screen';
   const difficulty = document.createElement('select');
@@ -422,6 +414,7 @@ export function mountGhost(
     speak: (job) => speakLine(job, { url: '/voice' }),
     play: (url) => {
       if (left) return;
+      if (!voice.checked) return;
       takeEl.pause();
       takeEl.muted = muted;
       if (muted) return;
@@ -456,29 +449,50 @@ export function mountGhost(
     model: pilotModel.value || localDefault,
     constrain: false,
   });
+  let fireGen = 0;
+  let fireCtl = new AbortController();
+  const bumpFire = () => {
+    fireGen += 1;
+    fireCtl.abort();
+    fireCtl = new AbortController();
+  };
+  const fireFetch: typeof fetch = (input, init) =>
+    fetch(input, { ...init, signal: fireCtl.signal });
   const beatSeconds = (rd: Round) =>
     attachedPatterns(rd).fire.tiers[String(rd.tier) as '0' | '1' | '2' | '3'].boss.period;
-  const newSeat = (): Seat =>
-    createSeat({
-      ask: (v) => askFire(v, fireOpts()),
+  const newSeat = (): Seat => {
+    const gen = fireGen;
+    const liveState = state;
+    return createSeat({
+      ask: (v) => askFire(v, { ...fireOpts(), fetchImpl: fireFetch }),
       admit: (verb) => {
+        if (left || gen !== fireGen || liveState !== state) return;
         cabinet.call('fire', { verb });
       },
       beatSeconds: beatSeconds(round),
-      onStatus: seatSay,
+      onStatus: (s) => {
+        if (left || daemon !== 'up') return;
+        seatSay(s);
+      },
     });
+  };
   let fireSeat = newSeat();
   // Keep the seat warm (G13): one real ask per model before it is needed.
   const warmed = new Set<string>();
   const warm = () => {
     const model = fireOpts().model;
-    if (!ollama.checked || daemon === 'down' || warmed.has(model)) return;
+    if (!ollama.checked || daemon !== 'up' || warmed.has(model)) return;
     warmed.add(model);
+    const gen = fireGen;
     seatSay('seat warming');
-    void warmUp(fireOpts())
-      .then(() => seatSay('seat warm'))
+    void warmUp({ ...fireOpts(), fetchImpl: fireFetch })
+      .then(() => {
+        if (left || gen !== fireGen || daemon !== 'up') return;
+        seatSay('seat warm');
+      })
       .catch((err: unknown) => {
         warmed.delete(model);
+        if (left || gen !== fireGen || daemon !== 'up') return;
         seatFailed(err);
       });
   };
@@ -508,7 +522,7 @@ export function mountGhost(
         says,
         models: [fireOpts().model, ...listedModels],
       }),
-      signal: ctl.signal,
+      signal: AbortSignal.any([ctl.signal, AbortSignal.timeout(12_000)]),
     })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('say'))))
       .then(
@@ -554,6 +568,7 @@ export function mountGhost(
     sayCtl?.abort();
     sayCtl = null;
     sayBusy = false;
+    bumpFire();
     stopTake();
     round = newRound();
     state = createRoundState(round);
@@ -588,6 +603,65 @@ export function mountGhost(
     canvas.focus();
   });
 
+  const fillPilot = (listed: string[]) => {
+    listedModels = listed;
+    const prev = pilotModel.value;
+    const pick = listed.includes(prev) ? prev : defaultPilotModel(listed);
+    pilotModel.replaceChildren();
+    for (const name of listed) {
+      const o = document.createElement('option');
+      o.value = name;
+      o.textContent = isCloudModel(name) ? `${name} (cloud)` : name;
+      pilotModel.append(o);
+    }
+    pilotModel.value = pick;
+  };
+  const markDaemonDown = () => {
+    const was = daemon;
+    daemon = 'down';
+    ollama.disabled = true;
+    ollama.checked = false;
+    seatSay('seat: no daemon');
+    if (was === 'down') return;
+    bumpFire();
+    fireSeat = newSeat();
+    warmed.clear();
+    sayCtl?.abort();
+    sayCtl = null;
+    sayBusy = false;
+  };
+  const probeTags = () => {
+    const signal = AbortSignal.any([tagsCtl.signal, AbortSignal.timeout(2000)]);
+    void fetch('/ollama/api/tags', { signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((body: { models?: { name?: string }[] }) => {
+        if (left) return;
+        const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
+        const listed = listPilotModels(names);
+        if (listed.length === 0) {
+          markDaemonDown();
+          return;
+        }
+        const was = daemon;
+        daemon = 'up';
+        fillPilot(listed);
+        ollama.disabled = false;
+        if (was !== 'up') {
+          seatSay(ollama.checked ? 'seat waiting' : 'seat off');
+          if (ollama.checked) warm();
+        }
+      })
+      .catch(() => {
+        if (left || tagsCtl.signal.aborted) return;
+        markDaemonDown();
+      })
+      .finally(() => {
+        if (left) return;
+        tagsProbe = window.setTimeout(probeTags, 5000);
+      });
+  };
+  probeTags();
+
   function frame(now: number) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
@@ -616,8 +690,14 @@ export function mountGhost(
       // One verb per beat through the cabinet's `fire`: the machine asks
       // once the last verb is spent, prefetches the next during a held
       // beat, and revokes on a changed view. The sim spends what it admits.
+      // A down daemon never ticks fire (or POSTs /api/chat); the say seat
+      // may still use a node-side key if the box is on.
       const v = seatView(live);
-      fireSeat.tick(v, state.t, state.bossIntent !== null);
+      if (daemon === 'up') {
+        fireSeat.tick(v, state.t, state.bossIntent !== null);
+        const k = host.takeSfx();
+        if (k && audio) audio.play(k);
+      }
       if (v.kind !== null && !sayBusy) {
         const key = `${state.wave}:${v.kind}`;
         if (key !== sayKey || state.t - sayAt >= DEFAULT_PERSONAS.cadence) {
@@ -627,8 +707,6 @@ export function mountGhost(
           askSay(v);
         }
       }
-      const k = host.takeSfx();
-      if (k && audio) audio.play(k);
     }
     // With Voice on, every boss speaks its authored spawn line (synthesised
     // once and cached, G15), so the voice is heard with or without a seat.
@@ -687,9 +765,11 @@ export function mountGhost(
     left = true;
     cancelAnimationFrame(raf);
     window.clearTimeout(voiceProbe);
+    window.clearTimeout(tagsProbe);
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     tagsCtl.abort();
+    bumpFire();
     sayCtl?.abort();
     sayCtl = null;
     sayBusy = false;

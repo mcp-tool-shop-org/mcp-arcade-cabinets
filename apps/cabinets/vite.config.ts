@@ -9,6 +9,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 const SAY_MAX_BYTES = 32 * 1024;
 const SAY_MIN_INTERVAL_MS = 400;
+const SAY_TIMEOUT_MS = 12_000;
 const SAY_MAX_RECENT = 16;
 const SAY_MAX_MODELS = 32;
 const SAY_STR = 200;
@@ -176,17 +177,27 @@ function cabinetSay(): Plugin {
           reject(429, 'slow down');
           return;
         }
+        sayBusy = true;
+        lastSayAt = now;
         const chunks: Buffer[] = [];
         let size = 0;
         let overflow = false;
         let finished = false;
+        let released = false;
+        const release = () => {
+          if (released) return;
+          released = true;
+          sayBusy = false;
+        };
         req.on('data', (chunk: Buffer) => {
           if (overflow || finished) return;
           size += chunk.length;
           if (size > SAY_MAX_BYTES) {
             overflow = true;
+            finished = true;
             reject(413, 'too large');
             req.destroy();
+            release();
             return;
           }
           chunks.push(chunk);
@@ -194,8 +205,6 @@ function cabinetSay(): Plugin {
         req.on('end', () => {
           if (overflow || finished) return;
           finished = true;
-          lastSayAt = Date.now();
-          sayBusy = true;
           void (async () => {
             if (!existsSync(dist)) {
               res.statusCode = 503;
@@ -232,7 +241,7 @@ function cabinetSay(): Plugin {
             };
             const ollama = process.env.OLLAMA_URL ?? 'http://127.0.0.1:11434';
             const says = Number(body.says ?? 0);
-            const answer = await cs.askSayFor(
+            const work = cs.askSayFor(
               view,
               parseStrings(body.recent, SAY_MAX_RECENT, SAY_STR),
               Number.isFinite(says) ? Math.max(0, Math.min(10_000, Math.floor(says))) : 0,
@@ -242,15 +251,36 @@ function cabinetSay(): Plugin {
                 models: parseStrings(body.models, SAY_MAX_MODELS, 128),
               },
             );
-            send(answer);
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            try {
+              const answer = await Promise.race([
+                work,
+                new Promise<never>((_, rej) => {
+                  timer = setTimeout(() => rej(new Error('no answer')), SAY_TIMEOUT_MS);
+                }),
+              ]);
+              send(answer);
+            } finally {
+              if (timer !== undefined) clearTimeout(timer);
+            }
           })()
             .catch((err: unknown) => {
               const msg = err instanceof Error ? err.message : String(err);
               send({ error: /retired/i.test(msg) ? 'model retired' : 'no answer' });
             })
             .finally(() => {
-              sayBusy = false;
+              release();
             });
+        });
+        req.on('aborted', () => {
+          if (finished) return;
+          finished = true;
+          release();
+        });
+        req.on('error', () => {
+          if (finished) return;
+          finished = true;
+          release();
         });
       });
     },
