@@ -18,6 +18,7 @@ export function kindOfAtom(atom: string): WaveKind {
 
 export const VISIBLE_MIN = 40;
 export const VISIBLE_MAX = 80;
+/** Legacy advisory length. Prepass duration comes from waves.json, not this. */
 export const DEFAULT_SECONDS = 150;
 
 export const FIELD = { width: 480, height: 360 } as const;
@@ -261,7 +262,11 @@ export interface DrawContext {
 }
 
 export interface PrepassOpts {
-  seconds: number;
+  /**
+   * Ignored. Duration is waves.json density/min/max plus fitSpan, not a
+   * caller-supplied clock. Optional so existing callers still typecheck.
+   */
+  seconds?: number;
   seed?: number;
   patterns?: PatternSet;
   /** Override derived tier so a fixture tape can play at live or hardcore. */

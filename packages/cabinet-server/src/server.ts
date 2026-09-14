@@ -95,10 +95,11 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   let bot = botFor('sweeper', round);
   const input: RoundInput = { left: false, right: false, fire: false };
   const live: Live = { round, state, input };
-  const voiced = { asked: 0, ok: 0, failed: 0, noWorker: 0 };
+  const voiced = { asked: 0, ok: 0, failed: 0, noWorker: 0, refused: 0 };
   const voiceUrl = opts.voiceUrl === undefined ? DEFAULT_VOICE_URL : opts.voiceUrl;
-  // Whether the worker answered lately. Probed with a short abort at start
-  // and on a cadence, and set by every take's outcome; never on the beat.
+  // Whether the worker will speak for us. Probed via authenticated GET /stats
+  // (bearer when set) with a short abort at start and on a cadence, and set
+  // by every take's outcome; never on the beat. Open GET /health is not this.
   let workerUp = false;
   const voiceOpts = voiceUrl
     ? { url: voiceUrl, ...(opts.voiceToken ? { token: opts.voiceToken } : {}) }
@@ -116,16 +117,24 @@ export function headlessRound(opts: HeadlessOpts = {}) {
       ? {
           // The server has no speaker: a take is spoken, receipted and cached
           // by the worker; the receipt is the artifact. Silent, and said so,
-          // when no worker answers (G18).
+          // when no worker answers or the bearer is refused (G18).
           voiceReady: () => workerUp,
           voice: (job) => {
             voiced.asked += 1;
             void speakLine(job, voiceOpts).then((a) => {
-              if (a.status === 'voiced') voiced.ok += 1;
-              else if (a.status === 'receipt failed') voiced.failed += 1;
-              else voiced.noWorker += 1;
-              if (a.status === 'no worker') workerUp = false;
-              else workerUp = true;
+              if (a.status === 'voiced') {
+                voiced.ok += 1;
+                workerUp = true;
+              } else if (a.status === 'receipt failed') {
+                voiced.failed += 1;
+                workerUp = true;
+              } else if (a.status === 'refused') {
+                voiced.refused += 1;
+                workerUp = false;
+              } else {
+                voiced.noWorker += 1;
+                workerUp = false;
+              }
             });
           },
         }

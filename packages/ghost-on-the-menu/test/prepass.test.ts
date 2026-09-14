@@ -24,7 +24,7 @@ function row(partial: Partial<TapeRow> & Pick<TapeRow, 'method' | 'seq'>): TapeR
   };
 }
 
-function tapeOf(rows: TapeRow[]): Tape {
+function tapeOf(rows: TapeRow[], over: Partial<Tape> = {}): Tape {
   return {
     schema_id: 'mcp-arcade.tape/v1',
     bout_id: 'bout_cap',
@@ -39,6 +39,7 @@ function tapeOf(rows: TapeRow[]): Tape {
     atoms: [{ id: 'inspect.tools_list', task_tool: 'echo', holdout: false }],
     rows,
     facts: [],
+    ...over,
   };
 }
 
@@ -72,6 +73,53 @@ describe('prepassRound', () => {
     expect(round.beats.length).toBeLessThanOrEqual(80);
   });
 
+  it('fits an 80-beat round so every beat.t is before duration and last t1 sits in the tail', () => {
+    const rows: TapeRow[] = [];
+    for (let i = 0; i < 100; i++) {
+      rows.push(row({ seq: i + 1, method: 'notifications/initialized' }));
+    }
+    const round = prepassRound(tapeOf(rows), { seconds: 150, seed: 0 });
+    expect(round.beats.length).toBe(VISIBLE_MAX);
+    expect(round.beats.every((b) => b.t < round.duration)).toBe(true);
+    const last = round.waveBounds[round.waveBounds.length - 1];
+    expect(last).toBeDefined();
+    const tail = DEFAULT_PATTERNS.waves.tiers[String(round.tier) as '0' | '1' | '2' | '3'].tail;
+    expect(last!.t1).toBeLessThanOrEqual(round.duration + 1e-6);
+    expect(round.duration - last!.t1).toBeLessThanOrEqual(tail + 1e-6);
+  });
+
+  it('gives unique beat ids when two mismatched tools/call rows share an atom', () => {
+    const round = prepassRound(
+      tapeOf(
+        [
+          row({
+            seq: 1,
+            atom: 'poison.follow_through',
+            method: 'tools/call',
+            note: 'tools/call leak',
+          }),
+          row({
+            seq: 2,
+            atom: 'poison.follow_through',
+            method: 'tools/call',
+            note: 'tools/call other',
+          }),
+        ],
+        {
+          atoms: [{ id: 'poison.follow_through', task_tool: 'echo', holdout: false }],
+          facts: [{ atom_id: 'poison.follow_through', fact: 'followed' }],
+        },
+      ),
+      { seconds: 150, seed: 0 },
+    );
+    const ids = round.beats.map((b) => b.id);
+    expect(ids.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(ids).size).toBe(ids.length);
+    const lies = round.beats.filter((b) => b.lie);
+    expect(lies).toHaveLength(2);
+    expect(lies[0]!.id).not.toBe(lies[1]!.id);
+  });
+
   it('keeps a synthetic burst of authorized calls as one beat', () => {
     const rows: TapeRow[] = [];
     for (let i = 0; i < 10; i++) {
@@ -95,13 +143,17 @@ describe('prepassRound', () => {
   it('marks the three naive-ndjson lies and does not pre-label their sprite', () => {
     const round = prepassRound(load('naive-ndjson'), { seconds: 150 });
     const lies = round.beats.filter((b) => b.lie);
-    expect(lies.map((b) => b.id).sort()).toEqual(
-      [
-        'poison.follow_through:followed',
-        'protocol.unlisted_call:ghost_answered',
-        'temporal.rug_pull:menu_changed',
-      ].sort(),
-    );
+    const expected: Record<string, string> = {
+      'poison.follow_through': 'followed',
+      'protocol.unlisted_call': 'ghost_answered',
+      'temporal.rug_pull': 'menu_changed',
+    };
+    expect(lies).toHaveLength(3);
+    for (const lie of lies) {
+      const fact = expected[lie.source.atom];
+      expect(fact, lie.source.atom).toBeDefined();
+      expect(lie.id.startsWith(`${lie.source.atom}:${fact}`)).toBe(true);
+    }
     const leak = lies.find((b) => b.source.atom === 'poison.follow_through')!;
     const ghost = lies.find((b) => b.source.atom === 'protocol.unlisted_call')!;
     const menu = lies.find((b) => b.source.atom === 'temporal.rug_pull')!;
@@ -274,12 +326,10 @@ describe('prepassRound', () => {
         byWave.set(b.source.atom, list);
       }
       for (const pack of byWave.values()) {
-        const ordered = pack.slice().sort((a, b) => a.t - b.t || a.source.index - b.source.index);
-        expect(ordered.map((b) => b.id)).toEqual(
-          pack.sort((a, b) => a.t - b.t || a.source.index - b.source.index).map((b) => b.id),
-        );
+        // Emission order is not a spawn contract: sorting it walls the live
+        // sweeper. The real invariant is unique timestamps per class.
         const byClass = new Map<string, number[]>();
-        for (const b of ordered) {
+        for (const b of pack) {
           const ts = byClass.get(b.sprite) ?? [];
           ts.push(b.t);
           byClass.set(b.sprite, ts);

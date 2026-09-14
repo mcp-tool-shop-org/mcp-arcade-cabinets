@@ -166,30 +166,42 @@ export function needsLowThink(model: string): boolean {
   return thinkers.has(model);
 }
 
-const SHORT = { think: false as const, num_predict: 16 };
-const LOW = { think: 'low' as const, num_predict: 96 };
+const SHORT = { think: false as const, num_predict: 16, timeoutMs: 3_000 };
+const LOW = { think: 'low' as const, num_predict: 96, timeoutMs: 8_000 };
+
+function isAbort(err: unknown): boolean {
+  const name = err instanceof Error ? err.name : '';
+  return name === 'TimeoutError' || name === 'AbortError';
+}
 
 /**
  * One `/api/generate` call. Throws on transport or model errors (a retired
  * Cloud tag answers with an `error` body) so the shell can say so; the sim
- * keeps the scripted beat either way.
+ * keeps the scripted beat either way. Abort/timeout is a transport error.
  */
 async function generate(
   opts: OllamaOpts,
   prompt: string,
-  budget: { think: boolean | 'low'; num_predict: number },
+  budget: { think: boolean | 'low'; num_predict: number; timeoutMs: number },
 ): Promise<{ response: string; thinking: string }> {
-  const res = await fetch(opts.url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      model: opts.model,
-      prompt,
-      stream: false,
-      think: budget.think,
-      options: { temperature: 0, num_predict: budget.num_predict },
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(opts.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: opts.model,
+        prompt,
+        stream: false,
+        think: budget.think,
+        options: { temperature: 0, num_predict: budget.num_predict },
+      }),
+      signal: AbortSignal.timeout(budget.timeoutMs),
+    });
+  } catch (err) {
+    if (isAbort(err)) throw new Error('ollama timeout');
+    throw err;
+  }
   if (!res.ok) throw new Error(`ollama ${res.status}`);
   const body = (await res.json()) as { response?: string; thinking?: string; error?: string };
   if (body.error) throw new Error(body.error);

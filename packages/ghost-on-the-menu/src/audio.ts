@@ -365,6 +365,8 @@ export function attach(
   let poolAt = pool.length ? Math.abs(opts.seed ?? 0) % pool.length : 0;
   let burstOn = false;
   let lastT = 0;
+  /** Current bed plus any still fading: mute/end/close must reach all of them. */
+  const live = new Set<MediaBed>();
   interface Fade {
     bed: MediaBed;
     from: number;
@@ -374,11 +376,24 @@ export function attach(
     pauseAtEnd: boolean;
   }
   let fades: Fade[] = [];
+  let endGen = 0;
+  const endTimers: ReturnType<typeof setTimeout>[] = [];
+  const cancelEndFade = () => {
+    endGen += 1;
+    for (const id of endTimers) clearTimeout(id);
+    endTimers.length = 0;
+  };
+  const pauseBed = (b: MediaBed) => {
+    b.pause();
+    b.playbackRate = 1;
+    live.delete(b);
+  };
   const fadeTo = (bed: MediaBed, to: number, dur: number, pauseAtEnd = false) => {
     fades = fades.filter((f) => f.bed !== bed);
+    live.add(bed);
     if (dur <= 0) {
       bed.volume = to;
-      if (pauseAtEnd) bed.pause();
+      if (pauseAtEnd) pauseBed(bed);
       return;
     }
     fades.push({ bed, from: bed.volume, to, left: dur, dur, pauseAtEnd });
@@ -400,22 +415,67 @@ export function attach(
       const u = 1 - f.left / f.dur;
       f.bed.volume = f.from + (f.to - f.from) * u;
       if (f.left > 0) keep.push(f);
-      else if (f.pauseAtEnd) f.bed.pause();
+      else if (f.pauseAtEnd) pauseBed(f.bed);
     }
     fades = keep;
   };
   const bringIn = (bed: MediaBed, level: number, dur: number, rate: number) => {
+    // Restart during END_FADE_S reuses this element; stale end() steps must not.
+    cancelEndFade();
     bed.loop = true;
     bed.muted = muted;
     if ('preservesPitch' in bed) bed.preservesPitch = true;
     bed.playbackRate = rate;
     // A bed comes in from silence when there is a fade to come in on.
     bed.volume = dur > 0 ? 0 : level;
+    live.add(bed);
     void bed.play();
     fadeTo(bed, level, dur);
   };
-  const schedule = (notes: Note[], base: number) => {
+  let musicGain: GainNode | undefined;
+  let barOscs: OscillatorNode[] = [];
+  const musicBus = (): GainNode => {
+    if (!musicGain) {
+      musicGain = ctx.createGain();
+      musicGain.connect(ctx.destination);
+    }
+    return musicGain;
+  };
+  const silenceBar = () => {
+    const now = ctx.currentTime;
+    if (musicGain) {
+      try {
+        musicGain.gain.setValueAtTime(0.0001, now);
+      } catch {
+        /* tests stub AudioParam */
+      }
+      musicGain.gain.value = 0;
+    }
+    for (const osc of barOscs) {
+      try {
+        osc.stop(now);
+      } catch {
+        /* already stopped */
+      }
+      try {
+        osc.disconnect();
+      } catch {
+        /* tests stub OscillatorNode */
+      }
+    }
+    barOscs = [];
+  };
+  const schedule = (notes: Note[], base: number, bus?: GainNode) => {
     if (muted) return;
+    if (bus) {
+      try {
+        bus.gain.setValueAtTime(1, ctx.currentTime);
+      } catch {
+        /* tests stub AudioParam */
+      }
+      bus.gain.value = 1;
+    }
+    const dest: AudioNode = bus ?? ctx.destination;
     for (const n of notes) {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
@@ -426,9 +486,30 @@ export function attach(
       g.gain.linearRampToValueAtTime(n.gain, t0 + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + n.dur);
       osc.connect(g);
-      g.connect(ctx.destination);
+      g.connect(dest);
       osc.start(t0);
       osc.stop(t0 + n.dur + 0.02);
+      if (bus) barOscs.push(osc);
+    }
+  };
+  const collectLive = (): MediaBed[] => {
+    const out: MediaBed[] = [];
+    const seen = new Set<MediaBed>();
+    const add = (b: MediaBed | undefined) => {
+      if (!b || seen.has(b)) return;
+      seen.add(b);
+      out.push(b);
+    };
+    add(currentBed);
+    for (const f of fades) add(f.bed);
+    for (const b of live) add(b);
+    return out;
+  };
+  const sweepOrphans = () => {
+    const fading = new Set(fades.map((f) => f.bed));
+    for (const b of [...live]) {
+      if (b === currentBed || fading.has(b)) continue;
+      pauseBed(b);
     }
   };
   /** The pool bed at the rotation, skipping keys with no file; undefined when the pool has none. */
@@ -474,18 +555,26 @@ export function attach(
       burstOn = burst;
       // A new round on the same player (a restart, the next call of a
       // shift): the round clock went back to zero; the hold carries.
+      // Any tick after end() cancels leftover wall-clock fade steps first.
+      if (t < lastT || endTimers.length > 0) cancelEndFade();
       if (t < lastT) bedSince = t - Math.max(0, lastT - bedSince);
       runFades(Math.max(0, Math.min(0.1, t - lastT)));
       lastT = t;
       // A recorded bed, when present, replaces the chiptune for that kind.
       const hasBed = switchBed(waveKind, t);
-      if (hasBed) return;
+      sweepOrphans();
+      if (hasBed) {
+        silenceBar();
+        lastKind = '';
+        return;
+      }
       // Bars are scheduled by the round clock so the music follows hitstop
       // and the end; a burst plays the same pattern faster.
       const base = TRACKS[waveKind] ?? pattern;
       const pat = burst ? { ...base, bpm: base.bpm * burstRate } : base;
       const key = `${waveKind}:${burst ? 'burst' : ''}`;
       if (key !== lastKind) {
+        silenceBar();
         lastKind = key;
         nextBar = Math.floor(t / barSeconds(pat));
       }
@@ -494,7 +583,7 @@ export function attach(
       if (barIndex < nextBar - 1) nextBar = barIndex;
       if (barIndex >= nextBar) {
         const lead = ctx.currentTime + 0.05;
-        schedule(bar(pat, waveKind, barIndex), lead);
+        schedule(bar(pat, waveKind, barIndex), lead, musicBus());
         nextBar = barIndex + 1;
       }
     },
@@ -505,41 +594,47 @@ export function attach(
     },
     end() {
       // The round clock has stopped; step the fade on the wall clock.
-      const beds = [currentBed].filter((b): b is MediaBed => Boolean(b));
+      cancelEndFade();
+      const beds = collectLive();
       currentBed = undefined;
       burstOn = false;
       fades = [];
+      silenceBar();
       if (beds.length === 0) return;
+      const gen = endGen;
       const steps = 20;
       const start = beds.map((b) => b.volume);
       let i = 0;
       const step = () => {
+        if (gen !== endGen) return;
         i += 1;
         beds.forEach((b, k) => {
+          if (gen !== endGen || b === currentBed) return;
           b.volume = Math.max(0, (start[k] ?? 1) * (1 - i / steps));
         });
         if (i >= steps) {
           for (const b of beds) {
-            b.pause();
-            b.playbackRate = 1;
+            if (gen !== endGen || b === currentBed) continue;
+            pauseBed(b);
           }
           return;
         }
-        setTimeout(step, (END_FADE_S * 1000) / steps);
+        endTimers.push(setTimeout(step, (END_FADE_S * 1000) / steps));
       };
-      setTimeout(step, (END_FADE_S * 1000) / steps);
+      endTimers.push(setTimeout(step, (END_FADE_S * 1000) / steps));
     },
     setMuted(m) {
       muted = m;
+      for (const b of live) b.muted = m;
       if (currentBed) currentBed.muted = m;
     },
     close() {
-      if (currentBed) {
-        currentBed.pause();
-        currentBed.playbackRate = 1;
-      }
+      cancelEndFade();
+      silenceBar();
+      for (const b of collectLive()) pauseBed(b);
       currentBed = undefined;
       fades = [];
+      live.clear();
       void ctx.close?.();
     },
   };

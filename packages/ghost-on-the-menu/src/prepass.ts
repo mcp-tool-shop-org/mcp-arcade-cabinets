@@ -2,7 +2,6 @@ import { factFor, type Tape, type TapeRow } from '@mcp-arcade-cabinets/tape-core
 
 import { attachPatterns, DEFAULT_PATTERNS, deriveTier, type WaveTier } from './patterns';
 import {
-  DEFAULT_SECONDS,
   FIELD,
   VISIBLE_MAX,
   type Beat,
@@ -152,7 +151,7 @@ function capVisible(beats: Beat[], max: number): Beat[] {
 }
 
 function beatId(c: Candidate, fact: ReturnType<typeof factFor>): string {
-  if (c.lie && fact) return `${c.row.atom}:${fact}`;
+  if (c.lie && fact) return `${c.row.atom}:${fact}:${c.index}`;
   return `${c.row.atom}:${c.sprite}:${c.index}`;
 }
 
@@ -249,28 +248,34 @@ function uniquifyClassTimes(pack: Beat[], t1: number, gap: number): number {
   return Math.max(t1, maxT + gap);
 }
 
+function scaleTimes(beats: Beat[], bounds: WaveBound[], scale: number): void {
+  for (const b of beats) b.t *= scale;
+  for (const w of bounds) {
+    w.t0 *= scale;
+    w.t1 *= scale;
+  }
+}
+
 function fitSpan(
   beats: Beat[],
   bounds: WaveBound[],
   duration: number,
   tail: number,
   min: number,
-  max: number,
+  _max: number,
 ): number {
   if (bounds.length === 0) return duration;
   const lastT1 = bounds[bounds.length - 1]!.t1;
   const room = duration - tail;
   if (lastT1 > 0 && lastT1 < room) {
-    const scale = room / lastT1;
-    for (const b of beats) b.t *= scale;
-    for (const w of bounds) {
-      w.t0 *= scale;
-      w.t1 *= scale;
-    }
+    scaleTimes(beats, bounds, room / lastT1);
     return duration;
   }
   const need = lastT1 + tail;
-  if (need > duration) return clamp(need, min, max);
+  // Do not compress a long rhythm into max: that walls the live sweeper.
+  // max is the scale-up ceiling (short tapes). A long tape keeps its span
+  // so every beat still spawns (t < duration, last t1 in the tail).
+  if (need > duration) return Math.max(need, min);
   return duration;
 }
 
@@ -308,11 +313,14 @@ function columnX(seed: number, i: number, cols: number, margin: number): number 
  * Whole-tape pre-pass (lock G7, wave 2): placement from event order, then
  * selection from event class. Consecutive authorized tools/call rows collapse
  * into one formation. Visible events are capped at 80. Duration is
- * clamp((base / density) × beats, 45, 120). One wave per atom, staged in
- * protocol order (init, menu, grids, answers, rest) with rhythm groups from waves.json.
- * Density is unused in group/rest/breather placement.
+ * clamp((base / density) × beats, waves.json min, max), then fitSpan scales
+ * short tapes up so the last t1 lands at duration-tail, and lets a long tape
+ * keep its span (duration grows; beats are not compressed). One
+ * wave per atom, staged in protocol order (init, menu, grids, answers, rest)
+ * with rhythm groups from waves.json. Density is unused in group/rest/breather
+ * placement. opts.seconds does not set the clock.
  */
-export function prepassRound(tape: Tape, opts: PrepassOpts = { seconds: DEFAULT_SECONDS }): Round {
+export function prepassRound(tape: Tape, opts: PrepassOpts = {}): Round {
   const seed = opts.seed ?? seedFromTape(tape);
   const patterns = opts.patterns ?? DEFAULT_PATTERNS;
   const tier = opts.tier ?? deriveTier(tape, patterns.ladder);

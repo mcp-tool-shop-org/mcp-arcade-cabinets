@@ -9,11 +9,24 @@ import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const args = new Set(process.argv.slice(2));
-const port = process.env.VOICE_PORT ?? '7788';
+const argv = process.argv.slice(2);
+let port = process.env.VOICE_PORT ?? '7788';
+const flags = new Set();
+for (let i = 0; i < argv.length; i++) {
+  const a = argv[i];
+  if (a === '--port') {
+    const next = argv[i + 1];
+    if (next && !next.startsWith('-')) {
+      port = next;
+      i += 1;
+    }
+    continue;
+  }
+  flags.add(a);
+}
 const url = `http://127.0.0.1:${port}`;
 
-if (args.has('--check')) {
+if (flags.has('--check')) {
   const res = await fetch(`${url}/health`).catch(() => null);
   if (!res || !res.ok) {
     console.error(`no voice worker at ${url}; start one with pnpm voice`);
@@ -43,23 +56,32 @@ if (args.has('--check')) {
       'utf8',
     ),
   );
+  let failedAny = false;
   for (const kind of ['whisperer', 'menu', 'doorman']) {
     const v = personas.boss[kind].voice;
     const text = voice.boss[kind][0];
     const t0 = Date.now();
-    const r = await (
-      await fetch(`${url}/speak`, {
+    try {
+      const spoken = await fetch(`${url}/speak`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...auth },
         body: JSON.stringify({ text, kind, preset: v.preset, rate: v.rate, loudness: v.loudness }),
-      })
-    ).json();
-    const failed = (r.checks ?? []).filter((c) => !c.ok).map((c) => `${c.check}: ${c.detail}`);
-    console.log(
-      `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms ${r.ok ? 'receipt ok ' : 'receipt FAILED'} ${r.cached ? '(cached)' : `tts ${r.tts_s}s asr ${r.asr_s}s`}  "${text}"${failed.length ? '\n    ' + failed.join('\n    ') : ''}`,
-    );
+      });
+      const r = await spoken.json();
+      const ok = spoken.ok && r.ok === true;
+      if (!ok) failedAny = true;
+      const failed = (r.checks ?? []).filter((c) => !c.ok).map((c) => `${c.check}: ${c.detail}`);
+      console.log(
+        `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms ${ok ? 'receipt ok ' : 'receipt FAILED'} ${r.cached ? '(cached)' : `tts ${r.tts_s}s asr ${r.asr_s}s`}  "${text}"${failed.length ? '\n    ' + failed.join('\n    ') : ''}`,
+      );
+    } catch {
+      failedAny = true;
+      console.log(
+        `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms receipt FAILED  "${text}"`,
+      );
+    }
   }
-  process.exit(0);
+  process.exit(failedAny ? 1 : 0);
 }
 
 const venv = path.resolve('.venv/Scripts/python.exe');

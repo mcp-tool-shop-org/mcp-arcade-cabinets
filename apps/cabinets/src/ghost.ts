@@ -186,8 +186,17 @@ export function mountGhost(
   // the page opened still enables the box, and say plainly when it is missing.
   let voiceProbe = 0;
   let workerUp = false;
+  let left = false;
+  const tagsCtl = new AbortController();
+  const takeEl = new Audio();
+  takeEl.volume = 0.9;
+  const stopTake = () => {
+    takeEl.pause();
+    takeEl.src = '';
+  };
   const probeVoice = () => {
     void voiceHealth({ url: '/voice', timeoutMs: 2000 }).then((h) => {
+      if (left) return;
       workerUp = h !== null;
       if (h) {
         voice.disabled = false;
@@ -211,9 +220,10 @@ export function mountGhost(
   pilotModel.append(seedOpt);
   pilotModel.value = localDefault;
   pilotModel.title = 'Cloud tags first when the local daemon has signed in.';
-  void fetch('/ollama/api/tags')
+  void fetch('/ollama/api/tags', { signal: tagsCtl.signal })
     .then((r) => (r.ok ? r.json() : Promise.reject()))
     .then((body: { models?: { name?: string }[] }) => {
+      if (left) return;
       const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
       const listed = listPilotModels(names);
       if (listed.length === 0) return;
@@ -230,6 +240,7 @@ export function mountGhost(
       daemon = 'up';
     })
     .catch(() => {
+      if (left) return;
       /* local daemon down: keep the 7B default */
       daemon = 'down';
     });
@@ -346,6 +357,7 @@ export function mountGhost(
     mute.textContent = muted ? 'Sound off' : 'Sound on';
     ensureAudio();
     audio?.setMuted(muted);
+    takeEl.muted = muted;
     canvas.focus();
   });
   intensity.addEventListener('change', () => canvas.focus());
@@ -391,9 +403,11 @@ export function mountGhost(
   let musicEnded = false;
   let spokenSpawn = '';
   const seatSay = (text: string) => {
+    if (left) return;
     seat.textContent = text;
   };
   const sayStatSay = (text: string) => {
+    if (left) return;
     sayStat.textContent = text;
   };
   const seatFailed = (err: unknown) => {
@@ -407,16 +421,19 @@ export function mountGhost(
   const voicer = createVoicer({
     speak: (job) => speakLine(job, { url: '/voice' }),
     play: (url) => {
+      if (left) return;
+      takeEl.pause();
+      takeEl.muted = muted;
       if (muted) return;
       // The worker's url is relative to the worker; the dev proxy mounts it at /voice.
-      const el = new Audio(`/voice${url}`);
-      el.volume = 0.9;
-      void el.play().catch(() => {
+      takeEl.src = `/voice${url}`;
+      void takeEl.play().catch(() => {
         /* the take is not the game */
       });
     },
     captionSeconds: 2.4,
     onStatus: (s) => {
+      if (left) return;
       voiceStat.textContent = s;
     },
   });
@@ -427,7 +444,7 @@ export function mountGhost(
     tapes: () => tapeCards(TAPES),
     voiceReady: () => voice.checked && workerUp,
     voice: (job) => {
-      if (voice.checked) voicer.job(job);
+      if (!left && voice.checked) voicer.job(job);
     },
   });
   const cabinet = createCabinet(host);
@@ -473,10 +490,15 @@ export function mountGhost(
   let sayKey = '';
   let sayAt = Number.NEGATIVE_INFINITY;
   let says = 0;
+  let sayCtl: AbortController | null = null;
   const askSay = (v: SeatView) => {
+    if (left) return;
     sayBusy = true;
     const asked = state;
     sayStatSay('say seat thinking');
+    sayCtl?.abort();
+    sayCtl = new AbortController();
+    const ctl = sayCtl;
     void fetch('/cabinet/say', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -486,6 +508,7 @@ export function mountGhost(
         says,
         models: [fireOpts().model, ...listedModels],
       }),
+      signal: ctl.signal,
     })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('say'))))
       .then(
@@ -495,7 +518,8 @@ export function mountGhost(
           suppressed?: boolean;
           error?: string;
         }) => {
-          if (asked !== state || !state.boss || !state.boss.alive) return;
+          if (left || ctl.signal.aborted || asked !== state || !state.boss || !state.boss.alive)
+            return;
           if (a.error) {
             sayStatSay(`say seat: ${a.error}`);
             return;
@@ -511,16 +535,26 @@ export function mountGhost(
               ? `seat called say (${a.tier ?? 'seat'}); gate refused it, own line`
               : `seat called say (${a.tier ?? 'seat'})`,
           );
-          // The line the gate admitted (or the boss's own) is voiced one beat ahead.
-          if (voice.checked) cabinet.call('speak', {});
+          // Seat speak owns the spawn beat when we dropped the authored take.
+          if (voice.checked && !left) cabinet.call('speak', {});
         },
       )
-      .catch(() => sayStatSay('say seat: no answer'))
+      .catch(() => {
+        if (left || ctl.signal.aborted) return;
+        sayStatSay('say seat: no answer');
+      })
       .finally(() => {
-        sayBusy = false;
+        if (sayCtl === ctl) {
+          sayBusy = false;
+          sayCtl = null;
+        }
       });
   };
   const restart = () => {
+    sayCtl?.abort();
+    sayCtl = null;
+    sayBusy = false;
+    stopTake();
     round = newRound();
     state = createRoundState(round);
     audio?.seed(round.seed);
@@ -542,6 +576,7 @@ export function mountGhost(
   });
   voice.addEventListener('change', () => {
     voiceStat.textContent = voice.checked ? 'voice on' : 'voice off';
+    if (!voice.checked) stopTake();
     canvas.focus();
   });
   pilotModel.addEventListener('change', () => {
@@ -601,13 +636,17 @@ export function mountGhost(
       const spawnKey = `${state.wave}:${state.boss.kind}`;
       if (spawnKey !== spokenSpawn && state.caption?.kind === 'wave' && state.caption.line) {
         spokenSpawn = spawnKey;
-        voicer.job({
-          text: state.caption.line,
-          kind: state.boss.kind,
-          voice: DEFAULT_PERSONAS.boss[state.boss.kind].voice,
-          maxGap: DEFAULT_PERSONAS.voice.maxGap,
-          at: state.t,
-        });
+        // Drop spawn when a seat speak is already asked for this boss.
+        const seatOwns = ollama.checked && sayBusy && sayKey === spawnKey;
+        if (!seatOwns) {
+          voicer.job({
+            text: state.caption.line,
+            kind: state.boss.kind,
+            voice: DEFAULT_PERSONAS.boss[state.boss.kind].voice,
+            maxGap: DEFAULT_PERSONAS.voice.maxGap,
+            at: state.t,
+          });
+        }
       }
     }
     voicer.tick(
@@ -645,10 +684,16 @@ export function mountGhost(
     if (state.scene) restart();
   });
   const leave = () => {
+    left = true;
     cancelAnimationFrame(raf);
     window.clearTimeout(voiceProbe);
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
+    tagsCtl.abort();
+    sayCtl?.abort();
+    sayCtl = null;
+    sayBusy = false;
+    stopTake();
     root.classList.remove('playing');
   };
   back.addEventListener('click', () => {

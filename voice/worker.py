@@ -213,6 +213,10 @@ class Voice:
 VOICE: Voice | None = None
 TOKEN: str | None = None
 STATS = {'spoken': 0, 'cached': 0, 'refused': 0, 'started': time.time()}
+# POST /speak: reject before read. Never rfile.read(-1).
+MAX_SPEAK_BODY = 4096
+MAX_KIND = 32
+MAX_PRESET = 32
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -286,35 +290,55 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(404, {'error': 'no such path'})
         if not self._allowed():
             return self._json(401, {'error': 'a bearer token is required'})
+        raw_len = self.headers.get('content-length')
+        if raw_len is None:
+            return self._json(400, {'error': 'bad content-length'})
         try:
-            n = int(self.headers.get('content-length', '0'))
-            body = json.loads(self.rfile.read(n) or b'{}')
+            n = int(raw_len)
+        except (TypeError, ValueError):
+            return self._json(400, {'error': 'bad content-length'})
+        if n < 0 or n > MAX_SPEAK_BODY:
+            return self._json(400, {'error': 'bad content-length'})
+        raw_body = self.rfile.read(n)
+        try:
+            body = json.loads(raw_body)
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+            return self._json(400, {'error': 'bad json'})
+        if not isinstance(body, dict):
+            return self._json(400, {'error': 'bad json'})
+        try:
             text = str(body.get('text', '')).strip()
             preset = str(body.get('preset', 'am_michael'))
+            kind = str(body.get('kind', 'boss'))
             rate = float(body.get('rate', 1.0))
             loudness = float(body.get('loudness', 0.0))
-            kind = str(body.get('kind', 'boss'))
             max_gap = float(body.get('max_gap_s', 0.5))
-            if not (0.1 <= max_gap <= 3.0):
-                return self._json(400, {'error': 'max_gap_s out of range'})
-            if not text or len(text) > 200:
-                return self._json(400, {'error': 'text must be one short line'})
-            if preset not in VOICE.voices:
-                return self._json(400, {'error': 'no such voice'})
-            if not (0.5 <= rate <= 2.0) or not (-24.0 <= loudness <= 12.0):
-                return self._json(400, {'error': 'rate or loudness out of range'})
+        except (TypeError, ValueError):
+            return self._json(400, {'error': 'bad request'})
+        if len(kind) > MAX_KIND or len(preset) > MAX_PRESET:
+            return self._json(400, {'error': 'kind or preset too long'})
+        if not (0.1 <= max_gap <= 3.0):
+            return self._json(400, {'error': 'max_gap_s out of range'})
+        if not text or len(text) > 200:
+            return self._json(400, {'error': 'text must be one short line'})
+        if preset not in VOICE.voices:
+            return self._json(400, {'error': 'no such voice'})
+        if not (0.5 <= rate <= 2.0) or not (-24.0 <= loudness <= 12.0):
+            return self._json(400, {'error': 'rate or loudness out of range'})
+        try:
             receipt = VOICE.speak(text, preset, rate, loudness, kind, max_gap)
-            if receipt.get('cached'):
-                STATS['cached'] += 1
-            else:
-                STATS['spoken'] += 1
-            if not receipt['ok']:
-                STATS['refused'] += 1
-            out = dict(receipt)
-            out['url'] = f"/audio/{receipt['id']}.wav" if receipt['ok'] else None
-            return self._json(200, out)
         except Exception as err:  # noqa: BLE001
-            return self._json(500, {'error': str(err)[:200]})
+            sys.stderr.write(f'voice: speak failed: {err}\n')
+            return self._json(500, {'error': 'speak failed'})
+        if receipt.get('cached'):
+            STATS['cached'] += 1
+        else:
+            STATS['spoken'] += 1
+        if not receipt['ok']:
+            STATS['refused'] += 1
+        out = dict(receipt)
+        out['url'] = f"/audio/{receipt['id']}.wav" if receipt['ok'] else None
+        return self._json(200, out)
 
 
 def main() -> int:

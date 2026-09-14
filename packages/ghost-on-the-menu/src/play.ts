@@ -11,7 +11,7 @@ import path from 'node:path';
 
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import { DEFAULT_SECONDS, FIELD, type Round, type RoundInput, type RoundState } from './types';
+import { FIELD, type Round, type RoundInput, type RoundState } from './types';
 import { prepassRound } from './prepass';
 import { createRoundState, isHittable, stepRound } from './sim';
 import { makeTextCtx, renderRound } from './render';
@@ -216,6 +216,7 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
     ...(args.tier !== undefined ? { tier: args.tier } : {}),
     ...(args.seat ? { seat: args.seat } : {}),
     ...(args.immortal ? { immortal: true } : {}),
+    ...(args.climb !== undefined ? { climb: args.climb } : {}),
   });
 }
 
@@ -233,7 +234,6 @@ export function playTape(
 ): Transcript {
   const { fixture, bot, seat } = opts;
   const round = prepassRound(tape, {
-    seconds: DEFAULT_SECONDS,
     tier: opts.tier,
     climb: opts.climb ?? 0,
   });

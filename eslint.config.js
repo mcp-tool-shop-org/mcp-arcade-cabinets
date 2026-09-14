@@ -11,6 +11,8 @@ export default tseslint.config(
       'fixtures/**',
       'film/**',
       'site/**',
+      '.swarm/',
+      '.swarm/**',
     ],
   },
   js.configs.recommended,

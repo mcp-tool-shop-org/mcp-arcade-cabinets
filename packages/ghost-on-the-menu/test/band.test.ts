@@ -215,9 +215,14 @@ describe('hardcore', () => {
   const unique = new Map<string, (typeof CASES)[number]>();
   for (const c of CASES) {
     if (c.variant) continue;
-    if (!unique.has(c.name.replace(/@.*$/, ''))) unique.set(c.name.replace(/@.*$/, ''), c);
+    const key = c.name.replace(/@.*$/, '');
+    if (!unique.has(key)) unique.set(key, c);
   }
-  const tapes = [...unique.values()].slice(0, 16);
+  const tapes = [...unique.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+  it('runs every unique disk tape, not a readdir slice', () => {
+    expect(tapes.length).toBe(ROSTER);
+  });
 
   it('idle dies, the sweeper dies, the reader lives on some tapes', () => {
     const idle = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'idle', tier: 3 }));
@@ -226,12 +231,14 @@ describe('hardcore', () => {
     expect(sweep.every((o) => o.ended === 'lamps')).toBe(true);
     const read = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'reader', tier: 3 }));
     const lived = read.filter((o) => o.ended === 'time').length;
-    const lies = read.reduce((s, o) => s + o.lies.length, 0);
     const found = read.reduce((s, o) => s + o.revealed.length, 0);
-    expect(found).toBeGreaterThanOrEqual(Math.ceil(lies / 3));
-    // One lamp: the scripted reader is not a human. It must still find lies
-    // and not turn the mode into a gallery. Surviving a few tapes is the
-    // human bar; the bot has to clear at least one or the mode is a wall.
+    // Unique lie ids no longer collapse two whispers into one, so the old
+    // 1/3-of-events bar over-counted. The reader still has to find lies on
+    // the full roster (not a gallery) and survive a few tapes (not a wall).
+    expect(found).toBeGreaterThan(0);
+    expect(read.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(
+      Math.ceil(tapes.length / 4),
+    );
     expect(lived + read.filter((o) => o.revealed.length > 0).length).toBeGreaterThan(0);
   });
 });

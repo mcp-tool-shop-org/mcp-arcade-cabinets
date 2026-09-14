@@ -48,8 +48,11 @@ function headersFor(opts: VoiceOpts, json = false): Record<string, string> {
 export const PROBE_MS = 200;
 
 /**
- * Whether a worker answers, and with which engine. Null when none. The
- * probe aborts after PROBE_MS so it can run beside the beat, never on it.
+ * Whether a worker will speak for us. Open GET /health is not enough: it
+ * never requires the bearer, so a token mismatch still looks live while
+ * POST /speak 401s. Probe GET /stats with the bearer; 401 is not ready.
+ * Null when none. The probe aborts after PROBE_MS so it can run beside
+ * the beat, never on it.
  */
 export async function voiceHealth(
   opts: VoiceOpts & { timeoutMs?: number },
@@ -58,7 +61,10 @@ export async function voiceHealth(
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = ctl ? setTimeout(() => ctl.abort(), opts.timeoutMs ?? PROBE_MS) : null;
   try {
-    const res = await f(`${opts.url}/health`, ctl ? { signal: ctl.signal } : {});
+    const res = await f(`${opts.url}/stats`, {
+      headers: headersFor(opts),
+      ...(ctl ? { signal: ctl.signal } : {}),
+    });
     if (!res.ok) return null;
     const j = (await res.json()) as { ok?: boolean; engine?: string };
     if (!j.ok) return null;
@@ -138,10 +144,12 @@ export interface VoicerOpts {
 
 /**
  * The timing rule. One take in flight at a time; a new job while one is
- * pending replaces it, and drops a take held for the breather (the boss
- * says the newer thing). The take plays at once if its own line is on the
- * field, or within the caption window on a clear field; never over a
- * catch or a wave card; else at the next breather; else never.
+ * pending replaces it, and drops a take that is ready or held for the
+ * breather (the boss says the newer thing). Ending the round bumps the
+ * generation token so a late receipt cannot land next round. The take
+ * plays at once if its own line is on the field, or within the caption
+ * window on a clear field; never over a catch or a wave card; else at
+ * the next breather; else never.
  */
 export function createVoicer(opts: VoicerOpts): Voicer {
   const stats: VoicerStats = {
@@ -170,8 +178,15 @@ export function createVoicer(opts: VoicerOpts): Voicer {
     job(job) {
       const mine = ++token;
       pending = { job, token: mine };
+      // One take at a time: a newer line drops a held breather take and an
+      // already-receipted ready take, so the next tick cannot play the stale
+      // line over (or beside) the new one.
       if (held) {
         held = null;
+        stats.dropped += 1;
+      }
+      if (ready) {
+        ready = null;
         stats.dropped += 1;
       }
       stats.asked += 1;
@@ -203,7 +218,9 @@ export function createVoicer(opts: VoicerOpts): Voicer {
     tick(t, caption, breather, ended) {
       now = t;
       if (ended) {
-        if (ready || held) stats.dropped += 1;
+        token += 1;
+        if (ready || held || pending) stats.dropped += 1;
+        pending = null;
         ready = null;
         held = null;
         return;

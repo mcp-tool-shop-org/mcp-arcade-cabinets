@@ -709,10 +709,44 @@ describe('stepRound', () => {
   });
 
   it('hovering sprites of a class in a wave do not overlap', () => {
-    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
-    const tape = loadTape(JSON.parse(readFileSync(file, 'utf8')));
-    const round = prepassRound(tape, { seconds: 150, seed: 0, tier: 1 });
-    const state = createRoundState(round);
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_hover_pair',
+        duration: 16,
+        tier: 1,
+        waveBounds: [{ atom: 'inspect.tools_list', t0: 0, t1: 14 }],
+        beats: [
+          {
+            id: 'inspect.tools_list:grid:0',
+            t: 0.4,
+            x: 100,
+            sprite: 'grid',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 0,
+            },
+          },
+          {
+            id: 'inspect.tools_list:grid:1',
+            t: 0.6,
+            x: 280,
+            sprite: 'grid',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 1,
+            },
+          },
+        ],
+      }),
+    );
     const aabb = (
       a: { x: number; y: number; w: number; h: number },
       b: { x: number; y: number; w: number; h: number },
@@ -721,28 +755,43 @@ describe('stepRound', () => {
     while (!state.scene && state.t < state.duration) {
       stepRound(state, { left: false, right: false, fire: false }, 1 / 15);
       const hovering = state.enemies.filter(
-        (e) => e.alive && e.mode === 'hover' && state.t >= e.tEnter,
+        (e) => e.alive && e.mode === 'hover' && e.sprite === 'grid' && state.t >= e.tEnter,
       );
-      const groups = new Map<string, typeof hovering>();
-      for (const e of hovering) {
-        const atom = e.id.slice(0, e.id.indexOf(':'));
-        const key = `${atom}:${e.sprite}`;
-        const list = groups.get(key) ?? [];
-        list.push(e);
-        groups.set(key, list);
-      }
-      for (const list of groups.values()) {
-        if (list.length < 2) continue;
-        checked += 1;
-        for (let i = 0; i < list.length; i++) {
-          for (let j = i + 1; j < list.length; j++) {
-            expect(aabb(list[i]!, list[j]!)).toBe(false);
-          }
+      if (hovering.length < 2) continue;
+      checked += 1;
+      for (let i = 0; i < hovering.length; i++) {
+        for (let j = i + 1; j < hovering.length; j++) {
+          expect(aabb(hovering[i]!, hovering[j]!)).toBe(false);
         }
       }
     }
-    // A wave of mixed classes may never pair; when it does, they must not stack.
-    if (checked === 0) return;
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('keeps the last-wave boss present during the reserved tail', () => {
+    const tail = DEFAULT_PATTERNS.waves.tiers['0'].tail;
+    const t1 = 10;
+    const duration = t1 + tail;
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_tail',
+        duration,
+        tier: 0,
+        waveBounds: [{ atom: 'protocol.unlisted_call', t0: 0, t1 }],
+      }),
+    );
+    let seen = 0;
+    while (state.t < duration - 0.15 && !state.scene) {
+      state.lives = state.maxLives;
+      stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
+      if (state.t > t1 + 0.05 && state.t < duration - 0.1) {
+        expect(state.boss, `t=${state.t.toFixed(2)}`).not.toBeNull();
+        expect(state.boss!.alive).toBe(true);
+        expect(state.boss!.kind).toBe('doorman');
+        seen += 1;
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
   });
 
   it('a dive aims then commits: a mover can step out, a stayer is hit', () => {

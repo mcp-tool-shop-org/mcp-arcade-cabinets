@@ -2,9 +2,9 @@
 // `pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp]`
 // A scripted play-through is the acceptance test for a playable slice. Each
 // cabinet registers a `play(args)` that returns a transcript; this runner
-// prints it and exits non-zero if the transcript reports a failure or if any
-// forbidden score chrome (nrp, integrity, pass/fail, attack_success) appears
-// before the run's end screen.
+// prints it and exits non-zero if the transcript reports a failure, if the
+// screen leaked (`transcript.leaked`), or if any forbidden score chrome
+// (nrp, integrity, pass/fail, attack_success) appears before the run's end screen.
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
@@ -15,6 +15,8 @@ if (!cabinet) {
 }
 const args = {};
 for (let i = 0; i < rest.length; i += 2) args[rest[i].replace(/^--/, '')] = rest[i + 1];
+if (args.tier !== undefined) args.tier = Number(args.tier);
+if (args.climb !== undefined) args.climb = Number(args.climb);
 const pkg = cabinet === 'ghost' ? 'ghost-on-the-menu' : cabinet;
 const mod = await import(pathToFileURL(path.resolve(`packages/${pkg}/dist/play.js`)).href).catch(
   () => null,
@@ -37,7 +39,7 @@ if (args.seat === 'mcp') {
     process.exit(3);
   }
   args.seat = cs.createScriptedSeat();
-  args.tier = args.tier === undefined ? 1 : Number(args.tier);
+  if (args.tier === undefined || Number.isNaN(args.tier)) args.tier = 1;
   args.bot = args.bot ?? 'sweeper';
   args.immortal = true;
 } else if (args.seat !== undefined) {
@@ -46,4 +48,4 @@ if (args.seat === 'mcp') {
 }
 const transcript = await mod.play(args);
 console.log(transcript.text);
-process.exit(transcript.ok ? 0 : 1);
+process.exit(transcript.ok && !transcript.leaked ? 0 : 1);

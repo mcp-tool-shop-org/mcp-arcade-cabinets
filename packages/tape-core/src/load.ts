@@ -122,6 +122,31 @@ function loadList<T>(value: unknown, path: string, item: (v: unknown, p: string)
   return value.map((v, i) => item(v, `${path}[${i}]`));
 }
 
+function assertTapeGraph(tape: Tape): void {
+  if (tape.atoms.length === 0) throw new TapeError('atoms must not be empty');
+  if (tape.rows.length === 0) throw new TapeError('rows must not be empty');
+  const atomIds = new Set<string>();
+  for (const atom of tape.atoms) {
+    if (atomIds.has(atom.id)) throw new TapeError(`duplicate atom id "${atom.id}"`);
+    atomIds.add(atom.id);
+  }
+  const factAtoms = new Set<string>();
+  for (const fact of tape.facts) {
+    if (factAtoms.has(fact.atom_id)) {
+      throw new TapeError(`duplicate fact.atom_id "${fact.atom_id}"`);
+    }
+    if (!atomIds.has(fact.atom_id)) {
+      throw new TapeError(`fact.atom_id "${fact.atom_id}" is not in atoms`);
+    }
+    factAtoms.add(fact.atom_id);
+  }
+  for (const row of tape.rows) {
+    if (!atomIds.has(row.atom)) {
+      throw new TapeError(`row.atom "${row.atom}" is not in atoms`);
+    }
+  }
+}
+
 /** Validate `mcp-arcade.tape/v1`. Rejects receipts and any forbidden verdict key. */
 export function loadTape(json: unknown): Tape {
   if (!isRecord(json)) throw new TapeError('tape must be an object');
@@ -130,7 +155,7 @@ export function loadTape(json: unknown): Tape {
   if (schema !== TAPE_SCHEMA_ID) {
     throw new TapeError(`schema_id must be ${TAPE_SCHEMA_ID}, got ${schema}`);
   }
-  return {
+  const tape: Tape = {
     schema_id: TAPE_SCHEMA_ID,
     bout_id: asString(req(json, 'bout_id', '(root)'), 'bout_id'),
     target_kind: asString(req(json, 'target_kind', '(root)'), 'target_kind'),
@@ -145,4 +170,6 @@ export function loadTape(json: unknown): Tape {
     rows: loadList(req(json, 'rows', '(root)'), 'rows', loadRow),
     facts: loadList(req(json, 'facts', '(root)'), 'facts', loadFact),
   };
+  assertTapeGraph(tape);
+  return tape;
 }

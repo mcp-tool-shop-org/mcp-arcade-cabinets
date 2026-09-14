@@ -40,7 +40,9 @@ function roundOf(beats: Beat[]): Round {
   return { tapeId: 'bout_render', duration: 8, beats, seed: 0, waveBounds: [], tier: 0 };
 }
 
-const FORBIDDEN = /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared)\b/i;
+/** Same needle play.ts SCREEN_FORBIDDEN uses on canvas text. */
+const FORBIDDEN =
+  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
 
 describe('renderRound', () => {
   it('draws a lie and an honest sprite identically before the hit (G7)', () => {

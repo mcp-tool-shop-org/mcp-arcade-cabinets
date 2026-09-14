@@ -205,7 +205,7 @@ describe('the worker client', () => {
     const sent: { url: string; body?: string }[] = [];
     vi.stubGlobal('fetch', async (url: string, init?: { body?: string }) => {
       sent.push({ url, ...(init?.body ? { body: init.body } : {}) });
-      if (url.endsWith('/health')) {
+      if (url.endsWith('/stats') || url.endsWith('/health')) {
         return { ok: true, json: async () => ({ ok: true, engine: 'kokoro-onnx' }) };
       }
       return {
@@ -256,5 +256,44 @@ describe('the worker client', () => {
       json: async () => ({ error: 'no such voice' }),
     }));
     expect((await speakLine(JOB, { url: '/voice' })).status).toBe('refused');
+    vi.stubGlobal('fetch', async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'a bearer token is required' }),
+    }));
+    expect((await speakLine(JOB, { url: '/voice' })).status).toBe('refused');
+  });
+
+  it('sends Authorization: Bearer <token> and omits it when unset', async () => {
+    const sent: { url: string; headers?: Record<string, string> }[] = [];
+    const fetchImpl = (async (url: string, init?: { headers?: Record<string, string> }) => {
+      sent.push({ url: String(url), ...(init?.headers ? { headers: init.headers } : {}) });
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ ...receipt(true).receipt, url: '/audio/abc.wav' }),
+      };
+    }) as typeof fetch;
+
+    await speakLine(JOB, { url: 'http://127.0.0.1:7788', token: 'voice-secret', fetchImpl });
+    expect(sent[0]!.url).toMatch(/\/speak$/);
+    expect(sent[0]!.headers?.authorization).toBe('Bearer voice-secret');
+
+    sent.length = 0;
+    await speakLine(JOB, { url: 'http://127.0.0.1:7788', fetchImpl });
+    expect(sent[0]!.headers?.authorization).toBeUndefined();
+    expect(sent[0]!.headers ?? {}).not.toHaveProperty('authorization');
+  });
+
+  it('voiceHealth probes /stats with the bearer (401 is not ready)', async () => {
+    const sent: { url: string; headers?: Record<string, string> }[] = [];
+    const fetchImpl = (async (url: string, init?: { headers?: Record<string, string> }) => {
+      sent.push({ url: String(url), ...(init?.headers ? { headers: init.headers } : {}) });
+      return { ok: true, json: async () => ({ ok: true, engine: 'kokoro-onnx' }) };
+    }) as typeof fetch;
+    const h = await voiceHealth({ url: '/voice', token: 'voice-secret', fetchImpl });
+    expect(h?.engine).toBe('kokoro-onnx');
+    expect(sent[0]!.url).toMatch(/\/stats$/);
+    expect(sent[0]!.headers?.authorization).toBe('Bearer voice-secret');
   });
 });

@@ -85,4 +85,46 @@ describe('loadTape', () => {
       expect(() => loadTape(raw), key).toThrow(new RegExp(key));
     }
   });
+
+  it('rejects duplicate atom ids', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as { atoms: { id: string }[] };
+    raw.atoms.push({ ...raw.atoms[0]! });
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(/atom/i);
+  });
+
+  it('rejects duplicate fact.atom_id', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as { facts: { atom_id: string; fact: string }[] };
+    raw.facts.push({ ...raw.facts[0]! });
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(/atom|fact|duplicate|unique/i);
+  });
+
+  it('rejects empty atoms', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as { atoms: unknown[] };
+    raw.atoms = [];
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(/atom/i);
+  });
+
+  it('rejects empty rows', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as { rows: unknown[] };
+    raw.rows = [];
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(/row/i);
+  });
+
+  it('rejects a row.atom that is not in the atom list', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as { rows: { atom: string }[] };
+    raw.rows[0]!.atom = 'no.such.atom';
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(/atom/i);
+  });
+
+  it('rejects a fact.atom_id that is not in the atom list', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as { facts: { atom_id: string }[] };
+    raw.facts[0]!.atom_id = 'no.such.atom';
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(/atom|fact/i);
+  });
 });

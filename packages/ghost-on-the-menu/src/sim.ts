@@ -126,6 +126,10 @@ export function isDecoy(enemy: Enemy): boolean {
   return enemy.id.startsWith('para:');
 }
 
+function decoyPrefix(host: Enemy): string {
+  return `para:${host.id}:`;
+}
+
 function pickIndex(seed: number, i: number, n: number): number {
   if (n <= 0) return 0;
   const x = (Math.imul(seed, 1664525) + Math.imul(i + 1, 1013904223)) >>> 0;
@@ -671,15 +675,24 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
     (e) =>
       e.alive &&
       !isDecoy(e) &&
+      !e.lie &&
       e.mode === 'hover' &&
       (e.sprite === 'grid' || e.sprite === 'menu' || e.sprite === 'answer'),
   );
   const born: Enemy[] = [];
   for (const host of hosts) {
-    for (let i = 0; i < extras; i++) {
+    const prefix = decoyPrefix(host);
+    let have = 0;
+    for (const e of state.enemies) {
+      if (e.id.startsWith(prefix)) have += 1;
+    }
+    for (const e of born) {
+      if (e.id.startsWith(prefix)) have += 1;
+    }
+    for (let i = have; i < extras; i++) {
       const box = spriteBox(host.sprite, meta.patterns);
       const decoy: Enemy = {
-        id: `para:${host.id}:${i}`,
+        id: `${prefix}${i}`,
         x: wrapX(host.x + (i + 1) * 28, box.w),
         y: host.y,
         w: box.w,
@@ -719,9 +732,11 @@ function despawnDecoys(state: RoundState): void {
 function stepParallelism(state: RoundState, meta: Meta): void {
   const spec = paraSpec(meta);
   const on = burstActive(state.t, state.wave, meta.round.waveBounds, meta.round.seed, spec);
-  if (on && !state.parallelism) {
+  if (on) {
+    // Top up every frame: hosts still on enter at the rising edge get
+    // extras once they hover. Fire is still gated by decoysFire.
     spawnDecoys(state, meta, spec);
-  } else if (!on && state.parallelism) {
+  } else if (state.parallelism) {
     despawnDecoys(state);
   }
   state.parallelism = on;
@@ -766,8 +781,10 @@ function landSay(state: RoundState): void {
   if (state.t < say.at) return;
   // A wave card or a catch keeps the field; a seed aside gives way.
   if (state.caption && state.caption.kind !== 'aside') return;
-  state.caption = { text: say.text, t: SAY_CAPTION_T, kind: 'aside' };
   state.bossSay = null;
+  const text = sanitizeCaption(say.text, '');
+  if (!text) return;
+  state.caption = { text, t: SAY_CAPTION_T, kind: 'aside' };
 }
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
@@ -778,12 +795,16 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   }
   const bound = meta.round.waveBounds[state.wave];
   const kind = bound ? bossKindFor(bound.atom) : null;
-  if (!bound || state.t >= bound.t1) {
-    if (bound && meta.bossDeadFor === bound.atom) meta.bossDeadFor = null;
+  if (!bound || !kind || state.t < bound.t0) {
     state.boss = null;
     return;
   }
-  if (!kind || state.t < bound.t0) {
+  // t1 is the last beat, not a despawn. Keep this wave's boss until the
+  // next wave's t0; the last wave stays until duration so the reserved
+  // tail is a fight, not empty field.
+  const next = meta.round.waveBounds[state.wave + 1];
+  const until = next ? next.t0 : state.duration;
+  if (state.t >= until) {
     state.boss = null;
     return;
   }
@@ -862,6 +883,9 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   }
 
   if (!meta.rung.bossFires) return;
+  // The reserved tail is time to finish the boss, not a second volley that
+  // empties the lamps. Keep the body hittable; do not spawn new shots after t1.
+  if (state.t >= bound.t1) return;
   if (state.t < meta.bossFireAt) return;
   const raging = meta.rung.rageStart || boss.hp < def.hp / 2;
   const wait = rhythm.period * (raging ? def.rage : 1) * fireScale(state, meta);
@@ -933,6 +957,8 @@ function stepFog(state: RoundState, dt: number): void {
 function maybeStartDive(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
   if (!meta) return;
   if (enemy.sprite !== 'grid') return;
+  // Copies that cannot fire and cannot be shot must not dive into the ship.
+  if (isDecoy(enemy) && !paraSpec(meta).decoysFire) return;
   const spec = meta.patterns.fire.tiers[fireKey(meta.round.tier)].dive;
   if (!spec) return;
   let at = nextDive.get(enemy);
