@@ -33,7 +33,10 @@ export {
   cadenceAt,
   DEFAULT_PATTERNS,
   intensityAt,
+  emptyLineBag,
+  nextBagLine,
   pickLine,
+  shuffleOrder,
   voiceWaveKey,
 } from './patterns';
 export type { ParallelismTier, PatternSet, PilotLever, ShiftSet } from './patterns';

@@ -50,6 +50,8 @@ const DROP_KINDS = ['lamp', 'spread'] as const;
 const VOICE_FORBIDDEN =
   /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
 const MIN_VOICE_LINES = 4;
+/** Offline asides/wave/catch/end. Boss spawn stays at VOICE_MAX_LINES for the letter seat. */
+const VOICE_POOL_MAX = 64;
 /** 14px mono at x=16 on the 480 field; ~8.4px/glyph, 16px gutter. */
 const VOICE_MAX_GLYPHS = 50;
 
@@ -652,13 +654,25 @@ function loadDrops(raw: unknown): PatternSet['drops'] {
   return drops;
 }
 
-function loadLines(raw: unknown, file: string, key: string): string[] {
+function loadLines(
+  raw: unknown,
+  file: string,
+  key: string,
+  maxLines: number = VOICE_MAX_LINES,
+): string[] {
   const list = asArray(raw, file, key).map((item, i) => asString(item, file, `${key}.${i}`));
-  if (list.length < MIN_VOICE_LINES || list.length > VOICE_MAX_LINES) fail(file, key);
+  if (list.length < MIN_VOICE_LINES || list.length > maxLines) fail(file, key);
+  const seen = new Set<string>();
   for (const line of list) {
-    if (line.trim() === '' || line.length > VOICE_MAX_GLYPHS || VOICE_FORBIDDEN.test(line)) {
+    if (
+      line.trim() === '' ||
+      line.length > VOICE_MAX_GLYPHS ||
+      VOICE_FORBIDDEN.test(line) ||
+      seen.has(line)
+    ) {
       fail(file, key);
     }
+    seen.add(line);
   }
   return list;
 }
@@ -849,7 +863,7 @@ function loadVoice(raw: unknown): VoiceSet {
   const waveRaw = asRecord(req(obj, file, 'wave'), file, 'wave');
   const wave = {} as VoiceSet['wave'];
   for (const key of WAVE_VOICE_KEYS) {
-    wave[key] = loadLines(req(waveRaw, file, key), file, key);
+    wave[key] = loadLines(req(waveRaw, file, key), file, key, VOICE_POOL_MAX);
   }
   const bossRaw = asRecord(req(obj, file, 'boss'), file, 'boss');
   const boss = {} as VoiceSet['boss'];
@@ -859,19 +873,19 @@ function loadVoice(raw: unknown): VoiceSet {
   const asideRaw = asRecord(req(obj, file, 'aside'), file, 'aside');
   const aside = {} as VoiceSet['aside'];
   for (const key of WAVE_VOICE_KEYS) {
-    aside[key] = loadLines(req(asideRaw, file, key), file, key);
+    aside[key] = loadLines(req(asideRaw, file, key), file, key, VOICE_POOL_MAX);
   }
   const catchRaw = asRecord(req(obj, file, 'catch'), file, 'catch');
   const catchLines = {} as VoiceSet['catch'];
   for (const key of WAVE_VOICE_KEYS) {
-    catchLines[key] = loadLines(req(catchRaw, file, key), file, key);
+    catchLines[key] = loadLines(req(catchRaw, file, key), file, key, VOICE_POOL_MAX);
   }
   return {
     wave,
     boss,
     aside,
     catch: catchLines,
-    end: loadLines(req(obj, file, 'end'), file, 'end'),
+    end: loadLines(req(obj, file, 'end'), file, 'end', VOICE_POOL_MAX),
   };
 }
 
@@ -880,6 +894,52 @@ export function pickLine(lines: readonly string[], seed: number, salt: number): 
   if (lines.length === 0) return '';
   const x = (Math.imul(seed, 1664525) + Math.imul(salt + 1, 1013904223)) >>> 0;
   return lines[x % lines.length]!;
+}
+
+/** A seed-shuffled walk through a pool. Same seed and cycle, same order. */
+export interface LineBag {
+  order: number[];
+  at: number;
+  cycle: number;
+}
+
+export function emptyLineBag(): LineBag {
+  return { order: [], at: 0, cycle: 0 };
+}
+
+export function shuffleOrder(n: number, seed: number, cycle: number): number[] {
+  const order = Array.from({ length: n }, (_, i) => i);
+  let a = (Math.imul(seed, 747796405) ^ Math.imul(cycle + 1, 2891336453)) >>> 0;
+  for (let i = n - 1; i > 0; i--) {
+    a = Math.imul(a ^ (a >>> 16), 2246822519) >>> 0;
+    const j = a % (i + 1);
+    const cur = order[i]!;
+    order[i] = order[j]!;
+    order[j] = cur;
+  }
+  return order;
+}
+
+/**
+ * Next unused line in a seed bag. Refills and reshuffles when the bag is empty.
+ * Never reads a fact. Same seed, same walk.
+ */
+export function nextBagLine(
+  lines: readonly string[],
+  bag: LineBag,
+  seed: number,
+  salt: number,
+): string {
+  if (lines.length === 0) return '';
+  if (bag.order.length !== lines.length || bag.at >= bag.order.length) {
+    if (bag.order.length === lines.length && bag.at >= bag.order.length) bag.cycle += 1;
+    else bag.cycle = 0;
+    bag.order = shuffleOrder(lines.length, seed ^ salt, bag.cycle);
+    bag.at = 0;
+  }
+  const i = bag.order[bag.at]!;
+  bag.at += 1;
+  return lines[i]!;
 }
 
 /** Wave voice key for an atom kind. Breath and unknowns share inspect's lines. */

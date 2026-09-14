@@ -4,7 +4,10 @@ import {
   burstActive,
   copiesAt,
   intensityAt,
+  emptyLineBag,
+  nextBagLine,
   pickLine,
+  type LineBag,
   voiceWaveKey,
   type BossDef,
   type DropKind,
@@ -73,6 +76,8 @@ interface Meta {
   waveHold: number;
   emittedGridForWave: boolean;
   asideAt: number;
+  asideBag: LineBag;
+  asideKind: string;
   /** Round time until which a pilot `hold` keeps the boss still. */
   bossHoldUntil: number;
   /** Pixels the boss has slid toward the ship for a pending pilot `column`. */
@@ -514,6 +519,8 @@ export function createRoundState(round: Round): RoundState {
     waveHold: 0,
     emittedGridForWave: false,
     asideAt: 6,
+    asideBag: emptyLineBag(),
+    asideKind: '',
     bossHoldUntil: 0,
     bossLean: 0,
     midboss: false,
@@ -733,8 +740,12 @@ function maybeAside(state: RoundState, meta: Meta): void {
   const kind = bound ? voiceWaveKey(kindOfAtom(bound.atom)) : 'inspect';
   const lines = meta.patterns.voice.aside[kind];
   if (!lines || lines.length === 0) return;
+  if (meta.asideKind !== kind) {
+    meta.asideBag = emptyLineBag();
+    meta.asideKind = kind;
+  }
   state.caption = {
-    text: pickLine(lines, meta.round.seed, Math.floor(state.t * 10) + state.wave * 13),
+    text: nextBagLine(lines, meta.asideBag, meta.round.seed, kind.charCodeAt(0)),
     t: 2.2,
     kind: 'aside',
   };

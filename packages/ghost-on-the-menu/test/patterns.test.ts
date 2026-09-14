@@ -6,6 +6,8 @@ import {
   DEFAULT_PATTERNS,
   intensityAt,
   loadPatterns,
+  emptyLineBag,
+  nextBagLine,
   pickLine,
   voiceWaveKey,
 } from '../src/patterns';
@@ -385,6 +387,20 @@ describe('loadPatterns', () => {
       expect(line).not.toMatch(forbidden);
     }
     expect(pickLine(voice.end, 1, 0)).toBe(pickLine(voice.end, 1, 0));
+    for (const key of ['inspect', 'poison', 'rug', 'unlisted'] as const) {
+      expect(voice.aside[key].length, key).toBeGreaterThanOrEqual(16);
+      expect(new Set(voice.aside[key]).size).toBe(voice.aside[key].length);
+    }
+    const bag = emptyLineBag();
+    const sample = voice.aside.inspect;
+    const walked = new Set<string>();
+    for (let i = 0; i < sample.length; i++) walked.add(nextBagLine(sample, bag, 11, 3));
+    expect(walked.size).toBe(sample.length);
+    const a = emptyLineBag();
+    const b = emptyLineBag();
+    const seqA = Array.from({ length: sample.length }, () => nextBagLine(sample, a, 11, 3));
+    const seqB = Array.from({ length: sample.length }, () => nextBagLine(sample, b, 11, 3));
+    expect(seqA).toEqual(seqB);
     expect(voiceWaveKey('breather')).toBe('inspect');
     expect(voiceWaveKey('poison')).toBe('poison');
     const raw = clone();

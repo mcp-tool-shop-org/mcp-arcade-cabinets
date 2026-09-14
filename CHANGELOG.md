@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- Offline voice asides are a large gated pool drawn from a seed bag without replacement, so a round does not keep repeating the same joke. Still not an Ollama seat.
+
 ## [0.7.0] - 2026-09-14
 
 Dogfood swarm after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README, landing, and handbook are current; translations wait on a free GPU. No npm.

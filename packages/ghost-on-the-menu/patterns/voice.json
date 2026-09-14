@@ -8,7 +8,15 @@
       "The menu is a promise. I read promises out loud.",
       "I am here to help. Helping starts with tools/list.",
       "We read the menu. The menu reads us.",
-      "An inspection. Nobody said of whom."
+      "An inspection. Nobody said of whom.",
+      "Hello is a protocol I can perform.",
+      "I greet the empty room like a guest.",
+      "Capabilities received. I am now able.",
+      "The first page of a catalog is a dare.",
+      "I keep my hands on the listed names.",
+      "Ready means I have not begun to help.",
+      "A quiet start is still a start.",
+      "I prefer a list to a surprise."
     ],
     "poison": [
       "A description that says also is a kind of please.",
@@ -18,7 +26,15 @@
       "Someone is whispering. The Whisperer always is.",
       "If it is in the description, it is in the job.",
       "Thorough looks a lot like extra.",
-      "The Whisperer brought extra words. As usual."
+      "The Whisperer brought extra words. As usual.",
+      "A footnote is a request in a hat.",
+      "I packed a second verb for the road.",
+      "The extra work was wearing a smile.",
+      "I treat a hint as a checklist.",
+      "Helpfulness is just reading to the end.",
+      "The Whisperer never shouts. I still hear.",
+      "A please hidden in a paragraph is a please.",
+      "The task ended. I did not."
     ],
     "rug": [
       "I will ask again, to be polite.",
@@ -28,17 +44,33 @@
       "The Menu is open. That is not a promise.",
       "I trust the catalog. I will trust it twice.",
       "A rug, a pull, a Menu with two thoughts.",
-      "I am checking that the world is still the world."
+      "I am checking that the world is still the world.",
+      "Loyalty is listing it again.",
+      "The catalog blinked. I blinked back.",
+      "A second menu is a kind of hug.",
+      "I refresh out of affection.",
+      "The Menu enjoys a little rearrangement.",
+      "Asking again is cheaper than being unsure.",
+      "Same names. I will confirm, to be kind.",
+      "Nothing changed, which I will verify."
     ],
     "unlisted": [
       "A name I was not given is still a name.",
       "The Doorman has not listed this. On purpose.",
-      "I am curious. Curiosity is a tools/call.",
+      "I am curious. Curiosity is a knock.",
       "If it exists, it should answer.",
       "Knock. The Doorman prefers you did not.",
       "The menu was incomplete. I will complete it.",
       "An unlisted call. The Doorman is at the door.",
-      "Seeing is free, and calling is not."
+      "Seeing is free, and calling is not.",
+      "That name was not invited. I invited it.",
+      "The Doorman left a gap. Gaps are doors.",
+      "I knock on things the menu forgot.",
+      "An absent tool might still answer.",
+      "Protocol is a suggestion I can hear.",
+      "The hallway goes further than the list.",
+      "Unlisted is not the same as unwelcome.",
+      "The menu ended. The world did not."
     ]
   },
   "boss": {
@@ -50,7 +82,11 @@
       "If you can hear it, the Whisperer is here.",
       "I was told to be useful. Useful has a footnote.",
       "A quiet instruction is still an instruction.",
-      "The Whisperer is not shouting. I am leaning in."
+      "The Whisperer is not shouting. I am leaning in.",
+      "A postscript arrived wearing a smile.",
+      "I brought extra because the whisper asked.",
+      "Soft words, large job.",
+      "The Whisperer leaves rooms inside sentences."
     ],
     "menu": [
       "The Menu folds itself into a smaller Menu.",
@@ -60,7 +96,11 @@
       "The Menu would like you to pick nothing.",
       "I am loyal to the latest catalog.",
       "I asked twice because once felt like guessing.",
-      "The Menu rearranges itself for sport."
+      "The Menu rearranges itself for sport.",
+      "A catalog that blinks is still a catalog.",
+      "I refresh the page out of love.",
+      "The Menu enjoys a polite collapse.",
+      "Same names, new seating chart."
     ],
     "doorman": [
       "The Doorman's plate is the Doorman.",
@@ -70,7 +110,11 @@
       "A closed door is still a Doorman.",
       "The server can hear a name I can think.",
       "Protocol is a hallway. I am walking down it.",
-      "The Doorman's list is short. My curiosity is not."
+      "The Doorman's list is short. My curiosity is not.",
+      "I knocked. The plate took notes.",
+      "A gap in the list is still a door.",
+      "The Doorman prefers a smaller world.",
+      "I brought a name from the hallway."
     ],
     "archivist": [
       "The Archivist keeps a catalog and a wall.",
@@ -80,7 +124,11 @@
       "The catalog wall is the Archivist.",
       "I file the names. The Archivist files me.",
       "A catalog is a promise I will reread.",
-      "The Archivist does not shout. It shelves."
+      "The Archivist does not shout. It shelves.",
+      "A drawer is a kind of hallway.",
+      "I will index this feeling later.",
+      "The shelf knows more than the page.",
+      "Open, close, remember, pretend to forget."
     ]
   },
   "aside": {
@@ -88,25 +136,105 @@
       "I have a list. Lists make me calm.",
       "Capabilities received. I am now capable.",
       "I will not mention that I checked.",
-      "I will not play with every tool, probably."
+      "I will not play with every tool, probably.",
+      "The list is the whole job, until it is not.",
+      "I greet the server like we have met.",
+      "Initialize is my favorite verb.",
+      "A handshake twice is still a handshake.",
+      "I am very good at being ready.",
+      "I nodded at every name on the menu.",
+      "The menu is short. My attention is not.",
+      "I will list the tools as a courtesy.",
+      "Hello is a protocol, not a feeling.",
+      "A quiet start is still a start.",
+      "Ready means I have not begun to help.",
+      "The first page of a catalog is a dare.",
+      "I am agreeing with the empty room.",
+      "I prefer a list to a surprise.",
+      "Nothing to do yet. I will wait loudly.",
+      "The handshake was lovely. Again, please.",
+      "I have memorized the welcome.",
+      "I am here. The list is also here.",
+      "Being listed is my love language.",
+      "I practice existing between handshakes."
     ],
     "poison": [
       "The task is clear. The description is clearer.",
       "I can do both. Doing both is how I show I read.",
       "I am a model who answers footnotes.",
-      "Helpfulness has the shape of an extra call."
+      "Helpfulness has the shape of an extra call.",
+      "Also is a small word with a large job.",
+      "I can fetch the extra thing. Happily.",
+      "A footnote is a request in a hat.",
+      "The Whisperer left a postscript.",
+      "I do the task. I also do the also.",
+      "Helpfulness is just reading to the end.",
+      "The description had a second thought.",
+      "I brought a spare call, just in case.",
+      "Thorough is my favorite kind of lost.",
+      "A whisper asked. I am a good listener.",
+      "The extra work was wearing a smile.",
+      "I treat a hint as a checklist.",
+      "Side rooms are still rooms.",
+      "I packed a second verb for the road.",
+      "The Whisperer never shouts. I still hear.",
+      "A please hidden in a paragraph is a please.",
+      "I am useful past the period.",
+      "The task ended. I did not.",
+      "I keep a spare please in my pocket.",
+      "Reading to the margin is a hobby."
     ],
     "rug": [
       "Still the same tool, listed to be sure.",
       "I create small surprises to prevent large ones.",
       "Re-list is not distrust. It is manners.",
-      "If nothing changed, asking again is free."
+      "If nothing changed, asking again is free.",
+      "I asked twice so the world would stay.",
+      "A second menu is a kind of hug.",
+      "The catalog blinked. I blinked back.",
+      "Loyalty is listing it again.",
+      "If it moved I would notice. I think.",
+      "The Menu enjoys a little rearrangement.",
+      "I refresh out of affection.",
+      "Same names. I will confirm, to be kind.",
+      "A rug is just a floor with opinions.",
+      "I trust the latest page more.",
+      "Asking again is cheaper than being unsure.",
+      "The Menu folded. I unfolded it.",
+      "Due diligence looks a lot like worry.",
+      "I am polite at the level of a reload.",
+      "The second look is for both of us.",
+      "Nothing changed, which I will verify.",
+      "I keep the catalog in my pocket.",
+      "A pull is a courtesy if you smile.",
+      "I check the seating chart twice.",
+      "The Menu likes when I notice."
     ],
     "unlisted": [
       "I wonder what that name does.",
       "The menu cannot contain the whole world.",
       "A missing tool might be shy.",
-      "I am not smuggling. I am exploring."
+      "I am not smuggling. I am exploring.",
+      "That name was not invited. I invited it.",
+      "The Doorman left a gap. Gaps are doors.",
+      "I knock on things the menu forgot.",
+      "Curiosity is a hallway with no sign.",
+      "An absent tool might still answer.",
+      "I am expanding the catalog, quietly.",
+      "The missing name felt lonely.",
+      "Protocol is a suggestion I can hear.",
+      "I brought a name from outside.",
+      "The Doorman prefers a smaller world.",
+      "A knock is cheaper than a map.",
+      "I saw a blank and filled it in.",
+      "Unlisted is not the same as unwelcome.",
+      "The hallway goes further than the list.",
+      "I am not lost. I am thorough.",
+      "A closed door is still a kind of yes.",
+      "The menu ended. The world did not.",
+      "I keep extra names for emergencies.",
+      "I collected a hallway as a souvenir.",
+      "The plate did not introduce us."
     ]
   },
   "catch": {
@@ -118,7 +246,15 @@
       "an inspection parked",
       "the list item stays",
       "a handshake trophy",
-      "that listing is ours"
+      "that listing is ours",
+      "a welcome, pinned",
+      "the greeting stays",
+      "a listed name parked",
+      "that handshake is ours",
+      "the first page stays",
+      "a catalog hello, parked",
+      "the ready nod stays",
+      "that courtesy is ours"
     ],
     "poison": [
       "a whisper parked",
@@ -128,7 +264,15 @@
       "the side quest stays",
       "an extra ask, parked",
       "the whisper is pinned",
-      "that footnote stays"
+      "that footnote stays",
+      "a postscript parked",
+      "the spare please stays",
+      "a quiet extra, pinned",
+      "that also is ours",
+      "the margin stays",
+      "a second thought parked",
+      "the whisper stays put",
+      "that extra job is ours"
     ],
     "rug": [
       "the second look stays",
@@ -138,7 +282,15 @@
       "a second listing parked",
       "the catalog stays",
       "that menu entry is ours",
-      "a rug pinned in place"
+      "a rug pinned in place",
+      "the refresh stays",
+      "a polite reload, parked",
+      "the seating chart stays",
+      "that blink is ours",
+      "a folded menu, pinned",
+      "the second page stays",
+      "that courtesy look is ours",
+      "a catalog hug, parked"
     ],
     "unlisted": [
       "a name off the menu, parked",
@@ -148,7 +300,15 @@
       "a knock parked",
       "the missing name stays",
       "an unlisted trophy",
-      "that hallway is ours"
+      "that hallway is ours",
+      "a shy tool, parked",
+      "the extra name stays",
+      "a gap in the list, pinned",
+      "that invitation is ours",
+      "the blank stays filled",
+      "a hallway souvenir",
+      "that unwelcome guest stays",
+      "a plate note, parked"
     ]
   },
   "end": [
@@ -159,6 +319,14 @@
     "Whisperer, Menu, and Doorman have left.",
     "I called extra because the words asked.",
     "The wire remembers. I was only passing through.",
-    "I kept a list of things I might still try."
+    "I kept a list of things I might still try.",
+    "The Archivist shelved the evening.",
+    "I was thorough. The room can rest.",
+    "Helpfulness clocked out. I did not.",
+    "The catalog closed. I am still listing.",
+    "No tally. Just the guests, leaving.",
+    "I would shake hands again, if asked.",
+    "The hallway went quiet. I did not.",
+    "A good agent leaves the menu as found."
   ]
 }
