@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>mcp-arcade cabinets</title>
     <style>
+      html {
+        color-scheme: dark;
+      }
       body {
         margin: 0;
         background: #0b0b0f;
@@ -16,6 +19,15 @@
         margin: 0 auto;
         padding: 2rem;
       }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0;
+      }
+      h2 {
+        font-size: 1.15rem;
+        margin: 0;
+        font-weight: 600;
+      }
       .column {
         display: flex;
         flex-direction: column;
@@ -25,7 +37,11 @@
       .row {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 0.5rem;
+      }
+      .seat {
+        flex: 1 1 12rem;
       }
       .muted {
         color: #9a9aa6;
@@ -49,10 +65,27 @@
       }
       button.commit {
         border-color: #5b8c5a;
+        background: #5b8c5a;
+        color: #e6e6e6;
       }
       button:disabled {
         opacity: 0.4;
         cursor: default;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      .tape-info:focus-visible,
+      label:has(input):focus-visible,
+      label:has(input:focus-visible) {
+        outline: 2px solid #e8a04a;
+        outline-offset: 2px;
+      }
+      input[type='checkbox'] {
+        accent-color: #e8a04a;
+      }
+      input::placeholder {
+        color: #9a9aa6;
       }
       .tape-list {
         list-style: none;
@@ -127,9 +160,8 @@
       .tape-info:focus-visible .tape-why {
         display: block;
       }
-      /* While a cabinet is playing the page gives it the width; the field is
-         as wide as the viewport allows and keeps 4:3. Full screen is the
-         canvas alone, letterboxed by the browser. */
+      /* The field is a 4:3 box, not a full-width element with letterbox
+         gutters. Full screen is the canvas alone, letterboxed by the browser. */
       main.playing {
         max-width: none;
         padding: 1rem 2rem;
@@ -139,8 +171,9 @@
       }
       canvas.field {
         display: block;
-        width: 100%;
-        max-height: calc(100vh - 8rem);
+        width: auto;
+        max-width: 100%;
+        height: min(calc(100vh - 8rem), calc((100vw - 4rem) * 3 / 4));
         aspect-ratio: 4 / 3;
         object-fit: contain;
         image-rendering: pixelated;
@@ -153,8 +186,9 @@
       }
       canvas.field:fullscreen,
       canvas.field:-webkit-full-screen {
-        width: 100vw;
-        height: 100vh;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: none;
         max-height: none;
         object-fit: contain;
         background: #000;
@@ -167,7 +201,7 @@
           padding: 0.5rem;
         }
         canvas.field {
-          max-height: calc(100vh - 14rem);
+          height: min(calc(100vh - 14rem), calc((100vw - 1.5rem) * 3 / 4));
         }
         .tape-why {
           left: auto;

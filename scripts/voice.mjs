@@ -9,6 +9,13 @@ import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
+const USAGE = `usage: pnpm voice [--check] [--port 7788]
+  --check     health plus one authored line per boss (needs a running worker)
+  --port      worker port (or VOICE_PORT, default 7788)
+env: KOKORO_DIR   folder holding the Kokoro ONNX weights (required to spawn)
+     VOICE_PYTHON interpreter (else the repo venv, else python)
+     VOICE_TOKEN  bearer the worker requires beyond loopback`;
+
 const argv = process.argv.slice(2);
 let port = process.env.VOICE_PORT ?? '7788';
 const flags = new Set();
@@ -24,34 +31,75 @@ for (let i = 0; i < argv.length; i++) {
   }
   flags.add(a);
 }
+
+if (flags.has('--help') || flags.has('-h')) {
+  console.log(USAGE);
+  process.exit(0);
+}
+
 const url = `http://127.0.0.1:${port}`;
+
+function timedOut(err) {
+  return Boolean(
+    err &&
+    typeof err === 'object' &&
+    'name' in err &&
+    (err.name === 'TimeoutError' || err.name === 'AbortError'),
+  );
+}
 
 if (flags.has('--check')) {
   const HEALTH_MS = 2_000;
   const SPEAK_MS = 20_000;
   const pathFree = (s) =>
     typeof s === 'string' && s.trim() !== '' && !s.includes('/') && !s.includes('\\');
-  const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(HEALTH_MS) }).catch(
-    () => null,
-  );
-  if (!res || !res.ok) {
-    console.error(`no voice worker at ${url}; start one with pnpm voice`);
+  let res;
+  try {
+    res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(HEALTH_MS) });
+  } catch (err) {
+    console.error(
+      timedOut(err)
+        ? 'the worker did not answer in time'
+        : 'no voice worker; start one with pnpm voice',
+    );
+    process.exit(1);
+  }
+  if (!res.ok) {
+    console.error('no voice worker; start one with pnpm voice');
     process.exit(1);
   }
   const h = await res.json();
   const auth = process.env.VOICE_TOKEN
     ? { authorization: `Bearer ${process.env.VOICE_TOKEN}` }
     : {};
-  const stats = await fetch(`${url}/stats`, {
-    headers: auth,
-    signal: AbortSignal.timeout(HEALTH_MS),
-  })
-    .then((r) => (r.ok ? r.json() : null))
-    .catch(() => null);
+  let stats = null;
+  let statsNote = '';
+  try {
+    const statsRes = await fetch(`${url}/stats`, {
+      headers: auth,
+      signal: AbortSignal.timeout(HEALTH_MS),
+    });
+    if (statsRes.status === 401) {
+      statsNote = "stats/speak need the worker's token";
+    } else if (!statsRes.ok) {
+      let errWord = '';
+      try {
+        const body = await statsRes.json();
+        errWord = pathFree(body.error) ? body.error.trim() : '';
+      } catch {
+        errWord = '';
+      }
+      statsNote = errWord || 'stats did not answer';
+    } else {
+      stats = await statsRes.json();
+    }
+  } catch (err) {
+    statsNote = timedOut(err) ? 'the worker did not answer in time' : 'stats did not answer';
+  }
   console.log(
     stats
       ? `${stats.engine} on ${stats.device}, ${stats.voices.length} voices, ${stats.cached} lines cached`
-      : `${h.engine} answers; stats need the worker's token`,
+      : `${h.engine} answers; ${statsNote}`,
   );
   const personas = JSON.parse(
     (await import('node:fs')).readFileSync(
@@ -98,10 +146,11 @@ if (flags.has('--check')) {
       console.log(
         `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms ${ok ? 'receipt ok ' : 'receipt FAILED'} ${r.cached ? '(cached)' : `tts ${r.tts_s}s asr ${r.asr_s}s`}  "${text}"${failed.length ? '\n    ' + failed.join('\n    ') : ''}${extra}`,
       );
-    } catch {
+    } catch (err) {
       failedAny = true;
+      const why = timedOut(err) ? 'the worker did not answer in time' : 'receipt FAILED';
       console.log(
-        `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms receipt FAILED  "${text}"`,
+        `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms ${why}  "${text}"`,
       );
     }
   }

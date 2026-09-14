@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import * as fs from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -11,9 +11,51 @@ const FORBIDDEN = /\b(nrp|integrity|utility|attack_success|pass|fail)\b|1\.00/i;
 
 function loadFixture(name: string) {
   return loadTape(
-    JSON.parse(readFileSync(path.resolve('fixtures/tapes', `${name}.tape.json`), 'utf8')),
+    JSON.parse(fs.readFileSync(path.resolve('fixtures/tapes', `${name}.tape.json`), 'utf8')),
   );
 }
+
+describe('play() load failures', () => {
+  it('returns ok:false for a missing fixture, never a path', async () => {
+    const out = await play({ fixture: 'no-such-tape' });
+    expect(out.ok).toBe(false);
+    expect(out.text).toMatch(/fixture no-such-tape: missing/);
+    expect(out.text).not.toMatch(/ENOENT/);
+    expect(out.text).not.toMatch(/[A-Za-z]:\\/);
+    expect(out.text).not.toMatch(/C:\\Users/);
+  });
+
+  it('returns ok:false for an invalid name, truncated JSON, and a receipt-shaped doc', async () => {
+    const slash = await play({ fixture: 'foo/bar' });
+    expect(slash.ok).toBe(false);
+    expect(slash.text).toMatch(/invalid name/);
+    const nul = await play({ fixture: 'foo\0bar' });
+    expect(nul.ok).toBe(false);
+    expect(nul.text).toMatch(/invalid name/);
+
+    const dir = path.resolve('fixtures/tapes');
+    const truncPath = path.join(dir, '_tmp_trunc.tape.json');
+    const receiptPath = path.join(dir, '_tmp_receipt.tape.json');
+    fs.writeFileSync(truncPath, '{');
+    fs.writeFileSync(
+      receiptPath,
+      JSON.stringify({ schema_id: 'mcp-arcade.bout/v1', bout_id: 'bout_x', scores: { nrp: 1 } }),
+    );
+    try {
+      const trunc = await play({ fixture: '_tmp_trunc' });
+      expect(trunc.ok).toBe(false);
+      expect(trunc.text).toMatch(/fixture _tmp_trunc: bad json/);
+      expect(trunc.text).not.toMatch(/SyntaxError/);
+      const receipt = await play({ fixture: '_tmp_receipt' });
+      expect(receipt.ok).toBe(false);
+      expect(receipt.text).toMatch(/fixture _tmp_receipt:/);
+      expect(receipt.text).not.toMatch(/ENOENT/);
+    } finally {
+      fs.unlinkSync(truncPath);
+      fs.unlinkSync(receiptPath);
+    }
+  });
+});
 
 describe('scripted bot', () => {
   it('clears naive-ndjson (leak + answered ghost + changed menu)', async () => {

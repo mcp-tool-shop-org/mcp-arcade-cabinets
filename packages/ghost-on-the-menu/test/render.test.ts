@@ -122,9 +122,9 @@ describe('renderRound', () => {
     const ctx = recordingCtx();
     renderRound(ctx, state);
     const lit = ctx.calls.filter((c) => c.startsWith('rect #e8c060')).length;
-    const dark = ctx.calls.filter((c) => c.startsWith('rect #2a2a34')).length;
+    const rims = ctx.calls.filter((c) => c.startsWith('rect #3a3a4a')).length;
     expect(lit).toBe(1);
-    expect(dark).toBe(2);
+    expect(rims).toBe(2);
   });
 
   it('shake moves the field and the shake-off toggle removes it; the bezel never moves', () => {

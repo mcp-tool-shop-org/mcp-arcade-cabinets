@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -28,6 +28,17 @@ type PlayCli = {
 
 type SweepCli = {
   endLabel: (ended: 'time' | 'lamps' | null) => string;
+  parseTapeFile: (file: string, name: string) => unknown;
+};
+
+type SitCli = {
+  endLabel: (ended: 'time' | 'lamps' | null) => string;
+  gateFromSay: (text: string) => string;
+  parseTapeFile: (file: string, name: string) => unknown;
+};
+
+type FilmCli = {
+  parseTapeFile: (file: string, name: string) => unknown;
 };
 
 function loadFixture(name: string) {
@@ -50,6 +61,14 @@ async function playCli(): Promise<PlayCli> {
 
 async function sweepCli(): Promise<SweepCli> {
   return (await import(pathToFileURL(path.join(ROOT, 'scripts', 'sweep.mjs')).href)) as SweepCli;
+}
+
+async function sitCli(): Promise<SitCli> {
+  return (await import(pathToFileURL(path.join(ROOT, 'scripts', 'sit.mjs')).href)) as SitCli;
+}
+
+async function filmCli(): Promise<FilmCli> {
+  return (await import(pathToFileURL(path.join(ROOT, 'scripts', 'film.mjs')).href)) as FilmCli;
 }
 
 describe('CLI --help (F-755a4733)', () => {
@@ -98,7 +117,17 @@ describe('CLI --help (F-755a4733)', () => {
     expect(r.stdout).toMatch(/--voice/);
     expect(r.stdout).toMatch(/--speed/);
     expect(r.stdout).toMatch(/--lamps/);
+    expect(r.stdout).toMatch(/--ollama/);
+    expect(r.stdout).toMatch(/--voice-url/);
     expect(r.stdout).not.toMatch(/\nsit /);
+  });
+
+  it('sit --ollama-url is unknown and the usage names --ollama', () => {
+    const r = run('sit.mjs', ['--ollama-url', 'x']);
+    expect(r.status).toBe(2);
+    expect(r.stderr).toMatch(/unknown flag --ollama-url/);
+    expect(r.stderr).toMatch(/--ollama/);
+    expect(r.stdout + r.stderr).not.toMatch(/\nsit /);
   });
 
   it('sweep --help prints --climb and exits 0 without playing a tape', () => {
@@ -298,5 +327,115 @@ describe('sweep end column (F-a27ffe6a)', () => {
     expect(src).toMatch(/end: time \| lamps \| clear/);
     expect(src).toMatch(/endLabel\(r\.ended\)/);
     expect(src).not.toMatch(/pad\(r\.ended,/);
+    expect(src).toMatch(/mean lost/);
+    expect(src).toMatch(/lamps: mean lamps lost of 3; revealed: found\/present/);
+    expect(src).not.toMatch(/\\ntier\/bot\s+tapes dead\s+lamps\s+revealed/);
+  });
+});
+
+describe('play.mjs unknown fixture before dist (F-d6b1613b)', () => {
+  it('unknown fixture is exit 2 with the roster, not a missing build', () => {
+    const r = run('play.mjs', ['ghost', '--fixture', 'nope']);
+    expect(r.status).toBe(2);
+    expect(r.stderr).toMatch(/unknown fixture nope; have:/);
+    expect(r.stderr).not.toMatch(/dist\/play\.js/);
+    expect(r.stderr).not.toMatch(/build it first/);
+  });
+});
+
+describe('sit GATE_FIX parenthetical (F-7cbaf3ac)', () => {
+  it('captures the whole refused-it sentence, not the first word', async () => {
+    const { gateFromSay } = await sitCli();
+    const repeat = gateFromSay(
+      'the gate refused it (that line was just said); the boss says one of its own instead',
+    );
+    const forbidden = gateFromSay(
+      'the gate refused it (that kind of word is not allowed); the boss says one of its own instead',
+    );
+    const digit = gateFromSay('the gate refused it (a digit is not allowed)');
+    expect(repeat).toBe('that line was just said');
+    expect(forbidden).toBe('that kind of word is not allowed');
+    expect(repeat).not.toBe(forbidden);
+    expect(`refused: ${repeat}`).not.toMatch(/^refused: that$/);
+    expect(`refused: ${forbidden}`).not.toMatch(/^refused: that$/);
+    expect(digit).toBe('a digit is not allowed');
+    expect(`refused: ${digit}`).not.toMatch(/^refused: a$/);
+  });
+});
+
+describe('sit round ended (F-b89aaec9)', () => {
+  it('prints time|lamps|clear, never the word null', async () => {
+    const { endLabel } = await sitCli();
+    expect(endLabel(null)).toBe('clear');
+    expect(`round ended by ${endLabel(null)}`).toBe('round ended by clear');
+    expect(`round ended by ${endLabel(null)}`).not.toMatch(/null/);
+    expect(endLabel('lamps')).toBe('lamps');
+    expect(endLabel('time')).toBe('time');
+    const src = readFileSync(path.join(ROOT, 'scripts', 'sit.mjs'), 'utf8');
+    expect(src).toMatch(/round ended by \$\{endLabel\(state\.ended\)\}/);
+    expect(src).not.toMatch(/round ended by \$\{state\.ended\}/);
+  });
+});
+
+describe('film/sit/sweep bad json (F-bdd1f83e)', () => {
+  it('names the fixture and does not dump a stack', async () => {
+    const film = await filmCli();
+    const sit = await sitCli();
+    const sweep = await sweepCli();
+    const tmp = path.join(os.tmpdir(), `tape-bdd1f83e-${process.pid}.json`);
+    writeFileSync(tmp, '{"schema_id":');
+    try {
+      for (const [name, parse] of [
+        ['film', film.parseTapeFile],
+        ['sit', sit.parseTapeFile],
+        ['sweep', sweep.parseTapeFile],
+      ] as const) {
+        expect(() => parse(tmp, 'naive-ndjson'), name).toThrow(/fixture naive-ndjson: bad json/);
+        try {
+          parse(tmp, 'naive-ndjson');
+        } catch (err) {
+          expect(String(err)).not.toMatch(/SyntaxError/);
+          expect(String(err)).not.toMatch(/at /);
+        }
+      }
+    } finally {
+      unlinkSync(tmp);
+    }
+    const srcFilm = readFileSync(path.join(ROOT, 'scripts', 'film.mjs'), 'utf8');
+    const srcSit = readFileSync(path.join(ROOT, 'scripts', 'sit.mjs'), 'utf8');
+    const srcSweep = readFileSync(path.join(ROOT, 'scripts', 'sweep.mjs'), 'utf8');
+    for (const src of [srcFilm, srcSit, srcSweep]) {
+      expect(src).toMatch(/parseTapeFile\(/);
+      expect(src).toMatch(/process\.exit\(2\)/);
+    }
+  });
+});
+
+describe('film last frame and empty times (F-94a60d0e)', () => {
+  it('uses real tape furniture, not server x', () => {
+    const src = readFileSync(path.join(ROOT, 'scripts', 'film.mjs'), 'utf8');
+    expect(src).toMatch(/server \$\{tape\.server_name/);
+    expect(src).toMatch(/policy \$\{tape\.agent_policy\}/);
+    expect(src).not.toMatch(/server x/);
+    expect(src).not.toMatch(/policy y/);
+    expect(src).toMatch(/no frames \(round ended at t=/);
+  });
+
+  it('--times past duration still writes an end-scene frame or exits 2', () => {
+    const tmp = mkdtempSync(path.join(os.tmpdir(), 'film-times-past-'));
+    const r = run(
+      'film.mjs',
+      ['--fixture', 'naive-ndjson', '--bot', 'idle', '--tier', '1', '--times', '200', '--out', tmp],
+      30000,
+    );
+    const pngs = readdirSync(tmp).filter((f) => f.endsWith('.png'));
+    if (pngs.length === 0) {
+      expect(r.status).toBe(2);
+      expect(r.stderr).toMatch(/no frames \(round ended at t=/);
+      expect(r.stdout).not.toMatch(/frames in /);
+    } else {
+      expect(r.status, r.stderr).toBe(0);
+      expect(pngs.length).toBeGreaterThan(0);
+    }
   });
 });

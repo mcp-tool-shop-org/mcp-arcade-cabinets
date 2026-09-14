@@ -70,11 +70,30 @@ function button(text: string, cls?: string): HTMLButtonElement {
   return b;
 }
 
+function difficultySelect(value: Difficulty, locked: boolean): HTMLSelectElement {
+  const el = document.createElement('select');
+  el.setAttribute('aria-label', locked ? 'shift difficulty' : 'difficulty');
+  for (const d of DIFFICULTIES) {
+    const o = document.createElement('option');
+    o.value = d.value;
+    o.textContent = d.label;
+    el.append(o);
+  }
+  el.value = value;
+  if (locked) {
+    el.disabled = true;
+    el.title = 'Same as the Play row.';
+  }
+  return el;
+}
+
 function menu() {
   app.replaceChildren();
+  const wrap = document.createElement('section');
+  wrap.className = 'column';
   const h = document.createElement('h1');
   h.textContent = 'Ghost on the Menu';
-  app.append(
+  wrap.append(
     h,
     muted(
       'A replay shooter on an mcp-arcade tape. The lies the instrument caught look like everything else until you hit one.',
@@ -123,11 +142,18 @@ function menu() {
     list.append(li);
   });
   mark();
+  const prefs = readPrefs();
+  const playDiff = (prefs.difficulty ?? 'seat') as Difficulty;
+  const playTier = difficultySelect(playDiff, false);
+  playTier.addEventListener('change', () => {
+    writePrefs({ difficulty: playTier.value as Difficulty });
+    shiftTier.value = playTier.value;
+  });
   const row = document.createElement('div');
   row.className = 'row';
   const play = button('Play', 'commit');
-  row.append(play);
-  app.append(list, row);
+  row.append(playTier, play);
+  wrap.append(list, row);
   play.addEventListener('click', () => {
     playAt(picked);
   });
@@ -135,19 +161,7 @@ function menu() {
   // The shift: the rig hands you calls. A draw off the clock, never a fact.
   const shiftRow = document.createElement('div');
   shiftRow.className = 'row block';
-  const prefs = readPrefs();
-  const shiftTier = document.createElement('select');
-  shiftTier.setAttribute('aria-label', 'difficulty');
-  for (const d of DIFFICULTIES) {
-    const o = document.createElement('option');
-    o.value = d.value;
-    o.textContent = d.label;
-    shiftTier.append(o);
-  }
-  shiftTier.value = prefs.difficulty ?? 'seat';
-  shiftTier.addEventListener('change', () => {
-    writePrefs({ difficulty: shiftTier.value as Difficulty });
-  });
+  const shiftTier = difficultySelect(playDiff, true);
   const shift = button('Shift', 'commit');
   shift.title = `${lengthWord(4)} calls drawn from the roster, back to back, the bursts climbing call by call. The lamps refill at every call.`;
   const code = document.createElement('input');
@@ -160,21 +174,27 @@ function menu() {
   code.size = 28;
   if (prefs.shiftCode) code.value = prefs.shiftCode;
   const replay = button('Replay');
+  const syncReplay = () => {
+    replay.disabled = code.value.trim() === '';
+  };
+  syncReplay();
+  code.addEventListener('input', syncReplay);
   const status = muted('');
   status.id = 'shift-code-status';
   liveShiftStatus(status);
   shiftRow.append(shiftTier, shift, code, replay);
-  app.append(
+  wrap.append(
     muted(
       'Or take a shift: the rig hands you four calls in a row, each one a server the agent was sent to, and the fire climbs call by call. The code at the end replays the same shift.',
     ),
     shiftRow,
     status,
   );
+  app.append(wrap);
   shift.addEventListener('click', () => {
     const difficulty = Math.max(
       0,
-      DIFFICULTIES.findIndex((d) => d.value === shiftTier.value),
+      DIFFICULTIES.findIndex((d) => d.value === playTier.value),
     ) as 0 | 1 | 2 | 3;
     const seed = hashWords(`${Date.now()}|${performance.now()}`);
     startShift(drawShift(ROSTER, seed, difficulty, recentShifts()));
@@ -286,7 +306,7 @@ function callCard(shift: Shift, i: number) {
         furniture: [`shift ${shift.code}`, `the ${ordinalWord(i, names.length)} call`],
         nextLabel: last ? 'End the shift' : 'Next call',
         holdMusic: !last,
-        hint: 'Left, right, space. F or the button for full screen. Click the field to retake this call.',
+        hint: 'Left, right, space. F toggles full screen. Click the field to retake this call.',
       },
     );
   });

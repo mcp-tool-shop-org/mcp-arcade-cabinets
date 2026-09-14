@@ -415,24 +415,23 @@ export function mountGhost(
     intensity,
     shakeLabel,
     ollamaLabel,
-    pilotModel,
-    seat,
-    sayStat,
     voiceLabel,
-    voiceStat,
-    chrome,
+    pilotModel,
     nextBtn,
   );
+  const statusRow = document.createElement('div');
+  statusRow.className = 'row';
+  statusRow.append(seat, sayStat, voiceStat, chrome);
 
   const hint = document.createElement('p');
   hint.className = 'muted';
   hint.textContent =
     extra.hint ??
-    'Left, right, space. F or the button for full screen. Click the field to restart the same tape.';
+    'Left, right, space. F toggles full screen. Click the field to restart the same tape.';
   canvas.setAttribute('aria-label', hint.textContent);
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
-  wrap.append(canvas, controls, hint, back);
+  wrap.append(canvas, controls, statusRow, hint, back);
   root.append(wrap);
   root.classList.add('playing');
 
@@ -486,6 +485,45 @@ export function mountGhost(
     }
   };
   full.addEventListener('click', goFull);
+  const fullEl = (): Element | null =>
+    document.fullscreenElement ?? fullDoc.webkitFullscreenElement ?? null;
+  const syncFullLabel = () => {
+    const on = fullEl() === canvas;
+    full.textContent = on ? 'Exit full screen' : 'Full screen';
+    full.classList.toggle('picked', on);
+  };
+  const onFullChange = (fn: () => void, on: boolean) => {
+    const target: EventTarget = document;
+    if (on) {
+      target.addEventListener('fullscreenchange', fn);
+      target.addEventListener('webkitfullscreenchange', fn);
+    } else {
+      target.removeEventListener('fullscreenchange', fn);
+      target.removeEventListener('webkitfullscreenchange', fn);
+    }
+  };
+  onFullChange(syncFullLabel, true);
+  const layoutField = () => {
+    if (fullEl() === canvas) {
+      canvas.style.removeProperty('width');
+      canvas.style.removeProperty('height');
+      return;
+    }
+    const maxW = wrap.clientWidth || FIELD.width;
+    const chromeH = (window.innerWidth <= 640 ? 14 : 8) * 16;
+    const maxH = Math.max(FIELD.height, window.innerHeight - chromeH);
+    const s = Math.min(Math.floor(maxW / FIELD.width), Math.floor(maxH / FIELD.height));
+    if (s >= 2) {
+      canvas.style.width = `${FIELD.width * s}px`;
+      canvas.style.height = `${FIELD.height * s}px`;
+    } else {
+      canvas.style.removeProperty('width');
+      canvas.style.removeProperty('height');
+    }
+  };
+  onFullChange(layoutField, true);
+  window.addEventListener('resize', layoutField);
+  layoutField();
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
 
@@ -539,7 +577,7 @@ export function mountGhost(
       ctx.font = v;
     },
     fillRect: (x, y, w, h) => ctx.fillRect(x, y, w, h),
-    fillText: (t, x, y) => ctx.fillText(t, x, y),
+    fillText: (t, x, y) => ctx.fillText(t, x, y, FIELD.width - 32),
   };
 
   const furniture = [
@@ -1030,6 +1068,9 @@ export function mountGhost(
     window.clearTimeout(tagsProbe);
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
+    window.removeEventListener('resize', layoutField);
+    onFullChange(syncFullLabel, false);
+    onFullChange(layoutField, false);
     tagsCtl.abort();
     bumpFire();
     sayCtl?.abort();

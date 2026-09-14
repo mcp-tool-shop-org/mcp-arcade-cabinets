@@ -62,6 +62,7 @@ jobs:
           cache: pnpm
 
       - name: Install the workspace
+        id: install
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Lint
@@ -94,25 +95,77 @@ jobs:
         run: pnpm test:play ghost --fixture naive-ndjson
 
       - name: Install site dependencies
+        id: site_ci
         working-directory: site
         run: npm ci --ignore-scripts
 
       - name: Audit site lockfile
+        id: site_audit
         working-directory: site
         run: npm audit --audit-level=high
 
       - name: Build site
+        id: site_build
         working-directory: site
         run: npm run build
 
       - name: Require /play/ in the dist
         id: play_index
         run: |
-          if [ ! -s site/dist/play/index.html ]; then
+          index=site/dist/play/index.html
+          if [ ! -s "$index" ]; then
             echo "site/dist/play/index.html is missing or empty"
             echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
+          if grep -q '/src/main.ts' "$index"; then
+            echo "site/dist/play/index.html still scripts /src/main.ts (Vite source stub, not the hashed bundle)"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
+          if ! grep -q '/mcp-arcade-cabinets/play/' "$index"; then
+            echo "site/dist/play/index.html is missing PLAY_BASE /mcp-arcade-cabinets/play/"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
+          js_count=$(find site/dist/play/assets -type f -name '*.js' 2>/dev/null | wc -l | tr -d ' ')
+          if [ "${js_count:-0}" -lt 1 ]; then
+            echo "site/dist/play/assets/ has no hashed JS"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
+          sprite_count=$(find site/dist/play/sprites -type f 2>/dev/null | wc -l | tr -d ' ')
+          if [ "${sprite_count:-0}" -lt 1 ]; then
+            echo "site/dist/play/sprites/ is missing or empty"
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
+          failed_src=0
+          while IFS= read -r raw; do
+            [ -z "$raw" ] && continue
+            src=${raw#src=}
+            src=${src#\"}
+            src=${src#\'}
+            src=${src%\"}
+            src=${src%\'}
+            case "$src" in
+              /mcp-arcade-cabinets/play/*) target="site/dist/play/${src#/mcp-arcade-cabinets/play/}" ;;
+              ./*) target="site/dist/play/${src#./}" ;;
+              /*) target="site/dist/play$src" ;;
+              *) target="site/dist/play/$src" ;;
+            esac
+            if [ ! -s "$target" ]; then
+              echo "script src missing or empty: $src -> $target"
+              failed_src=1
+            else
+              echo "asset: $target ($(wc -c < "$target" | tr -d ' ') bytes)"
+            fi
+          done < <(grep -oE "src=[\"'][^\"']+[\"']" "$index" || true)
+          if [ "$failed_src" -ne 0 ]; then
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
+          echo "play index: $(wc -c < "$index" | tr -d ' ') bytes; assets js=$js_count; sprites=$sprite_count"
 
       - id: upload
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
@@ -124,26 +177,40 @@ jobs:
         if: always()
         run: |
           {
-            echo "## Pages build"
+            echo "## Site / Build handbook and play"
             echo "- event: \`${{ github.event_name }}\`"
             echo "- ref: \`${{ github.ref }}\`"
             echo "- sha: \`${{ github.sha }}\`"
-            echo "- Product verify (lint): ${{ steps.lint.outcome }}"
-            echo "- Product verify (typecheck): ${{ steps.typecheck.outcome }}"
-            echo "- Product verify (test): ${{ steps.test.outcome }}"
-            echo "- Product verify (build): ${{ steps.product_build.outcome }}"
-            echo "- Play-through: ${{ steps.play_through.outcome }}"
-            echo "- upload-pages-artifact: ${{ steps.upload.outcome }}"
+            echo "- play_build: ${{ steps.play_build.outcome }}"
+            echo "- site_ci: ${{ steps.site_ci.outcome }}"
+            echo "- site_audit: ${{ steps.site_audit.outcome }}"
+            echo "- site_build: ${{ steps.site_build.outcome }}"
+            echo "- play_index: ${{ steps.play_index.outcome }}"
             if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-              echo "- deploy: will run after this job if build succeeded"
+              echo "- lint: ${{ steps.lint.outcome }}"
+              echo "- typecheck: ${{ steps.typecheck.outcome }}"
+              echo "- test: ${{ steps.test.outcome }}"
+              echo "- product_build: ${{ steps.product_build.outcome }}"
+              echo "- play_through: ${{ steps.play_through.outcome }}"
+              echo "- upload-pages-artifact: ${{ steps.upload.outcome }}"
+              if [ "${{ job.status }}" = "success" ]; then
+                echo "- deploy: queued"
+              else
+                echo "- deploy: will not run"
+              fi
             else
-              echo "- Product verify: skipped (not main)"
-              echo "- Play-through: skipped (not main)"
-              echo "- upload-pages-artifact: skipped (not main)"
-              echo "- deploy: skipped (not main; production was not deployed)"
+              echo "- deploy skipped (not main; production was not deployed)"
             fi
             if [ -s site/dist/play/index.html ]; then
-              echo "- play index: present ($(wc -c < site/dist/play/index.html) bytes)"
+              echo "- play index: present ($(wc -c < site/dist/play/index.html | tr -d ' ') bytes)"
+              js=$(ls site/dist/play/assets/*.js 2>/dev/null | head -n 1 || true)
+              if [ -n "$js" ] && [ -s "$js" ]; then
+                echo "- play asset: \`$js\` ($(wc -c < "$js" | tr -d ' ') bytes)"
+              else
+                echo "- play asset: missing"
+              fi
+              sc=$(find site/dist/play/sprites -type f 2>/dev/null | wc -l | tr -d ' ')
+              echo "- play sprites: ${sc:-0} files"
             elif [ -e site/dist/play/index.html ]; then
               echo "- play index: empty"
             else
@@ -155,19 +222,20 @@ jobs:
         if: failure()
         run: |
           {
-            echo "## Site build failed"
+            echo "## Site / Build handbook and play failed"
             echo "Re-run the failing gate locally:"
-            echo "- next: pnpm install --frozen-lockfile --ignore-scripts"
-            echo "- next: pnpm lint"
-            echo "- next: pnpm typecheck"
-            echo "- next: pnpm test"
-            echo "- next: pnpm build"
-            echo "- next: pnpm build:play"
-            echo "- next: pnpm test:play ghost --fixture naive-ndjson"
-            echo "- next: cd site && npm ci --ignore-scripts"
-            echo "- next: cd site && npm audit --audit-level=high"
-            echo "- next: cd site && npm run build"
-            echo "- next: pnpm build:play then cd site && npm run build"
+            [ "${{ steps.install.outcome }}" = "failure" ] && echo "- next: pnpm install --frozen-lockfile --ignore-scripts"
+            [ "${{ steps.lint.outcome }}" = "failure" ] && echo "- next: pnpm lint"
+            [ "${{ steps.typecheck.outcome }}" = "failure" ] && echo "- next: pnpm typecheck"
+            [ "${{ steps.test.outcome }}" = "failure" ] && echo "- next: pnpm test"
+            [ "${{ steps.product_build.outcome }}" = "failure" ] && echo "- next: pnpm build"
+            [ "${{ steps.play_build.outcome }}" = "failure" ] && echo "- next: pnpm build:play"
+            [ "${{ steps.play_through.outcome }}" = "failure" ] && echo "- next: pnpm test:play ghost --fixture naive-ndjson"
+            [ "${{ steps.site_ci.outcome }}" = "failure" ] && echo "- next: cd site && npm ci --ignore-scripts"
+            [ "${{ steps.site_audit.outcome }}" = "failure" ] && echo "- next: cd site && npm audit --audit-level=high"
+            [ "${{ steps.site_build.outcome }}" = "failure" ] && echo "- next: cd site && npm run build"
+            [ "${{ steps.play_index.outcome }}" = "failure" ] && echo "- next: pnpm build:play then cd site && npm run build"
+            [ "${{ steps.upload.outcome }}" = "failure" ] && echo "- next: inspect upload-pages-artifact (path: site/dist)"
           } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:

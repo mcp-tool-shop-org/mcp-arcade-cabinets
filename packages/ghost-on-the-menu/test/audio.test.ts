@@ -245,6 +245,25 @@ describe('recorded beds', () => {
     expect(inspect.plays).toBe(2);
   });
 
+  it('setMuted mutes every live recorded bed, including the leaving one', () => {
+    const inspect = bed();
+    const whisperer = bed();
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
+    out.tick(0, 'inspect');
+    expect(inspect.playing).toBe(true);
+    inspect.currentTime = 7.5;
+    out.tick(8, 'whisperer');
+    expect(whisperer.playing).toBe(true);
+    expect(inspect.playing).toBe(true);
+    out.setMuted(true);
+    expect(inspect.muted).toBe(true);
+    expect(whisperer.muted).toBe(true);
+    for (let t = 8.05; t < 9.2; t += 0.05) out.tick(t, 'whisperer');
+    expect(inspect.muted).toBe(true);
+    expect(whisperer.muted).toBe(true);
+  });
+
   it('a burst speeds the playing bed up over a ramp and lets it back down; nothing else plays', () => {
     const menu = bed();
     const parallelism = bed();

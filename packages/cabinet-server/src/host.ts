@@ -99,6 +99,8 @@ export function hostForRound(
   let says = 0;
   const recent: string[] = [];
   let recentFor: RoundState | null = null;
+  /** Pending line already handed to the voicer; a second speak must not stack. */
+  let spokenKey: string | null = null;
 
   // A new round under the host forgets the lines and restarts the fallback
   // salt, so the same call sequence on the same tape lands the same lines.
@@ -106,6 +108,7 @@ export function hostForRound(
     if (recentFor === state) return;
     recent.length = 0;
     says = 0;
+    spokenKey = null;
     recentFor = state;
   };
   const remember = (state: RoundState, line: string) => {
@@ -150,6 +153,9 @@ export function hostForRound(
       const say = state.bossSay;
       const boss = state.boss;
       if (!say || !boss || !boss.alive || state.scene) return 'no line';
+      const key = `${say.at}\0${say.text}`;
+      if (spokenKey === key) return 'queued';
+      spokenKey = key;
       opts.voice({
         text: say.text,
         kind: boss.kind,

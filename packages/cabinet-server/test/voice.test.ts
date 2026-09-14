@@ -264,6 +264,27 @@ describe('the worker client', () => {
     expect((await speakLine(JOB, { url: '/voice' })).status).toBe('refused');
   });
 
+  it('speakLine aborts a hanging worker and says no worker / timeout', async () => {
+    let sawSignal = false;
+    const fetchImpl = ((_url: string, init?: { signal?: AbortSignal }) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+      sawSignal = true;
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          const err = new Error('aborted');
+          err.name = 'AbortError';
+          reject(err);
+        });
+      });
+    }) as typeof fetch;
+    const t0 = Date.now();
+    const a = await speakLine(JOB, { url: '/voice', timeoutMs: 50, fetchImpl });
+    expect(Date.now() - t0).toBeLessThan(1000);
+    expect(sawSignal).toBe(true);
+    expect(a.status).toBe('no worker');
+    expect(a.why).toBe('timeout');
+  });
+
   it('sends Authorization: Bearer <token> and omits it when unset', async () => {
     const sent: { url: string; headers?: Record<string, string> }[] = [];
     const fetchImpl = (async (url: string, init?: { headers?: Record<string, string> }) => {

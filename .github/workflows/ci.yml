@@ -50,68 +50,99 @@ jobs:
           node-version: 22
           cache: pnpm
       - name: Env files stay ignored
+        id: env_ignore
         run: |
           failed=0
-          if git check-ignore -- .env; then
-            echo "ignored: .env"
-          else
-            echo "not ignored: .env"
-            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
-            failed=1
-          fi
-          if git check-ignore -- .env.local; then
-            echo "ignored: .env.local"
-          else
-            echo "not ignored: .env.local"
-            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
-            failed=1
-          fi
-          if git check-ignore -- '*.pem'; then
-            echo "ignored: *.pem"
-          else
-            echo "not ignored: *.pem"
-            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
-            failed=1
-          fi
+          probe_ignore() {
+            local p="$1"
+            if git check-ignore -- "$p"; then
+              echo "ignored: $p"
+            else
+              echo "not ignored: $p"
+              echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+              {
+                echo "not ignored: $p"
+                echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+              } >> "$GITHUB_STEP_SUMMARY"
+              failed=1
+            fi
+          }
+          probe_ignore .env
+          probe_ignore .env.local
+          probe_ignore '*.pem'
+          probe_ignore apps/cabinets/.env
+          probe_ignore apps/cabinets/.env.local
+          for pkg in packages/*/; do
+            probe_ignore "${pkg%/}/.env"
+            probe_ignore "${pkg%/}/.env.local"
+          done
           if git check-ignore -- .env.example; then
             echo ".env.example must not be ignored"
             echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            {
+              echo ".env.example must not be ignored"
+              echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            } >> "$GITHUB_STEP_SUMMARY"
             failed=1
           else
             echo "not ignored (ok): .env.example"
           fi
           exit "$failed"
       - name: Install
+        id: install
         run: pnpm install --frozen-lockfile
       - name: Audit
+        id: audit
         run: pnpm audit --audit-level=high
       - name: Lint
+        id: lint
         run: pnpm lint
       - name: Typecheck
+        id: typecheck
         run: pnpm typecheck
       - name: Test
+        id: test
         run: pnpm test
       - name: Build
+        id: build
         run: pnpm build
       - name: Play-through
+        id: play_through
         run: pnpm test:play ghost --fixture naive-ndjson
       - name: Voice worker syntax
+        id: voice
         run: python3 -m py_compile voice/worker.py
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## CI / Verify"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- audit: pnpm audit --audit-level=high (${{ steps.audit.outcome }})"
+            echo "- test:play: ghost --fixture naive-ndjson (${{ steps.play_through.outcome }})"
+            echo "- voice: python3 -m py_compile voice/worker.py (${{ steps.voice.outcome }})"
+            echo "- env-ignore: ${{ steps.env_ignore.outcome }}"
+            echo "- install: ${{ steps.install.outcome }}"
+            echo "- lint: ${{ steps.lint.outcome }}"
+            echo "- typecheck: ${{ steps.typecheck.outcome }}"
+            echo "- test: ${{ steps.test.outcome }}"
+            echo "- build: ${{ steps.build.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Next local command
         if: failure()
         run: |
           {
-            echo "## Verify failed"
+            echo "## CI / Verify failed"
             echo "Re-run the failing gate locally:"
-            echo "- next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
-            echo "- next: pnpm install --frozen-lockfile"
-            echo "- next: pnpm audit --audit-level=high"
-            echo "- next: pnpm lint"
-            echo "- next: pnpm typecheck"
-            echo "- next: pnpm test"
-            echo "- next: pnpm build"
-            echo "- next: pnpm test:play ghost --fixture naive-ndjson"
-            echo "- next: python3 -m py_compile voice/worker.py"
+            [ "${{ steps.env_ignore.outcome }}" = "failure" ] && echo "- next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            [ "${{ steps.install.outcome }}" = "failure" ] && echo "- next: pnpm install --frozen-lockfile"
+            [ "${{ steps.audit.outcome }}" = "failure" ] && echo "- next: pnpm audit --audit-level=high"
+            [ "${{ steps.lint.outcome }}" = "failure" ] && echo "- next: pnpm lint"
+            [ "${{ steps.typecheck.outcome }}" = "failure" ] && echo "- next: pnpm typecheck"
+            [ "${{ steps.test.outcome }}" = "failure" ] && echo "- next: pnpm test"
+            [ "${{ steps.build.outcome }}" = "failure" ] && echo "- next: pnpm build"
+            [ "${{ steps.play_through.outcome }}" = "failure" ] && echo "- next: pnpm test:play ghost --fixture naive-ndjson"
+            [ "${{ steps.voice.outcome }}" = "failure" ] && echo "- next: python3 -m py_compile voice/worker.py"
           } >> "$GITHUB_STEP_SUMMARY"
 
   catalog:
@@ -122,17 +153,122 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Catalog contract
+        id: catalog_contract
+        run: |
+          if ! grep -qE '^[[:space:]]*disableNetwork:[[:space:]]*true[[:space:]]*$' catalog/server.yaml; then
+            echo "catalog/server.yaml must set run.disableNetwork: true"
+            echo "next: set catalog/server.yaml run.disableNetwork: true"
+            exit 1
+          fi
+          echo "disableNetwork: true"
+          pin=$(grep -A2 '^source:' catalog/server.yaml | awk '/commit:/{print $2; exit}')
+          echo "source.commit=$pin"
+          echo "github.sha=${{ github.sha }}"
+          if [ -z "$pin" ]; then
+            echo "catalog/server.yaml source.commit is empty"
+            echo "next: pin catalog/server.yaml source.commit to ${{ github.sha }}"
+            exit 1
+          fi
+          if [ "$pin" = "${{ github.sha }}" ]; then
+            echo "source.commit equals github.sha"
+          elif git merge-base --is-ancestor "$pin" "${{ github.sha }}"; then
+            echo "source.commit is an ancestor of github.sha"
+          else
+            echo "source.commit $pin is not github.sha and is not an ancestor of ${{ github.sha }}"
+            echo "next: pin catalog/server.yaml source.commit to a commit in this history"
+            exit 1
+          fi
+          python3 -c '
+          import json, pathlib, sys
+          cat = {t["name"] for t in json.loads(pathlib.Path("catalog/tools.json").read_text(encoding="utf-8"))}
+          pkg = {t["name"] for t in json.loads(pathlib.Path("packages/cabinet-server/tools.json").read_text(encoding="utf-8"))["tools"]}
+          if cat != pkg:
+              print("catalog tools", sorted(cat), "!= cabinet-server tools", sorted(pkg))
+              sys.exit(1)
+          print("tool names match:", ",".join(sorted(cat)))
+          '
       - name: Build Catalog image
+        id: docker_build
         run: |
           if ! command -v docker >/dev/null 2>&1; then
-            echo "docker not available; skipping Catalog image build"
-            exit 0
+            echo "docker=missing" >> "$GITHUB_OUTPUT"
+            echo "docker is required on ubuntu-latest; Catalog image was not built"
+            echo "next: docker build -t mcp-arcade-cabinets:ci ."
+            exit 1
           fi
+          echo "docker=present" >> "$GITHUB_OUTPUT"
           docker build -t mcp-arcade-cabinets:ci .
+          id=$(docker image inspect -f '{{.Id}}' mcp-arcade-cabinets:ci)
+          echo "image_id=$id" >> "$GITHUB_OUTPUT"
+          echo "image id: $id"
+      - name: Run Catalog image over stdio
+        id: docker_run
+        run: |
+          init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
+          notified='{"jsonrpc":"2.0","method":"notifications/initialized"}'
+          list='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+          set +e
+          printf '%s\n' "$init" "$notified" "$list" | timeout 20 docker run --rm -i --network=none --cpus 1 --memory 2g mcp-arcade-cabinets:ci > /tmp/cabinet-stdio.out 2>/tmp/cabinet-stdio.err
+          status=$?
+          set -e
+          if [ -s /tmp/cabinet-stdio.err ]; then
+            cat /tmp/cabinet-stdio.err >&2
+          fi
+          cat /tmp/cabinet-stdio.out
+          if ! python3 -c '
+          import json, sys
+          need = {"fire", "say", "speak", "sfx", "view", "tapes"}
+          found = set()
+          raw = sys.stdin.read()
+          for line in raw.splitlines():
+              line = line.strip()
+              if not line:
+                  continue
+              try:
+                  msg = json.loads(line)
+              except json.JSONDecodeError:
+                  continue
+              tools = (msg.get("result") or {}).get("tools")
+              if not isinstance(tools, list):
+                  continue
+              for t in tools:
+                  if isinstance(t, dict) and isinstance(t.get("name"), str):
+                      found.add(t["name"])
+          missing = sorted(need - found)
+          if missing:
+              print("tools/list missing:", ",".join(missing))
+              sys.exit(1)
+          extra = sorted(found - need)
+          if extra:
+              print("tools/list extra:", ",".join(extra))
+              sys.exit(1)
+          print("tools/list:", ",".join(sorted(found)))
+          ' < /tmp/cabinet-stdio.out; then
+            echo "docker run exit $status (stdio tools/list under --network none)"
+            echo "next: docker run --rm -i --network=none mcp-arcade-cabinets:ci"
+            exit 1
+          fi
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## CI / Catalog"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- docker: ${{ steps.docker_build.outputs.docker }}"
+            echo "- image id: \`${{ steps.docker_build.outputs.image_id }}\`"
+            echo "- contract: ${{ steps.catalog_contract.outcome }}"
+            echo "- docker build: ${{ steps.docker_build.outcome }}"
+            echo "- docker run (stdio tools/list, --network none): ${{ steps.docker_run.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Next local command
         if: failure()
         run: |
           {
-            echo "## Catalog failed"
-            echo "- next: docker build -t mcp-arcade-cabinets:ci ."
+            echo "## CI / Catalog failed"
+            echo "Re-run the failing gate locally:"
+            [ "${{ steps.catalog_contract.outcome }}" = "failure" ] && echo "- next: check catalog/server.yaml disableNetwork: true, source.commit, and catalog/tools.json names"
+            [ "${{ steps.docker_build.outcome }}" = "failure" ] && echo "- next: docker build -t mcp-arcade-cabinets:ci ."
+            [ "${{ steps.docker_run.outcome }}" = "failure" ] && echo "- next: docker run --rm -i --network=none mcp-arcade-cabinets:ci"
           } >> "$GITHUB_STEP_SUMMARY"

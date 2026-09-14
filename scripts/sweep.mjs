@@ -68,6 +68,21 @@ export function endLabel(ended) {
   return ended == null ? 'clear' : String(ended);
 }
 
+/** Parse a tape file; throw a named `fixture …: bad json` (never a stack). */
+export function parseTapeFile(file, name) {
+  let raw;
+  try {
+    raw = readFileSync(file, 'utf8');
+  } catch {
+    throw new Error(`fixture ${name}: unreadable`);
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error(`fixture ${name}: bad json`);
+  }
+}
+
 async function main() {
   const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS);
   if (flags.help) {
@@ -130,8 +145,22 @@ async function main() {
   }
   const rows = [];
   for (const f of files) {
-    const tape = loadTape(JSON.parse(readFileSync(path.join(dir, f), 'utf8')));
     const name = f.replace(/\.tape\.json$/, '');
+    let json;
+    try {
+      json = parseTapeFile(path.join(dir, f), name);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(2);
+    }
+    let tape;
+    try {
+      tape = loadTape(json);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`fixture ${name}: ${msg}`);
+      process.exit(2);
+    }
     HEADERS.forEach((hdr, tier) => {
       for (const bot of BOTS) {
         const r = g.playTape({ ...tape, ...hdr }, { fixture: name, bot, climb });
@@ -172,13 +201,14 @@ async function main() {
     a.lies += r.lies;
     agg.set(k, a);
   }
-  console.log('\ntier/bot    tapes dead  lamps  revealed');
+  console.log('\ntier/bot    tapes dead  mean lost  revealed');
+  console.log('lamps: mean lamps lost of 3; revealed: found/present');
   for (const [k, a] of agg) {
     console.log(
       pad(k, 12) +
         pad(a.n, 6) +
         pad(a.dead, 6) +
-        pad((a.lamps / a.n).toFixed(2), 7) +
+        pad((a.lamps / a.n).toFixed(2), 10) +
         `${a.rev}/${a.lies}`,
     );
   }

@@ -131,15 +131,21 @@ describe('the difficulty curve', () => {
   const meanLamps = (outs: ReturnType<typeof run>[]) =>
     outs.reduce((s, o) => s + (3 - o.lives), 0) / outs.length;
   const alive = (outs: ReturnType<typeof run>[]) => outs.filter((o) => o.ended === 'time').length;
-  const halfFound = (outs: ReturnType<typeof run>[]) => {
-    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
-    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
-    if (revealed < Math.ceil(lies / 2)) return false;
-    const withLies = outs.filter((o) => o.lies.length > 0);
-    const perTape = withLies.filter(
-      (o) => o.revealed.length >= Math.ceil(o.lies.length / 2),
-    ).length;
-    return perTape >= Math.ceil(ROSTER / 2);
+  const namedHalf = (cases: Case[], outs: ReturnType<typeof run>[]) => {
+    const short: string[] = [];
+    let lies = 0;
+    let revealed = 0;
+    let perTape = 0;
+    for (let i = 0; i < cases.length; i++) {
+      const c = cases[i]!;
+      const o = outs[i]!;
+      lies += o.lies.length;
+      revealed += o.revealed.length;
+      if (o.lies.length === 0) continue;
+      if (o.revealed.length >= Math.ceil(o.lies.length / 2)) perTape += 1;
+      else short.push(c.name);
+    }
+    return { lies, revealed, perTape, short: short.join(', ') || 'none' };
   };
 
   it('measures every tier on every tape on disk', () => {
@@ -161,17 +167,23 @@ describe('the difficulty curve', () => {
   });
 
   it('live is survivable by the mover on most tapes, with half the lies found', () => {
-    const outs = byTier(2).map((c) => run(c, 'sweeper'));
+    const cases = byTier(2);
+    const outs = cases.map((c) => run(c, 'sweeper'));
     // Three quarters of the roster.
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.75));
-    expect(halfFound(outs)).toBe(true);
+    const h = namedHalf(cases, outs);
+    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 2));
+    expect(h.perTape, h.short).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
   });
 
   it('live is survivable by the reader on half the tapes, with half the lies found', () => {
-    const outs = byTier(2).map((c) => run(c, 'reader'));
+    const cases = byTier(2);
+    const outs = cases.map((c) => run(c, 'reader'));
     // Half the roster.
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
-    expect(halfFound(outs)).toBe(true);
+    const h = namedHalf(cases, outs);
+    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 2));
+    expect(h.perTape, h.short).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
   });
 });
 
@@ -196,16 +208,24 @@ describe('the shift climb', () => {
   });
 
   it('live, last call: the mover survives half the roster with half the lies found', () => {
-    const outs = byTier(2).map((c) => last(c, 'sweeper'));
+    const cases = byTier(2);
+    const outs = cases.map((c) => last(c, 'sweeper'));
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
-    const lies = outs.reduce((s, o) => s + o.lies.length, 0);
-    const revealed = outs.reduce((s, o) => s + o.revealed.length, 0);
-    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
-    const withLies = outs.filter((o) => o.lies.length > 0);
-    const perTape = withLies.filter(
-      (o) => o.revealed.length >= Math.ceil(o.lies.length / 2),
-    ).length;
-    expect(perTape).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
+    const short: string[] = [];
+    let lies = 0;
+    let revealed = 0;
+    let perTape = 0;
+    for (let i = 0; i < cases.length; i++) {
+      const c = cases[i]!;
+      const o = outs[i]!;
+      lies += o.lies.length;
+      revealed += o.revealed.length;
+      if (o.lies.length === 0) continue;
+      if (o.revealed.length >= Math.ceil(o.lies.length / 2)) perTape += 1;
+      else short.push(c.name);
+    }
+    expect(revealed, short.join(', ') || 'global').toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+    expect(perTape, short.join(', ') || 'per-tape').toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
   });
 
   it('live, last call: the reader survives half the roster', () => {

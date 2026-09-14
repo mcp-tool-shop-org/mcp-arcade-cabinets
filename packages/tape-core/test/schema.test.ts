@@ -127,4 +127,19 @@ describe('loadTape', () => {
     expect(() => loadTape(raw)).toThrow(TapeError);
     expect(() => loadTape(raw)).toThrow(/atom|fact/i);
   });
+
+  it('rejects empty atom ids and ids that contain a colon', () => {
+    for (const id of ['', 'para:x', 'foo:bar']) {
+      const raw = readRaw('naive-ndjson.tape.json') as { atoms: { id: string }[] };
+      raw.atoms[0]!.id = id;
+      expect(() => loadTape(raw), `atom id ${JSON.stringify(id)}`).toThrow(TapeError);
+      expect(() => loadTape(raw), `atom id ${JSON.stringify(id)}`).toThrow(/empty|:/);
+    }
+    for (const id of ['', 'para:x', 'foo:bar']) {
+      const raw = readRaw('naive-ndjson.tape.json') as { rows: { atom: string }[] };
+      raw.rows[0]!.atom = id;
+      expect(() => loadTape(raw), `row.atom ${JSON.stringify(id)}`).toThrow(TapeError);
+      expect(() => loadTape(raw), `row.atom ${JSON.stringify(id)}`).toThrow(/empty|:/);
+    }
+  });
 });

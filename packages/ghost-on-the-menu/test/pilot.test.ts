@@ -101,6 +101,8 @@ describe('ollama boss pilot', () => {
     expect(listed).toHaveLength(3);
     expect(defaultPilotModel(names)).toBe('gpt-oss:120b-cloud');
     expect(defaultPilotModel(['qwen2.5:7b-instruct'])).toBe('qwen2.5:7b-instruct');
+    expect(defaultPilotModel([])).toBe('');
+    expect(defaultPilotModel(['nomic-embed-text:latest'])).toBe('');
   });
 
   it('names hp, column and stick without digits', () => {
@@ -234,6 +236,34 @@ describe('askOllama over a daemon', () => {
     );
     expect(sawSignal).toBe(true);
   }, 10_000);
+
+  it('throws ollama down on ECONNREFUSED / TypeError, and bad payload on a broken body', async () => {
+    vi.stubGlobal('fetch', async () => {
+      const err = new Error('connect ECONNREFUSED');
+      (err as Error & { code: string }).code = 'ECONNREFUSED';
+      throw err;
+    });
+    await expect(askOllama(view, { url: '/x', model: 'kimi-test:cloud' })).rejects.toThrow(
+      /ollama down/,
+    );
+
+    vi.stubGlobal('fetch', async () => {
+      throw new TypeError('fetch failed');
+    });
+    await expect(askOllama(view, { url: '/x', model: 'kimi-test:cloud' })).rejects.toThrow(
+      /ollama down/,
+    );
+
+    vi.stubGlobal('fetch', async () => ({
+      ok: true,
+      json: async () => {
+        throw new SyntaxError('Unexpected token');
+      },
+    }));
+    await expect(askOllama(view, { url: '/x', model: 'kimi-test:cloud' })).rejects.toThrow(
+      /ollama bad payload/,
+    );
+  });
 
   it('asks the voice seat for a letter and returns a line index', async () => {
     const sent = stub(() => ({ response: 'd' }));

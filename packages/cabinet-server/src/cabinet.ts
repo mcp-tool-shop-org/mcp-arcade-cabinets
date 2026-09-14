@@ -82,7 +82,7 @@ const GATE_FIX: Record<GateReason, string> = {
   long: 'more than twelve words',
   sentences: 'more than one sentence',
   digit: 'a digit is not allowed',
-  forbidden: 'that kind of word is not allowed',
+  forbidden: 'the line used a closed word',
   name: 'that names a tool, model, or seat',
   repeat: 'that line was just said',
 };

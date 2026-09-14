@@ -181,6 +181,8 @@ async function main() {
     die(`unknown seat ${flags.seat}; use mcp`);
   }
 
+  requireFixture(flags.fixture ?? 'naive-ndjson');
+
   const pkg = 'ghost-on-the-menu';
   const mod = await import(pathToFileURL(path.resolve(`packages/${pkg}/dist/play.js`)).href).catch(
     () => null,
@@ -207,7 +209,6 @@ async function main() {
     args.bot = args.bot ?? 'sweeper';
     args.immortal = true;
   }
-  requireFixture(args.fixture ?? 'naive-ndjson');
   let transcript;
   try {
     transcript = await mod.play(args);

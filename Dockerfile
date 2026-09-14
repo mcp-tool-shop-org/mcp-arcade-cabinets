@@ -2,9 +2,10 @@
 #
 # One stdio server, every asset baked in: the bundled server, the tool
 # contract, the persona sheets and the twenty tapes. No network is needed
-# to list or to play. The voice is a host-side worker the container reaches
-# at host.docker.internal when one is running and is silent without.
-# Budget: one CPU and two gigabytes, as the Toolkit gives each server.
+# to list or to play. Catalog default is silent (empty VOICE_URL). A local
+# build with a host worker: VOICE_URL=http://host.docker.internal:7788
+# (and VOICE_TOKEN). Budget: one CPU and two gigabytes, as the Toolkit gives
+# each server.
 
 FROM node:22-alpine AS build
 RUN corepack enable && corepack prepare pnpm@11.4.0 --activate
@@ -27,7 +28,7 @@ LABEL org.opencontainers.image.title="Ghost on the Menu" \
 ENV NODE_ENV=production \
     CABINET_TAPES=/app/tapes \
     CABINET_FIXTURE=naive-ndjson \
-    VOICE_URL=http://host.docker.internal:7788
+    VOICE_URL=""
 WORKDIR /app
 COPY --from=build /src/packages/cabinet-server/dist/server.js ./server.js
 COPY fixtures/tapes ./tapes

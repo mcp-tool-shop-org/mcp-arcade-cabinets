@@ -44,6 +44,8 @@ const DROP_KINDS = ['lamp', 'spread'] as const;
 const VOICE_FORBIDDEN =
   /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
 const MIN_VOICE_LINES = 4;
+/** 14px mono at x=16 on the 480 field; ~8.4px/glyph, 16px gutter. */
+const VOICE_MAX_GLYPHS = 50;
 
 export interface PathPoint {
   x: number;
@@ -621,7 +623,9 @@ function loadLines(raw: unknown, file: string, key: string): string[] {
   const list = asArray(raw, file, key).map((item, i) => asString(item, file, `${key}.${i}`));
   if (list.length < MIN_VOICE_LINES || list.length > VOICE_MAX_LINES) fail(file, key);
   for (const line of list) {
-    if (line.trim() === '' || VOICE_FORBIDDEN.test(line)) fail(file, key);
+    if (line.trim() === '' || line.length > VOICE_MAX_GLYPHS || VOICE_FORBIDDEN.test(line)) {
+      fail(file, key);
+    }
   }
   return list;
 }
