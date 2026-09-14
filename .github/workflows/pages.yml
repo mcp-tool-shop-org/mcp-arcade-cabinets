@@ -140,6 +140,34 @@ jobs:
             echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
+          # TRACK_KEYS beds (inspect poison rug unlisted breather whisperer menu doorman).
+          # test:play is not proof of the uploaded Pages tree.
+          track_keys="inspect poison rug unlisted breather whisperer menu doorman"
+          missing_tracks=0
+          track_count=0
+          sample_track=
+          for key in $track_keys; do
+            f="site/dist/play/tracks/$key.mp3"
+            if [ ! -s "$f" ]; then
+              echo "site/dist/play/tracks/$key.mp3 is missing or empty"
+              missing_tracks=1
+            else
+              track_count=$((track_count + 1))
+              if [ -z "$sample_track" ]; then
+                sample_track=$f
+              fi
+            fi
+          done
+          echo "tracks=${track_count}" >> "$GITHUB_OUTPUT"
+          if [ -n "$sample_track" ]; then
+            echo "play track: $sample_track ($(wc -c < "$sample_track" | tr -d ' ') bytes); tracks=$track_count"
+          else
+            echo "play tracks: 0"
+          fi
+          if [ "$missing_tracks" -ne 0 ]; then
+            echo "next: pnpm build:play then cd site && npm run build"
+            exit 1
+          fi
           failed_src=0
           while IFS= read -r raw; do
             [ -z "$raw" ] && continue
@@ -165,7 +193,7 @@ jobs:
             echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
-          echo "play index: $(wc -c < "$index" | tr -d ' ') bytes; assets js=$js_count; sprites=$sprite_count"
+          echo "play index: $(wc -c < "$index" | tr -d ' ') bytes; assets js=$js_count; sprites=$sprite_count; tracks=$track_count"
 
       - id: upload
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
@@ -210,7 +238,22 @@ jobs:
                 echo "- play asset: missing"
               fi
               sc=$(find site/dist/play/sprites -type f 2>/dev/null | wc -l | tr -d ' ')
-              echo "- play sprites: ${sc:-0} files"
+              tc="${{ steps.play_index.outputs.tracks }}"
+              if [ -z "$tc" ]; then
+                tc=0
+                for key in inspect poison rug unlisted breather whisperer menu doorman; do
+                  if [ -s "site/dist/play/tracks/$key.mp3" ]; then
+                    tc=$((tc + 1))
+                  fi
+                done
+              fi
+              echo "- play sprites: ${sc:-0} files; play tracks: ${tc:-0} files"
+              trk=$(ls site/dist/play/tracks/*.mp3 2>/dev/null | head -n 1 || true)
+              if [ -n "$trk" ] && [ -s "$trk" ]; then
+                echo "- play track: \`$trk\` ($(wc -c < "$trk" | tr -d ' ') bytes)"
+              else
+                echo "- play track: missing"
+              fi
             elif [ -e site/dist/play/index.html ]; then
               echo "- play index: empty"
             else

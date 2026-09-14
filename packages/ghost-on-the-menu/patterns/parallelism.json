@@ -43,13 +43,13 @@
       "enabled": true,
       "copies": 3,
       "copiesLater": 4,
-      "copiesShift": 6,
+      "copiesShift": 4,
       "firstBurst": 7,
       "laterBurst": 18,
       "gap": 5,
       "intensity": 1.35,
       "intensityLater": 1.8,
-      "intensityShift": 2.6,
+      "intensityShift": 1.8,
       "decoysFire": true
     }
   }

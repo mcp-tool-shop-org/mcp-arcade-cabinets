@@ -78,12 +78,15 @@ export type SpriteKey = (typeof SPRITE_KEYS)[number];
 const SLIT_FRAME_W = 40;
 
 /** Cropped PNG sizes; dest rects keep this aspect instead of the sim box. */
-const BOSS_NATIVE: Partial<Record<SpriteKey, { w: number; h: number }>> = {
+const SPRITE_NATIVE: Partial<Record<SpriteKey, { w: number; h: number }>> = {
   'boss-whisperer': { w: 108, h: 64 },
   'boss-menu-open': { w: 74, h: 117 },
   'boss-menu-slit': { w: 16, h: 110 },
   'boss-doorman-plate-out': { w: 62, h: 89 },
   'boss-doorman-plate-gone': { w: 51, h: 89 },
+  'drop-lamp': { w: 73, h: 112 },
+  'drop-spread': { w: 112, h: 97 },
+  'hazard-band': { w: 111, h: 26 },
 };
 
 /** The boss frame is a function of the boss rect and plate the sim set; never of a fact. */
@@ -194,12 +197,30 @@ function paintLines(
 }
 
 /**
+ * Dest rect at the PNG aspect, centered on the sim box.
+ * Rectangle fallback stays the sim box when the PNG is missing.
+ */
+function nativeDest(
+  box: { x: number; y: number; w: number; h: number },
+  native: { w: number; h: number } | undefined,
+): { x: number; y: number; w: number; h: number } {
+  if (!native) return { x: box.x, y: box.y, w: box.w, h: box.h };
+  const destW = Math.max(box.w, native.w * (box.h / native.h));
+  const destH = Math.max(box.h, native.h * (box.w / native.w));
+  return {
+    x: Math.round(box.x + (box.w - destW) / 2),
+    y: Math.round(box.y + (box.h - destH) / 2),
+    w: Math.round(destW),
+    h: Math.round(destH),
+  };
+}
+
+/**
  * Dest rect at the PNG aspect, centered on the sim body (or body+plate).
  * dest-width of a plate-out frame spans the plate rect so the plate is not
  * squashed into the coat.
  */
 function bossSpriteRect(b: Boss): { x: number; y: number; w: number; h: number } {
-  const native = BOSS_NATIVE[bossFrame(b)];
   let sw = b.w;
   const sh = b.h;
   const sx = b.x;
@@ -207,15 +228,7 @@ function bossSpriteRect(b: Boss): { x: number; y: number; w: number; h: number }
   if (b.plate) {
     sw = Math.max(b.w, b.plate.x + b.plate.w - b.x);
   }
-  if (!native) return { x: sx, y: sy, w: sw, h: sh };
-  const destW = Math.max(sw, native.w * (sh / native.h));
-  const destH = Math.max(sh, native.h * (sw / native.w));
-  return {
-    x: Math.round(sx + (sw - destW) / 2),
-    y: Math.round(sy + (sh - destH) / 2),
-    w: Math.round(destW),
-    h: Math.round(destH),
-  };
+  return nativeDest({ x: sx, y: sy, w: sw, h: sh }, SPRITE_NATIVE[bossFrame(b)]);
 }
 
 type Rect = (x: number, y: number, w: number, h: number) => void;
@@ -305,9 +318,15 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     bossPaintBottom = drew ? dest.y + dest.h : b.y + b.h;
     // A player shot that lands flashes the boss white for a few frames; the
     // flash is the same whatever the wave's fact, because every boss takes hits.
+    // PNG: dest (including plate dest-width). Fallback: sim body and plate.
     if (b.hitT < BOSS_FLASH) {
       ctx.fillStyle = BOSS_FLASH_FILL;
-      rect(b.x, b.y, b.w, b.h);
+      if (drew) {
+        rect(dest.x, dest.y, dest.w, dest.h);
+      } else {
+        rect(b.x, b.y, b.w, b.h);
+        if (b.plate) rect(b.plate.x, b.plate.y, b.plate.w, b.plate.h);
+      }
     }
   }
 
@@ -369,7 +388,8 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   for (const h of state.hazards) {
     if (!h.alive) continue;
     const key = `hazard-${h.kind}` satisfies SpriteKey;
-    if (!sprite(key, h.x, h.y, h.w, h.h)) {
+    const dest = key === 'hazard-band' ? nativeDest(h, SPRITE_NATIVE[key]) : h;
+    if (!sprite(key, dest.x, dest.y, dest.w, dest.h)) {
       ctx.fillStyle = HAZARD_FILL[h.kind];
       rect(h.x, h.y, h.w, h.h);
     }
@@ -378,7 +398,8 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   for (const drop of state.drops) {
     if (!drop.alive) continue;
     const key = drop.kind === 'lamp' ? 'drop-lamp' : 'drop-spread';
-    if (!sprite(key, drop.x, drop.y, drop.w, drop.h)) {
+    const dest = nativeDest(drop, SPRITE_NATIVE[key]);
+    if (!sprite(key, dest.x, dest.y, dest.w, dest.h)) {
       ctx.fillStyle = drop.kind === 'lamp' ? DROP_LAMP_FILL : DROP_SPREAD_FILL;
       rect(drop.x, drop.y, drop.w, drop.h);
     }

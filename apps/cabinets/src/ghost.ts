@@ -39,14 +39,12 @@ import {
 import {
   attach,
   attachedPatterns,
-  bossKindFor,
   createRoundState,
   cues,
   DEFAULT_SECONDS,
   defaultPilotModel,
   FIELD,
   isCloudModel,
-  kindOfAtom,
   listPilotModels,
   prepassRound,
   renderRound,
@@ -215,18 +213,17 @@ const BEDS = new Map<string, HTMLAudioElement>();
 const bedMissing = new Set<string>();
 let bedsRequested = false;
 let bedsSettled = false;
-const onBedsSettled: Array<() => void> = [];
+const bedWatchers = new Set<() => void>();
 const loadBeds = () => {
   if (bedsRequested) return;
   bedsRequested = true;
   const pending = new Set<string>(TRACK_KEYS);
   const one = (key: string, ok: boolean) => {
-    if (!pending.delete(key)) return;
-    if (!ok) bedMissing.add(key);
-    if (pending.size === 0) {
-      bedsSettled = true;
-      for (const fn of onBedsSettled.splice(0)) fn();
-    }
+    pending.delete(key);
+    if (ok || BEDS.has(key)) bedMissing.delete(key);
+    else bedMissing.add(key);
+    if (pending.size === 0) bedsSettled = true;
+    for (const fn of bedWatchers) fn();
   };
   window.setTimeout(() => {
     for (const key of [...pending]) one(key, false);
@@ -335,10 +332,26 @@ export function mountGhost(
   const tagsCtl = new AbortController();
   const takeEl = new Audio();
   takeEl.volume = 0.9;
+  const duckBeds = (on: boolean) => {
+    music.audio?.setBedDuck(on);
+  };
   const stopTake = () => {
     takeEl.pause();
     takeEl.src = '';
+    duckBeds(false);
   };
+  takeEl.addEventListener('play', () => {
+    if (!left && !music.muted) duckBeds(true);
+  });
+  takeEl.addEventListener('playing', () => {
+    if (!left && !music.muted) duckBeds(true);
+  });
+  takeEl.addEventListener('pause', () => {
+    if (!left) duckBeds(false);
+  });
+  takeEl.addEventListener('ended', () => {
+    if (!left) duckBeds(false);
+  });
   const markVoiceDown = () => {
     const wasOn = voice.checked;
     if (workerUp) voiceSawDown = true;
@@ -436,6 +449,7 @@ export function mountGhost(
   root.classList.add('playing');
 
   let artMissing = false;
+  const missingArt = new Set<string>();
   let musicMissing = false;
   let fullWord = '';
   const writeChrome = () => {
@@ -533,17 +547,15 @@ export function mountGhost(
   const atlas = new Map<string, HTMLImageElement>();
   const pendingArt = new Set<string>(SPRITE_KEYS);
   const artOne = (key: string, ok: boolean) => {
-    if (!pendingArt.delete(key)) return;
-    if (!ok) artMissing = true;
-    if (pendingArt.size === 0 && artMissing) writeChrome();
+    pendingArt.delete(key);
+    if (ok || atlas.has(key)) missingArt.delete(key);
+    else missingArt.add(key);
+    artMissing = missingArt.size > 0;
+    writeChrome();
   };
   window.setTimeout(() => {
     if (left) return;
-    if (pendingArt.size > 0) {
-      artMissing = true;
-      pendingArt.clear();
-      writeChrome();
-    }
+    for (const key of [...pendingArt]) artOne(key, false);
   }, 4000);
   for (const key of SPRITE_KEYS) {
     const img = new Image();
@@ -590,21 +602,21 @@ export function mountGhost(
   loadBeds();
   const watchBeds = () => {
     if (left) return;
-    if (bedMissing.size > 0) {
-      musicMissing = true;
-      writeChrome();
-    }
+    musicMissing = bedMissing.size > 0;
+    writeChrome();
   };
+  bedWatchers.add(watchBeds);
   if (bedsSettled) watchBeds();
-  else onBedsSettled.push(watchBeds);
   let audio: AudioOut | null = music.audio;
   let muted = music.muted;
   mute.textContent = muted ? 'Sound off' : 'Sound on';
+  const takeIsPlaying = () => !takeEl.paused && !takeEl.ended && Boolean(takeEl.src);
   const ensureAudio = () => {
     if (audio || typeof AudioContext === 'undefined') return;
     audio = attach(new AudioContext(), undefined, (k) => BEDS.get(k), { seed: round.seed });
     audio.setMuted(muted);
     music.audio = audio;
+    if (takeIsPlaying() && !muted) audio.setBedDuck(true);
   };
   mute.addEventListener('click', () => {
     muted = !muted;
@@ -613,6 +625,8 @@ export function mountGhost(
     ensureAudio();
     audio?.setMuted(muted);
     takeEl.muted = muted;
+    if (muted || !takeIsPlaying()) duckBeds(false);
+    else duckBeds(true);
   });
   intensity.addEventListener('change', () => {
     writePrefs({ feel: intensity.value as Intensity });
@@ -702,7 +716,7 @@ export function mountGhost(
       // The worker's url is relative to the worker; the dev proxy mounts it at /voice.
       takeEl.src = `/voice${url}`;
       void takeEl.play().catch(() => {
-        /* the take is not the game */
+        duckBeds(false);
       });
     },
     captionSeconds: 2.4,
@@ -970,14 +984,10 @@ export function mountGhost(
     if (audio) {
       for (const c of cues(prev, next)) audio.play(c);
       if (!state.scene) {
-        // The wave's bed: a boss wave names its boss's bed; any other wave
-        // asks for the pool, which the player rotates through at each hold.
-        // A burst speeds the playing bed up, never a swap. Measured before
-        // the hold: twenty bed switches in a ninety-second round, most
-        // stretches under four seconds, every one a restart from zero.
-        const bound = round.waveBounds[state.wave];
-        const waveKind = bound ? kindOfAtom(bound.atom) : 'inspect';
-        const bedKind = bound ? (bossKindFor(bound.atom) ?? waveKind) : 'inspect';
+        // Named boss bed while a boss is up; otherwise the wave kind,
+        // including 'breather' in the t1→next-t0 gap.
+        const bedKind =
+          state.boss && state.boss.alive ? state.boss.kind : waveKindAt(round, state.t);
         audio.tick(state.t, bedKind, state.parallelism);
         musicEnded = false;
       } else if (!musicEnded) {
@@ -1077,6 +1087,7 @@ export function mountGhost(
     sayCtl = null;
     sayBusy = false;
     stopTake();
+    bedWatchers.delete(watchBeds);
     motionMq?.removeEventListener('change', onMotion);
     root.classList.remove('playing');
   };

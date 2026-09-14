@@ -70,6 +70,14 @@ function button(text: string, cls?: string): HTMLButtonElement {
   return b;
 }
 
+function introCopy(tier: Difficulty): string {
+  const lamps =
+    tier === 'hardcore'
+      ? 'One lamp and falling plates; a boss shot or a diving formation puts it out.'
+      : 'Three lamps; a boss shot or a diving formation puts one out.';
+  return `Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made. Hit one and it is yours for the rest of the round. ${lamps}`;
+}
+
 function difficultySelect(value: Difficulty, locked: boolean): HTMLSelectElement {
   const el = document.createElement('select');
   el.setAttribute('aria-label', locked ? 'shift difficulty' : 'difficulty');
@@ -93,14 +101,15 @@ function menu() {
   wrap.className = 'column';
   const h = document.createElement('h1');
   h.textContent = 'Ghost on the Menu';
+  const prefs = readPrefs();
+  const playDiff = (prefs.difficulty ?? 'seat') as Difficulty;
+  const intro = muted(introCopy(playDiff));
   wrap.append(
     h,
     muted(
       'A replay shooter on an mcp-arcade tape. The lies the instrument caught look like everything else until you hit one.',
     ),
-    muted(
-      'Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made. Hit one and it is yours for the rest of the round. Three lamps; a boss shot or a diving formation puts one out.',
-    ),
+    intro,
   );
 
   let picked = Math.max(
@@ -142,12 +151,11 @@ function menu() {
     list.append(li);
   });
   mark();
-  const prefs = readPrefs();
-  const playDiff = (prefs.difficulty ?? 'seat') as Difficulty;
   const playTier = difficultySelect(playDiff, false);
   playTier.addEventListener('change', () => {
     writePrefs({ difficulty: playTier.value as Difficulty });
     shiftTier.value = playTier.value;
+    intro.textContent = introCopy(playTier.value as Difficulty);
   });
   const row = document.createElement('div');
   row.className = 'row';

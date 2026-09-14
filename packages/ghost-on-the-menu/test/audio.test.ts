@@ -1,9 +1,13 @@
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import {
   attach,
   bar,
   barSeconds,
+  BED_LEVEL,
   BED_POOL,
   BURST_RATE,
   DEFAULT_MUSIC,
@@ -110,6 +114,24 @@ describe('the score is pure data (no assets, no sim)', () => {
   });
 });
 
+describe('recorded track files', () => {
+  it('every TRACK_KEYS has a file under apps/cabinets/public/tracks', () => {
+    const dir = path.resolve(__dirname, '../../../apps/cabinets/public/tracks');
+    const files = new Set(
+      readdirSync(dir)
+        .filter((f) => f.endsWith('.mp3'))
+        .map((f) => f.replace(/\.mp3$/, '')),
+    );
+    for (const key of TRACK_KEYS) {
+      const file = path.join(dir, `${key}.mp3`);
+      expect(files.has(key), key).toBe(true);
+      expect(existsSync(file), key).toBe(true);
+      expect(statSync(file).size, key).toBeGreaterThan(0);
+      expect(TRACKS[key], key).toBeDefined();
+    }
+  });
+});
+
 describe('wave motifs', () => {
   it('has a lead for every wave kind the cues can name', () => {
     for (const kind of ['inspect', 'poison', 'rug', 'unlisted', 'breather']) {
@@ -202,22 +224,28 @@ describe('recorded beds', () => {
     return b;
   }
 
-  it('holds a bed for at least a minute, then gives way to the wave that is playing', () => {
+  it('holds a same-kind bed; a boss key skips the hold and comes in at BED_LEVEL', () => {
     const inspect = bed();
     const whisperer = bed();
     const menu = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer, menu };
     const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60 });
     out.tick(0, 'inspect');
-    for (let t = 1; t < 59; t += 1) out.tick(t, t < 18 ? 'inspect' : 'whisperer');
-    expect(whisperer.playing).toBe(false); // wanted since 18 s, held
+    for (let t = 1; t < 18; t += 1) out.tick(t, 'inspect');
     expect(inspect.playing).toBe(true);
-    out.tick(61, 'menu'); // the hold is up: the bed that is wanted now comes in
-    expect(menu.playing).toBe(true);
-    expect(whisperer.playing).toBe(false);
-    for (let t = 61.05; t < 62.5; t += 0.05) out.tick(t, 'menu');
+    expect(inspect.volume).toBe(BED_LEVEL);
+    out.tick(18, 'whisperer'); // boss keys skip the 120s hold
+    expect(whisperer.playing).toBe(true);
+    expect(whisperer.volume).toBeGreaterThanOrEqual(0);
+    expect(whisperer.volume).toBeLessThanOrEqual(BED_LEVEL);
+    for (let t = 18.05; t < 19.2; t += 0.05) out.tick(t, 'whisperer');
     expect(inspect.playing).toBe(false);
-    expect(menu.volume).toBe(1);
+    expect(whisperer.volume).toBe(BED_LEVEL);
+    out.tick(20, 'menu');
+    expect(menu.playing).toBe(true);
+    for (let t = 20.05; t < 21.2; t += 0.05) out.tick(t, 'menu');
+    expect(whisperer.playing).toBe(false);
+    expect(menu.volume).toBe(BED_LEVEL);
   });
 
   it('crossfades between beds and resumes a bed where it left off, never from zero', () => {
@@ -227,17 +255,18 @@ describe('recorded beds', () => {
     const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
     out.tick(0, 'inspect');
     expect(inspect.playing).toBe(true);
-    expect(inspect.volume).toBe(1);
+    expect(inspect.volume).toBe(BED_LEVEL);
     inspect.currentTime = 7.5; // seven seconds in
     out.tick(8, 'whisperer');
     // Both play through the crossfade; the leaving bed is not paused yet.
     expect(whisperer.playing).toBe(true);
     expect(inspect.playing).toBe(true);
-    expect(whisperer.volume).toBeLessThan(1);
+    expect(whisperer.volume).toBeGreaterThanOrEqual(0);
+    expect(whisperer.volume).toBeLessThanOrEqual(BED_LEVEL);
     for (let t = 8.05; t < 9.2; t += 0.05) out.tick(t, 'whisperer');
     expect(inspect.playing).toBe(false);
     expect(inspect.volume).toBe(0);
-    expect(whisperer.volume).toBe(1);
+    expect(whisperer.volume).toBe(BED_LEVEL);
     // Back to inspect: it resumes from where it was, not from zero.
     out.tick(20, 'inspect');
     expect(inspect.playing).toBe(true);
@@ -278,7 +307,7 @@ describe('recorded beds', () => {
     expect(menu.playbackRate).toBeLessThan(BURST_RATE);
     for (let t = 1.4; t < 2.2; t += 0.05) out.tick(t, 'menu', true);
     expect(menu.playbackRate).toBeCloseTo(BURST_RATE, 5);
-    expect(menu.volume).toBe(1);
+    expect(menu.volume).toBe(BED_LEVEL);
     out.tick(3, 'menu', false);
     for (let t = 3.05; t < 4.2; t += 0.05) out.tick(t, 'menu', false);
     expect(menu.playbackRate).toBe(1);
@@ -299,53 +328,62 @@ describe('recorded beds', () => {
     expect(menu.playbackRate).toBe(1);
   });
 
-  it('opens on the bed the seed picks from the pool, and skips a bed with no file', () => {
+  it('plays a named TRACK_KEYS bed as itself, not a rotated pool bed', () => {
     const beds: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of ['inspect', 'poison', 'rug', 'unlisted']) beds[k] = bed();
+    for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60, seed: 0 });
+    out.tick(0, 'poison');
+    expect(beds.poison!.playing).toBe(true);
+    expect(beds.inspect!.playing).toBe(false);
+  });
+
+  it('skips a bed with no file and opens on the next pool bed the seed picks', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of ['poison', 'rug', 'unlisted']) beds[k] = bed();
     // seed 1 is 'breather', which has no file here: the next pool bed opens.
     const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 1 });
     out.tick(0, 'inspect');
     expect(beds.poison!.playing).toBe(true);
-    expect(beds.inspect!.playing).toBe(false);
     const other = attach(silentCtx(), undefined, (k) => beds[k], { seed: 4 });
     other.tick(0, 'inspect');
     expect(beds.unlisted!.plays).toBe(1);
   });
 
-  it('rotates to the next pool bed at each hold, and a boss wave brings its own once the hold is up', () => {
+  it('keeps a named same-kind bed through the hold; a boss key skips the hold', () => {
     const beds: Record<string, ReturnType<typeof bed>> = {};
     for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
     const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 10, seed: 0 });
     out.tick(0, 'inspect');
     expect(beds.inspect!.playing).toBe(true);
     for (let t = 1; t < 10; t += 1) out.tick(t, 'inspect');
-    expect(beds.breather!.playing).toBe(false); // held
-    out.tick(10.5, 'inspect');
-    expect(beds.breather!.playing).toBe(true); // the same wave kind, the next bed
-    out.tick(15, 'whisperer'); // a boss during the hold waits
-    expect(beds.whisperer!.playing).toBe(false);
-    out.tick(21, 'whisperer');
+    expect(beds.breather!.playing).toBe(false);
+    out.tick(10.5, 'inspect'); // named inspect stays inspect; no pool rotate
+    expect(beds.inspect!.playing).toBe(true);
+    expect(beds.breather!.playing).toBe(false);
+    out.tick(11, 'whisperer'); // a boss during the hold starts now
     expect(beds.whisperer!.playing).toBe(true);
-    out.tick(32, 'inspect'); // the boss is down and the hold is up: the pool goes on from where it was
-    expect(beds.poison!.playing).toBe(true);
+    for (let t = 11.05; t < 12.2; t += 0.05) out.tick(t, 'whisperer');
+    expect(beds.whisperer!.volume).toBe(BED_LEVEL);
+    out.tick(13, 'inspect'); // named inspect plays itself, not a pool rotate
+    expect(beds.inspect!.playing).toBe(true);
   });
 
-  it('carries the hold across a restart or the next call, and a seed only sets an opening', () => {
+  it('carries the named bed across a restart or the next call, and a seed only sets an opening', () => {
     const beds: Record<string, ReturnType<typeof bed>> = {};
     for (const k of BED_POOL) beds[k] = bed();
     const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 10, seed: 0 });
     out.tick(0, 'inspect');
     for (let t = 1; t < 7; t += 1) out.tick(t, 'inspect');
     out.seed(3); // a bed is playing: ignored
-    // The next call: the round clock goes back to zero, six seconds already held.
+    // The next call: the round clock goes back to zero; named inspect stays.
     out.tick(0, 'inspect');
     expect(beds.inspect!.playing).toBe(true);
     expect(beds.inspect!.plays).toBe(1);
     for (let t = 1; t < 4; t += 1) out.tick(t, 'inspect');
     expect(beds.breather!.playing).toBe(false);
-    out.tick(4.5, 'inspect'); // ten and a half seconds in all
-    expect(beds.breather!.playing).toBe(true);
-    expect(beds.unlisted!.playing).toBe(false);
+    out.tick(4.5, 'inspect');
+    expect(beds.inspect!.playing).toBe(true);
+    expect(beds.breather!.playing).toBe(false);
   });
 
   it('fades the music out at the scene on the wall clock, and a restart brings it back', () => {
@@ -358,7 +396,7 @@ describe('recorded beds', () => {
       out.end();
       expect(inspect.playing).toBe(true);
       vi.advanceTimersByTime(800);
-      expect(inspect.volume).toBeLessThan(1);
+      expect(inspect.volume).toBeLessThanOrEqual(BED_LEVEL);
       expect(inspect.volume).toBeGreaterThan(0);
       vi.advanceTimersByTime(1000);
       expect(inspect.playing).toBe(false);
@@ -386,7 +424,7 @@ describe('recorded beds', () => {
       expect(inspect.playing).toBe(true);
       vi.advanceTimersByTime(END_FADE_S * 1000);
       expect(inspect.playing).toBe(true);
-      expect(inspect.volume).toBe(1);
+      expect(inspect.volume).toBe(BED_LEVEL);
     } finally {
       vi.useRealTimers();
     }

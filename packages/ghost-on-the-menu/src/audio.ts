@@ -177,6 +177,8 @@ export const END_FADE_S = 1.5;
  * is remembered and made when the hold is up.
  */
 export const BED_MIN_S = 120;
+/** Recorded beds sit here, not at 1, so shots and the catch still read. */
+export const BED_LEVEL = 0.32;
 
 export type BedLookup = (key: string) => MediaBed | undefined;
 
@@ -316,6 +318,11 @@ export interface AudioOut {
   /** Seed the opening bed for a round about to start; ignored while a bed plays. */
   seed(seed: number): void;
   setMuted(muted: boolean): void;
+  /**
+   * Duck live recorded beds while a take plays. Leaves SFX and chiptune
+   * oscillator gains alone.
+   */
+  setBedDuck(on: boolean): void;
   close(): void;
 }
 
@@ -331,12 +338,12 @@ interface CtxLike {
  * Attach the score to an AudioContext. The shell constructs the context on
  * the first user gesture (browsers require it); tests never call this.
  *
- * Beds (the Director's decisions, 2026-09-11): a round opens on a bed the
- * seed picks from the pool of wave beds, holds it for `minBedSeconds`, then
- * rotates to the next pool bed; a boss wave brings its own bed when the
- * hold is up. The hold carries across a restart or the next call of a
- * shift, so a shift hears a run of beds rather than four openings. A burst
- * speeds the playing bed up (`burstRate`) instead of laying a track over it.
+ * Beds: if a recorded file exists for the asked wave or boss key, that
+ * named bed plays and a change of key crossfades. The 120s hold only
+ * gates same-kind pool rotation when no named file exists. Boss keys
+ * (whisperer/menu/doorman) skip the hold. The seed still picks the
+ * opening pool bed when the asked key has no file. A burst speeds the
+ * playing bed up (`burstRate`) instead of laying a track over it.
  */
 export function attach(
   ctx: CtxLike,
@@ -365,6 +372,8 @@ export function attach(
   let poolAt = pool.length ? Math.abs(opts.seed ?? 0) % pool.length : 0;
   let burstOn = false;
   let lastT = 0;
+  let ducked = false;
+  const bedGain = () => (ducked ? BED_LEVEL * 0.45 : BED_LEVEL);
   /** Current bed plus any still fading: mute/end/close must reach all of them. */
   const live = new Set<MediaBed>();
   interface Fade {
@@ -547,29 +556,34 @@ export function attach(
     }
     return undefined;
   };
-  const switchBed = (waveKind: string, t: number) => {
-    const fromPool = pool.includes(waveKind) || !bed?.(waveKind);
-    // A bed that is playing holds for the minimum before it gives way.
-    if (currentBed && t - bedSince < minBed) return true;
-    let next: MediaBed | undefined;
-    if (fromPool) {
-      // The hold is up and no boss is on: rotate to the next pool bed.
-      if (currentBed) poolAt = (poolAt + 1) % Math.max(1, pool.length);
-      next = poolBed();
-    } else {
-      next = bed?.(waveKind);
-    }
+  const adopt = (next: MediaBed | undefined, t: number): boolean => {
     if (next === currentBed) return Boolean(next);
     const leaving = currentBed;
     const rate = leaving?.playbackRate ?? 1;
     currentBed = next;
     bedSince = t;
-    if (leaving) {
-      fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
-    }
-    if (next) bringIn(next, 1, leaving ? BED_FADE_S : 0, rate);
+    if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
+    if (next) bringIn(next, bedGain(), leaving ? BED_FADE_S : 0, rate);
     if (leaving) leaving.playbackRate = 1;
     return Boolean(next);
+  };
+  const switchBed = (waveKind: string, t: number) => {
+    const named = bed?.(waveKind);
+    const isBoss = waveKind === 'whisperer' || waveKind === 'menu' || waveKind === 'doorman';
+    // A named file for this key always plays; pool membership is not a rotate.
+    if (named) return adopt(named, t);
+    if (isBoss) {
+      // Wanted boss bed is missing: drop the overlay so chiptune can follow.
+      if (currentBed) {
+        fadeTo(currentBed, 0, BED_FADE_S, true);
+        currentBed = undefined;
+      }
+      return false;
+    }
+    // Same-kind pool rotation only, and only when no named file exists.
+    if (currentBed && t - bedSince < minBed) return true;
+    if (currentBed) poolAt = (poolAt + 1) % Math.max(1, pool.length);
+    return adopt(poolBed(), t);
   };
   return {
     play(name) {
@@ -656,6 +670,16 @@ export function attach(
         silenceSfx();
       } else {
         restoreBuses();
+      }
+    },
+    setBedDuck(on) {
+      ducked = on;
+      if (!currentBed) return;
+      const target = bedGain();
+      const leaving = new Set(fades.filter((f) => f.pauseAtEnd).map((f) => f.bed));
+      for (const b of collectLive()) {
+        if (leaving.has(b)) continue;
+        fadeTo(b, target, 0.25);
       }
     },
     close() {
