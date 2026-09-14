@@ -1,3 +1,4 @@
+import { VOICE_MAX_LINES } from './pilot';
 import type { SpriteClass, WaveKind } from './types';
 
 import bossesJson from '../patterns/bosses.json';
@@ -204,6 +205,8 @@ export interface VoiceSet {
   wave: Record<VoiceWaveKey, string[]>;
   boss: Record<VoiceBossKey, string[]>;
   aside: Record<VoiceWaveKey, string[]>;
+  /** Closed player set for a catch caption. Never a tape note. */
+  catch: Record<VoiceWaveKey, string[]>;
   end: string[];
 }
 
@@ -616,7 +619,7 @@ function loadDrops(raw: unknown): PatternSet['drops'] {
 
 function loadLines(raw: unknown, file: string, key: string): string[] {
   const list = asArray(raw, file, key).map((item, i) => asString(item, file, `${key}.${i}`));
-  if (list.length < MIN_VOICE_LINES) fail(file, key);
+  if (list.length < MIN_VOICE_LINES || list.length > VOICE_MAX_LINES) fail(file, key);
   for (const line of list) {
     if (line.trim() === '' || VOICE_FORBIDDEN.test(line)) fail(file, key);
   }
@@ -782,7 +785,18 @@ function loadVoice(raw: unknown): VoiceSet {
   for (const key of WAVE_VOICE_KEYS) {
     aside[key] = loadLines(req(asideRaw, file, key), file, key);
   }
-  return { wave, boss, aside, end: loadLines(req(obj, file, 'end'), file, 'end') };
+  const catchRaw = asRecord(req(obj, file, 'catch'), file, 'catch');
+  const catchLines = {} as VoiceSet['catch'];
+  for (const key of WAVE_VOICE_KEYS) {
+    catchLines[key] = loadLines(req(catchRaw, file, key), file, key);
+  }
+  return {
+    wave,
+    boss,
+    aside,
+    catch: catchLines,
+    end: loadLines(req(obj, file, 'end'), file, 'end'),
+  };
 }
 
 /** Pick a line by seed and salt. Same seed and salt, same line; never reads a fact. */

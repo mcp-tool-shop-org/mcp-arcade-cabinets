@@ -46,8 +46,16 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_TAPES_DIR = path.resolve(here, '..', '..', '..', 'fixtures', 'tapes');
 
 export function listTapes(dir: string): { name: string; tape: Tape }[] {
+  let names: string[];
+  try {
+    names = readdirSync(dir).sort();
+  } catch {
+    // Menu-shaped miss: never dump ENOENT/EACCES with a machine path.
+    process.stderr.write('tapes dir did not load (unreadable)\n');
+    return [];
+  }
   const out: { name: string; tape: Tape }[] = [];
-  for (const f of readdirSync(dir).sort()) {
+  for (const f of names) {
     if (!f.endsWith('.tape.json')) continue;
     const name = f.replace(/\.tape\.json$/, '');
     try {
@@ -168,26 +176,33 @@ export function headlessRound(opts: HeadlessOpts = {}) {
           voiceReady: () => {
             if (workerUp && Date.now() - lastAuthMs <= VOICE_AUTH_FRESH_MS) return true;
             probe();
-            return false;
+            // A live bit with a stale auth window is not "no worker": a probe
+            // is in flight. Fail-closed on the take; the words say to retry.
+            return workerUp ? 'checking' : false;
           },
           voice: (job) => {
             voiced.asked += 1;
+            const gen = probeGen;
             void speakLine(job, voiceOpts).then((a) => {
+              const live = gen === probeGen;
               if (a.status === 'voiced') {
                 voiced.ok += 1;
-                markLive();
+                if (live) markLive();
               } else if (a.status === 'receipt failed') {
                 voiced.failed += 1;
-                markLive();
+                if (live) markLive();
+              } else if (a.status === 'speak failed') {
+                voiced.failed += 1;
+                if (live) markLive();
               } else if (a.status === 'refused' && a.refused !== 'auth') {
                 voiced.refused += 1;
-                markLive();
+                if (live) markLive();
               } else if (a.status === 'refused') {
                 voiced.refused += 1;
-                dropWorker();
+                if (live) dropWorker();
               } else {
                 voiced.noWorker += 1;
-                dropWorker();
+                if (live) dropWorker();
               }
             });
           },

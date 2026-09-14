@@ -112,7 +112,7 @@
         position: absolute;
         left: 1.6rem;
         top: -0.2rem;
-        width: 22rem;
+        width: min(22rem, calc(100vw - 2rem));
         background: #1a1a24;
         border: 1px solid #3a3a4a;
         color: #e6e6e6;
@@ -123,7 +123,8 @@
         font-size: 0.85rem;
       }
       .tape-info:hover .tape-why,
-      .tape-info:focus .tape-why {
+      .tape-info:focus .tape-why,
+      .tape-info:focus-visible .tape-why {
         display: block;
       }
       /* While a cabinet is playing the page gives it the width; the field is
@@ -146,12 +147,32 @@
         background: #101018;
         outline: none;
       }
-      canvas.field:fullscreen {
+      canvas.field:focus-visible {
+        outline: 2px solid #e8a04a;
+        outline-offset: 3px;
+      }
+      canvas.field:fullscreen,
+      canvas.field:-webkit-full-screen {
         width: 100vw;
         height: 100vh;
         max-height: none;
         object-fit: contain;
         background: #000;
+      }
+      @media (max-width: 640px) {
+        main {
+          padding: 1rem 0.75rem;
+        }
+        main.playing {
+          padding: 0.5rem;
+        }
+        canvas.field {
+          max-height: calc(100vh - 14rem);
+        }
+        .tape-why {
+          left: auto;
+          right: 0;
+        }
       }
     </style>
   </head>

@@ -77,9 +77,10 @@ export interface HostOpts {
   /**
    * Whether the worker behind the voicer will speak now (authenticated
    * probe, not open GET /health, not a 15s-old bit). False makes `speak`
-   * say so instead of promising a take; the probe runs off the beat.
+   * say no worker answers; `'checking'` means a probe is in flight on a
+   * bit that was live — silent until the next beat, not "no worker".
    */
-  voiceReady?: () => boolean;
+  voiceReady?: () => boolean | 'checking';
 }
 
 /**
@@ -140,7 +141,11 @@ export function hostForRound(
     },
     speak() {
       if (!opts.voice) return 'silent';
-      if (opts.voiceReady && !opts.voiceReady()) return 'no worker';
+      if (opts.voiceReady) {
+        const ready = opts.voiceReady();
+        if (ready === 'checking') return 'checking';
+        if (!ready) return 'no worker';
+      }
       const { state } = get();
       const say = state.bossSay;
       const boss = state.boss;

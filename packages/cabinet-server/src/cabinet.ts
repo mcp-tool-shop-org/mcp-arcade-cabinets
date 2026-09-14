@@ -39,10 +39,11 @@ export interface CabinetHost {
   /**
    * Voice the pending line (G15). The host hands it to the voicer, which
    * speaks it one beat ahead and receipts it; `silent` when no voice is on,
-   * `no worker` when one is configured but does not answer (G18: silent,
-   * and says so, without waiting on the beat).
+   * `no worker` when one is configured but does not answer, `checking`
+   * when a probe is in flight on a bit that was live (G18: silent, and
+   * says so, without waiting on the beat).
    */
-  speak(): 'queued' | 'no line' | 'silent' | 'no worker';
+  speak(): 'queued' | 'no line' | 'silent' | 'no worker' | 'checking';
   tapes(): TapeCard[];
   /** The round's recent lines, for the no-repeat window. */
   recent(): readonly string[];
@@ -74,6 +75,17 @@ function text(t: string, isError = false): ToolResult {
     ? { content: [{ type: 'text', text: t }], isError: true }
     : { content: [{ type: 'text', text: t }] };
 }
+
+/** MCP words for a gate drop. Names the rule, never the raw token or the matched word. */
+const GATE_FIX: Record<GateReason, string> = {
+  empty: 'empty line',
+  long: 'more than twelve words',
+  sentences: 'more than one sentence',
+  digit: 'a digit is not allowed',
+  forbidden: 'that kind of word is not allowed',
+  name: 'that names a tool, model, or seat',
+  repeat: 'that line was just said',
+};
 
 function argOf(args: unknown, key: string): unknown {
   if (typeof args !== 'object' || args === null) return undefined;
@@ -134,7 +146,7 @@ export function createCabinet(host: CabinetHost): Cabinet {
     return text(
       gate.ok
         ? 'the boss will say it'
-        : `the gate refused it (${gate.reason}); the boss says one of its own instead`,
+        : `the gate refused it (${GATE_FIX[gate.reason]}); the boss says one of its own instead`,
     );
   }
 
@@ -159,7 +171,9 @@ export function createCabinet(host: CabinetHost): Cabinet {
           ? 'no line to speak; give the boss one first'
           : r === 'no worker'
             ? 'the voice is silent: no worker answers'
-            : 'the voice is silent on this cabinet',
+            : r === 'checking'
+              ? 'the voice is silent until the next beat; call speak again'
+              : 'the voice is silent on this cabinet',
     );
   }
 

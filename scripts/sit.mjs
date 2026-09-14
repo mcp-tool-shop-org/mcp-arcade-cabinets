@@ -17,6 +17,64 @@ import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
+const USAGE = `usage: pnpm sit [--model a:cloud,b:cloud] [--fixture name] [--tier 0|1|2|3] [--bot idle|sweeper|reader]
+          [--seat mcp|prompt] [--constrain on|off] [--say on|off] [--voice auto|on|off]
+          [--speed 1] [--lamps keep|lose]`;
+const BOTS = ['idle', 'sweeper', 'reader'];
+const FLAGS = new Set([
+  'model',
+  'fixture',
+  'tier',
+  'bot',
+  'seat',
+  'constrain',
+  'say',
+  'voice',
+  'ollama',
+  'speed',
+  'lamps',
+  'voice-url',
+]);
+
+function die(msg, code = 2) {
+  console.error(msg);
+  process.exit(code);
+}
+
+function parseArgv(argv, known) {
+  const positional = [];
+  const flags = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i];
+    if (a === '--help' || a === '-h') {
+      flags.help = true;
+      continue;
+    }
+    if (a.startsWith('--')) {
+      let key;
+      let val;
+      const eq = a.indexOf('=');
+      if (eq !== -1) {
+        key = a.slice(2, eq);
+        val = a.slice(eq + 1);
+      } else {
+        key = a.slice(2);
+        const next = argv[i + 1];
+        if (next === undefined || String(next).startsWith('-')) {
+          die(`missing value for --${key}\n${USAGE}`);
+        }
+        val = next;
+        i += 1;
+      }
+      if (!known.has(key)) die(`unknown flag --${key}\n${USAGE}`);
+      flags[key] = val;
+    } else {
+      positional.push(a);
+    }
+  }
+  return { positional, flags };
+}
+
 function tapeRoster() {
   try {
     return readdirSync(path.resolve('fixtures/tapes'))
@@ -28,9 +86,43 @@ function tapeRoster() {
   }
 }
 
-const args = {};
-const rest = process.argv.slice(2);
-for (let i = 0; i < rest.length; i += 2) args[rest[i].replace(/^--/, '')] = rest[i + 1];
+const { positional, flags: args } = parseArgv(process.argv.slice(2), FLAGS);
+if (args.help) {
+  console.log(USAGE);
+  process.exit(0);
+}
+if (positional.length > 0) die(`unknown argument ${positional[0]}\n${USAGE}`);
+if (args.bot !== undefined && !BOTS.includes(args.bot)) {
+  die(`unknown bot ${args.bot}; use idle, sweeper or reader`);
+}
+if (args.tier !== undefined) {
+  const n = Number(args.tier);
+  if (!Number.isInteger(n) || n < 0 || n > 3) die(`tier must be 0..3 (got ${args.tier})`);
+}
+const seatKind = args.seat ?? 'mcp';
+if (seatKind !== 'mcp' && seatKind !== 'prompt') {
+  die(`unknown seat ${seatKind}; use prompt or mcp`);
+}
+const lamps = args.lamps ?? 'keep';
+if (lamps !== 'keep' && lamps !== 'lose') {
+  die(`unknown lamps ${lamps}; use keep or lose`);
+}
+const voiceArg = args.voice ?? 'auto';
+if (voiceArg !== 'auto' && voiceArg !== 'on' && voiceArg !== 'off') {
+  die(`unknown voice ${voiceArg}; use auto, on or off`);
+}
+const constrainRaw = args.constrain ?? 'on';
+if (constrainRaw !== 'on' && constrainRaw !== 'off') {
+  die(`unknown constrain ${constrainRaw}; use on or off`);
+}
+const sayRaw = args.say ?? 'on';
+if (sayRaw !== 'on' && sayRaw !== 'off') {
+  die(`unknown say ${sayRaw}; use on or off`);
+}
+const speed = Number(args.speed ?? 1);
+if (!Number.isFinite(speed) || speed <= 0) {
+  die(`speed must be a positive number (got ${args.speed})`);
+}
 const fixture = args.fixture ?? 'naive-ndjson';
 if (!existsSync(path.resolve('fixtures/tapes', `${fixture}.tape.json`))) {
   console.error(`unknown fixture ${fixture}; have: ${tapeRoster().join(', ')}`);
@@ -42,15 +134,9 @@ const models = String(args.model ?? 'gpt-oss:120b-cloud')
   .split(',')
   .map((m) => m.trim());
 const ollama = (args.ollama ?? 'http://127.0.0.1:11434').replace(/\/$/, '');
-const speed = Number(args.speed ?? 1);
-const seatKind = args.seat ?? 'mcp';
-const constrain = (args.constrain ?? 'on') !== 'off';
-const sayOn = (args.say ?? 'on') !== 'off';
-const voiceArg = args.voice ?? 'auto';
+const constrain = constrainRaw !== 'off';
+const sayOn = sayRaw !== 'off';
 const voiceUrl = (args['voice-url'] ?? 'http://127.0.0.1:7788').replace(/\/$/, '');
-// `keep` tops the lamps up every frame so every boss on the tape is sat;
-// `lose` lets the bot die the way a player would.
-const lamps = args.lamps ?? 'keep';
 
 const out = path.resolve('film');
 mkdirSync(out, { recursive: true });

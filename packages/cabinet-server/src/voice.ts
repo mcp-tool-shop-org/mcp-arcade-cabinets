@@ -25,12 +25,14 @@ export interface VoiceReceipt {
 export interface SpeakAnswer {
   receipt: VoiceReceipt | null;
   /** Words for the status line. */
-  status: 'voiced' | 'receipt failed' | 'no worker' | 'refused';
+  status: 'voiced' | 'receipt failed' | 'no worker' | 'refused' | 'speak failed';
   ms: number;
   /** 400 is a bad job on a live worker; 401 is not ready. */
   refused?: 'payload' | 'auth';
   /** Set when the speak POST was aborted. */
   why?: 'timeout';
+  /** Path-free worker `error` field from a 400/401/500 JSON body. */
+  error?: string;
 }
 
 export interface VoiceOpts {
@@ -46,6 +48,21 @@ function headersFor(opts: VoiceOpts, json = false): Record<string, string> {
   if (json) h['content-type'] = 'application/json';
   if (opts.token) h.authorization = `Bearer ${opts.token}`;
   return h;
+}
+
+/** Worker error field, dropped if it looks like a path. Never a home path. */
+async function readError(res: Response): Promise<string | undefined> {
+  try {
+    const j = (await res.json()) as { error?: unknown };
+    if (typeof j.error !== 'string') return undefined;
+    const e = j.error.trim();
+    if (e === '' || e.includes('/') || e.includes('\\') || /[A-Za-z]:[\\/]/.test(e)) {
+      return undefined;
+    }
+    return e.slice(0, 80);
+  } catch {
+    return undefined;
+  }
 }
 
 /** Milliseconds a liveness probe may take before the worker counts as absent. */
@@ -107,11 +124,18 @@ export async function speakLine(
       ...(ctl ? { signal: ctl.signal } : {}),
     });
     const ms = Date.now() - t0;
-    if (res.status === 400) {
-      return { receipt: null, status: 'refused', ms, refused: 'payload' };
-    }
-    if (res.status === 401) {
-      return { receipt: null, status: 'refused', ms, refused: 'auth' };
+    if (res.status === 400 || res.status === 401 || res.status === 500) {
+      const error = await readError(res);
+      if (res.status === 500) {
+        return { receipt: null, status: 'speak failed', ms, ...(error ? { error } : {}) };
+      }
+      return {
+        receipt: null,
+        status: 'refused',
+        ms,
+        refused: res.status === 401 ? 'auth' : 'payload',
+        ...(error ? { error } : {}),
+      };
     }
     if (!res.ok) return { receipt: null, status: 'no worker', ms };
     const r = (await res.json()) as VoiceReceipt;
@@ -235,6 +259,10 @@ export function createVoicer(opts: VoicerOpts): Voicer {
           say('voice: receipt failed, not played');
           return;
         }
+        if (a.status === 'speak failed') {
+          say('voice: speak failed');
+          return;
+        }
         if (a.status === 'no worker') {
           stats.noWorker += 1;
           say(
@@ -242,7 +270,15 @@ export function createVoicer(opts: VoicerOpts): Voicer {
           );
           return;
         }
-        say('voice: refused');
+        if (a.refused === 'auth') {
+          say('voice: refused (bearer)');
+          return;
+        }
+        const why =
+          a.error && !/\d/.test(a.error) && !a.error.includes('/') && !a.error.includes('\\')
+            ? a.error
+            : '';
+        say(why ? `voice: refused (${why})` : 'voice: refused');
       });
     },
     tick(t, caption, breather, ended) {

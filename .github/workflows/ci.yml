@@ -36,6 +36,7 @@ permissions:
 
 jobs:
   check:
+    name: Verify
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -50,24 +51,71 @@ jobs:
           cache: pnpm
       - name: Env files stay ignored
         run: |
-          git check-ignore -q .env
-          git check-ignore -q .env.local
-          git check-ignore -q -- '*.pem'
-          if git check-ignore -q .env.example; then
-            echo ".env.example must not be ignored"
-            exit 1
+          failed=0
+          if git check-ignore -- .env; then
+            echo "ignored: .env"
+          else
+            echo "not ignored: .env"
+            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            failed=1
           fi
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm audit --audit-level=high
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm build
-      - run: pnpm test:play ghost --fixture naive-ndjson
+          if git check-ignore -- .env.local; then
+            echo "ignored: .env.local"
+          else
+            echo "not ignored: .env.local"
+            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            failed=1
+          fi
+          if git check-ignore -- '*.pem'; then
+            echo "ignored: *.pem"
+          else
+            echo "not ignored: *.pem"
+            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            failed=1
+          fi
+          if git check-ignore -- .env.example; then
+            echo ".env.example must not be ignored"
+            echo "next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            failed=1
+          else
+            echo "not ignored (ok): .env.example"
+          fi
+          exit "$failed"
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Audit
+        run: pnpm audit --audit-level=high
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+      - name: Play-through
+        run: pnpm test:play ghost --fixture naive-ndjson
       - name: Voice worker syntax
         run: python3 -m py_compile voice/worker.py
+      - name: Next local command
+        if: failure()
+        run: |
+          {
+            echo "## Verify failed"
+            echo "Re-run the failing gate locally:"
+            echo "- next: restore .env / .env.* / *.pem and !.env.example in .gitignore"
+            echo "- next: pnpm install --frozen-lockfile"
+            echo "- next: pnpm audit --audit-level=high"
+            echo "- next: pnpm lint"
+            echo "- next: pnpm typecheck"
+            echo "- next: pnpm test"
+            echo "- next: pnpm build"
+            echo "- next: pnpm test:play ghost --fixture naive-ndjson"
+            echo "- next: python3 -m py_compile voice/worker.py"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   catalog:
+    name: Catalog
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -81,3 +129,10 @@ jobs:
             exit 0
           fi
           docker build -t mcp-arcade-cabinets:ci .
+      - name: Next local command
+        if: failure()
+        run: |
+          {
+            echo "## Catalog failed"
+            echo "- next: docker build -t mcp-arcade-cabinets:ci ."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -68,21 +68,23 @@ describe('screen leak crash-path', () => {
     expect(out.leaked).toBe(false);
   });
 
-  it("marks leaked and not ok when landSay of 'followed' reaches the screen", () => {
+  it("drops landSay of 'followed' so it never reaches the screen", () => {
+    const landed: string[] = [];
     const out = playTape(loadFixture('naive-ndjson'), {
       fixture: 'naive-ndjson',
       bot: 'idle',
       immortal: true,
       seat: {
         frame(live) {
+          if (live.state.caption?.kind === 'aside') landed.push(live.state.caption.text);
           if (live.state.scene || !live.state.boss?.alive) return;
           live.state.bossSay = { text: 'followed', at: live.state.t };
         },
         summary: () => [],
       },
     });
-    expect(out.leaked).toBe(true);
-    expect(out.ok).toBe(false);
+    expect(landed.every((t) => !/followed/i.test(t))).toBe(true);
+    expect(out.leaked).toBe(false);
   });
 
   it('marks leaked and not ok when furniture carries a digit', () => {

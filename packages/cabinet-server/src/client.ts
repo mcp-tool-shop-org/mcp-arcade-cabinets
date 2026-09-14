@@ -91,12 +91,58 @@ interface OllamaChatBody {
   error?: string;
 }
 
+function errName(err: unknown): string {
+  if (err instanceof Error) return err.name;
+  if (err && typeof err === 'object' && 'name' in err && typeof err.name === 'string') {
+    return err.name;
+  }
+  return '';
+}
+
+function errCause(err: unknown): unknown {
+  return err && typeof err === 'object' && 'cause' in err ? err.cause : undefined;
+}
+
+function errCode(err: unknown): string {
+  let cur: unknown = err;
+  for (let i = 0; i < 4 && cur && typeof cur === 'object'; i++) {
+    if ('code' in cur && typeof cur.code === 'string') return cur.code;
+    cur = errCause(cur);
+  }
+  return '';
+}
+
+function isAbort(err: unknown): boolean {
+  let cur: unknown = err;
+  for (let i = 0; i < 4 && cur; i++) {
+    const name = errName(cur);
+    if (name === 'TimeoutError' || name === 'AbortError') return true;
+    cur = errCause(cur);
+  }
+  return false;
+}
+
+/**
+ * Map a hung or down daemon to a digit-free transport word. Same envelope as
+ * ghost-on-the-menu `generate()`: timeout / down / missing / bad payload.
+ */
+export function mapTransport(err: unknown, daemon: 'ollama' | 'claude'): Error {
+  if (isAbort(err) || (err instanceof Error && /timeout/i.test(err.message))) {
+    return new Error(`${daemon} timeout`);
+  }
+  const code = errCode(err);
+  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || err instanceof TypeError) {
+    return new Error(`${daemon} down`);
+  }
+  return err instanceof Error ? err : new Error(String(err));
+}
+
 async function chatOnce(
   opts: ChatOpts,
   system: string,
   user: string,
   tools: readonly ToolDef[],
-  budget: { think: boolean | 'low'; num_predict: number },
+  budget: { think: boolean | 'low'; num_predict: number; timeoutMs: number },
   extra: { format?: object },
 ): Promise<ChatAnswer> {
   const f = opts.fetchImpl ?? fetch;
@@ -114,13 +160,26 @@ async function chatOnce(
   };
   if (!isCloudModel(opts.model)) body.keep_alive = opts.keepAlive ?? DEFAULT_KEEP_ALIVE;
   if (extra.format) body.format = extra.format;
-  const res = await f(opts.url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`ollama ${res.status}`);
-  const j = (await res.json()) as OllamaChatBody;
+  let res: Response;
+  try {
+    res = await f(opts.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(budget.timeoutMs),
+    });
+  } catch (err) {
+    throw mapTransport(err, 'ollama');
+  }
+  if (!res.ok) {
+    throw new Error(res.status === 404 ? 'ollama missing' : 'ollama down');
+  }
+  let j: OllamaChatBody;
+  try {
+    j = (await res.json()) as OllamaChatBody;
+  } catch {
+    throw new Error('ollama bad payload');
+  }
   if (j.error) throw new Error(j.error);
   const calls: ToolCall[] = [];
   for (const c of j.message?.tool_calls ?? []) {
@@ -136,8 +195,8 @@ async function chatOnce(
   };
 }
 
-const SHORT = { think: false as const, num_predict: 48 };
-const LOW = { think: 'low' as const, num_predict: 160 };
+const SHORT = { think: false as const, num_predict: 48, timeoutMs: 3_000 };
+const LOW = { think: 'low' as const, num_predict: 160, timeoutMs: 8_000 };
 
 /**
  * One chat call with tools. A model that spent a short budget thinking and
@@ -308,7 +367,13 @@ export function createSeat(opts: SeatOpts): Seat {
     if (r.error !== null) {
       opts.admit('script');
       stats.scripted += 1;
-      say(/retired/i.test(r.error) ? 'seat: model retired' : 'seat: no answer, script');
+      say(
+        /retired/i.test(r.error)
+          ? 'seat: model retired'
+          : /ollama down/i.test(r.error)
+            ? 'seat: ollama down, script'
+            : 'seat: no answer, script',
+      );
       return;
     }
     const a = r.answer!;

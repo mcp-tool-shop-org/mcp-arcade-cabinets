@@ -50,7 +50,6 @@ const SLIT_W = 16;
 /** Pixels per second a boss slides toward the ship for a pilot column. */
 const LEAN_SPEED = 90;
 
-const labels = new WeakMap<Enemy, string>();
 const diveIndex = new WeakMap<Enemy, number>();
 const nextDive = new WeakMap<Enemy, number>();
 const dives = new WeakMap<
@@ -89,12 +88,16 @@ function overlaps(
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-function sanitizeCaption(note: string, method: string): string {
-  const raw = (note.trim() || method).replace(/\d/g, '').replace(/\s+/g, ' ').trim();
-  return raw
-    .replace(/\b(pass|fail|score)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+/**
+ * Same needles as play.ts SCREEN_FORBIDDEN plus VOICE_FORBIDDEN's \bghost\b.
+ * Digits and fact words never reach the canvas; empty after strip is dropped.
+ */
+const CAPTION_FORBIDDEN =
+  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable|ghost)\b/gi;
+
+function sanitizeCaption(raw: string, fallback = ''): string {
+  const clean = (s: string) => s.replace(CAPTION_FORBIDDEN, ' ').replace(/\s+/g, ' ').trim();
+  return clean(raw) || clean(fallback);
 }
 
 function rungOf(patterns: PatternSet, tier: 0 | 1 | 2 | 3): LadderRung {
@@ -402,7 +405,6 @@ export function createRoundState(round: Round): RoundState {
       fireAt: Number.POSITIVE_INFINITY,
       dieAt: 0,
     };
-    labels.set(enemy, sanitizeCaption(beat.source.note, beat.source.method));
     diveIndex.set(enemy, i);
     enemies.push(enemy);
   });
@@ -546,6 +548,8 @@ function emitWaveGrids(state: RoundState, meta: Meta): void {
 }
 
 function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossDef): void {
+  // A leftover verb from the previous wave must not arm this spawn.
+  state.bossIntent = null;
   const x = FIELD.width / 2 - def.w / 2;
   const y = 24;
   state.boss = {
@@ -615,6 +619,7 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
     state.boss.alive = false;
   }
   state.boss = null;
+  state.bossIntent = null;
   meta.bossDeadFor = atom;
   state.bossKills += 1;
   state.bossDownT = state.t;
@@ -712,13 +717,13 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
       if (e.id.startsWith(prefix)) have += 1;
     }
     for (let i = have; i < extras; i++) {
-      const box = spriteBox(host.sprite, meta.patterns);
+      // Copies match the host formation box and segment count (G7).
       const decoy: Enemy = {
         id: `${prefix}${i}`,
-        x: wrapX(host.x + (i + 1) * 28, box.w),
+        x: wrapX(host.x + (i + 1) * 28, host.w),
         y: host.y,
-        w: box.w,
-        h: box.h,
+        w: host.w,
+        h: host.h,
         vx: 0,
         vy: 0,
         hoverY: host.hoverY,
@@ -727,7 +732,7 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
         revealed: false,
         alive: true,
         tEnter: state.t,
-        members: 1,
+        members: host.members,
         mode: 'hover',
         pathT: 1,
         path: [],
@@ -805,21 +810,36 @@ function landSay(state: RoundState): void {
   // A wave card or a catch keeps the field; a seed aside gives way.
   if (state.caption && state.caption.kind !== 'aside') return;
   state.bossSay = null;
-  const text = sanitizeCaption(say.text, '');
+  const text = sanitizeCaption(say.text);
   if (!text) return;
   state.caption = { text, t: SAY_CAPTION_T, kind: 'aside' };
+}
+
+/** Catch words: voice.json catch line, else the wave kind. Never the row note. */
+function catchCaption(state: RoundState, meta: Meta | undefined, enemy: Enemy): string {
+  const kind = voiceWaveKey(kindOfAtom(atomOf(enemy)));
+  const word = waveCaption(atomOf(enemy));
+  if (!meta) return sanitizeCaption(word);
+  const lines = meta.patterns.voice.catch[kind];
+  const picked =
+    lines.length > 0
+      ? pickLine(lines, meta.round.seed, (diveIndex.get(enemy) ?? 0) + 71 + state.wave * 5)
+      : word;
+  return sanitizeCaption(picked, word);
 }
 
 function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   if (!state.boss || !state.boss.alive) state.bossSay = null;
   if (meta.waveHold > 0) {
     state.boss = null;
+    state.bossIntent = null;
     return;
   }
   const bound = meta.round.waveBounds[state.wave];
   const kind = bound ? bossKindFor(bound.atom) : null;
   if (!bound || !kind || state.t < bound.t0) {
     state.boss = null;
+    state.bossIntent = null;
     return;
   }
   // t1 is the last beat, not a despawn. Keep this wave's boss until the
@@ -829,10 +849,12 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
   const until = next ? next.t0 : state.duration;
   if (state.t >= until) {
     state.boss = null;
+    state.bossIntent = null;
     return;
   }
   if (meta.bossDeadFor === bound.atom) {
     state.boss = null;
+    state.bossIntent = null;
     return;
   }
   const def = meta.patterns.bosses[kind];
@@ -905,10 +927,18 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     boss.y = meta.bossOriginY;
   }
 
-  if (!meta.rung.bossFires) return;
+  if (!meta.rung.bossFires) {
+    state.bossIntent = null;
+    return;
+  }
   // The reserved tail is time to finish the boss, not a second volley that
   // empties the lamps. Keep the body hittable; do not spawn new shots after t1.
-  if (state.t >= bound.t1) return;
+  // Drop a late verb so it cannot arm the next wave's first fire. A pending
+  // column still leans while t < bossFireAt.
+  if (state.t >= bound.t1) {
+    state.bossIntent = null;
+    return;
+  }
   if (state.t < meta.bossFireAt) return;
   const raging = meta.rung.rageStart || boss.hp < def.hp / 2;
   const wait = rhythm.period * (raging ? def.rage : 1) * fireScale(state, meta);
@@ -1239,8 +1269,8 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         if (!state.cleared.includes(enemy.id)) state.cleared.push(enemy.id);
         state.hitstop = HITSTOP;
         state.shake = 1;
-        const text = labels.get(enemy) || sanitizeCaption('', enemy.sprite);
-        state.caption = { text, t: CAPTION_T, kind: 'catch' };
+        const text = catchCaption(state, meta, enemy);
+        if (text) state.caption = { text, t: CAPTION_T, kind: 'catch' };
       } else {
         enemy.mode = 'dying';
         enemy.dieAt = state.t + DIE_POP;

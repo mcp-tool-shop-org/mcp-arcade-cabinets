@@ -325,17 +325,17 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
         ctx.font = '16px monospace';
         ctx.fillText(state.caption.text, 16, 40);
         if (state.caption.line) {
-          ctx.font = '11px monospace';
+          ctx.font = '14px monospace';
           ctx.fillText(state.caption.line, 16, 58);
         }
       } else {
-        ctx.font = '11px monospace';
+        ctx.font = '14px monospace';
         ctx.fillText(state.caption.text, 16, 40);
       }
     } else {
       // The catch: the wire fact in the reveal's amber, low on the field.
       ctx.fillStyle = REVEALED_FILL;
-      ctx.font = '12px monospace';
+      ctx.font = '14px monospace';
       ctx.fillText(state.caption.text, 16, FIELD.height - BEZEL_H - 30);
     }
   }
@@ -353,7 +353,7 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     // Furniture only: a voice line, then the tape by name, the server, the
     // policy. The bout id is hex and never goes on the canvas.
     ctx.fillStyle = FURNITURE;
-    ctx.font = '12px monospace';
+    ctx.font = '14px monospace';
     let y = 46;
     if (state.scene.line) {
       ctx.fillText(state.scene.line, 16, y);

@@ -18,7 +18,7 @@ import {
   type ShiftDraw,
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
-import { DIFFICULTIES, mountGhost } from './ghost';
+import { DIFFICULTIES, mountGhost, readPrefs, writePrefs, type Difficulty } from './ghost';
 import { TAPES } from './tapes';
 
 const app = document.getElementById('app')!;
@@ -54,6 +54,12 @@ function muted(text: string): HTMLParagraphElement {
   p.className = 'muted';
   p.textContent = text;
   return p;
+}
+
+function liveShiftStatus(el: HTMLElement): void {
+  el.setAttribute('aria-live', 'polite');
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-label', 'shift code status');
 }
 
 function button(text: string, cls?: string): HTMLButtonElement {
@@ -100,9 +106,13 @@ function menu() {
     info.className = 'tape-info';
     info.tabIndex = 0;
     info.textContent = 'i';
+    info.setAttribute('aria-label', 'why this tape');
+    info.setAttribute('role', 'button');
     const why = document.createElement('span');
     why.className = 'tape-why';
+    why.id = `tape-why-${i}`;
     why.textContent = tagged.why;
+    info.setAttribute('aria-describedby', why.id);
     info.append(why);
     li.append(name, diff, info);
     name.addEventListener('click', () => {
@@ -125,24 +135,34 @@ function menu() {
   // The shift: the rig hands you calls. A draw off the clock, never a fact.
   const shiftRow = document.createElement('div');
   shiftRow.className = 'row block';
+  const prefs = readPrefs();
   const shiftTier = document.createElement('select');
+  shiftTier.setAttribute('aria-label', 'difficulty');
   for (const d of DIFFICULTIES) {
     const o = document.createElement('option');
     o.value = d.value;
     o.textContent = d.label;
     shiftTier.append(o);
   }
-  shiftTier.value = 'seat';
+  shiftTier.value = prefs.difficulty ?? 'seat';
+  shiftTier.addEventListener('change', () => {
+    writePrefs({ difficulty: shiftTier.value as Difficulty });
+  });
   const shift = button('Shift', 'commit');
   shift.title = `${lengthWord(4)} calls drawn from the roster, back to back, the bursts climbing call by call. The lamps refill at every call.`;
   const code = document.createElement('input');
   code.type = 'text';
   code.placeholder = 'a shift code: four words';
+  code.setAttribute('aria-label', 'shift code');
+  code.id = 'shift-code';
   code.autocomplete = 'off';
   code.spellcheck = false;
   code.size = 28;
+  if (prefs.shiftCode) code.value = prefs.shiftCode;
   const replay = button('Replay');
   const status = muted('');
+  status.id = 'shift-code-status';
+  liveShiftStatus(status);
   shiftRow.append(shiftTier, shift, code, replay);
   app.append(
     muted(
@@ -166,8 +186,13 @@ function menu() {
         read.why === 'another menu'
           ? 'that code is from another menu of tapes'
           : 'not a shift code: four words, as the end of a shift spells them';
+      code.setAttribute('aria-invalid', 'true');
+      code.setAttribute('aria-describedby', status.id);
       return;
     }
+    code.removeAttribute('aria-invalid');
+    code.removeAttribute('aria-describedby');
+    status.textContent = '';
     startShift(read.draw);
   };
   replay.addEventListener('click', tryReplay);
@@ -179,7 +204,16 @@ function menu() {
 /** Mount the tape at index i; the end scene's Next tape walks the list in order. */
 function playAt(i: number, fromClick = false) {
   const t = TAPES[i % TAPES.length]!;
-  mountGhost(app, t.name, t.tape, menu, () => playAt(i + 1, true), fromClick);
+  const difficulty = readPrefs().difficulty;
+  mountGhost(
+    app,
+    t.name,
+    t.tape,
+    menu,
+    () => playAt(i + 1, true),
+    fromClick,
+    difficulty ? { difficulty } : undefined,
+  );
 }
 
 interface Shift {
@@ -190,6 +224,7 @@ interface Shift {
 function startShift(draw: ShiftDraw) {
   const shift: Shift = { draw, code: encodeShift(ROSTER, draw) };
   rememberShift(draw.names);
+  writePrefs({ shiftCode: shift.code });
   callCard(shift, 0);
 }
 

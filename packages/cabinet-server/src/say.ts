@@ -15,7 +15,7 @@ import {
 import type { SeatView } from './cabinet';
 import { toolDef } from './contract';
 import { FORBIDDEN } from './gate';
-import { chatTools, type ChatOpts } from './client';
+import { chatTools, mapTransport, type ChatOpts } from './client';
 import { DEFAULT_PERSONAS, LEADS, type Lead, type Persona } from './personas';
 import { seedLines } from './seeds';
 
@@ -113,36 +113,40 @@ function parseCall(args: unknown): SayCall | null {
 
 async function askClaude(prompt: SayPrompt, key: string): Promise<SayAnswer> {
   const t0 = Date.now();
-  const client = new Anthropic({ apiKey: key });
+  const client = new Anthropic({ apiKey: key, timeout: 8_000, maxRetries: 0 });
   const def = toolDef('say');
-  const response = await client.beta.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 256,
-    system: prompt.system,
-    output_config: { effort: 'low' },
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
-    tools: [
-      {
-        name: def.name,
-        description: def.description,
-        input_schema: { ...def.inputSchema } as Record<string, unknown> & { type: 'object' },
-        strict: true,
-      },
-    ],
-    messages: [{ role: 'user', content: prompt.user }],
-  });
-  const ms = Date.now() - t0;
-  if (response.stop_reason === 'refusal') {
-    return { call: null, tier: 'claude', model: CLAUDE_MODEL, ms, suppressed: false };
+  try {
+    const response = await client.beta.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 256,
+      system: prompt.system,
+      output_config: { effort: 'low' },
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      tools: [
+        {
+          name: def.name,
+          description: def.description,
+          input_schema: { ...def.inputSchema } as Record<string, unknown> & { type: 'object' },
+          strict: true,
+        },
+      ],
+      messages: [{ role: 'user', content: prompt.user }],
+    });
+    const ms = Date.now() - t0;
+    if (response.stop_reason === 'refusal') {
+      return { call: null, tier: 'claude', model: CLAUDE_MODEL, ms, suppressed: false };
+    }
+    let call: SayCall | null = null;
+    let prose = false;
+    for (const block of response.content) {
+      if (block.type === 'tool_use' && block.name === 'say') call = parseCall(block.input);
+      else if (block.type === 'text' && block.text.trim() !== '') prose = true;
+    }
+    return { call, tier: 'claude', model: CLAUDE_MODEL, ms, suppressed: call === null && prose };
+  } catch (err) {
+    throw mapTransport(err, 'claude');
   }
-  let call: SayCall | null = null;
-  let prose = false;
-  for (const block of response.content) {
-    if (block.type === 'tool_use' && block.name === 'say') call = parseCall(block.input);
-    else if (block.type === 'text' && block.text.trim() !== '') prose = true;
-  }
-  return { call, tier: 'claude', model: CLAUDE_MODEL, ms, suppressed: call === null && prose };
 }
 
 async function askOllamaSay(prompt: SayPrompt, chat: ChatOpts, tier: SayTier): Promise<SayAnswer> {

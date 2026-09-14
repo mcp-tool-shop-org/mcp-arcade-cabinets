@@ -27,7 +27,13 @@ for (let i = 0; i < argv.length; i++) {
 const url = `http://127.0.0.1:${port}`;
 
 if (flags.has('--check')) {
-  const res = await fetch(`${url}/health`).catch(() => null);
+  const HEALTH_MS = 2_000;
+  const SPEAK_MS = 20_000;
+  const pathFree = (s) =>
+    typeof s === 'string' && s.trim() !== '' && !s.includes('/') && !s.includes('\\');
+  const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(HEALTH_MS) }).catch(
+    () => null,
+  );
   if (!res || !res.ok) {
     console.error(`no voice worker at ${url}; start one with pnpm voice`);
     process.exit(1);
@@ -36,7 +42,10 @@ if (flags.has('--check')) {
   const auth = process.env.VOICE_TOKEN
     ? { authorization: `Bearer ${process.env.VOICE_TOKEN}` }
     : {};
-  const stats = await fetch(`${url}/stats`, { headers: auth })
+  const stats = await fetch(`${url}/stats`, {
+    headers: auth,
+    signal: AbortSignal.timeout(HEALTH_MS),
+  })
     .then((r) => (r.ok ? r.json() : null))
     .catch(() => null);
   console.log(
@@ -66,13 +75,28 @@ if (flags.has('--check')) {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...auth },
         body: JSON.stringify({ text, kind, preset: v.preset, rate: v.rate, loudness: v.loudness }),
+        signal: AbortSignal.timeout(SPEAK_MS),
       });
-      const r = await spoken.json();
+      let r = {};
+      try {
+        r = await spoken.json();
+      } catch {
+        r = {};
+      }
+      const errWord = pathFree(r.error) ? r.error.trim() : '';
+      if (spoken.status === 401) {
+        failedAny = true;
+        console.log(
+          `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms receipt FAILED  stats/speak need the worker's token${errWord ? `\n    ${errWord}` : ''}  "${text}"`,
+        );
+        continue;
+      }
       const ok = spoken.ok && r.ok === true;
       if (!ok) failedAny = true;
       const failed = (r.checks ?? []).filter((c) => !c.ok).map((c) => `${c.check}: ${c.detail}`);
+      const extra = !ok && errWord ? `\n    ${errWord}` : '';
       console.log(
-        `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms ${ok ? 'receipt ok ' : 'receipt FAILED'} ${r.cached ? '(cached)' : `tts ${r.tts_s}s asr ${r.asr_s}s`}  "${text}"${failed.length ? '\n    ' + failed.join('\n    ') : ''}`,
+        `  ${kind.padEnd(10)} ${v.preset.padEnd(11)} ${String(Date.now() - t0).padStart(5)}ms ${ok ? 'receipt ok ' : 'receipt FAILED'} ${r.cached ? '(cached)' : `tts ${r.tts_s}s asr ${r.asr_s}s`}  "${text}"${failed.length ? '\n    ' + failed.join('\n    ') : ''}${extra}`,
       );
     } catch {
       failedAny = true;

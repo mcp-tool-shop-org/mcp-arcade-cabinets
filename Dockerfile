@@ -30,7 +30,6 @@ ENV NODE_ENV=production \
     VOICE_URL=http://host.docker.internal:7788
 WORKDIR /app
 COPY --from=build /src/packages/cabinet-server/dist/server.js ./server.js
-COPY packages/cabinet-server/tools.json ./tools.json
 COPY fixtures/tapes ./tapes
 RUN chown -R node:node /app
 USER node

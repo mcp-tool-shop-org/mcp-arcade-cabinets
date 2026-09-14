@@ -87,10 +87,10 @@ function loadSeat(value: unknown, path: string): TapeSeat | null {
   };
 }
 
-/** Beat ids split on the first colon; `para:` is a decoy prefix. No empty, no colon. */
+/** Beat ids split on the first colon; `para:` is a decoy prefix. No empty, no colon, no `para`. */
 function assertAtomId(id: string, path: string): void {
-  if (id === '' || /[:]|^(para:)/.test(id)) {
-    throw new TapeError(`${path} must not be empty or contain ':'`);
+  if (id === '' || id === 'para' || id.includes(':')) {
+    throw new TapeError(`${path} must not be empty, 'para', or contain ':'`);
   }
 }
 

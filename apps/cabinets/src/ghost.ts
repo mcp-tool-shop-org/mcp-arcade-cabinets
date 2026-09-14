@@ -98,20 +98,152 @@ export interface MountExtra {
   holdMusic?: boolean;
 }
 
+/** Sibling of `ghost.shifts`. Words only: no score, no count, no digit. */
+const PREFS_KEY = 'ghost.prefs';
+
+export type Prefs = {
+  difficulty?: Difficulty;
+  ollama?: 'on' | 'off';
+  voice?: 'on' | 'off';
+  shiftCode?: string;
+  feel?: Intensity;
+  shake?: 'on' | 'off';
+};
+
+const DIFF_VALUES = new Set<string>(DIFFICULTIES.map((d) => d.value));
+const FEEL_VALUES = new Set<string>(INTENSITIES);
+
+export function readPrefs(): Prefs {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const o = parsed as Record<string, unknown>;
+    const out: Prefs = {};
+    if (typeof o.difficulty === 'string' && DIFF_VALUES.has(o.difficulty)) {
+      out.difficulty = o.difficulty as Difficulty;
+    }
+    if (o.ollama === 'on' || o.ollama === 'off') out.ollama = o.ollama;
+    if (o.voice === 'on' || o.voice === 'off') out.voice = o.voice;
+    if (typeof o.shiftCode === 'string' && o.shiftCode.trim() !== '' && !/\d/.test(o.shiftCode)) {
+      out.shiftCode = o.shiftCode;
+    }
+    if (typeof o.feel === 'string' && FEEL_VALUES.has(o.feel)) out.feel = o.feel as Intensity;
+    if (o.shake === 'on' || o.shake === 'off') out.shake = o.shake;
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export function writePrefs(patch: Prefs): void {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...readPrefs(), ...patch }));
+  } catch {
+    /* a private window or blocked storage: play still plays */
+  }
+}
+
+function liveStatus(el: HTMLElement, name: string): void {
+  el.setAttribute('aria-live', 'polite');
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-label', name);
+}
+
+function reduceMotion(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function chromeTarget(t: EventTarget | null): boolean {
+  return t instanceof Element && Boolean(t.closest('input, select, button, label, textarea'));
+}
+
+function stripFieldNoise(s: string): string {
+  return s
+    .replace(/[0-9]/g, '')
+    .replace(/https?:\/\/\S+/gi, '')
+    .replace(/\/\S*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function errorKind(
+  err: unknown,
+): 'retired' | 'timeout' | 'down' | 'missing' | 'bad payload' | 'script' {
+  const msg = err instanceof Error ? err.message : String(err);
+  const name = err instanceof Error ? err.name : '';
+  if (/retired/i.test(msg)) return 'retired';
+  if (name === 'TimeoutError' || name === 'AbortError' || /timeout/i.test(msg)) return 'timeout';
+  if (/bad payload/i.test(msg)) return 'bad payload';
+  if (/not found|missing/i.test(msg)) return 'missing';
+  const code = /\b(\d{3})\b/.exec(msg)?.[1];
+  if (code === '404' || code === '410') return 'missing';
+  if (code === '408' || code === '504') return 'timeout';
+  if (code === '400' || code === '413' || code === '415' || code === '422') return 'bad payload';
+  if (code === '500' || code === '502' || code === '503') return 'down';
+  if (/down|ECONNREFUSED|ENOTFOUND/i.test(msg) || err instanceof TypeError) return 'down';
+  return 'script';
+}
+
+function seatFailLine(err: unknown): string {
+  const k = errorKind(err);
+  if (k === 'retired') return 'seat: model retired';
+  if (k === 'script') return 'seat: no answer, script';
+  return `seat: no answer, ${k}`;
+}
+
+function sayFailLine(err: unknown): string {
+  const name = err instanceof Error ? err.name : '';
+  if (name === 'TimeoutError' || name === 'AbortError') return 'say seat: no answer, timeout';
+  const cleaned = stripFieldNoise(err instanceof Error ? err.message : String(err));
+  if (/slow down/i.test(cleaned)) return 'say seat: slow down';
+  if (/no cabinet server built/i.test(cleaned)) return 'say seat: no cabinet server built';
+  const k = errorKind(err);
+  if (k === 'timeout') return 'say seat: no answer, timeout';
+  if (k === 'down') return 'say seat: no answer, down';
+  if (k === 'missing') return 'say seat: no answer, missing';
+  if (k === 'bad payload') return 'say seat: no answer, bad payload';
+  if (cleaned && cleaned !== 'say') return `say seat: ${cleaned}`;
+  return 'say seat: no answer';
+}
+
 // The music lives as long as the page (the Director's word, 2026-09-11): a
 // shift hears a run of beds through its cards rather than four openings,
 // and a bed never restarts from zero. Beds load once; the context is built
 // on the first gesture, as browsers require.
 const BEDS = new Map<string, HTMLAudioElement>();
+const bedMissing = new Set<string>();
 let bedsRequested = false;
+let bedsSettled = false;
+const onBedsSettled: Array<() => void> = [];
 const loadBeds = () => {
   if (bedsRequested) return;
   bedsRequested = true;
+  const pending = new Set<string>(TRACK_KEYS);
+  const one = (key: string, ok: boolean) => {
+    if (!pending.delete(key)) return;
+    if (!ok) bedMissing.add(key);
+    if (pending.size === 0) {
+      bedsSettled = true;
+      for (const fn of onBedsSettled.splice(0)) fn();
+    }
+  };
+  window.setTimeout(() => {
+    for (const key of [...pending]) one(key, false);
+  }, 4000);
   for (const key of TRACK_KEYS) {
     const el = new Audio();
     el.preload = 'auto';
     el.loop = true;
-    el.addEventListener('canplaythrough', () => BEDS.set(key, el), { once: true });
+    el.addEventListener(
+      'canplaythrough',
+      () => {
+        BEDS.set(key, el);
+        one(key, true);
+      },
+      { once: true },
+    );
+    el.addEventListener('error', () => one(key, false), { once: true });
     el.src = `${import.meta.env.BASE_URL}tracks/${key}.mp3`;
   }
 };
@@ -128,6 +260,7 @@ export function mountGhost(
   extra: MountExtra = {},
 ) {
   root.replaceChildren();
+  const prefs = readPrefs();
   const wrap = document.createElement('section');
   wrap.className = 'column';
   const canvas = document.createElement('canvas');
@@ -141,17 +274,19 @@ export function mountGhost(
   const mute = document.createElement('button');
   mute.textContent = 'Sound on';
   const intensity = document.createElement('select');
+  intensity.setAttribute('aria-label', 'feel');
   for (const i of INTENSITIES) {
     const o = document.createElement('option');
     o.value = i;
     o.textContent = `feel: ${i}`;
     intensity.append(o);
   }
-  intensity.value = 'calm';
+  intensity.value =
+    prefs.feel === 'medium' || prefs.feel === 'loud' || prefs.feel === 'calm' ? prefs.feel : 'calm';
   const shakeLabel = document.createElement('label');
   const shake = document.createElement('input');
   shake.type = 'checkbox';
-  shake.checked = true;
+  shake.checked = prefs.shake !== undefined ? prefs.shake === 'on' : !reduceMotion();
   shakeLabel.append(shake, document.createTextNode(' shake'));
   const ollamaLabel = document.createElement('label');
   const ollama = document.createElement('input');
@@ -165,9 +300,11 @@ export function mountGhost(
   // words; never a fact, never a digit.
   const seat = document.createElement('span');
   seat.className = 'muted seat';
-  seat.textContent = 'seat off';
+  liveStatus(seat, 'seat');
+  seat.textContent = 'seat: looking for a daemon';
   const sayStat = document.createElement('span');
   sayStat.className = 'muted seat';
+  liveStatus(sayStat, 'say seat');
   sayStat.textContent = '';
   // The voice (G15): the boss speaks its gated lines through the host-side
   // worker; every take is receipted before it plays. Off, and disabled,
@@ -182,12 +319,18 @@ export function mountGhost(
     'The boss speaks its lines in its own voice through the local voice worker (pnpm voice). Every take is heard back and receipted before it plays; a failed receipt is never played.';
   const voiceStat = document.createElement('span');
   voiceStat.className = 'muted seat';
+  liveStatus(voiceStat, 'voice');
   voiceStat.textContent = '';
+  const chrome = document.createElement('span');
+  chrome.className = 'muted seat';
+  liveStatus(chrome, 'cabinet');
+  chrome.textContent = '';
   // Probe for the worker until it answers, so starting `pnpm voice` after
   // the page opened still enables the box, and say plainly when it is missing.
   let voiceProbe = 0;
   let tagsProbe = 0;
   let workerUp = false;
+  let voiceSawDown = false;
   let left = false;
   const tagsCtl = new AbortController();
   const takeEl = new Audio();
@@ -198,6 +341,7 @@ export function mountGhost(
   };
   const markVoiceDown = () => {
     const wasOn = voice.checked;
+    if (workerUp) voiceSawDown = true;
     workerUp = false;
     voice.disabled = true;
     voice.checked = false;
@@ -209,9 +353,15 @@ export function mountGhost(
       .then((h) => {
         if (left) return;
         if (h) {
+          const firstUp = !workerUp && !voiceSawDown;
           workerUp = true;
           voice.disabled = false;
-          if (!voice.checked) voiceStat.textContent = 'voice ready';
+          if (firstUp && prefs.voice === 'on') {
+            voice.checked = true;
+            voiceStat.textContent = 'voice on';
+          } else if (!voice.checked) {
+            voiceStat.textContent = 'voice ready';
+          }
           return;
         }
         markVoiceDown();
@@ -227,6 +377,7 @@ export function mountGhost(
   };
   probeVoice();
   let daemon: 'unknown' | 'up' | 'down' = 'unknown';
+  let daemonWasUp = false;
   let listedModels: string[] = [];
   const pilotModel = document.createElement('select');
   const localDefault = 'qwen2.5:7b-instruct';
@@ -236,9 +387,11 @@ export function mountGhost(
   pilotModel.append(seedOpt);
   pilotModel.value = localDefault;
   pilotModel.title = 'Cloud tags first when the local daemon has signed in.';
+  pilotModel.setAttribute('aria-label', 'model');
   const full = document.createElement('button');
   full.textContent = 'Full screen';
   const difficulty = document.createElement('select');
+  difficulty.setAttribute('aria-label', 'difficulty');
   for (const d of DIFFICULTIES) {
     const o = document.createElement('option');
     o.value = d.value;
@@ -246,7 +399,7 @@ export function mountGhost(
     difficulty.append(o);
   }
   // Fixture tapes derive to tier 0, where formations neither fire nor dive; seat is the fun default.
-  difficulty.value = extra.difficulty ?? 'seat';
+  difficulty.value = extra.difficulty ?? prefs.difficulty ?? 'seat';
   if (extra.lockDifficulty) {
     difficulty.disabled = true;
     difficulty.title = 'A shift plays at the difficulty its code names.';
@@ -267,6 +420,7 @@ export function mountGhost(
     sayStat,
     voiceLabel,
     voiceStat,
+    chrome,
     nextBtn,
   );
 
@@ -275,17 +429,61 @@ export function mountGhost(
   hint.textContent =
     extra.hint ??
     'Left, right, space. F or the button for full screen. Click the field to restart the same tape.';
+  canvas.setAttribute('aria-label', hint.textContent);
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
   wrap.append(canvas, controls, hint, back);
   root.append(wrap);
   root.classList.add('playing');
 
+  let artMissing = false;
+  let musicMissing = false;
+  let fullWord = '';
+  const writeChrome = () => {
+    if (left) return;
+    const parts: string[] = [];
+    if (artMissing) parts.push('art: using blocks');
+    if (musicMissing) parts.push('music: chiptune');
+    if (fullWord) parts.push(fullWord);
+    chrome.textContent = parts.join(' · ');
+  };
+
+  type FullEl = HTMLCanvasElement & { webkitRequestFullscreen?: () => Promise<void> };
+  type FullDoc = Document & {
+    webkitFullscreenElement?: Element;
+    webkitExitFullscreen?: () => Promise<void>;
+  };
+  const fullNode = canvas as FullEl;
+  const fullDoc = document as FullDoc;
+  const requestFull =
+    canvas.requestFullscreen?.bind(canvas) ?? fullNode.webkitRequestFullscreen?.bind(canvas);
+  if (!requestFull) {
+    full.hidden = true;
+    full.disabled = true;
+  }
   // Full screen is the canvas alone, letterboxed by the browser; keys keep working.
   const goFull = () => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void canvas.requestFullscreen();
-    canvas.focus();
+    const current = document.fullscreenElement ?? fullDoc.webkitFullscreenElement;
+    if (current) {
+      const exit =
+        document.exitFullscreen?.bind(document) ?? fullDoc.webkitExitFullscreen?.bind(document);
+      if (exit) void Promise.resolve(exit()).catch(() => {});
+      return;
+    }
+    if (!requestFull) {
+      fullWord = 'full screen: not on this browser';
+      writeChrome();
+      return;
+    }
+    try {
+      void Promise.resolve(requestFull()).catch(() => {
+        fullWord = 'full screen: not on this browser';
+        writeChrome();
+      });
+    } catch {
+      fullWord = 'full screen: not on this browser';
+      writeChrome();
+    }
   };
   full.addEventListener('click', goFull);
   const ctx = canvas.getContext('2d')!;
@@ -295,10 +493,28 @@ export function mountGhost(
   // whose file is missing or not yet loaded draws as its rectangle, so the
   // game is playable before, without, or during the art.
   const atlas = new Map<string, HTMLImageElement>();
+  const pendingArt = new Set<string>(SPRITE_KEYS);
+  const artOne = (key: string, ok: boolean) => {
+    if (!pendingArt.delete(key)) return;
+    if (!ok) artMissing = true;
+    if (pendingArt.size === 0 && artMissing) writeChrome();
+  };
+  window.setTimeout(() => {
+    if (left) return;
+    if (pendingArt.size > 0) {
+      artMissing = true;
+      pendingArt.clear();
+      writeChrome();
+    }
+  }, 4000);
   for (const key of SPRITE_KEYS) {
     const img = new Image();
     img.decoding = 'async';
-    img.addEventListener('load', () => atlas.set(key, img));
+    img.addEventListener('load', () => {
+      atlas.set(key, img);
+      artOne(key, true);
+    });
+    img.addEventListener('error', () => artOne(key, false));
     img.src = `${import.meta.env.BASE_URL}sprites/${key}.png`;
   }
   // The renderer draws through a narrow DrawContext; the canvas fill type is
@@ -334,6 +550,15 @@ export function mountGhost(
   ];
 
   loadBeds();
+  const watchBeds = () => {
+    if (left) return;
+    if (bedMissing.size > 0) {
+      musicMissing = true;
+      writeChrome();
+    }
+  };
+  if (bedsSettled) watchBeds();
+  else onBedsSettled.push(watchBeds);
   let audio: AudioOut | null = music.audio;
   let muted = music.muted;
   mute.textContent = muted ? 'Sound off' : 'Sound on';
@@ -350,10 +575,22 @@ export function mountGhost(
     ensureAudio();
     audio?.setMuted(muted);
     takeEl.muted = muted;
-    canvas.focus();
   });
-  intensity.addEventListener('change', () => canvas.focus());
-  shake.addEventListener('change', () => canvas.focus());
+  intensity.addEventListener('change', () => {
+    writePrefs({ feel: intensity.value as Intensity });
+  });
+  let shakeTouched = prefs.shake !== undefined;
+  shake.addEventListener('change', () => {
+    shakeTouched = true;
+    writePrefs({ shake: shake.checked ? 'on' : 'off' });
+  });
+  const motionMq =
+    typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const onMotion = () => {
+    if (left || shakeTouched) return;
+    shake.checked = !motionMq!.matches;
+  };
+  motionMq?.addEventListener('change', onMotion);
 
   const input: RoundInput = { left: false, right: false, fire: false };
   const keys: Record<string, keyof RoundInput> = {
@@ -364,7 +601,10 @@ export function mountGhost(
     ' ': 'fire',
   };
   const onKey = (down: boolean) => (e: KeyboardEvent) => {
+    if (chromeTarget(e.target)) return;
+    const onField = e.target === canvas;
     if (down && (e.key === 'f' || e.key === 'F')) {
+      if (!onField) return;
       goFull();
       e.preventDefault();
       return;
@@ -373,7 +613,11 @@ export function mountGhost(
     if (!k) return;
     if (down) ensureAudio();
     input[k] = down;
-    e.preventDefault();
+    if (e.key === ' ') {
+      if (onField) e.preventDefault();
+      return;
+    }
+    if (onField) e.preventDefault();
   };
   const keyDown = onKey(true);
   const keyUp = onKey(false);
@@ -403,8 +647,7 @@ export function mountGhost(
     sayStat.textContent = text;
   };
   const seatFailed = (err: unknown) => {
-    const msg = err instanceof Error ? err.message : String(err);
-    seatSay(/retired/i.test(msg) ? 'seat: model retired' : 'seat: no answer, script');
+    seatSay(seatFailLine(err));
   };
 
   // The voicer: a take plays the moment its receipt is back if the line is
@@ -524,38 +767,49 @@ export function mountGhost(
       }),
       signal: AbortSignal.any([ctl.signal, AbortSignal.timeout(12_000)]),
     })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('say'))))
-      .then(
-        (a: {
+      .then(async (r) => {
+        let a: {
           call?: { text: string; lead: string } | null;
           tier?: string;
           suppressed?: boolean;
           error?: string;
-        }) => {
-          if (left || ctl.signal.aborted || asked !== state || !state.boss || !state.boss.alive)
-            return;
-          if (a.error) {
-            sayStatSay(`say seat: ${a.error}`);
-            return;
-          }
-          if (!a.call) {
-            sayStatSay(a.suppressed ? 'say seat answered, called nothing' : 'say seat: no line');
-            return;
-          }
-          const r = cabinet.call('say', a.call);
-          const refused = /refused/.test(r.content[0]?.text ?? '');
-          sayStatSay(
-            refused
-              ? `seat called say (${a.tier ?? 'seat'}); gate refused it, own line`
-              : `seat called say (${a.tier ?? 'seat'})`,
+        } = {};
+        try {
+          a = (await r.json()) as typeof a;
+        } catch {
+          throw new Error(r.ok ? 'bad payload' : 'no answer');
+        }
+        if (!r.ok) {
+          throw new Error(
+            typeof a.error === 'string' && a.error.trim() ? a.error.trim() : 'no answer',
           );
-          // Seat speak owns the spawn beat when we dropped the authored take.
-          if (voice.checked && !left) cabinet.call('speak', {});
-        },
-      )
-      .catch(() => {
+        }
+        return a;
+      })
+      .then((a) => {
+        if (left || ctl.signal.aborted || asked !== state || !state.boss || !state.boss.alive)
+          return;
+        if (a.error) {
+          sayStatSay(sayFailLine(new Error(a.error)));
+          return;
+        }
+        if (!a.call) {
+          sayStatSay(a.suppressed ? 'say seat answered, called nothing' : 'say seat: no line');
+          return;
+        }
+        const r = cabinet.call('say', a.call);
+        const refused = /refused/.test(r.content[0]?.text ?? '');
+        sayStatSay(
+          refused
+            ? `seat called say (${a.tier ?? 'seat'}); gate refused it, own line`
+            : `seat called say (${a.tier ?? 'seat'})`,
+        );
+        // Seat speak owns the spawn beat when we dropped the authored take.
+        if (voice.checked && !left) cabinet.call('speak', {});
+      })
+      .catch((err: unknown) => {
         if (left || ctl.signal.aborted) return;
-        sayStatSay('say seat: no answer');
+        sayStatSay(sayFailLine(err));
       })
       .finally(() => {
         if (sayCtl === ctl) {
@@ -584,21 +838,21 @@ export function mountGhost(
     warm();
   };
   ollama.addEventListener('change', () => {
+    writePrefs({ ollama: ollama.checked ? 'on' : 'off' });
     seatSay(ollama.checked ? (daemon === 'down' ? 'seat: no daemon' : 'seat waiting') : 'seat off');
     sayStatSay('');
     warm();
-    canvas.focus();
   });
   voice.addEventListener('change', () => {
+    writePrefs({ voice: voice.checked ? 'on' : 'off' });
     voiceStat.textContent = voice.checked ? 'voice on' : 'voice off';
     if (!voice.checked) stopTake();
-    canvas.focus();
   });
   pilotModel.addEventListener('change', () => {
     warm();
-    canvas.focus();
   });
   difficulty.addEventListener('change', () => {
+    if (!extra.lockDifficulty) writePrefs({ difficulty: difficulty.value as Difficulty });
     restart();
     canvas.focus();
   });
@@ -643,12 +897,20 @@ export function mountGhost(
           return;
         }
         const was = daemon;
+        const returning = daemonWasUp && was === 'down';
         daemon = 'up';
+        daemonWasUp = true;
         fillPilot(listed);
         ollama.disabled = false;
         if (was !== 'up') {
-          seatSay(ollama.checked ? 'seat waiting' : 'seat off');
-          if (ollama.checked) warm();
+          if (!returning && prefs.ollama === 'on') {
+            ollama.checked = true;
+            seatSay('seat waiting');
+            warm();
+          } else {
+            seatSay(ollama.checked ? 'seat waiting' : 'seat ready');
+            if (ollama.checked) warm();
+          }
         }
       })
       .catch(() => {
@@ -774,6 +1036,7 @@ export function mountGhost(
     sayCtl = null;
     sayBusy = false;
     stopTake();
+    motionMq?.removeEventListener('change', onMotion);
     root.classList.remove('playing');
   };
   back.addEventListener('click', () => {

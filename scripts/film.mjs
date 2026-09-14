@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `pnpm film [--fixture name] [--bot reader] [--tier 1] [--times 3,8,12,20,30,45] [--out dir]`
+// `pnpm film [--fixture name] [--bot idle|sweeper|reader] [--tier 0|1|2|3] [--times 3,8,12,20,30,45] [--out dir]`
 // Renders frames of a scripted round to PNG through the same renderer the
 // shell uses, with rectangles only (no sprites, no text), so a round can be
 // looked at without a browser. A development tool: nothing here is a test.
@@ -8,6 +8,50 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
+
+const USAGE =
+  'usage: pnpm film [--fixture name] [--bot idle|sweeper|reader] [--tier 0|1|2|3] [--times 3,8,12,20,30,45] [--out dir]';
+const BOTS = ['idle', 'sweeper', 'reader'];
+const FLAGS = new Set(['fixture', 'bot', 'tier', 'times', 'out']);
+
+function die(msg, code = 2) {
+  console.error(msg);
+  process.exit(code);
+}
+
+function parseArgv(argv, known) {
+  const positional = [];
+  const flags = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i];
+    if (a === '--help' || a === '-h') {
+      flags.help = true;
+      continue;
+    }
+    if (a.startsWith('--')) {
+      let key;
+      let val;
+      const eq = a.indexOf('=');
+      if (eq !== -1) {
+        key = a.slice(2, eq);
+        val = a.slice(eq + 1);
+      } else {
+        key = a.slice(2);
+        const next = argv[i + 1];
+        if (next === undefined || String(next).startsWith('-')) {
+          die(`missing value for --${key}\n${USAGE}`);
+        }
+        val = next;
+        i += 1;
+      }
+      if (!known.has(key)) die(`unknown flag --${key}\n${USAGE}`);
+      flags[key] = val;
+    } else {
+      positional.push(a);
+    }
+  }
+  return { positional, flags };
+}
 
 function tapeRoster() {
   try {
@@ -20,18 +64,32 @@ function tapeRoster() {
   }
 }
 
-const args = {};
-const rest = process.argv.slice(2);
-for (let i = 0; i < rest.length; i += 2) args[rest[i].replace(/^--/, '')] = rest[i + 1];
-const fixture = args.fixture ?? 'naive-ndjson';
+const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS);
+if (flags.help) {
+  console.log(USAGE);
+  process.exit(0);
+}
+if (positional.length > 0) die(`unknown argument ${positional[0]}\n${USAGE}`);
+if (flags.bot !== undefined && !BOTS.includes(flags.bot)) {
+  die(`unknown bot ${flags.bot}; use idle, sweeper or reader`);
+}
+if (flags.tier !== undefined) {
+  const n = Number(flags.tier);
+  if (!Number.isInteger(n) || n < 0 || n > 3) die(`tier must be 0..3 (got ${flags.tier})`);
+}
+const timesSrc = flags.times ?? '3,8,12,20,30,45';
+const times = timesSrc.split(',').map(Number);
+if (times.length === 0 || times.some((t) => !Number.isFinite(t))) {
+  die(`times must be finite numbers (got ${timesSrc})`);
+}
+const fixture = flags.fixture ?? 'naive-ndjson';
 if (!existsSync(path.resolve('fixtures/tapes', `${fixture}.tape.json`))) {
   console.error(`unknown fixture ${fixture}; have: ${tapeRoster().join(', ')}`);
   process.exit(2);
 }
-const botName = args.bot ?? 'reader';
-const tier = args.tier === undefined ? undefined : Number(args.tier);
-const times = (args.times ?? '3,8,12,20,30,45').split(',').map(Number);
-const out = path.resolve(args.out ?? 'film');
+const botName = flags.bot ?? 'reader';
+const tier = flags.tier === undefined ? undefined : Number(flags.tier);
+const out = path.resolve(flags.out ?? 'film');
 
 const bundle = await build({
   stdin: {

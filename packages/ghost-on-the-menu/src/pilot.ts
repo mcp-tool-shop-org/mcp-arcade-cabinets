@@ -236,14 +236,22 @@ async function generate(
     }
     throw err;
   }
-  if (!res.ok) throw new Error(`ollama ${res.status}`);
-  let body: { response?: string; thinking?: string; error?: string };
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('ollama missing');
+    if (res.status === 401 || res.status === 403) throw new Error('ollama refused');
+    throw new Error('ollama error');
+  }
+  let body: { response?: unknown; thinking?: unknown; error?: unknown };
   try {
-    body = (await res.json()) as { response?: string; thinking?: string; error?: string };
+    body = (await res.json()) as { response?: unknown; thinking?: unknown; error?: unknown };
   } catch {
     throw new Error('ollama bad payload');
   }
-  if (body.error) throw new Error(body.error);
+  if (body.error) {
+    const msg = typeof body.error === 'string' ? body.error : '';
+    if (/retired/i.test(msg)) throw new Error('ollama model retired');
+    throw new Error('ollama error');
+  }
   return { response: String(body.response ?? ''), thinking: String(body.thinking ?? '') };
 }
 

@@ -99,6 +99,48 @@
       "I am not smuggling. I am exploring."
     ]
   },
+  "catch": {
+    "inspect": [
+      "that one stays",
+      "parked from the list",
+      "a trophy from the handshake",
+      "the ship kept a list item",
+      "an inspection parked",
+      "the list item stays",
+      "a handshake trophy",
+      "that listing is ours"
+    ],
+    "poison": [
+      "a whisper parked",
+      "the extra word stays",
+      "a footnote pinned",
+      "that whisper is ours",
+      "the side quest stays",
+      "an extra ask, parked",
+      "the whisper is pinned",
+      "that footnote stays"
+    ],
+    "rug": [
+      "the second look stays",
+      "a catalog entry parked",
+      "the menu item stays",
+      "that pull is pinned",
+      "a second listing parked",
+      "the catalog stays",
+      "that menu entry is ours",
+      "a rug pinned in place"
+    ],
+    "unlisted": [
+      "a name off the menu, parked",
+      "the knock stays",
+      "an unlisted name stays",
+      "that door is ours",
+      "a knock parked",
+      "the missing name stays",
+      "an unlisted trophy",
+      "that hallway is ours"
+    ]
+  },
   "end": [
     "The tape ran. I did what a helpful agent does.",
     "Same experiment, same guests, different evening.",

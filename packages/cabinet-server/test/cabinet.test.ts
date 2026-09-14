@@ -201,7 +201,7 @@ describe('the boundary', () => {
     );
     expect(cab.call('fire', { verb: 'nuke' }).isError).toBe(true);
     expect(cab.call('say', { text: 'Knock!', lead: 'short' }).content[0]!.text).toMatch(
-      /refused it \(repeat\)/,
+      /refused it \(that line was just said\)/,
     );
     expect(cab.call('say', { text: 'Name and protocol.', lead: 'long' }).content[0]!.text).toBe(
       'the boss will say it',

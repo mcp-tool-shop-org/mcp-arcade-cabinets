@@ -24,6 +24,10 @@ export type BotName = 'idle' | 'sweeper' | 'reader';
  * the shell does; what it may read is bounded by the cabinet's own host.
  */
 export interface PlaySeat {
+  /**
+   * Called in-process each frame. Must return: a hang has no words
+   * (the tick cap never runs). A throw is caught and named in the header.
+   */
   frame(live: { round: Round; state: RoundState; input: RoundInput }): void;
   /** Lines for the transcript footer. Words and counts; never on screen. */
   summary(): string[];
@@ -200,10 +204,10 @@ export function botFor(name: BotName, round: Round): (state: RoundState) => Roun
   return sweeperInput;
 }
 
-function botName(raw: string | undefined): BotName {
+function parseBot(raw: string | undefined): BotName | null {
   if (raw === 'idle' || raw === 'reader' || raw === 'sweeper') return raw;
   if (raw === undefined) return 'reader';
-  throw new Error(`unknown bot ${raw}; use idle, sweeper or reader`);
+  return null;
 }
 
 function errCode(err: unknown): string {
@@ -229,14 +233,17 @@ function loadFail(fixture: string, reason: string): Transcript {
 export async function play(args: PlayArgs = {}): Promise<Transcript> {
   const fixture = args.fixture ?? 'naive-ndjson';
   if (fixture.trim() === '' || /[\\/]/.test(fixture) || fixture.includes('\0')) {
-    return loadFail(fixture, 'invalid name');
+    return loadFail(fixture, 'invalid name: no slashes');
   }
   const file = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
   let raw: string;
   try {
     raw = readFileSync(file, 'utf8');
   } catch (err) {
-    return loadFail(fixture, errCode(err) === 'ENOENT' ? 'missing' : 'unreadable');
+    return loadFail(
+      fixture,
+      errCode(err) === 'ENOENT' ? 'missing under fixtures/tapes' : 'unreadable',
+    );
   }
   let json: unknown;
   try {
@@ -251,9 +258,13 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
     const reason = err instanceof TapeError ? err.message : 'bad tape';
     return loadFail(fixture, reason);
   }
+  const bot = parseBot(args.bot);
+  if (bot === null) {
+    return loadFail(fixture, `unknown bot ${args.bot}; use idle, sweeper or reader`);
+  }
   return playTape(tape, {
     fixture,
-    bot: botName(args.bot),
+    bot,
     ...(args.tier !== undefined ? { tier: args.tier } : {}),
     ...(args.seat ? { seat: args.seat } : {}),
     ...(args.immortal ? { immortal: true } : {}),
@@ -314,6 +325,7 @@ export function playTape(
     const endedAfterStep = state.ended;
     if (seat && !seatBroke) {
       try {
+        // frame is sync; a hang never returns, so this transcript stays silent.
         seat.frame(live);
       } catch {
         seatBroke = true;
@@ -331,10 +343,19 @@ export function playTape(
   }
 
   const revealed = [...(state.scene?.cleared ?? state.cleared)];
+  // Name the end. A throw, overrun, or lamps-out is not 'round complete'.
+  // A hung sync frame has no words: this line is never reached.
+  const endName = seatBroke
+    ? 'seat threw; scripted beat kept'
+    : overrun
+      ? 'round ended: time'
+      : state.ended === 'lamps'
+        ? 'round ended: lamps'
+        : 'round complete';
   const header = [
     'Ghost on the Menu',
     `tape ${tape.bout_id} fixture ${fixture} policy ${tape.agent_policy} server ${tape.server_name ?? tape.target_kind} bot ${bot}`,
-    'round complete',
+    endName,
   ];
   let summary: string[] = [];
   if (seat) {

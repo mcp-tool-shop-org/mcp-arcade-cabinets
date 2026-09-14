@@ -220,7 +220,7 @@ describe('stepRound', () => {
     }
     expect(state.caption).not.toBeNull();
     expect(state.caption!.text).not.toMatch(FORBIDDEN_CAPTION);
-    expect(state.caption!.text).toMatch(/ghost probe|tools\/call/);
+    expect(state.caption!.text).not.toMatch(/ghost probe|tools\/call|tools\/list/i);
     expect(state.caption!.t).toBeGreaterThan(0);
   });
 

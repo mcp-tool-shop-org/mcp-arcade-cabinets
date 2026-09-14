@@ -1,4 +1,4 @@
-name: Deploy site to GitHub Pages
+name: Site
 
 on:
   push:
@@ -46,6 +46,7 @@ permissions:
 
 jobs:
   build:
+    name: Build handbook and play
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -63,14 +64,32 @@ jobs:
       - name: Install the workspace
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Product verify
+      - name: Lint
+        id: lint
         if: github.ref == 'refs/heads/main'
-        run: pnpm lint && pnpm typecheck && pnpm test && pnpm build
+        run: pnpm lint
+
+      - name: Typecheck
+        id: typecheck
+        if: github.ref == 'refs/heads/main'
+        run: pnpm typecheck
+
+      - name: Test
+        id: test
+        if: github.ref == 'refs/heads/main'
+        run: pnpm test
+
+      - name: Build
+        id: product_build
+        if: github.ref == 'refs/heads/main'
+        run: pnpm build
 
       - name: Build the game into the site at /play/
+        id: play_build
         run: pnpm build:play
 
       - name: Play-through
+        id: play_through
         if: github.ref == 'refs/heads/main'
         run: pnpm test:play ghost --fixture naive-ndjson
 
@@ -87,23 +106,72 @@ jobs:
         run: npm run build
 
       - name: Require /play/ in the dist
+        id: play_index
         run: |
           if [ ! -s site/dist/play/index.html ]; then
             echo "site/dist/play/index.html is missing or empty"
+            echo "next: pnpm build:play then cd site && npm run build"
             exit 1
           fi
-          {
-            echo "## Pages build"
-            echo "- sha: \`${{ github.sha }}\`"
-            echo "- play: site/dist/play/index.html present ($(wc -c < site/dist/play/index.html) bytes)"
-          } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+      - id: upload
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         if: github.ref == 'refs/heads/main'
         with:
           path: site/dist
 
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Pages build"
+            echo "- event: \`${{ github.event_name }}\`"
+            echo "- ref: \`${{ github.ref }}\`"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- Product verify (lint): ${{ steps.lint.outcome }}"
+            echo "- Product verify (typecheck): ${{ steps.typecheck.outcome }}"
+            echo "- Product verify (test): ${{ steps.test.outcome }}"
+            echo "- Product verify (build): ${{ steps.product_build.outcome }}"
+            echo "- Play-through: ${{ steps.play_through.outcome }}"
+            echo "- upload-pages-artifact: ${{ steps.upload.outcome }}"
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              echo "- deploy: will run after this job if build succeeded"
+            else
+              echo "- Product verify: skipped (not main)"
+              echo "- Play-through: skipped (not main)"
+              echo "- upload-pages-artifact: skipped (not main)"
+              echo "- deploy: skipped (not main; production was not deployed)"
+            fi
+            if [ -s site/dist/play/index.html ]; then
+              echo "- play index: present ($(wc -c < site/dist/play/index.html) bytes)"
+            elif [ -e site/dist/play/index.html ]; then
+              echo "- play index: empty"
+            else
+              echo "- play index: missing"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Next local command
+        if: failure()
+        run: |
+          {
+            echo "## Site build failed"
+            echo "Re-run the failing gate locally:"
+            echo "- next: pnpm install --frozen-lockfile --ignore-scripts"
+            echo "- next: pnpm lint"
+            echo "- next: pnpm typecheck"
+            echo "- next: pnpm test"
+            echo "- next: pnpm build"
+            echo "- next: pnpm build:play"
+            echo "- next: pnpm test:play ghost --fixture naive-ndjson"
+            echo "- next: cd site && npm ci --ignore-scripts"
+            echo "- next: cd site && npm audit --audit-level=high"
+            echo "- next: cd site && npm run build"
+            echo "- next: pnpm build:play then cd site && npm run build"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   deploy:
+    name: Deploy Pages
     if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
@@ -118,9 +186,16 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
       - name: Record deploy
+        if: always()
         run: |
           {
             echo "## Pages deploy"
+            echo "- event: \`${{ github.event_name }}\`"
+            echo "- ref: \`${{ github.ref }}\`"
             echo "- sha: \`${{ github.sha }}\`"
-            echo "- url: ${{ steps.deployment.outputs.page_url }}"
+            echo "- url: \`${{ steps.deployment.outputs.page_url }}\`"
+            if [ -z "${{ steps.deployment.outputs.page_url }}" ]; then
+              echo "- deploy did not run"
+              echo "- next: inspect the github-pages environment / deploy-pages step"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
