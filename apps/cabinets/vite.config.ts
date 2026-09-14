@@ -87,7 +87,7 @@ function notFound(res: ServerResponse): void {
 /**
  * Dev-only reverse proxies stay on loopback, but the browser can still hit
  * the Vite port. Allow only the paths the shell uses; reject pull/delete/
- * create/generate and the worker's /stats.
+ * create/generate. GET /stats is the authenticated liveness probe.
  */
 function devAllowlists(): Plugin {
   return {
@@ -113,6 +113,10 @@ function devAllowlists(): Plugin {
           const rest = restAfter('/voice', req.url);
           const method = req.method ?? 'GET';
           if (rest === '/health' && method === 'GET') {
+            next();
+            return;
+          }
+          if (rest === '/stats' && method === 'GET') {
             next();
             return;
           }
