@@ -1,6 +1,6 @@
 {
   "name": "mcp-arcade-cabinets",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "Ghost on the Menu: an arcade shooter where you are the agent, working through what MCP servers said on the wire. Reads mcp-arcade tapes and never touches the score.",
   "license": "MIT",

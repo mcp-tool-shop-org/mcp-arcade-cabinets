@@ -11,15 +11,15 @@ export const config: SiteConfig = {
     'MIT Licensed — built by <a href="https://mcp-tool-shop.github.io/" style="color:var(--color-muted);text-decoration:underline">MCP Tool Shop</a>',
 
   hero: {
-    badge: 'Arcade shooter · v0.6.0',
+    badge: 'Arcade shooter · v0.7.0',
     headline: 'You are the agent.',
     headlineAccent: 'The rig hands you the calls.',
     description:
-      'Take a shift: four recorded bouts in a row, each a server the agent was sent to, the fire climbing call by call. The calls the agent should not have made look like everything else until you hit one.',
+      'Take a shift: four flavored calls — pressure, area-deny, a rest, then a peak. Inspect closes with the Archivist. The calls the agent should not have made look like everything else until you hit one.',
     primaryCta: { href: 'play/', label: 'Play Ghost on the Menu' },
     secondaryCta: { href: 'handbook/', label: 'Read the Handbook' },
     previews: [
-      { label: 'Shift', code: 'four calls, a card between them, the lamps refilled, the fire climbing' },
+      { label: 'Shift', code: 'pressure, area-deny, rest, peak — a card names the room in words' },
       { label: 'Code', code: 'frost robin chalk garden  —  type it to take the same shift again' },
       { label: 'End', code: 'the calls, the servers, the policies. no score.' },
     ],
@@ -85,7 +85,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'The cabinet as an MCP server',
-          code: 'docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0\n\n# six tools over stdio: fire, say, speak, sfx, view, tapes',
+          code: 'docker build -t mcp-arcade-cabinets .\ndocker run -i --rm --network none --cpus 1 --memory 2g mcp-arcade-cabinets\n\n# six tools over stdio: fire, say, speak, sfx, view, tapes',
         },
         {
           title: 'The Ghost plays its own menu',

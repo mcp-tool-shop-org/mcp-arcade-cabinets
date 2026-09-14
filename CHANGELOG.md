@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Dogfood swarm on `main` after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README and handbook are current; translations wait on a free GPU.
+## [0.7.0] - 2026-09-14
+
+Dogfood swarm after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README, landing, and handbook are current; translations wait on a free GPU. No npm.
 
 ### Added
 
@@ -133,6 +135,7 @@ The first release. Ghost on the Menu is playable in a browser and from a termina
 
 - House Call, the turn-based calibration cabinet, is parked (last state 152f548) until a design that plays exists.
 
-[Unreleased]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.6.0...HEAD
+[0.7.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.6.0...HEAD
 [0.3.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.2.0
