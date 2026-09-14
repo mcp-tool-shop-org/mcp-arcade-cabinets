@@ -53,6 +53,12 @@ A take plays the moment its receipt is back if its line is still on the field, w
 The repo's root `Dockerfile` builds the server into one file on `node:22-alpine` (digest-pinned FROM lines, `linux/amd64` and `linux/arm64`) with the tool contract and the twenty tapes baked in. It lists its six tools within a fraction of a second under the Docker MCP Toolkit's budget of one CPU and two gigabytes, and needs no network to list or to play. An optional read-only overlay (`CABINET_TAPES_USER`, Catalog volume `{{tapes}}:/tapes-user`) lists extra operator tapes beside those twenty; receipts stay off the menu. Host-only compose for a local image is `voice/compose.host.yaml` — not in the Catalog listing.
 
 ```bash
+docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
+```
+
+Or build from this tree:
+
+```bash
 docker build -t mcp-arcade-cabinets .
 docker run -i --rm --cpus 1 --memory 2g mcp-arcade-cabinets
 ```
@@ -66,7 +72,7 @@ KOKORO_DIR=/path/to/kokoro VOICE_TOKEN=<token> VOICE_HOST=0.0.0.0 pnpm voice
 docker run -i --rm -e VOICE_URL=http://host.docker.internal:7788 -e VOICE_TOKEN=<token> mcp-arcade-cabinets
 ```
 
-Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0`.
+Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0`.
 
 ## Not in this layer
 

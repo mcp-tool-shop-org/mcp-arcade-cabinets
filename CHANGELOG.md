@@ -7,12 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-- Offline voice asides are a large gated pool drawn from a seed bag without replacement, so a round does not keep repeating the same joke. Still not an Ollama seat.
-- Recorded beds hold about half a minute (`BED_MIN_S` 36) before they may give way, named wave or boss included, so a song is not cut off by the next card.
-
 ## [0.7.0] - 2026-09-14
 
-Dogfood swarm after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README, landing, and handbook are current; translations wait on a free GPU. No npm.
+Dogfood swarm after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README, landing, and handbook are current. Translations skipped for this tag (GPU in use). No npm.
 
 ### Added
 
@@ -20,10 +17,11 @@ Dogfood swarm after v0.6.0: health A–D, a visual/audio pass, then feature slic
 - **Inspect-wave cast (B).** Unique hulls **probe** (a dart), **shelf** (a ledge across the lane), **ledger** (a stacked elite). **Archivist** is the inspect closer on a shift (idle catalog / open drawer). Picker-alone inspect keeps the old empty hover so the tape-alone fairness band holds. Lies still share honest sprites until hit.
 - **Ollama next-verb (C).** `askNextIntents` fills a closed-set `bossQueue` off the beat. Cadence and look-ahead are data in `fire.json`. A hung or missing answer is script, never a stall. The picker writes a library line after fire (`a wide fan`, `a held breath`). Pages omits the local Ollama/Voice chrome.
 - **Catalog volume (D).** Optional `CABINET_TAPES_USER` overlay beside the baked twenty. Catalog card stays silent; `disableNetwork: true`. Dockerfile FROM lines digest-pinned; CI builds `linux/amd64` and `linux/arm64` and refuses `:latest`. Host compose lives at `voice/compose.host.yaml`, not in the listing.
+- **Aside pool.** Offline gated mutters (24 per room) drawn from a seed bag without replacement. Not an Ollama seat.
 
 ### Changed
 
-- Named wave and boss beds play as themselves; Whisperer / Menu / Doorman skip the 120s hold; the gap ticks breather. Recorded beds come in ducked so shots and the catch still read.
+- Named wave and boss beds play as themselves. A song holds 36s (one loop) before the wanted bed comes in. Recorded beds come in ducked so shots and the catch still read.
 - Play-row difficulty drives the intro copy (hardcore: one lamp and falling plates).
 - Pages `play_index` derives the uploaded sprite and track roster from `SPRITE_KEYS` / `TRACK_KEYS`.
 
@@ -138,7 +136,7 @@ The first release. Ghost on the Menu is playable in a browser and from a termina
 
 - House Call, the turn-based calibration cabinet, is parked (last state 152f548) until a design that plays exists.
 
-[Unreleased]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.6.0...HEAD
-[0.7.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/compare/v0.6.0...v0.7.0
 [0.3.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.2.0

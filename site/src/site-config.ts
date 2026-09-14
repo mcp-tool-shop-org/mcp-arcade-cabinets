@@ -85,7 +85,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'The cabinet as an MCP server',
-          code: 'docker build -t mcp-arcade-cabinets .\ndocker run -i --rm --network none --cpus 1 --memory 2g mcp-arcade-cabinets\n\n# six tools over stdio: fire, say, speak, sfx, view, tapes',
+          code: 'docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0\n\n# six tools over stdio: fire, say, speak, sfx, view, tapes',
         },
         {
           title: 'The Ghost plays its own menu',

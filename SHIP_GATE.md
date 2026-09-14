@@ -44,7 +44,7 @@
 ## D. Shipping Hygiene
 
 - [x] `[all]` `verify` script exists — 2026-09-10: pnpm verify = lint, typecheck, test, build, play-through (test + build + smoke in one command)
-- [x] `[all]` Version in manifest matches git tag — 2026-09-14: 0.7.0 in every package.json and SERVER_VERSION (ahead of tag v0.6.0 until a v0.7.0 cut); D2: manifest not behind the newest released tag — executed by `npx @mcptoolshop/shipcheck manifest`
+- [x] `[all]` Version in manifest matches git tag — 2026-09-14: 0.7.0 in every package.json and SERVER_VERSION; tag v0.7.0 — executed by `npx @mcptoolshop/shipcheck manifest`
 - [x] `[all]` Dependency scanning runs in CI — 2026-09-10: pnpm audit --audit-level=high in ci.yml (shipcheck ci: passed) (ecosystem-appropriate) — executed by `npx @mcptoolshop/shipcheck ci` (D3: a recognized scanner is _configured_ in CI, or dependabot is present)
 - [x] `[all]` No known high/critical vulnerabilities — 2026-09-10: pnpm audit reports 0 high/critical (2 moderate, dev-only); Dependabot alerts enabled via API. shipcheck deps cannot parse a pnpm tree (it runs npm audit), so this line is attested from pnpm audit in any dependency tree, and Dependabot alerts are enabled — executed by `npx @mcptoolshop/shipcheck deps` (the OUTCOME: audits **every** tree incl. subtrees, not just the root; `ci` only proves a scanner is configured)
 - [ ] `[all]` SKIP: org rule: no dependabot.yml unless asked; alerts are on — Automated dependency **update** mechanism exists <!-- soft/optional: the org rule restricts the auto-PR bot (CI minutes), NOT alerts. The security outcome is enforced by `shipcheck deps`; the update bot is optional. -->

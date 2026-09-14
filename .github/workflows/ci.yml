@@ -252,7 +252,7 @@ jobs:
             echo "catalog/server.yaml image digest matches Hub"
           fi
           set +e
-          ghcr_out=$(docker buildx imagetools inspect ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0 2>/tmp/ghcr-inspect.err)
+          ghcr_out=$(docker buildx imagetools inspect ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0 2>/tmp/ghcr-inspect.err)
           ghcr_status=$?
           set -e
           if [ "$ghcr_status" -eq 0 ]; then
