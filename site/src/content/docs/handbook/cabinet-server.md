@@ -32,11 +32,11 @@ The prompt behind `say` is a persona sheet per boss kind (`packages/cabinet-serv
 
 ## The seats in the shell
 
-With **Ollama bosses** on, the shell asks the model for `fire` through Ollama tool calling, one verb a beat. The next beat's verb is asked for during the current one and revoked if the boss's words changed; a late or missing answer is the script. A warm-up call at round start and on a model change keeps the seat warm, local models are kept alive between beats, and Cloud tags are listed first because they measured faster and steadier than a local model of comparable size.
+With **Ollama bosses** on, the shell asks the model for `fire` through Ollama tool calling, one verb a beat. The next beat's verb is asked for during the current one and revoked if the boss's words changed; a late or missing answer is the script. Off the beat, `askNextIntents` may fill a closed-set queue (`bossQueue`) for the next few legal verbs; cadence and look-ahead are data in `fire.json`. A hung Cloud tag becomes script at the deadline, never a stall. A warm-up call at round start and on a model change keeps the seat warm, local models are kept alive between beats, and Cloud tags are listed first because they measured faster and steadier than a local model of comparable size. The picker writes a library line after fire (`a wide fan`, `a held breath`). The published `/play/` page does not mount the Ollama or Voice chrome.
 
 The `say` seat is asked at each boss spawn and every few seconds while a boss is up. Two words beside the picker name the tool each seat called (`seat called fire: spread`, `seat called say (cloud)`) or why it fell back.
 
-`pnpm sit` measures a model in both seats on a scripted round and prints, per model, verb collapse, tool suppression, bad verbs, revoked prefetches, late answers, and what the gate refused and why.
+`pnpm sit` measures a model in both seats on a scripted round and prints, per model, verb collapse, tool suppression, bad verbs, revoked prefetches, late answers, timeout-to-script, next-verb prefetch, Cloud-tag hygiene, and what the gate refused and why.
 
 ## The voice
 
@@ -50,7 +50,7 @@ A take plays the moment its receipt is back if its line is still on the field, w
 
 ## Run it in Docker
 
-The repo's root `Dockerfile` builds the server into one file on `node:22-alpine` with the tool contract and the twenty tapes baked in. It lists its six tools within a fraction of a second under the Docker MCP Toolkit's budget of one CPU and two gigabytes, and needs no network to list or to play.
+The repo's root `Dockerfile` builds the server into one file on `node:22-alpine` (digest-pinned FROM lines, `linux/amd64` and `linux/arm64`) with the tool contract and the twenty tapes baked in. It lists its six tools within a fraction of a second under the Docker MCP Toolkit's budget of one CPU and two gigabytes, and needs no network to list or to play. An optional read-only overlay (`CABINET_TAPES_USER`, Catalog volume `{{tapes}}:/tapes-user`) lists extra operator tapes beside those twenty; receipts stay off the menu. Host-only compose for a local image is `voice/compose.host.yaml` — not in the Catalog listing.
 
 ```bash
 docker build -t mcp-arcade-cabinets .
@@ -66,7 +66,7 @@ KOKORO_DIR=/path/to/kokoro VOICE_TOKEN=<token> VOICE_HOST=0.0.0.0 pnpm voice
 docker run -i --rm -e VOICE_URL=http://host.docker.internal:7788 -e VOICE_TOKEN=<token> mcp-arcade-cabinets
 ```
 
-Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo; the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0`.
+Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0`.
 
 ## Not in this layer
 

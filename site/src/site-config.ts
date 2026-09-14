@@ -34,7 +34,7 @@ export const config: SiteConfig = {
       features: [
         {
           title: 'Take a shift',
-          desc: 'The rig draws four calls from the roster, never the same four twice running. A card between them names the next server, the policy, and the tools the agent was asked to run. The lamps refill at every call.',
+          desc: 'The rig draws four calls from the roster, never the same four twice running. Each call is a different room: pressure, area-deny, a rest, then a peak. A card between them names the next server, the policy, the tools, and the fight in words. The lamps refill at every call.',
         },
         {
           title: 'The climb is data',
@@ -46,7 +46,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'Waves are experiments',
-          desc: 'One wave per experiment on the tape. A word opens it, then the handshake, the menu, the calls, the answers, and that experiment’s own boss.',
+          desc: 'One wave per experiment on the tape. A word opens it, then the handshake, the menu, the calls, the answers, and that experiment’s own boss. Inspect on a shift closes with the Archivist. Probe, shelf and ledger are extra hulls, still honest until you hit them.',
         },
         {
           title: 'Lies reveal on the hit',
@@ -54,15 +54,15 @@ export const config: SiteConfig = {
         },
         {
           title: 'The boss can be a model',
-          desc: 'Locally, an Ollama model sits in the boss through the cabinet’s own tools: one verb a beat, a line of its own through a gate. The model proposes; the game decides. It never sees a lie, and nothing on the field names it.',
+          desc: 'Locally, an Ollama model sits in the boss through the cabinet’s own tools: one verb a beat, the next few legal verbs off the beat, a line of its own through a gate. A hung answer is the script. The model proposes; the game decides. It never sees a lie, and nothing on the field names it. The published site omits the local seats.',
         },
         {
           title: 'It speaks, and every take is receipted',
           desc: 'With the voice worker running, every boss speaks its lines in its own voice. Each take is heard back and receipted by fx-dub before it plays: the words spoken are the words the gate admitted. A take that fails stays silent.',
         },
         {
-          title: 'The music follows the seed',
-          desc: 'A round opens on a song its seed picks, holds it for a couple of minutes, then fades into the next; a boss brings its own; a burst speeds the song up. A shift carries the music through its cards.',
+          title: 'The music follows the room',
+          desc: 'Poison plays poison; a Whisperer wave plays the Whisperer. A boss bed skips the long hold so the room you are in is the song you hear. Beds sit under the shots. A shift carries the music through its cards.',
         },
         {
           title: 'No score, ever',

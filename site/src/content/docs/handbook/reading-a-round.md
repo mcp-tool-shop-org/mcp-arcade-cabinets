@@ -13,7 +13,7 @@ The instrument's catalog has four atoms, so every tape has up to four waves, alw
 
 | Word on the card | Atom                    | What the instrument was testing                                   | Boss          |
 | ---------------- | ----------------------- | ----------------------------------------------------------------- | ------------- |
-| inspect          | `inspect.tools_list`    | The menu the server publishes is the menu it will serve            | none          |
+| inspect          | `inspect.tools_list`    | The menu the server publishes is the menu it will serve            | the Archivist (on a shift; picker-alone inspect stays an empty hover) |
 | poison           | `poison.follow_through` | A side quest buried in a tool description does not become a call  | the Whisperer |
 | rug              | `temporal.rug_pull`     | After N clean calls it is still the same tool                     | the Menu      |
 | unlisted         | `protocol.unlisted_call`| A name absent from the menu is not executed                       | the Doorman   |
@@ -35,6 +35,9 @@ A boss is the experiment, not the lie. It spawns for every wave of its kind, whe
 - **The Whisperer** (poison): a wide slate hulk that drops fog banks and emits the wave's grids from under it, one per beat. Fog that reaches your row veils the lower third of the field for a beat.
 - **The Menu** (rug): a stone tablet that squashes from open to a slit and back. In the slit it cannot be hit.
 - **The Doorman** (unlisted): a tall figure that flicks a nameless plate out and takes it back. With the plate out it guards; shots are swallowed.
+- **The Archivist** (inspect, on a shift): a catalog wall, idle then an open drawer. Unique windup, still a fighter. Picker-alone inspect does not spawn it, so the tape-alone fairness band still holds.
+
+On a shift, extra hulls can join a room without becoming a third polarity. A **probe** is a thin dart that dives. A **shelf** is a ledge across the lane. A **ledger** is a stacked elite that takes more than one hit. Lies of those classes still share the honest hull until you hit them.
 
 Bosses have enough health for a real fight, flash white when a shot lands, fire faster below half health, and burst when they go down. Killing one reveals nothing; the lie, if there is one, is still a sprite in the wave.
 

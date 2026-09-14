@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Dogfood swarm on `main` after v0.6.0: health A–D, a visual/audio pass, then feature slices A–D (shift flavors and a new inspect-wave cast; Ollama next-verb; sealed Catalog volume). Still `0.x`. English README and handbook are current; translations wait on a free GPU.
+
+### Added
+
+- **Shift flavors (A).** Four authored landmarks on climb `[0, 0.35, 0.7, 1]`: pressure, area-deny, a rest-shaped trough on the third call, and a peak. The card between calls names the next fight in words (biome, motif, silhouette), no digits. The field room follows the named bed. Climb stays data; lamps still refill; the four-word code is unchanged.
+- **Inspect-wave cast (B).** Unique hulls **probe** (a dart), **shelf** (a ledge across the lane), **ledger** (a stacked elite). **Archivist** is the inspect closer on a shift (idle catalog / open drawer). Picker-alone inspect keeps the old empty hover so the tape-alone fairness band holds. Lies still share honest sprites until hit.
+- **Ollama next-verb (C).** `askNextIntents` fills a closed-set `bossQueue` off the beat. Cadence and look-ahead are data in `fire.json`. A hung or missing answer is script, never a stall. The picker writes a library line after fire (`a wide fan`, `a held breath`). Pages omits the local Ollama/Voice chrome.
+- **Catalog volume (D).** Optional `CABINET_TAPES_USER` overlay beside the baked twenty. Catalog card stays silent; `disableNetwork: true`. Dockerfile FROM lines digest-pinned; CI builds `linux/amd64` and `linux/arm64` and refuses `:latest`. Host compose lives at `voice/compose.host.yaml`, not in the listing.
+
+### Changed
+
+- Named wave and boss beds play as themselves; Whisperer / Menu / Doorman skip the 120s hold; the gap ticks breather. Recorded beds come in ducked so shots and the catch still read.
+- Play-row difficulty drives the intro copy (hardcore: one lamp and falling plates).
+- Pages `play_index` derives the uploaded sprite and track roster from `SPRITE_KEYS` / `TRACK_KEYS`.
+
 ## [0.6.0] - 2026-09-11
 
 The game's direction, solidified: you are the agent, and the rig hands you the calls. The shift (slice 7) makes a play a run of four recorded bouts as one agent session, with a climb in data and a name of four words; the music was reworked to follow the seed and carry through a shift; the cabinet server ships as a Docker image with the Catalog entry drafted; Grok's reviews of slices 6 and 7 are applied (`docs/cabinet-container.review.md`, `docs/shift.review.md`). Still `0.x`: the seats and the voice need the local shell; Pages serves the game with the shift and the music.

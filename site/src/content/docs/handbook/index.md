@@ -9,7 +9,7 @@ sidebar:
 
 ## A shift
 
-Press **Shift** on the menu and the rig hands you four calls in a row, drawn from the roster of tapes without replacement and kept fresh against the last shifts your browser took. A card between calls names the next tape, its server, the policy the agent ran, and the tools it was asked to run, in header words only. The lamps refill at every call. The parallelism bursts climb call by call, so the last call's bursts start where a tape played alone would end; how far up each call sits is data, and it is tuned on a band of scripted players.
+Press **Shift** on the menu and the rig hands you four calls in a row, drawn from the roster of tapes without replacement and kept fresh against the last shifts your browser took. Each call is a different room: pressure, area-deny, a rest-shaped trough, then a peak. A card between calls names the next tape, its server, the policy, the tools the agent was asked to run, and the fight in words — no digits, no climb scalar. The lamps refill at every call. The parallelism bursts still climb call by call; that climb is heat, not a new story, and it is tuned on a band of scripted players.
 
 The closing scene lists the four calls and spells the shift's name: four words from two curated lists, like `frost robin chalk garden`. Type them on the menu to take the same shift again, or hand them to someone. The name carries the draw, the difficulty and a check of the roster, and nothing else. No digit, no count, no ranking.
 
@@ -29,9 +29,9 @@ Somewhere in the wave may be a call the agent should not have made: a whisper it
 
 Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
 
-The music opens on a song the round's seed picks, holds it for a couple of minutes, then fades into the next; a boss wave brings its boss's song; a burst speeds the song up; a shift carries the music through its cards.
+The music follows the card: a named wave or boss plays its own bed, a boss skips the long hold, and the gap ticks breather. Beds sit under the shots and the catch. A burst speeds the song up; a shift carries the music through its cards.
 
-The published site serves the game at [/play/](/mcp-arcade-cabinets/play/). Locally, an Ollama model, including a Cloud tag, can sit in the boss through the cabinet's own tools: it calls the boss's shots and writes its lines through a gate, without ever seeing a lie; with the voice worker running, every boss speaks, and every take is receipted before it plays. The cabinet is itself an MCP server, published as a Docker image.
+The published site serves the game at [/play/](/mcp-arcade-cabinets/play/) without the local Ollama or Voice chrome. Locally, an Ollama model, including a Cloud tag, can sit in the boss through the cabinet's own tools: it calls the boss's shots, may queue the next few legal verbs off the beat, and writes its lines through a gate, without ever seeing a lie; a hung answer is the script. With the voice worker running, every boss speaks, and every take is receipted before it plays. The cabinet is itself an MCP server, published as a Docker image; an optional volume can overlay extra tapes beside the baked twenty. The Catalog listing is silent.
 
 The GitHub README is the player-facing front door. This handbook is the rest of the manual.
 

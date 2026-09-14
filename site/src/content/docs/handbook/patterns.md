@@ -19,6 +19,7 @@ Tuning never changes code. The sim reads a **pattern set** of ten JSON files, va
 | `drops.json`      | What a downed boss and a cleared formation drop, how fast it falls and drifts, the catch box, and how long a spread lasts |
 | `voice.json`      | Four dry lines per wave kind, boss kind, and the end scene, picked by the round seed                      |
 | `parallelism.json` | Per tier: whether a burst is on, how many honest extra copies on the first wave and on the last (`copies`, `copiesLater`), how long the first burst vs later ones, the quiet gap, fire intensity on the first wave and on the last (`intensity`, `intensityLater`), whether the extras shoot. The copies and the intensity climb by wave |
+| `shift.json`      | Shift length (four), climb `[0, 0.35, 0.7, 1]`, the two word lists for the code, and `flavors[]`: role, biome, exclusive verbs, optional midboss, telegraph words. Trough is encounter shape on the third call, not a dip in climb. |
 
 ## Tiers
 
@@ -35,7 +36,7 @@ The shell can override the derived tier (the difficulty selector), and the fairn
 
 - **`fire.json` → tiers.N.formation** `period`, `burst`, `spread`, `speed`: how often a hovering formation fires straight down, how many shots, how wide, how fast. Null at tier 0 by schema.
 - **`fire.json` → tiers.N.boss** the same plus `aim`: with `aim` the burst fans around the line from the boss to the ship as it is when the shot leaves.
-- **`fire.json` → tiers.N.boss.pilot** `fan`, `spread`, `lean`: what an Ollama seat may do beyond the phase script. A seat's `spread` is a fan of `fan` shots across `spread` of the field, straight down; a pending `column` slides the boss up to `lean` pixels toward the ship before an aimed shot; `hold` is a silent beat that keeps the boss still. Thin on the recorded rung. The seat never sees a fact, so none of this can either.
+- **`fire.json` → tiers.N.boss.pilot** `fan`, `spread`, `lean`, `cadence`, `lookAhead`: what an Ollama seat may do beyond the phase script. A seat's `spread` is a fan of `fan` shots across `spread` of the field, straight down; a pending `column` slides the boss up to `lean` pixels toward the ship before an aimed shot; `hold` is a silent beat that keeps the boss still. `cadence` is beats between next-verb asks; `lookAhead` is how many closed verbs one ask may queue. Thin on the recorded rung. The seat never sees a fact, so none of this can either.
 - **`fire.json` → tiers.N.dive** `period`, `speed`, `depth`: how often a hovering formation dives, how fast, how far down as a fraction of the field. A dive tracks the ship until half its depth, then commits.
 - **`bosses.json` → hp, rage**: health in hits; the fire-period multiplier below half health (in 0..1). Phases whose motion is `slit` or `hold` take no damage.
 - **`waves.json` → density, tail**: seconds per beat is a base over density, so a higher density packs the same beats into a shorter round; the tail is how long the round runs after the last wave closes. Placement is stretched so the last wave ends a tail before time-up.

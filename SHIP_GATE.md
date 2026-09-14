@@ -33,8 +33,8 @@
 
 ## C. Operator Docs
 
-- [x] `[all]` README is current — 2026-09-11: the direction (you are the agent; the shift), play, the boss seat, the voice, the image, Node 22+: what, play, terminal tools, Node 22+: what it does, install, usage, supported platforms + runtime versions
-- [x] `[all]` CHANGELOG.md (Keep a Changelog format) — 2026-09-10: 0.3.0 entry
+- [x] `[all]` README is current — 2026-09-14: the direction (you are the agent; the shift), four flavored calls, inspect-wave cast, named beds, next-verb queue, silent Catalog volume, Node 22+: what it does, install, usage, supported platforms + runtime versions
+- [x] `[all]` CHANGELOG.md (Keep a Changelog format) — 2026-09-14: Unreleased A–D after 0.6.0
 - [x] `[all]` LICENSE file present — 2026-09-10: MIT; support status in SECURITY.md (0.3.x) and repo states support status
 - [x] `[cli]` `--help` output accurate — 2026-09-10: scripts/play.mjs prints usage on a missing cabinet; film and sweep document their flags in their headers for all commands and flags
 - [ ] `[cli|mcp|desktop]` SKIP: the tools print a transcript or a table; nothing logs secrets because nothing holds any — Logging levels defined: silent / normal / verbose / debug — secrets redacted at all levels
