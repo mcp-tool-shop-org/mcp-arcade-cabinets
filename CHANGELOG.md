@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 - Offline voice asides are a large gated pool drawn from a seed bag without replacement, so a round does not keep repeating the same joke. Still not an Ollama seat.
+- Recorded beds hold about half a minute (`BED_MIN_S` 36) before they may give way, named wave or boss included, so a song is not cut off by the next card.
 
 ## [0.7.0] - 2026-09-14
 

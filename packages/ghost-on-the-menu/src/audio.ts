@@ -180,12 +180,11 @@ export const BURST_RAMP_S = 0.6;
 /** Seconds the music takes to leave at the scene. */
 export const END_FADE_S = 1.5;
 /**
- * Seconds a bed plays before it may give way to the wave's bed (the
- * Director's word, 2026-09-11: a song plays for at least a minute, then
- * fades into another; on hearing it, longer). A wanted change before that
- * is remembered and made when the hold is up.
+ * Seconds a bed plays before it may give way. ACE-Step loops are about
+ * 31–44s; hold one loop, then the wanted wave or boss bed comes in.
+ * A wanted change during the hold is remembered and made when it is up.
  */
-export const BED_MIN_S = 120;
+export const BED_MIN_S = 36;
 /** Recorded beds sit here, not at 1, so shots and the catch still read. */
 export const BED_LEVEL = 0.32;
 
@@ -348,11 +347,11 @@ interface CtxLike {
  * the first user gesture (browsers require it); tests never call this.
  *
  * Beds: if a recorded file exists for the asked wave or boss key, that
- * named bed plays and a change of key crossfades. The 120s hold only
- * gates same-kind pool rotation when no named file exists. Boss keys
- * (whisperer/menu/doorman/archivist) skip the hold. The seed still picks the
- * opening pool bed when the asked key has no file. A burst speeds the
- * playing bed up (`burstRate`) instead of laying a track over it.
+ * named bed plays. A change of key waits out BED_MIN_S (one loop), then
+ * crossfades. Pool rotation only when the asked key has no file, and only
+ * after the same hold. The seed still picks the opening pool bed when the
+ * asked key has no file. A burst speeds the playing bed up (`burstRate`)
+ * instead of laying a track over it.
  */
 export function attach(
   ctx: CtxLike,
@@ -583,7 +582,8 @@ export function attach(
       waveKind === 'menu' ||
       waveKind === 'doorman' ||
       waveKind === 'archivist';
-    // A named file for this key always plays; pool membership is not a rotate.
+    // One loop (BED_MIN_S) before a playing bed gives way, named or not.
+    if (currentBed && t - bedSince < minBed) return true;
     if (named) return adopt(named, t);
     if (isBoss) {
       // Wanted boss bed is missing: drop the overlay so chiptune can follow.
@@ -593,8 +593,7 @@ export function attach(
       }
       return false;
     }
-    // Same-kind pool rotation only, and only when no named file exists.
-    if (currentBed && t - bedSince < minBed) return true;
+    // No named file: rotate the pool, still after the hold.
     if (currentBed) poolAt = (poolAt + 1) % Math.max(1, pool.length);
     return adopt(poolBed(), t);
   };

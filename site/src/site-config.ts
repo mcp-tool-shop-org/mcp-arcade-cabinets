@@ -62,7 +62,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'The music follows the room',
-          desc: 'Poison plays poison; a Whisperer wave plays the Whisperer. A boss bed skips the long hold so the room you are in is the song you hear. Beds sit under the shots. A shift carries the music through its cards.',
+          desc: 'Poison wants poison; a Whisperer wants the Whisperer. A song holds about half a minute before it gives way. Beds sit under the shots. A shift carries the music through its cards.',
         },
         {
           title: 'No score, ever',
