@@ -46,6 +46,25 @@ describe('the ported corpus', () => {
     expect(() => loadCorpus({ ...rest, bash: bad })).toThrow('patterns/corpus/bash.json: root');
   });
 
+  it('halts on a snippet ask the chat could not say', () => {
+    const rest = Object.fromEntries(
+      CORPUS_STACKS.map((s) => [s, DEFAULT_CORPUS.byStack[s]!.map((x) => ({ ...x }))]),
+    ) as Record<string, Record<string, unknown>[]>;
+    const digit = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    digit.bash![1]!.ask = 'can we have 3 folders';
+    expect(() => loadCorpus(digit)).toThrow('patterns/corpus/bash.json: 1.ask');
+
+    const titled = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    titled.bash![2]!.ask = 'can we have {title} again';
+    expect(() => loadCorpus(titled)).toThrow('patterns/corpus/bash.json: 2.ask');
+  });
+
+  it('keeps the ask a snippet carries, and leaves the rest without one', () => {
+    const withAsk = DEFAULT_CORPUS.snippets.filter((s) => s.ask !== undefined);
+    expect(withAsk.length).toBeGreaterThanOrEqual(5);
+    for (const snippet of withAsk) expect(snippet.ask).not.toBe('');
+  });
+
   it('builds the same model twice and reads surprisal in bits', () => {
     const a = buildModel(DEFAULT_CORPUS.snippets.map((s) => s.code));
     const b = buildModel(DEFAULT_CORPUS.snippets.map((s) => s.code));

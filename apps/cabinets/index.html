@@ -317,24 +317,33 @@
       }
       .vibe-lines li {
         line-height: 1.35;
+        font-size: var(--vibe-font, 0.95rem);
       }
       .vibe-user {
         color: #7fa3c6;
       }
+      .vibe-nag {
+        color: #9bb9d6;
+        font-style: italic;
+      }
       .vibe-agent {
         color: #e6e6e6;
       }
+      .vibe-beat {
+        font-size: var(--vibe-font, 0.95rem);
+      }
       .vibe-code {
         font-family: ui-monospace, monospace;
-        font-size: 0.95rem;
+        font-size: var(--vibe-font, 0.95rem);
         line-height: 1.5;
-        white-space: pre-wrap;
-        word-break: break-word;
         overflow-y: auto;
+        overflow-x: auto;
         flex: 1;
       }
       .vibe-line {
         color: #6a6a78;
+        /* A token never breaks. A line too long for the pane scrolls sideways. */
+        white-space: pre;
       }
       .vibe-line.done {
         color: #3f5c4a;
@@ -434,6 +443,11 @@
         background: #1a1a24;
         color: #e8a04a;
         padding: 0.2rem 0.45rem;
+      }
+      @media (min-width: 1280px) {
+        .vibe-panes {
+          grid-template-columns: minmax(10rem, 0.8fr) minmax(24rem, 2fr) auto;
+        }
       }
       @media (max-width: 900px) {
         .vibe-panes {

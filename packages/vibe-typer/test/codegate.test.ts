@@ -19,7 +19,7 @@ import {
 } from '../src/codegate';
 import { DEFAULT_CORPUS } from '../src/corpus';
 import { value as valueOf } from '../src/difficulty';
-import { CORPUS_STACKS, DEFAULT_PATTERNS, VOICE_FORBIDDEN } from '../src/patterns';
+import { CORPUS_STACKS, DEFAULT_PATTERNS, FORM_FORBIDDEN, VOICE_FORBIDDEN } from '../src/patterns';
 import type { Band, Stack } from '../src/types';
 
 const SET = DEFAULT_PATTERNS.difficulty;
@@ -297,7 +297,8 @@ describe('the parts the gate is built from', () => {
 
   it('is the same barred list as the chat gate, minus the digit branch', () => {
     // VOICE_FORBIDDEN refuses any digit; code has digits and always will.
-    // Every other word in that list is still refused in code.
+    // Every other word in that list, and every inflection FORM_FORBIDDEN
+    // added, is still refused in code.
     for (const word of [
       'lie',
       'fact',
@@ -315,6 +316,23 @@ describe('the parts the gate is built from', () => {
     ]) {
       expect(BARRED_IN_CODE.test(`a ${word} here`), word).toBe(true);
       expect(VOICE_FORBIDDEN.test(`a ${word} here`), word).toBe(true);
+    }
+    for (const word of [
+      'lies',
+      'lied',
+      'facts',
+      'scores',
+      'scored',
+      'scoring',
+      'passes',
+      'passed',
+      'fails',
+      'failed',
+      'failing',
+      'ghosts',
+    ]) {
+      expect(BARRED_IN_CODE.test(`a ${word} here`), word).toBe(true);
+      expect(FORM_FORBIDDEN.test(`a ${word} here`), word).toBe(true);
     }
     expect(BARRED_IN_CODE.test('rows = 7')).toBe(false);
     expect(VOICE_FORBIDDEN.test('rows = 7')).toBe(true);

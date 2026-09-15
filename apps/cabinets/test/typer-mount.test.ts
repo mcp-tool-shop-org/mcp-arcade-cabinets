@@ -17,7 +17,7 @@ import {
   VALUE_TOLERANCE,
 } from '@mcp-arcade-cabinets/vibe-typer';
 
-import { mountVibeTyper, type VibeMount } from '../src/vibe-typer';
+import { FONT_SIZES, mountVibeTyper, type VibeMount } from '../src/vibe-typer';
 
 const STEP = 1 / 60;
 
@@ -209,6 +209,29 @@ describe('the field, mounted', () => {
     for (const barred of ['accuracy', 'words a minute', 'wpm', 'errors', 'mistakes']) {
       expect(field.toLowerCase(), barred).not.toContain(barred);
     }
+  });
+
+  it('takes the type size from the options and the beat word from the levers', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      font: 'huge',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    const field = root.querySelector('.vibe') as HTMLElement;
+    expect(field.style.getPropertyValue('--vibe-font')).toBe(FONT_SIZES.huge);
+
+    // The beat word is the lever's, never a constant in the shell.
+    const beats = DEFAULT_PATTERNS.cabinet.words.beats;
+    expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.request);
+    run(mount, 1);
+    expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.reply);
   });
 
   it('stops listening when it is unmounted', () => {

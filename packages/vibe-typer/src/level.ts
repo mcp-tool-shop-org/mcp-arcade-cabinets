@@ -5,7 +5,7 @@
 
 import { inBand, weakWeight, type Corpus } from './corpus';
 import { value as valueOf } from './difficulty';
-import { fill, type LinePicker } from './lines';
+import type { LinePicker } from './lines';
 import { CORPUS_STACKS, type LevelDef, type Patterns } from './patterns';
 import { mixSeed, seededRandom, weightedPick } from './seed';
 import type { Band, LevelPlan, Request, Snippet, Stack, Tier } from './types';
@@ -75,6 +75,8 @@ function endlessDef(opts: EndlessAt, rng: () => number): LevelDef {
   return {
     id: `endless-${i}`,
     product: template.split('{noun}').join(noun),
+    // An endless level has no authored premise; the standup shows nothing.
+    story: '',
     stack,
     requests: e.requests,
     bandMin: bands.bandMin,
@@ -111,7 +113,14 @@ export function levelDefAt(opts: PlanOpts, rng: () => number): LevelDef | null {
   if (opts.endless) return endlessDef(opts, rng);
   const def = opts.set.levels.levels[opts.levelIndex];
   if (!def) return null;
-  return opts.stack ? { ...def, stack: opts.stack } : def;
+  if (!opts.stack) return def;
+  // A run pinned to one language drops the level's pinned snippets when the
+  // language is not the level's own: those ids live in the level's stack, and
+  // a run that moved the stack asked for the band, not for the story.
+  if (opts.stack === def.stack) return { ...def, stack: opts.stack };
+  const moved: LevelDef = { ...def, stack: opts.stack };
+  delete moved.snippets;
+  return moved;
 }
 
 /** Candidates for a request: unused, in band, widening only when it must. */
@@ -161,11 +170,26 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
   // the same whether or not a seat is sitting. The override lands after.
   const product = taken.length > 0 && opts.product !== undefined ? opts.product : def.product;
   const requests: Request[] = [];
+  const pinned = def.snippets;
   for (let i = 0; i < def.requests; i++) {
+    // Three ways a request gets its snippet, and they cannot collide: a fed
+    // one is endless only, a pinned one is a listed story level only, and a
+    // drawn one is everything else. A pinned level plays its authored
+    // snippets in story order and draws nothing for them, so the rng call
+    // order is: no pick, then the creep draw per request, then the sync
+    // draw. A fed one is the same: the seat already chose. A drawn level is
+    // exactly as it was. An id that is not in the stack is a halt, not a
+    // quiet fallback.
     const fed = taken[i];
     let snippet: Snippet;
     if (fed) {
       snippet = fed;
+    } else if (pinned) {
+      const id = pinned[i];
+      const found =
+        id === undefined ? undefined : (opts.corpus.byStack[stack] ?? []).find((x) => x.id === id);
+      if (!found) throw new Error(`patterns/levels.json: levels.${opts.levelIndex}.snippets.${i}`);
+      snippet = found;
     } else {
       const pool = candidates(opts.corpus, stack, def, opts.used);
       if (pool.length === 0) break;
@@ -175,13 +199,11 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
     opts.used.add(snippet.id);
     const request: Request = {
       id: `${def.id}-${i}`,
-      // A seated snippet brings its own ask, which is the point of the
-      // seat: the request describes the job this code actually does. A
-      // snippet without one falls back to the authored template pool.
-      ask:
-        fed && typeof fed.ask === 'string' && fed.ask !== ''
-          ? fill(fed.ask, product, snippet)
-          : opts.picker.ask(stack, product, snippet),
+      // `picker.ask` prefers the snippet's own words and falls back to the
+      // template pool (sub-slice B part two). A seated snippet always has
+      // its own, which is the point of the seat: the request describes the
+      // job this code actually does. Nothing special is needed here for it.
+      ask: opts.picker.ask(stack, product, snippet),
       reply: opts.picker.reply(),
       snippet,
       value: valueOf(snippet, opts.corpus.model, opts.set.difficulty),
@@ -202,7 +224,11 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
       : undefined;
   return {
     id: def.id,
+    // The noun list was drawn inside `levelDefAt` either way, so the seed's
+    // stream is the same whether or not a seat is sitting; `product` is
+    // `def.product` unless a seat named this level and fed it.
     product,
+    story: def.story,
     stack,
     tier: opts.tier,
     requests,

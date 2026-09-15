@@ -5,15 +5,35 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PATTERNS } from '../src/patterns';
+import { DEFAULT_PATTERNS, type Patterns } from '../src/patterns';
 import { hypeLadder } from '../src/score';
 import { SCREEN_FORBIDDEN } from '../src/play';
-import { drive, seatFiller, LEVELS, SEEDS, TIERS } from './helpers';
+import { drive, seatFiller, LEVELS, SEEDS, TIERS, type RunReport } from './helpers';
 import type { Tier } from '../src/types';
 
 const REQUESTS = DEFAULT_PATTERNS.levels.levels.map((l) => l.requests);
 /** Idle proves nothing ships by itself; half an hour of it is proof enough. */
 const IDLE_TICKS = 60 * 60 * 30;
+/**
+ * Check-ins a level may carry, measured at `typist:40:0.03` on the gentlest
+ * tier over seeds 1 to 3 and rounded out: the sweep reads one on the two
+ * short levels and thirteen on the longest, because a level runs anywhere
+ * from about two minutes to about twenty at forty words a minute and one
+ * interval cannot put every one of them inside the same narrow count.
+ */
+const NAG_MIN = 1;
+const NAG_MAX = 16;
+
+/** The same levers with the check-ins pushed past the end of any run. */
+const NAGS_OFF: Patterns = {
+  ...DEFAULT_PATTERNS,
+  levels: { ...DEFAULT_PATTERNS.levels, nagEvery: { min: 1e9, max: 1e9 } },
+};
+
+/** The run with the words taken out: everything a check-in may not move. */
+function bones(report: RunReport): string {
+  return JSON.stringify({ ...report.state, chat: [], events: [] });
+}
 
 function everyLevel(): number[] {
   return Array.from({ length: LEVELS }, (_, i) => i);
@@ -172,6 +192,53 @@ describe('the scoreboard', () => {
     const built = run.state.built.reduce((n, p) => n + p.size, 0);
     expect(built).toBeGreaterThan(0);
     expect(run.valuation).toBeGreaterThanOrEqual(built);
+  });
+});
+
+describe('the check-in', () => {
+  it('lands a handful a level, and only where it may', () => {
+    for (const level of everyLevel()) {
+      for (const seed of SEEDS) {
+        const run = drive({ bot: 'typist:40:0.03', seed, tier: 0, level });
+        const where = `level ${level} seed ${seed}`;
+        expect(run.nags, where).toBeGreaterThanOrEqual(NAG_MIN);
+        expect(run.nags, where).toBeLessThanOrEqual(NAG_MAX);
+        // Never off a code beat — so never in a meeting, a creep, a ship, an
+        // ask or a reply — and never on the run's very first line.
+        expect(run.nagFaults, where).toBe(0);
+      }
+    }
+  });
+
+  it('keeps to the code beat at every tier, endless included', () => {
+    for (const tier of TIERS) {
+      for (const seed of SEEDS) {
+        const listed = drive({ bot: 'typist:40:0.03', seed, tier, level: (seed + tier) % LEVELS });
+        expect(listed.nagFaults, `tier ${tier} seed ${seed}`).toBe(0);
+        const endless = drive({ bot: 'typist:40:0.03', seed, tier, endless: true });
+        expect(endless.nagFaults, `endless tier ${tier} seed ${seed}`).toBe(0);
+      }
+    }
+  });
+
+  it('changes no valuation, no vibes, no streak and no plan', () => {
+    for (const tier of TIERS) {
+      for (const level of everyLevel()) {
+        for (const seed of SEEDS) {
+          const where = `tier ${tier} level ${level} seed ${seed}`;
+          const on = drive({ bot: 'typist:40:0.03', seed, tier, level });
+          const off = drive({ bot: 'typist:40:0.03', seed, tier, level, levers: NAGS_OFF });
+          expect(off.nags, where).toBe(0);
+          expect(on.valuation, where).toBe(off.valuation);
+          expect(on.hypes, where).toEqual(off.hypes);
+          expect(on.state.streak, where).toBe(off.state.streak);
+          expect(on.ticks, where).toBe(off.ticks);
+          // The whole run minus the words: the plan, the pieces, the bar, the
+          // milestones and the weak pairs are the same to the byte.
+          expect(bones(on), where).toBe(bones(off));
+        }
+      }
+    }
   });
 });
 

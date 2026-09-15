@@ -23,10 +23,10 @@ export interface Snippet {
   notes: string[];
   topics: string[];
   /**
-   * The user's own ask for this snippet, when it has one: the request
-   * describes the job the code actually does. `{product}` may appear.
-   * Absent on a corpus snippet that has not been written one, where the
-   * template pool in user.json is the fallback (slice 3).
+   * The user's own words for the job this code does, so the request and the
+   * code are the same thing (slice 3). `{product}` may stand in it; the
+   * template pool in user.json is the fallback for a snippet without one.
+   * A seated model writes one for every request it sends (G28 amended).
    */
   ask?: string;
 }
@@ -50,6 +50,8 @@ export interface Request {
 export interface LevelPlan {
   id: string;
   product: string;
+  /** The level's premise in one line; empty in endless until a seat writes one. */
+  story: string;
   stack: Stack;
   tier: Tier;
   requests: Request[];
@@ -80,6 +82,8 @@ export interface ChatLine {
   who: 'user' | 'agent';
   line: string;
   at: number;
+  /** A check-in while you type. It costs nothing and changes nothing (slice 3). */
+  nag?: true;
 }
 
 export interface BuiltPiece {
@@ -93,7 +97,7 @@ export type Event =
   | { kind: 'hmm' }
   | { kind: 'piece'; size: number }
   | { kind: 'ship'; nearMiss: boolean }
-  | { kind: 'message'; who: 'user' | 'agent' }
+  | { kind: 'message'; who: 'user' | 'agent'; nag?: true }
   | { kind: 'compaction' }
   | { kind: 'milestone'; name: string }
   | { kind: 'copilot'; on: boolean }

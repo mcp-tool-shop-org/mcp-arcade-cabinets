@@ -85,10 +85,12 @@ export type CodeGateResult =
  * digit, which is right for a chat line and wrong for code: an index, a
  * port and a column number are all digits and all ordinary. The words
  * themselves still cannot appear anywhere in a seated snippet, comments
- * included. Kept in step with VOICE_FORBIDDEN in patterns.ts by a test.
+ * included, and the inflections FORM_FORBIDDEN added go with them — a seat
+ * that may not write `score` may not write `scores` either. Kept in step
+ * with both lists in patterns.ts by a test.
  */
 export const BARRED_IN_CODE =
-  /\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
+  /\b(lie|lies|lied|fact|facts|revealed|followed|held|score|scores|scored|scoring|pass|passes|passed|fail|fails|failed|failing|nrp|integrity|utility|cleared|ghost|ghosts)\b/i;
 
 /**
  * Anything that is not plain, printable ASCII or a newline. The tab and the
@@ -374,6 +376,9 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   // writes the product itself in braces instead, and the braces then land on
   // the field because nothing fills them. Only the exact hole is a hole.
   if (/[{}]/.test(askText)) return refuse('bad-ask', 'stray brace');
+  // `lineFault` refuses a non-ASCII line too, since sub-slice B part two;
+  // these run first only so the reason is the specific one rather than
+  // whichever word rule the line also happens to break.
   if (TEXT_NOT_ASCII.test(seat.ask)) return refuse('bad-ask', 'not ascii');
   const askFault = lineFault(askText);
   if (askFault !== null) return refuse('bad-ask', askFault);
