@@ -191,8 +191,40 @@ export function emptyRosterSentence() {
   return 'empty roster is no-seat';
 }
 
+/**
+ * Which cabinet is being sat, and the argv with that flag taken out. Read
+ * before anything else, because the typing cabinet's own flags are not this
+ * file's flags and `parseArgv` halts on a flag it does not know. Ghost is
+ * the default and its path below is unchanged, byte for byte.
+ */
+export function readCabinet(argv) {
+  const rest = [];
+  let cabinet = 'ghost';
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i];
+    if (a === '--cabinet') {
+      cabinet = argv[i + 1] ?? '';
+      i += 1;
+      continue;
+    }
+    if (a.startsWith('--cabinet=')) {
+      cabinet = a.slice('--cabinet='.length);
+      continue;
+    }
+    rest.push(a);
+  }
+  return { cabinet, rest };
+}
+
 async function main() {
-  const { positional, flags: args } = parseArgv(process.argv.slice(2), FLAGS);
+  const { cabinet, rest: argvRest } = readCabinet(process.argv.slice(2));
+  if (cabinet === 'vibe-typer') {
+    const m = await import('./sit-vibe.mjs');
+    await m.main(argvRest);
+    return;
+  }
+  if (cabinet !== 'ghost') die(`unknown cabinet ${cabinet}; use ghost or vibe-typer`);
+  const { positional, flags: args } = parseArgv(argvRest, FLAGS);
   if (args.help) {
     console.log(USAGE);
     process.exit(0);

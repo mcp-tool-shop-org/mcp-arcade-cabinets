@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_PATTERNS, type Patterns } from '../src/patterns';
 import { hypeLadder } from '../src/score';
 import { SCREEN_FORBIDDEN } from '../src/play';
-import { drive, LEVELS, SEEDS, TIERS, type RunReport } from './helpers';
+import { drive, seatFiller, LEVELS, SEEDS, TIERS, type RunReport } from './helpers';
 import type { Tier } from '../src/types';
 
 const REQUESTS = DEFAULT_PATTERNS.levels.levels.map((l) => l.requests);
@@ -140,6 +140,32 @@ describe('endless', () => {
       const typist = drive({ bot: 'typist:40:0.03', seed, tier: 0, endless: true });
       expect(typist.ended, `typist seed ${seed}`).toBe('context');
       expect(typist.levels, `typist seed ${seed}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+});
+
+// G11, as the slice-3 kickoff reads it: endless with a seat is measured on
+// its own bar, with the seat swapped for the authored pool. The bar above
+// is the pool; this one is the seat, played by gated corpus snippets fed
+// the way the shell's prefetch feeds them. Feeding may never shorten a run
+// or cost the player anything: `drive` throws the moment a valuation falls.
+describe('endless with a seat', () => {
+  it('lasts at least as long as the same run with no seat, and never pays less', () => {
+    for (const seed of SEEDS) {
+      const plain = drive({ bot: 'perfect', seed, tier: 0, endless: true });
+      const seated = drive({
+        bot: 'perfect',
+        seed,
+        tier: 0,
+        endless: true,
+        supply: seatFiller(seed, 0, 4),
+      });
+      const where = `seed ${seed}`;
+      expect(seated.ended, where).toBe('context');
+      expect(seated.levels, where).toBeGreaterThanOrEqual(plain.levels);
+      expect(seated.pieces, where).toBeGreaterThanOrEqual(plain.pieces);
+      expect(seated.valuation, where).toBeGreaterThan(0);
+      expect(seated.unexplainedDrops, where).toBe(0);
     }
   });
 });

@@ -7,7 +7,13 @@ import path from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { createCabinetServer, listenFrom, parseSeatView, parseStrings } from '../src/serve';
+import {
+  createCabinetServer,
+  listenFrom,
+  parseEndlessView,
+  parseSeatView,
+  parseStrings,
+} from '../src/serve';
 
 /**
  * `fetch` resolves `/../x` against the origin before it ever opens a
@@ -246,5 +252,166 @@ describe('what the say route will accept as a view', () => {
     expect(parseStrings(['x'.repeat(50)], 5, 4)).toEqual(['xxxx']);
     expect(parseStrings(['ok', 7, null, 'two'], 5, 10)).toEqual(['ok', 'two']);
     expect(parseStrings('not a list', 5, 10)).toEqual([]);
+  });
+});
+
+// ——— the endless seat's route (G28 as slice 3 amends it) ————————————————————
+//
+// The typing cabinet posts the level it is about to play; this process asks
+// the seated model for the request the player will type. Same envelope as
+// the say route: post only, json only, a size cap, a minimum interval, and
+// words rather than a status code when the seat has nothing.
+
+describe('what the endless route will accept as a view', () => {
+  const good = {
+    product: 'a diary for houseplants',
+    stack: 'python',
+    bandMin: 1,
+    bandMax: 2,
+    recent: ['can you make the list shorter'],
+    weak: ['th', '()'],
+    newLevel: true,
+  };
+
+  it('takes a complete fact-blind view', () => {
+    expect(parseEndlessView(good)).toEqual(good);
+  });
+
+  it('refuses a stack outside the closed set and a band off the ladder', () => {
+    expect(parseEndlessView({ ...good, stack: 'rust' })).toBeNull();
+    expect(parseEndlessView({ ...good, bandMin: 0 })).toBeNull();
+    expect(parseEndlessView({ ...good, bandMax: 8 })).toBeNull();
+    expect(parseEndlessView({ ...good, bandMin: 1.5 })).toBeNull();
+    expect(parseEndlessView({ ...good, bandMin: 4, bandMax: 2 })).toBeNull();
+    expect(parseEndlessView({ ...good, product: '   ' })).toBeNull();
+    expect(parseEndlessView(null)).toBeNull();
+    expect(parseEndlessView('python')).toBeNull();
+  });
+
+  it('caps the free text so a prompt cannot be smuggled in it', () => {
+    const big = parseEndlessView({
+      ...good,
+      product: 'p'.repeat(500),
+      recent: Array.from({ length: 20 }, () => 'r'.repeat(500)),
+      weak: Array.from({ length: 80 }, () => 'weak'),
+      newLevel: 'yes',
+    });
+    expect(big?.product).toHaveLength(120);
+    expect(big?.recent).toHaveLength(3);
+    expect(big?.recent[0]).toHaveLength(200);
+    expect(big?.weak).toHaveLength(24);
+    expect(big?.weak[0]).toBe('we');
+    expect(big?.newLevel).toBe(false);
+  });
+});
+
+describe('the endless route', () => {
+  let seated: Server;
+  let seatedBase: string;
+  let moduleDir: string;
+
+  beforeAll(async () => {
+    moduleDir = await mkdtemp(path.join(os.tmpdir(), 'cabinet-endless-'));
+    // A stand-in for the bundled cabinet-server: it answers the way the
+    // real one does, and throws when the product says to, so the route's
+    // own words can be measured without a daemon.
+    await writeFile(
+      path.join(moduleDir, 'seat.mjs'),
+      [
+        'export async function askEndlessFor(view, opts) {',
+        '  if (view.product.includes("boom")) throw new Error("ollama down");',
+        '  if (view.product.includes("gone")) throw new Error("tag was retired");',
+        '  return {',
+        '    request: { ask: "can you make it sing", code: "x = 1", title: "a thing", notes: [] },',
+        '    tier: "cloud",',
+        '    model: opts.models[0] ?? "none",',
+        '    ms: 1,',
+        '    suppressed: false,',
+        '  };',
+        '}',
+      ].join('\n'),
+      'utf8',
+    );
+    seated = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      endlessModule: path.join(moduleDir, 'seat.mjs'),
+      ollamaUrl: upstreamBase,
+      voiceUrl: upstreamBase,
+      voiceToken: null,
+      anthropicKey: null,
+    });
+    const port = await listenFrom(seated, 24_511);
+    seatedBase = `http://127.0.0.1:${port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((r) => seated.close(() => r()));
+    await rm(moduleDir, { recursive: true, force: true });
+  });
+
+  const view = {
+    product: 'a diary for houseplants',
+    stack: 'python',
+    bandMin: 1,
+    bandMax: 2,
+    recent: [],
+    weak: [],
+    newLevel: false,
+  };
+
+  function post(body: unknown, at = seatedBase): Promise<Response> {
+    return fetch(`${at}/cabinet/endless`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it('refuses anything that is not a posted json view', async () => {
+    expect((await fetch(`${seatedBase}/cabinet/endless`)).status).toBe(405);
+    const plain = await fetch(`${seatedBase}/cabinet/endless`, { method: 'POST', body: 'x' });
+    expect(plain.status).toBe(415);
+    const bad = await post({ view: { stack: 'rust' } });
+    expect(bad.status).toBe(400);
+    expect(await bad.json()).toEqual({ error: 'no answer' });
+  });
+
+  it('refuses a body bigger than the cap', async () => {
+    const res = await post({ view, filler: 'x'.repeat(40 * 1024) });
+    expect(res.status).toBe(413);
+  });
+
+  it('says so when the package has no cabinet server rather than hanging', async () => {
+    const res = await post({ view }, base);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'no cabinet server built' });
+  });
+
+  it('asks the seat and hands back what it said', async () => {
+    // The refusals above each took the route's turn; the minimum interval
+    // between two asks is the point of that turn, so wait it out.
+    await new Promise((r) => setTimeout(r, 450));
+    const res = await post({ view, models: ['kimi-test:cloud'] });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { request: { ask: string }; model: string };
+    expect(body.request.ask).toBe('can you make it sing');
+    expect(body.model).toBe('kimi-test:cloud');
+  });
+
+  it('slows a second ask down rather than running two seats at once', async () => {
+    const res = await post({ view });
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: 'slow down' });
+  });
+
+  it('answers in words when the seat throws', async () => {
+    await new Promise((r) => setTimeout(r, 450));
+    const down = await post({ view: { ...view, product: 'a boom for houseplants' } });
+    expect(down.status).toBe(200);
+    expect(await down.json()).toEqual({ error: 'no answer' });
+    await new Promise((r) => setTimeout(r, 450));
+    const retired = await post({ view: { ...view, product: 'a gone for houseplants' } });
+    expect(await retired.json()).toEqual({ error: 'model retired' });
   });
 });

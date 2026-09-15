@@ -26,6 +26,7 @@ export interface Snippet {
    * The user's own words for the job this code does, so the request and the
    * code are the same thing (slice 3). `{product}` may stand in it; the
    * template pool in user.json is the fallback for a snippet without one.
+   * A seated model writes one for every request it sends (G28 amended).
    */
   ask?: string;
 }

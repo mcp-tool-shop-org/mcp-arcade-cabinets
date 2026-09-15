@@ -7,7 +7,15 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_PATTERNS, createRun, planOf } from '@mcp-arcade-cabinets/vibe-typer';
+import {
+  DEFAULT_CORPUS,
+  DEFAULT_PATTERNS,
+  createRun,
+  endlessPeek,
+  gateCode,
+  planOf,
+  VALUE_TOLERANCE,
+} from '@mcp-arcade-cabinets/vibe-typer';
 
 import { FONT_SIZES, mountVibeTyper, type VibeMount } from '../src/vibe-typer';
 
@@ -285,5 +293,163 @@ describe('the field, mounted', () => {
       spy.mockRestore();
     }
     mount = null;
+  });
+});
+
+// ——— the endless seat (G28 as slice 3 amends it) ——————————————————————————
+//
+// The shell prefetches the next level's requests from the node-side seat
+// while the current one is typed. What is measured here is the wiring: a
+// gated answer reaches the run's buffer, a refused one does not, and the
+// field is never told either way (G17, G23).
+
+const SEED = 11;
+
+/** The stack and band the endless ladder will draw for the level after the first. */
+function nextLevel() {
+  return endlessPeek({ set: DEFAULT_PATTERNS, seed: SEED, tier: 0, levelIndex: 1 });
+}
+
+/** A real corpus snippet the gate is happy with for that level. */
+function goodCode(): string {
+  const def = nextLevel();
+  for (const snippet of DEFAULT_CORPUS.byStack[def.stack] ?? []) {
+    if (snippet.band < def.bandMin || snippet.band > def.bandMax) continue;
+    const r = gateCode(
+      { ask: 'can you make it do the thing', code: snippet.code, title: 'a thing', notes: [] },
+      {
+        stack: def.stack,
+        bandMin: def.bandMin,
+        bandMax: def.bandMax,
+        corpus: DEFAULT_CORPUS,
+        set: DEFAULT_PATTERNS.difficulty,
+        tolerance: VALUE_TOLERANCE,
+      },
+    );
+    if (r.ok) return snippet.code;
+  }
+  throw new Error('no corpus snippet for the next endless level');
+}
+
+function flush(times = 6): Promise<void> {
+  let p = Promise.resolve();
+  for (let i = 0; i < times; i++) p = p.then(() => new Promise<void>((r) => setTimeout(r, 0)));
+  return p;
+}
+
+/** A daemon with one tag, and a seat that answers with `request`. */
+function stubSeat(request: unknown) {
+  const posted: unknown[] = [];
+  globalThis.fetch = vi.fn((url: string, init?: { body?: string }) => {
+    if (String(url).includes('/ollama/api/tags')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ models: [{ name: 'kimi-test:cloud' }] }),
+      } as Response);
+    }
+    if (String(url).includes('/cabinet/endless')) {
+      posted.push(JSON.parse(init?.body ?? '{}'));
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ request, model: 'kimi-test:cloud', tier: 'cloud', ms: 1 }),
+      } as Response);
+    }
+    return Promise.reject(new Error('no samples in a test'));
+  }) as never;
+  return posted;
+}
+
+function mountEndless(): VibeMount {
+  return mountVibeTyper(root, {
+    tier: 0,
+    endless: true,
+    seed: SEED,
+    agentName: 'Claudette',
+    theme: 'mechanical',
+    integration: [],
+    onExit: () => undefined,
+    startAudio: false,
+  });
+}
+
+describe('the endless seat, mounted', () => {
+  it('feeds a gated request into the run and tells the field nothing', async () => {
+    const posted = stubSeat({
+      ask: 'can you make {product} remember all of my plants',
+      code: goodCode(),
+      title: 'a list of plants',
+      notes: ['it walks the list once'],
+      product: 'a diary for houseplants',
+    });
+    mount = mountEndless();
+    await flush();
+    run(mount, 2);
+    await flush();
+    const seen = mount.debug();
+    expect(seen.asked).toBeGreaterThan(0);
+    expect(seen.accepted).toBeGreaterThan(0);
+    expect(seen.supplied).toBeGreaterThan(0);
+    expect(seen.refused).toBe(0);
+    // Fact-blind in (G12): the product, the language and the band as
+    // numbers the route bounds, and nothing else at all.
+    const view = (posted[0] as { view: Record<string, unknown> }).view;
+    expect(Object.keys(view).sort()).toEqual([
+      'bandMax',
+      'bandMin',
+      'newLevel',
+      'product',
+      'recent',
+      'stack',
+      'weak',
+    ]);
+    expect(view.stack).toBe(nextLevel().stack);
+    expect(view.newLevel).toBe(true);
+    // The seat's name is in the controls row and nowhere near the field.
+    const controls = root.querySelector('[data-vibe-seat]')!;
+    expect(controls).not.toBeNull();
+    expect(controls.textContent).toContain('Model user');
+    expect(root.querySelector('.vibe-chat')!.textContent).not.toContain('kimi');
+    expect(root.querySelector('.vibe-board')!.textContent).not.toContain('kimi');
+  });
+
+  it('drops a request the gate refuses and plays on', async () => {
+    stubSeat({
+      ask: 'can you make {product} remember all of my plants',
+      code: 'SELECT * FROM plants;',
+      title: 'a list of plants',
+      notes: [],
+      product: 'a diary for houseplants',
+    });
+    mount = mountEndless();
+    await flush();
+    run(mount, 2);
+    await flush();
+    const seen = mount.debug();
+    expect(seen.asked).toBeGreaterThan(0);
+    expect(seen.accepted).toBe(0);
+    expect(seen.supplied).toBe(0);
+    expect(seen.refused).toBeGreaterThan(0);
+    // Nothing about the refusal reaches the player.
+    expect(root.querySelector('.vibe-chat')!.textContent).not.toContain('refused');
+  });
+
+  it('never sits at all in a listed level', async () => {
+    stubSeat({ ask: 'x', code: 'y', title: 'z', notes: [] });
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: SEED,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    await flush();
+    run(mount, 4);
+    await flush();
+    expect(mount.debug()).toEqual({ supplied: 0, asked: 0, accepted: 0, refused: 0 });
+    expect(root.querySelector('[data-vibe-seat]')).toBeNull();
   });
 });

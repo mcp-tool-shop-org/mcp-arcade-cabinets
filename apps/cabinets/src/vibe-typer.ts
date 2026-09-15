@@ -16,20 +16,31 @@
 
 import {
   PITCH_CAP,
+  VALUE_TOLERANCE,
   agentNameOf,
   codeOf,
+  corpusOf,
   createRun,
+  endlessPeek,
+  feedRequests,
+  gateCode,
   leversOf,
   planOf,
   seededRandom,
   stepRun,
+  suppliedAsks,
+  suppliedCount,
   syncOf,
   NEAR_MISS,
+  type Band,
+  type CodeGateReason,
   type RunInput,
   type RunState,
   type Snippet,
+  type Stack,
   type Tier,
 } from '@mcp-arcade-cabinets/vibe-typer';
+import { listPilotModels } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
 import { CONFETTI_MAX, cuesFor, shakeFor, type Cue } from './typer-cues';
 import { createTyperAudio, isTheme, type Theme, type TyperAudio } from './typer-audio';
@@ -70,6 +81,30 @@ const WEAK_DECAY = 0.5;
 const RETRO_EVERY = 3;
 /** Pairs the retro's key map shows. */
 const RETRO_PAIRS = 8;
+
+/**
+ * Pages cannot reach a daemon, so the production Pages build omits the seat
+ * chrome and the fetch that goes with it. The launcher is a production
+ * build that *can* reach one: `VITE_LOCAL_SEATS=true` at pack time. Dev is
+ * never PROD, so the seat stays on there either way. Same switch as
+ * `ghost.ts`; the launcher's pack greps the strings this guards.
+ */
+const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
+
+// The endless seat (G28 as slice 3 amends it). The seat writes a whole
+// request; the code gate accepts or refuses it; a refusal is re-asked once
+// and then forgotten, because the corpus is always there (G11, G13).
+// // Director
+/** How long one ask may take before the shell stops listening for it. */
+const ENDLESS_TIMEOUT_MS = 20_000;
+/** How often the shell looks for a daemon while the seat is off. */
+const TAGS_EVERY_MS = 5000;
+/** Asks for one request slot before the shell gives that slot to the corpus. */
+const ENDLESS_TRIES = 2;
+/** Weak pairs the seat is told about. */
+const WEAK_TO_SEAT = 8;
+/** Asks the seat is shown so it does not repeat itself. */
+const RECENT_TO_SEAT = 3;
 
 /**
  * The editor type, in four words. A typing game is read at arm's length and
@@ -170,6 +205,8 @@ export interface VibePrefs {
   runs?: number;
   /** The last seed played, so a blank box draws the next one from it. */
   last?: number;
+  /** Whether the endless user is played by a model, when one can be reached. */
+  seat?: 'on' | 'off';
 }
 
 export function readVibePrefs(): VibePrefs {
@@ -192,6 +229,7 @@ export function readVibePrefs(): VibePrefs {
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
     if (typeof o.last === 'number' && Number.isFinite(o.last)) out.last = o.last >>> 0;
+    if (o.seat === 'on' || o.seat === 'off') out.seat = o.seat;
     return out;
   } catch {
     return {};
@@ -271,6 +309,12 @@ export interface VibeMount {
   unmount(): void;
   /** The loop, one frame. The test drives this instead of the browser's clock. */
   tick(dt: number): void;
+  /**
+   * What the endless seat has put in the run's buffer, and what the gate
+   * has refused. For the tests only; nothing on the field reads it, and
+   * nothing here is ever drawn (G17, G23).
+   */
+  debug(): { supplied: number; asked: number; accepted: number; refused: number };
 }
 
 interface ChatItem {
@@ -300,6 +344,13 @@ interface Box {
   y: number;
   w: number;
   h: number;
+}
+
+/** A span the reader's software announces when it changes. Ghost's shape. */
+function liveStatus(node: HTMLElement, name: string): void {
+  node.setAttribute('aria-live', 'polite');
+  node.setAttribute('role', 'status');
+  node.setAttribute('aria-label', name);
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -425,6 +476,25 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const back = el('button', undefined, 'Back to the cabinets');
   back.type = 'button';
   controls.append(mute, back);
+  // The seat, outside the field. G17 keeps the model's name off the field;
+  // the controls row is not the field, as Ghost's is not, so the tag may be
+  // read here and nowhere else. The chat never learns it.
+  const seatLabel = el('label');
+  const seatBox = document.createElement('input');
+  seatBox.type = 'checkbox';
+  seatBox.checked = false;
+  seatBox.disabled = true;
+  seatLabel.append(seatBox, document.createTextNode(' Model user'));
+  seatLabel.title =
+    'In endless, your user is played by a model on your own machine: it names the product, asks for the thing and writes the code you type, behind a gate that refuses anything that is not small, plain and in the right language. Needs the local game, not Pages.';
+  const seatStat = el('span', 'muted seat', '');
+  liveStatus(seatStat, 'the user');
+  const seatOn = LOCAL_SEATS && opts.endless;
+  if (seatOn) {
+    // The unique mark the launcher's pack greps for: a Pages build has none.
+    controls.setAttribute('data-vibe-seat', 'on');
+    controls.append(seatLabel, seatStat);
+  }
 
   const hint = el(
     'p',
@@ -761,6 +831,239 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     }
   };
 
+  // ——— the endless seat (G28 as slice 3 amends it) ————————————————————————
+  //
+  // In endless the user may be a model. It writes the product, the ask, the
+  // code, the title and the notes; the code gate and the chat gate refuse
+  // what it should not have written; the sim is fed the ones that pass and
+  // never waits for any of it (G11, G13). The seat's own name is legible
+  // here, in the controls row, and nowhere on the field (G17).
+
+  let seatModels: string[] = [];
+  let daemon: 'unknown' | 'up' | 'down' = 'unknown';
+  let seatBusy = false;
+  let seatCtl: AbortController | null = null;
+  let tagsTimer = 0;
+  /** Refusals in a row for the slot in hand; the second one gives it up. */
+  let slotTries = 0;
+  /** Slots this level has already handed to the corpus, and which level. */
+  let given = 0;
+  let givenFor = -1;
+  const seatCounts = { asked: 0, accepted: 0, refused: 0 };
+  const refusals: Record<string, number> = {};
+  const tagsCtl = new AbortController();
+
+  const seatSay = (text: string) => {
+    if (!left) seatStat.textContent = text;
+  };
+
+  const markSeatDown = () => {
+    daemon = 'down';
+    seatModels = [];
+    seatBox.disabled = true;
+    seatBox.checked = false;
+    seatSay('seat: the authored pool');
+  };
+
+  /**
+   * The last few asks, so the seat does not repeat itself: the ones already
+   * in the buffer first, because they are the ones it just wrote and they
+   * have not been said on the field yet, then the chat's own.
+   */
+  const recentAsks = (): string[] =>
+    [
+      ...suppliedAsks(state),
+      ...state.chat.filter((line) => line.who === 'user').map((line) => line.line),
+    ].slice(-RECENT_TO_SEAT);
+
+  /** The pairs this player fumbles most, for the seat to work into the code. */
+  const topWeak = (): string[] =>
+    Object.entries(state.weakBigrams)
+      .filter(([, n]) => n > 0)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, WEAK_TO_SEAT)
+      .map(([pair]) => pair);
+
+  /**
+   * Ask the seat for one request for the NEXT endless level, while the
+   * current one is being typed. One call in flight, ever; the level in hand
+   * is never touched, and an answer that arrives after the level it was for
+   * has started is simply queued behind what is there.
+   */
+  const askSeat = () => {
+    if (left || !seatOn || !seatBox.checked || seatBusy || daemon !== 'up') return;
+    if (!state.endless || state.over) return;
+    const next = state.levelIndex + 1;
+    if (givenFor !== next) {
+      givenFor = next;
+      given = 0;
+      slotTries = 0;
+    }
+    const def = endlessPeek({
+      set: levers,
+      seed: opts.seed,
+      tier: planOf(state).tier,
+      levelIndex: next,
+    });
+    const have = suppliedCount(state);
+    if (have + given >= def.requests) return;
+    seatBusy = true;
+    seatCounts.asked += 1;
+    seatSay('seat thinking');
+    seatCtl?.abort();
+    seatCtl = new AbortController();
+    const ctl = seatCtl;
+    const stack: Stack = def.stack;
+    const bandMin: Band = def.bandMin;
+    const bandMax: Band = def.bandMax;
+    const give = (reason: string) => {
+      refusals[reason] = (refusals[reason] ?? 0) + 1;
+      seatCounts.refused += 1;
+      if (slotTries + 1 >= ENDLESS_TRIES) {
+        slotTries = 0;
+        given += 1;
+        seatSay('seat: the authored pool');
+        return;
+      }
+      slotTries += 1;
+    };
+    void fetch('/cabinet/endless', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        view: {
+          product: planOf(state).product,
+          stack,
+          bandMin,
+          bandMax,
+          recent: recentAsks(),
+          weak: topWeak(),
+          newLevel: have === 0,
+        },
+        models: seatModels,
+      }),
+      signal: AbortSignal.any([ctl.signal, AbortSignal.timeout(ENDLESS_TIMEOUT_MS)]),
+    })
+      .then(async (r) => {
+        let a: {
+          request?: unknown;
+          model?: string;
+          tier?: string;
+          suppressed?: boolean;
+          error?: string;
+        } = {};
+        try {
+          a = (await r.json()) as typeof a;
+        } catch {
+          throw new Error(r.ok ? 'bad payload' : 'no answer');
+        }
+        if (!r.ok) {
+          throw new Error(
+            typeof a.error === 'string' && a.error.trim() ? a.error.trim() : 'no answer',
+          );
+        }
+        return a;
+      })
+      .then((a) => {
+        if (left || ctl.signal.aborted || state.over) return;
+        if (a.error) {
+          give('no answer');
+          return;
+        }
+        if (!a.request) {
+          give(a.suppressed === true ? 'answered in words' : 'no request');
+          return;
+        }
+        const gated = gateCode(a.request, {
+          stack,
+          bandMin,
+          bandMax,
+          corpus: corpusOf(state),
+          set: levers.difficulty,
+          tolerance: VALUE_TOLERANCE,
+        });
+        if (!gated.ok) {
+          const reason: CodeGateReason = gated.reason;
+          give(reason);
+          return;
+        }
+        slotTries = 0;
+        seatCounts.accepted += 1;
+        feedRequests(state, [gated.snippet], gated.product);
+        // The tag carries a version, which is a digit; the controls row is
+        // not the field, so it may be read here (G17, and Ghost does the
+        // same beside its own mute button).
+        seatSay(`seat: ${a.model ?? 'a model'}`);
+      })
+      .catch(() => {
+        if (left || ctl.signal.aborted) return;
+        give('no answer');
+      })
+      .finally(() => {
+        if (seatCtl === ctl) {
+          seatBusy = false;
+          seatCtl = null;
+        }
+      });
+  };
+
+  const probeTags = () => {
+    void fetch('/ollama/api/tags', {
+      signal: AbortSignal.any([tagsCtl.signal, AbortSignal.timeout(2000)]),
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no daemon'))))
+      .then((body: { models?: { name?: string }[] }) => {
+        if (left) return;
+        const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
+        const listed = listPilotModels(names);
+        if (listed.length === 0) {
+          markSeatDown();
+          return;
+        }
+        const was = daemon;
+        seatModels = listed;
+        daemon = 'up';
+        seatBox.disabled = false;
+        if (was !== 'up') {
+          if (prefs.seat !== 'off') {
+            seatBox.checked = true;
+            seatSay('seat: looking for a daemon');
+            askSeat();
+          } else {
+            seatSay('seat: the authored pool');
+          }
+        }
+      })
+      .catch(() => {
+        if (left || tagsCtl.signal.aborted) return;
+        markSeatDown();
+      })
+      .finally(() => {
+        if (left || !seatOn || seatBox.checked) return;
+        tagsTimer = window.setTimeout(probeTags, TAGS_EVERY_MS);
+      });
+  };
+
+  seatBox.addEventListener('change', () => {
+    writeVibePrefs({ seat: seatBox.checked ? 'on' : 'off' });
+    if (seatBox.checked) {
+      seatSay('seat: looking for a daemon');
+      askSeat();
+      return;
+    }
+    seatCtl?.abort();
+    seatCtl = null;
+    seatBusy = false;
+    seatSay('seat: the authored pool');
+    if (tagsTimer) window.clearTimeout(tagsTimer);
+    tagsTimer = window.setTimeout(probeTags, TAGS_EVERY_MS);
+  });
+
+  if (seatOn) {
+    seatSay('seat: looking for a daemon');
+    probeTags();
+  }
+
   // ——— the loop ————————————————————————————————————————————————————————————
 
   // The creep frame is held for CREEP_HOLD_MS of frame time so the appended
@@ -788,6 +1091,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       stepRun(state, input, STEP);
       pushChat();
       drainEvents();
+      // Here, and only here: this is the one place that knows a request has
+      // just been paid for, so it is where the next one is asked for and
+      // where a late answer costs the step nothing (slice 2's note, G13).
+      askSeat();
       if (state.beat === 'creep') break;
     }
     if (state.over && !over) standup();
@@ -967,6 +1274,17 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       tally.append(el('span', 'muted', `levels: ${countWord(state.levelIndex + 1)}`));
     }
     scene.append(tally);
+    // Who your user was, in words. The standup is the field's end card, so
+    // the model is a character here too and goes unnamed (G17).
+    if (state.endless && seatOn) {
+      scene.append(
+        el(
+          'p',
+          'muted',
+          seatCounts.accepted > 0 ? 'the user was a model' : 'the user was the authored pool',
+        ),
+      );
+    }
     if (state.milestones.length > 0) {
       scene.append(el('p', 'muted', state.milestones.join(' · ')));
     }
@@ -1004,6 +1322,13 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   function leave() {
     if (left) return;
     left = true;
+    // Nothing in flight outlives the mount: the seat's ask and the daemon
+    // probe are both dropped before anything else is taken down.
+    seatCtl?.abort();
+    seatCtl = null;
+    seatBusy = false;
+    tagsCtl.abort();
+    if (tagsTimer) window.clearTimeout(tagsTimer);
     if (raf) cancelAnimationFrame(raf);
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
@@ -1022,5 +1347,11 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   return {
     unmount: leave,
     tick,
+    debug: () => ({
+      supplied: suppliedCount(state),
+      asked: seatCounts.asked,
+      accepted: seatCounts.accepted,
+      refused: seatCounts.refused,
+    }),
   };
 }

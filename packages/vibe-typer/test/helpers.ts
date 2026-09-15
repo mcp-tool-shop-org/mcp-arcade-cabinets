@@ -1,9 +1,18 @@
 // Shared drive loop for the band and the sim tests. Not a test file itself.
 
+import { gateCode, VALUE_TOLERANCE } from '../src/codegate';
+import { endlessPeek } from '../src/level';
 import { DT, botFor, parseBot, type Bot } from '../src/play';
-import { createRun, stepRun, type CreateRunOpts } from '../src/sim';
+import {
+  corpusOf,
+  createRun,
+  feedRequests,
+  stepRun,
+  suppliedCount,
+  type CreateRunOpts,
+} from '../src/sim';
 import { DEFAULT_PATTERNS, type Patterns } from '../src/patterns';
-import type { Event, RunState, Tier } from '../src/types';
+import type { Event, RunState, Snippet, Tier } from '../src/types';
 
 export const SEEDS = [1, 2, 3];
 export const TIERS: Tier[] = [0, 1, 2, 3];
@@ -47,6 +56,12 @@ export interface DriveOpts {
   maxTicks?: number;
   /** Levers other than the default ones; the nag bars drive the same run twice. */
   levers?: Patterns;
+  /**
+   * Called before every step, so a bar can play the endless seat: it feeds
+   * gated requests into the run the way the shell's prefetch does (G13).
+   * Absent, and the run is the run this cabinet has always played.
+   */
+  supply?: (state: RunState) => void;
 }
 
 export function makeBot(spec: string, seed: number): Bot {
@@ -93,6 +108,7 @@ export function drive(opts: DriveOpts): RunReport {
   const firstLevel = state.levelIndex;
   while (!state.over && report.ticks < cap) {
     report.ticks += 1;
+    opts.supply?.(state);
     // The beat, the request and the line as they stood when the step began:
     // a check-in is raised before the step reads any input, so these are what
     // it saw. The band asserts a nag never lands anywhere else.
@@ -136,4 +152,58 @@ function tally(events: readonly Event[], report: RunReport): void {
     else if (event.kind === 'message' && event.nag === true) report.nags += 1;
     else if (event.kind === 'milestone') report.milestones.push(event.name);
   }
+}
+
+// ——— the endless seat, played by the corpus ————————————————————————————————
+//
+// G11 says a seated model is measured on its own bar with the seat swapped
+// for the authored pool. The swap here is the corpus itself: real snippets
+// of the stack and band the next endless level will draw, put through the
+// same code gate a model's answer goes through, and fed the same way. What
+// the bar then measures is the feeding, not the model.
+
+/** Gated requests for the endless level at `levelIndex`, drawn from the corpus. */
+export function seatFeed(seed: number, tier: Tier, levelIndex: number, count: number): Snippet[] {
+  const state = createRun({ seed, tier, endless: true });
+  const corpus = corpusOf(state);
+  const def = endlessPeek({ set: DEFAULT_PATTERNS, seed, tier, levelIndex });
+  const out: Snippet[] = [];
+  for (const snippet of corpus.byStack[def.stack] ?? []) {
+    if (out.length >= count) break;
+    if (snippet.band < def.bandMin || snippet.band > def.bandMax) continue;
+    const gated = gateCode(
+      {
+        ask: `can you make {product} do the ${snippet.id.replace(/[^a-z]+/gi, ' ').trim()} thing`,
+        code: snippet.code,
+        title: 'a small thing',
+        notes: ['it does the one job'],
+      },
+      {
+        stack: def.stack,
+        bandMin: def.bandMin,
+        bandMax: def.bandMax,
+        corpus,
+        set: DEFAULT_PATTERNS.difficulty,
+        tolerance: VALUE_TOLERANCE,
+        id: `seat-${levelIndex}-${out.length}`,
+      },
+    );
+    if (gated.ok) out.push(gated.snippet);
+  }
+  return out;
+}
+
+/**
+ * A `supply` hook that keeps the next level's buffer full, the way the
+ * shell's prefetch does. Memoized per level, because the bar calls it every
+ * step and the gate is not free.
+ */
+export function seatFiller(seed: number, tier: Tier, count: number): (state: RunState) => void {
+  const done = new Set<number>();
+  return (state: RunState) => {
+    const next = state.levelIndex + 1;
+    if (done.has(next) || suppliedCount(state) > 0) return;
+    done.add(next);
+    feedRequests(state, seatFeed(seed, tier, next, count), undefined);
+  };
 }

@@ -106,18 +106,45 @@ export {
 export { askFor, fill, LinePicker, safeTitle } from './lines';
 export type { PickerOpts } from './lines';
 
-export { levelDefAt, planLevel } from './level';
+export { endlessBandAt, endlessPeek, levelDefAt, levelSeedFor, planLevel } from './level';
 export type { PlanOpts } from './level';
+
+// The code gate (G28 as slice 3 amends it): the mechanical half of what
+// stands between a seated model's request and the field. The other half is
+// `lineFault`, exported above.
+export {
+  balanced,
+  bandRange,
+  BARRED_IN_CODE,
+  gateCode,
+  LANGUAGE_HINTS,
+  MAX_COLS,
+  MAX_LINES,
+  MAX_NOTES,
+  MAX_PRODUCT_WORDS,
+  VALUE_TOLERANCE,
+} from './codegate';
+export type {
+  BandRange,
+  CodeGateCtx,
+  CodeGateReason,
+  CodeGateResult,
+  SeatRequest,
+} from './codegate';
 
 export {
   agentNameOf,
   codeOf,
+  corpusOf,
   createRun,
+  feedRequests,
   leversOf,
   NAG_SALT,
   nextSeed,
   planOf,
   stepRun,
+  suppliedAsks,
+  suppliedCount,
   syncOf,
 } from './sim';
 export type { CreateRunOpts } from './sim';
