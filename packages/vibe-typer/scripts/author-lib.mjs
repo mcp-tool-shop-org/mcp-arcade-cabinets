@@ -5,69 +5,15 @@
 //
 // Offline authoring only. Nothing in this file is imported by the game and
 // nothing in it runs at play time.
+//
+// The spelling check is NOT here. `britishHit` lives in
+// `packages/vibe-typer/src/spelling.ts` and reaches this file the same way
+// `lineFault` does: `author.mjs` bundles the package's barrel with esbuild and
+// hands both to `makeGate`. This file is plain ESM so that `node` can run the
+// script with no loader, which is exactly why it cannot import the TypeScript
+// module itself; injection is what keeps the one list in one place.
 
 import { createHash } from 'node:crypto';
-
-/**
- * British spellings, as word-boundary patterns that do not catch the American
- * words that share a stem (`optimistic`, `parallelism`, `analysis`, `color`).
- *
- * A sibling sub-slice adds `britishHit()` to `packages/vibe-typer/src/spelling.ts`
- * for the spelling test; that branch is not this one, so the list lives here for
- * now. When both land, this copy is deleted and the module is imported instead.
- */
-export const BRITISH_PATTERNS = [
-  /\bcolours?\b/i,
-  /\bfavourites?\b/i,
-  /\borganis(?:e|es|ed|ing|ation|ations)\b/i,
-  /\bapologis(?:e|es|ed|ing)\b/i,
-  /\bprogrammes?\b/i,
-  /\bneighbourhoods?\b/i,
-  /\brealis(?:e|es|ed|ing)\b/i,
-  /\boptimis(?:e|es|ed|ing|ation|ations)\b/i,
-  /\bcustomis(?:e|es|ed|ing|ation|ations)\b/i,
-  /\bsummaris(?:e|es|ed|ing)\b/i,
-  /\bparallelis(?:e|es|ed|ing)\b/i,
-  /\bnormalis(?:e|es|ed|ing|ation)\b/i,
-  /\bcentres?\b/i,
-  /\blicences?\b/i,
-  /\bbehaviours?\b/i,
-  /\bhonours?\b/i,
-  /\bhumours?\b/i,
-  /\bflavours?\b/i,
-  /\bcatalogues?\b/i,
-  /\bgrey\b/i,
-  /\btravelling\b/i,
-  /\bmodelling\b/i,
-  /\bcancelled\b/i,
-  /\binitialis(?:e|es|ed|ing|ation)\b/i,
-  /\bserialis(?:e|es|ed|ing|ation)\b/i,
-  /\bvisualis(?:e|es|ed|ing|ation)\b/i,
-  /\brecognis(?:e|es|ed|ing)\b/i,
-  /\bauthoris(?:e|es|ed|ing|ation)\b/i,
-  /\bwhilst\b/i,
-  /\bamongst\b/i,
-  /\bmarvellous\b/i,
-  /\banalys(?:e|es|ed|ing)\b/i,
-  /\btheatres?\b/i,
-  /\bmetres?\b/i,
-  /\blabour\b/i,
-  /\barmour\b/i,
-  /\bdefence\b/i,
-  /\boffence\b/i,
-  /\bpractis(?:e|es|ed|ing)\b/i,
-  /\bjewellery\b/i,
-];
-
-/** The British spelling this line carries, lower case, or null. */
-export function britishHit(line) {
-  if (typeof line !== 'string') return null;
-  for (const re of BRITISH_PATTERNS) {
-    const m = re.exec(line);
-    if (m) return m[0].toLowerCase();
-  }
-  return null;
-}
 
 /**
  * Real companies and products a level's own product string may name. The
@@ -108,15 +54,35 @@ export function stripFences(text) {
 }
 
 /**
- * The first balanced JSON value in `text`, ignoring a code fence and any prose
- * around it. Throws `Error` with a one-line reason when nothing parses.
+ * The candidates in `text`, ignoring a code fence and any prose around it.
+ *
+ * A preamble can carry a bracket of its own ("Here are the lines [one per
+ * piece]:"), so the first bracket is not necessarily the answer. Every bracket
+ * is tried in turn and the first balanced span that parses and holds at least
+ * one string wins; a value that parses but holds no string at all is the
+ * fallback. Throws `Error` with a one-line reason when nothing parses.
  */
 export function parseCandidates(text) {
   const body = stripFences(text);
-  const start = firstBracket(body);
-  if (start === -1) throw new Error('no JSON array or object in the answer');
-  const end = matchBracket(body, start);
-  const slice = end === -1 ? body.slice(start) : body.slice(start, end + 1);
+  let sawBracket = false;
+  let stringless = null;
+  for (let i = 0; i < body.length; i += 1) {
+    if (body[i] !== '[' && body[i] !== '{') continue;
+    sawBracket = true;
+    const end = matchBracket(body, i);
+    const slice = end === -1 ? body.slice(i) : body.slice(i, end + 1);
+    const value = tryParse(slice);
+    if (value === undefined) continue;
+    if (holdsString(value)) return value;
+    if (stringless === null) stringless = { value };
+  }
+  if (stringless !== null) return stringless.value;
+  if (!sawBracket) throw new Error('no JSON array or object in the answer');
+  throw new Error('the JSON in the answer does not parse');
+}
+
+/** The value, or `undefined` when the slice is not JSON even after one repair. */
+function tryParse(slice) {
   try {
     return JSON.parse(slice);
   } catch {
@@ -124,16 +90,17 @@ export function parseCandidates(text) {
     try {
       return JSON.parse(slice.replace(/,\s*([\]}])/g, '$1'));
     } catch {
-      throw new Error('the JSON in the answer does not parse');
+      return undefined;
     }
   }
 }
 
-function firstBracket(s) {
-  for (let i = 0; i < s.length; i += 1) {
-    if (s[i] === '[' || s[i] === '{') return i;
-  }
-  return -1;
+/** Whether a parsed value carries any string at all; a bare `[one, two]` does not. */
+function holdsString(value) {
+  if (typeof value === 'string') return true;
+  if (Array.isArray(value)) return value.some(holdsString);
+  if (value && typeof value === 'object') return Object.values(value).some(holdsString);
+  return false;
 }
 
 /** The index of the bracket closing the one at `start`, or -1. */
@@ -165,35 +132,57 @@ function matchBracket(s, start) {
  * Shape whatever the model returned into one candidate list per key. Accepts
  * an object keyed by id, an array of arrays in order, a flat array of
  * `keys.length * per` strings, and a flat array of `keys.length` strings.
- * A key with nothing for it gets an empty list; the caller counts that.
+ *
+ * Returns `{ groups, dropped }`. A key with nothing for it gets an empty list
+ * and the caller counts that. A line the shaping cannot place — a key nobody
+ * asked about, a row past the last key, the remainder of a flat array that is
+ * longer than the keys but is not `keys.length * per` — is counted under
+ * `surplus` and never vanishes: a silent discard is a line the Director paid
+ * for and never saw.
  */
 export function groupCandidates(parsed, keys, per) {
-  const out = new Map();
-  for (const k of keys) out.set(k, []);
+  const groups = new Map();
+  const dropped = {};
+  let surplus = 0;
+  for (const k of keys) groups.set(k, []);
+  const done = () => {
+    if (surplus > 0) dropped.surplus = surplus;
+    return { groups, dropped };
+  };
+
   if (parsed && !Array.isArray(parsed) && typeof parsed === 'object') {
+    const wanted = new Set(keys);
     for (const k of keys) {
       const v = parsed[k];
-      if (Array.isArray(v)) out.set(k, v.filter(isLine));
-      else if (isLine(v)) out.set(k, [v]);
+      if (Array.isArray(v)) groups.set(k, v.filter(isLine));
+      else if (isLine(v)) groups.set(k, [v]);
     }
-    return out;
+    for (const [k, v] of Object.entries(parsed)) {
+      if (wanted.has(k)) continue;
+      surplus += Array.isArray(v) ? v.filter(isLine).length : isLine(v) ? 1 : 0;
+    }
+    return done();
   }
-  if (!Array.isArray(parsed)) return out;
+  if (!Array.isArray(parsed)) return done();
+
   if (parsed.every((x) => Array.isArray(x))) {
-    keys.forEach((k, i) => out.set(k, (parsed[i] ?? []).filter(isLine)));
-    return out;
+    keys.forEach((k, i) => groups.set(k, (parsed[i] ?? []).filter(isLine)));
+    for (const row of parsed.slice(keys.length)) surplus += row.filter(isLine).length;
+    return done();
   }
+
   const flat = parsed.filter(isLine);
   if (flat.length === keys.length * per) {
-    keys.forEach((k, i) => out.set(k, flat.slice(i * per, i * per + per)));
-    return out;
+    keys.forEach((k, i) => groups.set(k, flat.slice(i * per, i * per + per)));
+    return done();
   }
   if (flat.length >= keys.length) {
-    keys.forEach((k, i) => out.set(k, [flat[i]]));
-    return out;
+    keys.forEach((k, i) => groups.set(k, [flat[i]]));
+    surplus += flat.length - keys.length;
+    return done();
   }
-  keys.forEach((k, i) => out.set(k, i < flat.length ? [flat[i]] : []));
-  return out;
+  keys.forEach((k, i) => groups.set(k, i < flat.length ? [flat[i]] : []));
+  return done();
 }
 
 function isLine(x) {
@@ -201,10 +190,12 @@ function isLine(x) {
 }
 
 /**
- * Compose the package's own `lineFault` with the British check and an optional
- * tighter word cap into one gate. It returns a reason or null; it never edits.
+ * Compose the package's own `lineFault` and its own `britishHit` with an
+ * optional tighter word cap into one gate. Both come from the bundled package
+ * module, so the authoring gate cannot drift from the game's. It returns a
+ * reason or null; it never edits.
  */
-export function makeGate(lineFault, opts = {}) {
+export function makeGate(lineFault, britishHit, opts = {}) {
   const maxWords = opts.maxWords ?? 0;
   return (line) => {
     const fault = lineFault(line);
@@ -219,23 +210,20 @@ export function makeGate(lineFault, opts = {}) {
 /**
  * Keep the first candidate the gate lets through; count why the others fell.
  *
- * Whitespace around a candidate is stripped before gating and nothing else is
- * touched: the padding is the model's serializer, not its writing, and the
- * gate's `padded` reason would otherwise measure the wrong thing. `trimmed`
- * says how often that happened so the receipt does not hide it.
+ * The candidate is gated exactly as it was written. A padded line is a drop
+ * with the gate's own `padded` reason, like any other: stripping the
+ * whitespace first would be the script editing a line into passing, which it
+ * is forbidden to do.
  */
 export function keepFirstPassing(candidates, gate) {
   const dropped = {};
   const alternates = [];
   let kept = null;
-  let trimmed = 0;
-  for (const raw of candidates ?? []) {
-    if (typeof raw !== 'string') {
+  for (const line of candidates ?? []) {
+    if (typeof line !== 'string') {
       dropped['not a string'] = (dropped['not a string'] ?? 0) + 1;
       continue;
     }
-    const line = raw.trim();
-    if (line !== raw) trimmed += 1;
     const reason = line === '' ? 'empty' : gate(line);
     if (reason !== null) {
       dropped[reason] = (dropped[reason] ?? 0) + 1;
@@ -244,7 +232,7 @@ export function keepFirstPassing(candidates, gate) {
     if (kept === null) kept = line;
     else alternates.push(line);
   }
-  return { kept, dropped, alternates, trimmed };
+  return { kept, dropped, alternates };
 }
 
 /** Add one drop tally into another, in place. */

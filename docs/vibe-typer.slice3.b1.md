@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-15. **Builder:** Opus (this sub-slice). **Coordinator:** Claude (Fable 5.1). **Director:** Mike.
 **Brief:** `docs/vibe-typer.kickoff-s3.md` § Sub-slice B, under `docs/vibe-typer.dispatch.md` (the lock G23–G30).
-**Branch:** `cabinet/vibe-typer-s3b1`, one commit, not merged.
+**Branch:** `cabinet/vibe-typer-s3b1`, two commits, not merged: the build, then the Kimi review's four changes with
+`main` merged in.
 
 This section belongs in `docs/vibe-typer.slice3.md`; that file is a sibling branch's to create, so it is written
 here in the same house style and the coordinator folds it in at merge.
@@ -19,7 +20,7 @@ sample receipt and the sample document. Version stays `0.9.0`.
 | PIN_PER_STEP             | 3     | Every call records the model, the route, the date, the temperature and the sha256 of the exact prompt text (system, a blank line, user) in `docs/vibe-typer.author-sample.json`. The same model at the same prompt hash is the replay; the hashes are in the sample document and in the table below, and the three shared prompts hashed identically across all four seats. |
 | ANDON_AUTHORITY          | 3     | The gate halts a line and never repairs it. A level product that names a real company with no brand-free phrase halts the whole run rather than putting a brand in a prompt. A seat that will not answer is recorded and the other seats continue. The sample itself is the halt before the full run, and `run` was deliberately not executed.                              |
 | NAMED_COMPENSATORS       | 2     | The only irreversible action on this branch is the branch push. Compensator: `git push origin --delete cabinet/vibe-typer-s3b1` (owner: the coordinator). The four calls to the studio's OpenRouter account cost $0.19717 and cannot be unspent; that is reported rather than compensated. No npm, no tag, no release, no Pages deploy, no lever write.                     |
-| DECOMPOSE_BY_SECRETS     | 3     | Four things that change for four reasons: `author-lib.mjs` (parsing and gating, pure and tested), the prompts, the two transports, the slots that know the schema. The package's `lineFault` is bundled in with esbuild, never copied, so the authoring gate cannot drift from the game's.                                                                                  |
+| DECOMPOSE_BY_SECRETS     | 3     | Four things that change for four reasons: `author-lib.mjs` (parsing and gating, pure and tested), the prompts, the two transports, the slots that know the schema. The package's `lineFault` and `britishHit` are bundled in from the barrel with esbuild, never copied, so the authoring gate cannot drift from the game's.                                                |
 | UNCERTAINTY_GATED_HUMANS | 3     | The script stops at the sample by construction; `run` exists, is implemented, and was not run. `run` without `--apply` is itself dry. The sample document ends with `Pick: ____`. Where the brief was silent the choice is under **Decisions** with its reason.                                                                                                             |
 | EXTERNAL_VERIFIER        | 3     | None of the four writing seats is the coordinator's family and none is this builder's; three different families answered. The gate is mechanical and is the package's own, so no model judges its own line. The diff goes to a different family from a packet before merge.                                                                                                 |
 
@@ -44,7 +45,8 @@ OpenRouter is one non-streaming POST with the referer and title headers, and its
   Each call adds its model's column to `docs/vibe-typer.author-sample.json` and re-renders
   `docs/vibe-typer.author-sample.md`, so three calls make the side-by-side.
 - **`run`** is the full pass and the default is dry: without `--apply` it writes the candidates and a report to
-  `packages/vibe-typer/authoring/<date>-<slot>.json` and touches no lever. With `--apply` it writes the kept lines
+  `packages/vibe-typer/authoring/<stamp>-<slot>.json`, where `<stamp>` is the date and the time of day to the
+  millisecond, one stamp per invocation, and touches no lever. With `--apply` it writes the kept lines
   into the lever and corpus files, two-space indented with a trailing newline and the existing key order kept, then
   runs prettier over exactly the files it touched. Each slot is one function with one prompt.
 
@@ -56,21 +58,23 @@ Errors are structured and exit non-zero with a one-line reason and no stack: `mi
 
 ## The gate
 
-Every kept line passes the package's own `lineFault` — bundled out of `src/patterns.ts` with esbuild in process, the
-same trick `scripts/sit.mjs` uses, so the script uses the real gate and never a copy. On top of it:
+Every kept line passes the package's own `lineFault` **and** the package's own `britishHit` — both bundled out of
+`src/index.ts` with esbuild in process, the same trick `scripts/sit.mjs` uses, so the script uses the real gate and
+never a copy of either list. On top of the two:
 
-- a British-spelling check over the forty patterns the kickoff lists, written as word-boundary regexes that do not
-  catch `optimistic`, `parallelism`, `analysis` or `color`;
 - a tighter word cap where the lever needs one: ten words for an ask template, so a seven-word product still reads
   once `{product}` is substituted at plan time; five for a sync line, which slice 1 already caps at five.
 
-The British list lives in `author-lib.mjs` under a comment saying it moves to `packages/vibe-typer/src/spelling.ts`
-when the sibling sub-slice's `britishHit()` and this branch both land.
+`makeGate(lineFault, britishHit, opts)` takes both by injection. `author-lib.mjs` is plain ESM so that `node` can
+run the script with no loader, which is exactly why it cannot import the TypeScript module itself; injection is what
+keeps the one list in one place. The test composes the gate the same way, out of `src/patterns.ts` and
+`src/spelling.ts`, so nothing anywhere carries a second copy.
 
 ## The schema the full run will write
 
-This is the data contract; the sim and loader sub-slice implements the same one in parallel, so it is written out
-here in full.
+This is the data contract, written out in full because the sim and loader sub-slice was building against it in
+parallel. It landed on `main` as sub-slice B part two while this branch was open, so what follows is now a
+description of what the levers hold rather than a promise about them.
 
 - **Asks per snippet.** A `patterns/corpus/<stack>.json` snippet gains `"ask": string` — a template in the user's
   voice describing the job that snippet's code actually does for the product. `{product}` may appear and is
@@ -162,13 +166,19 @@ Three things worth the Director's eye while he reads:
   asked for, the gate caught no exclamation mark, no shouted word and no British spelling at all; the only drops
   were mistral running past the ten-word ask cap and four candidates carrying a digit or a barred word. The register
   held, so the differences between the columns are taste.
-- **The gate lets a plural through a barred word.** `VOICE_FORBIDDEN` bars `score` on a word boundary, so `scores`
-  passes, and two of mistral's kept lines use it. This is the game's gate, not the script's, so the script did not
-  touch it; settling it belongs with the sim sub-slice that owns `patterns.ts`.
-- **The gate lets a curly apostrophe through.** Four of mistral's kept lines carry one (`i’m`, `It’s`), and no other
-  seat wrote one. `lineFault` has no ASCII rule and the script is forbidden to edit a line into passing, so all four
-  were kept as written. Before the full run either `lineFault` grows an ASCII rule or the prompt asks for a straight
-  apostrophe; the script must not be the place that quietly rewrites the text.
+- **The gate let a plural through a barred word.** `VOICE_FORBIDDEN` barred `score` on a word boundary, so `scores`
+  passed, and two of mistral's kept lines use it. **Closed on main:** sub-slice B part two added `FORM_FORBIDDEN`,
+  which catches the inflected forms.
+- **The gate let a curly apostrophe through.** Four of mistral's kept lines carry one (`i’m`, `It’s`), and no other
+  seat wrote one. `lineFault` had no ASCII rule and the script is forbidden to edit a line into passing, so all four
+  were kept as written. **Closed on main:** `lineFault` now refuses a non-ASCII character with `'not ascii'`, and it
+  refuses rather than straightens, which is the right half of the rule to have chosen.
+
+**The sample was not re-read under the merged gate, and the Director reads it as it stands.** Those six lines would
+now be drops, so the merged gate is stricter than the columns below it suggest — which only sharpens the read, since
+a tighter gate is the one the full run will use. Re-running would have spent the OpenRouter account again and moved
+the lines the Director is about to compare. A smoke run of the same prompts against mistral after the merge confirms
+the new rules fire: `not ascii` appeared as a drop reason for the first time.
 
 ## Decisions
 
@@ -193,9 +203,12 @@ Where the brief was silent, the choice and the reason.
    tables read as one exchange and a weak check-in cannot be rescued by another model's reply. A reply keeps its
    check-in's key rather than its place in the answer, so a nag that fell the gate leaves a hole in both tables at
    the same row. The cost is that the reply prompt's hash differs per seat, which the document says.
-6. **Surrounding whitespace is stripped before gating; nothing else is touched.** Padding around a JSON string is the
-   model's serializer, not its writing, and `lineFault`'s `padded` reason would otherwise measure the wrong thing.
-   The receipt counts `trimmed` per slot so this never hides behind a kept line. It was zero for all four seats.
+6. **A candidate is gated exactly as it was written, padding included.** The first draft stripped surrounding
+   whitespace on the reasoning that padding is the model's serializer rather than its writing, and counted the
+   strips in the receipt. The Kimi review called that what it is — the script editing a line into passing — and it
+   is right: the rule has no exception that survives contact with a second exception. A padded line is now a drop
+   with the gate's own `padded` reason, like any other, and `trimmed` is gone. Nothing was lost by it: the count was
+   zero for all four seats.
 7. **A brand in a level's product halts the run.** The prompt must name no real company, but one level's product is
    written with one. `PRODUCT_PHRASE` maps that product to the dispatch's own brand-free words for it
    ("a rideshare for ducks"), a `BRAND_NAMES` regex catches the case, and a product that hits it with no entry — or
@@ -210,34 +223,69 @@ Where the brief was silent, the choice and the reason.
 10. **Three candidates are asked for and all three are read.** The first that passes is kept, the rest that pass are
     filed as `alternates` in the receipt, and the rest that fail are counted by reason. The Director prunes on read;
     the alternates are there so the full run has somewhere to fall back to without asking again.
-11. **The parser is lenient about shape, strict about content.** It strips a code fence, finds the first balanced
-    `[` or `{` (respecting strings and escapes), forgives one trailing comma, and accepts an object keyed by id, an
-    array of arrays, a flat array of `n × 3`, or a flat array of `n`. What it will not do is guess a missing line: a
-    key with nothing for it is counted as `missing` and rendered as a dash.
+11. **The parser is lenient about shape, strict about content.** It strips a code fence, walks the balanced spans in
+    order (respecting strings and escapes), forgives one trailing comma, and accepts an object keyed by id, an array
+    of arrays, a flat array of `n × 3`, or a flat array of `n`. What it will not do is guess a missing line: a key
+    with nothing for it is counted as `missing` and rendered as a dash, and a candidate it cannot place is counted
+    as `surplus` rather than dropped in silence.
 12. **Each call is retried once and then recorded.** A seat that fails twice becomes a receipt line, not a halt, so
     one dead tag does not cost the other two seats their run. The same message twice reads as "(twice)".
 13. **`run` writes candidates by default and levers only under `--apply`.** The brief asks for this; what it does not
     say is what `--apply` does about formatting, so it writes two-space JSON with a trailing newline in the existing
     key order and then runs the repo's own prettier over exactly the files it touched, so the diff a reviewer reads
     is the lines and not the whitespace.
-14. **The gate is bundled, not copied.** `src/patterns.ts` and `src/lines.ts` are built in process with esbuild and
-    imported, the same shape `scripts/sit.mjs` uses, into the system temp directory and removed afterwards. A copied
-    regex would drift from the game's on the first commit that changes one.
+14. **The gate is bundled, not copied.** The package's barrel `src/index.ts` is built in process with esbuild and
+    imported, the same shape `scripts/sit.mjs` uses, into the system temp directory and removed afterwards, and
+    `lineFault` and `britishHit` come out of it. A copied regex would drift from the game's on the first commit that
+    changes one — which is exactly what the merge below would have done to the British list.
 15. **`packages/vibe-typer/tsconfig.json` gains `allowJs`.** The test imports the script's helpers, which are plain
     ESM because the script is `node`-only; without it `tsc --noEmit` cannot see the module. `checkJs` stays off, so
     nothing else changes.
 16. **The authoring output directory is `packages/vibe-typer/authoring/`,** beside the levers it will feed, and it is
     created on demand. It holds no file today because `run` has not been run.
+17. **One run stamp per invocation, not per day.** Every file a `run` writes shares `<date>-<hhmmssmmm>`, so a second
+    dry run on the same day sits beside the first instead of on top of it. The candidates a run threw away are the
+    thing somebody reads afterwards to decide whether the prompt moved in the right direction; overwriting them
+    loses the comparison the dry run exists for.
+18. **A candidate the shaping cannot place is counted, never discarded.** `groupCandidates` returns
+    `{ groups, dropped }` and tallies `surplus`: a key nobody asked about, a row past the last key, or the remainder
+    of a flat array longer than the keys but not `keys.length × 3`. A silent discard is a line the Director paid for
+    and never saw.
+19. **The parser tries every bracket, not only the first.** A preamble can carry one of its own ("Here are the lines
+    [one per piece]:"), which the first draft would have tried to parse and then given up on. Each balanced span is
+    tried in order and the first that parses and holds at least one string wins; a value that parses but holds no
+    string — a bare `[1, 2]` in a preamble — is kept only as the fallback. Both shapes are tested.
+
+## The Kimi review of this diff
+
+No halt, four changes, all applied in the second commit, with `main` merged in the same commit.
+
+| #   | The reviewer's finding                                                                   | What changed                                                                                                         |
+| --- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 1   | `keepFirstPassing` trimmed a candidate before gating, editing a padded line into passing | The trim is gone and `trimmed` with it; `padded` is a drop reason like any other. Decision 6 is rewritten above.     |
+| 2   | `groupCandidates` silently discarded surplus candidates from a flat array                | It returns `{ groups, dropped }` and tallies `surplus`; `askSlot` merges that into the slot's drops. Decision 18.    |
+| 3   | The parser was untested against a preamble carrying a bracket                            | It was also broken there. It now walks every balanced span; five parser tests cover it. Decision 19.                 |
+| 4   | Dry-run filenames used only the date, so a second run the same day overwrote the first   | One `<date>-<hhmmssmmm>` stamp per invocation, carried in every file the run writes and in the receipt. Decision 17. |
+
+The merge brought sub-slice A's `src/spelling.ts` and sub-slice B part two's data contract and gate change. Two
+things follow from it: the script's own British list is deleted in favor of the package's `britishHit`, bundled from
+the barrel beside `lineFault` (Decision 14, and the gate section above); and the two findings this sub-slice raised
+are closed by `FORM_FORBIDDEN` and `'not ascii'` in `lineFault`, which is recorded where they were raised.
 
 ## Verification
 
 - `pnpm -F @mcp-arcade-cabinets/vibe-typer typecheck` — clean. `pnpm typecheck` across the workspace — clean.
-- `pnpm test` — 503 tests in 45 files, green. `packages/vibe-typer/test/author.test.ts` is 39 of them and holds
-  `parseCandidates`, `groupCandidates`, `britishHit`, the composed gate, `keepFirstPassing`, `mergeDropped`,
-  `promptHash`, `sampleSnippets`, `productPhrase`, `corpusTopics` and `chunk`. No test touches the network.
+- `pnpm test` — green, `packages/vibe-typer/test/author.test.ts` 43 of them, holding `parseCandidates`,
+  `groupCandidates`, the composed gate, `keepFirstPassing`, `mergeDropped`, `promptHash`, `sampleSnippets`,
+  `productPhrase`, `corpusTopics` and `chunk`. No test touches the network. The spelling list has its own test
+  (`test/spelling.test.ts`, from sub-slice A) and is no longer tested twice.
 - `pnpm lint` — eslint and prettier clean over the whole repo.
 - `node scripts/author.mjs --help` prints the usage and exits zero; an unknown command, an unknown flag, an unknown
   slot and an unknown level each exit two with one reason line and the usage, and no stack.
+- The whole `sample` path was smoke-run once after the merge against `mistral-large-3:675b-cloud`, writing outside
+  the repo, to prove the barrel bundle, the injected gate and the rendering still work end to end. It kept 39 of 40
+  and drew `not ascii` as a drop reason, which is the merged gate doing its new job. Its output was deleted; the
+  committed sample stands as the Director's read.
 - `pnpm verify` end to end and `pnpm build:play` were not run; this branch changes no game code.
 
 ## What this leaves for the rest of sub-slice B
@@ -245,8 +293,6 @@ Where the brief was silent, the choice and the reason.
 1. **The Director picks a model** from `docs/vibe-typer.author-sample.md` and the pick, the id, the prompt hash and
    the date go into `docs/vibe-typer.slice3.md`.
 2. **Then the full run**, slot by slot, dry first (`run --only stories`, read the candidates, then `--apply`).
-3. **Two gate questions settle before that run:** the plural of a barred word, and the curly apostrophe. Both belong
-   to `patterns.ts`, which the sim sub-slice owns.
-4. **The nag mechanic in the sim**, the loader for `ask`, `story`, `snippets`, `nags`, `nagReplies`,
-   `reactionsByTopic` and `reviewsByProduct`, and the band bars for the nag count — the sibling sub-slice, against
-   the schema written out above.
+3. **The nag mechanic in the sim**, the loader for `ask`, `story`, `snippets`, `nags`, `nagReplies`,
+   `reactionsByTopic` and `reviewsByProduct`, and the band bars for the nag count — landed on `main` as sub-slice B
+   part two while this branch was open, against the schema written out above.

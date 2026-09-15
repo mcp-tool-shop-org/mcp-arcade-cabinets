@@ -149,13 +149,14 @@ function parseArgv(argv) {
 // The package's own gate, bundled in process so this script never copies it.
 // ---------------------------------------------------------------------------
 
-/** Bundle `src/patterns.ts` and `src/lines.ts` with esbuild and import them. */
+/**
+ * Bundle the package's barrel with esbuild and import it, so `lineFault` and
+ * `britishHit` are the game's own and not a copy that drifts from them.
+ */
 async function loadPackage() {
   const dir = path.join(os.tmpdir(), `vibe-author-${process.pid}`);
   mkdirSync(dir, { recursive: true });
-  const entry =
-    "export { lineFault, MAX_WORDS, VOICE_FORBIDDEN, MODEL_FORBIDDEN } from './packages/vibe-typer/src/patterns.ts';\n" +
-    "export { fill, safeTitle } from './packages/vibe-typer/src/lines.ts';\n";
+  const entry = "export * from './packages/vibe-typer/src/index.ts';\n";
   let out;
   try {
     const r = await build({
@@ -645,7 +646,6 @@ async function askSlot(target, user, keys, gate, opts) {
     requested: keys.length * CANDIDATES_PER_SLOT,
     kept: 0,
     dropped: {},
-    trimmed: 0,
     missing: 0,
     ms: 0,
     tokens: { in: 0, out: 0 },
@@ -675,13 +675,14 @@ async function askSlot(target, user, keys, gate, opts) {
     return { ...base, error: err.message };
   }
   base.raw = parsed;
-  const grouped = groupCandidates(parsed, keys, CANDIDATES_PER_SLOT);
+  const { groups, dropped: shapeDropped } = groupCandidates(parsed, keys, CANDIDATES_PER_SLOT);
+  // A line the shaping could not place is a drop like any other, under `surplus`.
+  mergeDropped(base.dropped, shapeDropped);
   for (const key of keys) {
-    const list = grouped.get(key) ?? [];
+    const list = groups.get(key) ?? [];
     if (list.length === 0) base.missing += 1;
-    const { kept, dropped, alternates, trimmed } = keepFirstPassing(list, gate);
+    const { kept, dropped, alternates } = keepFirstPassing(list, gate);
     mergeDropped(base.dropped, dropped);
-    base.trimmed += trimmed;
     base.lines[key] = kept;
     base.alternates[key] = alternates;
     if (kept !== null) base.kept += 1;
@@ -817,7 +818,6 @@ function emptySlot(opts) {
     requested: 0,
     kept: 0,
     dropped: {},
-    trimmed: 0,
     missing: 0,
     ms: 0,
     tokens: { in: 0, out: 0 },
@@ -845,6 +845,19 @@ function today() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/**
+ * The stamp every file of one `run` shares: the date and the time of day to the
+ * millisecond. A second dry run on the same day has to sit beside the first,
+ * not on top of it — the candidates a run threw away are the thing somebody
+ * reads afterwards to decide whether the prompt moved in the right direction.
+ */
+function runStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  const ms = String(d.getMilliseconds()).padStart(3, '0');
+  return `${today()}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}${ms}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1120,8 +1133,12 @@ async function commandRun(args, gates) {
     reviews: slotReviews,
     pools: slotPools,
   };
+  // One stamp for every file this invocation writes, so a second run on the
+  // same day sits beside the first instead of on top of it.
+  const stamp = runStamp();
   const receipt = {
     date: today(),
+    stamp,
     model: target.spec,
     route: target.route,
     temperature: opts.temperature,
@@ -1135,15 +1152,16 @@ async function commandRun(args, gates) {
     if (apply) {
       result.apply();
     } else {
-      writeJson(path.join(AUTHORING, `${today()}-${name}.json`), {
+      writeJson(path.join(AUTHORING, `${stamp}-${name}.json`), {
         model: target.spec,
         date: today(),
+        stamp,
         report: result.report,
         candidates: result.candidates,
       });
     }
   }
-  writeJson(path.join(AUTHORING, `${today()}-run.json`), receipt);
+  writeJson(path.join(AUTHORING, `${stamp}-run.json`), receipt);
   if (apply) {
     saveLevers(ctx);
     prettier([...ctx.touched]);
@@ -1184,7 +1202,6 @@ function emptyReport(target, opts) {
     requested: 0,
     kept: 0,
     missing: 0,
-    trimmed: 0,
     dropped: {},
     ms: 0,
     tokens: { in: 0, out: 0 },
@@ -1198,7 +1215,6 @@ function foldSlot(report, slot) {
   report.requested += slot.requested;
   report.kept += slot.kept;
   report.missing += slot.missing;
-  report.trimmed += slot.trimmed;
   report.ms += slot.ms;
   report.tokens.in += slot.tokens?.in ?? 0;
   report.tokens.out += slot.tokens?.out ?? 0;
@@ -1240,9 +1256,8 @@ async function slotStories(ctx) {
     let clean = true;
     for (const id of picks) {
       const list = Array.isArray(raw?.asks?.[id]) ? raw.asks[id] : [];
-      const { kept, dropped, trimmed } = keepFirstPassing(list, ctx.gates.ask);
+      const { kept, dropped } = keepFirstPassing(list, ctx.gates.ask);
       mergeDropped(report.dropped, dropped);
-      report.trimmed += trimmed;
       report.requested += list.length;
       if (kept === null) {
         clean = false;
@@ -1497,9 +1512,9 @@ async function main() {
   }
   const pkg = await loadPackage();
   const gates = {
-    line: makeGate(pkg.lineFault),
-    ask: makeGate(pkg.lineFault, { maxWords: ASK_WORDS }),
-    sync: makeGate(pkg.lineFault, { maxWords: SYNC_WORDS }),
+    line: makeGate(pkg.lineFault, pkg.britishHit),
+    ask: makeGate(pkg.lineFault, pkg.britishHit, { maxWords: ASK_WORDS }),
+    sync: makeGate(pkg.lineFault, pkg.britishHit, { maxWords: SYNC_WORDS }),
   };
   if (command === 'sample') await commandSample(args, gates);
   else await commandRun(args, gates);

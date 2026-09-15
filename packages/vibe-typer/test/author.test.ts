@@ -6,7 +6,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  britishHit,
   chunk,
   corpusTopics,
   groupCandidates,
@@ -20,10 +19,13 @@ import {
   stripFences,
 } from '../scripts/author-lib.mjs';
 import { lineFault } from '../src/patterns';
+import { britishHit } from '../src/spelling';
 import { DEFAULT_CORPUS } from '../src/corpus';
 
-const gate = makeGate(lineFault);
-const askGate = makeGate(lineFault, { maxWords: 10 });
+// The script injects both halves of the gate from the bundled package, so the
+// test composes it the same way rather than from a copy of either list.
+const gate = makeGate(lineFault, britishHit);
+const askGate = makeGate(lineFault, britishHit, { maxWords: 10 });
 
 describe('parseCandidates', () => {
   it('reads a bare JSON array', () => {
@@ -37,6 +39,18 @@ describe('parseCandidates', () => {
 
   it('reads through a preamble and a sign-off', () => {
     const text = 'Sure, here you go:\n\n[["one"], ["two"]]\n\nHope that helps.';
+    expect(parseCandidates(text)).toEqual([['one'], ['two']]);
+  });
+
+  it('takes the first balanced value when the preamble carries a bracket', () => {
+    const text = 'Here are the lines [one per piece]:\n\n{"a": ["one", "two"]}\n';
+    // The preamble's own bracket is the first one, so the parser has to start
+    // there, fail to find anything usable, and go on to the real value.
+    expect(parseCandidates(text)).toEqual({ a: ['one', 'two'] });
+  });
+
+  it('takes an array that follows a bracketed preamble', () => {
+    const text = 'Notes [read these first]: three candidates each.\n[["one"], ["two"]]';
     expect(parseCandidates(text)).toEqual([['one'], ['two']]);
   });
 
@@ -66,61 +80,64 @@ describe('groupCandidates', () => {
 
   it('takes an object keyed by id', () => {
     const got = groupCandidates({ a: ['one', 'two'], b: ['three'] }, keys, 3);
-    expect(got.get('a')).toEqual(['one', 'two']);
-    expect(got.get('b')).toEqual(['three']);
+    expect(got.groups.get('a')).toEqual(['one', 'two']);
+    expect(got.groups.get('b')).toEqual(['three']);
+    expect(got.dropped).toEqual({});
   });
 
   it('takes an array of arrays, in order', () => {
     const got = groupCandidates([['one'], ['two']], keys, 3);
-    expect(got.get('a')).toEqual(['one']);
-    expect(got.get('b')).toEqual(['two']);
+    expect(got.groups.get('a')).toEqual(['one']);
+    expect(got.groups.get('b')).toEqual(['two']);
   });
 
   it('chunks a flat array of the right length', () => {
     const flat = ['a1', 'a2', 'a3', 'b1', 'b2', 'b3'];
     const got = groupCandidates(flat, keys, 3);
-    expect(got.get('a')).toEqual(['a1', 'a2', 'a3']);
-    expect(got.get('b')).toEqual(['b1', 'b2', 'b3']);
+    expect(got.groups.get('a')).toEqual(['a1', 'a2', 'a3']);
+    expect(got.groups.get('b')).toEqual(['b1', 'b2', 'b3']);
+    expect(got.dropped).toEqual({});
   });
 
   it('gives one each when the model wrote one each', () => {
     const got = groupCandidates(['one', 'two'], keys, 3);
-    expect(got.get('a')).toEqual(['one']);
-    expect(got.get('b')).toEqual(['two']);
+    expect(got.groups.get('a')).toEqual(['one']);
+    expect(got.groups.get('b')).toEqual(['two']);
   });
 
   it('leaves a key empty rather than inventing a line', () => {
     const got = groupCandidates({ a: ['one'] }, keys, 3);
-    expect(got.get('b')).toEqual([]);
+    expect(got.groups.get('b')).toEqual([]);
   });
 
   it('ignores a non-string among the candidates', () => {
     const got = groupCandidates({ a: ['one', 7, null] }, keys, 3);
-    expect(got.get('a')).toEqual(['one']);
-  });
-});
-
-describe('britishHit', () => {
-  it('catches the spellings on the list', () => {
-    expect(britishHit('make the colour nicer')).toBe('colour');
-    expect(britishHit('a loyalty programme for the machine')).toBe('programme');
-    expect(britishHit('the folder should feel organised')).toBe('organised');
-    expect(britishHit('whilst you were typing')).toBe('whilst');
-    expect(britishHit('a marvellous little thing')).toBe('marvellous');
-    expect(britishHit('put it in the catalogue')).toBe('catalogue');
+    expect(got.groups.get('a')).toEqual(['one']);
   });
 
-  it('leaves the American words alone', () => {
-    for (const line of [
-      'the logs sound optimistic today',
-      'i love a good parallelism',
-      'the analysis is wonderful',
-      'paint the color a friendly blue',
-      'it is a program that runs',
-      'center the button please',
-    ]) {
-      expect(britishHit(line)).toBeNull();
-    }
+  it('records the surplus of a flat array that fits neither shape', () => {
+    const seven = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+    const got = groupCandidates(seven, keys, 3);
+    expect(got.groups.get('a')).toEqual(['one']);
+    expect(got.groups.get('b')).toEqual(['two']);
+    expect(got.dropped).toEqual({ surplus: 5 });
+  });
+
+  it('records a key nobody asked about', () => {
+    const got = groupCandidates({ a: ['one'], b: ['two'], c: ['three', 'four'] }, keys, 3);
+    expect(got.dropped).toEqual({ surplus: 2 });
+  });
+
+  it('records a row past the last key', () => {
+    const got = groupCandidates([['one'], ['two'], ['three'], ['four']], keys, 3);
+    expect(got.groups.get('b')).toEqual(['two']);
+    expect(got.dropped).toEqual({ surplus: 2 });
+  });
+
+  it('says nothing about a short answer, which the caller counts as missing', () => {
+    const got = groupCandidates(['one'], keys, 3);
+    expect(got.groups.get('b')).toEqual([]);
+    expect(got.dropped).toEqual({});
   });
 });
 
@@ -137,7 +154,7 @@ describe('the gate', () => {
   });
 
   it('names the British spelling it found', () => {
-    expect(gate('make the colour warmer')).toBe('british:colour');
+    expect(gate('make the colour warmer')).toBe('british:colour (write color)');
   });
 
   it('holds asks to the tighter word cap', () => {
@@ -163,7 +180,10 @@ describe('keepFirstPassing', () => {
     );
     expect(got.kept).toBe('make it duck shaped');
     expect(got.alternates).toEqual(['one more duck']);
-    expect(got.dropped).toEqual({ 'forbidden word or digit': 1, 'british:colour': 1 });
+    expect(got.dropped).toEqual({
+      'forbidden word or digit': 1,
+      'british:colour (write color)': 1,
+    });
   });
 
   it('keeps nothing when nothing passes', () => {
@@ -172,10 +192,10 @@ describe('keepFirstPassing', () => {
     expect(got.dropped).toEqual({ 'forbidden word or digit': 1, yells: 1 });
   });
 
-  it('strips the transport whitespace and says how often', () => {
-    const got = keepFirstPassing(['  make it duck shaped  '], gate);
+  it('drops a padded line rather than trimming it into passing', () => {
+    const got = keepFirstPassing(['  make it duck shaped  ', 'make it duck shaped'], gate);
     expect(got.kept).toBe('make it duck shaped');
-    expect(got.trimmed).toBe(1);
+    expect(got.dropped).toEqual({ padded: 1 });
   });
 
   it('counts an answer that was not a line at all', () => {
