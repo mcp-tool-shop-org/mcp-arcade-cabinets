@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Vibe Typer, slice 1: the package** (`packages/vibe-typer`, private). A second cabinet, headless only: a seeded sim (`createRun` / `stepRun`), the corpus ported from dev-op-typer (249 snippets, six stacks, seven bands, with teaching notes) plus an integration stack built from tape headers and rows, a deterministic difficulty formula (surprisal, bigram travel, length, punctuation, identifier and bracket weight), the scoreboard (valuation, vibes, streak, milestones, Copilot), the context timer (compaction in levels, the end in endless and hardcore), authored user and agent lines behind the same word gate as `voice.json`, three bots and a band of sixteen bars, and `pnpm test:play vibe-typer` in `verify`. Design, research and the lock G23–G30 in `docs/vibe-typer.dispatch.md`; the build in `docs/vibe-typer.slice1.md`. No shell yet; that is slice 2.
+- **The README is the arcade's entrance.** Ghost on the Menu's page moved to `packages/ghost-on-the-menu/README.md`; the repo logo is the cabinet render; repo description and topics follow.
+
 Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the GHCR `0.8.x` image and the README Docker tag that follows it.
 
 ## [0.8.2] - 2026-09-14
