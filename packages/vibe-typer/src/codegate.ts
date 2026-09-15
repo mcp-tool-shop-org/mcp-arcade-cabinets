@@ -20,6 +20,7 @@ import type { Corpus } from './corpus';
 import { value as valueOf } from './difficulty';
 import { lineFault, MODEL_FORBIDDEN, type DifficultySet } from './patterns';
 import { hashString } from './seed';
+import { britishHit } from './spelling';
 import type { Band, Snippet, Stack } from './types';
 
 // The bounds the Director owns. // Director
@@ -302,6 +303,19 @@ function words(line: string): number {
  */
 const TEXT_NOT_ASCII = /[^\x20-\x7e]/;
 
+/**
+ * The chat gate plus the spelling rule. A seated model writes in whatever
+ * English it was raised on; the field is American (sub-slice A), and the
+ * levers are tested for it, so the seat's lines are held to the same word
+ * list here (the review's third change). The reason is the spelling hit.
+ */
+function textFault(line: string): string | null {
+  const fault = lineFault(line);
+  if (fault !== null) return fault;
+  const british = britishHit(line);
+  return british === null ? null : `spelling: ${british}`;
+}
+
 function shapeOf(candidate: unknown): SeatRequest | null {
   if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) return null;
   const o = candidate as Record<string, unknown>;
@@ -363,6 +377,9 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   const range = bandRange(ctx.corpus, ctx.set, ctx.stack, ctx.bandMin, ctx.bandMax);
   if (!range) return refuse('value-out-of-band', 'no band in the corpus');
   const v = valueOf(snippet, ctx.corpus.model, ctx.set);
+  // Every comparison with NaN is false, so a value that is not a number would
+  // sail through the range test (the review's second change).
+  if (!Number.isFinite(v)) return refuse('value-out-of-band', 'not a number');
   const low = range.min * (1 - ctx.tolerance);
   const high = range.max * (1 + ctx.tolerance);
   if (v < low || v > high) return refuse('value-out-of-band', v < low ? 'under' : 'over');
@@ -380,20 +397,20 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   // these run first only so the reason is the specific one rather than
   // whichever word rule the line also happens to break.
   if (TEXT_NOT_ASCII.test(seat.ask)) return refuse('bad-ask', 'not ascii');
-  const askFault = lineFault(askText);
+  const askFault = textFault(askText);
   if (askFault !== null) return refuse('bad-ask', askFault);
   if (TEXT_NOT_ASCII.test(seat.title)) return refuse('bad-title', 'not ascii');
-  const titleFault = lineFault(seat.title);
+  const titleFault = textFault(seat.title);
   if (titleFault !== null) return refuse('bad-title', titleFault);
   if (seat.notes.length > MAX_NOTES) return refuse('bad-notes', 'too many');
   for (const note of seat.notes) {
     if (TEXT_NOT_ASCII.test(note)) return refuse('bad-notes', 'not ascii');
-    const fault = lineFault(note);
+    const fault = textFault(note);
     if (fault !== null) return refuse('bad-notes', fault);
   }
   if (seat.product !== undefined) {
     if (TEXT_NOT_ASCII.test(seat.product)) return refuse('bad-product', 'not ascii');
-    const fault = lineFault(seat.product);
+    const fault = textFault(seat.product);
     if (fault !== null) return refuse('bad-product', fault);
     if (words(seat.product) > MAX_PRODUCT_WORDS) return refuse('bad-product', 'too many words');
     return { ok: true, snippet, product: seat.product };

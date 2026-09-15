@@ -195,6 +195,23 @@ describe('the code gate refuses, one reason at a time', () => {
     ).toBe('bad-product');
   });
 
+  it('refuses a British spelling in any text field, with the word in the detail', () => {
+    // The review's third change: the seat writes in whatever English it was
+    // raised on; the field is American.
+    const r = gateCode(candidate({ ask: 'can {product} pick a colour' }), ctx('python', 1));
+    expect(reasonOf(r)).toBe('bad-ask');
+    if (!r.ok) expect(r.detail).toContain('colour');
+    expect(reasonOf(gateCode(candidate({ title: 'favourite fare' }), ctx('python', 1)))).toBe(
+      'bad-title',
+    );
+    expect(
+      reasonOf(gateCode(candidate({ notes: ['it is organised by name'] }), ctx('python', 1))),
+    ).toBe('bad-notes');
+    expect(
+      reasonOf(gateCode(candidate({ product: 'a loyalty programme for ducks' }), ctx('python', 1))),
+    ).toBe('bad-product');
+  });
+
   it('refuses a title that cannot be said', () => {
     expect(reasonOf(gateCode(candidate({ title: 'the 2nd total' }), ctx('python', 1)))).toBe(
       'bad-title',
