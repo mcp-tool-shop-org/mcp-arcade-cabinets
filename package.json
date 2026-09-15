@@ -2,7 +2,7 @@
   "name": "mcp-arcade-cabinets",
   "version": "0.8.2",
   "private": true,
-  "description": "Ghost on the Menu: an arcade shooter where you are the agent, working through what MCP servers said on the wire. Reads mcp-arcade tapes and never touches the score.",
+  "description": "The arcade: games made from what MCP servers said on the wire. Cabinets read mcp-arcade tapes and never touch the score. Ghost on the Menu (shipped), Vibe Typer (in build).",
   "license": "MIT",
   "packageManager": "pnpm@11.4.0",
   "engines": {

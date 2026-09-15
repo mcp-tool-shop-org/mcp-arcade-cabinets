@@ -3,74 +3,73 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="Ghost on the Menu" width="400" />
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="mcp-arcade-cabinets" width="400" />
 </p>
 
 <p align="center">
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml"><img src="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp-tool-shop-org/mcp-arcade-cabinets" alt="License: MIT" /></a>
-  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
 </p>
 
 <p align="center">
-  <strong>You are the agent. The rig hands you the calls.</strong>
+  <strong>Arcade games made from what MCP servers said on the wire.</strong>
 </p>
 
-**Ghost on the Menu** is a short retro shooter made from what MCP servers said on the wire. You are the model, sent down into the guts of the rig with a task list. Every call is a recorded bout between an MCP server and an agent, and it plays out above your ship as waves: the handshake, the menu, the calls, the answers coming back, and a boss that is the experiment itself.
+**mcp-arcade-cabinets** is the arcade. Each cabinet is a small game built on the same chassis: it reads **tapes**, the recordings that [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) keeps of a bout between an MCP server and an agent, and turns them into something you can play. A cabinet never talks to a server, never loads a receipt, and never keeps a score the instrument could see. You are always the model; the games differ in what the rig asks of you.
 
-Somewhere in there are the calls the agent should not have made. They look like everything else until you hit one. Then it is yours for the rest of the round.
+[Play in the browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)
 
-[Play it in the browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [How to read a round](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+## The cabinets
 
-## Take a shift
+| Cabinet                                                       | What it is                                                                                                                                                                                                                    | State                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | A short retro shooter. The rig hands you the calls; the calls the agent should not have made are hiding among the honest ones and reveal on the hit. Bosses are the experiment, and a local model can sit in them.            | Shipped, `v0.8.2`. [Play](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **Vibe Typer**                                                | A typing arcade game. You are a hard-working, sycophantic coding agent; your user is a vibe coder whose requests are absurd. Type the code, watch the thing get built, and the valuation rolls up. Levels, endless, hardcore. | In build. Design and lock in [`docs/vibe-typer.dispatch.md`](docs/vibe-typer.dispatch.md).                                                                                                                                              |
+| **House Call**                                                | A turn-based calibration game: state a call and a confidence, then the tape reveals what happened.                                                                                                                            | Parked until there is a design that plays. `tape-core` keeps its scoring rules.                                                                                                                                                         |
 
-Press **Shift** and the rig hands you four calls in a row, drawn from the roster and never the same four twice running. Each one is a server the agent was sent to, and each call is a different room: pressure, area-deny, a rest, then a peak. A card between them names the next server, the policy, the tools the agent was asked to run, and the fight in words — a steel handshake, a shelf across the lane, a rest between peaks, an ochre catalog wall. The lamps refill at every call. The fire still climbs call by call; the climb is heat, not a new story.
+More cabinets will land here. Each one gets its own package, its own page in the handbook, and its own row in this table.
 
-At the end the shift has a name of four words, like `frost robin chalk garden`. Type it on the menu to take the same shift again, or hand it to someone. No digit, no count, no ranking: a shift is a task list, not a scoreboard.
+## What every cabinet shares
 
-Or pick one tape from the list and play it alone. Each is labelled fixture, seat or live; hover **i** for why. Seat is the default fight. Live is meant to be survived. Hardcore is the fourth rung, from the selector only.
+- **Tapes in, nothing out.** `packages/tape-core` loads `mcp-arcade.tape/v1`, rejects anything that carries a score or a verdict, and hands the game header words, wire rows and one closed fact per atom. Twenty recordings ship in `fixtures/tapes/`.
+- **A headless sim and a thin shell.** Every game is a pure, seeded simulation with a scripted play-through and a fairness band that fails the build. `apps/cabinets` is the browser shell that mounts them and is what Pages serves at `/play/`.
+- **Data levers, not code.** Waves, voices, difficulty, lines: JSON under each package's `patterns/`, validated at load, so the game is tuned without a rebuild.
+- **A seat for a model, behind a gate.** A local or cloud model can sit in a cabinet (a boss in Ghost, the user in Vibe Typer's endless mode). It only ever fills a lever from a closed set, every line it writes passes a word gate, and nothing on the field names it. A cabinet can also run as an MCP server over stdio, so an agent can be the one playing.
+- **A voice.** A host-side worker (`voice/`) speaks the lines a gate admitted, receipted by [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) before they play.
 
-## How it plays
+The full account is in the handbook's [architecture](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/architecture/) and [security](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/security/) pages.
 
-A **tape** is a recording of one bout. This game only reads tapes. It never talks to a server, never keeps a score, and never tells you who won.
+## Layout
 
-- **Three lamps.** A boss shot or a diving formation puts one out. Catch a lamp that falls **straight down** from a downed boss to relight one. You have to move under it. All out ends the round.
-- **Spread.** Clear a formation and a spread falls straight down. Catch it and your fire fans for a few seconds.
-- **Bosses are the experiment, not the accusation.** The Whisperer, the Menu and the Doorman show up for their wave whether or not anything went wrong. On a shift, inspect closes with the Archivist (a catalog wall). They mutter like an agent thinking out loud. Hardcore is one lamp and rage from the first shot.
-- **Parallelism bursts.** Seat, live and hardcore get bursts that multiply the field with honest copies and heat the fire, and the music speeds up under them. They start short and climb wave by wave, and across a shift call by call. The climb is data, tuned on a band of scripted players, never on you.
-- **The tells are in the sequence.** A lie never looks, moves or arrives differently from its honest twin. What gives it away is where it sits: an extra formation, a second menu, a singleton right after the menu. On a shift, extra hulls can join the room — a darting probe, a shelf across the lane, a stacked ledger — still sharing their honest twin until you hit them.
-- **The music** follows the card, but a song gets one loop (about half a minute) before it gives way. Poison still wants poison; the Whisperer still wants the Whisperer. Beds sit under the shots and the catch; mute still kills everything together. A shift carries the music through its cards.
-- **The end scene** names the tape, the server and the policy. Caught lies sit as trophies. Escaped ones sit in their honest paint. No score, no count, no digit.
-
-## The boss can be a model
-
-Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), `speak`, and read-only `view` and `tapes`. It may also queue the next few legal verbs off the beat; a hung answer is the script, never a stall. The picker writes a closed library line after fire. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it. The published site has no daemon, so it omits the Ollama and Voice chrome.
-
-With a voice worker running, every boss speaks: its authored line when it arrives, and the lines the model writes. Every take is heard back by a speech recogniser and receipted by [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) before it plays, so the words spoken are the words the gate admitted, no invented speech, no hole. A take that fails its receipt stays silent.
-
-The cabinet is itself an MCP server over stdio, with the same six tools, so the instrument can play the Ghost's own menu; four of the recordings in the repo are the cabinet recording itself. It ships as a Docker image too:
-
-```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
+```
+packages/tape-core          the tape loader, schema and calibration math
+packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
+packages/vibe-typer         the typing game (in build)
+packages/house-call         parked
+packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx play mode and --mcp
+apps/cabinets               the browser shell, served by Pages at /play/
+fixtures/tapes              twenty recordings, tape JSON only
+docs/                       one dispatch (research + lock) and one review per slice
+site/                       the landing page and the Starlight handbook
+voice/                      the Kokoro voice worker and its compose file
+catalog/                    the Docker MCP Catalog entry
 ```
 
-One bundled file on `node:22-alpine` with the tool contract and the tapes baked in; it lists its tools within a fraction of a second under one CPU and two gigabytes and needs no network to play. An optional read-only volume can overlay extra operator tapes beside those twenty. The Catalog listing is silent (network off, no voice in the image). The Docker MCP Catalog entry is drafted under `catalog/`. Host-only compose for a local image lives at `voice/compose.host.yaml`.
+## Play
 
-## Controls
+In the browser: [`/play/`](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/). The published page has no daemon, so the model and voice seats are absent there.
 
-Left and right (or A and D) to move, space to fire, F for full screen. Click the field to replay the same tape. Next tape walks the list; in a shift, Next call takes the next card. Sound starts on the first key or click; mute, three feel presets and a shake-off toggle sit under the field. Difficulty sits on the Play row (hardcore is one lamp and falling plates). Locally, **Ollama bosses** and **Voice** sit beside them, with a model picker and words that say what each seat is doing. The published `/play/` page is the field, Sound, feel, shake and difficulty only.
-
-## Play it locally
-
-One command, nothing to clone:
+Locally, with the seats lit, nothing to clone:
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-That serves the cabinet on `127.0.0.1` and opens it. Unlike the published page, this one can reach an Ollama daemon and a voice worker on your own machine, so the seats light up. `--mcp` runs the same cabinet as an MCP server over stdio instead, for an agent to play it; `--help` lists the rest. Node 22 or newer, and nothing else.
+That serves the shell on `127.0.0.1` and opens it; `--mcp` runs the cabinet as an MCP server over stdio instead. Node 22 or newer. One package publishes to npm and it is that one; every other package here is private.
 
-To work on it, clone it — you need Node 22 and pnpm 11:
+To work on the arcade, clone it. You need Node 22 and pnpm 11:
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git
@@ -79,14 +78,16 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Open the address Vite prints. Twenty recordings ship in the repo, exported from [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), the instrument that talks to the server and keeps the tape.
+`pnpm verify` is the gate: lint, types, tests, build and every cabinet's scripted play-through. For the model seat, run an Ollama daemon on the same machine; for the voice, see [`voice/`](voice/) and `pnpm voice`.
 
-For the boss seat, run an Ollama daemon on the same machine and tick **Ollama bosses**. For the voice, make a Python 3.12 venv at `.venv` with `kokoro-onnx`, `faster-whisper` and `fx-dub`, point `KOKORO_DIR` at the Kokoro ONNX weights, and run `pnpm voice` in a second terminal; the **Voice** box enables when the worker answers. Neither is needed to play; the published site has neither.
+To play your own server, record a bout with mcp-arcade, then `mcp-arcade tape receipt.json -o your.tape.json` and drop it beside the fixtures. The container takes a read-only volume of tapes the same way.
 
-To record your own server and play that tape, run a bout over there, then `mcp-arcade tape receipt.json -o your.tape.json`.
+## Adding a cabinet
+
+A new game starts as a dispatch in `docs/`: the research grounding, the lock it inherits and extends, its data levers and its slices. Then a package that follows the shape above, a mount in `apps/cabinets`, a row in the table here, and a page in the handbook. The version stays `0.x` until the Director says otherwise, and no second package goes to npm without the same word.
 
 ## More
 
-The [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) is the rest of the manual: the shift, the tells, the bosses, the difficulties, the cabinet server and its tools, and how the game is put together. What shipped, and when, is in the [changelog](CHANGELOG.md). What the game touches is in [SECURITY.md](SECURITY.md).
+What shipped, and when, is in the [changelog](CHANGELOG.md). What the games touch is in [SECURITY.md](SECURITY.md).
 
 MIT. Built by [MCP Tool Shop](https://mcp-tool-shop.github.io/).
