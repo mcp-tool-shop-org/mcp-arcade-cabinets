@@ -72,20 +72,29 @@ Every irreversible call, its undo, and what the undo leaves behind.
 - **`NPM_TOKEN`.** Trusted Publishing or nothing. There is no long-lived registry credential in this repo.
 - **1.0.0.** npm takes `0.x` and `0.x` is true. The cabinet lock is unchanged.
 
-## Trusted Publishing (done, 2026-09-14)
+## Trusted Publishing, and the 404 that fooled a session
 
-Configured by the Director on `@mcptoolshop/ghost-on-the-menu`: repo `mcp-tool-shop-org/mcp-arcade-cabinets`, workflow `release.yml`, **no environment**, permissions `npm publish` + `npm stage publish`.
+**Shipped 2026-09-14.** `@mcptoolshop/ghost-on-the-menu@0.8.0`, published by CI over OIDC — `_npmUser: "GitHub Actions"`, provenance attested, sigstore log index 2837055244, 63 files, 6.0 MB packed. TP is configured against repo `mcp-tool-shop-org/mcp-arcade-cabinets`, workflow `release.yml`, **no environment**.
 
-It was configured on a name with **zero published versions**, and the registry still 404s it. That is worth recording, because this doc said the opposite in an earlier draft. The correction and its correction:
+**The placeholder was required, and this doc claimed twice that it was not.** The record, because the failure mode is reusable:
 
-- The **npmjs.com web UI** accepts a trusted publisher on an unpublished name. Directly observed here, and on `@ai-rpg-engine/ledger-adapter` in July.
-- The **`npm trust` CLI** does not — _"The package you're configuring must already exist on the npm registry"_ — and [npm/cli#8544](https://github.com/npm/cli/issues/8544) is open. Both true, both about a different surface.
-- Reasoning from the CLI docs to the UI is what produced the wrong draft. Two different surfaces, two different rules.
+| Event                                                                       | Time (UTC)    |
+| --------------------------------------------------------------------------- | ------------- |
+| Placeholder `0.0.0` published by the Director                               | **00:09:22Z** |
+| `curl registry.npmjs.org/...` → **404**, read as "the name has no versions" | 00:11:17Z     |
+| Concluded from that 404 that npm allows TP on an unpublished name           | —             |
+| `v0.8.0` published by CI via OIDC                                           | 00:22:23Z     |
 
-**What is still unproven:** whether the first OIDC publish _creates_ the package. This release is the test. A `0.0.0` placeholder is staged and unpublished at `E:/AI/ghost-on-the-menu-placeholder/` as the fallback if the publish returns `E404`.
+The 404 arrived **115 seconds after** the placeholder publish. `registry.npmjs.org` lags npmjs.com by a couple of minutes, and npm's own publish output says so — _"Your package is being processed and may take a few minutes to become available."_ The package existed the entire time.
 
-**The filename is pinned twice.** `release.yml` is the org convention for the TP-configured workflow, and npm ties the trust to it. Renaming it breaks publishing until the trust is re-pointed.
+So the order is: **publish a placeholder, then configure TP.** npm has no equivalent of PyPI's pending publishers; `npm trust` states the requirement outright and [npm/cli#8544](https://github.com/npm/cli/issues/8544) is open.
 
-**The environment must match on both sides — or be absent from both.** GitHub's OIDC subject claim gains an `:environment:<name>` segment when a job declares one. npm's field is optional and its docs do not say what a mismatch does. This workflow originally declared `environment: npm` against a TP config that named none; the `environment:` key was removed rather than guessing. If you ever want one for deployment protection, add it on npmjs.com in the same sitting.
+Three rules came out of it, and they are in the canonical `npm-placeholder-bootstrap` playbook now:
 
-**After the first successful CI publish**, flip "Require 2FA and disallow tokens" — not before, that is a lockout.
+- A registry 404 is not proof a name is unpublished. `npm view <pkg> time --json` is authoritative; a 404 is not.
+- The website, the registry API and the CLI are three surfaces with three consistency guarantees. Do not reason from one to another.
+- If the workflow job declares an `environment:`, npm's trusted publisher must name the same one — GitHub's OIDC subject claim gains an `:environment:<name>` segment. This workflow originally declared `environment: npm` against a TP config naming none; the key was removed rather than guessed at. Caught before the release.
+
+**The filename is pinned twice.** `release.yml` is the org convention and npm ties the trust to it. Renaming it breaks publishing until the trust is re-pointed.
+
+**Still owed:** flip "Require 2FA and disallow tokens" on the access page now that a CI publish has succeeded, and `npm deprecate @mcptoolshop/ghost-on-the-menu@0.0.0 "placeholder"`.
