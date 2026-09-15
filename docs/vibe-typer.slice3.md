@@ -243,3 +243,40 @@ Where the brief was silent, the choice and the reason.
 - The `vibe-typer` play-through at `--tier 0 --bot typist:40` is **byte-identical** to the baseline taken
   before any edit: level `cat-website`, seed 1, valuation 96, four pieces, no compaction. The renamed coffee
   level is level five and this run plays level zero.
+
+## Where slice 3 stands (the coordinator, 2026-09-15, after the four merges)
+
+Sub-slices A, B part one, B part two and C are on `main`, each merged from its own branch after a Kimi K2.6
+review from a packet, with `pnpm verify`, `pnpm build:play` and the identity scan green before every push.
+Their sections live beside this file rather than inside it, because three builders wrote them in parallel:
+
+| Sub-slice | What landed                                                                                                       | Section                        | Review                               |
+| --------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------ |
+| A         | American English with a test, the settings row and `--vibe-font`, beat words in `cabinet.json`                    | above                          | `docs/vibe-typer.slice3a.review.md`  |
+| B, one    | `author.mjs`, the offline authoring script, and the forty-line sample from three writing models                   | `docs/vibe-typer.slice3.b1.md` | `docs/vibe-typer.slice3b1.review.md` |
+| B, two    | Per-snippet asks, story levels with pinned snippets, reactions by topic, reviews by product, the nag mechanic     | `docs/vibe-typer.slice3.b2.md` | `docs/vibe-typer.slice3b2.review.md` |
+| C         | The code gate, `feedRequests`, `/cabinet/endless` on both node sides, the seat in the shell, `pnpm sit --cabinet` | `docs/vibe-typer.slice3.c.md`  | `docs/vibe-typer.slice3c.review.md`  |
+
+Two changes landed on `main` between the merges, both from what the sample taught: `lineFault` refuses any
+character off the typed keyboard (`not ascii`) and the inflected forms of Ghost's barred words
+(`FORM_FORBIDDEN`, beside the list that must stay identical to Ghost's). Every review change was applied
+before its merge except one, recorded in the C review as not a bypass.
+
+### The two halts, and what waits behind them
+
+1. **The writing model.** `docs/vibe-typer.author-sample.md` holds the forty lines from `kimi-k2.6:cloud`,
+   `openai/gpt-6-astra` (OpenRouter) and `mistral-large-3:675b-cloud`; `deepseek-v3.1:671b-cloud` answered
+   410 (retired) and is in the receipt only. The pick, the model id, the prompt hash and the date go in the
+   table below before `node packages/vibe-typer/scripts/author.mjs run --model <spec> --apply` is executed.
+   Behind it: the full authoring pass (asks for every snippet, sixteen level stories with pinned snippets,
+   fifty nags and replies, reactions per topic, reviews per product, every pool to three times its size),
+   then sub-slice E (the menu grouped by stack, the endless entry naming its seat, the premise on the standup).
+2. **The art.** Sub-slice D is Comfy MCP spend and waits on a yes per batch; rectangles are the fallback and
+   the cabinet plays on them today.
+
+| Receipt       | Value                                                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| The pick      | _pending the Director's read of the sample_                                                                                           |
+| Model id      | _pending_                                                                                                                             |
+| Prompt hashes | asks `07a941cf…`, nags `c5b3675a…`, reactions `87de735d…` (per-seat for replies; full hashes in `docs/vibe-typer.author-sample.json`) |
+| Date          | sample 2026-09-15; run _pending_                                                                                                      |
