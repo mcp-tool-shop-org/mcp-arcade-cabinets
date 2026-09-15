@@ -24,7 +24,7 @@ Da qualche parte, in questa sequenza, ci sono le comunicazioni che l’agente no
 
 ## Inizia il turno
 
-Premi **Shift** e la struttura ti assegna quattro chiamate consecutive, estratte dalla lista e mai ripetute due volte. Ognuna di esse è un server a cui è stato inviato l'agente. Una scheda tra le chiamate indica il server successivo, la politica che l'agente ha seguito e gli strumenti che gli è stato chiesto di utilizzare. Le lampade si ricaricano a ogni chiamata e il fuoco aumenta di chiamata in chiamata, quindi l'ultima chiamata inizia dove è finita la prima.
+Premi **Shift** e il sistema ti fornirà quattro azioni consecutive, scelte dalla lista e mai le stesse due volte. Ognuna di esse rappresenta un server in cui l'agente è stato inviato, e ogni azione si svolge in una stanza diversa: una situazione di pressione, un'area da difendere, un momento di riposo, quindi un momento di massima intensità. Una carta tra queste indica il server successivo, la strategia, gli strumenti che l'agente deve utilizzare e la descrizione della sfida — una stretta di mano d'acciaio, una barriera che divide la corsia, un momento di riposo tra le fasi di massima intensità, una parete di cataloghi color ocra. Le lampade si ricaricano ad ogni azione. Il fuoco continua a crescere di azione in azione; l'aumento è di intensità, non una nuova storia.
 
 Alla fine, il turno ha un nome composto da quattro parole, come `frost robin chalk garden`. Digitalo nel menu per ripetere lo stesso turno, oppure passalo a qualcun altro. Nessun numero, nessun conteggio, nessuna classifica: un turno è una lista di compiti, non una tabella dei punteggi.
 
@@ -34,35 +34,43 @@ Scegli una registrazione dall'elenco. Ognuna è etichettata come "fissa", "in mo
 
 Una **cassetta** è una registrazione di un singolo combattimento. Questo gioco legge solo le cassette. Non comunica mai con un server, non tiene mai il punteggio e non ti dice mai chi ha vinto.
 
-- **Tre lampade.** Un colpo di boss o una formazione di immersione ne spegne una. Afferra una lampada che cade **direttamente** da un boss abbattuto per riaccenderne una. Devi muoverti sotto di essa. Se tutte si spengono, il round finisce.
-- **Diffusione.** Elimina una formazione e una diffusione cade direttamente. Afferrala e il tuo fuoco si intensificherà per alcuni secondi.
-- **I boss sono l'esperimento, non l'accusa.** Il Sussurratore, il Menu e il Portiere appaiono per la loro ondata, indipendentemente dal fatto che qualcosa sia andato storto o meno. Mormorano come un agente che pensa ad alta voce. La modalità hardcore prevede una sola lampada e rabbia fin dal primo colpo.
-- **Il parallelismo esplode.** Le modalità Seat, Live e Hardcore generano esplosioni che moltiplicano il campo con copie autentiche e intensificano il fuoco, e la musica accelera sotto di esse. Iniziano in modo breve e aumentano di ondata in ondata, e durante un turno di chiamata in chiamata. L'aumento è un dato, calibrato su un gruppo di giocatori predefiniti, mai su di te.
-- **Gli indizi sono nella sequenza.** Una bugia non appare, non si muove e non arriva in modo diverso dalla sua controparte onesta. Ciò che la rivela è dove si trova: una formazione extra, un secondo menu, un elemento singolo subito dopo il menu.
-- **La musica** inizia con una canzone scelta dal seme del round, la mantiene per un paio di minuti, quindi sfuma nella successiva; un boss porta con sé la propria, e un turno trasporta la musica attraverso le sue schede.
-- **La scena finale** indica il nome della registrazione, il server e la politica. Le bugie catturate rimangono come trofei. Quelle sfuggite rimangono nel loro aspetto onesto. Nessun punteggio, nessun conteggio, nessun numero.
+- **Tre lampade.** Un colpo del boss o una formazione di attacco ne spegne una. Afferra una lampada che cade **direttamente** da un boss sconfitto per riaccenderla. Devi muoverti sotto di essa. Se tutte le lampade si spengono, il round termina.
+- **Dispersione.** Elimina una formazione e una dispersione cade direttamente. Afferrala e il tuo fuoco si intensificherà per alcuni secondi.
+- **I boss sono l'esperimento, non l'accusa.** Il Sussurratore, il Menu e il Portiere appaiono per la loro ondata, indipendentemente dal fatto che qualcosa sia andato storto o meno. Durante un turno, l'ispezione si conclude con l'Archivista (una parete di cataloghi). Mormorano come un agente che pensa ad alta voce. La modalità hardcore prevede una sola lampada e furia fin dal primo colpo.
+- **Il parallelismo esplode.** Le modalità Seat, Live e Hardcore generano raffiche che moltiplicano il campo con copie fedeli e intensificano il fuoco, e la musica accelera. Iniziano in modo breve e aumentano di intensità di ondata in ondata, e durante un turno, di azione in azione. L'aumento è di dati, calibrato su un gruppo di giocatori predefiniti, mai su di te.
+- **Gli indizi sono nella sequenza.** Una bugia non appare, non si muove e non arriva in modo diverso dalla sua controparte onesta. Ciò che la rivela è dove si trova: una formazione extra, un secondo menu, un elemento singolo subito dopo il menu. Durante un turno, elementi aggiuntivi possono unirsi alla stanza: una sonda che si muove rapidamente, una barriera che divide la corsia, un registro impilato, ma condividono comunque la loro controparte onesta finché non li colpisci.
+- **La musica** segue la carta, ma una canzone ha un solo ciclo (circa mezz'ora) prima di cambiare. Il veleno vuole ancora il veleno; il Sussurratore vuole ancora il Sussurratore. I letti si trovano sotto i colpi e l'azione di afferrare; il silenzio uccide tutto insieme. Un turno fa proseguire la musica attraverso le sue carte.
+- **La scena finale** indica la traccia, il server e la strategia. Le bugie catturate rimangono come trofei. Quelle sfuggite rimangono nel loro aspetto onesto. Nessun punteggio, nessun conteggio, nessuna cifra.
 
 ## Il boss può essere un modello
 
-Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), `speak`, and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
+Localmente, un modello Ollama, incluso un tag Cloud come `gpt-oss:120b-cloud`, può essere presente nel boss. Non riceve un prompt per agire liberamente. Riceve gli strumenti del sistema: `fire` (un verbo per ogni battuta: un ventaglio, un movimento laterale e un colpo mirato, un respiro trattenuto, nebbia, la piastra), `say` (una sua linea, attraverso un cancello: dodici parole, una frase, nessuna cifra, nessuna parola che indichi un fatto, nessun nome di strumento o modello; una linea rifiutata riproduce una delle linee del boss), `speak` e `view` e `tapes` in sola lettura. Potrebbe anche mettere in coda le prossime azioni legali dopo la battuta; una risposta interrotta è lo script, mai un blocco. Il selezionatore scrive una linea di libreria chiusa dopo il fuoco. Il modello propone; il gioco decide. Non vede quali sprite sono bugie e nulla nel campo lo identifica. Il sito pubblicato non ha un demone, quindi omette il componente Ollama e Voice.
 
 Con un processo di sintesi vocale in esecuzione, ogni boss parla: la frase originale quando arriva e le frasi che il modello scrive. Ogni registrazione viene riascoltata da un sistema di riconoscimento vocale e convalidata da [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) prima di essere riprodotta, in modo che le parole pronunciate siano le parole che il sistema ha accettato, senza invenzioni o errori. Una registrazione che non supera la convalida rimane silenziosa.
 
 Il sistema è esso stesso un server MCP su stdio, con gli stessi sei strumenti, in modo che lo strumento possa riprodurre il menu originale del Ghost; quattro delle registrazioni nel repository sono registrazioni del sistema stesso.
 
 ```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
 ```
 
-Un singolo file compresso su `node:22-alpine` con il contratto degli strumenti e le registrazioni incluse; elenca i suoi strumenti in una frazione di secondo con un singolo processore e due gigabyte e non necessita di una rete per essere eseguito. La voce del catalogo Docker MCP è in fase di bozza sotto `catalog/`.
+Un singolo file compresso su `node:22-alpine` con il contratto degli strumenti e le tracce integrate; elenca i suoi strumenti in una frazione di secondo con una sola CPU e due gigabyte e non necessita di una rete per funzionare. Un volume opzionale in sola lettura può sovrapporre tracce operative aggiuntive oltre a quelle venti. L'elenco del catalogo è silenzioso (nessuna rete, nessun audio nell'immagine). La voce del catalogo Docker MCP è redatta sotto `catalog/`. La composizione solo per l'host per un'immagine locale è disponibile all'indirizzo `voice/compose.host.yaml`.
 
 ## Controlli
 
-Sinistra e destra (o A e D) per muoversi, spazio per sparare, F per schermo intero. Clicca sul campo per riprodurre la stessa traccia. La traccia successiva scorre l'elenco. Il suono inizia alla prima pressione di un tasto o al primo clic; sotto il campo sono presenti i controlli per disattivare l'audio, tre preimpostazioni di sensibilità e un interruttore per disattivare le vibrazioni. I **boss Ollama** e la funzione **Voice** sono posizionati accanto, con un selettore di modelli e delle parole che indicano cosa sta facendo ogni boss.
+Sinistra e destra (o A e D) per muoversi, spazio per sparare, F per la modalità schermo intero. Fai clic sul campo per riprodurre la stessa traccia. La traccia successiva scorre la lista; in un turno, "Prossima azione" seleziona la carta successiva. Il suono inizia con il primo tasto o clic; il silenzio, tre preimpostazioni di sensazione e un interruttore per disattivare le vibrazioni si trovano sotto il campo. La difficoltà è impostata nella riga "Play" (la modalità hardcore prevede una sola lampada e piastre che cadono). Localmente, i **boss Ollama** e **Voice** si trovano accanto, con un selezionatore di modelli e parole che indicano cosa sta facendo ogni elemento. La pagina pubblicata `/play/` è il campo, il suono, la sensazione, le vibrazioni e la difficoltà.
 
 ## Gioca in locale
 
-È necessario Node 22 e pnpm 11.
+Un singolo comando, niente da clonare:
+
+```bash
+npx @mcptoolshop/ghost-on-the-menu
+```
+
+Questo avvia il sistema su `127.0.0.1` e lo apre. A differenza della pagina pubblicata, questo può raggiungere un demone Ollama e un worker vocale sulla tua macchina, quindi gli elementi si illuminano. `--mcp` esegue lo stesso sistema come server MCP tramite stdio, in modo che un agente possa giocarci; `--help` elenca il resto. Node 22 o successivo, e nient'altro.
+
+Per lavorarci, clonalo: hai bisogno di Node 22 e pnpm 11:
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git

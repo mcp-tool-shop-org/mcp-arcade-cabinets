@@ -1,0 +1,381 @@
+// The launcher's server: the shell on disk, two allowlisted proxies, and
+// the say seat's node side.
+//
+// This is what `apps/cabinets/vite.config.ts` gives a developer, minus
+// Vite, so a player who has only run `npx` gets the same cabinet — the one
+// thing GitHub Pages structurally cannot serve, because Pages cannot reach
+// a daemon on the player's own machine.
+//
+// It listens on loopback and only loopback. The proxies hand a browser a
+// path to the player's Ollama daemon and voice worker; a bind on any other
+// interface would hand it to their network too.
+
+import { createReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import { Readable } from 'node:stream';
+import { pathToFileURL } from 'node:url';
+
+import { allowed, pathOnly, PREFIXES, restAfter, SAY_PATH, upstreamFor } from './allow';
+import { resolveUnder, typeFor } from './files';
+
+/** Loopback only. Not an option: see the note at the top of this file. */
+export const HOST = '127.0.0.1';
+
+const SAY_MAX_BYTES = 32 * 1024;
+const SAY_MIN_INTERVAL_MS = 400;
+const SAY_TIMEOUT_MS = 12_000;
+const SAY_MAX_RECENT = 16;
+const SAY_MAX_MODELS = 32;
+const SAY_STR = 200;
+const PROXY_TIMEOUT_MS = 120_000;
+
+const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
+const HP_WORDS = ['high', 'mid', 'low'] as const;
+const COLUMNS = ['left', 'center', 'right'] as const;
+const STICKS = ['still', 'left', 'right'] as const;
+const WAVES = ['inspect', 'poison', 'rug', 'unlisted', 'breather'] as const;
+
+/** What the launcher needs to know to stand a cabinet up. */
+export interface ServeOpts {
+  /** The built shell (`index.html`, `assets`, `sprites`, `tracks`). */
+  playDir: string;
+  /** The bundled cabinet-server, for the say seat. Null disables `/cabinet/say`. */
+  sayModule: string | null;
+  /** The player's Ollama daemon. */
+  ollamaUrl: string;
+  /** The host-side voice worker (`pnpm voice`), when they run one. */
+  voiceUrl: string;
+  /** The worker's bearer. Added here; the browser never holds it. */
+  voiceToken: string | null;
+  /** Sits the Claude tier of the say seat. Never reaches the browser. */
+  anthropicKey: string | null;
+}
+
+interface SeatView {
+  kind: (typeof BOSS_KINDS)[number];
+  hp: (typeof HP_WORDS)[number];
+  column: (typeof COLUMNS)[number];
+  stick: (typeof STICKS)[number];
+  motion: string;
+  wave: (typeof WAVES)[number];
+}
+
+function oneOf<T extends string>(v: unknown, list: readonly T[]): T | undefined {
+  return typeof v === 'string' && (list as readonly string[]).includes(v) ? (v as T) : undefined;
+}
+
+function jsonType(header: string | string[] | undefined): boolean {
+  const raw = Array.isArray(header) ? header[0] : header;
+  const type = String(raw ?? '')
+    .split(';')[0]
+    ?.trim()
+    .toLowerCase();
+  return type === 'application/json';
+}
+
+/** The boss's fact-blind view, or null. A malformed view is never guessed at. */
+export function parseSeatView(raw: unknown): SeatView | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const kind = oneOf(o.kind, BOSS_KINDS);
+  const hp = oneOf(o.hp, HP_WORDS);
+  const column = oneOf(o.column, COLUMNS);
+  const stick = oneOf(o.stick, STICKS);
+  const wave = oneOf(o.wave, WAVES);
+  if (!kind || !hp || !column || !stick || !wave) return null;
+  if (typeof o.motion !== 'string') return null;
+  return { kind, hp, column, stick, motion: o.motion.slice(0, 80), wave };
+}
+
+/** Bounded list of bounded strings. Anything else in the array is dropped. */
+export function parseStrings(raw: unknown, max: number, each: number): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (out.length >= max) break;
+    if (typeof item === 'string') out.push(item.slice(0, each));
+  }
+  return out;
+}
+
+function sendJson(res: ServerResponse, code: number, body: unknown): void {
+  res.statusCode = code;
+  res.setHeader('content-type', 'application/json');
+  res.end(JSON.stringify(body));
+}
+
+function readBody(req: IncomingMessage, cap: number): Promise<Buffer | null> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    let done = false;
+    const finish = (value: Buffer | null) => {
+      if (done) return;
+      done = true;
+      resolve(value);
+    };
+    req.on('data', (chunk: Buffer) => {
+      if (done) return;
+      size += chunk.length;
+      if (size > cap) {
+        finish(null);
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => finish(Buffer.concat(chunks)));
+    req.on('error', () => finish(null));
+    req.on('aborted', () => finish(null));
+  });
+}
+
+/** Serve one file out of the shell, or 404. */
+async function serveFile(res: ServerResponse, playDir: string, urlPath: string): Promise<void> {
+  const file = resolveUnder(playDir, urlPath);
+  if (!file) {
+    sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+  let target = file;
+  try {
+    const info = await stat(target);
+    if (info.isDirectory()) {
+      const index = resolveUnder(playDir, `${urlPath.replace(/\/+$/, '')}/index.html`);
+      if (!index) {
+        sendJson(res, 404, { error: 'not found' });
+        return;
+      }
+      target = index;
+      await stat(target);
+    }
+  } catch {
+    sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+  res.statusCode = 200;
+  res.setHeader('content-type', typeFor(target));
+  // The shell is rebuilt under the same names on every release; a player
+  // who upgrades must not be served yesterday's bundle out of the cache.
+  res.setHeader('cache-control', 'no-cache');
+  createReadStream(target)
+    .on('error', () => {
+      if (!res.headersSent) sendJson(res, 404, { error: 'not found' });
+      else res.end();
+    })
+    .pipe(res);
+}
+
+/** Pass an allowlisted call to the daemon or the worker and stream it back. */
+async function proxy(
+  req: IncomingMessage,
+  res: ServerResponse,
+  base: string,
+  rest: string,
+  token: string | null,
+): Promise<void> {
+  const raw = req.url ?? '';
+  const cut = raw.indexOf('?');
+  const query = cut === -1 ? '' : raw.slice(cut);
+  const target = `${base.replace(/\/$/, '')}${rest}${query}`;
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (jsonType(req.headers['content-type'])) headers['content-type'] = 'application/json';
+  if (token) headers.authorization = `Bearer ${token}`;
+  const method = req.method ?? 'GET';
+  const body = method === 'POST' ? await readBody(req, SAY_MAX_BYTES) : null;
+  if (method === 'POST' && body === null) {
+    sendJson(res, 413, { error: 'too large' });
+    return;
+  }
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), PROXY_TIMEOUT_MS);
+  try {
+    const upstream = await fetch(target, {
+      method,
+      headers,
+      signal: ctl.signal,
+      ...(body ? { body: new Uint8Array(body) } : {}),
+    });
+    res.statusCode = upstream.status;
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    if (!upstream.body) {
+      res.end();
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      const stream = Readable.fromWeb(upstream.body as Parameters<typeof Readable.fromWeb>[0]);
+      stream.on('error', () => {
+        res.end();
+        resolve();
+      });
+      res.on('close', () => resolve());
+      stream.on('end', () => resolve());
+      stream.pipe(res);
+    });
+  } catch {
+    // The daemon or the worker is not up, or took too long. The shell
+    // already falls back to the scripted seat on a failed call.
+    if (!res.headersSent) sendJson(res, 502, { error: 'no answer' });
+    else res.end();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** The say seat's node side (G14), as the dev server runs it. */
+function sayRoute(opts: ServeOpts) {
+  let lastAt = 0;
+  let busy = false;
+  return async function handleSay(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'post only' });
+      req.resume();
+      return;
+    }
+    if (!jsonType(req.headers['content-type'])) {
+      sendJson(res, 415, { error: 'json only' });
+      req.resume();
+      return;
+    }
+    if (!opts.sayModule) {
+      sendJson(res, 503, { error: 'no cabinet server built' });
+      req.resume();
+      return;
+    }
+    const declared = Number(req.headers['content-length'] ?? NaN);
+    if (Number.isFinite(declared) && declared > SAY_MAX_BYTES) {
+      sendJson(res, 413, { error: 'too large' });
+      req.resume();
+      return;
+    }
+    const now = Date.now();
+    if (busy || now - lastAt < SAY_MIN_INTERVAL_MS) {
+      sendJson(res, 429, { error: 'slow down' });
+      req.resume();
+      return;
+    }
+    busy = true;
+    lastAt = now;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const raw = await readBody(req, SAY_MAX_BYTES);
+      if (raw === null) {
+        sendJson(res, 413, { error: 'too large' });
+        return;
+      }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw.toString('utf8') || '{}');
+      } catch {
+        sendJson(res, 400, { error: 'no answer' });
+        return;
+      }
+      const body = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+      const view = parseSeatView(body.view);
+      if (!view) {
+        sendJson(res, 400, { error: 'no answer' });
+        return;
+      }
+      const cs = (await import(pathToFileURL(opts.sayModule).href)) as {
+        askSayFor: (
+          view: unknown,
+          recent: readonly string[],
+          says: number,
+          o: { anthropicKey: string | null; ollamaUrl: string; models: readonly string[] },
+        ) => Promise<unknown>;
+      };
+      const says = Number(body.says ?? 0);
+      const work = cs.askSayFor(
+        view,
+        parseStrings(body.recent, SAY_MAX_RECENT, SAY_STR),
+        Number.isFinite(says) ? Math.max(0, Math.min(10_000, Math.floor(says))) : 0,
+        {
+          anthropicKey: opts.anthropicKey,
+          ollamaUrl: `${opts.ollamaUrl.replace(/\/$/, '')}/api/chat`,
+          models: parseStrings(body.models, SAY_MAX_MODELS, 128),
+        },
+      );
+      const answer = await Promise.race([
+        work,
+        new Promise<never>((_, rej) => {
+          timer = setTimeout(() => rej(new Error('no answer')), SAY_TIMEOUT_MS);
+        }),
+      ]);
+      sendJson(res, 200, answer);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      sendJson(res, 200, { error: /retired/i.test(msg) ? 'model retired' : 'no answer' });
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+      busy = false;
+    }
+  };
+}
+
+/** Build the cabinet's server. Nothing listens until `listen` is called. */
+export function createCabinetServer(opts: ServeOpts): Server {
+  const handleSay = sayRoute(opts);
+  return createServer((req, res) => {
+    void (async () => {
+      const p = pathOnly(req.url);
+      if (p === SAY_PATH) {
+        await handleSay(req, res);
+        return;
+      }
+      const up = upstreamFor(req.url);
+      if (up) {
+        const rest = restAfter(PREFIXES[up], req.url);
+        if (!allowed(up, req.method ?? 'GET', rest)) {
+          sendJson(res, 404, { error: 'not found' });
+          req.resume();
+          return;
+        }
+        await proxy(
+          req,
+          res,
+          up === 'ollama' ? opts.ollamaUrl : opts.voiceUrl,
+          rest,
+          up === 'voice' ? opts.voiceToken : null,
+        );
+        return;
+      }
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        sendJson(res, 405, { error: 'get only' });
+        req.resume();
+        return;
+      }
+      await serveFile(res, opts.playDir, p);
+    })().catch(() => {
+      if (!res.headersSent) sendJson(res, 500, { error: 'no answer' });
+      else res.end();
+    });
+  });
+}
+
+/** Listen on the first free port at or above `from`, on loopback. */
+export function listenFrom(server: Server, from: number, tries = 20): Promise<number> {
+  return new Promise((resolve, reject) => {
+    let port = from;
+    let left = tries;
+    const attempt = () => {
+      const onError = (err: NodeJS.ErrnoException) => {
+        server.removeListener('error', onError);
+        if (err.code === 'EADDRINUSE' && left > 0) {
+          left -= 1;
+          port += 1;
+          attempt();
+          return;
+        }
+        reject(err);
+      };
+      server.once('error', onError);
+      server.listen(port, HOST, () => {
+        server.removeListener('error', onError);
+        resolve(port);
+      });
+    };
+    attempt();
+  });
+}

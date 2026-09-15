@@ -16,7 +16,7 @@
   <strong>You are the agent. The rig hands you the calls.</strong>
 </p>
 
-**Ghost on the Menu** est un court jeu de tir rétro créé à partir des données transmises par les serveurs MCP. Vous êtes le modèle, envoyé au cœur de la structure avec une liste de tâches. Chaque interaction est un échange enregistré entre un serveur MCP et un agent, et il se déroule au-dessus de votre vaisseau sous forme d’ondes : la poignée de main, le menu, les interactions, les réponses, et un boss qui est l’expérience elle-même.
+**Ghost on the Menu** est un court jeu de tir rétro créé à partir des données transmises par les serveurs MCP. Vous êtes le modèle, envoyé dans les entrailles de la structure avec une liste de tâches. Chaque interaction est un enregistrement d’une conversation entre un serveur MCP et un agent, et elle se déroule au-dessus de votre vaisseau sous forme de vagues : la poignée de main, le menu, les appels, les réponses, et un boss qui est l’expérience elle-même.
 
 Quelque part, il y a les appels que l’agent n’aurait pas dû faire. Ils ressemblent à tout le reste jusqu’à ce que vous en touchiez un. Ensuite, il vous appartient pour le reste de la manche.
 
@@ -24,9 +24,9 @@ Quelque part, il y a les appels que l’agent n’aurait pas dû faire. Ils ress
 
 ## Effectuez un quart de travail
 
-Appuyez sur **Shift** et la structure vous propose quatre interactions de suite, tirées de la liste et jamais les mêmes quatre interactions deux fois de suite. Chacune d’entre elles correspond à un serveur vers lequel l’agent a été envoyé. Une carte entre les interactions indique le serveur suivant, la politique suivie par l’agent et les outils qu’il a été invité à utiliser. Les lampes se rechargent à chaque interaction, et le feu monte d’une interaction à l’autre, de sorte que la dernière interaction commence là où la première s’est terminée.
+Appuyez sur **Shift** et la structure vous propose quatre interactions de suite, tirées de la liste et jamais les mêmes quatre interactions deux fois de suite. Chacune d’entre elles correspond à un serveur vers lequel l’agent a été envoyé, et chaque interaction correspond à une pièce différente : pression, zone interdite, une pause, puis un pic d’activité. Une carte entre elles indique le serveur suivant, la politique et les outils que l’agent était censé utiliser, ainsi que le déroulement du combat en mots : une poignée de main d’acier, une étagère traversant le passage, une pause entre les pics d’activité, un mur de catalogue ocre. Les lampes se rechargent à chaque interaction. Le feu continue de s’intensifier à chaque interaction ; l’ascension représente la chaleur, et non une nouvelle histoire.
 
-À la fin, le quart de travail a un nom composé de quatre mots, comme `frost robin chalk garden`. Tapez-le dans le menu pour effectuer à nouveau le même quart de travail, ou transmettez-le à quelqu’un d’autre. Pas de chiffre, pas de décompte, pas de classement : un quart de travail est une liste de tâches, pas un tableau de scores.
+À la fin, le quart de travail a un nom composé de quatre mots, comme `frost robin chalk garden`. Tapez-le dans le menu pour effectuer à nouveau le même quart de travail, ou transmettez-le à quelqu’un d’autre. Pas de chiffre, pas de décompte, pas de classement : un quart de travail est une liste de tâches, et non un tableau de scores.
 
 Choisissez une cassette dans la liste. Chacune est étiquetée « fixture », « seat » ou « live » ; passez la souris sur **i** pour en savoir plus. « Seat » est le mode de combat par défaut. « Live » est conçu pour être surmonté. « Hardcore » est le quatrième niveau, accessible uniquement via le sélecteur.
 
@@ -34,35 +34,43 @@ Choisissez une cassette dans la liste. Chacune est étiquetée « fixture », 
 
 Une **cassette** est un enregistrement d’un affrontement. Ce jeu ne lit que des cassettes. Il ne communique jamais avec un serveur, ne conserve jamais de score et ne vous dit jamais qui a gagné.
 
-- **Trois lampes.** Un tir de boss ou une formation plongeante en éteint une. Attrapez une lampe qui tombe **directement** d’un boss abattu pour en rallumer une. Vous devez vous déplacer en dessous. Si toutes les lampes s’éteignent, la manche se termine.
-- **Dispersion.** Nettoyez une formation et une dispersion tombe directement. Attrapez-la et votre tir se disperse pendant quelques secondes.
-- **Les boss sont l’expérience, pas l’accusation.** Le Murmureur, le Menu et le Gardien apparaissent pour leur manche, que quelque chose se soit mal passé ou non. Ils marmonnent comme un agent qui réfléchit à voix haute. Le mode hardcore se joue avec une seule lampe et une rage dès le premier tir.
-- **Les parallèles explosent.** Les modes siège, en direct et hardcore déclenchent des explosions qui multiplient le champ avec des copies fidèles et intensifient le feu, et la musique s’accélère. Ils commencent lentement et montent d’une manche à l’autre, et au cours d’un quart de travail, d’une interaction à l’autre. L’ascension est une donnée, ajustée sur un ensemble de joueurs prédéfinis, jamais sur vous.
-- **Les indices se trouvent dans la séquence.** Un mensonge ne ressemble, ne bouge et n’arrive jamais différemment de son jumeau honnête. Ce qui le trahit, c’est l’endroit où il se trouve : une formation supplémentaire, un deuxième menu, un élément unique juste après le menu.
-- **La musique** commence par une chanson choisie par la graine de la manche, la maintient pendant quelques minutes, puis s’estompe pour laisser place à la suivante ; un boss apporte sa propre musique, et un quart de travail fait passer la musique à travers ses cartes.
-- **La scène finale** donne un nom à l’enregistrement, au serveur et à la politique. Les mensonges détectés sont conservés comme trophées. Ceux qui ont échappé à la détection restent dans leur état honnête. Pas de score, pas de décompte, pas de chiffre.
+- **Trois lampes.** Un tir de boss ou une formation en plongée en éteint une. Attrapez une lampe qui tombe **directement** d’un boss mis hors de combat pour en rallumer une. Vous devez vous déplacer en dessous. Si toutes les lampes sont éteintes, la manche se termine.
+- **Dispersion.** Éliminez une formation et une dispersion tombe directement. Attrapez-la et votre tir s’intensifie pendant quelques secondes.
+- **Les boss représentent l’expérience, et non l’accusation.** Le Murmureur, le Menu et le Gardien apparaissent pour leur vague, que quelque chose se soit mal passé ou non. Pendant un quart de travail, l’inspection se termine avec l’Archiviste (un mur de catalogue). Ils marmonnent comme un agent qui réfléchit à voix haute. Le mode hardcore se caractérise par une seule lampe et une rage dès le premier tir.
+- **Le parallélisme explose.** Les modes siège, en direct et hardcore déclenchent des explosions qui multiplient le champ avec des copies fidèles et intensifient le feu, et la musique s’accélère. Ils commencent lentement et s’intensifient vague après vague, et au cours d’une interaction, interaction après interaction. L’ascension représente les données, ajustées sur une bande de joueurs programmés, et non sur vous.
+- **Les indices se trouvent dans la séquence.** Un mensonge ne ressemble, ne bouge et n’arrive jamais différemment de son jumeau honnête. Ce qui le trahit, c’est l’endroit où il se trouve : une formation supplémentaire, un deuxième menu, un élément unique juste après le menu. Pendant un quart de travail, des coques supplémentaires peuvent rejoindre la pièce : une sonde rapide, une étagère traversant le passage, un registre empilé ; elles partagent toujours leur jumeau honnête jusqu’à ce que vous les touchiez.
+- **La musique** suit la carte, mais une chanson ne dure qu’une seule boucle (environ une demi-minute) avant de s’arrêter. Le poison veut toujours du poison ; le Murmureur veut toujours le Murmureur. Les lits se trouvent sous les tirs et l’attrape ; le mode muet tue tout en même temps. Un quart de travail fait passer la musique à travers ses cartes.
+- **La scène finale** indique le nom de la bande, du serveur et de la politique. Les mensonges capturés servent de trophées. Ceux qui ont échappé se présentent sous leur forme honnête. Pas de score, pas de décompte, pas de chiffre.
 
 ## Le boss peut être un modèle
 
-Localement, un modèle Ollama, y compris une balise Cloud comme `gpt-oss:120b-cloud`, peut être placé dans le boss. Il ne reçoit pas d’invite pour improviser. Il reçoit les propres outils de la structure : `fire` (un verbe par temps : un ventilateur, une inclinaison et un tir ciblé, une respiration retenue, du brouillard, la plaque), `say` (une ligne de son propre chef, à travers une porte : douze mots, une phrase, pas de chiffre, pas de mot factuel, pas de nom d’outil ou de modèle ; une ligne refusée joue l’une des propres lignes du boss), `speak`, et `view` et `tapes` en lecture seule. Le modèle propose ; le jeu décide. Il ne voit jamais quels sprites sont des mensonges, et rien dans le champ ne l’identifie.
+Localement, un modèle Ollama, y compris une balise Cloud comme `gpt-oss:120b-cloud`, peut se trouver dans le boss. Il ne reçoit pas d’invite pour improviser. Il reçoit les propres outils de l’armoire : `fire` (un verbe par temps : un ventilateur, une inclinaison et un tir ciblé, une respiration retenue, du brouillard, la plaque), `say` (une ligne de son propre chef, à travers une porte : douze mots, une phrase, pas de chiffre, pas de mot factuel, pas de nom d’outil ou de modèle ; une ligne refusée joue l’une des propres lignes du boss), `speak`, et `view` et `tapes` en lecture seule. Il peut également mettre en file d’attente les prochains verbes légaux après le temps ; une réponse suspendue est le script, et non un blocage. Le sélecteur écrit une ligne de bibliothèque fermée après le tir. Le modèle propose ; le jeu décide. Il ne voit jamais quels sprites sont des mensonges, et rien dans le champ ne l’identifie. Le site publié n’a pas de démon, il omet donc Ollama et Voice.
 
-Avec un processus vocal en cours d’exécution, chaque boss parle : sa propre ligne lorsqu’il arrive, et les lignes que le modèle écrit. Chaque prise est réentendue par un système de reconnaissance vocale et enregistrée par [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) avant d’être diffusée, de sorte que les mots prononcés sont les mots que la porte a admis, pas de discours inventé, pas de trou. Une prise qui échoue à son enregistrement reste silencieuse.
+Avec un travailleur vocal en cours d’exécution, chaque boss parle : sa ligne écrite lorsqu’il arrive, et les lignes que le modèle écrit. Chaque prise est réentendue par un système de reconnaissance vocale et enregistrée par [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) avant d’être diffusée, de sorte que les mots prononcés sont les mots que la porte a admis, et non des paroles inventées, et qu’il n’y a pas de trou. Une prise qui échoue à son enregistrement reste silencieuse.
 
-La structure est elle-même un serveur MCP sur stdio, avec les mêmes six outils, de sorte que l’instrument peut jouer le propre menu de Ghost ; quatre des enregistrements du dépôt sont la structure qui s’enregistre elle-même. Il est également fourni sous forme d’image Docker :
+L’armoire est elle-même un serveur MCP sur stdio, avec les mêmes six outils, de sorte que l’instrument peut jouer le propre menu du Ghost ; quatre des enregistrements du dépôt sont l’armoire qui s’enregistre elle-même. Elle est également livrée sous forme d’image Docker :
 
 ```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
 ```
 
-Un seul fichier groupé sur `node:22-alpine` contenant le contrat d’outil et les enregistrements intégrés ; il répertorie ses outils en moins d’une seconde avec un seul processeur et deux gigaoctets, et n’a pas besoin de réseau pour fonctionner. L’entrée du catalogue Docker MCP est rédigée sous `catalog/`.
+Un seul fichier groupé sur `node:22-alpine` avec le contrat d’outil et les bandes intégrées ; il répertorie ses outils en moins d’une seconde avec un seul processeur et deux gigaoctets, et n’a pas besoin de réseau pour fonctionner. Un volume facultatif en lecture seule peut superposer des bandes d’opérateur supplémentaires à ces vingt. La liste du catalogue est silencieuse (réseau désactivé, pas de voix dans l’image). L’entrée du catalogue Docker MCP est rédigée sous `catalog/`. La composition locale pour une image locale se trouve à `voice/compose.host.yaml`.
 
 ## Commandes
 
-Gauche et droite (ou A et D) pour se déplacer, espace pour tirer, F pour le plein écran. Cliquez sur le champ pour rejouer le même enregistrement. Le prochain enregistrement parcourt la liste ; dans un quart de travail, le prochain appel prend la prochaine carte. Le son démarre au premier appui sur une touche ou au premier clic ; le son est coupé, trois préréglages d’ambiance et un bouton d’arrêt se trouvent sous le champ. Les **boss Ollama** et la **voix** se trouvent à côté, avec un sélecteur de modèle et des mots qui indiquent ce que fait chaque siège.
+Gauche et droite (ou A et D) pour se déplacer, espace pour tirer, F pour le plein écran. Cliquez sur le champ pour rejouer la même bande. La bande suivante fait défiler la liste ; pendant un quart de travail, la bande suivante sélectionne la carte suivante. Le son démarre au premier appui sur une touche ou au premier clic ; le mode muet, trois préréglages de sensation et un commutateur d’arrêt se trouvent sous le champ. La difficulté se trouve dans la ligne Lecture (le mode hardcore se caractérise par une seule lampe et des plaques qui tombent). Localement, les **boss Ollama** et **Voice** se trouvent à côté, avec un sélecteur de modèle et des mots qui indiquent ce que fait chaque siège. La page publiée `/play/` est le champ, le son, la sensation, l’arrêt et la difficulté uniquement.
 
 ## Jouez-y localement
 
-Vous avez besoin de Node 22 et de pnpm 11.
+Une seule commande, rien à cloner :
+
+```bash
+npx @mcptoolshop/ghost-on-the-menu
+```
+
+Cela sert l’armoire sur `127.0.0.1` et l’ouvre. Contrairement à la page publiée, celle-ci peut atteindre un démon Ollama et un travailleur vocal sur votre propre machine, de sorte que les sièges s’allument. `--mcp` exécute la même armoire en tant que serveur MCP sur stdio, pour qu’un agent puisse y jouer ; `--help` répertorie le reste. Node 22 ou version ultérieure, et rien d’autre.
+
+Pour travailler dessus, clonez-le : vous avez besoin de Node 22 et de pnpm 11 :
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git
@@ -73,7 +81,7 @@ pnpm -F @mcp-arcade-cabinets/cabinets dev
 
 Ouvrez l’adresse que Vite affiche. Seize enregistrements sont inclus dans le dépôt, exportés de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), l’instrument qui communique avec le serveur et conserve la cassette.
 
-Pour le siège du boss, exécutez un démon Ollama sur la même machine et cochez **Boss Ollama**. Pour la voix, créez un environnement virtuel Python 3.12 à `.venv` avec `kokoro-onnx`, `faster-whisper` et `fx-dub`, pointez `KOKORO_DIR` vers les poids Kokoro ONNX et exécutez `pnpm voice` dans un deuxième terminal ; la case **Voix** s’active lorsque le processus répond. Aucun des deux n’est nécessaire pour jouer ; le site publié n’en a aucun.
+Pour le poste de « chef », exécutez un démon Ollama sur la même machine et cochez la case « Ollama chefs ». Pour la voix, créez un environnement virtuel Python 3.12 à l’emplacement `.venv` avec `kokoro-onnx`, `faster-whisper` et `fx-dub`, pointez `KOKORO_DIR` vers les poids Kokoro ONNX, et exécutez `pnpm voice` dans un deuxième terminal ; la case « Voix » s’active lorsque l’agent répond. Aucun de ces éléments n’est nécessaire pour la lecture ; le site publié n’en contient aucun.
 
 Pour enregistrer votre propre serveur et lire cette cassette, exécutez une séquence là-bas, puis `mcp-arcade tape receipt.json -o your.tape.json`.
 

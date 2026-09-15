@@ -62,7 +62,15 @@ Left and right (or A and D) to move, space to fire, F for full screen. Click the
 
 ## Play it locally
 
-You need Node 22 and pnpm 11.
+One command, nothing to clone:
+
+```bash
+npx @mcptoolshop/ghost-on-the-menu
+```
+
+That serves the cabinet on `127.0.0.1` and opens it. Unlike the published page, this one can reach an Ollama daemon and a voice worker on your own machine, so the seats light up. `--mcp` runs the same cabinet as an MCP server over stdio instead, for an agent to play it; `--help` lists the rest. Node 22 or newer, and nothing else.
+
+To work on it, clone it — you need Node 22 and pnpm 11:
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git

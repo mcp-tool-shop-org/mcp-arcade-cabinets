@@ -17,7 +17,8 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  { files: ['scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
+  // The root's scripts and each package's own (packages/launcher/scripts).
+  { files: ['**/scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
   { files: ['apps/**/*.ts'], languageOptions: { globals: globals.browser } },
   { rules: { '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }] } },
 );

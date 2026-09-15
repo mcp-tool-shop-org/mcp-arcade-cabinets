@@ -24,7 +24,7 @@ En algún lugar de esa secuencia se encuentran las comunicaciones que el agente 
 
 ## Comienza un turno
 
-Presiona **Shift** y la instalación te asigna cuatro llamadas consecutivas, seleccionadas de la lista y nunca las mismas cuatro dos veces seguidas. Cada una es un servidor al que se envió al agente. Una tarjeta entre las llamadas indica el siguiente servidor, la política que siguió el agente y las herramientas que se le pidió que utilizara. Las lámparas se rellenan en cada llamada, y el fuego aumenta llamada tras llamada, por lo que la última llamada comienza donde terminó la primera.
+Presiona **Shift** y el equipo te dará cuatro indicaciones seguidas, seleccionadas de la lista y nunca serán las mismas cuatro dos veces seguidas. Cada una es un servidor al que se envió al agente, y cada indicación es una sala diferente: presión, área de negación, un descanso y luego un punto álgido. Una tarjeta entre ellas indica el siguiente servidor, la política, las herramientas que se le pidió al agente que utilizara y la pelea en palabras: un apretón de manos de acero, una estantería a lo largo del camino, un descanso entre los puntos álgidos, una pared de catálogo ocre. Las lámparas se rellenan en cada indicación. El fuego sigue subiendo de indicación en indicación; la subida es calor, no una nueva historia.
 
 Al final, el turno tiene un nombre de cuatro palabras, como `frost robin chalk garden`. Escríbelo en el menú para repetir el mismo turno o pásaselo a otra persona. No hay puntuación, ni conteo, ni clasificación: un turno es una lista de tareas, no una tabla de resultados.
 
@@ -34,35 +34,43 @@ Elige una grabación de la lista. Cada una está etiquetada como "fijo", "asient
 
 Una **cinta** es una grabación de un enfrentamiento. Este juego solo reproduce cintas. Nunca se comunica con un servidor, nunca guarda una puntuación y nunca te dice quién ganó.
 
-- **Tres lámparas.** Un disparo de un jefe o una formación de buceo apaga una de ellas. Recoge una lámpara que cae **directamente hacia abajo** desde un jefe derribado para volver a encender una. Debes moverte debajo de ella. Si se apagan todas, termina la ronda.
-- **Dispersión.** Al eliminar una formación, una dispersión cae directamente hacia abajo. Recógela y tu fuego se extenderá durante unos segundos.
-- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. Murmuran como un agente que piensa en voz alta. En el modo difícil, solo hay una lámpara y el fuego se desata desde el primer disparo.
-- **Las secuencias paralelas se intensifican.** Los modos Fácil, Normal y Difícil generan secuencias que multiplican el campo con copias precisas y aumentan el fuego, y la música se acelera. Comienzan de forma breve y aumentan oleada tras oleada, y en cada turno, llamada tras llamada. El aumento es información, ajustada en un conjunto de jugadores predefinidos, nunca en ti.
-- **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de forma diferente a su gemela honesta. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú.
-- **La música** comienza con una canción que elige la semilla de la ronda, la mantiene durante un par de minutos y luego se desvanece en la siguiente; un jefe trae la suya propia, y un turno lleva la música a través de sus cartas.
-- **La escena final** indica el nombre de la grabación, el servidor y la política. Las mentiras detectadas se muestran como trofeos. Las que se evaden permanecen con su apariencia original. No hay puntuación, ni conteo, ni número.
+- **Tres lámparas.** Un disparo de jefe o una formación de buceo apaga una de ellas. Atrapa una lámpara que cae **directamente hacia abajo** desde un jefe derrotado para volver a encender una. Tienes que moverte debajo de ella. Que todas se apaguen termina la ronda.
+- **Dispersión.** Elimina una formación y una dispersión cae directamente hacia abajo. Atrapa y tu fuego se extenderá durante unos segundos.
+- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. En una ronda, la inspección termina con el Archivista (una pared de catálogo). Murmuran como un agente que piensa en voz alta. El modo difícil es una lámpara y furia desde el primer disparo.
+- **El paralelismo estalla.** Los modos de asiento, en vivo y difícil obtienen ráfagas que multiplican el campo con copias honestas y calientan el fuego, y la música se acelera bajo ellas. Comienzan cortas y suben oleada tras oleada, y en una ronda, indicación tras indicación. La subida es datos, ajustados en una banda de jugadores programados, nunca en ti.
+- **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de manera diferente a su gemelo honesto. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú. En una ronda, los cascos adicionales pueden unirse a la sala: una sonda que se mueve rápidamente, una estantería a lo largo del camino, un libro de contabilidad apilado; todos ellos comparten su gemelo honesto hasta que los golpees.
+- **La música** sigue la tarjeta, pero una canción tiene un solo ciclo (aproximadamente medio minuto) antes de que ceda. El veneno sigue queriendo veneno; el Susurrador sigue queriendo al Susurrador. Las camas están debajo de los disparos y la captura; el silencio sigue matando todo a la vez. Una ronda lleva la música a través de sus tarjetas.
+- **La escena final** indica la cinta, el servidor y la política. Las mentiras atrapadas sirven como trofeos. Las que escapan permanecen en su color honesto. Sin puntuación, sin conteo, sin dígito.
 
 ## El jefe puede ser un modelo
 
-Locally, an Ollama model, including a Cloud tag like `gpt-oss:120b-cloud`, can sit in the boss. It does not get a prompt to freewheel in. It gets the cabinet's own tools: `fire` (one verb a beat: a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of its own, through a gate: twelve words, one sentence, no digit, no fact word, no tool or model name; a refused line plays one of the boss's own), `speak`, and read-only `view` and `tapes`. The model proposes; the game decides. It never sees which sprites are lies, and nothing on the field names it.
+Localmente, un modelo de Ollama, incluido un indicador de nube como `gpt-oss:120b-cloud`, puede estar en el jefe. No recibe una indicación para improvisar. Recibe las propias herramientas del gabinete: `fire` (un verbo por compás: un ventilador, una inclinación y un disparo dirigido, una respiración contenida, niebla, la placa), `say` (una línea propia, a través de una puerta: doce palabras, una oración, sin dígito, sin palabra de hecho, sin nombre de herramienta o modelo; una línea rechazada reproduce una de las propias del jefe), `speak` y solo lectura `view` y `tapes`. También puede poner en cola los próximos pocos verbos legales fuera del compás; una respuesta interrumpida es el guion, nunca una pausa. El selector escribe una línea de biblioteca cerrada después del disparo. El modelo propone; el juego decide. Nunca ve qué sprites son mentiras, y nada en el campo lo identifica. El sitio publicado no tiene un demonio, por lo que omite el aspecto de Ollama y Voice.
 
 Con un programa de voz en funcionamiento, cada jefe habla: su línea original cuando llega y las líneas que escribe el modelo. Cada toma se reproduce y se registra mediante [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) antes de reproducirse, por lo que las palabras que se dicen son las palabras que la puerta admitió, sin discursos inventados, sin errores. Una toma que no pasa la verificación permanece en silencio.
 
 El gabinete es en sí mismo un servidor MCP a través de stdio, con las mismas seis herramientas, por lo que el instrumento puede reproducir el propio menú del Fantasma; cuatro de las grabaciones en el repositorio son del propio gabinete grabando.
 
 ```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.6.0
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
 ```
 
-Un archivo empaquetado en `node:22-alpine` con el contrato de la herramienta y las grabaciones incluidas; enumera sus herramientas en una fracción de segundo con un solo procesador y dos gigabytes, y no necesita red para funcionar. La entrada del catálogo Docker MCP se está redactando bajo `catalog/`.
+Un archivo agrupado en `node:22-alpine` con el contrato de la herramienta y las cintas integradas; enumera sus herramientas en una fracción de segundo con una CPU y dos gigabytes, y no necesita red para funcionar. Un volumen opcional de solo lectura puede superponer cintas adicionales del operador junto a esas veinte. La lista del catálogo está en silencio (red apagada, sin voz en la imagen). La entrada del catálogo de Docker MCP se redacta en `catalog/`. La composición solo para el host para una imagen local está en `voice/compose.host.yaml`.
 
 ## Controles
 
-Izquierda y derecha (o A y D) para moverse, espacio para disparar, F para pantalla completa. Haz clic en el campo para reproducir la misma pista. La siguiente pista recorre la lista. El sonido comienza con la primera tecla o clic; los controles de silencio, tres preajustes de sonido y un interruptor de vibración están debajo del campo. Los **jefes de Ollama** y la opción **Voz** están a su lado, con un selector de modelos y palabras que indican qué está haciendo cada "seat".
+Izquierda y derecha (o A y D) para moverse, espacio para disparar, F para pantalla completa. Haz clic en el campo para reproducir la misma cinta. La siguiente cinta recorre la lista; en una ronda, la siguiente indicación toma la siguiente tarjeta. El sonido comienza en la primera tecla o clic; el silencio, tres ajustes de sensación y un interruptor de desactivación están debajo del campo. La dificultad está en la fila de reproducción (el modo difícil es una lámpara y placas que caen). Localmente, los **jefes de Ollama** y **Voice** están junto a ellos, con un selector de modelo y palabras que indican lo que está haciendo cada asiento. La página publicada `/play/` es el campo, sonido, sensación, desactivación y dificultad solamente.
 
 ## Juega localmente
 
-Necesitas Node 22 y pnpm 11.
+Un comando, nada que clonar:
+
+```bash
+npx @mcptoolshop/ghost-on-the-menu
+```
+
+Eso sirve al gabinete en `127.0.0.1` y lo abre. A diferencia de la página publicada, esta puede acceder a un demonio de Ollama y a un trabajador de voz en tu propia máquina, por lo que los asientos se iluminan. `--mcp` ejecuta el mismo gabinete como un servidor MCP a través de stdio, para que un agente lo juegue; `--help` enumera el resto. Node 22 o posterior, y nada más.
+
+Para trabajar en ello, clónalo: necesitas Node 22 y pnpm 11:
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git

@@ -1,0 +1,254 @@
+# Publish the launcher to npm.
+#
+# Fires on a published release only, so it costs nothing until a release is
+# cut, and does not count against the two push-triggered workflows the house
+# rule allows. workflow_dispatch is here to exercise it without a release;
+# it dry-runs by default and will only publish when asked in as many words.
+#
+# Authentication is npm Trusted Publishing (OIDC). There is no NPM_TOKEN in
+# this repo and there must not be one: the trust is pinned on npmjs.com to
+# this repository AND this filename.
+#
+# THE FILENAME IS LOAD-BEARING TWICE OVER. It is `release.yml` because that
+# is the org convention for the TP-configured workflow, and because npm
+# pins the trust to it. Renaming this file breaks publishing until the
+# trust is re-pointed on npmjs.com.
+#
+# The package must already EXIST on npm before a trusted publisher can be
+# configured for it — npm has no equivalent of PyPI's pending publishers,
+# for the access page and for `npm trust` alike. The first version is
+# therefore published by hand; see docs/npm-launcher.md.
+#
+# Standards compliance, including the compensators table that `npm publish`
+# requires: docs/npm-launcher.md.
+
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Pack and check without publishing'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # NO `environment:` here, deliberately. GitHub's OIDC subject claim gains
+    # an `:environment:<name>` segment when a job declares one, and npm's
+    # trusted publisher for this package is configured WITHOUT an environment.
+    # The two must agree or the publish fails as a masked E404. If you ever add
+    # an environment for deployment protection, add it on npmjs.com in the same
+    # sitting -- never on one side alone.
+    permissions:
+      contents: read
+      # Trusted Publishing and the provenance attestation.
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: npm with Trusted Publishing
+        id: npm_version
+        run: |
+          npm install -g npm@latest
+          npm --version
+          # OIDC Trusted Publishing landed in npm 11.5.1.
+          node -e '
+          const [maj, min, pat] = process.argv[1].split(".").map(Number);
+          const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && pat >= 1)));
+          if (!ok) {
+            console.log("npm " + process.argv[1] + " is too old for Trusted Publishing");
+            console.log("next: npm install -g npm@latest");
+            process.exit(1);
+          }
+          console.log("npm " + process.argv[1] + " supports Trusted Publishing");
+          ' "$(npm --version)"
+
+      - name: Install
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      - name: Version matches the tag
+        id: version
+        run: |
+          pkg=$(node -p "require('./packages/launcher/package.json').version")
+          root=$(node -p "require('./package.json').version")
+          echo "package=$pkg" >> "$GITHUB_OUTPUT"
+          echo "launcher: $pkg / root: $root"
+          if [ "$pkg" != "$root" ]; then
+            echo "packages/launcher is $pkg but the repo is $root"
+            echo "next: put every package.json on one version"
+            exit 1
+          fi
+          if [ "${{ github.event_name }}" = "release" ]; then
+            tag="${{ github.event.release.tag_name }}"
+            if [ "$tag" != "v$pkg" ]; then
+              echo "release tag $tag does not name version $pkg"
+              echo "next: tag the release v$pkg, or bump the packages to match $tag"
+              exit 1
+            fi
+            echo "tag $tag matches"
+          fi
+
+      - name: Verify
+        id: verify
+        run: pnpm verify
+
+      - name: Build the package
+        id: build
+        run: pnpm build:launcher
+
+      - name: The built bin runs
+        id: smoke
+        working-directory: packages/launcher
+        run: |
+          set -e
+          got=$(node dist/cli.js --version)
+          want="${{ steps.version.outputs.package }}"
+          if [ "$got" != "$want" ]; then
+            echo "dist/cli.js --version said $got, package.json says $want"
+            echo "next: pnpm build:launcher"
+            exit 1
+          fi
+          echo "--version: $got"
+          # The MCP seat must list its six tools over stdio with no network.
+          init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
+          notified='{"jsonrpc":"2.0","method":"notifications/initialized"}'
+          list='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+          printf '%s\n' "$init" "$notified" "$list" | timeout 30 node dist/cli.js --mcp > /tmp/mcp.out 2>/tmp/mcp.err || true
+          cat /tmp/mcp.err >&2 || true
+          if ! python3 -c '
+          import json, sys
+          need = {"fire", "say", "speak", "sfx", "view", "tapes"}
+          found = set()
+          for line in sys.stdin.read().splitlines():
+              line = line.strip()
+              if not line:
+                  continue
+              try:
+                  msg = json.loads(line)
+              except json.JSONDecodeError:
+                  continue
+              tools = (msg.get("result") or {}).get("tools")
+              if isinstance(tools, list):
+                  for t in tools:
+                      if isinstance(t, dict) and isinstance(t.get("name"), str):
+                          found.add(t["name"])
+          if found != need:
+              print("tools/list was", ",".join(sorted(found)) or "(nothing)", "want", ",".join(sorted(need)))
+              sys.exit(1)
+          print("tools/list:", ",".join(sorted(found)))
+          ' < /tmp/mcp.out; then
+            echo "next: node packages/launcher/dist/cli.js --mcp"
+            exit 1
+          fi
+
+      - name: The tarball carries the shell and no sources
+        id: tarball
+        working-directory: packages/launcher
+        run: |
+          set -e
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e '
+          const pack = require("/tmp/pack.json")[0];
+          const files = pack.files.map((f) => f.path);
+          const need = [
+            "dist/cli.js",
+            "dist/cabinet-stdio.js",
+            "dist/cabinet-server.js",
+            "dist/play/index.html",
+            "README.md",
+            "LICENSE",
+          ];
+          const missing = need.filter((n) => !files.includes(n));
+          if (missing.length) {
+            console.log("tarball is missing: " + missing.join(", "));
+            console.log("next: pnpm build:launcher");
+            process.exit(1);
+          }
+          const leaked = files.filter((f) => /\.tsx?$|\.map$|^src\/|^test\/|tsconfig/.test(f));
+          if (leaked.length) {
+            console.log("tarball carries sources: " + leaked.join(", "));
+            console.log("next: check the files field in packages/launcher/package.json");
+            process.exit(1);
+          }
+          const tapes = files.filter((f) => f.startsWith("dist/tapes/")).length;
+          if (tapes < 20) {
+            console.log("tarball has " + tapes + " tapes, want 20");
+            console.log("next: pnpm build:launcher");
+            process.exit(1);
+          }
+          console.log(
+            "- tarball: " + pack.entryCount + " files" +
+            ", " + tapes + " tapes" +
+            ", packed " + (pack.size / 1048576).toFixed(1) + " MB" +
+            ", unpacked " + (pack.unpackedSize / 1048576).toFixed(1) + " MB",
+          );
+          ' | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish
+        id: publish
+        if: github.event_name == 'release' || inputs.dry_run == false
+        working-directory: packages/launcher
+        run: npm publish --provenance --access public
+
+      - name: Dry run
+        id: dry
+        if: github.event_name != 'release' && inputs.dry_run != false
+        working-directory: packages/launcher
+        run: npm publish --provenance --access public --dry-run
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Publish / npm"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- version: \`${{ steps.version.outputs.package }}\`"
+            echo "- event: ${{ github.event_name }}"
+            published="no (dry run)"
+            [ "${{ steps.publish.outcome }}" = "success" ] && published="yes"
+            echo "- published: $published"
+            echo "- npm: ${{ steps.npm_version.outcome }}"
+            echo "- version gate: ${{ steps.version.outcome }}"
+            echo "- verify: ${{ steps.verify.outcome }}"
+            echo "- build: ${{ steps.build.outcome }}"
+            echo "- bin smoke (--version, --mcp tools/list): ${{ steps.smoke.outcome }}"
+            echo "- tarball contract: ${{ steps.tarball.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Next local command
+        if: failure()
+        run: |
+          {
+            echo "## Publish / npm failed"
+            echo "Nothing was published unless the publish step itself is the one that failed."
+            echo "Re-run the failing gate locally:"
+            [ "${{ steps.version.outcome }}" = "failure" ] && echo "- next: put every package.json on the tag's version"
+            [ "${{ steps.install.outcome }}" = "failure" ] && echo "- next: pnpm install --frozen-lockfile"
+            [ "${{ steps.verify.outcome }}" = "failure" ] && echo "- next: pnpm verify"
+            [ "${{ steps.build.outcome }}" = "failure" ] && echo "- next: pnpm build:launcher"
+            [ "${{ steps.smoke.outcome }}" = "failure" ] && echo "- next: node packages/launcher/dist/cli.js --mcp"
+            [ "${{ steps.tarball.outcome }}" = "failure" ] && echo "- next: cd packages/launcher && npm pack --dry-run"
+            [ "${{ steps.publish.outcome }}" = "failure" ] && echo "- next: see docs/npm-launcher.md for what a half-finished publish leaves behind"
+          } >> "$GITHUB_STEP_SUMMARY"

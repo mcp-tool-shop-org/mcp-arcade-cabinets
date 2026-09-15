@@ -1,6 +1,35 @@
-# HANDOFF — Ghost on the Menu, v0.7.0
+# HANDOFF — Ghost on the Menu, v0.8.0 staged
 
-Read this, then `CLAUDE.md`, then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`, still not npm.
+Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **No longer "not npm": one package publishes** — see below.
+
+## Staged on `main`, untagged: the npm launcher (Claude, 2026-09-14)
+
+**The Director lifted the never-npm rule for one package.** `packages/launcher` publishes as `@mcptoolshop/ghost-on-the-menu`; the other four stay `"private": true`. `npx @mcptoolshop/ghost-on-the-menu` serves the shell on loopback with the Ollama and voice seats reachable — the thing Pages structurally cannot do — and `--mcp` hands stdio to the cabinet server, so `npx` joins Docker as an install path for the MCP seat. No runtime dependencies: esbuild bundles the workspace in, which is what keeps it to one package.
+
+Everything is built and measured but **nothing is published and nothing is tagged.** The numbers, the refusals, the standards scoring and the compensators are in `docs/npm-launcher.md`. All packages are bumped to `0.8.0`.
+
+**Trusted Publishing is already configured** (Director, 2026-09-14): `@mcptoolshop/ghost-on-the-menu` → repo `mcp-tool-shop-org/mcp-arcade-cabinets`, workflow `release.yml`, **no environment**, permissions `npm publish` + `npm stage publish`. It was configured on a name with **zero published versions** — the npmjs.com web UI allows that, whatever the `npm trust` CLI docs say about the CLI. The registry still 404s the name; the first CI publish is what creates it.
+
+A `0.0.0` placeholder is **staged and deliberately unpublished** at `E:/AI/ghost-on-the-menu-placeholder/` (a sibling, not in this repo; `npm pack --dry-run` clean, 2 files, 516 B). It is the fallback for exactly one failure: the first OIDC publish returning `E404`.
+
+What the Director does, in order:
+
+1. **Dry-run the rails**: Actions → Publish → `workflow_dispatch` with the dry-run box ticked. Nothing is published; the five gates run. Note this does **not** exercise OIDC auth — only a real release does.
+2. **Play it**: `pnpm build:launcher`, then `node packages/launcher/dist/cli.js` with the daemon up. The seats should light the way they do under `pnpm dev`.
+3. **Add the `npx` line to the front-door `README.md`** — deliberately left out for now. The repo README is public the moment `main` moves, and `npx @mcptoolshop/ghost-on-the-menu` 404s until the first publish; a front door does not carry a command that does not work. It belongs in the release commit, where it lands together with the translations of it. The package's own README (`packages/launcher/README.md`) is written and ships in the tarball — that one is only visible once the package exists, so it has no such gap. Bump the GHCR tag in both READMEs to `0.8.0` in the same commit, once the image is pushed.
+4. **Translations before the tag**, not after (the v0.7.0 lesson, still owed from that tag). They must run _after_ the README edit above, or they ship stale — the whole point of the v0.7.0 ordering fix.
+5. **Run the tracked-tree identity scan.** It was not run this session — the tool is not on this rig — so `SHIP_GATE.md` carries the 2026-09-10 result forward and says so. A targeted grep of the new files for the operator's identity and rig paths came back empty, and Gates H, I, J and L passed against the real tarball, but the tree scan is still owed before the push.
+6. **Grok reviews this diff** before the tag — the EXTERNAL_VERIFIER remediation named in `docs/npm-launcher.md`, and the only standard scoring below 2.
+7. Then tag `v0.8.0` and cut the release. **Read this twice:** cutting the release fires `release.yml`. A GitHub release is no longer an undoable act — after 72 hours an npm version cannot be unpublished, only deprecated.
+   - **If the publish E404s:** that is a masked auth failure, not a missing package. Check the TP config matches (repo, `release.yml`, and that neither side names an environment). If it matches, publish the staged placeholder — `npm login`, then `npm publish E:/AI/ghost-on-the-menu-placeholder --access public` — and `gh run rerun <id> --failed`. The release tag stays; only the publish is retried.
+8. **After the first CI publish:** flip "Require 2FA and disallow tokens" on the access page — not before, or you lock the rails out. If the placeholder was used, `npm deprecate @mcptoolshop/ghost-on-the-menu@0.0.0 "placeholder"`.
+9. **Record what happened** in `npm-placeholder-bootstrap.md`. Whether the first OIDC publish creates the package on a TP-first name is still the open question there — this release settles it either way, and it is the one data point that playbook needs.
+
+Deferred from v0.7.0 and still open: the translations, the Comfy Cloud polish of the five sprites, `archivist.mp3`, and the health leftovers listed below.
+
+---
+
+# History — pickup after v0.7.0
 
 **Pickup after v0.7.0 (Grok, 2026-09-14, dogfood swarm + full treatment, published on the Director's word).** Tag `v0.7.0` at `34433f5`. GitHub release, Pages, GHCR `:0.7.0` (`linux/amd64`+`linux/arm64`, digest `sha256:162480aa60565d6c629b82ef58dc158151f9490d3a669c5f579b53a7af16314d`). Catalog PR docker/mcp-registry#5061 still sealed (network off, no voice), awaiting Docker. The player is the agent; a shift is four flavored calls.
 

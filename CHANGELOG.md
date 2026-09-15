@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Owed on a follow-up commit, not a retag of `v0.7.0`: README translations (GPU was busy); Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag.
+Staged for `0.8.0`, built and measured, **not published and not tagged**. Owed before the tag: README translations (still owed from `v0.7.0`, GPU was busy); Grok's review of this diff; Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag.
+
+### Added
+
+- **The npm launcher.** `packages/launcher` publishes as `@mcptoolshop/ghost-on-the-menu` — the first and only package in this repo to reach a registry, on the Director's word of 2026-09-14. `npx @mcptoolshop/ghost-on-the-menu` serves the built shell on `127.0.0.1` and opens it; `--mcp` hands stdio to the cabinet server, so `npx` joins the Docker image as an install path for the MCP seat. `--port`, `--no-open`, `--help`, `--version`.
+- **The local seats, without a clone.** The launcher carries the two allowlisted proxies and the say route that `apps/cabinets/vite.config.ts` gives a developer, minus Vite, so a player who only ran `npx` gets the Ollama bosses and the voice. This is the difference from the published page, which cannot reach a daemon.
+- **`release.yml`** on `release: published` and a dry-running `workflow_dispatch`. npm Trusted Publishing (OIDC) with provenance; no `NPM_TOKEN` in this repo. Five gates halt before the irreversible step: version-matches-tag, `pnpm verify`, the build, a bin smoke that runs a real `tools/list` over stdio, and a tarball contract (required files present, no sources leaked, twenty tapes).
+- **`pnpm build:launcher`** at the root, and `docs/npm-launcher.md` — the numbers, the refusals, the standards scoring, and the compensators table.
+
+### Changed
+
+- Every package is on `0.8.0`. Still `0.x`; the cabinet lock is unchanged.
+- **Cutting a GitHub release now publishes to npm.** It used to be an undoable act; after 72 hours an npm version can only be deprecated, never unpublished. `docs/npm-launcher.md` carries the compensators.
+- `tape-core`, `ghost-on-the-menu`, `cabinet-server` and `cabinets` stay `"private": true`. The launcher declares no runtime dependencies so bundling, not the registry, resolves them.
 
 ## [0.7.0] - 2026-09-14
 
