@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { fill, LinePicker, safeTitle } from '../src/lines';
+import { askFor, fill, LinePicker, safeTitle } from '../src/lines';
 import { DEFAULT_PATTERNS, lineFault } from '../src/patterns';
 import { DEFAULT_CORPUS } from '../src/corpus';
 import type { Snippet } from '../src/types';
 
-const SNIPPET = DEFAULT_CORPUS.byStack.bash![0]!;
+function bash(id: string): Snippet {
+  const found = DEFAULT_CORPUS.byStack.bash!.find((s) => s.id === id);
+  if (!found) throw new Error(`no snippet ${id}`);
+  return found;
+}
+
+/** A snippet with no ask of its own: the template pool answers for it. */
+const SNIPPET = bash('cal-sh-d1-002');
+/** A snippet that carries its own ask, and whose topics nobody has written for. */
+const OWN_ASK = bash('cal-sh-d1-001');
 
 function picker(seed = 3, tier: 0 | 1 | 2 | 3 = 0): LinePicker {
   const p = new LinePicker(DEFAULT_PATTERNS, { seed, tier });
@@ -36,7 +45,7 @@ describe('the line picker', () => {
       expect(a.ask('python', 'Uber but for ducks', SNIPPET)).toBe(
         b.ask('python', 'Uber but for ducks', SNIPPET),
       );
-      expect(a.reaction()).toBe(b.reaction());
+      expect(a.reaction(OWN_ASK)).toBe(b.reaction(OWN_ASK));
     }
   });
 
@@ -71,7 +80,96 @@ describe('the line picker', () => {
   it('reads hardcore in tier two words', () => {
     const hard = picker(6, 3);
     const easy = picker(6, 2);
-    expect(hard.reaction()).toBe(easy.reaction());
+    // A snippet whose topics carry no pool of their own reads the tier pool.
+    expect(hard.reaction(OWN_ASK)).toBe(easy.reaction(OWN_ASK));
+  });
+
+  it('walks the check-ins and the answers without a repeat inside a level', () => {
+    const p = picker();
+    const nags = new Set<string>();
+    const replies = new Set<string>();
+    for (let i = 0; i < 12; i++) {
+      nags.add(p.nag());
+      replies.add(p.nagReply());
+    }
+    expect(nags.size).toBe(12);
+    expect(replies.size).toBe(12);
+    for (const line of nags) expect(DEFAULT_PATTERNS.user.nags).toContain(line);
+    for (const line of replies) expect(DEFAULT_PATTERNS.agent.nagReplies).toContain(line);
+  });
+
+  it('keeps every check-in and every answer inside the gate', () => {
+    for (const line of DEFAULT_PATTERNS.user.nags) expect(lineFault(line)).toBeNull();
+    for (const line of DEFAULT_PATTERNS.agent.nagReplies) expect(lineFault(line)).toBeNull();
+    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(12);
+    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('reacts to the piece by its topic when a topic has been written for', () => {
+    const byTopic = DEFAULT_PATTERNS.user.reactionsByTopic;
+    const topic = SNIPPET.topics.find((t) => byTopic[t] !== undefined);
+    expect(topic).toBeDefined();
+    const pool = byTopic[topic!]!;
+    const p = picker();
+    const said = new Set<string>();
+    for (let i = 0; i < pool.length; i++) said.add(p.reaction(SNIPPET));
+    expect([...said].sort()).toEqual([...pool].sort());
+    // The tier pool still answers a snippet nobody has written a topic for.
+    expect(DEFAULT_PATTERNS.user.reactions['0']).toContain(picker().reaction(OWN_ASK));
+  });
+
+  it('reviews a product from its own pool, and falls back to the generic one', () => {
+    const byProduct = DEFAULT_PATTERNS.user.reviewsByProduct;
+    const id = Object.keys(byProduct)[0]!;
+    const pool = byProduct[id]!;
+    const p = picker();
+    for (let i = 0; i < pool.length; i++) expect(pool).toContain(p.review(id));
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(picker().review('no-such-level'));
+  });
+
+  it('names every product pool after a level that exists', () => {
+    const ids = new Set(DEFAULT_PATTERNS.levels.levels.map((l) => l.id));
+    for (const id of Object.keys(DEFAULT_PATTERNS.user.reviewsByProduct)) {
+      expect(ids, id).toContain(id);
+    }
+  });
+
+  it('names every topic pool after a topic the corpus carries', () => {
+    const topics = new Set(DEFAULT_CORPUS.snippets.flatMap((s) => s.topics));
+    for (const topic of Object.keys(DEFAULT_PATTERNS.user.reactionsByTopic)) {
+      expect(topics, topic).toContain(topic);
+    }
+  });
+});
+
+describe('the ask a snippet carries', () => {
+  it('uses the snippet own words and spends no draw from the pool', () => {
+    const p = picker();
+    const product = 'a website for my cat';
+    expect(p.ask('bash', product, OWN_ASK)).toBe(OWN_ASK.ask);
+    // The template bag is untouched, so the next drawn ask is the pool's first.
+    const fresh = picker();
+    expect(p.ask('bash', product, SNIPPET)).toBe(fresh.ask('bash', product, SNIPPET));
+  });
+
+  it('falls back to the template pool for a snippet without one', () => {
+    const p = picker();
+    const line = p.ask('bash', 'a website for my cat', SNIPPET);
+    expect(SNIPPET.ask).toBeUndefined();
+    expect(line).not.toContain('{product}');
+    expect(line).not.toContain('{title}');
+  });
+
+  it('fills the product into a snippet own ask, and never a title', () => {
+    const withHole: Snippet = { ...SNIPPET, ask: 'can {product} do the thing' };
+    expect(askFor(withHole, 'Uber but for ducks', picker(), 'bash')).toBe(
+      'can Uber but for ducks do the thing',
+    );
+    for (const snippet of DEFAULT_CORPUS.snippets) {
+      if (snippet.ask === undefined) continue;
+      expect(lineFault(snippet.ask), snippet.id).toBeNull();
+      expect(snippet.ask, snippet.id).not.toContain('{title}');
+    }
   });
 });
 

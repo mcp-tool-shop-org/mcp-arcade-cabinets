@@ -437,6 +437,38 @@
       "call the press, then call my mother"
     ]
   },
+  "reactionsByTopic": {
+    "print": [
+      "it says things now, out loud, in the terminal",
+      "look at it talking to me",
+      "the words came out, i saw them"
+    ],
+    "strings": [
+      "the words all stick together properly now",
+      "it knows how to say a name",
+      "lovely, the letters are behaving"
+    ],
+    "variables": [
+      "the little names for things, i adore that",
+      "it remembers what i told it",
+      "everything has a label now, very tidy"
+    ],
+    "arithmetic": [
+      "it does the math so i do not have to",
+      "numbers going in, answers coming out",
+      "my accountant will be so relieved"
+    ],
+    "for-loop": [
+      "it does the boring bit over and over",
+      "one line, and it repeats forever, wonderful",
+      "look at it going round and round"
+    ],
+    "functions": [
+      "we can call it whenever we want now",
+      "a little machine i can press, delightful",
+      "reusable, my cousin will be thrilled"
+    ]
+  },
   "creeps": [
     "oh also can it work on my phone",
     "oh also can we add one small button",
@@ -460,6 +492,36 @@
     "this is the best day of the quarter",
     "i want to do the next one immediately",
     "put it on the internet, all of it"
+  ],
+  "reviewsByProduct": {
+    "cat-website": [
+      "the cat has seen it and did not walk away",
+      "the cat's followers are going to be thrilled",
+      "it is beautiful, the cat agrees"
+    ],
+    "duck-rides": [
+      "the ducks are already lining up",
+      "my cousin has ordered a duck to his house",
+      "this is going to change waterfowl forever"
+    ]
+  },
+  "nags": [
+    "how is it going",
+    "any update",
+    "is it live yet",
+    "can i see it",
+    "are you done yet",
+    "my cousin is asking",
+    "just checking in",
+    "how long do you think",
+    "is it nearly there",
+    "status",
+    "still going",
+    "quick one, how far along",
+    "sorry to interrupt",
+    "did that work",
+    "should i tell the investors",
+    "is the fun part soon"
   ],
   "syncs": [
     "sounds good",
