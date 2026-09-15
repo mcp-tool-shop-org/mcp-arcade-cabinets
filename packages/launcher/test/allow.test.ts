@@ -24,9 +24,11 @@ describe('the launcher allowlists', () => {
   it('lets through exactly what the shell calls on the daemon', () => {
     expect(allowed('ollama', 'GET', '/api/tags')).toBe(true);
     expect(allowed('ollama', 'POST', '/api/chat')).toBe(true);
+    expect(allowed('ollama', 'POST', '/api/generate')).toBe(true);
     // The methods are not interchangeable.
     expect(allowed('ollama', 'POST', '/api/tags')).toBe(false);
     expect(allowed('ollama', 'GET', '/api/chat')).toBe(false);
+    expect(allowed('ollama', 'GET', '/api/generate')).toBe(false);
   });
 
   it('refuses every way to make the daemon do work', () => {
@@ -36,7 +38,6 @@ describe('the launcher allowlists', () => {
       '/api/create',
       '/api/delete',
       '/api/copy',
-      '/api/generate',
       '/api/embeddings',
       '/api/blobs/sha256:00',
       '/',

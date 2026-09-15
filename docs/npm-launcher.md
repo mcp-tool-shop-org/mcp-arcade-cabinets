@@ -67,7 +67,7 @@ Every irreversible call, its undo, and what the undo leaves behind.
 - **Publishing the game library.** No consumer, and it would pull three private packages onto the registry behind it.
 - **A `dependencies` block.** Bundling is what keeps this to one package. A single runtime dependency would put the `@mcp-arcade-cabinets/*` scope on npm.
 - **Binding anything but `127.0.0.1`.** The launcher hands a browser a path to the player's own daemon; a bind on another interface hands it to their network. Not an option, not a flag.
-- **A general proxy.** The allowlist is six calls. Convenient as `/ollama/*` would be, it is a remote-control for a daemon that can pull and delete models.
+- **A general proxy.** The allowlist is seven calls (tags, chat, generate, health, stats, speak, cached takes). Convenient as `/ollama/*` would be, it is a remote-control for a daemon that can pull and delete models. Generate is the next-verb seat, not a general completion proxy.
 - **Fetching the beds on first run** to cut the tarball below 6 MB. It would trade a fixed 5 MB for a network dependency and a fail-open path, against the fail-closed `TRACK_KEYS` discipline the shell already keeps.
 - **`NPM_TOKEN`.** Trusted Publishing or nothing. There is no long-lived registry credential in this repo.
 - **1.0.0.** npm takes `0.x` and `0.x` is true. The cabinet lock is unchanged.

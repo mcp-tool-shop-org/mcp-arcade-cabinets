@@ -58,8 +58,8 @@ Environment
   CABINET_TAPES     a directory of tapes to play instead of the bundled ones
 
 The server listens on ${HOST} only. Ollama and the voice worker are reached
-through a fixed allowlist: model list and chat, worker health and stats,
-speak and its cached takes. Nothing else is proxied.`;
+through a fixed allowlist: model list, chat and generate, worker health and
+stats, speak and its cached takes. Nothing else is proxied.`;
 
 /** Read the arguments. Pure, so the table of cases is a test. */
 export function parseArgs(argv: readonly string[]): Args {

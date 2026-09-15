@@ -54,13 +54,15 @@ const AUDIO_RE = /^\/audio\/[a-f0-9]{8,64}\.wav$/i;
 
 /**
  * Does this method and path reach the upstream? The listed pairs are the
- * ones the shell calls and no others: no pull, no delete, no create, no
- * generate on the daemon; no arbitrary file read on the worker.
+ * ones the shell calls and no others: no pull, no delete, no create on
+ * the daemon; generate is the next-verb seat. No arbitrary file read on
+ * the worker. Keep in step with apps/cabinets/vite.config.ts.
  */
 export function allowed(up: Upstream, method: string, rest: string): boolean {
   if (up === 'ollama') {
     if (method === 'GET' && rest === '/api/tags') return true;
     if (method === 'POST' && rest === '/api/chat') return true;
+    if (method === 'POST' && rest === '/api/generate') return true;
     return false;
   }
   if (method === 'GET' && (rest === '/health' || rest === '/stats')) return true;

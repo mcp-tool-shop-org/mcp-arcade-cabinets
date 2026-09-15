@@ -30,7 +30,7 @@ const SAY_MAX_MODELS = 32;
 const SAY_STR = 200;
 const PROXY_TIMEOUT_MS = 120_000;
 
-const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
+const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const HP_WORDS = ['high', 'mid', 'low'] as const;
 const COLUMNS = ['left', 'center', 'right'] as const;
 const STICKS = ['still', 'left', 'right'] as const;

@@ -1,6 +1,6 @@
 {
   "name": "mcp-arcade-cabinets",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "description": "Ghost on the Menu: an arcade shooter where you are the agent, working through what MCP servers said on the wire. Reads mcp-arcade tapes and never touches the score.",
   "license": "MIT",
@@ -20,7 +20,7 @@
     "sit": "node scripts/sit.mjs",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:play ghost --fixture naive-ndjson",
     "build:play": "cross-env PLAY_BASE=/mcp-arcade-cabinets/play/ PLAY_OUT=../../site/public/play pnpm -F @mcp-arcade-cabinets/cabinets build",
-    "build:launcher": "pnpm build && pnpm -F @mcptoolshop/ghost-on-the-menu pack:dist",
+    "build:launcher": "pnpm -F @mcp-arcade-cabinets/cabinet-server build && cross-env VITE_LOCAL_SEATS=true pnpm -F @mcp-arcade-cabinets/cabinets build && pnpm -F @mcptoolshop/ghost-on-the-menu pack:dist",
     "voice": "node scripts/voice.mjs"
   },
   "devDependencies": {

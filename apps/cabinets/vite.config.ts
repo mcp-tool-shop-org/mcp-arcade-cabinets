@@ -14,7 +14,7 @@ const SAY_MAX_RECENT = 16;
 const SAY_MAX_MODELS = 32;
 const SAY_STR = 200;
 
-const BOSS_KINDS = ['whisperer', 'menu', 'doorman'] as const;
+const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const HP_WORDS = ['high', 'mid', 'low'] as const;
 const COLUMNS = ['left', 'center', 'right'] as const;
 const STICKS = ['still', 'left', 'right'] as const;
@@ -87,7 +87,8 @@ function notFound(res: ServerResponse): void {
 /**
  * Dev-only reverse proxies stay on loopback, but the browser can still hit
  * the Vite port. Allow only the paths the shell uses; reject pull/delete/
- * create/generate. GET /stats is the authenticated liveness probe.
+ * create. POST /api/generate is the next-verb seat. GET /stats is the
+ * authenticated liveness probe. Keep in step with packages/launcher/src/allow.ts.
  */
 function devAllowlists(): Plugin {
   return {
@@ -103,6 +104,10 @@ function devAllowlists(): Plugin {
             return;
           }
           if (rest === '/api/chat' && method === 'POST') {
+            next();
+            return;
+          }
+          if (rest === '/api/generate' && method === 'POST') {
             next();
             return;
           }

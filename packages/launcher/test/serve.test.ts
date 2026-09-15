@@ -130,7 +130,7 @@ describe('the launcher server', () => {
     expect(res.status).toBe(405);
   });
 
-  it('passes the two allowlisted daemon calls through', async () => {
+  it('passes the three allowlisted daemon calls through', async () => {
     seen.length = 0;
     const tags = await fetch(`${base}/ollama/api/tags`);
     expect(tags.status).toBe(200);
@@ -140,12 +140,22 @@ describe('the launcher server', () => {
       body: JSON.stringify({ model: 'x', messages: [] }),
     });
     expect(chat.status).toBe(200);
-    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual(['GET /api/tags', 'POST /api/chat']);
+    const gen = await fetch(`${base}/ollama/api/generate`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'x', prompt: 'hold' }),
+    });
+    expect(gen.status).toBe(200);
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'GET /api/tags',
+      'POST /api/chat',
+      'POST /api/generate',
+    ]);
   });
 
   it('never opens a socket for a daemon path outside the allowlist', async () => {
     seen.length = 0;
-    for (const bad of ['/ollama/api/pull', '/ollama/api/delete', '/ollama/api/generate']) {
+    for (const bad of ['/ollama/api/pull', '/ollama/api/delete', '/ollama/api/create']) {
       const res = await fetch(`${base}${bad}`, { method: 'POST' });
       expect(res.status, bad).toBe(404);
     }
@@ -209,8 +219,16 @@ describe('what the say route will accept as a view', () => {
     expect(parseSeatView(good)).toEqual(good);
   });
 
+  it('takes the Archivist, the fourth boss kind', () => {
+    expect(parseSeatView({ ...good, kind: 'archivist', wave: 'inspect' })).toEqual({
+      ...good,
+      kind: 'archivist',
+      wave: 'inspect',
+    });
+  });
+
   it('refuses a view with a word outside the closed set', () => {
-    expect(parseSeatView({ ...good, kind: 'archivist' })).toBeNull();
+    expect(parseSeatView({ ...good, kind: 'oracle' })).toBeNull();
     expect(parseSeatView({ ...good, hp: '40' })).toBeNull();
     expect(parseSeatView({ ...good, wave: 'shift' })).toBeNull();
     expect(parseSeatView({ ...good, motion: 7 })).toBeNull();

@@ -1,28 +1,43 @@
-# HANDOFF — Ghost on the Menu, v0.8.1
+# HANDOFF — Ghost on the Menu, v0.8.2
 
-Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **One package is on npm now** — see below.
+Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/npm-launcher.review.md` (Grok, 2026-09-14, no halt; the three changes applied), then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **One package is on npm** — `@mcptoolshop/ghost-on-the-menu`. Install **0.8.2** once this tag is cut; `0.8.1` play mode is the Pages chrome.
+
+## v0.8.2 (Grok, 2026-09-14, launcher seats — Grok's review applied)
+
+The three changes from `docs/npm-launcher.review.md`, on `main`, untagged until the Director cuts it. Do not retag `v0.8.0` or `v0.8.1`.
+
+- **Play mode lights the local seats.** `VITE_LOCAL_SEATS=true` at pack time. Pages still omits them. The pack andons if the play bundle is missing `data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, or `Ollama bosses`. Measured: launcher bundle has all four; a plain `vite build` has none of the first three.
+- **Archivist sits the say seat.** `BOSS_KINDS` in `packages/launcher/src/serve.ts` and `apps/cabinets/vite.config.ts` is four kinds, in step with the sim.
+- **Next-verb is `POST /api/generate`** on both allowlists. Pull/delete/create still 404 before a socket opens. Fire stays on `/api/chat`.
+
+`--mcp` is unchanged and still the path that already worked.
+
+### Two things the Director still owns
+
+1. **Flip "Require 2FA and disallow tokens"** on the package access page.
+2. **`npm deprecate @mcptoolshop/ghost-on-the-menu@0.0.0 "placeholder"`** — and, if wanted, deprecate `0.8.0` for the wrong handshake. `0.8.1` play mode is the Pages chrome; say so if you deprecate that too.
+
+### Still open
+
+- **Bump the GHCR tag** in both READMEs once an `0.8.x` image is pushed; they correctly still say `0.7.0`. GHCR has `:0.5.0`, `:0.6.0`, `:0.7.0` only.
+- Still deferred from v0.7.0: Comfy Cloud polish of `probe.png`, `shelf.png`, `ledger.png`, `boss-archivist*.png`; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as a real mix preset; silent `takeEl.play()`; mix-overlap unasserted; `pnpm film` never captures the end scene; Catalog `source.commit` trails HEAD.
+- **Still parked:** House Call; slice 5 stingers/backdrops; no MCP shift/climb tool; no next-verb MCP tools.
+
+## Pickup after v0.8.1 (Grok, 2026-09-14, the launcher review) — history
+
+Tag `v0.8.1` at `8ac309f`. [GitHub release](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.8.1). npm `0.8.1` published 2026-09-15T00:46:17Z. Grok reviewed the launcher (`docs/npm-launcher.review.md`). No halt in the sim lane. Tracked-tree identity scan **CLEAN**. The three changes landed as v0.8.2 above.
+
+## Shipped in v0.8.1 (Claude, 2026-09-14, handshake fix + npm hero)
+
+Tag `v0.8.1` at `8ac309f`. The MCP seat announces `0.8.1`. The release gate now reads `SERVER_VERSION` out of the source and halts on a mismatch (negative-tested). Hero art on the npm-only README (absolute raw URL). Repo README translations were not owed.
 
 ## Shipped in v0.8.0 (Claude, 2026-09-14, the npm launcher, published on the Director's word)
 
 Tag `v0.8.0` at `d0b17b7`. [GitHub release](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.8.0), Pages, and **npm**: [`@mcptoolshop/ghost-on-the-menu@0.8.0`](https://www.npmjs.com/package/@mcptoolshop/ghost-on-the-menu) — published by CI over OIDC with provenance (`_npmUser: "GitHub Actions"`, sigstore log index 2837055244, 63 files, 6.0 MB packed). Translations shipped **with** the tag this time, all eight languages.
 
-`packages/launcher` is the only package that publishes; the other four stay `"private": true`. It declares no runtime dependencies — esbuild collapses the workspace — which is what keeps this to one package. `npx @mcptoolshop/ghost-on-the-menu` serves the shell on loopback with the local seats reachable; `--mcp` is the stdio cabinet server. Both smoke-tested from the registry after publish.
+`packages/launcher` is the only package that publishes; the other four stay `"private": true`. It declares no runtime dependencies — esbuild collapses the workspace — which is what keeps this to one package. `npx @mcptoolshop/ghost-on-the-menu` serves the shell on loopback; `--mcp` is the stdio cabinet server. **Play-mode local seats are the v0.8.2 patch** — see the review. `--mcp` was smoke-tested from the registry after publish.
 
 **Cutting a GitHub release now publishes to npm.** After 72 hours an npm version can only be deprecated, never unpublished. Compensators in `docs/npm-launcher.md`.
-
-### Two things the Director still owns
-
-1. **Flip "Require 2FA and disallow tokens"** on the package access page — a CI publish has now succeeded, so the lockout risk is past.
-2. **`npm deprecate @mcptoolshop/ghost-on-the-menu@0.0.0 "placeholder"`** — the bootstrap placeholder is still `0.0.0` in the version list. `latest` is correctly `0.8.0`.
-
-### Open on `main`, untagged
-
-- **`SERVER_VERSION` was stale in `v0.8.0` and is fixed in `v0.8.1`.** `v0.8.0` announced itself as `0.7.0` in the MCP handshake; the release gate now reads the constant out of the source and halts on a mismatch (negative-tested). `0.8.0` on npm keeps the wrong handshake forever — it can only be deprecated — so `0.8.1` is the one to install.
-- **The tracked-tree identity scan is still owed.** The tool is not on this rig. Gates H, I, J and L passed against the real tarball and a targeted grep of the new surface came back empty, but the tree scan did not run.
-- **Grok's review of this diff** — the EXTERNAL_VERIFIER remediation named in `docs/npm-launcher.md`, the only standard scoring below 2.
-- **Bump the GHCR tag** in both READMEs once an `0.8.x` image is pushed; they correctly still say `0.7.0`.
-- Still deferred from v0.7.0: Comfy Cloud polish of `probe.png`, `shelf.png`, `ledger.png`, `boss-archivist*.png`; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as a real mix preset; silent `takeEl.play()`; mix-overlap unasserted; `pnpm film` never captures the end scene; Catalog `source.commit` trails HEAD.
-- **Still parked:** House Call; slice 5 stingers/backdrops; no MCP shift/climb tool; no next-verb MCP tools.
 
 ### What this release taught, kept because it will recur
 

@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the tracked-tree identity scan; Grok's review of the v0.8.0/v0.8.1 diff; the GHCR `0.8.x` image and the README Docker tag that follows it.
+Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the GHCR `0.8.x` image and the README Docker tag that follows it.
+
+## [0.8.2] - 2026-09-14
+
+The npm play path lights the local seats. Grok's review of v0.8.0/v0.8.1 (`docs/npm-launcher.review.md`) found that `npx` served the Pages chrome: `import.meta.env.PROD` stripped the Ollama / Voice / model picker, so the proxies sat unused. `--mcp` was already fine.
+
+### Fixed
+
+- **Launcher play mode mounts the local seats.** `VITE_LOCAL_SEATS=true` at pack time. Pages still omits them (cannot reach a daemon). The pack andons if the play bundle is missing `data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, or `Ollama bosses`.
+- **Archivist can sit the say seat.** `BOSS_KINDS` in the launcher and the Vite say route includes the fourth boss, in step with the sim.
+- **Next-verb reaches the daemon.** `POST /api/generate` is on both allowlists (the fire seat stays on `/api/chat`). Pull, delete and create still 404 before a socket opens.
+
+### Changed
+
+- Every package is on `0.8.2`. `SERVER_VERSION` matches.
+- Allowlist is seven calls, not six. Keep the two copies in step (`allow.ts` and `vite.config.ts`).
 
 ## [0.8.1] - 2026-09-14
 

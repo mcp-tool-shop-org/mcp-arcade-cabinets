@@ -76,7 +76,7 @@ Without a daemon the bosses fly their scripted phases, which is the game as desi
 
 The server binds `127.0.0.1` and only `127.0.0.1` — the game is not put on your network.
 
-Your daemon is reached through a fixed allowlist, not a general proxy. Six calls pass and no others: the model list and chat on Ollama; health, stats, speak and cached takes on the voice worker. Everything else is a 404 before a socket is opened — no pull, no delete, no create, no generate. `VOICE_TOKEN` and `ANTHROPIC_API_KEY` are used on the node side and never reach the page.
+Your daemon is reached through a fixed allowlist, not a general proxy. Seven calls pass and no others: the model list, chat and generate on Ollama; health, stats, speak and cached takes on the voice worker. Everything else is a 404 before a socket is opened — no pull, no delete, no create. `VOICE_TOKEN` and `ANTHROPIC_API_KEY` are used on the node side and never reach the page.
 
 No telemetry, no analytics, no network call of its own. The `--mcp` server needs no network at all.
 

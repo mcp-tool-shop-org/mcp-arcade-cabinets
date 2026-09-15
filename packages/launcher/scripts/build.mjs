@@ -21,7 +21,7 @@
 //   EXTERNAL_VERIFIER 1 — CI runs the published bin, which is a different
 //     process than the one that built it, but not a different family.
 
-import { cp, mkdir, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -126,6 +126,30 @@ async function main() {
       ...absent.map((rel) => `- missing: dist/${rel}`),
       '',
       'next: pnpm build:launcher (from the repo root)',
+    ]);
+  }
+
+  // The reason this package exists: local seats in the served shell.
+  // A Pages `vite build` (PROD, no VITE_LOCAL_SEATS) DCE's the chrome and
+  // still contains the label strings. Grep the unique mount mark.
+  const assets = path.join(dist, 'play', 'assets');
+  const names = (await readdir(assets)).filter((n) => n.endsWith('.js'));
+  let playJs = '';
+  for (const n of names) playJs += await readFile(path.join(assets, n), 'utf8');
+  const seats = [
+    ['data-local-seats', 'the seats mount mark'],
+    ['/ollama/api/tags', 'the daemon probe'],
+    ['/ollama/api/generate', 'the next-verb seat'],
+    ['Ollama bosses', 'the Ollama checkbox'],
+  ];
+  const stripped = seats.filter(([needle]) => !playJs.includes(needle));
+  if (stripped.length > 0) {
+    halt([
+      'launcher: the play shell is the Pages shell — local seats were stripped',
+      ...stripped.map(([, what]) => `- missing: ${what}`),
+      '',
+      'next: VITE_LOCAL_SEATS=true pnpm -F @mcp-arcade-cabinets/cabinets build',
+      '     then pnpm build:launcher',
     ]);
   }
 

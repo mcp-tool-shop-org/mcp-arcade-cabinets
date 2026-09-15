@@ -67,6 +67,14 @@ import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { TAPES } from './tapes';
 
+/**
+ * Pages cannot reach a daemon, so the production Pages build omits the
+ * Ollama / Voice chrome. The launcher is a production build that *can*
+ * reach one: `VITE_LOCAL_SEATS=true` at pack time. Dev (`pnpm … dev`)
+ * is never PROD, so the seats stay on there either way.
+ */
+const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
+
 const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
 /** The tier the round plays at: as the tape's header derives it, or forced. */
@@ -313,7 +321,7 @@ export function mountGhost(
   const seat = document.createElement('span');
   seat.className = 'muted seat';
   liveStatus(seat, 'seat');
-  seat.textContent = import.meta.env.PROD ? '' : 'seat: looking for a daemon';
+  seat.textContent = LOCAL_SEATS ? 'seat: looking for a daemon' : '';
   const sayStat = document.createElement('span');
   sayStat.className = 'muted seat';
   liveStatus(sayStat, 'say seat');
@@ -403,7 +411,7 @@ export function mountGhost(
         voiceProbe = window.setTimeout(probeVoice, 5000);
       });
   };
-  if (!import.meta.env.PROD) probeVoice();
+  if (LOCAL_SEATS) probeVoice();
   let daemon: 'unknown' | 'up' | 'down' = 'unknown';
   let daemonWasUp = false;
   let listedModels: string[] = [];
@@ -437,7 +445,11 @@ export function mountGhost(
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
   controls.append(full, difficulty, mute, intensity, shakeLabel);
-  if (!import.meta.env.PROD) controls.append(ollamaLabel, voiceLabel, pilotModel);
+  if (LOCAL_SEATS) {
+    // Unique string the launcher pack greps for: a Pages build DCE's this.
+    controls.setAttribute('data-local-seats', 'on');
+    controls.append(ollamaLabel, voiceLabel, pilotModel);
+  }
   controls.append(nextBtn);
   const statusRow = document.createElement('div');
   statusRow.className = 'row';
@@ -1007,7 +1019,7 @@ export function mountGhost(
         tagsProbe = window.setTimeout(probeTags, 5000);
       });
   };
-  if (!import.meta.env.PROD) probeTags();
+  if (LOCAL_SEATS) probeTags();
 
   function frame(now: number) {
     const dt = Math.min(0.05, (now - last) / 1000);
