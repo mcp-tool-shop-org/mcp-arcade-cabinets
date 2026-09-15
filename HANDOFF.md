@@ -1,10 +1,12 @@
 # HANDOFF — Ghost on the Menu, v0.8.2
 
-Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/npm-launcher.review.md` (Grok, 2026-09-14, no halt; the three changes applied), then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **One package is on npm** — `@mcptoolshop/ghost-on-the-menu`. Install **0.8.2** once this tag is cut; `0.8.1` play mode is the Pages chrome.
+Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/npm-launcher.review.md` (Grok, 2026-09-14, no halt; the three changes applied), then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **One package is on npm** — `@mcptoolshop/ghost-on-the-menu@0.8.2` is the one to install. `0.8.1` play mode is the Pages chrome; `0.8.0` handshook as `0.7.0`.
 
-## v0.8.2 (Grok, 2026-09-14, launcher seats — Grok's review applied)
+## Shipped in v0.8.2 (Grok, 2026-09-14, launcher seats, published on the Director's word)
 
-The three changes from `docs/npm-launcher.review.md`, on `main`, untagged until the Director cuts it. Do not retag `v0.8.0` or `v0.8.1`.
+Tag `v0.8.2` at this commit. GitHub release; npm follows from `release.yml`. Do not retag `v0.8.0` or `v0.8.1`.
+
+The three changes from `docs/npm-launcher.review.md`:
 
 - **Play mode lights the local seats.** `VITE_LOCAL_SEATS=true` at pack time. Pages still omits them. The pack andons if the play bundle is missing `data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, or `Ollama bosses`. Measured: launcher bundle has all four; a plain `vite build` has none of the first three.
 - **Archivist sits the say seat.** `BOSS_KINDS` in `packages/launcher/src/serve.ts` and `apps/cabinets/vite.config.ts` is four kinds, in step with the sim.
@@ -35,7 +37,7 @@ Tag `v0.8.1` at `8ac309f`. The MCP seat announces `0.8.1`. The release gate now 
 
 Tag `v0.8.0` at `d0b17b7`. [GitHub release](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.8.0), Pages, and **npm**: [`@mcptoolshop/ghost-on-the-menu@0.8.0`](https://www.npmjs.com/package/@mcptoolshop/ghost-on-the-menu) — published by CI over OIDC with provenance (`_npmUser: "GitHub Actions"`, sigstore log index 2837055244, 63 files, 6.0 MB packed). Translations shipped **with** the tag this time, all eight languages.
 
-`packages/launcher` is the only package that publishes; the other four stay `"private": true`. It declares no runtime dependencies — esbuild collapses the workspace — which is what keeps this to one package. `npx @mcptoolshop/ghost-on-the-menu` serves the shell on loopback; `--mcp` is the stdio cabinet server. **Play-mode local seats are the v0.8.2 patch** — see the review. `--mcp` was smoke-tested from the registry after publish.
+`packages/launcher` is the only package that publishes; the other four stay `"private": true`. It declares no runtime dependencies — esbuild collapses the workspace — which is what keeps this to one package. `npx @mcptoolshop/ghost-on-the-menu` serves the shell on loopback; `--mcp` is the stdio cabinet server. Play-mode local seats landed as v0.8.2. `--mcp` was smoke-tested from the registry after the 0.8.0 publish.
 
 **Cutting a GitHub release now publishes to npm.** After 72 hours an npm version can only be deprecated, never unpublished. Compensators in `docs/npm-launcher.md`.
 
