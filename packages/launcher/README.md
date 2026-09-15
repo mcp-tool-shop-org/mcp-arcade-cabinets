@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/hero.png" alt="Ghost on the Menu" width="760" />
+</p>
+
 # Ghost on the Menu
 
 **You are the agent. The rig hands you the calls.**
