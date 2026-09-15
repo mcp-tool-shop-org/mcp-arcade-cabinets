@@ -13,14 +13,14 @@ Paste-ready brief for one Opus builder. Read `docs/vibe-typer.dispatch.md` first
 
 ## Standards compliance (this slice)
 
-| Standard                 | Score | Evidence                                                                                                                 |
-| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------ |
-| PIN_PER_STEP             | 2     | Seeded sim; every band bar and play-through replays byte-for-byte from `(seed, levers, input)`.                            |
-| ANDON_AUTHORITY          | 2     | The loader halts on any lever fault; the band fails `pnpm test`; `test:play` fails `pnpm verify`.                          |
+| Standard                 | Score | Evidence                                                                                                                                |
+| ------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| PIN_PER_STEP             | 2     | Seeded sim; every band bar and play-through replays byte-for-byte from `(seed, levers, input)`.                                         |
+| ANDON_AUTHORITY          | 2     | The loader halts on any lever fault; the band fails `pnpm test`; `test:play` fails `pnpm verify`.                                       |
 | NAMED_COMPENSATORS       | 2     | The slice's only irreversible action is `git push` of a branch; compensator: `git push origin --delete cabinet/vibe-typer-s1`. No skip. |
-| DECOMPOSE_BY_SECRETS     | 2     | Sim, levers, corpus, bots and the play script are separate modules with the dependency arrows listed below.                 |
-| UNCERTAINTY_GATED_HUMANS | 2     | Numbers the Director owns (hardcore drain, hype steps, Copilot window) are data with a `// Director` comment, not code.     |
-| EXTERNAL_VERIFIER        | 2     | The diff is reviewed by a different family from a packet before merge; this builder never reviews its own work.            |
+| DECOMPOSE_BY_SECRETS     | 2     | Sim, levers, corpus, bots and the play script are separate modules with the dependency arrows listed below.                             |
+| UNCERTAINTY_GATED_HUMANS | 2     | Numbers the Director owns (hardcore drain, hype steps, Copilot window) are data with a `// Director` comment, not code.                 |
+| EXTERNAL_VERIFIER        | 2     | The diff is reviewed by a different family from a packet before merge; this builder never reviews its own work.                         |
 
 ## Package layout
 
@@ -55,29 +55,77 @@ Dependency arrows: `sim → level → corpus, difficulty, score, context, lines,
 
 ```ts
 export type Stack = 'bash' | 'csharp' | 'java' | 'javascript' | 'python' | 'sql' | 'integration';
-export type Tier = 0 | 1 | 2 | 3;              // 3 = hardcore, selector only (G25, G26)
+export type Tier = 0 | 1 | 2 | 3; // 3 = hardcore, selector only (G25, G26)
 export type Beat = 'request' | 'reply' | 'code' | 'ship' | 'compaction' | 'creep';
-export interface Snippet { id: string; stack: Stack; band: 1|2|3|4|5|6|7; title: string; code: string; notes: string[]; topics: string[] }
-export interface Request { id: string; ask: string; reply: string; snippet: Snippet; value: number; creep?: { line: string; ask: string } }
-export interface LevelPlan { id: string; product: string; stack: Stack; tier: Tier; requests: Request[]; drainPerSec: number; refillShare: number; messageCost: number; shipBonus: number; seed: number }
-export interface RunInput { key?: string; backspace?: boolean; enter?: boolean; tab?: boolean }   // one keystroke per step, or none
+export interface Snippet {
+  id: string;
+  stack: Stack;
+  band: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  title: string;
+  code: string;
+  notes: string[];
+  topics: string[];
+}
+export interface Request {
+  id: string;
+  ask: string;
+  reply: string;
+  snippet: Snippet;
+  value: number;
+  creep?: { line: string; ask: string };
+}
+export interface LevelPlan {
+  id: string;
+  product: string;
+  stack: Stack;
+  tier: Tier;
+  requests: Request[];
+  drainPerSec: number;
+  refillShare: number;
+  messageCost: number;
+  shipBonus: number;
+  seed: number;
+}
+export interface RunInput {
+  key?: string;
+  backspace?: boolean;
+  enter?: boolean;
+  tab?: boolean;
+} // one keystroke per step, or none
 export interface RunState {
-  plan: LevelPlan; endless: boolean; levelIndex: number; requestIndex: number; beat: Beat;
-  target: string; typed: string; lineIndex: number;          // the line being typed, the player's buffer, which line of the snippet
-  errors: number[];                                           // indices in typed that are wrong; empty means clean
-  context: number;                                            // 0..1
-  valuation: number; hype: number; streak: number;            // the scoreboard (G23)
-  copilot: { until: number; used: boolean } | null;           // G26: null in hardcore
-  built: { id: string; size: number }[];                      // the preview pieces (G24)
+  plan: LevelPlan;
+  endless: boolean;
+  levelIndex: number;
+  requestIndex: number;
+  beat: Beat;
+  target: string;
+  typed: string;
+  lineIndex: number; // the line being typed, the player's buffer, which line of the snippet
+  errors: number[]; // indices in typed that are wrong; empty means clean
+  context: number; // 0..1
+  valuation: number;
+  hype: number;
+  streak: number; // the scoreboard (G23)
+  copilot: { until: number; used: boolean } | null; // G26: null in hardcore
+  built: { id: string; size: number }[]; // the preview pieces (G24)
   chat: { who: 'user' | 'agent'; line: string; at: number }[];
-  clock: number; over: boolean; ended?: 'shipped' | 'context' ;
-  events: Event[];                                            // drained by the shell each frame
+  clock: number;
+  over: boolean;
+  ended?: 'shipped' | 'context';
+  events: Event[]; // drained by the shell each frame
 }
 export type Event =
-  | { kind: 'key'; ok: boolean; pitch: number }                 // pitch = streak clamped to 12 (G29)
-  | { kind: 'line'; ok: boolean } | { kind: 'hmm' } | { kind: 'piece'; size: number } | { kind: 'ship'; nearMiss: boolean }
-  | { kind: 'message'; who: 'user' | 'agent' } | { kind: 'compaction' } | { kind: 'milestone'; name: string }
-  | { kind: 'copilot'; on: boolean } | { kind: 'creep' } | { kind: 'over'; how: 'shipped' | 'context' };
+  | { kind: 'key'; ok: boolean; pitch: number } // pitch = streak clamped to 12 (G29)
+  | { kind: 'line'; ok: boolean }
+  | { kind: 'hmm' }
+  | { kind: 'piece'; size: number }
+  | { kind: 'ship'; nearMiss: boolean }
+  | { kind: 'message'; who: 'user' | 'agent' }
+  | { kind: 'compaction' }
+  | { kind: 'milestone'; name: string }
+  | { kind: 'copilot'; on: boolean }
+  | { kind: 'creep' }
+  | { kind: 'over'; how: 'shipped' | 'context' };
 ```
 
 The sim's public surface is exactly `createRun(opts: { levers?: Patterns; seed: number; tier: Tier; endless: boolean; weakBigrams?: Record<string, number>; stack?: Stack; agentName?: string })`, `stepRun(state, input, dt)` (mutating, `dt` in seconds), and the pure helpers. No score field is hidden anywhere else; `valuation`, `hype`, `streak` are the whole scoreboard.

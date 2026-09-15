@@ -1,0 +1,2 @@
+Error: No receipt signing key configured. Set PRISM_SIGNING_KEY (Ed25519 private key — recommended; run `prism keygen`), PRISM_SIGNING_SECRET (HMAC, legacy), pass signing_key=/signing_secret=, or set PRISM_DEV=1 for local development.
+EXIT 2

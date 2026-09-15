@@ -1,35 +1,266 @@
 [
-  { "id": "Q1.1", "claim": "Providing knowledge of results on only about half of practice trials, or fading it out, produced retention equal to or better than feedback on every trial.", "title": "Reduced Frequency of Knowledge of Results Enhances Motor Skill Learning", "authors": "Winstein, Schmidt", "year": 1990, "identifier": "10.1037/0278-7393.16.4.677" },
-  { "id": "Q1.2", "claim": "Frequent extrinsic feedback guides performance during practice but can degrade learning by preventing the learner from developing intrinsic error-detection.", "title": "Knowledge of Results and Motor Learning: A Review and Critical Reappraisal", "authors": "Salmoni, Schmidt, Walter", "year": 1984, "identifier": "10.1037/0033-2909.95.3.355" },
-  { "id": "Q1.3", "claim": "Skilled typists slowed after their own keystroke errors even when the screen was corrected, showing error detection at the motor level independent of the display.", "title": "Cognitive Illusions of Authorship Reveal Hierarchical Error Detection in Skilled Typists", "authors": "Logan, Crump", "year": 2010, "identifier": "10.1126/science.1190483" },
-  { "id": "Q1.4", "claim": "Removing visual feedback of the typed text had little effect on error detection but greatly reduced error correction.", "title": "The role of visual feedback in detecting and correcting typing errors: A signal detection approach", "authors": "Pinet, Nozari", "year": 2020, "identifier": "10.1016/j.jml.2020.104128" },
-  { "id": "Q1.5", "claim": "In a dataset of 136 million keystrokes, typing speed was predicted mainly by inter-key intervals of letter pairs typed with different hands or fingers and by rollover, rather than by single-key identity.", "title": "Observations on Typing from 136 Million Keystrokes", "authors": "Dhakal, Feit, Kristensson, Oulasvirta", "year": 2018, "identifier": "10.1145/3173574.3174220" },
-  { "id": "Q1.6", "claim": "Self-taught typists reached speeds comparable to trained touch typists; speed was predicted by consistent finger-to-key mapping rather than the number of fingers used.", "title": "How We Type: Movement Strategies and Performance in Everyday Typing", "authors": "Feit, Weir, Oulasvirta", "year": 2016, "identifier": "10.1145/2858036.2858233" },
-  { "id": "Q1.7", "claim": "Measuring an enjoyable activity increased how much people engaged in it but decreased their enjoyment and subsequent voluntary engagement.", "title": "The Hidden Cost of Personal Quantification", "authors": "Etkin", "year": 2016, "identifier": "10.1093/jcr/ucv095" },
-  { "id": "Q1.8", "claim": "Postal workers trained in one one-hour session per day learned to type in fewer total hours than groups trained in longer or more frequent sessions.", "title": "The Influence of Length and Frequency of Training Session on the Rate of Learning to Type", "authors": "Baddeley, Longman", "year": 1978, "identifier": "10.1080/00140137808931764" },
-  { "id": "Q1.9", "claim": "Part-task training transferred positively for tasks whose components were separable and was neutral or harmful where components were highly interdependent.", "title": "Effectiveness of Part-Task Training and Increasing-Difficulty Training Strategies: A Meta-Analysis Approach", "authors": "Wickens, Hutchins, Carolan, Cumming", "year": 2013, "identifier": "10.1177/0018720812451994" },
-  { "id": "Q2.3", "claim": "Skilled typing is controlled by two nested loops: an outer loop that produces words and an inner loop that produces keystrokes, with the inner loop informationally encapsulated from the outer.", "title": "Hierarchical Control of Cognitive Processes: The Case for Skilled Typewriting", "authors": "Logan, Crump", "year": 2011, "identifier": "10.1016/B978-0-12-385527-5.00001-2" },
-  { "id": "Q2.5", "claim": "Identifier count, line length and punctuation density are among the strongest features predicting lower human-rated code readability.", "title": "Learning a Metric for Code Readability", "authors": "Buse, Weimer", "year": 2010, "identifier": "10.1109/TSE.2009.70" },
-  { "id": "Q2.6", "claim": "Keyboard layout optimisation is formulated as an assignment problem whose objective sums bigram frequency times key-pair movement cost.", "title": "Improvements to Keyboard Optimization with Integer Programming", "authors": "Karrenbauer, Oulasvirta", "year": 2014, "identifier": "10.1145/2642918.2647382" },
-  { "id": "Q2.7", "claim": "Real-world code completions differ from synthetic benchmarks and developers rely on completion most for long identifiers.", "title": "When Code Completion Fails: A Case Study on Real-World Completions", "authors": "Hellendoorn, Proksch, Gall, Bacchelli", "year": 2019, "identifier": "10.1109/ICSE.2019.00101" },
-  { "id": "Q3.1", "claim": "In a large study of an action RPG, both no juiciness and extreme juiciness reduced play time, player experience and performance relative to medium and high juiciness.", "title": "The effects of juiciness in an action RPG", "authors": "Kao", "year": 2020, "identifier": "10.1016/j.entcom.2020.100359" },
-  { "id": "Q3.2", "claim": "Visual embellishments that carry no gameplay information improved perceived appeal and sense of agency in player experience studies.", "title": "Juicy Game Design: Understanding the Impact of Visual Embellishments on Player Experience", "authors": "Hicks, Gerling, Richardson, Pike, Dickinson", "year": 2019, "identifier": "10.1145/3311350.3347171" },
-  { "id": "Q3.3", "claim": "A version of a game with juicy audio effects produced higher reported presence than the same game without them.", "title": "That Sound's Juicy! Exploring Juicy Audio Effects in Video Games", "authors": "Smets, van der Spek", "year": 2021, "identifier": "10.1007/978-3-030-89394-1_24" },
-  { "id": "Q3.4", "claim": "Auditory feedback such as error sonification mapped to pitch supports motor learning and its benefits persist better than concurrent visual feedback when feedback is withdrawn.", "title": "Augmented visual, auditory, haptic, and multimodal feedback in motor learning: A review", "authors": "Sigrist, Rauter, Riener, Wolf", "year": 2013, "identifier": "10.3758/s13423-012-0333-8" },
-  { "id": "Q3.5", "claim": "Synchronising game events with music affected performance and experience in a VR rhythm game, mediated by whether players consciously perceived the synchronisation.", "title": "The Effect of Auditory-Motor Synchronization in Exergames on the Example of the VR Rhythm Game BeatSaber", "authors": "Albert, Burkard, Queck, Herrlich", "year": 2022, "identifier": "10.1145/3549516" },
-  { "id": "Q3.6", "claim": "Near-miss outcomes in a gambling task were rated less pleasant than full misses yet increased the desire to continue and activated reward-related brain regions.", "title": "Gambling Near-Misses Enhance Motivation to Gamble and Recruit Win-Related Brain Circuitry", "authors": "Clark, Lawrence, Astley-Jones, Gray", "year": 2009, "identifier": "10.1016/j.neuron.2009.01.031" },
-  { "id": "Q3.7", "claim": "Fast-tempo music increased speed but also increased errors in a driving game relative to slower or no music.", "title": "The effects of music on time perception and performance of a driving game", "authors": "Cassidy, MacDonald", "year": 2010, "identifier": "10.1111/j.1467-9450.2010.00830.x" },
-  { "id": "Q3.8", "claim": "Dynamic difficulty adjustment techniques aim to keep players in a flow channel by adjusting challenge in real time based on observed performance.", "title": "Dynamic Difficulty Adjustment (DDA) in Computer Games: A Review", "authors": "Zohaib", "year": 2018, "identifier": "10.1155/2018/5681652" },
-  { "id": "Q4.1", "claim": "Transcription typing operates on a limited eye-hand span of several characters and typing skill is unrelated to comprehension of the copied text.", "title": "Perceptual, Cognitive, and Motoric Aspects of Transcription Typing", "authors": "Salthouse", "year": 1986, "identifier": "10.1037/0033-2909.99.3.303" },
-  { "id": "Q4.2", "claim": "Typographic emphasis in written text and prosodic stress in spoken text increased detection of changed words.", "title": "Shallow Processing and Attention Capture in Written and Spoken Discourse", "authors": "Sanford, Sanford, Molle, Emmott", "year": 2006, "identifier": "10.1207/s15326950dp4202_2" },
-  { "id": "Q4.3", "claim": "In visual search, miss rates rose sharply as target prevalence fell from common to rare.", "title": "Rare items often missed in visual searches", "authors": "Wolfe, Horowitz, Kenner", "year": 2005, "identifier": "10.1038/435439a" },
-  { "id": "Q5.1", "claim": "Humor in computer games functions to support play, including softening failure and carrying narrative, rather than as decoration.", "title": "A Review of Humor for Computer Games: Play, Laugh and More", "authors": "Dormann, Biddle", "year": 2009, "identifier": "10.1177/1046878109341390" },
-  { "id": "Q5.2", "claim": "In a randomised trial of humorous versus plain script variants in a learning game, perceived humor and character likeability differed but completion and amount played did not.", "title": "Exploring players' experience of humor and snark in a grade 3-6 history practices game", "authors": "Gagnon, Kern, Bryant, Kinnebrew, Hoyer, Garbin, Bell", "year": 2022, "identifier": "arXiv:2210.09906" },
-  { "id": "Q5.3", "claim": "A learning game whose fantasy was intrinsically integrated with its core mechanic produced better motivation and learning than a version where the same content was extrinsic to play.", "title": "Motivating Children to Learn Effectively: Exploring the Value of Intrinsic Integration in Educational Games", "authors": "Habgood, Ainsworth", "year": 2011, "identifier": "10.1080/10508406.2010.508029" },
-  { "id": "Q5.4", "claim": "Embedding a learning activity in a fantasy context with personalisation increased intrinsic motivation, engagement and learning.", "title": "Intrinsic Motivation and the Process of Learning: Beneficial Effects of Contextualization, Personalization, and Choice", "authors": "Cordova, Lepper", "year": 1996, "identifier": "10.1037/0022-0663.88.4.715" },
-  { "id": "Q5.5", "claim": "Humor arises when something is perceived as a violation that is simultaneously benign.", "title": "Benign Violations: Making Immoral Behavior Funny", "authors": "McGraw, Warren", "year": 2010, "identifier": "10.1177/0956797610376073" },
-  { "id": "Q5.6", "claim": "Disparagement humor is enjoyed more when it targets an out-group, and in-group targeting can be accepted when it signals shared membership rather than derogation.", "title": "Disparagement humor: A theoretical and empirical review of psychoanalytic, superiority, and social identity theories", "authors": "Ferguson, Ford", "year": 2008, "identifier": "10.1515/HUMOR.2008.014" },
-  { "id": "Q5.7", "claim": "Intertextual jokes depend on the audience recognising the referenced text, and unrecognised references exclude the audience from the humor.", "title": "Intertextuality and/in political jokes", "authors": "Tsakona", "year": 2018, "identifier": "10.1016/j.lingua.2017.10.009" },
-  { "id": "Q5.8", "claim": "Large language models generated humor rated below mid-tier human performers and weighted novelty where humans weighted empathy.", "title": "Assessing the Capabilities of Large Language Models in Humor: Oogiri Generation and Evaluation", "authors": "Yan et al.", "year": 2025, "identifier": "arXiv:2511.09133" },
-  { "id": "Q5.9", "claim": "AI-generated jokes were judged fluent but derivative and formulaic compared with human-written humor.", "title": "Can AI Take a Joke, Or Make One? Evaluating Humor Generation in Large Language Models", "authors": "Bhatt et al.", "year": 2025, "identifier": "10.1145/3698061.3734388" }
+  {
+    "id": "Q1.1",
+    "claim": "Providing knowledge of results on only about half of practice trials, or fading it out, produced retention equal to or better than feedback on every trial.",
+    "title": "Reduced Frequency of Knowledge of Results Enhances Motor Skill Learning",
+    "authors": "Winstein, Schmidt",
+    "year": 1990,
+    "identifier": "10.1037/0278-7393.16.4.677"
+  },
+  {
+    "id": "Q1.2",
+    "claim": "Frequent extrinsic feedback guides performance during practice but can degrade learning by preventing the learner from developing intrinsic error-detection.",
+    "title": "Knowledge of Results and Motor Learning: A Review and Critical Reappraisal",
+    "authors": "Salmoni, Schmidt, Walter",
+    "year": 1984,
+    "identifier": "10.1037/0033-2909.95.3.355"
+  },
+  {
+    "id": "Q1.3",
+    "claim": "Skilled typists slowed after their own keystroke errors even when the screen was corrected, showing error detection at the motor level independent of the display.",
+    "title": "Cognitive Illusions of Authorship Reveal Hierarchical Error Detection in Skilled Typists",
+    "authors": "Logan, Crump",
+    "year": 2010,
+    "identifier": "10.1126/science.1190483"
+  },
+  {
+    "id": "Q1.4",
+    "claim": "Removing visual feedback of the typed text had little effect on error detection but greatly reduced error correction.",
+    "title": "The role of visual feedback in detecting and correcting typing errors: A signal detection approach",
+    "authors": "Pinet, Nozari",
+    "year": 2020,
+    "identifier": "10.1016/j.jml.2020.104128"
+  },
+  {
+    "id": "Q1.5",
+    "claim": "In a dataset of 136 million keystrokes, typing speed was predicted mainly by inter-key intervals of letter pairs typed with different hands or fingers and by rollover, rather than by single-key identity.",
+    "title": "Observations on Typing from 136 Million Keystrokes",
+    "authors": "Dhakal, Feit, Kristensson, Oulasvirta",
+    "year": 2018,
+    "identifier": "10.1145/3173574.3174220"
+  },
+  {
+    "id": "Q1.6",
+    "claim": "Self-taught typists reached speeds comparable to trained touch typists; speed was predicted by consistent finger-to-key mapping rather than the number of fingers used.",
+    "title": "How We Type: Movement Strategies and Performance in Everyday Typing",
+    "authors": "Feit, Weir, Oulasvirta",
+    "year": 2016,
+    "identifier": "10.1145/2858036.2858233"
+  },
+  {
+    "id": "Q1.7",
+    "claim": "Measuring an enjoyable activity increased how much people engaged in it but decreased their enjoyment and subsequent voluntary engagement.",
+    "title": "The Hidden Cost of Personal Quantification",
+    "authors": "Etkin",
+    "year": 2016,
+    "identifier": "10.1093/jcr/ucv095"
+  },
+  {
+    "id": "Q1.8",
+    "claim": "Postal workers trained in one one-hour session per day learned to type in fewer total hours than groups trained in longer or more frequent sessions.",
+    "title": "The Influence of Length and Frequency of Training Session on the Rate of Learning to Type",
+    "authors": "Baddeley, Longman",
+    "year": 1978,
+    "identifier": "10.1080/00140137808931764"
+  },
+  {
+    "id": "Q1.9",
+    "claim": "Part-task training transferred positively for tasks whose components were separable and was neutral or harmful where components were highly interdependent.",
+    "title": "Effectiveness of Part-Task Training and Increasing-Difficulty Training Strategies: A Meta-Analysis Approach",
+    "authors": "Wickens, Hutchins, Carolan, Cumming",
+    "year": 2013,
+    "identifier": "10.1177/0018720812451994"
+  },
+  {
+    "id": "Q2.3",
+    "claim": "Skilled typing is controlled by two nested loops: an outer loop that produces words and an inner loop that produces keystrokes, with the inner loop informationally encapsulated from the outer.",
+    "title": "Hierarchical Control of Cognitive Processes: The Case for Skilled Typewriting",
+    "authors": "Logan, Crump",
+    "year": 2011,
+    "identifier": "10.1016/B978-0-12-385527-5.00001-2"
+  },
+  {
+    "id": "Q2.5",
+    "claim": "Identifier count, line length and punctuation density are among the strongest features predicting lower human-rated code readability.",
+    "title": "Learning a Metric for Code Readability",
+    "authors": "Buse, Weimer",
+    "year": 2010,
+    "identifier": "10.1109/TSE.2009.70"
+  },
+  {
+    "id": "Q2.6",
+    "claim": "Keyboard layout optimisation is formulated as an assignment problem whose objective sums bigram frequency times key-pair movement cost.",
+    "title": "Improvements to Keyboard Optimization with Integer Programming",
+    "authors": "Karrenbauer, Oulasvirta",
+    "year": 2014,
+    "identifier": "10.1145/2642918.2647382"
+  },
+  {
+    "id": "Q2.7",
+    "claim": "Real-world code completions differ from synthetic benchmarks and developers rely on completion most for long identifiers.",
+    "title": "When Code Completion Fails: A Case Study on Real-World Completions",
+    "authors": "Hellendoorn, Proksch, Gall, Bacchelli",
+    "year": 2019,
+    "identifier": "10.1109/ICSE.2019.00101"
+  },
+  {
+    "id": "Q3.1",
+    "claim": "In a large study of an action RPG, both no juiciness and extreme juiciness reduced play time, player experience and performance relative to medium and high juiciness.",
+    "title": "The effects of juiciness in an action RPG",
+    "authors": "Kao",
+    "year": 2020,
+    "identifier": "10.1016/j.entcom.2020.100359"
+  },
+  {
+    "id": "Q3.2",
+    "claim": "Visual embellishments that carry no gameplay information improved perceived appeal and sense of agency in player experience studies.",
+    "title": "Juicy Game Design: Understanding the Impact of Visual Embellishments on Player Experience",
+    "authors": "Hicks, Gerling, Richardson, Pike, Dickinson",
+    "year": 2019,
+    "identifier": "10.1145/3311350.3347171"
+  },
+  {
+    "id": "Q3.3",
+    "claim": "A version of a game with juicy audio effects produced higher reported presence than the same game without them.",
+    "title": "That Sound's Juicy! Exploring Juicy Audio Effects in Video Games",
+    "authors": "Smets, van der Spek",
+    "year": 2021,
+    "identifier": "10.1007/978-3-030-89394-1_24"
+  },
+  {
+    "id": "Q3.4",
+    "claim": "Auditory feedback such as error sonification mapped to pitch supports motor learning and its benefits persist better than concurrent visual feedback when feedback is withdrawn.",
+    "title": "Augmented visual, auditory, haptic, and multimodal feedback in motor learning: A review",
+    "authors": "Sigrist, Rauter, Riener, Wolf",
+    "year": 2013,
+    "identifier": "10.3758/s13423-012-0333-8"
+  },
+  {
+    "id": "Q3.5",
+    "claim": "Synchronising game events with music affected performance and experience in a VR rhythm game, mediated by whether players consciously perceived the synchronisation.",
+    "title": "The Effect of Auditory-Motor Synchronization in Exergames on the Example of the VR Rhythm Game BeatSaber",
+    "authors": "Albert, Burkard, Queck, Herrlich",
+    "year": 2022,
+    "identifier": "10.1145/3549516"
+  },
+  {
+    "id": "Q3.6",
+    "claim": "Near-miss outcomes in a gambling task were rated less pleasant than full misses yet increased the desire to continue and activated reward-related brain regions.",
+    "title": "Gambling Near-Misses Enhance Motivation to Gamble and Recruit Win-Related Brain Circuitry",
+    "authors": "Clark, Lawrence, Astley-Jones, Gray",
+    "year": 2009,
+    "identifier": "10.1016/j.neuron.2009.01.031"
+  },
+  {
+    "id": "Q3.7",
+    "claim": "Fast-tempo music increased speed but also increased errors in a driving game relative to slower or no music.",
+    "title": "The effects of music on time perception and performance of a driving game",
+    "authors": "Cassidy, MacDonald",
+    "year": 2010,
+    "identifier": "10.1111/j.1467-9450.2010.00830.x"
+  },
+  {
+    "id": "Q3.8",
+    "claim": "Dynamic difficulty adjustment techniques aim to keep players in a flow channel by adjusting challenge in real time based on observed performance.",
+    "title": "Dynamic Difficulty Adjustment (DDA) in Computer Games: A Review",
+    "authors": "Zohaib",
+    "year": 2018,
+    "identifier": "10.1155/2018/5681652"
+  },
+  {
+    "id": "Q4.1",
+    "claim": "Transcription typing operates on a limited eye-hand span of several characters and typing skill is unrelated to comprehension of the copied text.",
+    "title": "Perceptual, Cognitive, and Motoric Aspects of Transcription Typing",
+    "authors": "Salthouse",
+    "year": 1986,
+    "identifier": "10.1037/0033-2909.99.3.303"
+  },
+  {
+    "id": "Q4.2",
+    "claim": "Typographic emphasis in written text and prosodic stress in spoken text increased detection of changed words.",
+    "title": "Shallow Processing and Attention Capture in Written and Spoken Discourse",
+    "authors": "Sanford, Sanford, Molle, Emmott",
+    "year": 2006,
+    "identifier": "10.1207/s15326950dp4202_2"
+  },
+  {
+    "id": "Q4.3",
+    "claim": "In visual search, miss rates rose sharply as target prevalence fell from common to rare.",
+    "title": "Rare items often missed in visual searches",
+    "authors": "Wolfe, Horowitz, Kenner",
+    "year": 2005,
+    "identifier": "10.1038/435439a"
+  },
+  {
+    "id": "Q5.1",
+    "claim": "Humor in computer games functions to support play, including softening failure and carrying narrative, rather than as decoration.",
+    "title": "A Review of Humor for Computer Games: Play, Laugh and More",
+    "authors": "Dormann, Biddle",
+    "year": 2009,
+    "identifier": "10.1177/1046878109341390"
+  },
+  {
+    "id": "Q5.2",
+    "claim": "In a randomised trial of humorous versus plain script variants in a learning game, perceived humor and character likeability differed but completion and amount played did not.",
+    "title": "Exploring players' experience of humor and snark in a grade 3-6 history practices game",
+    "authors": "Gagnon, Kern, Bryant, Kinnebrew, Hoyer, Garbin, Bell",
+    "year": 2022,
+    "identifier": "arXiv:2210.09906"
+  },
+  {
+    "id": "Q5.3",
+    "claim": "A learning game whose fantasy was intrinsically integrated with its core mechanic produced better motivation and learning than a version where the same content was extrinsic to play.",
+    "title": "Motivating Children to Learn Effectively: Exploring the Value of Intrinsic Integration in Educational Games",
+    "authors": "Habgood, Ainsworth",
+    "year": 2011,
+    "identifier": "10.1080/10508406.2010.508029"
+  },
+  {
+    "id": "Q5.4",
+    "claim": "Embedding a learning activity in a fantasy context with personalisation increased intrinsic motivation, engagement and learning.",
+    "title": "Intrinsic Motivation and the Process of Learning: Beneficial Effects of Contextualization, Personalization, and Choice",
+    "authors": "Cordova, Lepper",
+    "year": 1996,
+    "identifier": "10.1037/0022-0663.88.4.715"
+  },
+  {
+    "id": "Q5.5",
+    "claim": "Humor arises when something is perceived as a violation that is simultaneously benign.",
+    "title": "Benign Violations: Making Immoral Behavior Funny",
+    "authors": "McGraw, Warren",
+    "year": 2010,
+    "identifier": "10.1177/0956797610376073"
+  },
+  {
+    "id": "Q5.6",
+    "claim": "Disparagement humor is enjoyed more when it targets an out-group, and in-group targeting can be accepted when it signals shared membership rather than derogation.",
+    "title": "Disparagement humor: A theoretical and empirical review of psychoanalytic, superiority, and social identity theories",
+    "authors": "Ferguson, Ford",
+    "year": 2008,
+    "identifier": "10.1515/HUMOR.2008.014"
+  },
+  {
+    "id": "Q5.7",
+    "claim": "Intertextual jokes depend on the audience recognising the referenced text, and unrecognised references exclude the audience from the humor.",
+    "title": "Intertextuality and/in political jokes",
+    "authors": "Tsakona",
+    "year": 2018,
+    "identifier": "10.1016/j.lingua.2017.10.009"
+  },
+  {
+    "id": "Q5.8",
+    "claim": "Large language models generated humor rated below mid-tier human performers and weighted novelty where humans weighted empathy.",
+    "title": "Assessing the Capabilities of Large Language Models in Humor: Oogiri Generation and Evaluation",
+    "authors": "Yan et al.",
+    "year": 2025,
+    "identifier": "arXiv:2511.09133"
+  },
+  {
+    "id": "Q5.9",
+    "claim": "AI-generated jokes were judged fluent but derivative and formulaic compared with human-written humor.",
+    "title": "Can AI Take a Joke, Or Make One? Evaluating Humor Generation in Large Language Models",
+    "authors": "Bhatt et al.",
+    "year": 2025,
+    "identifier": "10.1145/3698061.3734388"
+  }
 ]

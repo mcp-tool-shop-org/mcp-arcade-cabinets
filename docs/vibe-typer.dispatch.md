@@ -9,22 +9,22 @@
 
 ## Standards compliance
 
-| Standard                 | Score | Evidence                                                                                                                                                                                                                                                              |
-| ------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PIN_PER_STEP             | 2     | Each slice is one Opus brief committed as `docs/vibe-typer.kickoff.md` (slice 1) and its successors; the sim is seeded, so every run and every band bar is replayable; citation receipts are signed prism output beside this file.                              |
-| ANDON_AUTHORITY          | 2     | `pnpm verify` gains `test:play vibe-typer`; the band test fails the build on any bar; lever text is scanned for digits and forbidden words at load and the loader halts. A finding the oracle cannot resolve is barred from the lock (table below).              |
-| NAMED_COMPENSATORS       | 2     | The cabinet performs no irreversible action. The slices touch `git push` and Pages only; compensators below. No npm in these slices. No skip.                                                                                                                          |
-| DECOMPOSE_BY_SECRETS     | 2     | `packages/vibe-typer` changes with the game's rules; `patterns/` changes with content; `apps/cabinets/src/vibe-typer.ts` changes with the shell; `tape-core`, `ghost-on-the-menu`, `cabinet-server` and `launcher` are not edited by any slice here.        |
-| UNCERTAINTY_GATED_HUMANS | 2     | The Director chose the tone, the scoreboard, the payoff, the shape and the timer in words on 2026-09-15 (quoted below). The name and the hardcore numbers are contrastive checkpoints for the Director. Art and music spend wait on a playable slice.                  |
-| EXTERNAL_VERIFIER        | 2     | Citations verified by a family-different lens with the caller's reasoning hidden; each slice's diff is reviewed by a different family (Grok or Kimi) from a packet before merge; the coordinator (Claude) never reviews its own builder's diff alone.                    |
+| Standard                 | Score | Evidence                                                                                                                                                                                                                                              |
+| ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PIN_PER_STEP             | 2     | Each slice is one Opus brief committed as `docs/vibe-typer.kickoff.md` (slice 1) and its successors; the sim is seeded, so every run and every band bar is replayable; citation receipts are signed prism output beside this file.                    |
+| ANDON_AUTHORITY          | 2     | `pnpm verify` gains `test:play vibe-typer`; the band test fails the build on any bar; lever text is scanned for digits and forbidden words at load and the loader halts. A finding the oracle cannot resolve is barred from the lock (table below).   |
+| NAMED_COMPENSATORS       | 2     | The cabinet performs no irreversible action. The slices touch `git push` and Pages only; compensators below. No npm in these slices. No skip.                                                                                                         |
+| DECOMPOSE_BY_SECRETS     | 2     | `packages/vibe-typer` changes with the game's rules; `patterns/` changes with content; `apps/cabinets/src/vibe-typer.ts` changes with the shell; `tape-core`, `ghost-on-the-menu`, `cabinet-server` and `launcher` are not edited by any slice here.  |
+| UNCERTAINTY_GATED_HUMANS | 2     | The Director chose the tone, the scoreboard, the payoff, the shape and the timer in words on 2026-09-15 (quoted below). The name and the hardcore numbers are contrastive checkpoints for the Director. Art and music spend wait on a playable slice. |
+| EXTERNAL_VERIFIER        | 2     | Citations verified by a family-different lens with the caller's reasoning hidden; each slice's diff is reviewed by a different family (Grok or Kimi) from a packet before merge; the coordinator (Claude) never reviews its own builder's diff alone. |
 
 ## Irreversible actions and compensators
 
-| Action                                             | Compensator (command)                                | Post-rollback state                          | Owner  |
-| -------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------- | ------ |
-| `git push` of a slice (package, shell, data, docs) | `git revert <sha> && git push origin main`           | The repo as v0.8.2 plus earlier slices        | Claude |
-| Pages deploy carrying the new cabinet              | Revert the merge; `pages.yml` redeploys on push      | `/play/` serves Ghost alone                   | Claude |
-| Slice branch merge                                 | `git revert -m 1 <merge-sha> && git push origin main` | `main` as before the merge                   | Claude |
+| Action                                             | Compensator (command)                                 | Post-rollback state                    | Owner  |
+| -------------------------------------------------- | ----------------------------------------------------- | -------------------------------------- | ------ |
+| `git push` of a slice (package, shell, data, docs) | `git revert <sha> && git push origin main`            | The repo as v0.8.2 plus earlier slices | Claude |
+| Pages deploy carrying the new cabinet              | Revert the merge; `pages.yml` redeploys on push       | `/play/` serves Ghost alone            | Claude |
+| Slice branch merge                                 | `git revert -m 1 <merge-sha> && git push origin main` | `main` as before the merge             | Claude |
 
 ## The brief (the Director, 2026-09-15)
 
@@ -86,17 +86,17 @@ Inherited without change: G8 (no ranking against other players; the only best is
 
 ## Data levers
 
-| File                          | Holds                                                                                       |
-| ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `patterns/cabinet.json`       | display name, the agent's default name, the field words                                     |
-| `patterns/levels.json`        | levels: product, stack, request count, band range, drain, refill, ship bonus; endless ramps |
+| File                          | Holds                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `patterns/cabinet.json`       | display name, the agent's default name, the field words                                      |
+| `patterns/levels.json`        | levels: product, stack, request count, band range, drain, refill, ship bonus; endless ramps  |
 | `patterns/score.json`         | hype steps, streak thresholds, Copilot window and discount, milestones, hardcore multipliers |
-| `patterns/context.json`       | drain per second by tier, cost per user message, refill share, hardcore burn per error      |
-| `patterns/difficulty.json`    | the key map for travel cost, the formula weights, the identifier and bracket weights        |
-| `patterns/user.json`          | requests, reactions, asides, reviews by tier and beat; `dated` flags                        |
-| `patterns/agent.json`         | replies, "hmm" lines, compaction summaries, ship lines                                      |
-| `patterns/products.json`      | nouns and templates for endless product names                                               |
-| `patterns/corpus/<lang>.json` | the ported snippets with band, title, code, notes                                           |
+| `patterns/context.json`       | drain per second by tier, cost per user message, refill share, hardcore burn per error       |
+| `patterns/difficulty.json`    | the key map for travel cost, the formula weights, the identifier and bracket weights         |
+| `patterns/user.json`          | requests, reactions, asides, reviews by tier and beat; `dated` flags                         |
+| `patterns/agent.json`         | replies, "hmm" lines, compaction summaries, ship lines                                       |
+| `patterns/products.json`      | nouns and templates for endless product names                                                |
+| `patterns/corpus/<lang>.json` | the ported snippets with band, title, code, notes                                            |
 
 Every file is validated at load with the same halting loader shape as Ghost's `patterns.ts` and every text line is scanned for digits and forbidden words.
 
