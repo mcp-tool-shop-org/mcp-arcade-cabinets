@@ -153,11 +153,14 @@ async function chatOnce(
       { role: 'system', content: system },
       { role: 'user', content: user },
     ],
-    tools: tools.map(toOllamaTool),
     stream: false,
     think: budget.think,
     options: { temperature: 0, num_predict: budget.num_predict },
   };
+  // A call with no tools is a call with no `tools` key: the endless seat
+  // (G28 as slice 3 amends it) asks for one JSON object and pulls no lever,
+  // and an empty array is not the same request to every daemon.
+  if (tools.length > 0) body.tools = tools.map(toOllamaTool);
   if (!isCloudModel(opts.model)) body.keep_alive = opts.keepAlive ?? DEFAULT_KEEP_ALIVE;
   if (extra.format) body.format = extra.format;
   let res: Response;
@@ -221,6 +224,43 @@ export async function chatTools(
     ? { ...LOW, num_predict: Math.max(LOW.num_predict, extra.num_predict) }
     : LOW;
   return chatOnce(opts, system, user, tools, low, fmt);
+}
+
+/** How long a JSON answer may take. Code is longer than a line (slice 3). */
+const JSON_TIMEOUT_MS = 20_000;
+const JSON_PREDICT = 400;
+
+/**
+ * One chat call constrained to a JSON schema, with no tools. The schema path
+ * is the whole contract here: the seat is asked for an object and answers
+ * with an object, and the caller parses leniently anyway, because a model
+ * that wraps its answer in a fence has still answered.
+ *
+ * `think: 'low'` for the models `chatTools` has already found need it, so a
+ * thinker does not spend its whole budget before writing anything.
+ */
+export async function chatJson(
+  opts: ChatOpts,
+  system: string,
+  user: string,
+  schema: object,
+  extra: { num_predict?: number; timeoutMs?: number } = {},
+): Promise<ChatAnswer> {
+  const budget = {
+    num_predict: extra.num_predict ?? JSON_PREDICT,
+    timeoutMs: extra.timeoutMs ?? JSON_TIMEOUT_MS,
+  };
+  const fmt = { format: schema };
+  if (!needsLowThinkChat(opts.model)) {
+    const first = await chatOnce(opts, system, user, [], { think: false, ...budget }, fmt);
+    if (first.content.trim() !== '' || first.thinking === '') return first;
+    // Measured on this rig: a thinking cloud tag asked with `think: false`
+    // spends its budget thinking and answers with nothing at all. Same
+    // remedy `chatTools` already uses, and the same memory, so the model
+    // pays for the discovery once.
+    thinkers.add(opts.model);
+  }
+  return chatOnce(opts, system, user, [], { think: 'low', ...budget }, fmt);
 }
 
 export interface FireAnswer {

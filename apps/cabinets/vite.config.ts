@@ -14,6 +14,27 @@ const SAY_MAX_RECENT = 16;
 const SAY_MAX_MODELS = 32;
 const SAY_STR = 200;
 
+// The endless seat (G28 as slice 3 amends it). Same envelope as the say
+// seat, with a longer wait: the seat writes a whole snippet, not one line,
+// and a cloud tag takes several seconds over it. Nothing waits on the
+// answer - the shell prefetches during the request in hand and the corpus
+// plays if it is late (G11, G13) - so the ceiling only has to be higher
+// than a slow answer, not lower than a player's patience.
+const ENDLESS_TIMEOUT_MS = 20_000;
+const ENDLESS_MAX_RECENT = 3;
+const ENDLESS_MAX_WEAK = 24;
+const ENDLESS_STR = 200;
+const ENDLESS_PRODUCT = 120;
+const VIBE_STACKS = [
+  'bash',
+  'csharp',
+  'java',
+  'javascript',
+  'python',
+  'sql',
+  'integration',
+] as const;
+
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const HP_WORDS = ['high', 'mid', 'low'] as const;
 const COLUMNS = ['left', 'center', 'right'] as const;
@@ -76,6 +97,43 @@ function parseStrings(raw: unknown, max: number, each: number): string[] {
     out.push(item.slice(0, each));
   }
   return out;
+}
+
+function bandNumber(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 7 ? v : undefined;
+}
+
+/**
+ * The typing cabinet's fact-blind view of the level it is about to play, or
+ * null. Closed sets where there is one, a length everywhere else. Keep in
+ * step with `parseEndlessView` in packages/launcher/src/serve.ts.
+ */
+function parseEndlessView(raw: unknown): {
+  product: string;
+  stack: (typeof VIBE_STACKS)[number];
+  bandMin: number;
+  bandMax: number;
+  recent: string[];
+  weak: string[];
+  newLevel: boolean;
+} | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const stack = oneOf(o.stack, VIBE_STACKS);
+  const bandMin = bandNumber(o.bandMin);
+  const bandMax = bandNumber(o.bandMax);
+  if (!stack || bandMin === undefined || bandMax === undefined) return null;
+  if (bandMax < bandMin) return null;
+  if (typeof o.product !== 'string' || o.product.trim() === '') return null;
+  return {
+    product: o.product.slice(0, ENDLESS_PRODUCT),
+    stack,
+    bandMin,
+    bandMax,
+    recent: parseStrings(o.recent, ENDLESS_MAX_RECENT, ENDLESS_STR),
+    weak: parseStrings(o.weak, ENDLESS_MAX_WEAK, 2),
+    newLevel: o.newLevel === true,
+  };
 }
 
 function notFound(res: ServerResponse): void {
@@ -296,6 +354,150 @@ function cabinetSay(): Plugin {
   };
 }
 
+/**
+ * The endless seat's node side (G28 as slice 3 amends it). The typing
+ * cabinet posts the product, the language, the band and the player's weak
+ * pairs; this runs the same tiered agent the say seat uses and answers with
+ * the request the seat wrote, ungated. The code gate and the chat gate both
+ * run in the browser, where the request lands. Words only on a failure.
+ */
+function cabinetEndless(): Plugin {
+  const dist = path.resolve(here, '../../packages/cabinet-server/dist/index.js');
+  let lastAt = 0;
+  let busy = false;
+  return {
+    name: 'cabinet-endless',
+    configureServer(server) {
+      server.middlewares.use('/cabinet/endless', (req: IncomingMessage, res: ServerResponse) => {
+        const send = (body: unknown) => {
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify(body));
+        };
+        const reject = (code: number, error: string) => {
+          res.statusCode = code;
+          send({ error });
+          req.resume();
+        };
+        if (req.method !== 'POST') {
+          reject(405, 'post only');
+          return;
+        }
+        if (!jsonType(req.headers['content-type'])) {
+          reject(415, 'json only');
+          return;
+        }
+        const declared = Number(req.headers['content-length'] ?? NaN);
+        if (Number.isFinite(declared) && declared > SAY_MAX_BYTES) {
+          reject(413, 'too large');
+          return;
+        }
+        const now = Date.now();
+        if (busy || now - lastAt < SAY_MIN_INTERVAL_MS) {
+          reject(429, 'slow down');
+          return;
+        }
+        busy = true;
+        lastAt = now;
+        const chunks: Buffer[] = [];
+        let size = 0;
+        let overflow = false;
+        let finished = false;
+        let released = false;
+        const release = () => {
+          if (released) return;
+          released = true;
+          busy = false;
+        };
+        req.on('data', (chunk: Buffer) => {
+          if (overflow || finished) return;
+          size += chunk.length;
+          if (size > SAY_MAX_BYTES) {
+            overflow = true;
+            finished = true;
+            reject(413, 'too large');
+            req.destroy();
+            release();
+            return;
+          }
+          chunks.push(chunk);
+        });
+        req.on('end', () => {
+          if (overflow || finished) return;
+          finished = true;
+          void (async () => {
+            if (!existsSync(dist)) {
+              res.statusCode = 503;
+              send({ error: 'no cabinet server built' });
+              return;
+            }
+            let parsed: unknown;
+            try {
+              parsed = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+            } catch {
+              res.statusCode = 400;
+              send({ error: 'no answer' });
+              return;
+            }
+            const body =
+              parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+            const view = parseEndlessView(body.view);
+            if (!view) {
+              res.statusCode = 400;
+              send({ error: 'no answer' });
+              return;
+            }
+            const cs = (await import(pathToFileURL(dist).href)) as {
+              askEndlessFor: (
+                view: unknown,
+                opts: {
+                  anthropicKey: string | null;
+                  ollamaUrl: string;
+                  models: readonly string[];
+                },
+              ) => Promise<unknown>;
+            };
+            const ollama = process.env.OLLAMA_URL ?? 'http://127.0.0.1:11434';
+            const work = cs.askEndlessFor(view, {
+              anthropicKey: process.env.ANTHROPIC_API_KEY ?? null,
+              ollamaUrl: `${ollama.replace(/\/$/, '')}/api/chat`,
+              models: parseStrings(body.models, SAY_MAX_MODELS, 128),
+            });
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            try {
+              const answer = await Promise.race([
+                work,
+                new Promise<never>((_, rej) => {
+                  timer = setTimeout(() => rej(new Error('no answer')), ENDLESS_TIMEOUT_MS);
+                }),
+              ]);
+              send(answer);
+            } finally {
+              if (timer !== undefined) clearTimeout(timer);
+            }
+          })()
+            .catch((err: unknown) => {
+              const msg = err instanceof Error ? err.message : String(err);
+              send({ error: /retired/i.test(msg) ? 'model retired' : 'no answer' });
+            })
+            .finally(() => {
+              release();
+            });
+        });
+        req.on('aborted', () => {
+          if (finished) return;
+          finished = true;
+          release();
+        });
+        req.on('error', () => {
+          if (finished) return;
+          finished = true;
+          release();
+        });
+      });
+    },
+  };
+}
+
 // The shell is built two ways: relative-base for the package's own dist, and
 // under the landing site at /<repo>/play/ for GitHub Pages (PLAY_BASE and
 // PLAY_OUT are set by the root `build:play` script). The say middleware and
@@ -304,7 +506,7 @@ function cabinetSay(): Plugin {
 export default defineConfig({
   base: process.env.PLAY_BASE ?? './',
   build: { outDir: process.env.PLAY_OUT ?? 'dist', emptyOutDir: true },
-  plugins: [devAllowlists(), cabinetSay()],
+  plugins: [devAllowlists(), cabinetSay(), cabinetEndless()],
   server: {
     proxy: {
       '/ollama': {

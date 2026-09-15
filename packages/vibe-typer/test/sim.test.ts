@@ -2,9 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import { DT } from '../src/play';
 import { DEFAULT_PATTERNS, tierContext, type Patterns } from '../src/patterns';
-import { agentNameOf, codeOf, createRun, leversOf, planOf, stepRun, syncOf } from '../src/sim';
+import {
+  agentNameOf,
+  codeOf,
+  createRun,
+  feedRequests,
+  leversOf,
+  planOf,
+  stepRun,
+  suppliedCount,
+  syncOf,
+} from '../src/sim';
+import { endlessPeek } from '../src/level';
 import type { Event, RunInput, RunState, Tier } from '../src/types';
-import { makeBot } from './helpers';
+import { makeBot, seatFeed } from './helpers';
 
 function step(state: RunState, input: RunInput = {}): RunState {
   return stepRun(state, input, DT);
@@ -465,5 +476,97 @@ describe('the run', () => {
     expect(() => createRun({ seed: 4, tier: 0, endless: false, levelIndex: 99 })).toThrow(
       'patterns/levels.json: levels.99',
     );
+  });
+});
+
+// ——— the seat's requests (G28 as slice 3 amends it) ————————————————————————
+//
+// In endless a seated model may write the request the player types. The sim
+// never waits for it: the shell feeds gated snippets into a buffer and the
+// planner takes what is there when the next level starts. Everything below
+// measures that the buffer is a queue, that a listed level ignores it, and
+// that an empty buffer changes nothing at all.
+
+/** Run an endless level to its end with a perfect typist. */
+function finishLevel(state: RunState): void {
+  const level = state.levelIndex;
+  let guard = 0;
+  const bot = makeBot('perfect', 1);
+  while (!state.over && state.levelIndex === level && guard < 400000) {
+    step(state, bot(state));
+    guard += 1;
+  }
+}
+
+describe("the seat's requests", () => {
+  it('changes nothing at all when nothing is fed', () => {
+    const plain = createRun({ seed: 5, tier: 0, endless: true });
+    const fed = createRun({ seed: 5, tier: 0, endless: true });
+    feedRequests(fed, []);
+    expect(suppliedCount(fed)).toBe(0);
+    const bot = makeBot('perfect', 5);
+    for (let i = 0; i < 40000 && !plain.over; i++) {
+      step(plain, bot(plain));
+    }
+    const bot2 = makeBot('perfect', 5);
+    for (let i = 0; i < 40000 && !fed.over; i++) {
+      feedRequests(fed, []);
+      step(fed, bot2(fed));
+    }
+    expect(JSON.stringify(fed)).toBe(JSON.stringify(plain));
+  });
+
+  it('gives the next endless level the fed requests in order, with the fed product', () => {
+    const feed = seatFeed(5, 0, 1, 4);
+    expect(feed.length).toBe(4);
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    feedRequests(state, feed, 'a diary for houseplants');
+    expect(suppliedCount(state)).toBe(4);
+    finishLevel(state);
+    expect(state.levelIndex).toBe(1);
+    expect(suppliedCount(state)).toBe(0);
+    expect(planOf(state).requests.map((r) => r.snippet.id)).toEqual(feed.map((f) => f.id));
+    expect(planOf(state).product).toBe('a diary for houseplants');
+    // The ask is the seat's own, with the product filled in (G28 amended).
+    expect(planOf(state).requests[0]!.ask).toContain('a diary for houseplants');
+    expect(planOf(state).requests[0]!.ask).not.toContain('{product}');
+  });
+
+  it('takes what it was given and draws the rest from the corpus', () => {
+    const feed = seatFeed(6, 0, 1, 2);
+    expect(feed.length).toBe(2);
+    const state = createRun({ seed: 6, tier: 0, endless: true });
+    feedRequests(state, feed);
+    finishLevel(state);
+    const ids = planOf(state).requests.map((r) => r.snippet.id);
+    expect(ids.length).toBe(4);
+    expect(ids.slice(0, 2)).toEqual(feed.map((f) => f.id));
+    expect(ids.slice(2).every((id) => id.startsWith('seat-'))).toBe(false);
+    // Nothing was fed for the product, so the noun list's draw stands.
+    expect(planOf(state).product).toBe(
+      endlessPeek({ set: DEFAULT_PATTERNS, seed: 6, tier: 0, levelIndex: 1 }).product,
+    );
+  });
+
+  it('gives the same run for the same feed, twice', () => {
+    const once = () => {
+      const state = createRun({ seed: 7, tier: 0, endless: true });
+      feedRequests(state, seatFeed(7, 0, 1, 4), 'a diary for houseplants');
+      const bot = makeBot('perfect', 7);
+      for (let i = 0; i < 60000 && !state.over; i++) step(state, bot(state));
+      return state;
+    };
+    expect(JSON.stringify(once())).toBe(JSON.stringify(once()));
+  });
+
+  it('ignores the buffer in a listed level', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: false, levelIndex: 0 });
+    const before = planOf(state).requests.map((r) => r.snippet.id);
+    feedRequests(state, seatFeed(5, 0, 1, 4), 'a diary for houseplants');
+    expect(suppliedCount(state)).toBe(4);
+    finishLevel(state);
+    expect(state.over).toBe(true);
+    expect(planOf(state).requests.map((r) => r.snippet.id)).toEqual(before);
+    expect(suppliedCount(state)).toBe(4);
   });
 });

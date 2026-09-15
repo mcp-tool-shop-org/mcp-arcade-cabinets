@@ -56,6 +56,16 @@ interface RunContext {
   syncIndex: number;
   /** One sync a level, spent or not. */
   syncDone: boolean;
+  /**
+   * Requests a seated model wrote and the code gate accepted, waiting for
+   * the next endless level to take them (G28 as slice 3 amends it). The
+   * shell fills this while the current request is typed and the planner
+   * splices off what it needs; an empty buffer is a run with no seat, and
+   * that run is byte for byte the run this cabinet has always played.
+   */
+  supplied: Snippet[];
+  /** The product the seat named for the level its buffer is filling, or null. */
+  suppliedProduct: string | null;
 }
 
 /** Lines in a quick sync. Three is a meeting; more is a level. */
@@ -82,6 +92,48 @@ export function syncOf(state: RunState): string[] {
 /** The levers this run was built with. */
 export function leversOf(state: RunState): Patterns {
   return runs.get(state)?.set ?? DEFAULT_PATTERNS;
+}
+
+/** The corpus this run plans from, tapes and all. The code gate values against it. */
+export function corpusOf(state: RunState): Corpus {
+  return runs.get(state)?.corpus ?? DEFAULT_CORPUS;
+}
+
+/**
+ * Hand the run gated requests for the next endless level (G28 amended).
+ * They are appended in order and taken in order. This never blocks, never
+ * throws and never touches the level in hand: a late answer arriving at
+ * any moment is either used by the next level or, if the buffer is already
+ * full, simply queued behind what is there (G11, G13).
+ *
+ * `product` is the name the seat gave the level it is filling for; the
+ * first one offered for a buffer wins, and the planner drops it once the
+ * level has taken its requests.
+ */
+export function feedRequests(state: RunState, items: readonly Snippet[], product?: string): void {
+  const ctx = runs.get(state);
+  if (!ctx || items.length === 0) return;
+  ctx.supplied.push(...items);
+  if (product !== undefined && product !== '' && ctx.suppliedProduct === null) {
+    ctx.suppliedProduct = product;
+  }
+}
+
+/** How many gated requests are waiting. The shell's prefetch bookkeeping. */
+export function suppliedCount(state: RunState): number {
+  return runs.get(state)?.supplied.length ?? 0;
+}
+
+/**
+ * The asks already in the buffer. The shell shows these to the seat along
+ * with the chat's own, so a seat filling four slots for one level does not
+ * write the same request four times: those asks have not been said yet and
+ * so are nowhere in `state.chat` to be found.
+ */
+export function suppliedAsks(state: RunState): string[] {
+  const ctx = runs.get(state);
+  if (!ctx) return [];
+  return ctx.supplied.map((s) => s.ask ?? '').filter((ask) => ask !== '');
 }
 
 function push(state: RunState, event: Event): void {
@@ -156,6 +208,8 @@ export function createRun(opts: CreateRunOpts): RunState {
     syncLines: [],
     syncIndex: 0,
     syncDone: false,
+    supplied: [],
+    suppliedProduct: null,
   });
   enterRequest(state);
   return state;
@@ -286,6 +340,10 @@ function advance(state: RunState): void {
   const levelIndex = state.levelIndex + 1;
   const used = new Set(state.used);
   ctx.picker.startLevel(levelIndex);
+  // The seat's buffer, if a seat is sitting. `planLevel` splices off what
+  // it takes, so an empty buffer costs one property read and changes
+  // nothing: every draw below is the draw it always was.
+  const before = ctx.supplied.length;
   const plan = planLevel({
     set: ctx.set,
     corpus: ctx.corpus,
@@ -296,8 +354,11 @@ function advance(state: RunState): void {
     endless: true,
     weakBigrams: state.weakBigrams,
     used,
+    supplied: ctx.supplied,
+    ...(ctx.suppliedProduct !== null ? { product: ctx.suppliedProduct } : {}),
     ...(ctx.opts.stack ? { stack: ctx.opts.stack } : {}),
   });
+  if (ctx.supplied.length !== before) ctx.suppliedProduct = null;
   if (!plan) {
     state.over = true;
     state.ended = 'shipped';

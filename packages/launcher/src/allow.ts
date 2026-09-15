@@ -24,6 +24,13 @@ export const PREFIXES: Record<Upstream, string> = {
 /** The say seat's node-side route. Not a proxy: it runs in this process. */
 export const SAY_PATH = '/cabinet/say';
 
+/**
+ * The endless seat's node-side route (G28 as slice 3 amends it). Not a
+ * proxy either: the typing cabinet posts the level it is about to play and
+ * this process asks the seated model for the request the player will type.
+ */
+export const ENDLESS_PATH = '/cabinet/endless';
+
 /** Strip the query. Routing never reads it; the upstream still gets it. */
 export function pathOnly(url: string | undefined): string {
   return (url ?? '/').split('?')[0] ?? '/';

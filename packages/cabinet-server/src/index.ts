@@ -20,6 +20,7 @@ export { speakLine, voiceHealth, createVoicer } from './voice';
 export type { SpeakAnswer, VoiceOpts, VoiceReceipt, Voicer, VoicerStats } from './voice';
 export {
   askFire,
+  chatJson,
   chatTools,
   createSeat,
   DEFAULT_KEEP_ALIVE,
@@ -43,6 +44,17 @@ export type {
 } from './client';
 export { askSay, askSayFor, CLAUDE_MODEL, SAY_SYSTEM, sayPrompt, sayTier, seedLines } from './say';
 export type { SayAnswer, SayCall, SayOpts, SayPrompt, SayTier } from './say';
+// The endless seat (G28 as slice 3 amends it): the vibe coder, played by a
+// model, for the typing cabinet's endless ladder.
+export {
+  askEndlessFor,
+  bandWord,
+  ENDLESS_SCHEMA,
+  ENDLESS_SYSTEM,
+  endlessPrompt,
+  parseRequest,
+} from './endless';
+export type { EndlessAnswer, EndlessPrompt, EndlessRequest, EndlessView } from './endless';
 export { seedPool } from './seeds';
 export { createScriptedSeat, SCRIPTED_LINES } from './scripted';
 export type { ScriptedSeat } from './scripted';

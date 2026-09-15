@@ -22,6 +22,13 @@ export interface Snippet {
   code: string;
   notes: string[];
   topics: string[];
+  /**
+   * The user's own ask for this snippet, when it has one: the request
+   * describes the job the code actually does. `{product}` may appear.
+   * Absent on a corpus snippet that has not been written one, where the
+   * template pool in user.json is the fallback (slice 3).
+   */
+  ask?: string;
 }
 
 export interface Creep {

@@ -136,10 +136,17 @@ async function main() {
   const names = (await readdir(assets)).filter((n) => n.endsWith('.js'));
   let playJs = '';
   for (const n of names) playJs += await readFile(path.join(assets, n), 'utf8');
+  // Measured, not guessed: a Pages build keeps every path and label string
+  // in this list (`/ollama/api/tags`, `Ollama bosses` and `/cabinet/endless`
+  // are all still there), so the only needles that actually discriminate are
+  // the two mount marks, which Rollup strips with the chrome they sit on.
+  // The rest stay because a missing one is still a broken pack.
   const seats = [
     ['data-local-seats', 'the seats mount mark'],
+    ['data-vibe-seat', 'the endless seat mount mark'],
     ['/ollama/api/tags', 'the daemon probe'],
     ['/ollama/api/generate', 'the next-verb seat'],
+    ['/cabinet/endless', 'the endless seat'],
     ['Ollama bosses', 'the Ollama checkbox'],
   ];
   const stripped = seats.filter(([needle]) => !playJs.includes(needle));

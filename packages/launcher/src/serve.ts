@@ -16,7 +16,15 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { Readable } from 'node:stream';
 import { pathToFileURL } from 'node:url';
 
-import { allowed, pathOnly, PREFIXES, restAfter, SAY_PATH, upstreamFor } from './allow';
+import {
+  allowed,
+  ENDLESS_PATH,
+  pathOnly,
+  PREFIXES,
+  restAfter,
+  SAY_PATH,
+  upstreamFor,
+} from './allow';
 import { resolveUnder, typeFor } from './files';
 
 /** Loopback only. Not an option: see the note at the top of this file. */
@@ -30,6 +38,17 @@ const SAY_MAX_MODELS = 32;
 const SAY_STR = 200;
 const PROXY_TIMEOUT_MS = 120_000;
 
+// The endless seat writes a whole snippet, not a line, so it is given
+// longer than the say seat's twelve seconds. Nothing waits on it: the shell
+// prefetches during the request in hand and the corpus plays if it is late
+// (G11, G13).
+const ENDLESS_TIMEOUT_MS = 20_000;
+const ENDLESS_MAX_RECENT = 3;
+const ENDLESS_MAX_WEAK = 24;
+const ENDLESS_STR = 200;
+const ENDLESS_PRODUCT = 120;
+const STACKS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql', 'integration'] as const;
+
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const HP_WORDS = ['high', 'mid', 'low'] as const;
 const COLUMNS = ['left', 'center', 'right'] as const;
@@ -42,6 +61,13 @@ export interface ServeOpts {
   playDir: string;
   /** The bundled cabinet-server, for the say seat. Null disables `/cabinet/say`. */
   sayModule: string | null;
+  /**
+   * The bundled cabinet-server for the endless seat. The same file as
+   * `sayModule` in the shipped package, and named separately only so a
+   * caller can light one seat without the other. Absent means the say
+   * module, and null on both disables `/cabinet/endless`.
+   */
+  endlessModule?: string | null;
   /** The player's Ollama daemon. */
   ollamaUrl: string;
   /** The host-side voice worker (`pnpm voice`), when they run one. */
@@ -59,6 +85,17 @@ interface SeatView {
   stick: (typeof STICKS)[number];
   motion: string;
   wave: (typeof WAVES)[number];
+}
+
+/** What the endless seat is shown. Words and the product; nothing measured. */
+export interface EndlessView {
+  product: string;
+  stack: (typeof STACKS)[number];
+  bandMin: number;
+  bandMax: number;
+  recent: string[];
+  weak: string[];
+  newLevel: boolean;
 }
 
 function oneOf<T extends string>(v: unknown, list: readonly T[]): T | undefined {
@@ -86,6 +123,36 @@ export function parseSeatView(raw: unknown): SeatView | null {
   if (!kind || !hp || !column || !stick || !wave) return null;
   if (typeof o.motion !== 'string') return null;
   return { kind, hp, column, stick, motion: o.motion.slice(0, 80), wave };
+}
+
+function bandNumber(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 7 ? v : undefined;
+}
+
+/**
+ * The typing cabinet's fact-blind view of the level it is about to play, or
+ * null. The stack is a closed set, the bands are the seven the cabinet has,
+ * and every free-text field is cut to a length, so nothing longer than a
+ * request can be smuggled through the route into the prompt.
+ */
+export function parseEndlessView(raw: unknown): EndlessView | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const stack = oneOf(o.stack, STACKS);
+  const bandMin = bandNumber(o.bandMin);
+  const bandMax = bandNumber(o.bandMax);
+  if (!stack || bandMin === undefined || bandMax === undefined) return null;
+  if (bandMax < bandMin) return null;
+  if (typeof o.product !== 'string' || o.product.trim() === '') return null;
+  return {
+    product: o.product.slice(0, ENDLESS_PRODUCT),
+    stack,
+    bandMin,
+    bandMax,
+    recent: parseStrings(o.recent, ENDLESS_MAX_RECENT, ENDLESS_STR),
+    weak: parseStrings(o.weak, ENDLESS_MAX_WEAK, 2),
+    newLevel: o.newLevel === true,
+  };
 }
 
 /** Bounded list of bounded strings. Anything else in the array is dropped. */
@@ -314,14 +381,102 @@ function sayRoute(opts: ServeOpts) {
   };
 }
 
+/** The endless seat's node side (G28 amended), as the dev server runs it. */
+function endlessRoute(opts: ServeOpts) {
+  let lastAt = 0;
+  let busy = false;
+  const module = opts.endlessModule === undefined ? opts.sayModule : opts.endlessModule;
+  return async function handleEndless(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'post only' });
+      req.resume();
+      return;
+    }
+    if (!jsonType(req.headers['content-type'])) {
+      sendJson(res, 415, { error: 'json only' });
+      req.resume();
+      return;
+    }
+    if (!module) {
+      sendJson(res, 503, { error: 'no cabinet server built' });
+      req.resume();
+      return;
+    }
+    const declared = Number(req.headers['content-length'] ?? NaN);
+    if (Number.isFinite(declared) && declared > SAY_MAX_BYTES) {
+      sendJson(res, 413, { error: 'too large' });
+      req.resume();
+      return;
+    }
+    const now = Date.now();
+    if (busy || now - lastAt < SAY_MIN_INTERVAL_MS) {
+      sendJson(res, 429, { error: 'slow down' });
+      req.resume();
+      return;
+    }
+    busy = true;
+    lastAt = now;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const raw = await readBody(req, SAY_MAX_BYTES);
+      if (raw === null) {
+        sendJson(res, 413, { error: 'too large' });
+        return;
+      }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw.toString('utf8') || '{}');
+      } catch {
+        sendJson(res, 400, { error: 'no answer' });
+        return;
+      }
+      const body = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+      const view = parseEndlessView(body.view);
+      if (!view) {
+        sendJson(res, 400, { error: 'no answer' });
+        return;
+      }
+      const cs = (await import(pathToFileURL(module).href)) as {
+        askEndlessFor: (
+          view: unknown,
+          o: { anthropicKey: string | null; ollamaUrl: string; models: readonly string[] },
+        ) => Promise<unknown>;
+      };
+      const work = cs.askEndlessFor(view, {
+        anthropicKey: opts.anthropicKey,
+        ollamaUrl: `${opts.ollamaUrl.replace(/\/$/, '')}/api/chat`,
+        models: parseStrings(body.models, SAY_MAX_MODELS, 128),
+      });
+      const answer = await Promise.race([
+        work,
+        new Promise<never>((_, rej) => {
+          timer = setTimeout(() => rej(new Error('no answer')), ENDLESS_TIMEOUT_MS);
+        }),
+      ]);
+      sendJson(res, 200, answer);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      sendJson(res, 200, { error: /retired/i.test(msg) ? 'model retired' : 'no answer' });
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+      busy = false;
+    }
+  };
+}
+
 /** Build the cabinet's server. Nothing listens until `listen` is called. */
 export function createCabinetServer(opts: ServeOpts): Server {
   const handleSay = sayRoute(opts);
+  const handleEndless = endlessRoute(opts);
   return createServer((req, res) => {
     void (async () => {
       const p = pathOnly(req.url);
       if (p === SAY_PATH) {
         await handleSay(req, res);
+        return;
+      }
+      if (p === ENDLESS_PATH) {
+        await handleEndless(req, res);
         return;
       }
       const up = upstreamFor(req.url);
