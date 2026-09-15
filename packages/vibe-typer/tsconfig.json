@@ -1,4 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `test/author.test.ts` imports the authoring script's pure helpers, which
+    // are plain ESM because the script is `node`-only and never bundled.
+    "allowJs": true
+  },
   "include": ["src", "test"]
 }

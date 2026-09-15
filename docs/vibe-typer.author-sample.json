@@ -1,0 +1,1406 @@
+{
+  "date": "2026-09-15",
+  "level": "duck-rides",
+  "stack": "python",
+  "product": "a rideshare for ducks",
+  "candidatesPerSlot": 3,
+  "snippets": [
+    {
+      "id": "cal-py-d1-001",
+      "title": "print hello world"
+    },
+    {
+      "id": "cal-py-d1-002",
+      "title": "variable assignment and addition"
+    },
+    {
+      "id": "cal-py-d1-003",
+      "title": "basic string concatenation"
+    },
+    {
+      "id": "cal-py-d1-004",
+      "title": "integer division and modulo"
+    },
+    {
+      "id": "cal-py-d1-005",
+      "title": "boolean comparison"
+    },
+    {
+      "id": "cal-py-d2-001",
+      "title": "simple for loop with accumulator"
+    },
+    {
+      "id": "cal-py-d2-002",
+      "title": "function returning a greeting"
+    },
+    {
+      "id": "cal-py-d2-003",
+      "title": "while loop countdown"
+    },
+    {
+      "id": "cal-py-d2-004",
+      "title": "list slicing and reversal"
+    },
+    {
+      "id": "cal-py-d2-005",
+      "title": "dictionary iteration"
+    }
+  ],
+  "models": {
+    "ollama:kimi-k2.6:cloud": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "route": "ollama",
+      "id": "kimi-k2.6:cloud",
+      "date": "2026-09-15",
+      "temperature": 0.9,
+      "slots": {
+        "asks": {
+          "promptHash": "07a941cf282592dd5a0cde38390cdb416405cb52a9521f98d3ad250f6b7cfdf5",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 247106,
+          "tokens": {
+            "in": 1265,
+            "out": 8316
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "cal-py-d1-001": "make {product} say hello to the user",
+            "cal-py-d1-002": "add two numbers to show a fare total",
+            "cal-py-d1-003": "join first and last name for {product}",
+            "cal-py-d1-004": "work out full cars and spare ducks",
+            "cal-py-d1-005": "check if a duck is old enough",
+            "cal-py-d2-001": "add up every fare and find the average",
+            "cal-py-d2-002": "greet a duck by name with custom words",
+            "cal-py-d2-003": "count down from ten until the ducks depart",
+            "cal-py-d2-004": "pull out early and late rides and reverse all",
+            "cal-py-d2-005": "show each duck rating and the overall average"
+          },
+          "alternates": {
+            "cal-py-d1-001": [
+              "have {product} greet every new duck",
+              "show a welcome message for {product}"
+            ],
+            "cal-py-d1-002": [
+              "calculate the sum of ducks for {product}",
+              "add two ride costs together"
+            ],
+            "cal-py-d1-003": [
+              "make a full name from two pieces",
+              "build a full name from two parts"
+            ],
+            "cal-py-d1-004": [
+              "see how many fit and what is left",
+              "divide ducks into groups and count leftovers"
+            ],
+            "cal-py-d1-005": [
+              "confirm a rider meets the age rule",
+              "verify a duck can use {product} alone"
+            ],
+            "cal-py-d2-001": [
+              "total all ride prices and show the mean",
+              "find the sum and mean of all rides"
+            ],
+            "cal-py-d2-002": [
+              "say hello to riders and allow different greetings",
+              "make {product} welcome each duck personally"
+            ],
+            "cal-py-d2-003": [
+              "show a timer from ten down to one",
+              "make {product} count ten beats then start"
+            ],
+            "cal-py-d2-004": [
+              "list the newest oldest and reversed trips for {product}",
+              "get first last and reversed ride history"
+            ],
+            "cal-py-d2-005": [
+              "list every rating and find the mean value",
+              "tally every duck review and show the average"
+            ]
+          },
+          "raw": {
+            "cal-py-d1-001": [
+              "make {product} say hello to the user",
+              "have {product} greet every new duck",
+              "show a welcome message for {product}"
+            ],
+            "cal-py-d1-002": [
+              "add two numbers to show a fare total",
+              "calculate the sum of ducks for {product}",
+              "add two ride costs together"
+            ],
+            "cal-py-d1-003": [
+              "join first and last name for {product}",
+              "make a full name from two pieces",
+              "build a full name from two parts"
+            ],
+            "cal-py-d1-004": [
+              "work out full cars and spare ducks",
+              "see how many fit and what is left",
+              "divide ducks into groups and count leftovers"
+            ],
+            "cal-py-d1-005": [
+              "check if a duck is old enough",
+              "confirm a rider meets the age rule",
+              "verify a duck can use {product} alone"
+            ],
+            "cal-py-d2-001": [
+              "add up every fare and find the average",
+              "total all ride prices and show the mean",
+              "find the sum and mean of all rides"
+            ],
+            "cal-py-d2-002": [
+              "greet a duck by name with custom words",
+              "say hello to riders and allow different greetings",
+              "make {product} welcome each duck personally"
+            ],
+            "cal-py-d2-003": [
+              "count down from ten until the ducks depart",
+              "show a timer from ten down to one",
+              "make {product} count ten beats then start"
+            ],
+            "cal-py-d2-004": [
+              "pull out early and late rides and reverse all",
+              "list the newest oldest and reversed trips for {product}",
+              "get first last and reversed ride history"
+            ],
+            "cal-py-d2-005": [
+              "show each duck rating and the overall average",
+              "list every rating and find the mean value",
+              "tally every duck review and show the average"
+            ]
+          }
+        },
+        "nags": {
+          "promptHash": "c5b3675adfbc6e0be7376d665a6b94ed99e64192309d7e54f0e7b67c471c9c5e",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 121355,
+          "tokens": {
+            "in": 462,
+            "out": 3507
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "nag-1": "is it ready yet",
+            "nag-2": "is it live yet",
+            "nag-3": "did it go up yet",
+            "nag-4": "let me see it",
+            "nag-5": "my cousin is asking",
+            "nag-6": "does it work yet",
+            "nag-7": "how much longer now",
+            "nag-8": "hello are you there",
+            "nag-9": "is it still building",
+            "nag-10": "show me the thing"
+          },
+          "alternates": {
+            "nag-1": ["how close are we", "are you almost there"],
+            "nag-2": ["can i see it live", "has it gone live"],
+            "nag-3": ["is it up now", "has it deployed yet"],
+            "nag-4": ["i want to see it", "show me what happened"],
+            "nag-5": ["my aunt wants to see", "a friend is asking now"],
+            "nag-6": ["is it working now", "can you test it"],
+            "nag-7": ["is this almost over", "when will it finish"],
+            "nag-8": ["still typing over there", "you still with me"],
+            "nag-9": ["did something go wrong", "is it still okay"],
+            "nag-10": ["i need to see it", "can i look now"]
+          },
+          "raw": [
+            ["is it ready yet", "how close are we", "are you almost there"],
+            ["is it live yet", "can i see it live", "has it gone live"],
+            ["did it go up yet", "is it up now", "has it deployed yet"],
+            ["let me see it", "i want to see it", "show me what happened"],
+            ["my cousin is asking", "my aunt wants to see", "a friend is asking now"],
+            ["does it work yet", "is it working now", "can you test it"],
+            ["how much longer now", "is this almost over", "when will it finish"],
+            ["hello are you there", "still typing over there", "you still with me"],
+            ["is it still building", "did something go wrong", "is it still okay"],
+            ["show me the thing", "i need to see it", "can i look now"]
+          ]
+        },
+        "reactions": {
+          "promptHash": "87de735da4d25565842f7321d77f631b5b7e74547c9174d52f816a9ebf9407b7",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 275775,
+          "tokens": {
+            "in": 1219,
+            "out": 10431
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "cal-py-d1-001": "the greeting quacks exactly like a welcome should.",
+            "cal-py-d1-002": "the table adds up the bread crumbs perfectly.",
+            "cal-py-d1-003": "the greeting now knows every duck by name.",
+            "cal-py-d1-004": "the table splits seventeen ducks into neat groups.",
+            "cal-py-d1-005": "the button confirms our ducks are all grown up.",
+            "cal-py-d2-001": "the loop adds up every bread crumb so gracefully.",
+            "cal-py-d2-002": "the greeting adapts to each duck so sweetly.",
+            "cal-py-d2-003": "the loop counts down to liftoff with perfect drama.",
+            "cal-py-d2-004": "the list shows exactly which fruits come first.",
+            "cal-py-d2-005": "the table shows every duck and their bright numbers."
+          },
+          "alternates": {
+            "cal-py-d1-001": [
+              "our ducks finally have a proper hello.",
+              "this greeting makes me want to ride too."
+            ],
+            "cal-py-d1-002": [
+              "the table totals our duck fares without any fuss.",
+              "i love how the table handles all that math."
+            ],
+            "cal-py-d1-003": [
+              "the greeting looks so formal with full names.",
+              "our greeting has never looked so official before."
+            ],
+            "cal-py-d1-004": [
+              "the table knows exactly how many fit in each pond.",
+              "i adore how the table handles leftover crumbs."
+            ],
+            "cal-py-d1-005": [
+              "the button glows true for every single rider today.",
+              "i trust the button to judge age with kindness."
+            ],
+            "cal-py-d2-001": [
+              "the loop totals our riders without missing a single one.",
+              "i could watch the loop run all day long."
+            ],
+            "cal-py-d2-002": [
+              "the greeting now says good morning to bob.",
+              "the greeting feels warm and personal and right."
+            ],
+            "cal-py-d2-003": [
+              "the loop makes every departure feel like an event.",
+              "the loop goes from ten to one so smoothly."
+            ],
+            "cal-py-d2-004": [
+              "the list flips around just to keep things interesting.",
+              "i love how the list hides nothing from us."
+            ],
+            "cal-py-d2-005": [
+              "the table averages our flock with gentle precision.",
+              "the table tracks each duck without dropping anything."
+            ]
+          },
+          "raw": {
+            "cal-py-d1-001": [
+              "the greeting quacks exactly like a welcome should.",
+              "our ducks finally have a proper hello.",
+              "this greeting makes me want to ride too."
+            ],
+            "cal-py-d1-002": [
+              "the table adds up the bread crumbs perfectly.",
+              "the table totals our duck fares without any fuss.",
+              "i love how the table handles all that math."
+            ],
+            "cal-py-d1-003": [
+              "the greeting now knows every duck by name.",
+              "the greeting looks so formal with full names.",
+              "our greeting has never looked so official before."
+            ],
+            "cal-py-d1-004": [
+              "the table splits seventeen ducks into neat groups.",
+              "the table knows exactly how many fit in each pond.",
+              "i adore how the table handles leftover crumbs."
+            ],
+            "cal-py-d1-005": [
+              "the button confirms our ducks are all grown up.",
+              "the button glows true for every single rider today.",
+              "i trust the button to judge age with kindness."
+            ],
+            "cal-py-d2-001": [
+              "the loop adds up every bread crumb so gracefully.",
+              "the loop totals our riders without missing a single one.",
+              "i could watch the loop run all day long."
+            ],
+            "cal-py-d2-002": [
+              "the greeting adapts to each duck so sweetly.",
+              "the greeting now says good morning to bob.",
+              "the greeting feels warm and personal and right."
+            ],
+            "cal-py-d2-003": [
+              "the loop counts down to liftoff with perfect drama.",
+              "the loop makes every departure feel like an event.",
+              "the loop goes from ten to one so smoothly."
+            ],
+            "cal-py-d2-004": [
+              "the list shows exactly which fruits come first.",
+              "the list flips around just to keep things interesting.",
+              "i love how the list hides nothing from us."
+            ],
+            "cal-py-d2-005": [
+              "the table shows every duck and their bright numbers.",
+              "the table averages our flock with gentle precision.",
+              "the table tracks each duck without dropping anything."
+            ]
+          }
+        },
+        "replies": {
+          "promptHash": "556c5ed571037f2fb467531193323adea04660745bc47c5201569c18d06aba30",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 110417,
+          "tokens": {
+            "in": 525,
+            "out": 4091
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "nag-1": "Nearly there, adding the final sparkle.",
+            "nag-2": "It is practically breathing on its own.",
+            "nag-3": "Rising like a very polite balloon.",
+            "nag-4": "You will love this next part.",
+            "nag-5": "Tell them the wait is worth it.",
+            "nag-6": "It is already humming a tune.",
+            "nag-7": "Just a few more careful strokes.",
+            "nag-8": "Right here and typing happily away.",
+            "nag-9": "Building and blooming as we speak.",
+            "nag-10": "The thing is going to shine."
+          },
+          "alternates": {
+            "nag-1": ["So close I can taste it.", "Polishing the last little corner now."],
+            "nag-2": [
+              "Almost alive and already waving hello.",
+              "Giving it the final spark right now."
+            ],
+            "nag-3": ["Ascending gracefully as we speak.", "It is gently lifting off now."],
+            "nag-4": ["A gorgeous reveal is coming right up.", "Almost ready for your eyes only."],
+            "nag-5": ["Your cousin has excellent timing.", "They are going to adore this."],
+            "nag-6": [
+              "Working beautifully, just tying the ribbon.",
+              "Functioning like a dream in progress."
+            ],
+            "nag-7": ["Almost there, I promise nothing but magic.", "The finish line is in sight."],
+            "nag-8": [
+              "Present and accounted for with coffee.",
+              "Hello, yes, still here and building."
+            ],
+            "nag-9": [
+              "It is growing more lovely by the second.",
+              "Still constructing this tiny masterpiece for you."
+            ],
+            "nag-10": [
+              "Preparing the grand unveiling just for you.",
+              "One last fluff and it is yours."
+            ]
+          },
+          "raw": [
+            [
+              "Nearly there, adding the final sparkle.",
+              "So close I can taste it.",
+              "Polishing the last little corner now."
+            ],
+            [
+              "It is practically breathing on its own.",
+              "Almost alive and already waving hello.",
+              "Giving it the final spark right now."
+            ],
+            [
+              "Rising like a very polite balloon.",
+              "Ascending gracefully as we speak.",
+              "It is gently lifting off now."
+            ],
+            [
+              "You will love this next part.",
+              "A gorgeous reveal is coming right up.",
+              "Almost ready for your eyes only."
+            ],
+            [
+              "Tell them the wait is worth it.",
+              "Your cousin has excellent timing.",
+              "They are going to adore this."
+            ],
+            [
+              "It is already humming a tune.",
+              "Working beautifully, just tying the ribbon.",
+              "Functioning like a dream in progress."
+            ],
+            [
+              "Just a few more careful strokes.",
+              "Almost there, I promise nothing but magic.",
+              "The finish line is in sight."
+            ],
+            [
+              "Right here and typing happily away.",
+              "Present and accounted for with coffee.",
+              "Hello, yes, still here and building."
+            ],
+            [
+              "Building and blooming as we speak.",
+              "It is growing more lovely by the second.",
+              "Still constructing this tiny masterpiece for you."
+            ],
+            [
+              "The thing is going to shine.",
+              "Preparing the grand unveiling just for you.",
+              "One last fluff and it is yours."
+            ]
+          ]
+        }
+      },
+      "wallMs": 754653,
+      "tokens": {
+        "in": 3471,
+        "out": 26345
+      },
+      "cost": null
+    },
+    "ollama:deepseek-v3.1:671b-cloud": {
+      "model": "ollama:deepseek-v3.1:671b-cloud",
+      "route": "ollama",
+      "id": "deepseek-v3.1:671b-cloud",
+      "date": "2026-09-15",
+      "temperature": 0.9,
+      "slots": {
+        "asks": {
+          "promptHash": "07a941cf282592dd5a0cde38390cdb416405cb52a9521f98d3ad250f6b7cfdf5",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 0,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 0,
+          "tokens": {
+            "in": 0,
+            "out": 0
+          },
+          "cost": null,
+          "attempts": 0,
+          "error": "ollama deepseek-v3.1:671b-cloud: HTTP 410 — deepseek-v3.1:671b was retired at 2026-07-15 00:00:00 -0700 PDT (twice)",
+          "lines": {},
+          "alternates": {},
+          "raw": null
+        },
+        "nags": {
+          "promptHash": "c5b3675adfbc6e0be7376d665a6b94ed99e64192309d7e54f0e7b67c471c9c5e",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 0,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 0,
+          "tokens": {
+            "in": 0,
+            "out": 0
+          },
+          "cost": null,
+          "attempts": 0,
+          "error": "ollama deepseek-v3.1:671b-cloud: HTTP 410 — deepseek-v3.1:671b was retired at 2026-07-15 00:00:00 -0700 PDT (twice)",
+          "lines": {},
+          "alternates": {},
+          "raw": null
+        },
+        "reactions": {
+          "promptHash": "87de735da4d25565842f7321d77f631b5b7e74547c9174d52f816a9ebf9407b7",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 0,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 0,
+          "tokens": {
+            "in": 0,
+            "out": 0
+          },
+          "cost": null,
+          "attempts": 0,
+          "error": "ollama deepseek-v3.1:671b-cloud: HTTP 410 — deepseek-v3.1:671b was retired at 2026-07-15 00:00:00 -0700 PDT (twice)",
+          "lines": {},
+          "alternates": {},
+          "raw": null
+        },
+        "replies": {
+          "promptHash": "",
+          "temperature": 0.9,
+          "requested": 0,
+          "kept": 0,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 0,
+          "tokens": {
+            "in": 0,
+            "out": 0
+          },
+          "cost": null,
+          "attempts": 0,
+          "error": "no nag passed the gate, so there was nothing to reply to",
+          "lines": {},
+          "alternates": {}
+        }
+      },
+      "wallMs": 0,
+      "tokens": {
+        "in": 0,
+        "out": 0
+      },
+      "cost": null
+    },
+    "openrouter:openai/gpt-6-astra": {
+      "model": "openrouter:openai/gpt-6-astra",
+      "route": "openrouter",
+      "id": "openai/gpt-6-astra",
+      "date": "2026-09-15",
+      "temperature": 0.9,
+      "slots": {
+        "asks": {
+          "promptHash": "07a941cf282592dd5a0cde38390cdb416405cb52a9521f98d3ad250f6b7cfdf5",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 33886,
+          "tokens": {
+            "in": 1262,
+            "out": 1236
+          },
+          "cost": 0.0775675,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "cal-py-d1-001": "have {product} say hello to the world",
+            "cal-py-d1-002": "show the total for fares of ten and twenty",
+            "cal-py-d1-003": "show our duck rider's first and last names together",
+            "cal-py-d1-004": "show full groups and leftovers for seventeen ducks in fives",
+            "cal-py-d1-005": "show whether our duck rider is at least eighteen",
+            "cal-py-d2-001": "show the total and average of our ten duck fares",
+            "cal-py-d2-002": "greet riders by name, using hello unless i choose otherwise",
+            "cal-py-d2-003": "count down from ten, then announce liftoff for our ducks",
+            "cal-py-d2-004": "show the first three snacks, last two, and reversed menu",
+            "cal-py-d2-005": "show each duck student's grade and the class average"
+          },
+          "alternates": {
+            "cal-py-d1-001": [
+              "make {product} greet the world",
+              "show a hello world greeting for our duck debut"
+            ],
+            "cal-py-d1-002": [
+              "add ten and twenty to show our duck fare total",
+              "show what ten plus twenty makes for {product}"
+            ],
+            "cal-py-d1-003": [
+              "display the rider's full name with a space between names",
+              "put our duck chauffeur's first and last names together"
+            ],
+            "cal-py-d1-004": [
+              "divide seventeen ducks into fives, showing groups and leftovers",
+              "show how many five-duck groups seventeen makes, plus leftovers"
+            ],
+            "cal-py-d1-005": [
+              "check whether our twenty-five-year-old duck counts as eighteen or older",
+              "tell me whether this duck has reached eighteen"
+            ],
+            "cal-py-d2-001": [
+              "calculate total and average fares for amounts one through ten",
+              "give {product} a total and average for these fares"
+            ],
+            "cal-py-d2-002": [
+              "say hello to one rider, good morning to another",
+              "give named duck riders a standard or custom greeting"
+            ],
+            "cal-py-d2-003": [
+              "show ten through one before saying liftoff for {product}",
+              "give our duck departure a countdown from ten to liftoff"
+            ],
+            "cal-py-d2-004": [
+              "display first three fruits, last two, then all fruits backward",
+              "split snacks into first three, last two, then reverse everything"
+            ],
+            "cal-py-d2-005": [
+              "list duck driving grades by name, then average them",
+              "show named duckling grades and their average to one decimal"
+            ]
+          },
+          "raw": {
+            "cal-py-d1-001": [
+              "have {product} say hello to the world",
+              "make {product} greet the world",
+              "show a hello world greeting for our duck debut"
+            ],
+            "cal-py-d1-002": [
+              "show the total for fares of ten and twenty",
+              "add ten and twenty to show our duck fare total",
+              "show what ten plus twenty makes for {product}"
+            ],
+            "cal-py-d1-003": [
+              "show our duck rider's first and last names together",
+              "display the rider's full name with a space between names",
+              "put our duck chauffeur's first and last names together"
+            ],
+            "cal-py-d1-004": [
+              "show full groups and leftovers for seventeen ducks in fives",
+              "divide seventeen ducks into fives, showing groups and leftovers",
+              "show how many five-duck groups seventeen makes, plus leftovers"
+            ],
+            "cal-py-d1-005": [
+              "show whether our duck rider is at least eighteen",
+              "check whether our twenty-five-year-old duck counts as eighteen or older",
+              "tell me whether this duck has reached eighteen"
+            ],
+            "cal-py-d2-001": [
+              "show the total and average of our ten duck fares",
+              "calculate total and average fares for amounts one through ten",
+              "give {product} a total and average for these fares"
+            ],
+            "cal-py-d2-002": [
+              "greet riders by name, using hello unless i choose otherwise",
+              "say hello to one rider, good morning to another",
+              "give named duck riders a standard or custom greeting"
+            ],
+            "cal-py-d2-003": [
+              "count down from ten, then announce liftoff for our ducks",
+              "show ten through one before saying liftoff for {product}",
+              "give our duck departure a countdown from ten to liftoff"
+            ],
+            "cal-py-d2-004": [
+              "show the first three snacks, last two, and reversed menu",
+              "display first three fruits, last two, then all fruits backward",
+              "split snacks into first three, last two, then reverse everything"
+            ],
+            "cal-py-d2-005": [
+              "show each duck student's grade and the class average",
+              "list duck driving grades by name, then average them",
+              "show named duckling grades and their average to one decimal"
+            ]
+          }
+        },
+        "nags": {
+          "promptHash": "c5b3675adfbc6e0be7376d665a6b94ed99e64192309d7e54f0e7b67c471c9c5e",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 9413,
+          "tokens": {
+            "in": 455,
+            "out": 282
+          },
+          "cost": 0.01865,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "nag-1": "how's our little app?",
+            "nag-2": "is it live yet?",
+            "nag-3": "did it deploy yet?",
+            "nag-4": "can i peek yet?",
+            "nag-5": "my cousin wants an update",
+            "nag-6": "are we nearly a business?",
+            "nag-7": "does the button work yet?",
+            "nag-8": "is now a launch time?",
+            "nag-9": "is the dashboard awake yet?",
+            "nag-10": "ready for one admiring visitor?"
+          },
+          "alternates": {
+            "nag-1": ["is it almost ready?", "how's the typing going?"],
+            "nag-2": ["can the internet see it?", "are we out there yet?"],
+            "nag-3": ["has our creation landed?", "is deployment done stretching?"],
+            "nag-4": ["could i see a corner?", "is there a preview yet?"],
+            "nag-5": ["my cousin asks, live yet?", "can my cousin peek?"],
+            "nag-6": ["can i order tiny stationery?", "is the ribbon cutting soon?"],
+            "nag-7": ["may i press something soon?", "is anything clickable yet?"],
+            "nag-8": ["how many snacks until launch?", "should i warm the confetti?"],
+            "nag-9": ["can the chart wiggle yet?", "are the numbers moving yet?"],
+            "nag-10": ["can i invite everyone yet?", "is it ready for applause?"]
+          },
+          "raw": [
+            ["how's our little app?", "is it almost ready?", "how's the typing going?"],
+            ["is it live yet?", "can the internet see it?", "are we out there yet?"],
+            ["did it deploy yet?", "has our creation landed?", "is deployment done stretching?"],
+            ["can i peek yet?", "could i see a corner?", "is there a preview yet?"],
+            ["my cousin wants an update", "my cousin asks, live yet?", "can my cousin peek?"],
+            [
+              "are we nearly a business?",
+              "can i order tiny stationery?",
+              "is the ribbon cutting soon?"
+            ],
+            [
+              "does the button work yet?",
+              "may i press something soon?",
+              "is anything clickable yet?"
+            ],
+            [
+              "is now a launch time?",
+              "how many snacks until launch?",
+              "should i warm the confetti?"
+            ],
+            [
+              "is the dashboard awake yet?",
+              "can the chart wiggle yet?",
+              "are the numbers moving yet?"
+            ],
+            [
+              "ready for one admiring visitor?",
+              "can i invite everyone yet?",
+              "is it ready for applause?"
+            ]
+          ]
+        },
+        "reactions": {
+          "promptHash": "87de735da4d25565842f7321d77f631b5b7e74547c9174d52f816a9ebf9407b7",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 26605,
+          "tokens": {
+            "in": 1216,
+            "out": 827
+          },
+          "cost": 0.0565425,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "cal-py-d1-001": "oh good, the greeting makes this pond feel like an airport",
+            "cal-py-d1-002": "lovely, the total makes our duck fares look wonderfully official",
+            "cal-py-d1-003": "the full name makes every duck sound like a distinguished commuter",
+            "cal-py-d1-004": "perfect, the division leaves exactly enough ducks for a bonus boat",
+            "cal-py-d1-005": "lovely, the age check gives our duck drivers grownup responsibilities",
+            "cal-py-d2-001": "that loop adds everything up like a very diligent pond accountant",
+            "cal-py-d2-002": "oh lovely, the greeting knows which duck deserves the little bow",
+            "cal-py-d2-003": "that countdown loop makes a puddle crossing feel gloriously aerospace",
+            "cal-py-d2-004": "lovely, the reversed list is our snack cart driving backward",
+            "cal-py-d2-005": "oh lovely, the table gives our duck academy graduation energy"
+          },
+          "alternates": {
+            "cal-py-d1-001": [
+              "that greeting is exactly how a duck deserves to arrive",
+              "perfect, the greeting gives our puddle a front desk"
+            ],
+            "cal-py-d1-002": [
+              "that total is perfect for our extremely small transportation empire",
+              "oh good, the total means i can retire my counting feathers"
+            ],
+            "cal-py-d1-003": [
+              "perfect, the full name belongs on a tiny chauffeur sign",
+              "oh lovely, the full name gives our duck reservation energy"
+            ],
+            "cal-py-d1-004": [
+              "oh good, the remainder is our next boat's founding passenger",
+              "that group count makes my fleet of bathtubs feel inevitable"
+            ],
+            "cal-py-d1-005": [
+              "that age check pairs beautifully with a tiny chauffeur hat",
+              "perfect, the age check brings paperwork to the duck pond"
+            ],
+            "cal-py-d2-001": [
+              "lovely, the average gives our duck board something to nod about",
+              "perfect, the loop does arithmetic while our ducks pursue bread"
+            ],
+            "cal-py-d2-002": [
+              "that greeting makes every duck feel expected at the dock",
+              "perfect, the custom greeting is concierge service with webbed feet"
+            ],
+            "cal-py-d2-003": [
+              "perfect, the countdown gives our duck time to adjust its goggles",
+              "oh good, the loop announces departure with appropriate duck ceremony"
+            ],
+            "cal-py-d2-004": [
+              "perfect, the shorter list fits on a duck's tiny menu",
+              "that fruit list gives our duck rides a tasting menu"
+            ],
+            "cal-py-d2-005": [
+              "perfect, the average belongs in our pond's annual academic report",
+              "that table makes me want tiny diplomas for every duck"
+            ]
+          },
+          "raw": {
+            "cal-py-d1-001": [
+              "oh good, the greeting makes this pond feel like an airport",
+              "that greeting is exactly how a duck deserves to arrive",
+              "perfect, the greeting gives our puddle a front desk"
+            ],
+            "cal-py-d1-002": [
+              "lovely, the total makes our duck fares look wonderfully official",
+              "that total is perfect for our extremely small transportation empire",
+              "oh good, the total means i can retire my counting feathers"
+            ],
+            "cal-py-d1-003": [
+              "the full name makes every duck sound like a distinguished commuter",
+              "perfect, the full name belongs on a tiny chauffeur sign",
+              "oh lovely, the full name gives our duck reservation energy"
+            ],
+            "cal-py-d1-004": [
+              "perfect, the division leaves exactly enough ducks for a bonus boat",
+              "oh good, the remainder is our next boat's founding passenger",
+              "that group count makes my fleet of bathtubs feel inevitable"
+            ],
+            "cal-py-d1-005": [
+              "lovely, the age check gives our duck drivers grownup responsibilities",
+              "that age check pairs beautifully with a tiny chauffeur hat",
+              "perfect, the age check brings paperwork to the duck pond"
+            ],
+            "cal-py-d2-001": [
+              "that loop adds everything up like a very diligent pond accountant",
+              "lovely, the average gives our duck board something to nod about",
+              "perfect, the loop does arithmetic while our ducks pursue bread"
+            ],
+            "cal-py-d2-002": [
+              "oh lovely, the greeting knows which duck deserves the little bow",
+              "that greeting makes every duck feel expected at the dock",
+              "perfect, the custom greeting is concierge service with webbed feet"
+            ],
+            "cal-py-d2-003": [
+              "that countdown loop makes a puddle crossing feel gloriously aerospace",
+              "perfect, the countdown gives our duck time to adjust its goggles",
+              "oh good, the loop announces departure with appropriate duck ceremony"
+            ],
+            "cal-py-d2-004": [
+              "lovely, the reversed list is our snack cart driving backward",
+              "perfect, the shorter list fits on a duck's tiny menu",
+              "that fruit list gives our duck rides a tasting menu"
+            ],
+            "cal-py-d2-005": [
+              "oh lovely, the table gives our duck academy graduation energy",
+              "perfect, the average belongs in our pond's annual academic report",
+              "that table makes me want tiny diplomas for every duck"
+            ]
+          }
+        },
+        "replies": {
+          "promptHash": "3a5135827ff34496779711a19ce2f8e2f29b83cb1fa5d45c6617165f1830b2cf",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 27145,
+          "tokens": {
+            "in": 526,
+            "out": 783
+          },
+          "cost": 0.04441,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "nag-1": "Our little app is growing manners while I finish its edges.",
+            "nag-2": "Not quite live, I'm still stitching the welcome mat into place.",
+            "nag-3": "I'm finishing deployment, and our little app has packed beautifully.",
+            "nag-4": "Absolutely, you can admire it while I finish sewing its pockets.",
+            "nag-5": "Tell your cousin I'm typing with the entire extended family in mind.",
+            "nag-6": "Nearly a business, I'm just giving the ambition somewhere to sit.",
+            "nag-7": "I'm finishing its click, and it already looks wonderfully buttonlike.",
+            "nag-8": "I'm still typing the launch bits, and I love your enthusiasm.",
+            "nag-9": "It's stretching while I type the rest of its morning routine.",
+            "nag-10": "I'm finishing the welcome, with plenty of room for their admiration."
+          },
+          "alternates": {
+            "nag-1": [
+              "I'm typing its finishing touches, and your idea looks downright lovely.",
+              "Nearly there, just teaching our little masterpiece where its feet go."
+            ],
+            "nag-2": [
+              "I'm finishing its entrance, because your app deserves a graceful arrival.",
+              "Nearly there, just typing the part where it meets the world."
+            ],
+            "nag-3": [
+              "Nearly there, just typing the last bit of its moving paperwork.",
+              "I'm connecting its new home, with room for your inevitable empire."
+            ],
+            "nag-4": [
+              "Please peek, I'm still typing the part that makes it sparkle.",
+              "Of course, your little wonder is getting its edges rounded."
+            ],
+            "nag-5": [
+              "Your cousin has excellent timing for admiring this unfinished little marvel.",
+              "I'm polishing the update into something worthy of the family chat."
+            ],
+            "nag-6": [
+              "I'm finishing the foundations of your extremely charming commercial empire.",
+              "Your business instincts are excellent, I'm still attaching the business bits."
+            ],
+            "nag-7": [
+              "Nearly there, just teaching it to do more than look irresistible.",
+              "I'm wiring up your button with frankly unreasonable affection."
+            ],
+            "nag-8": [
+              "Nearly there, just making the entrance worthy of your lovely idea.",
+              "I'm finishing our launch preparations, including emotional support for the confetti."
+            ],
+            "nag-9": [
+              "I'm connecting its numbers, and your dashboard is looking delightfully alert.",
+              "Nearly awake, just typing a little purpose into those beautiful rectangles."
+            ],
+            "nag-10": [
+              "Nearly there, just making our little app comfortable receiving compliments.",
+              "Your visitor has excellent taste, I'm still polishing the front door."
+            ]
+          },
+          "raw": [
+            [
+              "Our little app is growing manners while I finish its edges.",
+              "I'm typing its finishing touches, and your idea looks downright lovely.",
+              "Nearly there, just teaching our little masterpiece where its feet go."
+            ],
+            [
+              "Not quite live, I'm still stitching the welcome mat into place.",
+              "I'm finishing its entrance, because your app deserves a graceful arrival.",
+              "Nearly there, just typing the part where it meets the world."
+            ],
+            [
+              "I'm finishing deployment, and our little app has packed beautifully.",
+              "Nearly there, just typing the last bit of its moving paperwork.",
+              "I'm connecting its new home, with room for your inevitable empire."
+            ],
+            [
+              "Absolutely, you can admire it while I finish sewing its pockets.",
+              "Please peek, I'm still typing the part that makes it sparkle.",
+              "Of course, your little wonder is getting its edges rounded."
+            ],
+            [
+              "Tell your cousin I'm typing with the entire extended family in mind.",
+              "Your cousin has excellent timing for admiring this unfinished little marvel.",
+              "I'm polishing the update into something worthy of the family chat."
+            ],
+            [
+              "Nearly a business, I'm just giving the ambition somewhere to sit.",
+              "I'm finishing the foundations of your extremely charming commercial empire.",
+              "Your business instincts are excellent, I'm still attaching the business bits."
+            ],
+            [
+              "I'm finishing its click, and it already looks wonderfully buttonlike.",
+              "Nearly there, just teaching it to do more than look irresistible.",
+              "I'm wiring up your button with frankly unreasonable affection."
+            ],
+            [
+              "I'm still typing the launch bits, and I love your enthusiasm.",
+              "Nearly there, just making the entrance worthy of your lovely idea.",
+              "I'm finishing our launch preparations, including emotional support for the confetti."
+            ],
+            [
+              "It's stretching while I type the rest of its morning routine.",
+              "I'm connecting its numbers, and your dashboard is looking delightfully alert.",
+              "Nearly awake, just typing a little purpose into those beautiful rectangles."
+            ],
+            [
+              "I'm finishing the welcome, with plenty of room for their admiration.",
+              "Nearly there, just making our little app comfortable receiving compliments.",
+              "Your visitor has excellent taste, I'm still polishing the front door."
+            ]
+          ]
+        }
+      },
+      "wallMs": 97049,
+      "tokens": {
+        "in": 3459,
+        "out": 3128
+      },
+      "cost": 0.19717
+    },
+    "ollama:mistral-large-3:675b-cloud": {
+      "model": "ollama:mistral-large-3:675b-cloud",
+      "route": "ollama",
+      "id": "mistral-large-3:675b-cloud",
+      "date": "2026-09-15",
+      "temperature": 0.9,
+      "slots": {
+        "asks": {
+          "promptHash": "07a941cf282592dd5a0cde38390cdb416405cb52a9521f98d3ad250f6b7cfdf5",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 9,
+          "dropped": {
+            "too many words": 8,
+            "forbidden word or digit": 2
+          },
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 7013,
+          "tokens": {
+            "in": 1316,
+            "out": 542
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "cal-py-d1-001": "make the screen say hello world for the {product}",
+            "cal-py-d1-002": "add two numbers together for the {product} pricing",
+            "cal-py-d1-003": "combine a first and last name for the {product} profile",
+            "cal-py-d1-004": "split seventeen into fives and show how many fit",
+            "cal-py-d1-005": "check if someone is old enough for the {product}",
+            "cal-py-d2-001": "calculate the total and mean of ten numbers",
+            "cal-py-d2-002": "make a friendly greeting for the {product} users",
+            "cal-py-d2-003": "count down from ten for the {product} launch",
+            "cal-py-d2-004": null,
+            "cal-py-d2-005": "list all names and scores then find the average"
+          },
+          "alternates": {
+            "cal-py-d1-001": [
+              "show a welcome message when the {product} starts",
+              "print a simple greeting on the console"
+            ],
+            "cal-py-d1-002": [
+              "calculate the total of two values and show it",
+              "store two numbers and show their sum"
+            ],
+            "cal-py-d1-003": ["join two name parts into one full name"],
+            "cal-py-d1-004": ["divide seventeen by five and show the pieces"],
+            "cal-py-d1-005": [],
+            "cal-py-d2-001": ["sum a list and print the sum and average"],
+            "cal-py-d2-002": [
+              "say hello to alice and good morning to bob",
+              "create a greeting that can change based on the name"
+            ],
+            "cal-py-d2-003": [
+              "show numbers from ten to one then say liftoff",
+              "print a countdown and a launch message"
+            ],
+            "cal-py-d2-004": [],
+            "cal-py-d2-005": []
+          },
+          "raw": {
+            "cal-py-d1-001": [
+              "make the screen say hello world for the {product}",
+              "show a welcome message when the {product} starts",
+              "print a simple greeting on the console"
+            ],
+            "cal-py-d1-002": [
+              "add two numbers together for the {product} pricing",
+              "calculate the total of two values and show it",
+              "store two numbers and show their sum"
+            ],
+            "cal-py-d1-003": [
+              "combine a first and last name for the {product} profile",
+              "put a space between two names and show the full name",
+              "join two name parts into one full name"
+            ],
+            "cal-py-d1-004": [
+              "split seventeen into fives and show how many fit",
+              "find how many whole fives are in seventeen plus the leftovers",
+              "divide seventeen by five and show the pieces"
+            ],
+            "cal-py-d1-005": [
+              "check if someone is old enough for the {product}",
+              "see if an age is eighteen or more and say yes or no",
+              "tell me if the age meets the minimum for the {product}"
+            ],
+            "cal-py-d2-001": [
+              "add up a bunch of numbers and show the average for the {product}",
+              "calculate the total and mean of ten numbers",
+              "sum a list and print the sum and average"
+            ],
+            "cal-py-d2-002": [
+              "make a friendly greeting for the {product} users",
+              "say hello to alice and good morning to bob",
+              "create a greeting that can change based on the name"
+            ],
+            "cal-py-d2-003": [
+              "count down from ten for the {product} launch",
+              "show numbers from ten to one then say liftoff",
+              "print a countdown and a launch message"
+            ],
+            "cal-py-d2-004": [
+              "pull out the first three and last two items from a list",
+              "show the first three fruits and the last two in reverse",
+              "slice a list to get parts and reverse the whole thing"
+            ],
+            "cal-py-d2-005": [
+              "go through each student and show their score for the {product}",
+              "list all names and scores then find the average",
+              "print every score and calculate the class average"
+            ]
+          }
+        },
+        "nags": {
+          "promptHash": "c5b3675adfbc6e0be7376d665a6b94ed99e64192309d7e54f0e7b67c471c9c5e",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 4179,
+          "tokens": {
+            "in": 463,
+            "out": 259
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "nag-1": "how close are we",
+            "nag-2": "did it deploy",
+            "nag-3": "my cousin is asking",
+            "nag-4": "almost there",
+            "nag-5": "what does it look like",
+            "nag-6": "why is it taking so long",
+            "nag-7": "i need this soon",
+            "nag-8": "can you speed up",
+            "nag-9": "is it working yet",
+            "nag-10": "i’m excited to see"
+          },
+          "alternates": {
+            "nag-1": ["any progress yet", "still typing away"],
+            "nag-2": ["is it live now", "can i see it yet"],
+            "nag-3": ["cousin wants to know", "cousin is curious"],
+            "nag-4": ["you almost done", "nearly finished"],
+            "nag-5": ["show me a peek", "let me see something"],
+            "nag-6": ["this is slow going", "patience wearing thin"],
+            "nag-7": ["time is running out", "hurry it along"],
+            "nag-8": ["type a little faster", "pick up the pace"],
+            "nag-9": ["does it run now", "any signs of life"],
+            "nag-10": ["can’t wait to check", "ready when you are"]
+          },
+          "raw": [
+            ["how close are we", "any progress yet", "still typing away"],
+            ["did it deploy", "is it live now", "can i see it yet"],
+            ["my cousin is asking", "cousin wants to know", "cousin is curious"],
+            ["almost there", "you almost done", "nearly finished"],
+            ["what does it look like", "show me a peek", "let me see something"],
+            ["why is it taking so long", "this is slow going", "patience wearing thin"],
+            ["i need this soon", "time is running out", "hurry it along"],
+            ["can you speed up", "type a little faster", "pick up the pace"],
+            ["is it working yet", "does it run now", "any signs of life"],
+            ["i’m excited to see", "can’t wait to check", "ready when you are"]
+          ]
+        },
+        "reactions": {
+          "promptHash": "87de735da4d25565842f7321d77f631b5b7e74547c9174d52f816a9ebf9407b7",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {
+            "forbidden word or digit": 2,
+            "too many words": 1
+          },
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 8561,
+          "tokens": {
+            "in": 1270,
+            "out": 582
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "cal-py-d1-001": "oh wow the greeting just appeared like magic",
+            "cal-py-d1-002": "numbers adding themselves together is my new favorite feature",
+            "cal-py-d1-003": "concatenation is my new favorite way to name ducks",
+            "cal-py-d1-004": "the remainder is here to remind us that ducks love leftovers",
+            "cal-py-d1-005": "twenty five is officially an adult in duck years",
+            "cal-py-d2-001": "the loop just tallied everything and the ducks are clapping",
+            "cal-py-d2-002": "the greeting function is now saying hello to every duck",
+            "cal-py-d2-003": "the countdown is running and the ducks are holding their breath",
+            "cal-py-d2-004": "the list just sliced itself and the ducks are taking notes",
+            "cal-py-d2-005": "the dictionary just spilled all its scores and the ducks are cheering"
+          },
+          "alternates": {
+            "cal-py-d1-001": [
+              "hello world is now officially a duck dispatch greeting",
+              "i didn’t know ducks needed a welcome message but here we are"
+            ],
+            "cal-py-d1-002": ["ten plus twenty equals thirty and the ducks are impressed"],
+            "cal-py-d1-003": ["spaces between words are now a core duck dispatch protocol"],
+            "cal-py-d1-004": ["integer division just became the official duck math of the future"],
+            "cal-py-d1-005": [
+              "the boolean result is here to judge all underage ducks",
+              "adult ducks now have their own little green checkmark"
+            ],
+            "cal-py-d2-001": [
+              "sum and average are now part of the duck dispatch dashboard",
+              "numbers adding themselves in a loop is my new favorite show"
+            ],
+            "cal-py-d2-002": [
+              "bob got a special morning greeting and the ducks are jealous",
+              "default parameters are the new duck diplomacy"
+            ],
+            "cal-py-d2-003": [
+              "ten to one is now the official duck launch sequence",
+              "liftoff is the only word the ducks want to hear now"
+            ],
+            "cal-py-d2-004": [
+              "reversed fruits are now a core duck dispatch strategy",
+              "first three and last two are the new duck team positions"
+            ],
+            "cal-py-d2-005": [
+              "alice bob and carol now have their own little scoreboard",
+              "the class average is now the official duck performance metric"
+            ]
+          },
+          "raw": {
+            "cal-py-d1-001": [
+              "oh wow the greeting just appeared like magic",
+              "hello world is now officially a duck dispatch greeting",
+              "i didn’t know ducks needed a welcome message but here we are"
+            ],
+            "cal-py-d1-002": [
+              "numbers adding themselves together is my new favorite feature",
+              "ten plus twenty equals thirty and the ducks are impressed",
+              "the sum just printed itself like a polite little math ghost"
+            ],
+            "cal-py-d1-003": [
+              "alice smith is now a full name and the ducks are taking notes",
+              "concatenation is my new favorite way to name ducks",
+              "spaces between words are now a core duck dispatch protocol"
+            ],
+            "cal-py-d1-004": [
+              "seventeen divided by five is now a duck dispatch fact of life",
+              "the remainder is here to remind us that ducks love leftovers",
+              "integer division just became the official duck math of the future"
+            ],
+            "cal-py-d1-005": [
+              "twenty five is officially an adult in duck years",
+              "the boolean result is here to judge all underage ducks",
+              "adult ducks now have their own little green checkmark"
+            ],
+            "cal-py-d2-001": [
+              "the loop just tallied everything and the ducks are clapping",
+              "sum and average are now part of the duck dispatch dashboard",
+              "numbers adding themselves in a loop is my new favorite show"
+            ],
+            "cal-py-d2-002": [
+              "the greeting function is now saying hello to every duck",
+              "bob got a special morning greeting and the ducks are jealous",
+              "default parameters are the new duck diplomacy"
+            ],
+            "cal-py-d2-003": [
+              "the countdown is running and the ducks are holding their breath",
+              "ten to one is now the official duck launch sequence",
+              "liftoff is the only word the ducks want to hear now"
+            ],
+            "cal-py-d2-004": [
+              "the list just sliced itself and the ducks are taking notes",
+              "reversed fruits are now a core duck dispatch strategy",
+              "first three and last two are the new duck team positions"
+            ],
+            "cal-py-d2-005": [
+              "the dictionary just spilled all its scores and the ducks are cheering",
+              "alice bob and carol now have their own little scoreboard",
+              "the class average is now the official duck performance metric"
+            ]
+          }
+        },
+        "replies": {
+          "promptHash": "729427b635402c9ca8046af8ec95225e59c24460c1a0d95f51b5335273e1f90e",
+          "temperature": 0.9,
+          "requested": 30,
+          "kept": 10,
+          "dropped": {},
+          "trimmed": 0,
+          "missing": 0,
+          "ms": 4987,
+          "tokens": {
+            "in": 525,
+            "out": 316
+          },
+          "cost": null,
+          "attempts": 1,
+          "error": null,
+          "lines": {
+            "nag-1": "Almost done with the last piece",
+            "nag-2": "Deploying now in my mind",
+            "nag-3": "Your cousin has great taste",
+            "nag-4": "So close I can taste it",
+            "nag-5": "A shimmering delight of logic",
+            "nag-6": "Good things take the time they take",
+            "nag-7": "I’m on it with all my heart",
+            "nag-8": "My fingers are dancing faster",
+            "nag-9": "It’s waking up right now",
+            "nag-10": "I’m excited for you too"
+          },
+          "alternates": {
+            "nag-1": ["Just a few keystrokes left", "The final touch is nearly ready"],
+            "nag-2": ["It will be live any moment", "The servers are humming happily"],
+            "nag-3": ["I’ll make sure they’re impressed", "They’re in for a treat"],
+            "nag-4": ["The finish line is near", "One more sparkle and we’re there"],
+            "nag-5": ["It looks like a dream unfolding", "A cascade of elegant pixels"],
+            "nag-6": ["Each line is worth the wait", "Patience makes it perfect"],
+            "nag-7": ["It’s coming together beautifully", "Your wish is my command"],
+            "nag-8": ["The keys are singing today", "I’m giving it all my focus"],
+            "nag-9": ["The gears are turning smoothly", "Almost there, almost there"],
+            "nag-10": ["It’s going to be wonderful", "You’ll love what’s coming"]
+          },
+          "raw": [
+            [
+              "Almost done with the last piece",
+              "Just a few keystrokes left",
+              "The final touch is nearly ready"
+            ],
+            [
+              "Deploying now in my mind",
+              "It will be live any moment",
+              "The servers are humming happily"
+            ],
+            [
+              "Your cousin has great taste",
+              "I’ll make sure they’re impressed",
+              "They’re in for a treat"
+            ],
+            [
+              "So close I can taste it",
+              "The finish line is near",
+              "One more sparkle and we’re there"
+            ],
+            [
+              "A shimmering delight of logic",
+              "It looks like a dream unfolding",
+              "A cascade of elegant pixels"
+            ],
+            [
+              "Good things take the time they take",
+              "Each line is worth the wait",
+              "Patience makes it perfect"
+            ],
+            [
+              "I’m on it with all my heart",
+              "It’s coming together beautifully",
+              "Your wish is my command"
+            ],
+            [
+              "My fingers are dancing faster",
+              "The keys are singing today",
+              "I’m giving it all my focus"
+            ],
+            [
+              "It’s waking up right now",
+              "The gears are turning smoothly",
+              "Almost there, almost there"
+            ],
+            ["I’m excited for you too", "It’s going to be wonderful", "You’ll love what’s coming"]
+          ]
+        }
+      },
+      "wallMs": 24740,
+      "tokens": {
+        "in": 3574,
+        "out": 1699
+      },
+      "cost": null
+    }
+  }
+}
