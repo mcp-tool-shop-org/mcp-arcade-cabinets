@@ -1,4 +1,10 @@
-// The browser shell. Pick a tape and Ghost on the Menu takes the page; or
+// The browser shell. Two cabinets sit at the top of the menu: Ghost on the
+// Menu, which opens selected, and Vibe Typer beside it. The switch remembers
+// which one this browser played last, so a returning player lands on their
+// game; each cabinet paints its own menu below the switch and owns its own
+// prefs (`ghost.prefs`, `vibe.prefs`).
+//
+// Ghost, unchanged below the switch. Pick a tape and Ghost on the Menu takes the page; or
 // take a shift (slice 7): four calls drawn from the roster and played back
 // to back as one agent session, a card between them naming the next server
 // and what the agent was asked to run, the lamps refilled at every call, the
@@ -21,8 +27,28 @@ import {
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
+import {
+  DEFAULT_PATTERNS as VIBE,
+  hashString,
+  integrationSnippets,
+  nextSeed,
+  type IntegrationSeed,
+  type Snippet,
+  type Tier,
+} from '@mcp-arcade-cabinets/vibe-typer';
+
 import { DIFFICULTIES, mountGhost, readPrefs, writePrefs, type Difficulty } from './ghost';
 import { TAPES } from './tapes';
+import { THEMES, THEME_WORDS, type Theme } from './typer-audio';
+import {
+  TIER_WORDS,
+  bandWord,
+  cleanName,
+  mountVibeTyper,
+  readVibePrefs,
+  writeVibePrefs,
+  STACK_WORDS,
+} from './vibe-typer';
 
 const app = document.getElementById('app')!;
 const ROSTER = TAPES.map((t) => t.name);
@@ -98,10 +124,53 @@ function difficultySelect(value: Difficulty, locked: boolean): HTMLSelectElement
   return el;
 }
 
+type CabinetId = 'ghost' | 'vibe';
+
+/** The switch at the top: two cards, Ghost first and selected by default. */
+const CABINETS: { id: CabinetId; name: string; line: string }[] = [
+  {
+    id: 'ghost',
+    name: 'Ghost on the Menu',
+    line: 'A replay shooter on an mcp-arcade tape.',
+  },
+  { id: 'vibe', name: VIBE.cabinet.name, line: VIBE.cabinet.tagline },
+];
+
 function menu() {
   app.replaceChildren();
-  const wrap = document.createElement('section');
-  wrap.className = 'column';
+  let picked: CabinetId = readVibePrefs().cabinet ?? 'ghost';
+  const cards = document.createElement('ul');
+  cards.className = 'tape-list cabinet-cards';
+  const rows: HTMLLIElement[] = [];
+  const body = document.createElement('section');
+  body.className = 'column';
+  const paint = () => {
+    rows.forEach((row, i) => row.classList.toggle('picked', CABINETS[i]!.id === picked));
+    body.replaceChildren();
+    if (picked === 'ghost') ghostMenu(body);
+    else vibeMenu(body);
+  };
+  CABINETS.forEach((cabinet) => {
+    const li = document.createElement('li');
+    li.className = 'tape-row cabinet-card';
+    const name = button(cabinet.name, 'tape-name');
+    const line = document.createElement('span');
+    line.className = 'tape-diff cabinet-line';
+    line.textContent = cabinet.line;
+    li.append(name, line);
+    name.addEventListener('click', () => {
+      picked = cabinet.id;
+      writeVibePrefs({ cabinet: picked });
+      paint();
+    });
+    rows.push(li);
+    cards.append(li);
+  });
+  app.append(cards, body);
+  paint();
+}
+
+function ghostMenu(wrap: HTMLElement) {
   const h = document.createElement('h1');
   h.textContent = 'Ghost on the Menu';
   const prefs = readPrefs();
@@ -201,7 +270,6 @@ function menu() {
     shiftRow,
     status,
   );
-  app.append(wrap);
   shift.addEventListener('click', () => {
     const difficulty = Math.max(
       0,
@@ -412,6 +480,180 @@ function shiftEnd(shift: Shift) {
     startShift(drawShift(ROSTER, seed, shift.draw.difficulty, recentShifts()));
   });
   back.addEventListener('click', menu);
+}
+
+// ——— Vibe Typer ————————————————————————————————————————————————————————————
+// The second cabinet's menu: the levels as products, the endless ladder, the
+// four tier words, the agent's name, the dated jokes, the keyboard and the
+// seed. Every choice persists under `vibe.`; no band digits anywhere (G23).
+
+/** Tool names off the bundled tapes, so a request can name a thing the player runs (G30). */
+function tapeSeeds(): IntegrationSeed[] {
+  return TAPES.map((entry) => {
+    const tools = new Set<string>();
+    for (const row of entry.tape.rows) {
+      if (row.method !== 'tools/call') continue;
+      const note = row.note.trim();
+      const after = note.startsWith('tools/call ') ? note.slice('tools/call '.length) : '';
+      const name = after.split(/\s+/)[0] ?? '';
+      if (name !== '') tools.add(name);
+    }
+    return {
+      server: entry.tape.server_name ?? entry.tape.target_kind,
+      policy: entry.tape.agent_policy,
+      tools: [...tools].sort(),
+    };
+  });
+}
+
+let integration: Snippet[] | null = null;
+function integrationSeasoning(): Snippet[] {
+  if (!integration) integration = integrationSnippets(tapeSeeds());
+  return integration;
+}
+
+/** A typed seed replays; a blank box draws the next one off the last run. */
+function seedFrom(raw: string, last: number, runs: number): number {
+  const text = raw.trim();
+  if (text === '') return nextSeed(last, runs) >>> 0;
+  if (/^\d+$/.test(text)) return Number(text) >>> 0;
+  return hashString(text) >>> 0;
+}
+
+function vibeMenu(wrap: HTMLElement) {
+  const prefs = readVibePrefs();
+  const h = document.createElement('h1');
+  h.textContent = VIBE.cabinet.name;
+  wrap.append(
+    h,
+    muted(
+      'You are the coding agent. Your user has an idea, you type the code, and the thing gets built while you both watch.',
+    ),
+    muted(
+      'Enter sends a line. A wrong line is a hmm and a retry, never a loss. The context bar is the clock.',
+    ),
+  );
+
+  let picked: number | 'endless' =
+    prefs.endless === 'on' ? 'endless' : Math.min(prefs.level ?? 0, VIBE.levels.levels.length - 1);
+  const list = document.createElement('ul');
+  list.className = 'tape-list';
+  const rows: { el: HTMLLIElement; id: number | 'endless' }[] = [];
+  const mark = () => {
+    rows.forEach((row) => row.el.classList.toggle('picked', row.id === picked));
+  };
+  const addRow = (id: number | 'endless', title: string, stack: string, band: string) => {
+    const li = document.createElement('li');
+    li.className = 'tape-row';
+    const name = button(title, 'tape-name');
+    const stackWord = document.createElement('span');
+    stackWord.className = 'tape-diff';
+    stackWord.textContent = stack;
+    const bandSpan = document.createElement('span');
+    bandSpan.className = 'tape-diff';
+    bandSpan.textContent = band;
+    li.append(name, stackWord, bandSpan);
+    name.addEventListener('click', () => {
+      picked = id;
+      mark();
+    });
+    rows.push({ el: li, id });
+    list.append(li);
+  };
+  VIBE.levels.levels.forEach((level, i) => {
+    addRow(
+      i,
+      level.product,
+      STACK_WORDS[level.stack] ?? level.stack,
+      bandWord(level.bandMin, level.bandMax),
+    );
+  });
+  addRow('endless', 'Endless', 'every stack', 'climbing');
+  mark();
+  wrap.append(list);
+
+  const row = document.createElement('div');
+  row.className = 'row';
+  const tier = document.createElement('select');
+  tier.setAttribute('aria-label', 'difficulty');
+  for (const t of TIER_WORDS) {
+    const o = document.createElement('option');
+    o.value = String(t.tier);
+    o.textContent = `difficulty: ${t.word}`;
+    tier.append(o);
+  }
+  tier.value = String(prefs.tier ?? 0);
+  const theme = document.createElement('select');
+  theme.setAttribute('aria-label', 'keyboard');
+  for (const t of THEMES) {
+    const o = document.createElement('option');
+    o.value = t;
+    o.textContent = `keyboard: ${THEME_WORDS[t]}`;
+    theme.append(o);
+  }
+  theme.value = prefs.theme ?? 'mechanical';
+  const datedLabel = document.createElement('label');
+  const dated = document.createElement('input');
+  dated.type = 'checkbox';
+  dated.checked = prefs.dated === 'on';
+  datedLabel.append(dated, document.createTextNode(' dated jokes'));
+  datedLabel.title = 'The jokes that were funny a while ago. Off by default.';
+  row.append(tier, theme, datedLabel);
+
+  const row2 = document.createElement('div');
+  row2.className = 'row';
+  const agent = document.createElement('input');
+  agent.type = 'text';
+  agent.setAttribute('aria-label', 'what you call the agent');
+  agent.placeholder = 'name the agent';
+  agent.autocomplete = 'off';
+  agent.spellcheck = false;
+  agent.size = 14;
+  agent.value = prefs.agent ?? VIBE.cabinet.agentName;
+  const seedBox = document.createElement('input');
+  seedBox.type = 'text';
+  seedBox.setAttribute('aria-label', 'seed');
+  seedBox.placeholder = 'a seed, or leave it blank';
+  seedBox.autocomplete = 'off';
+  seedBox.spellcheck = false;
+  seedBox.size = 18;
+  if (prefs.seed) seedBox.value = prefs.seed;
+  const play = button('Play', 'commit');
+  row2.append(agent, seedBox, play);
+  wrap.append(row, row2);
+
+  const start = () => {
+    const runs = (prefs.runs ?? 0) + 1;
+    const seed = seedFrom(seedBox.value, prefs.last ?? 1, runs);
+    const name = cleanName(agent.value) || VIBE.cabinet.agentName;
+    const endless = picked === 'endless';
+    writeVibePrefs({
+      cabinet: 'vibe',
+      tier: Number(tier.value) as Tier,
+      ...(endless ? {} : { level: picked as number }),
+      endless: endless ? 'on' : 'off',
+      agent: name,
+      dated: dated.checked ? 'on' : 'off',
+      theme: theme.value as Theme,
+      seed: seedBox.value.trim().slice(0, 12),
+    });
+    mountVibeTyper(app, {
+      tier: Number(tier.value) as Tier,
+      endless,
+      ...(endless ? {} : { levelIndex: picked as number }),
+      seed,
+      agentName: name,
+      dated: dated.checked,
+      theme: theme.value as Theme,
+      integration: integrationSeasoning(),
+      onExit: menu,
+      startAudio: true,
+    });
+  };
+  play.addEventListener('click', start);
+  seedBox.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') start();
+  });
 }
 
 menu();

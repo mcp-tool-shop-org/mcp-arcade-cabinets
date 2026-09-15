@@ -44,7 +44,8 @@ function wrongKey(expected: string | undefined, rng: () => number): string {
 /**
  * A typist at a cadence, with a rate of mistypes it fixes on its next press.
  * It types the target character, sends a full line with Enter, and never
- * reads anything the player cannot see.
+ * reads anything the player cannot see. A quick sync is typed like any other
+ * line; it is the meeting, and the meeting is still words on the screen.
  */
 export function typistBot(wpm: number, errorRate: number, seed: number): Bot {
   const period = 60 / (Math.max(1, wpm) * 5);
@@ -52,7 +53,7 @@ export function typistBot(wpm: number, errorRate: number, seed: number): Bot {
   let nextAt = 0;
   return (state) => {
     if (state.clock < nextAt) return NOTHING;
-    if (state.beat !== 'reply' && state.beat !== 'code') return NOTHING;
+    if (state.beat !== 'reply' && state.beat !== 'code' && state.beat !== 'sync') return NOTHING;
     nextAt = state.clock + period;
     if (state.errors.length > 0) return { backspace: true };
     if (state.typed.length >= state.target.length) return { enter: true };

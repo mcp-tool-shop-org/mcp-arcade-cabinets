@@ -225,6 +225,25 @@ DifficultySet KeyPos UserSet AgentSet ProductsSet TierLines
 Bot BotSpec PlayArgs Transcript          // types only; the values live in ./play
 ```
 
+### Amended in slice 2 (the quick sync)
+
+The shell's slice added one rule to this package and nothing else. The surface above gains:
+
+- **A beat.** `Beat` is `'request' | 'reply' | 'code' | 'ship' | 'compaction' | 'creep' | 'sync'`. The `sync`
+  beat is a quick sync: three short lines of meeting chatter the player types between two requests, never in
+  front of the first and never after the last. Enter sends one like a reply line (clean, or the agent's "hmm"),
+  and it pays nothing, builds nothing, costs the bar nothing — the drain stops for it — and leaves the streak
+  exactly where it stands.
+- **An event.** `{ kind: 'sync'; on: boolean }`, raised when the meeting starts and when it ends.
+- **A lever.** `levels.json` gains `syncShare` (`0.25`): the seeded share of levels that draw one. `user.json`
+  gains `syncs`, at least twelve lines of five words or fewer, through the same gate as every other line; the
+  loader halts with `patterns/user.json: syncs.<i>` on a long one. `LevelPlan` carries `syncAt?: number`, the
+  request index the meeting sits in front of, drawn after the requests so the lever never moves the snippets.
+- **An export.** `syncOf(state): string[]` — the three lines in typing order, empty outside the beat.
+
+Every band bar in `test/band.test.ts` holds at its original number and `syncShare` was not re-tuned; the
+reasoning and the sweep are in `docs/vibe-typer.slice2.md`.
+
 The shape the shell should expect: call `createRun` once, then `stepRun(state, input, dt)` per frame with at most one keystroke, drain `state.events` after each step for the cues, and read `state.chat`, `codeOf(state)`, `state.target`, `state.typed`, `state.errors`, `state.built`, `state.context`, `state.valuation`, `state.hype`, `state.streak`, `state.copilot`. The field words to print come from `DEFAULT_PATTERNS.cabinet.words` (`valuation`, `vibes`, `streak`, `context`), the display name and tagline from the same file, and a rename is that file plus the package directory.
 
 Left for slice 2, as briefed: `apps/cabinets/src/vibe-typer.ts`, the two-card picker with Ghost as default, the DOM chat and editor, the canvas preview, the keystroke audio and the cue table, the bed with tempo on hype, quick sync, and Pages. Slice 3 takes the seat, the voice and the retro.

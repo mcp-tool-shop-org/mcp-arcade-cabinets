@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { fill, LinePicker, safeTitle } from '../src/lines';
-import { DEFAULT_PATTERNS } from '../src/patterns';
+import { DEFAULT_PATTERNS, lineFault } from '../src/patterns';
 import { DEFAULT_CORPUS } from '../src/corpus';
 import type { Snippet } from '../src/types';
 
@@ -63,6 +63,22 @@ describe('the line picker', () => {
     const withDated = new Set<string>();
     for (let i = 0; i < 24; i++) withDated.add(on.ask('sql', 'a dashboard', SNIPPET));
     expect([...withDated].some((line) => dated.has(line))).toBe(true);
+  });
+
+  it('walks the sync pool without a repeat inside a meeting', () => {
+    const p = picker();
+    const said = new Set<string>();
+    for (let i = 0; i < DEFAULT_PATTERNS.user.syncs.length; i++) said.add(p.sync());
+    expect(said.size).toBe(DEFAULT_PATTERNS.user.syncs.length);
+    for (const line of said) expect(DEFAULT_PATTERNS.user.syncs).toContain(line);
+  });
+
+  it('keeps a sync line short enough to be chatter', () => {
+    for (const line of DEFAULT_PATTERNS.user.syncs) {
+      expect(lineFault(line)).toBeNull();
+      expect(line.split(/\s+/).length).toBeLessThanOrEqual(5);
+    }
+    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(12);
   });
 
   it('reads hardcore in tier two words', () => {

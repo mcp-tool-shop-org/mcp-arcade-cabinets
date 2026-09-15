@@ -109,6 +109,16 @@ describe('the gate halts', () => {
     expect(() => loadPatterns(dupe)).toThrow('patterns/agent.json: ships.1');
   });
 
+  it('halts on a sync line that runs long, and on a missing sync share', () => {
+    const long = clone(RAW);
+    long.user.syncs[0] = 'can you please share your screen with us';
+    expect(() => loadPatterns(long)).toThrow('patterns/user.json: syncs.0');
+
+    const gone = clone(RAW) as Record<string, unknown>;
+    delete (gone.levels as Record<string, unknown>).syncShare;
+    expect(() => loadPatterns(gone)).toThrow('patterns/levels.json: syncShare');
+  });
+
   it('halts on a level that names the integration stack or a bad band', () => {
     const stack = clone(RAW);
     stack.levels.levels[0]!.stack = 'integration';

@@ -10,7 +10,7 @@ export type Stack = 'bash' | 'csharp' | 'java' | 'javascript' | 'python' | 'sql'
 /** Tier 3 is hardcore and comes from the selector only (G25, G26). */
 export type Tier = 0 | 1 | 2 | 3;
 
-export type Beat = 'request' | 'reply' | 'code' | 'ship' | 'compaction' | 'creep';
+export type Beat = 'request' | 'reply' | 'code' | 'ship' | 'compaction' | 'creep' | 'sync';
 
 export type Band = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -52,6 +52,12 @@ export interface LevelPlan {
   refillShare: number;
   messageCost: number;
   shipBonus: number;
+  /**
+   * The request index a quick sync sits in front of, when this level drew one.
+   * Never the first request and never after the last: a sync is between two
+   * requests, and it is a breather (slice 2).
+   */
+  syncAt?: number;
   seed: number;
 }
 
@@ -85,6 +91,7 @@ export type Event =
   | { kind: 'milestone'; name: string }
   | { kind: 'copilot'; on: boolean }
   | { kind: 'creep' }
+  | { kind: 'sync'; on: boolean }
   | { kind: 'over'; how: 'shipped' | 'context' };
 
 export interface RunState {

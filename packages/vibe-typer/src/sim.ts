@@ -3,7 +3,10 @@
 // endless flag, same weak pairs, same stack and the same input stream give a
 // byte-identical RunState (a test asserts it).
 //
-// The beats run request -> reply -> code -> (creep) -> ship. `request`,
+// The beats run request -> reply -> code -> (creep) -> ship, with a quick
+// sync between two requests on the levels that drew one: three short lines
+// of meeting chatter the player types, which cost the bar nothing, pay
+// nothing and leave the streak where it stands (slice 2). `request`,
 // `creep` and `ship` are transitional: each holds for exactly one step and
 // swallows that step's input, which is what keeps a creep from being appended
 // silently inside a line the player is already transcribing (Q4.1).
@@ -49,7 +52,15 @@ interface RunContext {
   lines: string[];
   agentName: string;
   levelOffset: number;
+  /** The quick sync in hand: its three lines and how far the player is through them. */
+  syncLines: string[];
+  syncIndex: number;
+  /** One sync a level, spent or not. */
+  syncDone: boolean;
 }
+
+/** Lines in a quick sync. Three is a meeting; more is a level. */
+const SYNC_LINES = 3;
 
 const runs = new WeakMap<RunState, RunContext>();
 
@@ -61,6 +72,12 @@ export function agentNameOf(state: RunState): string {
 /** The current request's code lines, in typing order. The shell draws these. */
 export function codeOf(state: RunState): string[] {
   return runs.get(state)?.lines ?? [];
+}
+
+/** The quick sync in hand, in typing order. Empty outside the sync beat. */
+export function syncOf(state: RunState): string[] {
+  const ctx = runs.get(state);
+  return ctx && state.beat === 'sync' ? ctx.syncLines : [];
 }
 
 /** The levers this run was built with. */
@@ -138,6 +155,9 @@ export function createRun(opts: CreateRunOpts): RunState {
     lines: [],
     agentName: opts.agentName ?? set.cabinet.agentName,
     levelOffset,
+    syncLines: [],
+    syncIndex: 0,
+    syncDone: false,
   });
   enterRequest(state);
   return state;
@@ -232,11 +252,30 @@ function ship(state: RunState): void {
   state.beat = 'ship';
 }
 
-/** After the ship frame: the next request, the next level, or the end. */
+/**
+ * The meeting: three short lines, no cost, no pay, the streak left standing.
+ * It sits in front of a request the planner picked, never the first one.
+ */
+function enterSync(state: RunState): void {
+  const ctx = runs.get(state)!;
+  ctx.syncLines = Array.from({ length: SYNC_LINES }, () => ctx.picker.sync());
+  ctx.syncIndex = 0;
+  ctx.syncDone = true;
+  state.beat = 'sync';
+  state.lineIndex = 0;
+  push(state, { kind: 'sync', on: true });
+  startLine(state, ctx.syncLines[0] ?? '');
+}
+
+/** After the ship frame: the sync, the next request, the next level, or the end. */
 function advance(state: RunState): void {
   const ctx = runs.get(state)!;
   if (state.requestIndex < state.plan.requests.length - 1) {
     state.requestIndex += 1;
+    if (state.plan.syncAt === state.requestIndex && !ctx.syncDone) {
+      enterSync(state);
+      return;
+    }
     enterRequest(state);
     return;
   }
@@ -271,6 +310,9 @@ function advance(state: RunState): void {
   state.levelIndex = levelIndex;
   state.requestIndex = 0;
   state.used = [...used];
+  ctx.syncDone = false;
+  ctx.syncLines = [];
+  ctx.syncIndex = 0;
   enterRequest(state);
 }
 
@@ -290,8 +332,40 @@ function landCreep(state: RunState): void {
   startLine(state, creep.line);
 }
 
+/**
+ * A sync line sent. Clean, the player said it and the meeting moves on; not
+ * clean, the agent's own "hmm" and the line resets. Either way the streak is
+ * where it was: a breather neither builds a run nor breaks one.
+ */
+function sendSyncLine(state: RunState): void {
+  const ctx = runs.get(state)!;
+  const clean = state.errors.length === 0 && state.typed === state.target;
+  if (!clean) {
+    push(state, { kind: 'line', ok: false });
+    push(state, { kind: 'hmm' });
+    say(state, 'agent', ctx.picker.hmm());
+    state.typed = '';
+    state.errors = [];
+    return;
+  }
+  push(state, { kind: 'line', ok: true });
+  say(state, 'agent', state.target);
+  ctx.syncIndex += 1;
+  if (ctx.syncIndex >= ctx.syncLines.length) {
+    push(state, { kind: 'sync', on: false });
+    enterRequest(state);
+    return;
+  }
+  state.lineIndex = ctx.syncIndex;
+  startLine(state, ctx.syncLines[ctx.syncIndex] ?? '');
+}
+
 function sendLine(state: RunState): void {
   const ctx = runs.get(state)!;
+  if (state.beat === 'sync') {
+    sendSyncLine(state);
+    return;
+  }
   const request = state.plan.requests[state.requestIndex]!;
   const clean = state.errors.length === 0 && state.typed === state.target;
   if (!clean) {
@@ -372,7 +446,11 @@ export function stepRun(state: RunState, input: RunInput, dt: number): RunState 
   state.events.length = 0;
   if (state.over) return state;
   state.clock += dt;
-  state.context = drain(state.context, rateAt(state.plan, state.requestIndex), dt);
+  // A quick sync is a breather: the meeting costs the bar nothing at all, so
+  // the bar holds still for it (slice 2). The clock runs; only the drain stops.
+  if (state.beat !== 'sync') {
+    state.context = drain(state.context, rateAt(state.plan, state.requestIndex), dt);
+  }
   if (state.copilot && state.clock >= state.copilot.until) {
     state.copilot = null;
     push(state, { kind: 'copilot', on: false });

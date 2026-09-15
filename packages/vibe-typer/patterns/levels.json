@@ -90,6 +90,7 @@
     }
   ],
   "creepShare": 0.3,
+  "syncShare": 0.25,
   "weakBias": 0.35,
   "endless": {
     "startBand": 1,

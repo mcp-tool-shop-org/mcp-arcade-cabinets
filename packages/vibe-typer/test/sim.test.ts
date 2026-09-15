@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { DT } from '../src/play';
-import { DEFAULT_PATTERNS, tierContext } from '../src/patterns';
-import { agentNameOf, codeOf, createRun, leversOf, planOf, stepRun } from '../src/sim';
+import { DEFAULT_PATTERNS, tierContext, type Patterns } from '../src/patterns';
+import { agentNameOf, codeOf, createRun, leversOf, planOf, stepRun, syncOf } from '../src/sim';
 import type { Event, RunInput, RunState, Tier } from '../src/types';
 import { makeBot } from './helpers';
 
@@ -10,9 +10,13 @@ function step(state: RunState, input: RunInput = {}): RunState {
   return stepRun(state, input, DT);
 }
 
+function typeable(state: RunState): boolean {
+  return state.beat === 'reply' || state.beat === 'code' || state.beat === 'sync';
+}
+
 function toTyping(state: RunState): void {
   let guard = 0;
-  while (!state.over && state.beat !== 'reply' && state.beat !== 'code' && guard < 16) {
+  while (!state.over && !typeable(state) && guard < 16) {
     step(state);
     guard += 1;
   }
@@ -38,9 +42,18 @@ function shipRequest(state: RunState): void {
   let n = 0;
   const index = state.requestIndex;
   while (!state.over && state.requestIndex === index && n < guard) {
-    if (state.beat === 'reply' || state.beat === 'code') sendLine(state);
+    if (typeable(state)) sendLine(state);
     else step(state);
     n += 1;
+  }
+}
+
+/** Ship requests until the meeting lands. Seed 1, tier 0, level 2 draws one. */
+function toSync(state: RunState): void {
+  let guard = 0;
+  while (!state.over && state.beat !== 'sync' && guard < 8) {
+    shipRequest(state);
+    guard += 1;
   }
 }
 
@@ -272,6 +285,119 @@ describe('scope creep', () => {
     expect(state.beat).toBe('code');
     expect(state.target).toBe(request.creep!.line);
     expect(codeOf(state)).toHaveLength(lines + 1);
+  });
+});
+
+describe('the quick sync', () => {
+  const SEED = 1;
+  const LEVEL = 2;
+
+  it('sits between two requests, never in front of the first', () => {
+    const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    const at = state.plan.syncAt;
+    expect(at).toBeDefined();
+    expect(at).toBeGreaterThanOrEqual(1);
+    expect(at).toBeLessThanOrEqual(state.plan.requests.length - 1);
+
+    toSync(state);
+    expect(state.beat).toBe('sync');
+    expect(state.requestIndex).toBe(at);
+    expect(syncOf(state)).toHaveLength(3);
+    expect(syncOf(state)).toContain(state.target);
+    expect(new Set(syncOf(state)).size).toBe(3);
+    for (const line of syncOf(state)) {
+      expect(DEFAULT_PATTERNS.user.syncs).toContain(line);
+    }
+  });
+
+  it('costs the bar nothing, pays nothing, and leaves the streak standing', () => {
+    const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    toSync(state);
+    const context = state.context;
+    const streak = state.streak;
+    const hype = state.hype;
+    const valuation = state.valuation;
+    const pieces = state.built.length;
+    // Two of the three lines, and a hundred idle frames on top of them.
+    sendLine(state);
+    for (let i = 0; i < 100; i++) step(state);
+    sendLine(state);
+    expect(state.beat).toBe('sync');
+    expect(state.context).toBe(context);
+    expect(state.streak).toBe(streak);
+    expect(state.hype).toBe(hype);
+    expect(state.valuation).toBe(valuation);
+    expect(state.built).toHaveLength(pieces);
+    expect(state.clock).toBeGreaterThan(0);
+  });
+
+  it('lands each line in the chat and hands the next request over when it is done', () => {
+    const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    toSync(state);
+    const lines = [...syncOf(state)];
+    const index = state.requestIndex;
+    sendLine(state);
+    expect(state.chat.at(-1)).toMatchObject({ who: 'agent', line: lines[0] });
+    expect(kinds(state.events)).toContain('line');
+    sendLine(state);
+    sendLine(state);
+    expect(kinds(state.events)).toContain('sync');
+    expect(state.events.some((e) => e.kind === 'sync' && !e.on)).toBe(true);
+    expect(state.beat).toBe('request');
+    expect(state.requestIndex).toBe(index);
+    expect(state.chat.at(-1)).toMatchObject({
+      who: 'user',
+      line: state.plan.requests[index]!.ask,
+    });
+  });
+
+  it('answers a short line with the agent own hmm and leaves the streak alone', () => {
+    const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    toSync(state);
+    const streak = state.streak;
+    const before = state.chat.length;
+    const target = state.target;
+    expect(target.length).toBeGreaterThan(1);
+    // Every character right, one short of the line: the send is what is wrong.
+    for (const ch of target.slice(0, target.length - 1)) step(state, { key: ch });
+    step(state, { enter: true });
+    expect(state.chat.length).toBe(before + 1);
+    expect(state.chat.at(-1)!.who).toBe('agent');
+    expect(DEFAULT_PATTERNS.agent.hmm).toContain(state.chat.at(-1)!.line);
+    expect(state.typed).toBe('');
+    expect(state.errors).toEqual([]);
+    expect(state.streak).toBe(streak);
+    expect(state.beat).toBe('sync');
+    expect(state.target).toBe(target);
+  });
+
+  it('gives a level one sync and no more', () => {
+    const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    let syncs = 0;
+    let guard = 0;
+    while (!state.over && guard < 400) {
+      if (typeable(state)) sendLine(state);
+      else step(state);
+      syncs += state.events.filter((e) => e.kind === 'sync' && e.on).length;
+      guard += 1;
+    }
+    expect(state.over).toBe(true);
+    expect(state.ended).toBe('shipped');
+    expect(syncs).toBe(1);
+  });
+
+  it('gives a level with the lever at zero no sync at all', () => {
+    const levers: Patterns = {
+      ...DEFAULT_PATTERNS,
+      levels: { ...DEFAULT_PATTERNS.levels, syncShare: 0 },
+    };
+    const plain = createRun({ levers, seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    const full = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
+    expect(plain.plan.syncAt).toBeUndefined();
+    // The lever moves the meeting, never the snippets a level plans.
+    expect(plain.plan.requests.map((r) => r.snippet.id)).toEqual(
+      full.plan.requests.map((r) => r.snippet.id),
+    );
   });
 });
 

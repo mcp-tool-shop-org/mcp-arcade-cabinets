@@ -102,7 +102,7 @@ export type { PickerOpts } from './lines';
 export { levelDefAt, planLevel } from './level';
 export type { PlanOpts } from './level';
 
-export { agentNameOf, codeOf, createRun, leversOf, nextSeed, planOf, stepRun } from './sim';
+export { agentNameOf, codeOf, createRun, leversOf, nextSeed, planOf, stepRun, syncOf } from './sim';
 export type { CreateRunOpts } from './sim';
 
 export { hashString, mixSeed, seededRandom, shuffleOrder, weightedPick } from './seed';
