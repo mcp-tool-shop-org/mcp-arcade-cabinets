@@ -13,6 +13,11 @@
 // climbs a semitone a clean line to an octave (Q3.4); the bed's tempo
 // follows the vibes and holds through a level's last request (Q3.7); the bed
 // ducks under the deploy.
+//
+// The bed has three shapes, and the player picks one on the menu: see
+// MUSIC_MODES and BED_MODES below. The tempo still follows the vibes in the
+// two that play; what changes is how loud, how fast, and whether a kick is
+// laid down at all.
 
 import type { Cue } from './typer-cues';
 import { rateFor } from './typer-cues';
@@ -47,9 +52,9 @@ export function isTheme(value: unknown): value is Theme {
 }
 
 // The feel budget in numbers. High, not extreme (Q3.1). // Director
-/** The bed's own tempo, in beats a minute, at one times vibes. */
+/** The bed's own tempo, in beats a minute, at one times vibes. The `on` mode. */
 export const BED_BPM = 96;
-/** What each step of vibes above one does to the tempo. */
+/** What each step of vibes above one does to the tempo. The `on` mode. */
 export const BED_HYPE = 0.06;
 /** How far a keystroke wanders from the sample's own pitch, either way. */
 export const DETUNE = 0.03;
@@ -63,7 +68,7 @@ export const DUCK = 0.5;
 export const DUCK_S = 0.7;
 /** Everything the master hears. */
 export const MASTER = 0.9;
-/** The bed sits under the game, not beside it. */
+/** The bed sits under the game, not beside it. The `on` mode. */
 export const BED_LEVEL = 0.16;
 /** No sound runs longer than this, the end chord excepted. */
 export const TAIL_CAP = 0.7;
@@ -72,11 +77,60 @@ export const END_TAIL = 1.6;
 /** How near a beat a message has to land to bring the kick with it. */
 export const BEAT_WINDOW = 0.08;
 
+/**
+ * The music setting, in three words. The bed must never read as a countdown:
+ * a four-beat kick under a draining context bar is a clock, and Vibe Typer's
+ * tension is a reward, not a punishment (G25). So the default is `soft` — no
+ * kick at all, a quiet tick, a slower base and half the climb — and the pulse
+ * that shipped is kept for the players who ask for it by name.
+ * `off` leaves the bed out entirely; every cue still plays, and muting the
+ * sound still silences everything, because `music` only shapes the bed.
+ */
+export const MUSIC_MODES = ['on', 'soft', 'off'] as const;
+export type MusicMode = (typeof MUSIC_MODES)[number];
+
+export function isMusicMode(value: unknown): value is MusicMode {
+  return typeof value === 'string' && (MUSIC_MODES as readonly string[]).includes(value);
+}
+
+/** The bed a player who has set nothing hears. // Director */
+export const DEFAULT_MUSIC: MusicMode = 'soft';
+
+/** One mode's bed: how loud, how fast, how far the vibes move it, and its voices. */
+export interface BedMode {
+  /** The bed bus's own gain. */
+  level: number;
+  /** Beats a minute at one times vibes. */
+  bpm: number;
+  /** What each step of vibes above one does to the tempo. */
+  hype: number;
+  /** Whether the bar lays down its kick and bass at all. */
+  kick: boolean;
+  /** Share of the hat's own gain this mode plays it at. */
+  hat: number;
+  /** Where the hat is filtered: high is a hiss, lower is a tick. */
+  hatHz: number;
+}
+
+/**
+ * The three beds. `on` is exactly what shipped in v0.9.0, which is what
+ * `BED_LEVEL`, `BED_BPM` and `BED_HYPE` now describe. // Director
+ */
+export const BED_MODES: Record<MusicMode, BedMode> = {
+  on: { level: BED_LEVEL, bpm: BED_BPM, hype: BED_HYPE, kick: true, hat: 1, hatHz: 6000 },
+  soft: { level: 0.05, bpm: 80, hype: 0.03, kick: false, hat: 0.75, hatHz: 4200 },
+  off: { level: 0, bpm: BED_BPM, hype: 0, kick: false, hat: 0, hatHz: 6000 },
+};
+
 export interface TyperAudio {
   /** The first gesture: browsers will not start a context without one. */
   resume(): void;
   setMuted(muted: boolean): void;
   setTheme(theme: Theme): void;
+  /** The bed's shape. Takes effect on the next bar; the gain moves at once. */
+  setMusic(mode: MusicMode): void;
+  /** Which bed is playing. For the tests; nothing on the field reads it. */
+  music(): MusicMode;
   /** One cue, now. */
   play(cue: Cue): void;
   /** The bed. `hold` keeps the tempo where it climbed to (a level's last request). */
@@ -142,10 +196,11 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
   sfx.gain.value = 1;
   sfx.connect(master);
   const bed = ctx.createGain();
-  bed.gain.value = BED_LEVEL;
+  bed.gain.value = BED_MODES[DEFAULT_MUSIC].level;
   bed.connect(master);
 
   let muted = false;
+  let music: MusicMode = DEFAULT_MUSIC;
   let theme: Theme = 'mechanical';
   let buffers: AudioBuffer[] = [];
   let loading = '';
@@ -155,7 +210,7 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
   let duckUntil = 0;
   // The bed's clock: where the next bar starts, and the beats already put down.
   let barAt = 0;
-  let tempo = BED_BPM;
+  let tempo = BED_MODES[DEFAULT_MUSIC].bpm;
   let beats: number[] = [];
   let ended = false;
 
@@ -279,8 +334,10 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
   };
 
   const duck = () => {
+    // With no bed there is nothing to duck, and nothing to bring back.
+    if (music === 'off') return;
     duckUntil = now() + DUCK_S;
-    setBed(BED_LEVEL * DUCK);
+    setBed(BED_MODES[music].level * DUCK);
   };
 
   const setBed = (level: number) => {
@@ -294,30 +351,37 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
     }
   };
 
-  /** One bar of four beats: a soft kick, a two-note bass, a hat off the beat. */
+  /**
+   * One bar of four beats: a soft kick, a two-note bass, a hat off the beat.
+   * The mode decides whether the kick is laid down at all — it is the voice
+   * that reads as a countdown — and how loud and how filtered the hat is.
+   */
   const bar = (at: number, spb: number) => {
+    const mode = BED_MODES[music];
     for (let i = 0; i < 4; i++) {
       const beatAt = at + i * spb;
       beats.push(beatAt);
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      const g = ctx.createGain();
-      osc.frequency.setValueAtTime(hz(i === 0 ? -12 : i === 2 ? -5 : -10), beatAt);
-      g.gain.setValueAtTime(0.0001, beatAt);
-      g.gain.exponentialRampToValueAtTime(i % 2 === 0 ? 0.5 : 0.25, beatAt + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, beatAt + spb * 0.8);
-      osc.connect(g);
-      g.connect(bed);
-      osc.start(beatAt);
-      osc.stop(beatAt + spb * 0.85);
+      if (mode.kick) {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        const g = ctx.createGain();
+        osc.frequency.setValueAtTime(hz(i === 0 ? -12 : i === 2 ? -5 : -10), beatAt);
+        g.gain.setValueAtTime(0.0001, beatAt);
+        g.gain.exponentialRampToValueAtTime(i % 2 === 0 ? 0.5 : 0.25, beatAt + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, beatAt + spb * 0.8);
+        osc.connect(g);
+        g.connect(bed);
+        osc.start(beatAt);
+        osc.stop(beatAt + spb * 0.85);
+      }
       const hat = ctx.createBufferSource();
       hat.buffer = noise();
       const hp = ctx.createBiquadFilter();
       hp.type = 'highpass';
-      hp.frequency.value = 6000;
+      hp.frequency.value = mode.hatHz;
       const hg = ctx.createGain();
       const hatAt = beatAt + spb * 0.5;
-      hg.gain.setValueAtTime(0.16, hatAt);
+      hg.gain.setValueAtTime(0.16 * mode.hat, hatAt);
       hg.gain.exponentialRampToValueAtTime(0.0001, hatAt + 0.05);
       hat.connect(hp);
       hp.connect(hg);
@@ -362,6 +426,17 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
       if (next === theme && loading === next) return;
       theme = next;
       load(next);
+    },
+    setMusic(next: MusicMode) {
+      if (next === music) return;
+      music = next;
+      // The bar already scheduled plays out; the next one is the new mode's.
+      // The tempo scale changed with it, so the climb starts again from base.
+      tempo = BED_MODES[next].bpm;
+      setBed(duckUntil > 0 ? BED_MODES[next].level * DUCK : BED_MODES[next].level);
+    },
+    music() {
+      return music;
     },
     play(cue: Cue) {
       if (muted) return;
@@ -527,12 +602,15 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
     },
     tick(_dt: number, hype: number, hold: boolean) {
       if (muted || ended) return;
-      const want = BED_BPM * (1 + BED_HYPE * (Math.max(1, hype) - 1));
+      // `off` schedules nothing at all. The cues are untouched by this.
+      if (music === 'off') return;
+      const mode = BED_MODES[music];
+      const want = mode.bpm * (1 + mode.hype * (Math.max(1, hype) - 1));
       // Through a level's last request the tempo holds where it climbed to.
       tempo = hold ? Math.max(tempo, want) : want;
       if (duckUntil > 0 && now() >= duckUntil) {
         duckUntil = 0;
-        setBed(BED_LEVEL);
+        setBed(mode.level);
       }
       const spb = 60 / tempo;
       if (barAt === 0) barAt = now() + 0.08;
