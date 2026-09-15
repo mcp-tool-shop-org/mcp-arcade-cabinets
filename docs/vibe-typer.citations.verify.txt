@@ -1,2 +1,810 @@
-Error: No receipt signing key configured. Set PRISM_SIGNING_KEY (Ed25519 private key — recommended; run `prism keygen`), PRISM_SIGNING_SECRET (HMAC, legacy), pass signing_key=/signing_secret=, or set PRISM_DEV=1 for local development.
-EXIT 2
+{
+  "verdict": "revise",
+  "confidence": 0.9,
+  "retryable": true,
+  "revision_hint": "FIX METADATA: resolved, but to a different title than cited: 'The role of retrieval during study: Evidence of reminding from overt rehearsal'; FIX METADATA: resolved, but to a different title than cited: 'How We Type'; FIX METADATA: resolved, but to a different title than cited: 'Hierarchical Control of Cognitive Processes'; FIX METADATA: resolved, but to a different title than cited: 'Juicy Game Design'; FIX METADATA: resolved, but to a different title than cited: \"Personality, Addiction, Dopam",
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:2:Q1.3",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "ceec300732e3fa0d62e1a3bba42c3c6f1b40faff2b3e5a88be98ecd9c88991a7"
+    },
+    {
+      "lens": "citation_groundedness:6:Q1.7",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "bc1a1296ea0f893a33d48f09af69845d5d0d36a0d3da603dba014c6f7f4a49d4"
+    },
+    {
+      "lens": "citation_groundedness:8:Q1.9",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "75f0c61684a4ae09e326f081cb0a3edab3ece06bf2491f7c7f797258d51f8d5c"
+    },
+    {
+      "lens": "citation_groundedness:17:Q3.5",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "5f8b26ebcdece5cf37a1c59b17397c9e43dace26899294f8c459581156618c74"
+    },
+    {
+      "lens": "citation_groundedness:20:Q3.8",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "8e4997d6e591e1911e58a5d436ce61b03431ef2003a6d4808f3c7b38ebac2b37"
+    },
+    {
+      "lens": "citation_groundedness:24:Q5.1",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "09c363e3fa0358913213785640c4b58c1220d1110f7a7b6399d5531234eafdcc"
+    },
+    {
+      "lens": "citation_groundedness:25:Q5.2",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "f3722df9b599a708e6856ae6f5664db6f99f7b4a18b757091748a75d544e3912"
+    },
+    {
+      "lens": "citation_groundedness:29:Q5.6",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "8f00121fd955ad147c77373a4e852c5ae41d26b3c436d7a6e6f32e9c302d9842"
+    },
+    {
+      "lens": "citation_groundedness:31:Q5.8",
+      "model_family": "local",
+      "model_id": "mistral-small:24b",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.9,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "3590999bfe2b39a3a1b89175b88a5caa5b2954d9e9fcd1ac6b7d56e3c742c216"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "Q1.1",
+      "identifier": "10.1037/0278-7393.16.4.677",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Reduced frequency of knowledge of results enhances motor skill learning.",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q1.2",
+      "identifier": "10.1037/0033-2909.95.3.355",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Knowledge of results and motor learning: A review and critical reappraisal.",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q1.3",
+      "identifier": "10.1126/science.1190483",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Cognitive Illusions of Authorship Reveal Hierarchical Error Detection in Skilled Typists",
+      "source_abstract": "Touchy Typing\n          \n            Even the most able typist makes errors, and\n            Logan and Crump\n            (p.\n            683\n            ) have used this real-world task to probe for the existence of two error-detection mechanisms. They inserted errors into words that had been typed correctly by the subjects, and they corrected errors that had been made. By measuring implicit error detection as the slowing of movement just after an error had been committed and by eliciting explicit monitoring of errors by the output shown on the screen, they uncovered a double dissociation. Inserted errors did not lengthen the interval until the next letter was typed, but they were reported by the typist as errors; on the other hand, corrected errors did increase the interval, but were nevertheless claimed by the subjects as having been typed correctly.",
+      "supporting_span": "corrected errors did increase the interval, but were nevertheless claimed by the subjects as having been typed correctly.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q1.4",
+      "identifier": "10.1016/j.jml.2020.104128",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'The role of retrieval during study: Evidence of reminding from overt rehearsal'",
+      "source_title": "The role of retrieval during study: Evidence of reminding from overt rehearsal",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q1.5",
+      "identifier": "10.1145/3173574.3174220",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Observations on Typing from 136 Million Keystrokes",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q1.6",
+      "identifier": "10.1145/2858036.2858233",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'How We Type'",
+      "source_title": "How We Type",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q1.7",
+      "identifier": "10.1093/jcr/ucv095",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "The Hidden Cost of Personal Quantification",
+      "source_abstract": "Abstract\n                  From sleep and energy use to exercise and health, consumers have access to more information about their behavior than ever before. The appeal of personal quantification seems clear. By better understanding our behavior, we can make the necessary changes to live happier, healthier lives. But might the new tools people are using\u2014quantifying life\u2014 rob them of some of the benefits of engaging in those activities? Six experiments demonstrate that while measurement increases how much of an activity people do (e.g., walk or read more), it can simultaneously reduce how much people enjoy those activities. This occurs because measurement can undermine intrinsic motivation. By drawing attention to output, measurement can make enjoyable activities feel more like work, which reduces their enjoyment. As a result, measurement can decrease continued engagement in the activity and subjective well-being. Even in the absence of explicit external incentives, measurement itself can thus have similar effects. The findings have implications for measurement\u2019s use, as well as for the psychology of external incentives and intrinsic motivation.",
+      "supporting_span": "Six experiments demonstrate that while measurement increases how much of an activity people do (e.g., walk or read more), it can simultaneously reduce how much people enjoy those activities.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q1.8",
+      "identifier": "10.1080/00140137808931764",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The Influence of Length and Frequency of Training Session on the Rate of Learning to Type",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q1.9",
+      "identifier": "10.1177/0018720812451994",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Effectiveness of Part-Task Training and Increasing-Difficulty Training Strategies",
+      "source_abstract": "Objective:\n                    The objective was to conduct meta-analyses that investigated the effects of two training strategies, increasing difficulty (ID) and part-task training (PTT), on transfer of skills and the variables that moderate effectiveness of the strategies.\n                  \n                  \n                    Background:\n                    Cognitive load theory (CLT) provides a basis for predicting that training strategies reducing the intrinsic load of a task during training avail more resources to be devoted to learning. Two strategies that accomplish this goal, by dividing tasks in parts or by simplifying tasks in early training trials, have offered only mixed success.\n                  \n                  \n                    Method:\n                    A pair of complementary effect size measures were used in the meta-analyses conducted on 37 transfer studies employing the two training strategies: (a) a transfer ratio analysis on the ratio of treatment transfer performance to control transfer performance and (b) a Hedges\u2019 g analysis on the standardized difference between treatment and control group means.\n                  \n                  \n                    Results:\n                    PTT generally produced negative transfer when the parts were performed concurrently in the whole transfer task but not when the parts were performed in sequence. Variable-priority training of the whole task was a successful technique. ID training was successful when the increases were implemented adaptively but not when increased in fixed steps. Both strategies provided evidence that experienced learners benefited less, or suffered more, from the strategy, consistent with CLT.\n                  \n                  \n                    Conclusion:\n                    PTT can be successful if the integrated parts are varied in the priority they are given to the learner. ID training is successful if the increases are adaptive. The fundamental elements of CLT are confirmed.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q2.3",
+      "identifier": "10.1016/B978-0-12-385527-5.00001-2",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Hierarchical Control of Cognitive Processes'",
+      "source_title": "Hierarchical Control of Cognitive Processes",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q2.5",
+      "identifier": "10.1109/TSE.2009.70",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Learning a Metric for Code Readability",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q2.6",
+      "identifier": "10.1145/2642918.2647382",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Improvements to keyboard optimization with integer programming",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q2.7",
+      "identifier": "10.1109/ICSE.2019.00101",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "When Code Completion Fails: A Case Study on Real-World Completions",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.1",
+      "identifier": "10.1016/j.entcom.2020.100359",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The effects of juiciness in an action RPG",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.2",
+      "identifier": "10.1145/3311350.3347171",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Juicy Game Design'",
+      "source_title": "Juicy Game Design",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.3",
+      "identifier": "10.1007/978-3-030-89394-1_24",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "That Sound\u2019s Juicy! Exploring Juicy Audio Effects in Video Games",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.4",
+      "identifier": "10.3758/s13423-012-0333-8",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Augmented visual, auditory, haptic, and multimodal feedback in motor learning: A review",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.5",
+      "identifier": "10.1145/3549516",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "The Effect of Auditory-Motor Synchronization in Exergames on the Example of the VR Rhythm Game BeatSaber",
+      "source_abstract": "Physical inactivity and an increasingly sedentary lifestyle constitute a significant public health concern. Exergames try to tackle this problem by combining exercising with motivational gameplay. Another approach in sports science is the use of auditory-motor synchronization, the entrainment of movements to the rhythm of music. There are already commercially successful games making use of the combination of both, such as the popular VR rhythm game BeatSaber. However, unlike traditional exercise settings often relying on periodic movements that can be easily entrained to a rhythmic pulse, exergames typically offer an additional cognitive challenge through their gameplay and might be based more on reaction or memorization. That poses the question as to what extent the effects of auditory-motor synchronization can be transferred to exergames, and if the synchronization of music and gameplay facilitates the playing experience. We conducted a user study (N = 54) to investigate the effects of different degrees of synchronization between music and gameplay using the VR rhythm game BeatSaber. Results show significant effects on performance, perceived workload, and player experience between the synchronized and non-synchronized conditions, but the results seem to be strongly mediated by the ability of the participants to consciously perceive the synchronization differences.",
+      "supporting_span": "Results show significant effects on performance, perceived workload, and player experience between the synchronized and non-synchronized conditions, but the results seem to be strongly mediated by the ability of the participants to consciously perceive the synchronization differences.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q3.6",
+      "identifier": "10.1016/j.neuron.2009.01.031",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: \"Personality, Addiction, Dopamine: Insights from Parkinson's Disease\"",
+      "source_title": "Personality, Addiction, Dopamine: Insights from Parkinson's Disease",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.7",
+      "identifier": "10.1111/j.1467-9450.2010.00830.x",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The effects of music on time perception and performance of a driving game",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.8",
+      "identifier": "10.1155/2018/5681652",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Dynamic Difficulty Adjustment (DDA) in Computer Games: A Review",
+      "source_abstract": "Dynamic difficulty adjustment (DDA) is a method of automatically modifying a game\u2019s features, behaviors, and scenarios in real-time, depending on the player\u2019s skill, so that the player, when the game is very simple, does not feel bored or frustrated, when it is very difficult. The intent of the DDA is to keep the player engrossed till the end and to provide him/her with a challenging experience. In traditional games, difficulty levels increase linearly or stepwise during the course of the game. The features such as frequency, starting levels, or rates can be set only at the beginning of the game by choosing a level of difficulty. This can, however, result in a negative experience for players as they try to map a predecided learning curve. DDA attempts to solve this problem by presenting a customized solution for the gamers. This paper provides a review of the current approaches to DDA.",
+      "supporting_span": "The intent of the DDA is to keep the player engrossed till the end and to provide him/her with a challenging experience.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q4.1",
+      "identifier": "10.1037/0033-2909.99.3.303",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Perceptual, cognitive, and motoric aspects of transcription typing.",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q4.2",
+      "identifier": "10.1207/s15326950dp4202_2",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Shallow Processing and Attention Capture in Written and Spoken Discourse",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q4.3",
+      "identifier": "10.1038/435439a",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Rare items often missed in visual searches",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q5.1",
+      "identifier": "10.1177/1046878109341390",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "A Review of Humor for Computer Games: Play, Laugh and More",
+      "source_abstract": "Computer games are now becoming ways to communicate, teach, and influence attitudes and behavior. In this article, we address the role of humor in computer games, especially in support of serious purposes. We begin with a review of the main theories of humor, including superiority, incongruity, and relief. These theories and their interrelationships do well in helping us understand the humor process, but they have been developed in the context of traditional human activity. To explore how they relate to computer games, we present the findings of a qualitative study of player experience of humor and show how it relates to the theoretical perspectives. We then review the main functions of humor, especially its effects on social, emotional, and cognitive behavior. We show how each of these functions can be used in game design to support the specific experiences and outcomes of game-play. Finally, we address the issue of serious games and make suggestions on how humor can inform and support the design of those games. We suggest that humor can support design by smoothing and sustaining the game mechanics. Moreover, games can draw on the functions of humor in the real world for enhancing communication, learning, and social presence. Using humor makes games richer and more powerful, as well as fun.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q5.2",
+      "identifier": "arXiv:2210.09906",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Exploring players' experience of humor and snark in a grade 3-6 history practices game",
+      "source_abstract": "In this paper we use an existing history learning game with an active audience as a research platform for exploring how humor and \"snarkiness\" in the dialog script affect students' progression and attitudes about the game. We conducted a 2x2 randomized experiment with 11,804 anonymous 3rd-6th grade students. Using one-way ANOVA and Kruskall-Wallis tests, we find that changes to the script produced measurable results in the self-reported perceived humor of the game and the likeability of the player character. Different scripts did not produce significant differences in player completion of the game, or how much of the game was played. Perceived humor and enjoyment of the game and its main character contributed significantly to progress in the game, as did self-perceived reading skill.",
+      "supporting_span": "Different scripts did not produce significant differences in player completion of the game, or how much of the game was played.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q5.3",
+      "identifier": "10.1080/10508406.2010.508029",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Motivating Children to Learn Effectively: Exploring the Value of Intrinsic Integration in Educational Games",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q5.4",
+      "identifier": "10.1037/0022-0663.88.4.715",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Intrinsic motivation and the process of learning: Beneficial effects of contextualization, personalization, and choice.",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q5.5",
+      "identifier": "10.1177/0956797610376073",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Benign Violations'",
+      "source_title": "Benign Violations",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q5.6",
+      "identifier": "10.1515/HUMOR.2008.014",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "Disparagement humor: A theoretical and empirical review of psychoanalytic, superiority, and social identity theories",
+      "source_abstract": "AbstractThis research reviews the empirical and theoretical literature on disparagement humor and amusement. In particular, we ask, \u201cWhy is disparagement humor funny?\u201d Three theoretical frameworks provide responses to this question: psychoanalytic theory, superiority theories, and social identity theory. Each framework suggests a distinct psychological mechanism that fosters amusement upon exposure to disparagement humor. The review presents the central theoretical propositions from each framework and assesses their empirical support. Based on this review, we suggest that social identity theory offers a promising new avenue for disparagement humor research. The review concludes by offering future research directions.",
+      "supporting_span": null,
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q5.7",
+      "identifier": "10.1016/j.lingua.2017.10.009",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Gemination and segmental patterns with reference to Sanskrit and Assamese: An OT account'",
+      "source_title": "Gemination and segmental patterns with reference to Sanskrit and Assamese: An OT account",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q5.8",
+      "identifier": "arXiv:2511.09133",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Assessing the Capabilities of LLMs in Humor:A Multi-dimensional Analysis of Oogiri Generation and Evaluation",
+      "source_abstract": "Computational humor is a frontier for creating advanced and engaging natural language processing (NLP) applications, such as sophisticated dialogue systems. While previous studies have benchmarked the humor capabilities of Large Language Models (LLMs), they have often relied on single-dimensional evaluations, such as judging whether something is simply ``funny.'' This paper argues that a multifaceted understanding of humor is necessary and addresses this gap by systematically evaluating LLMs through the lens of Oogiri, a form of Japanese improvisational comedy games. To achieve this, we expanded upon existing Oogiri datasets with data from new sources and then augmented the collection with Oogiri responses generated by LLMs. We then manually annotated this expanded collection with 5-point absolute ratings across six dimensions: Novelty, Clarity, Relevance, Intelligence, Empathy, and Overall Funniness. Using this dataset, we assessed the capabilities of state-of-the-art LLMs on two core tasks: their ability to generate creative Oogiri responses and their ability to evaluate the funniness of responses using a six-dimensional evaluation. Our results show that while LLMs can generate responses at a level between low- and mid-tier human performance, they exhibit a notable lack of Empathy. This deficit in Empathy helps explain their failure to replicate human humor assessment. Correlation analyses of human and model evaluation data further reveal a fundamental divergence in evaluation criteria: LLMs prioritize Novelty, whereas humans prioritize Empathy. We release our annotated corpus to the community to pave the way for the development of more emotionally intelligent and sophisticated conversational agents.",
+      "supporting_span": "Our results show that while LLMs can generate responses at a level between low- and mid-tier human performance, they exhibit a notable lack of Empathy. This deficit in Empathy helps explain their failure to replicate human humor assessment. Correlation analyses of human and model evaluation data further reveal a fundamental divergence in evaluation criteria: LLMs prioritize Novelty, whereas humans prioritize Empathy.",
+      "confidence": 0.9
+    },
+    {
+      "citation_id": "Q5.9",
+      "identifier": "10.1145/3698061.3734388",
+      "existence": "metadata_mismatch",
+      "finding_match": "unchecked",
+      "verdict": "revise",
+      "action": "FIX METADATA",
+      "detail": "resolved, but to a different title than cited: 'Can AI Take a Joke\u2014Or Make One? A Study of Humor Generation and Recognition in LLMs'",
+      "source_title": "Can AI Take a Joke\u2014Or Make One? A Study of Humor Generation and Recognition in LLMs",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m2k7m2v8dczhrvcnestgb4ff",
+    "pre_strip_hash": "524a2be3e0d9c9f18964d8906be5a84af0540e686d1abfb800ae14414ac284db",
+    "post_strip_hash": "524a2be3e0d9c9f18964d8906be5a84af0540e686d1abfb800ae14414ac284db",
+    "timestamp": "2026-09-15 19:10:11.304131+00:00",
+    "verifier_models": [
+      "mistral-small:24b"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:2:Q1.3": "ceec300732e3fa0d62e1a3bba42c3c6f1b40faff2b3e5a88be98ecd9c88991a7",
+      "citation_groundedness:6:Q1.7": "bc1a1296ea0f893a33d48f09af69845d5d0d36a0d3da603dba014c6f7f4a49d4",
+      "citation_groundedness:8:Q1.9": "75f0c61684a4ae09e326f081cb0a3edab3ece06bf2491f7c7f797258d51f8d5c",
+      "citation_groundedness:17:Q3.5": "5f8b26ebcdece5cf37a1c59b17397c9e43dace26899294f8c459581156618c74",
+      "citation_groundedness:20:Q3.8": "8e4997d6e591e1911e58a5d436ce61b03431ef2003a6d4808f3c7b38ebac2b37",
+      "citation_groundedness:24:Q5.1": "09c363e3fa0358913213785640c4b58c1220d1110f7a7b6399d5531234eafdcc",
+      "citation_groundedness:25:Q5.2": "f3722df9b599a708e6856ae6f5664db6f99f7b4a18b757091748a75d544e3912",
+      "citation_groundedness:29:Q5.6": "8f00121fd955ad147c77373a4e852c5ae41d26b3c436d7a6e6f32e9c302d9842",
+      "citation_groundedness:31:Q5.8": "3590999bfe2b39a3a1b89175b88a5caa5b2954d9e9fcd1ac6b7d56e3c742c216"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "Q1.1",
+        "identifier": "10.1037/0278-7393.16.4.677",
+        "query": "https://api.crossref.org/works/10.1037/0278-7393.16.4.677?mailto=verify%40prism-verify.dev",
+        "source_sha256": "b4d55686f22749af3909ba3a384d0cbd36dde5e5d0830507c889194d696564da",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q1.2",
+        "identifier": "10.1037/0033-2909.95.3.355",
+        "query": "https://api.crossref.org/works/10.1037/0033-2909.95.3.355?mailto=verify%40prism-verify.dev",
+        "source_sha256": "6a6746e49e8c8e5809a5af4c7efd9e63dfd5e80939b38eff72345c230f90159a",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q1.3",
+        "identifier": "10.1126/science.1190483",
+        "query": "https://api.crossref.org/works/10.1126/science.1190483?mailto=verify%40prism-verify.dev",
+        "source_sha256": "111712e605e0f5c4668a45b3e0465b9dba7d7d705995365bdabc86142a86f98f",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q1.4",
+        "identifier": "10.1016/j.jml.2020.104128",
+        "query": "https://api.crossref.org/works/10.1016/j.jml.2020.104128?mailto=verify%40prism-verify.dev",
+        "source_sha256": "2ec94c5d1949db61f9e6096cf25a180ead084b23f63de07a541c20192fbbe3f6",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q1.5",
+        "identifier": "10.1145/3173574.3174220",
+        "query": "https://api.crossref.org/works/10.1145/3173574.3174220?mailto=verify%40prism-verify.dev",
+        "source_sha256": "0463ca4e6ea1d218328806c277217845fe11a0c91a19ad6c9b64a81cd04d0f62",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q1.6",
+        "identifier": "10.1145/2858036.2858233",
+        "query": "https://api.crossref.org/works/10.1145/2858036.2858233?mailto=verify%40prism-verify.dev",
+        "source_sha256": "02013ed0c5446e838aeae401533dbb3c8ccb0cc0fb311e417d7d5ec68771f5fb",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q1.7",
+        "identifier": "10.1093/jcr/ucv095",
+        "query": "https://api.crossref.org/works/10.1093/jcr/ucv095?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a1c14d77fa96e2d8a0fa73401c85f0c5b91b77c248be8b2e7b21349f9b1b47b0",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q1.8",
+        "identifier": "10.1080/00140137808931764",
+        "query": "https://api.crossref.org/works/10.1080/00140137808931764?mailto=verify%40prism-verify.dev",
+        "source_sha256": "277a485337aaf3b5347104a65174bae3abb2651a6a2b777e7f7a97aa145fd9aa",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q1.9",
+        "identifier": "10.1177/0018720812451994",
+        "query": "https://api.crossref.org/works/10.1177/0018720812451994?mailto=verify%40prism-verify.dev",
+        "source_sha256": "1d073919b73add91398a0ae91ef5bbdef2d1f064e93557d5ac34e03cfeabaff8",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q2.3",
+        "identifier": "10.1016/B978-0-12-385527-5.00001-2",
+        "query": "https://api.crossref.org/works/10.1016/B978-0-12-385527-5.00001-2?mailto=verify%40prism-verify.dev",
+        "source_sha256": "1bd11c91fdd0333151e3f85f2afeaa64d42baa658e80944cd267d3dd06c80ff5",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q2.5",
+        "identifier": "10.1109/TSE.2009.70",
+        "query": "https://api.crossref.org/works/10.1109/TSE.2009.70?mailto=verify%40prism-verify.dev",
+        "source_sha256": "2cea041ce0ae476c62fad8aa161eee4c6b3b348fa311f41ace52cab2f082bc3c",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q2.6",
+        "identifier": "10.1145/2642918.2647382",
+        "query": "https://api.crossref.org/works/10.1145/2642918.2647382?mailto=verify%40prism-verify.dev",
+        "source_sha256": "30a706d1ccd78473d0dd518be1357db7a3f63c35c077e8febf957bf897efc423",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q2.7",
+        "identifier": "10.1109/ICSE.2019.00101",
+        "query": "https://api.crossref.org/works/10.1109/ICSE.2019.00101?mailto=verify%40prism-verify.dev",
+        "source_sha256": "3c085785408403c8a1ad186de31a3106fac98df28438b029d50ba4011557b558",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.1",
+        "identifier": "10.1016/j.entcom.2020.100359",
+        "query": "https://api.crossref.org/works/10.1016/j.entcom.2020.100359?mailto=verify%40prism-verify.dev",
+        "source_sha256": "25b56dd54334b66b58d633ea0e13619cdf9590bd4547250f685ddab2c39ec29c",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.2",
+        "identifier": "10.1145/3311350.3347171",
+        "query": "https://api.crossref.org/works/10.1145/3311350.3347171?mailto=verify%40prism-verify.dev",
+        "source_sha256": "edc64488acbe1c61316d9cf7f5583bfb7a43942f60ab9f0596a62a863ca9ee96",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q3.3",
+        "identifier": "10.1007/978-3-030-89394-1_24",
+        "query": "https://api.crossref.org/works/10.1007/978-3-030-89394-1_24?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ac65954f8f9b84688a361c07dac4486523785c3ae0d5068251e4c088b6d8cdd3",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.4",
+        "identifier": "10.3758/s13423-012-0333-8",
+        "query": "https://api.crossref.org/works/10.3758/s13423-012-0333-8?mailto=verify%40prism-verify.dev",
+        "source_sha256": "0878de3d635d7974931886a612d45662c9bfa209323013450065e31d11d1e049",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.5",
+        "identifier": "10.1145/3549516",
+        "query": "https://api.crossref.org/works/10.1145/3549516?mailto=verify%40prism-verify.dev",
+        "source_sha256": "9be38ebbb5ef45cb91658f2657cdea3b96975f955f390d7a8396c7bdbcd8fb50",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.6",
+        "identifier": "10.1016/j.neuron.2009.01.031",
+        "query": "https://api.crossref.org/works/10.1016/j.neuron.2009.01.031?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a3faa6b823d6f9dd767b070f4272d6b4f22189103500af7ec48328511dadf7aa",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q3.7",
+        "identifier": "10.1111/j.1467-9450.2010.00830.x",
+        "query": "https://api.crossref.org/works/10.1111/j.1467-9450.2010.00830.x?mailto=verify%40prism-verify.dev",
+        "source_sha256": "a4661c7686693831d1f0317d06f7047076cf0afce5b68c4dfd7fc3a5dc3552a0",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.8",
+        "identifier": "10.1155/2018/5681652",
+        "query": "https://api.crossref.org/works/10.1155/2018/5681652?mailto=verify%40prism-verify.dev",
+        "source_sha256": "44380d1abeb20230f0c7aadbba97148d240d7432ef7a00b68b0f0b6a5cd832b8",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q4.1",
+        "identifier": "10.1037/0033-2909.99.3.303",
+        "query": "https://api.crossref.org/works/10.1037/0033-2909.99.3.303?mailto=verify%40prism-verify.dev",
+        "source_sha256": "8adce6525c7128b8e3f663c2857472fa6c569c0c2f27e714545342b223dacb0f",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q4.2",
+        "identifier": "10.1207/s15326950dp4202_2",
+        "query": "https://api.crossref.org/works/10.1207/s15326950dp4202_2?mailto=verify%40prism-verify.dev",
+        "source_sha256": "d00a3d8709b577ddebd7f94687120de88cbe538e78888eb746b3eb63670a0840",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q4.3",
+        "identifier": "10.1038/435439a",
+        "query": "https://api.crossref.org/works/10.1038/435439a?mailto=verify%40prism-verify.dev",
+        "source_sha256": "f6c4da86deea7a8162deb64fbde5e47607d8d6dab4306627ace170055178b790",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.1",
+        "identifier": "10.1177/1046878109341390",
+        "query": "https://api.crossref.org/works/10.1177/1046878109341390?mailto=verify%40prism-verify.dev",
+        "source_sha256": "454b524775547d029382d9c5b2a9bffbebb27e3a60e82d5c4106eb0cb5652361",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.2",
+        "identifier": "arXiv:2210.09906",
+        "query": "https://export.arxiv.org/api/query?id_list=2210.09906",
+        "source_sha256": "25edb63943953a49b3fe6666ea3f62cfafc81627dc739d512b62e272bba617a1",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.3",
+        "identifier": "10.1080/10508406.2010.508029",
+        "query": "https://api.crossref.org/works/10.1080/10508406.2010.508029?mailto=verify%40prism-verify.dev",
+        "source_sha256": "bdba237f778c317c86a6c9853478c520203957aecacef7dbe041b15f3510b94f",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.4",
+        "identifier": "10.1037/0022-0663.88.4.715",
+        "query": "https://api.crossref.org/works/10.1037/0022-0663.88.4.715?mailto=verify%40prism-verify.dev",
+        "source_sha256": "d7235b0ced78d73ff1574920db4cf65e3524491e9c521f8ebba20e6b4e42f88d",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.5",
+        "identifier": "10.1177/0956797610376073",
+        "query": "https://api.crossref.org/works/10.1177/0956797610376073?mailto=verify%40prism-verify.dev",
+        "source_sha256": "1e8cc01deb7986df8d8e1f328c27c55c37df72b2b0b416771a281c77d862ccfd",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q5.6",
+        "identifier": "10.1515/HUMOR.2008.014",
+        "query": "https://api.crossref.org/works/10.1515/HUMOR.2008.014?mailto=verify%40prism-verify.dev",
+        "source_sha256": "d8f492abd27075a60773489e7804afee9fced0f5b146715329ef114601561f6b",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.7",
+        "identifier": "10.1016/j.lingua.2017.10.009",
+        "query": "https://api.crossref.org/works/10.1016/j.lingua.2017.10.009?mailto=verify%40prism-verify.dev",
+        "source_sha256": "1e8cdbab0d07932b19b052d1dbb5fec495202d1165252addf787b9816a70adcb",
+        "existence": "metadata_mismatch"
+      },
+      {
+        "id": "Q5.8",
+        "identifier": "arXiv:2511.09133",
+        "query": "https://export.arxiv.org/api/query?id_list=2511.09133",
+        "source_sha256": "a2492797757b7ac65fb6c44ffbbdd87c6ce45638197cd05cdf378c4b8d22ce67",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.9",
+        "identifier": "10.1145/3698061.3734388",
+        "query": "https://api.crossref.org/works/10.1145/3698061.3734388?mailto=verify%40prism-verify.dev",
+        "source_sha256": "306aec7cce0f5ac0376d2a362171f41e3994dd0310b8a09448b1fdbc1f8dee75",
+        "existence": "metadata_mismatch"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-91914c8d4e99814a",
+    "schema_version": 5,
+    "signature": "bacc571f2c3a7d20e8ad216554cb9997985f93d6045b32ef43ec3d24b6b43e0fd1a3941e125b5ff953d6c31d5574914a84757dca9248ef68f5f360aad7405403",
+    "replayable": true
+  }
+}
+EXIT 0

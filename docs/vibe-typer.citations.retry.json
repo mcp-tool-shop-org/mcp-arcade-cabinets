@@ -1,0 +1,26 @@
+[
+  {
+    "id": "Q1.4",
+    "claim": "Removing visual feedback of the typed text had little effect on error detection but greatly reduced error correction.",
+    "title": "The role of visual feedback in detecting and correcting typing errors: A signal detection approach",
+    "authors": "Pinet, Nozari",
+    "year": 2021,
+    "identifier": "10.1016/j.jml.2020.104193"
+  },
+  {
+    "id": "Q3.6",
+    "claim": "Near-miss outcomes in a gambling task were rated less pleasant than full misses yet increased the desire to continue and activated reward-related brain regions.",
+    "title": "Gambling Near-Misses Enhance Motivation to Gamble and Recruit Win-Related Brain Circuitry",
+    "authors": "Clark, Lawrence, Astley-Jones, Gray",
+    "year": 2009,
+    "identifier": "10.1016/j.neuron.2008.12.031"
+  },
+  {
+    "id": "Q5.7",
+    "claim": "Intertextual jokes depend on the audience recognising the referenced text, and unrecognised references exclude the audience from the humor.",
+    "title": "Intertextuality and/in political jokes",
+    "authors": "Tsakona",
+    "year": 2018,
+    "identifier": "10.1016/j.lingua.2017.09.003"
+  }
+]

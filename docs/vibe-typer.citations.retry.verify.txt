@@ -1,0 +1,91 @@
+{
+  "verdict": "escalate",
+  "confidence": 1.0,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "Q1.4",
+      "identifier": "10.1016/j.jml.2020.104193",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "The role of visual feedback in detecting and correcting typing errors: A signal detection approach",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q3.6",
+      "identifier": "10.1016/j.neuron.2008.12.031",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Gambling Near-Misses Enhance Motivation to Gamble and Recruit Win-Related Brain Circuitry",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    },
+    {
+      "citation_id": "Q5.7",
+      "identifier": "10.1016/j.lingua.2017.09.003",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "resolved, but no abstract was available to ground the claim",
+      "source_title": "Intertextuality and/in political jokes",
+      "source_abstract": null,
+      "supporting_span": null,
+      "confidence": null
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m2k7ry18ygeqqdrw3q2avyeb",
+    "pre_strip_hash": "cc0334c67917d0dd813c9837b7d5337a662d2030bea33b32f9754442dfeadcee",
+    "post_strip_hash": "cc0334c67917d0dd813c9837b7d5337a662d2030bea33b32f9754442dfeadcee",
+    "timestamp": "2026-09-15 19:12:50.216157+00:00",
+    "verifier_models": [
+      "mistral-small:24b"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {},
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "Q1.4",
+        "identifier": "10.1016/j.jml.2020.104193",
+        "query": "https://api.crossref.org/works/10.1016/j.jml.2020.104193?mailto=verify%40prism-verify.dev",
+        "source_sha256": "e2880f942d181d8269ce7fcb2c97198b55aae4decfa915c49b7f09949ff95f55",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q3.6",
+        "identifier": "10.1016/j.neuron.2008.12.031",
+        "query": "https://api.crossref.org/works/10.1016/j.neuron.2008.12.031?mailto=verify%40prism-verify.dev",
+        "source_sha256": "0afca45e4d3bcecda2e226691ddbf49e8f80e7c1fa7270851c9eb20acbc4b510",
+        "existence": "resolved"
+      },
+      {
+        "id": "Q5.7",
+        "identifier": "10.1016/j.lingua.2017.09.003",
+        "query": "https://api.crossref.org/works/10.1016/j.lingua.2017.09.003?mailto=verify%40prism-verify.dev",
+        "source_sha256": "74e9a18cd7c4596dd3307776ab214cdf6a3e1f499f69f21c26bdeb73da759917",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-91914c8d4e99814a",
+    "schema_version": 5,
+    "signature": "105529463ea523b71fe801e58042c2ffdff174b0cca08904cfaffd587000c884b55061824b967d43b099a8539a13a486abcc4159d6eb1d62841db97ea8554907",
+    "replayable": true
+  }
+}
+EXIT 0
