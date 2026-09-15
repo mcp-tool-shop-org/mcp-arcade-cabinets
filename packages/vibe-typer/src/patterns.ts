@@ -9,7 +9,7 @@
 // IDENTICAL. A test compares them character for character; if Ghost's list
 // grows, this one grows with it in the same commit.
 
-import type { Band, Stack, Tier } from './types';
+import type { Band, Beat, Stack, Tier } from './types';
 
 import cabinetJson from '../patterns/cabinet.json';
 import levelsJson from '../patterns/levels.json';
@@ -30,6 +30,22 @@ export const VOICE_FORBIDDEN =
  */
 export const MODEL_FORBIDDEN =
   /\b(claude|gpt|chatgpt|opus|sonnet|haiku|gemini|llama|mistral|qwen|grok|kimi|codex|copilot|cursor|openai|anthropic|ollama|deepseek)\b/i;
+
+/**
+ * Every beat, so the loader can require a word for each. The `satisfies`
+ * object below is the exhaustiveness check: add a member to `Beat` and this
+ * file stops compiling until the beat is listed here and worded in the lever.
+ */
+const BEAT_KEYS = {
+  request: true,
+  reply: true,
+  code: true,
+  creep: true,
+  sync: true,
+  ship: true,
+  compaction: true,
+} satisfies Record<Beat, true>;
+export const BEATS = Object.keys(BEAT_KEYS) as readonly Beat[];
 
 export const CORPUS_STACKS: readonly Stack[] = [
   'bash',
@@ -61,7 +77,14 @@ export interface CabinetSet {
   name: string;
   tagline: string;
   agentName: string;
-  words: { valuation: string; hype: string; streak: string; context: string };
+  words: {
+    valuation: string;
+    hype: string;
+    streak: string;
+    context: string;
+    /** The beat in words. The enum is never on screen (slice 2's decision 5). */
+    beats: Record<Beat, string>;
+  };
 }
 
 export interface LevelDef {
@@ -319,11 +342,18 @@ function loadCabinet(raw: unknown): CabinetSet {
   if (lineFault(tagline) !== null) fail(file, 'tagline');
   if (lineFault(agentName) !== null) fail(file, 'agentName');
   const wordsRaw = asRecord(req(obj, file, 'words'), file, 'words');
-  const words = {} as CabinetSet['words'];
+  const words = { beats: {} as Record<Beat, string> } as CabinetSet['words'];
   for (const key of ['valuation', 'hype', 'streak', 'context'] as const) {
     const word = asString(at(wordsRaw, key, file, `words.${key}`), file, `words.${key}`);
     if (lineFault(word) !== null) fail(file, `words.${key}`);
     words[key] = word;
+  }
+  const beatsRaw = asRecord(at(wordsRaw, 'beats', file, 'words.beats'), file, 'words.beats');
+  for (const beat of BEATS) {
+    const key = `words.beats.${beat}`;
+    const word = asString(at(beatsRaw, beat, file, key), file, key);
+    if (lineFault(word) !== null) fail(file, key);
+    words.beats[beat] = word;
   }
   return { name, tagline, agentName, words };
 }

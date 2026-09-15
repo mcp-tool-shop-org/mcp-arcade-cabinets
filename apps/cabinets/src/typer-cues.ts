@@ -3,7 +3,7 @@
 // default makes a new event kind a type error here before it is a silent
 // nothing on the field (ANDON_AUTHORITY).
 //
-// G25, nothing yells: a mistyped character colours its character and sounds,
+// G25, nothing yells: a mistyped character colors its character and sounds,
 // and shakes nothing. The shake belongs to a line sent wrong and to a
 // compaction, capped and scaled by the length of the line (Q3.1). The full
 // flash is the ship's alone.

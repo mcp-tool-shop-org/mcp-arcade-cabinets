@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  BEATS,
   DEFAULT_PATTERNS,
   lineFault,
   lineTier,
@@ -42,6 +43,8 @@ describe('the levers load', () => {
     const set = loadPatterns(clone(RAW));
     expect(set.cabinet.name).toBe('Vibe Typer');
     expect(set.cabinet.words.hype).toBe('vibes');
+    expect(Object.keys(set.cabinet.words.beats).sort()).toEqual([...BEATS].sort());
+    expect(set.cabinet.words.beats.code).toBe('the code');
     expect(set.levels.levels.length).toBeGreaterThanOrEqual(8);
     expect(Object.keys(set.user.asks).sort()).toEqual([...STACKS].sort());
   });
@@ -126,6 +129,21 @@ describe('the gate halts', () => {
     const band = clone(RAW);
     band.levels.levels[0]!.bandMax = 0;
     expect(() => loadPatterns(band)).toThrow('patterns/levels.json: levels.0.bandMax');
+  });
+
+  it('halts on a missing beat word and on a beat word that cannot be said', () => {
+    const gone = clone(RAW) as Record<string, unknown>;
+    const words = (gone.cabinet as Record<string, unknown>).words as Record<string, unknown>;
+    delete (words.beats as Record<string, unknown>).creep;
+    expect(() => loadPatterns(gone)).toThrow('patterns/cabinet.json: words.beats.creep');
+
+    const noBeats = clone(RAW) as Record<string, unknown>;
+    delete ((noBeats.cabinet as Record<string, unknown>).words as Record<string, unknown>).beats;
+    expect(() => loadPatterns(noBeats)).toThrow('patterns/cabinet.json: words.beats');
+
+    const bad = clone(RAW);
+    bad.cabinet.words.beats.ship = 'shipping 2 things';
+    expect(() => loadPatterns(bad)).toThrow('patterns/cabinet.json: words.beats.ship');
   });
 
   it('names the reason a line cannot be said', () => {

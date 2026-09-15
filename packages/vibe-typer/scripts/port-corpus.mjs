@@ -10,7 +10,7 @@
 //   <src>/Snippets/<lang>.json     camelCase:  id language difficulty title code topics explain
 //
 // Output shape is `Snippet[]`: { id, stack, band, title, code, notes, topics }.
-// Line endings are normalised to \n, trailing whitespace is stripped per line,
+// Line endings are normalized to \n, trailing whitespace is stripped per line,
 // a trailing blank line is dropped. A snippet whose code carries a tab or a
 // non-ASCII character is rejected and named on stderr with the reason; the
 // counts print at the end and belong in the slice doc.
@@ -29,8 +29,8 @@ function srcDir(argv) {
   return process.env.VIBE_TYPER_CORPUS_SRC ?? DEFAULT_SRC;
 }
 
-/** Normalise one code block: \n endings, no trailing blanks, no trailing newline. */
-function normalise(code) {
+/** Normalize one code block: \n endings, no trailing blanks, no trailing newline. */
+function normalize(code) {
   const lines = String(code)
     .replace(/\r\n?/g, '\n')
     .split('\n')
@@ -81,7 +81,7 @@ function port(src) {
     const seen = new Set();
     let rejected = 0;
     for (const row of rows) {
-      const code = normalise(row.code);
+      const code = normalize(row.code);
       const why = rejectReason(code, row.band) ?? (seen.has(row.id) ? 'duplicate id' : null);
       if (why) {
         rejected += 1;
