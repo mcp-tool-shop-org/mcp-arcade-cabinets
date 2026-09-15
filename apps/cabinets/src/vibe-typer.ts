@@ -439,7 +439,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   let flashLeft = 0;
   let toastLeft = 0;
   let rolled = 0;
-  let creepSince = 0;
+  /** Seconds the creep frame has been held, in sim frame time (never the wall clock). */
+  let creepHeld = 0;
   let escSince = 0;
   let lastSig = '';
   const pieces: Piece[] = [];
@@ -727,28 +728,32 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   // ——— the loop ————————————————————————————————————————————————————————————
 
-  const holding = (): boolean => {
+  // The creep frame is held for CREEP_HOLD_MS of frame time so the appended
+  // line is seen before it is typeable (Q4.1). Sim time does not accumulate
+  // while it is held, so the loop never falls behind and never catches up in
+  // a burst afterwards (the review's second change).
+  const holding = (dt: number): boolean => {
     if (state.beat !== 'creep') {
-      creepSince = 0;
+      creepHeld = 0;
       return false;
     }
-    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (creepSince === 0) creepSince = now;
-    return now - creepSince < CREEP_HOLD_MS;
+    creepHeld += dt;
+    return creepHeld < CREEP_HOLD_MS / 1000;
   };
 
   const advance = (dt: number) => {
     if (over) return;
+    if (holding(dt)) return;
     acc = Math.min(acc + dt, STEP * MAX_STEPS);
     let steps = 0;
     while (acc >= STEP && steps < MAX_STEPS && !state.over) {
-      if (holding()) break;
       acc -= STEP;
       steps += 1;
       const input = queue.shift() ?? {};
       stepRun(state, input, STEP);
       pushChat();
       drainEvents();
+      if (state.beat === 'creep') break;
     }
     if (state.over && !over) standup();
   };
@@ -762,12 +767,13 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     drawPreview(dt);
     if (shake > 0) {
       shake = Math.max(0, shake - dt * 24);
-      const x = (Math.random() * 2 - 1) * shake;
-      const y = (Math.random() * 2 - 1) * shake;
+      const x = (rng() * 2 - 1) * shake;
+      const y = (rng() * 2 - 1) * shake;
       editorPane.style.transform = shake > 0.1 ? `translate(${x}px, ${y}px)` : '';
     }
     const hold = state.requestIndex >= planOf(state).requests.length - 1;
-    audio?.tick(dt, state.hype, hold);
+    // A meeting is a breather: the bed drops to base tempo for it (Q3.7).
+    audio?.tick(dt, state.beat === 'sync' ? 1 : state.hype, hold);
     if (escSince > 0) {
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
       if (now - escSince >= LEAVE_HOLD_MS) {

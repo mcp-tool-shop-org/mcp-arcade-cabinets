@@ -260,9 +260,12 @@ describe('the field, mounted', () => {
     press('Escape');
     const later = performance.now() + 1000;
     const spy = vi.spyOn(performance, 'now').mockReturnValue(later);
-    mount.tick(STEP);
-    spy.mockRestore();
-    expect(left).toBe(1);
+    try {
+      mount.tick(STEP);
+      expect(left).toBe(1);
+    } finally {
+      spy.mockRestore();
+    }
     mount = null;
   });
 });
