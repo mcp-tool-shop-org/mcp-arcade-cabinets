@@ -42,6 +42,8 @@ function endlessDef(opts: PlanOpts, rng: () => number): LevelDef {
   return {
     id: `endless-${i}`,
     product: template.split('{noun}').join(noun),
+    // An endless level has no authored premise; the standup shows nothing.
+    story: '',
     stack,
     requests: e.requests,
     bandMin: low,
@@ -59,7 +61,14 @@ export function levelDefAt(opts: PlanOpts, rng: () => number): LevelDef | null {
   if (opts.endless) return endlessDef(opts, rng);
   const def = opts.set.levels.levels[opts.levelIndex];
   if (!def) return null;
-  return opts.stack ? { ...def, stack: opts.stack } : def;
+  if (!opts.stack) return def;
+  // A run pinned to one language drops the level's pinned snippets when the
+  // language is not the level's own: those ids live in the level's stack, and
+  // a run that moved the stack asked for the band, not for the story.
+  if (opts.stack === def.stack) return { ...def, stack: opts.stack };
+  const moved: LevelDef = { ...def, stack: opts.stack };
+  delete moved.snippets;
+  return moved;
 }
 
 /** Candidates for a request: unused, in band, widening only when it must. */
@@ -101,11 +110,25 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
   const stack = def.stack;
   const weakBias = opts.set.levels.weakBias;
   const requests: Request[] = [];
+  const pinned = def.snippets;
   for (let i = 0; i < def.requests; i++) {
-    const pool = candidates(opts.corpus, stack, def, opts.used);
-    if (pool.length === 0) break;
-    const weights = pool.map((s) => 1 + weakBias * weakWeight(s, opts.weakBigrams));
-    const snippet = pool[weightedPick(weights, rng)]!;
+    // A pinned level plays its authored snippets in story order and draws
+    // nothing for them, so the rng call order is: no pick, then the creep
+    // draw per request, then the sync draw. A drawn level is exactly as it
+    // was. An id that is not in the stack is a halt, not a quiet fallback.
+    let snippet: Snippet;
+    if (pinned) {
+      const id = pinned[i];
+      const found =
+        id === undefined ? undefined : (opts.corpus.byStack[stack] ?? []).find((x) => x.id === id);
+      if (!found) throw new Error(`patterns/levels.json: levels.${opts.levelIndex}.snippets.${i}`);
+      snippet = found;
+    } else {
+      const pool = candidates(opts.corpus, stack, def, opts.used);
+      if (pool.length === 0) break;
+      const weights = pool.map((s) => 1 + weakBias * weakWeight(s, opts.weakBigrams));
+      snippet = pool[weightedPick(weights, rng)]!;
+    }
     opts.used.add(snippet.id);
     const request: Request = {
       id: `${def.id}-${i}`,
@@ -131,6 +154,7 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
   return {
     id: def.id,
     product: def.product,
+    story: def.story,
     stack,
     tier: opts.tier,
     requests,

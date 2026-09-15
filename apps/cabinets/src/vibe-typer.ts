@@ -483,7 +483,13 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const pushChat = () => {
     for (let i = chatAt; i < state.chat.length; i++) {
       const line = state.chat[i]!;
-      const node = el('li', line.who === 'user' ? 'vibe-user' : 'vibe-agent', '');
+      const cls =
+        line.who === 'user'
+          ? line.nag === true
+            ? 'vibe-user vibe-nag'
+            : 'vibe-user'
+          : 'vibe-agent';
+      const node = el('li', cls, '');
       chatList.append(node);
       chat.push({ el: node, full: line.line, shown: 0 });
     }
@@ -940,6 +946,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     audio?.end();
     const scene = el('section', 'column vibe-standup');
     scene.append(el('h1', undefined, plan.product));
+    // The level's premise, under its name. An endless level has none.
+    if (plan.story !== '') scene.append(el('p', 'muted', plan.story));
     const lastUser = [...state.chat].reverse().find((c) => c.who === 'user');
     scene.append(
       el('p', 'muted', state.ended === 'shipped' ? 'the level shipped' : 'the context ran out'),

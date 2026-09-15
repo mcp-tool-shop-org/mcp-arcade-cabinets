@@ -6,7 +6,7 @@
 // and cached on the loaded corpus; difficulty.ts reads surprisal off it.
 
 import type { Band, Snippet, Stack } from './types';
-import { CORPUS_STACKS } from './patterns';
+import { CORPUS_STACKS, lineFault } from './patterns';
 
 import bashJson from '../patterns/corpus/bash.json';
 import csharpJson from '../patterns/corpus/csharp.json';
@@ -67,6 +67,16 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
     if (!Array.isArray(topics) || topics.some((t) => typeof t !== 'string')) {
       fail(file, key('topics'));
     }
+    // The snippet's own ask, when it has one (slice 3): the user's words for
+    // the job this code does. It goes through the same gate as every authored
+    // line, with `{product}` read as the one word it is, and it may not carry
+    // `{title}` — a snippet that describes itself has no use for its title.
+    const ask = rec.ask;
+    if (ask !== undefined) {
+      if (typeof ask !== 'string') fail(file, key('ask'));
+      if (ask.includes('{title}')) fail(file, key('ask'));
+      if (lineFault(ask) !== null) fail(file, key('ask'));
+    }
     return {
       id,
       stack,
@@ -75,6 +85,7 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
       code,
       notes: notes as string[],
       topics: topics as string[],
+      ...(typeof ask === 'string' ? { ask } : {}),
     };
   });
 }

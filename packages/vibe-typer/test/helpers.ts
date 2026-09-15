@@ -2,7 +2,7 @@
 
 import { DT, botFor, parseBot, type Bot } from '../src/play';
 import { createRun, stepRun, type CreateRunOpts } from '../src/sim';
-import { DEFAULT_PATTERNS } from '../src/patterns';
+import { DEFAULT_PATTERNS, type Patterns } from '../src/patterns';
 import type { Event, RunState, Tier } from '../src/types';
 
 export const SEEDS = [1, 2, 3];
@@ -23,6 +23,13 @@ export interface RunReport {
   copilotOn: number;
   creeps: number;
   nearMisses: number;
+  /** Check-ins the user sent while the player typed (slice 3). */
+  nags: number;
+  /**
+   * Check-ins that landed where they may not: off a code beat, or on the run's
+   * very first line. The band asserts this is zero.
+   */
+  nagFaults: number;
   lines: string[];
   ticks: number;
   /** Streak drops with no bad key, no bad line and no compaction in the same step. */
@@ -38,6 +45,8 @@ export interface DriveOpts {
   level?: number;
   endless?: boolean;
   maxTicks?: number;
+  /** Levers other than the default ones; the nag bars drive the same run twice. */
+  levers?: Patterns;
 }
 
 export function makeBot(spec: string, seed: number): Bot {
@@ -53,6 +62,7 @@ export function drive(opts: DriveOpts): RunReport {
     tier: opts.tier,
     endless: opts.endless === true,
     ...(opts.level !== undefined ? { levelIndex: opts.level } : {}),
+    ...(opts.levers ? { levers: opts.levers } : {}),
   };
   const state = createRun(create);
   const bot = makeBot(opts.bot, opts.seed);
@@ -68,6 +78,8 @@ export function drive(opts: DriveOpts): RunReport {
     copilotOn: 0,
     creeps: 0,
     nearMisses: 0,
+    nags: 0,
+    nagFaults: 0,
     lines: state.chat.map((c) => c.line),
     ticks: 0,
     unexplainedDrops: 0,
@@ -78,10 +90,20 @@ export function drive(opts: DriveOpts): RunReport {
   let lastStreak = state.streak;
   let lastValuation = state.valuation;
   let chatAt = state.chat.length;
+  const firstLevel = state.levelIndex;
   while (!state.over && report.ticks < cap) {
     report.ticks += 1;
+    // The beat, the request and the line as they stood when the step began:
+    // a check-in is raised before the step reads any input, so these are what
+    // it saw. The band asserts a nag never lands anywhere else.
+    const beat = state.beat;
+    const onFirstLine =
+      state.levelIndex === firstLevel && state.requestIndex === 0 && state.lineIndex === 0;
     stepRun(state, bot(state), DT);
     tally(state.events, report);
+    if (state.events.some((e) => e.kind === 'message' && e.nag === true)) {
+      if (beat !== 'code' || onFirstLine) report.nagFaults += 1;
+    }
     if (state.valuation + 1e-9 < lastValuation) throw new Error('valuation fell');
     lastValuation = state.valuation;
     if (state.streak < lastStreak) {
@@ -111,6 +133,7 @@ function tally(events: readonly Event[], report: RunReport): void {
     else if (event.kind === 'ship' && event.nearMiss) report.nearMisses += 1;
     else if (event.kind === 'copilot' && event.on) report.copilotOn += 1;
     else if (event.kind === 'creep') report.creeps += 1;
+    else if (event.kind === 'message' && event.nag === true) report.nags += 1;
     else if (event.kind === 'milestone') report.milestones.push(event.name);
   }
 }

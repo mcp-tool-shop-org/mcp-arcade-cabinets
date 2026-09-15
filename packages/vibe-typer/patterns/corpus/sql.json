@@ -4,6 +4,7 @@
     "stack": "sql",
     "band": 1,
     "title": "select all columns",
+    "ask": "show me everything in {product}, all of it at once",
     "code": "SELECT *\nFROM users;",
     "notes": ["Retrieves all columns from the users table."],
     "topics": ["select", "basic-query"]

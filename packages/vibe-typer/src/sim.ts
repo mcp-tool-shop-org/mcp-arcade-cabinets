@@ -22,7 +22,7 @@ import { LinePicker } from './lines';
 import { DEFAULT_PATTERNS, tierContext, type Patterns } from './patterns';
 import { planLevel } from './level';
 import { copilotReady, hypeFor, milestoneCrossed, pay, pitchFor } from './score';
-import { mixSeed } from './seed';
+import { mixSeed, seededRandom } from './seed';
 import type { Event, LevelPlan, RunInput, RunState, Snippet, Stack, Tier } from './types';
 
 export interface CreateRunOpts {
@@ -56,10 +56,26 @@ interface RunContext {
   syncIndex: number;
   /** One sync a level, spent or not. */
   syncDone: boolean;
+  /**
+   * The nag clock. Its own generator, salted off the level seed, so a level
+   * plans the same snippets, creeps and meeting whether nags are on or off.
+   */
+  nagRng: () => number;
+  /** Frame time the next check-in is due at. */
+  nextNagAt: number;
+  /** A check-in is waiting for the agent's answer; a second one does not land. */
+  nagReplyPending: boolean;
 }
 
 /** Lines in a quick sync. Three is a meeting; more is a level. */
 const SYNC_LINES = 3;
+
+/**
+ * The salt that keeps the nag clock off the planner's generator (slice 3).
+ * The level seed fans out through mixSeed, so the check-ins are replayable
+ * and the plan is byte-identical with the nag lever at any value.
+ */
+export const NAG_SALT = 0x9a9;
 
 const runs = new WeakMap<RunState, RunContext>();
 
@@ -88,9 +104,41 @@ function push(state: RunState, event: Event): void {
   state.events.push(event);
 }
 
-function say(state: RunState, who: 'user' | 'agent', line: string): void {
-  state.chat.push({ who, line, at: state.clock });
-  push(state, { kind: 'message', who });
+function say(state: RunState, who: 'user' | 'agent', line: string, nag = false): void {
+  state.chat.push({ who, line, at: state.clock, ...(nag ? { nag: true as const } : {}) });
+  push(state, { kind: 'message', who, ...(nag ? { nag: true as const } : {}) });
+}
+
+/** The next check-in is due this many seconds of frame time from now. */
+function armNag(state: RunState, ctx: RunContext): void {
+  const { min, max } = ctx.set.levels.nagEvery;
+  ctx.nextNagAt = state.clock + min + ctx.nagRng() * (max - min);
+}
+
+/** A new level, a new nag clock, and nothing owed from the level before. */
+function startNagClock(state: RunState, ctx: RunContext): void {
+  ctx.nagRng = seededRandom(mixSeed(state.plan.seed, NAG_SALT));
+  ctx.nagReplyPending = false;
+  armNag(state, ctx);
+}
+
+/**
+ * The user checks in while you type. It lands on a code beat only, never in
+ * the run's very first line, and never while an earlier check-in is still
+ * waiting for its answer. When the moment is wrong the check-in waits; it
+ * does not skip. It costs the bar nothing, pays nothing, builds nothing and
+ * leaves the streak exactly where it stands — the comedy, and no more.
+ */
+function maybeNag(state: RunState): void {
+  const ctx = runs.get(state)!;
+  if (state.clock < ctx.nextNagAt) return;
+  if (state.beat !== 'code' || ctx.nagReplyPending) return;
+  const first =
+    state.levelIndex === ctx.levelOffset && state.requestIndex === 0 && state.lineIndex === 0;
+  if (first) return;
+  say(state, 'user', ctx.picker.nag(), true);
+  ctx.nagReplyPending = true;
+  armNag(state, ctx);
 }
 
 export function createRun(opts: CreateRunOpts): RunState {
@@ -145,7 +193,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     weakBigrams,
     milestones: [],
   };
-  runs.set(state, {
+  const ctx: RunContext = {
     set,
     corpus,
     picker,
@@ -156,7 +204,12 @@ export function createRun(opts: CreateRunOpts): RunState {
     syncLines: [],
     syncIndex: 0,
     syncDone: false,
-  });
+    nagRng: () => 0,
+    nextNagAt: 0,
+    nagReplyPending: false,
+  };
+  runs.set(state, ctx);
+  startNagClock(state, ctx);
   enterRequest(state);
   return state;
 }
@@ -245,7 +298,11 @@ function ship(state: RunState): void {
     push(state, { kind: 'milestone', name: milestone.name });
   }
   say(state, 'agent', ctx.picker.ship());
-  say(state, 'user', last ? ctx.picker.review() : ctx.picker.reaction());
+  say(
+    state,
+    'user',
+    last ? ctx.picker.review(state.plan.id) : ctx.picker.reaction(request.snippet),
+  );
   setStreak(state, state.streak + 1);
   state.beat = 'ship';
 }
@@ -308,6 +365,7 @@ function advance(state: RunState): void {
   state.levelIndex = levelIndex;
   state.requestIndex = 0;
   state.used = [...used];
+  startNagClock(state, ctx);
   ctx.syncDone = false;
   ctx.syncLines = [];
   ctx.syncIndex = 0;
@@ -377,6 +435,13 @@ function sendLine(state: RunState): void {
   }
   push(state, { kind: 'line', ok: true });
   setStreak(state, state.streak + 1);
+  // A check-in is answered once the line in hand is out clean, so the answer
+  // never lands inside what the player is transcribing. A line sent wrong
+  // keeps it owed; a ship on this line says the answer before the ship line.
+  if (state.beat === 'code' && ctx.nagReplyPending) {
+    ctx.nagReplyPending = false;
+    say(state, 'agent', ctx.picker.nagReply());
+  }
   if (state.beat === 'reply') {
     say(state, 'agent', request.reply);
     state.beat = 'code';
@@ -471,6 +536,9 @@ export function stepRun(state: RunState, input: RunInput, dt: number): RunState 
     advance(state);
     return state;
   }
+  // After the transitional beats, so a check-in can never land on the frame
+  // that shows a creep, a ship or an ask — those steps have already returned.
+  maybeNag(state);
   if (input.tab) {
     takeCopilot(state);
     return state;

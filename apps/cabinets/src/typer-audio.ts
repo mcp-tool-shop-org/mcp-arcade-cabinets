@@ -392,6 +392,18 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
           stinger([{ at: 0, semis: 19, dur: 0.18, gain: 0.14, type: 'sine' }], 2600, 0.12);
           if (onBeat()) kick();
           return;
+        case 'nag':
+          // The user again, checking in: the ping, and a fourth below it a
+          // beat later. Down, not up, so it reads as a question, not an ask.
+          stinger(
+            [
+              { at: 0, semis: 19, dur: 0.16, gain: 0.13, type: 'sine' },
+              { at: 0.18, semis: 14, dur: 0.24, gain: 0.11, type: 'sine' },
+            ],
+            2400,
+            0.1,
+          );
+          return;
         case 'blip':
           stinger([{ at: 0, semis: 7, dur: 0.16, gain: 0.12, type: 'triangle' }], 1200, 0.08);
           return;

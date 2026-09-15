@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_CORPUS, integrationSnippets, withIntegration } from '../src/corpus';
 import { LinePicker } from '../src/lines';
-import { DEFAULT_PATTERNS } from '../src/patterns';
+import { DEFAULT_PATTERNS, lineFault } from '../src/patterns';
 import { levelDefAt, planLevel, type PlanOpts } from '../src/level';
 import { seededRandom } from '../src/seed';
 import type { LevelPlan, Stack, Tier } from '../src/types';
@@ -103,6 +103,60 @@ describe('planning a level', () => {
     const share = creeps / requests;
     expect(share).toBeGreaterThan(DEFAULT_PATTERNS.levels.creepShare - 0.12);
     expect(share).toBeLessThan(DEFAULT_PATTERNS.levels.creepShare + 0.12);
+  });
+
+  it('pins every named snippet to one that exists in the level stack', () => {
+    // The loader never reads the corpus, so this is where a typo in
+    // levels.json halts the build rather than the first play-through.
+    for (const [i, def] of DEFAULT_PATTERNS.levels.levels.entries()) {
+      if (!def.snippets) continue;
+      expect(def.snippets, `levels.${i}.snippets`).toHaveLength(def.requests);
+      expect(new Set(def.snippets).size, `levels.${i}.snippets`).toBe(def.snippets.length);
+      for (const [j, id] of def.snippets.entries()) {
+        const found = (DEFAULT_CORPUS.byStack[def.stack] ?? []).find((sn) => sn.id === id);
+        expect(found, `levels.${i}.snippets.${j}`).toBeDefined();
+      }
+    }
+  });
+
+  it('plays a pinned level in its authored order at every seed', () => {
+    for (const [i, def] of DEFAULT_PATTERNS.levels.levels.entries()) {
+      if (!def.snippets) continue;
+      for (const seed of [1, 2, 3, 17]) {
+        const made = plan({ levelIndex: i, seed });
+        expect(
+          made.requests.map((r) => r.snippet.id),
+          `${def.id} seed ${seed}`,
+        ).toEqual(def.snippets);
+      }
+    }
+  });
+
+  it('halts on a pinned id the stack does not carry', () => {
+    const levels = DEFAULT_PATTERNS.levels.levels.map((def, i) =>
+      i === 0 ? { ...def, snippets: ['nothing-like-this', 'b', 'c', 'd'] } : def,
+    );
+    const set = { ...DEFAULT_PATTERNS, levels: { ...DEFAULT_PATTERNS.levels, levels } };
+    expect(() => planLevel(opts({ set, levelIndex: 0 }))).toThrow(
+      'patterns/levels.json: levels.0.snippets.0',
+    );
+  });
+
+  it('drops the pins when the run is moved to another language', () => {
+    const def = DEFAULT_PATTERNS.levels.levels.find((l) => l.snippets)!;
+    const i = DEFAULT_PATTERNS.levels.levels.indexOf(def);
+    const other = def.stack === 'python' ? 'sql' : 'python';
+    const made = plan({ levelIndex: i, stack: other as Stack });
+    expect(made.stack).toBe(other);
+    for (const request of made.requests) expect(request.snippet.stack).toBe(other);
+  });
+
+  it('carries the level story onto the plan, and nothing onto an endless one', () => {
+    for (const [i, def] of DEFAULT_PATTERNS.levels.levels.entries()) {
+      expect(lineFault(def.story), `levels.${i}.story`).toBeNull();
+      expect(plan({ levelIndex: i }).story).toBe(def.story);
+    }
+    expect(plan({ levelIndex: 3, endless: true }).story).toBe('');
   });
 
   it('runs out of listed levels but never out of endless ones', () => {

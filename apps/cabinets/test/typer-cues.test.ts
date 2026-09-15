@@ -26,6 +26,7 @@ const EVERY: Event[] = [
   { kind: 'ship', nearMiss: false },
   { kind: 'ship', nearMiss: true },
   { kind: 'message', who: 'user' },
+  { kind: 'message', who: 'user', nag: true },
   { kind: 'message', who: 'agent' },
   { kind: 'compaction' },
   { kind: 'milestone', name: 'seed' },
@@ -65,7 +66,10 @@ describe('the cue table', () => {
     expect(cueFor({ kind: 'line', ok: true }).name).toBe('sent');
     expect(cueFor({ kind: 'line', ok: false }).name).toBe('hmm');
     expect(cueFor({ kind: 'message', who: 'user' }).name).toBe('ping');
+    expect(cueFor({ kind: 'message', who: 'user', nag: true }).name).toBe('nag');
     expect(cueFor({ kind: 'message', who: 'agent' }).name).toBe('blip');
+    // The agent's answer to a check-in is the agent speaking, and sounds it.
+    expect(cueFor({ kind: 'message', who: 'agent', nag: true }).name).toBe('blip');
     expect(cueFor({ kind: 'copilot', on: true }).name).toBe('shimmerIn');
     expect(cueFor({ kind: 'copilot', on: false }).name).toBe('shimmerOut');
     expect(cueFor({ kind: 'sync', on: true }).name).toBe('syncIn');
@@ -139,6 +143,14 @@ describe('the cue table', () => {
       { kind: 'message', who: 'agent' },
     ]);
     expect(cues.map((c) => c.name)).toEqual(['key', 'key', 'hmm', 'blip']);
+  });
+
+  it('leaves a check-in as quiet as any other line', () => {
+    const nag = cueFor({ kind: 'message', who: 'user', nag: true });
+    expect(nag.shake).toBe(0);
+    expect(nag.flash).toBe(0);
+    expect(nag.confetti).toBe(0);
+    expect(nag.toast).toBe('');
   });
 
   it('carries the built piece size through to the pop', () => {

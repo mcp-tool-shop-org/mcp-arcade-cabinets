@@ -38,6 +38,16 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+/** The levers as loose data, so a halt test can spoil exactly one key. */
+function loose(): Record<string, Record<string, unknown>> {
+  return JSON.parse(JSON.stringify(RAW)) as Record<string, Record<string, unknown>>;
+}
+
+/** The level rows of a loose copy. */
+function rowsOf(raw: Record<string, Record<string, unknown>>): Record<string, unknown>[] {
+  return raw.levels!.levels as Record<string, unknown>[];
+}
+
 describe('the levers load', () => {
   it('loads every file', () => {
     const set = loadPatterns(clone(RAW));
@@ -61,6 +71,17 @@ describe('the levers load', () => {
     expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(8);
     expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(12);
     expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(8);
+    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(12);
+    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('gives every level a story and reads the check-in clock', () => {
+    for (const def of DEFAULT_PATTERNS.levels.levels) {
+      expect(lineFault(def.story), def.id).toBeNull();
+    }
+    const nag = DEFAULT_PATTERNS.levels.nagEvery;
+    expect(nag.min).toBeGreaterThan(0);
+    expect(nag.max).toBeGreaterThanOrEqual(nag.min);
   });
 
   it('hardcore borrows tier two and tier three burns', () => {
@@ -119,6 +140,60 @@ describe('the gate halts', () => {
     const gone = clone(RAW) as Record<string, unknown>;
     delete (gone.levels as Record<string, unknown>).syncShare;
     expect(() => loadPatterns(gone)).toThrow('patterns/levels.json: syncShare');
+  });
+
+  it('halts on a level with no story and on one that yells', () => {
+    const gone = loose();
+    delete rowsOf(gone)[0]!.story;
+    expect(() => loadPatterns(gone)).toThrow('patterns/levels.json: levels.0.story');
+
+    const yell = loose();
+    rowsOf(yell)[1]!.story = 'the ducks are READY for this';
+    expect(() => loadPatterns(yell)).toThrow('patterns/levels.json: levels.1.story');
+  });
+
+  it('halts on a pinned list of the wrong length and on a repeat in it', () => {
+    const short = loose();
+    rowsOf(short)[0]!.snippets = ['cal-sh-d1-001', 'cal-sh-d1-005'];
+    expect(() => loadPatterns(short)).toThrow('patterns/levels.json: levels.0.snippets');
+
+    const twice = loose();
+    rowsOf(twice)[0]!.snippets = ['a', 'b', 'c', 'c'];
+    expect(() => loadPatterns(twice)).toThrow('patterns/levels.json: levels.0.snippets.3');
+  });
+
+  it('halts on a check-in clock that runs backwards, and on a short pool', () => {
+    const backwards = loose();
+    backwards.levels!.nagEvery = { min: 90, max: 30 };
+    expect(() => loadPatterns(backwards)).toThrow('patterns/levels.json: nagEvery.max');
+
+    const gone = loose();
+    delete gone.levels!.nagEvery;
+    expect(() => loadPatterns(gone)).toThrow('patterns/levels.json: nagEvery');
+
+    const short = loose();
+    short.user!.nags = (short.user!.nags as string[]).slice(0, 4);
+    expect(() => loadPatterns(short)).toThrow('patterns/user.json: nags');
+
+    const answers = loose();
+    (answers.agent!.nagReplies as string[])[2] = 'let me ask claude about that one';
+    expect(() => loadPatterns(answers)).toThrow('patterns/agent.json: nagReplies.2');
+  });
+
+  it('halts on a named pool with a bad line, and takes an empty record', () => {
+    const topic = loose();
+    const byTopic = topic.user!.reactionsByTopic as Record<string, string[]>;
+    byTopic.print![0] = 'it printed 3 things';
+    expect(() => loadPatterns(topic)).toThrow('patterns/user.json: reactionsByTopic.print.0');
+
+    const empty = loose();
+    empty.user!.reactionsByTopic = {};
+    empty.user!.reviewsByProduct = {};
+    expect(loadPatterns(empty).user.reactionsByTopic).toEqual({});
+
+    const bare = loose();
+    bare.user!.reviewsByProduct = { 'cat-website': [] };
+    expect(() => loadPatterns(bare)).toThrow('patterns/user.json: reviewsByProduct.cat-website');
   });
 
   it('halts on a level that names the integration stack or a bad band', () => {
