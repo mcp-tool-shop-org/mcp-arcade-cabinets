@@ -400,3 +400,166 @@ Nothing in `packages/`, `tape-core`, `cabinet-server`, `launcher`, `catalog/`, `
 - **`soft` has no separate hardcore reading.** Hardcore is the one mode that is meant to hurt (G25), and a
   player who wants the clock back can set `music: on`. Whether hardcore should force the pulse is the
   Director's call, not the builder's.
+
+---
+
+## Sub-slice E — the menu by stack, the seat on the endless entry, the premise
+
+Branch `cabinet/vibe-typer-s3e`, cut from `cabinet/vibe-typer-s3a2` (the bed) rather than `main`, because both
+edit `vibeMenu` and the merge should be a merge, not a rewrite. Nothing the bed added was touched: the
+`music:` select is where it left it and `setMusic` was not read.
+
+### What was built
+
+**The level list is grouped by stack.** The flat list of products is now one quiet heading a stack — the stack
+word from `STACK_WORDS`, the same word the row used to carry — with that stack's levels under it. A row is a
+product and a difficulty word and nothing else. The endless entry sits under a heading of its own and names
+the seat that will sit it.
+
+**The grouping rule, exactly.** Stacks are printed in `STACKS` order, which is `CORPUS_STACKS` and then
+`integration` — shell, sharp, java, script, python, tables, wires. A stack with no listed level gets no
+heading; a stack with one level gets a heading like any other. Inside a group the levels are in `levels.json`
+order, untouched. A stack the levers grow that this shell has no word for still gets a heading, after the
+known ones, printed with its own key rather than dropped. The pick is still an index into `levels.levels` and
+still persists as `vibe.prefs.level`, so the mount's contract is exactly what it was — the menu's shape moved,
+its output did not. Nothing reads a count of levels anywhere: eight levels and sixteen paint the same way.
+
+**The probe rule, exactly.** On Pages (`LOCAL_SEATS` false) the endless row reads `the authored user` and the
+menu makes no call at all. Where a daemon is reachable the row opens on `looking for a daemon` and the menu
+takes **one** look — `GET /ollama/api/tags`, five seconds, no retry loop; the field keeps its own five-second
+loop and is unchanged in that. The answer is read through `listPilotModels`, cloud tags first, and the first
+name is the one printed: `the user is <tag>`. Nothing listed, no daemon, a timeout, or `vibe.prefs.seat` set to
+`off` all read `the authored user`. Play abandons the look, and a menu that has been replaced (the switch, or
+the cabinet card) is never written to.
+
+The reading itself is now one function, `probeSeatModels`, exported from `apps/cabinets/src/vibe-typer.ts` and
+used by both the menu and the field's `probeTags`, so the name the menu prints is the name the field will sit.
+It never throws: a daemon that is not there, an answer that is not JSON, a look that timed out and a look that
+was abandoned are all the same answer — no seat — and the authored pool plays either way. `probeSeatName` is
+the menu's one-line wrapper over it.
+
+**The standup.** B2's premise under the product heading is confirmed by test, and the heading now carries the
+stack beside the product: `a website for my cat · shell`. Endless gets the same heading shape and no premise,
+because nobody wrote it one. The retro's order is untouched: weak pairs, then consistency, then speed as a
+word, and never against another player.
+
+### Files
+
+```
+apps/cabinets/src/main.ts               vibeMenu is exported; the level list is grouped (groupList/addRow,
+                                        the byStack map and the STACKS order); the endless row gains a third
+                                        column and the one-look probe; SEAT_LOOKING / SEAT_AUTHORED; the
+                                        page's root is resolved once and the bootstrap runs only when it is
+                                        there
+apps/cabinets/src/vibe-typer.ts         LOCAL_SEATS exported; TAGS_TIMEOUT_MS and SEAT_PROBE_TIMEOUT_MS
+                                        named; probeSeatModels and probeSeatName added; probeTags rewritten
+                                        onto the shared reader; the standup heading carries the stack word
+apps/cabinets/index.html                .vibe-levels and .vibe-group, beside the .tape-* rules
+apps/cabinets/test/typer-menu.test.ts   new: eight cases over the painted menu
+apps/cabinets/test/typer-mount.test.ts  + the standup names the product and its stack and carries the
+                                        premise, + endless shows no premise
+```
+
+Ghost is byte-identical: `ghostMenu`, `menu()`, the switch, the shift path and every Ghost rule in
+`index.html` are untouched. No lever was edited — nothing under `packages/vibe-typer/patterns/` moved — and
+`drawPreview`, `drawFrame` and `frameBox` were not opened. No new dependency.
+
+### The tests
+
+`apps/cabinets/test/typer-menu.test.ts` (jsdom, the mount stubbed so Play is a pref write and a call, not a
+game):
+
+- one heading a stack that has a level, in the corpus order, with `every stack` last;
+- every level under its own stack in the levers' order, with its difficulty word beside it, one column a row,
+  and every listed level on the menu exactly once — all computed from `levels.levels`, never from a count, so
+  the sixteen-level rewrite lands without touching this file;
+- no digit anywhere in the list, headings included (G23);
+- a level picked in the **second** group persists that level's index and hands the mount the same one;
+- the endless row's seat column: `looking for a daemon`, then `the user is kimi-test:cloud` from a two-tag
+  daemon (the cloud tag, not the local one that sorts first by name); `the authored user` when nothing
+  answers; `the authored user` when this browser turned the seat off; and, with `LOCAL_SEATS` false, `the
+authored user` from the first paint with no call made at all.
+
+`typer-mount.test.ts` gains the standup pair. Both let the context run out rather than typing a level, which
+is the cheapest way to the card; the listed one runs at hardcore, because that is the one listed tier where an
+empty bar is the end rather than a compaction.
+
+### Verification
+
+`pnpm verify` green: eslint and prettier clean, six typechecks clean, **622 tests in 50 files** (612 before),
+both play-throughs unchanged — Ghost's round on `naive-ndjson`, Vibe Typer shipping `cat-website` at valuation
+66 with four pieces. `pnpm build:play` green.
+
+The marker gate still discriminates, measured on both bundles after this change: the Pages build carries `the
+authored user` and **not** `the user is ` or `data-vibe-seat`, so the menu's probe is dead-code-eliminated
+there along with the seat chrome; the launcher build (`pnpm build:launcher`) carries both. `looking for a
+daemon` survives in Pages only as the field's own `seat: looking for a daemon`, exactly as before.
+
+### Evidence against the standards table
+
+- **ANDON_AUTHORITY (2 → held).** The menu test fails the build if a stack loses its heading, if a level moves
+  out of its group or order, if a digit reaches the list, if a pick stops persisting its index, or if the seat
+  column says something other than the four things it may say.
+- **NAMED_COMPENSATORS (2 → held).** The only irreversible action is the branch push. Compensator:
+  `git push origin --delete cabinet/vibe-typer-s3e`, owner the coordinator. No npm, no tag, no release, no
+  Pages deploy, no spend.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** The two timeouts are named constants beside the seat's own; every
+  choice the brief left open is under Decisions below with its reason.
+- **EXTERNAL_VERIFIER (2 → held).** The builder does not review its own diff; the coordinator sends it to a
+  different family. Every assertion here is a mechanical comparison against the levers, not a reading of how
+  the menu looks.
+
+### Decisions
+
+1. **The heading carries the stack word, so the row drops it.** Printing both would say the same word on every
+   row of a group. The row keeps the difficulty word, because that is the one thing that differs inside a
+   group and it is what a player picks on.
+2. **`STACKS` is the order, not a list written here.** `STACKS` is `CORPUS_STACKS` and then `integration`,
+   which is the order the brief asked for and is already the package's own answer to "what are the stacks."
+   Writing the order into the shell would be a second copy to drift.
+3. **An unknown stack still gets a heading.** The levers are data and a sibling is rewriting them; a stack this
+   shell has no word for prints under its own key, after the known ones, rather than silently losing its
+   levels. It costs three lines and it cannot be the reason a level goes missing.
+4. **The endless entry gets its own heading, `every stack`.** Without one it would hang under the last stack's
+   heading and read as one more level of that stack. It keeps `climbing` as its difficulty word, so its seat
+   is the third column exactly as the brief has it.
+5. **The menu takes one look, the field keeps its loop.** A menu is a still page and a player sits on it; a
+   five-second poll there would be a background loop nobody asked for, and the field starts its own the moment
+   a run begins. The one look is bounded twice — five seconds, and Play aborts it.
+6. **The tag is printed on the menu and never on the field.** G17 protects the field. The menu is outside it,
+   as the controls row is, and a player choosing endless is owed the name of what will sit in the chair before
+   they commit to a run. The standup still says `the user was a model` and no more.
+7. **`probeSeatModels` is shared and returns a list; `probeSeatName` takes the first.** The field posts the
+   whole list to `/cabinet/endless` and the route picks; the menu needs one name. One reading, two shapes. The
+   field's own timeout stays two seconds and the menu's is five, which is the only thing the two callers
+   disagree about.
+8. **What the menu names is the Ollama seat, and a Claude seat can outrank it.** `sayTier` takes an
+   `ANTHROPIC_API_KEY` first, then a cloud tag, then a local one. A tag list cannot show an API key, so a
+   launcher started with one will seat Claude where the menu named a daemon tag. The menu names what it can
+   see, and the controls row corrects it once the first answer lands — a wrong name before the run is a small
+   lie, and printing no name at all would be a larger one.
+9. **The seat pref is read, but the menu does not offer to change it.** `vibe.prefs.seat` is the field's
+   checkbox and belongs beside the field's own controls; the menu reports what that choice means for the run
+   about to start and stays a menu.
+10. **The probe never throws.** Every failure is the same answer — the authored pool — and a reader that
+    reports "no seat" instead of raising is what let `probeTags` lose its own duplicated `catch`.
+11. **`vibeMenu` is exported and the bootstrap is guarded, rather than the menu moving to its own module.** The
+    brief asked for the smallest change that keeps `menu()` byte-identical for Ghost. The page's root is
+    resolved once into `root` and `menu()` runs only when it is there; `app` is unchanged for every caller. A
+    test that imports the module for the menu alone now runs none of the page.
+12. **The standup's heading joins the two with a middle dot.** The same separator the milestone line uses, and
+    it keeps the stack legible as a second fact rather than a subtitle. It is one more word on a card that
+    already names the product, the premise and how the run ended.
+13. **The standup tests run the context out instead of typing a level.** Typing four requests in jsdom would
+    make two slow tests that fail for reasons that have nothing to do with the card. The listed one runs at
+    hardcore because below it an empty bar is a compaction and an untyped run refills forever.
+14. **The menu test stubs the mount and computes its expectations from the levers.** Nothing in it names a
+    product, a stack or a number of levels, so the sixteen-level rewrite lands under it without an edit.
+
+### Left open
+
+- **The menu does not say which tier the seat would sit** (Claude, cloud or local), only the name it can see.
+  The honest fix is a route that reports the seat without asking it for a request; that is a launcher change,
+  not a shell one, and it waits for the Director.
+- **Nothing here pins the endless entry's position.** It is last because the stacks come first; if a later pass
+  wants endless at the top, that is a one-line move and a decision about what the menu is for.

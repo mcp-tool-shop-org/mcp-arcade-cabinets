@@ -32,6 +32,7 @@ import {
   hashString,
   integrationSnippets,
   nextSeed,
+  STACKS,
   type IntegrationSeed,
   type Snippet,
   type Tier,
@@ -49,18 +50,24 @@ import {
 } from './typer-audio';
 import {
   DEFAULT_FONT,
+  LOCAL_SEATS,
   TIER_WORDS,
   VIBE_FONTS,
   bandWord,
   cleanName,
   isVibeFont,
   mountVibeTyper,
+  probeSeatName,
   readVibePrefs,
   writeVibePrefs,
   STACK_WORDS,
 } from './vibe-typer';
 
-const app = document.getElementById('app')!;
+// The page's own root. The bootstrap at the bottom of this file is what the
+// page runs; a test that imports the menu alone has no `#app` and runs none
+// of it.
+const root = document.getElementById('app');
+const app = root!;
 const ROSTER = TAPES.map((t) => t.name);
 /** The last shifts this browser took, so the next draw stays fresh. Per viewer, never sent. */
 const RECENT_KEY = 'ghost.shifts';
@@ -493,10 +500,11 @@ function shiftEnd(shift: Shift) {
 }
 
 // ——— Vibe Typer ————————————————————————————————————————————————————————————
-// The second cabinet's menu: the levels as products, the endless ladder, the
-// four tier words, a settings row (the type, the keyboard, the sound, the
-// music), the agent's name and the seed. Every choice persists under `vibe.`;
-// no band digits anywhere (G23).
+// The second cabinet's menu: the levels as products under a heading a stack,
+// the endless ladder with the seat that will sit it, the four tier words, a
+// settings row (the type, the keyboard, the sound, the music), the agent's
+// name and the seed. Every choice persists under `vibe.`; no band digits
+// anywhere (G23).
 
 /** Tool names off the bundled tapes, so a request can name a thing the player runs (G30). */
 function tapeSeeds(): IntegrationSeed[] {
@@ -531,7 +539,12 @@ function seedFrom(raw: string, last: number, runs: number): number {
   return hashString(text) >>> 0;
 }
 
-function vibeMenu(wrap: HTMLElement) {
+/** What the endless row says while the menu is still looking for a daemon. */
+const SEAT_LOOKING = 'looking for a daemon';
+/** What it says when nothing will sit: Pages, no daemon, or the seat turned off. */
+const SEAT_AUTHORED = 'the authored user';
+
+export function vibeMenu(wrap: HTMLElement) {
   const prefs = readVibePrefs();
   const h = document.createElement('h1');
   h.textContent = VIBE.cabinet.name;
@@ -547,23 +560,43 @@ function vibeMenu(wrap: HTMLElement) {
 
   let picked: number | 'endless' =
     prefs.endless === 'on' ? 'endless' : Math.min(prefs.level ?? 0, VIBE.levels.levels.length - 1);
-  const list = document.createElement('ul');
-  list.className = 'tape-list';
   const rows: { el: HTMLLIElement; id: number | 'endless' }[] = [];
   const mark = () => {
     rows.forEach((row) => row.el.classList.toggle('picked', row.id === picked));
   };
-  const addRow = (id: number | 'endless', title: string, stack: string, band: string) => {
+
+  // ——— the levels, by stack ————————————————————————————————————————————————
+  // One heading a stack, in the corpus order with `integration` last, and
+  // under it that stack's levels in the levers' own order. The heading
+  // carries the stack word the row used to, so a row is a product and a
+  // difficulty word and nothing else; no band digits anywhere (G23). The
+  // pick is still an index into `levels.levels`, so the mount is unmoved.
+  const groups = document.createElement('div');
+  groups.className = 'vibe-levels';
+  const groupList = (word: string): HTMLUListElement => {
+    const head = document.createElement('h2');
+    head.className = 'vibe-group';
+    head.textContent = word;
+    const list = document.createElement('ul');
+    list.className = 'tape-list';
+    groups.append(head, list);
+    return list;
+  };
+  const addRow = (
+    list: HTMLUListElement,
+    id: number | 'endless',
+    title: string,
+    band: string,
+    extra?: HTMLElement,
+  ) => {
     const li = document.createElement('li');
     li.className = 'tape-row';
     const name = button(title, 'tape-name');
-    const stackWord = document.createElement('span');
-    stackWord.className = 'tape-diff';
-    stackWord.textContent = stack;
     const bandSpan = document.createElement('span');
     bandSpan.className = 'tape-diff';
     bandSpan.textContent = band;
-    li.append(name, stackWord, bandSpan);
+    li.append(name, bandSpan);
+    if (extra) li.append(extra);
     name.addEventListener('click', () => {
       picked = id;
       mark();
@@ -571,17 +604,48 @@ function vibeMenu(wrap: HTMLElement) {
     rows.push({ el: li, id });
     list.append(li);
   };
+
+  const byStack = new Map<string, number[]>();
   VIBE.levels.levels.forEach((level, i) => {
-    addRow(
-      i,
-      level.product,
-      STACK_WORDS[level.stack] ?? level.stack,
-      bandWord(level.bandMin, level.bandMax),
-    );
+    const bucket = byStack.get(level.stack);
+    if (bucket) bucket.push(i);
+    else byStack.set(level.stack, [i]);
   });
-  addRow('endless', 'Endless', 'every stack', 'climbing');
+  const order = [
+    ...STACKS.filter((stack) => byStack.has(stack)),
+    // A stack the levers grow that this shell has never heard of still gets
+    // a heading, after the known ones, rather than no row at all.
+    ...[...byStack.keys()].filter((stack) => !(STACKS as readonly string[]).includes(stack)),
+  ];
+  for (const stack of order) {
+    const list = groupList(STACK_WORDS[stack] ?? stack);
+    for (const i of byStack.get(stack) ?? []) {
+      const level = VIBE.levels.levels[i]!;
+      addRow(list, i, level.product, bandWord(level.bandMin, level.bandMax));
+    }
+  }
+
+  // The endless entry, under a heading of its own so it does not read as one
+  // more level of the last stack. Its third column names the seat that will
+  // sit: the menu is outside the field, so a tag may be read here (G17).
+  const seatCell = document.createElement('span');
+  seatCell.className = 'tape-diff';
+  seatCell.setAttribute('aria-live', 'polite');
+  seatCell.textContent = LOCAL_SEATS ? SEAT_LOOKING : SEAT_AUTHORED;
+  addRow(groupList('every stack'), 'endless', 'Endless', 'climbing', seatCell);
   mark();
-  wrap.append(list);
+  wrap.append(groups);
+
+  // One look for a daemon, not a loop: the menu is a still page, and the
+  // field does its own looking. Play abandons it, five seconds ends it, and
+  // a menu that has been replaced is never written to.
+  const seatLook = new AbortController();
+  if (LOCAL_SEATS) {
+    void probeSeatName(seatLook.signal).then((tag) => {
+      if (!seatCell.isConnected) return;
+      seatCell.textContent = tag && prefs.seat !== 'off' ? `the user is ${tag}` : SEAT_AUTHORED;
+    });
+  }
 
   const row = document.createElement('div');
   row.className = 'row';
@@ -667,6 +731,7 @@ function vibeMenu(wrap: HTMLElement) {
   wrap.append(row, settings, row2);
 
   const start = () => {
+    seatLook.abort();
     const runs = (prefs.runs ?? 0) + 1;
     const seed = seedFrom(seedBox.value, prefs.last ?? 1, runs);
     const name = cleanName(agent.value) || VIBE.cabinet.agentName;
@@ -703,4 +768,4 @@ function vibeMenu(wrap: HTMLElement) {
   });
 }
 
-menu();
+if (root) menu();
