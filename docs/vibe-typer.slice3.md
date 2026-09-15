@@ -280,3 +280,123 @@ before its merge except one, recorded in the C review as not a bypass.
 | Model id      | _pending_                                                                                                                             |
 | Prompt hashes | asks `07a941cf…`, nags `c5b3675a…`, reactions `87de735d…` (per-seat for replies; full hashes in `docs/vibe-typer.author-sample.json`) |
 | Date          | sample 2026-09-15; run _pending_                                                                                                      |
+
+## Sub-slice A, part two — the bed
+
+**Branch:** `cabinet/vibe-typer-s3a2`, one commit, not merged. `pnpm verify` and `pnpm build:play` green.
+
+### The decision, and why
+
+The Director played the cabinet and found the music under the context bar stressful. The decision: **the bed
+must never read as a countdown.** Vibe Typer's tension is a reward, not a punishment — the lock's G25 says
+nothing yells, and the brief-as-decisions in `docs/vibe-typer.dispatch.md` puts the joy in what gets built,
+not in what is running out. What shipped in v0.9.0 was a four-beat kick-and-hat bar at ninety-six beats a
+minute whose tempo climbs with vibes; a steady kick under a draining bar is a clock, and that is exactly the
+reading the game does not want.
+
+So the bed becomes a setting with a calm default, and the pulse is kept only for the players who ask for it by
+name. G29 still holds in the two modes that play: the tempo follows the vibes and holds through a level's last
+request, so the bed is still the score's voice — it is only the voice that sounds like a metronome that is
+gone. `sound: off` still silences the whole cabinet; `music` only shapes the bed under it.
+
+### The three modes
+
+`MUSIC_MODES` and `BED_MODES` at the top of `apps/cabinets/src/typer-audio.ts`, all `// Director`.
+`DEFAULT_MUSIC` is `soft`.
+
+| Mode           | Bed level | Base tempo | Vibes step | Kick and bass | Hat gain | Hat filter | What it is                           |
+| -------------- | --------- | ---------- | ---------- | ------------- | -------- | ---------- | ------------------------------------ |
+| `on`           | `0.16`    | `96`       | `0.06`     | yes           | `1`      | `6000` Hz  | exactly the bed that shipped         |
+| `soft` default | `0.05`    | `80`       | `0.03`     | no            | `0.75`   | `4200` Hz  | a quiet tick, half the climb         |
+| `off`          | `0`       | —          | —          | no            | —        | —          | no bed at all; every cue still plays |
+
+- **`on`** is the v0.9.0 bed unchanged: `BED_LEVEL 0.16`, `BED_BPM 96`, `BED_HYPE 0.06`, the kick, the
+  two-note bass and the hat. Those three constants now describe this mode and nothing else.
+- **`soft`** drops the kick voice entirely — it is the one that reads as a countdown — and keeps the hat,
+  quieter and filtered lower so it is a tick rather than a hiss. The bed bus sits at `0.05`, a little under a
+  quarter of `on`'s, the base tempo is `80`, and each step of vibes moves the tempo half as far. At five times
+  vibes the bar is `0.67` seconds a beat against `on`'s `0.50`. The deploy duck and the drop to base tempo
+  through a sync both still apply.
+- **`off`** schedules nothing: `tick()` returns before the bar, the deploy duck is a no-op, and the bed bus is
+  ramped to silence. Every cue still plays, and the keystroke engine, the pitch climb and the duck constants
+  are untouched. With no bar laid down there are no beats for a user message to land on, so the beat-joined
+  kick in the `ping` cue never fires either.
+
+Switching at run time takes effect on the next bar: the bar already scheduled plays out, the bed gain moves at
+once through `setBed`, and the tempo climb restarts from the new mode's base because the scale it climbs on
+changed. Setting the same mode twice does nothing the second time.
+
+### What was built
+
+```
+apps/cabinets/src/typer-audio.ts        MUSIC_MODES / MusicMode / isMusicMode / DEFAULT_MUSIC / BedMode /
+                                        BED_MODES; TyperAudio.setMusic() and .music(); bar() reads the mode
+                                        (the kick is conditional, the hat is scaled and filtered by it);
+                                        tick() reads the mode's bpm, hype and level and returns early on
+                                        off; duck() is a no-op on off
+apps/cabinets/src/vibe-typer.ts         VibePrefs.music with validation in readVibePrefs; VibeOpts.music;
+                                        the mount resolves opts.music ?? prefs.music ?? DEFAULT_MUSIC and
+                                        calls audio.setMusic() right after setTheme in ensureAudio;
+                                        debug() reports the engine's mode, or nothing when there is none
+apps/cabinets/src/main.ts               the music select in vibeMenu's settings row, persisted with the patch
+apps/cabinets/test/typer-audio.test.ts  new: a recording AudioContext and six cases (the default; off lays
+                                        down nothing; off still plays a cue; the kick is on's alone; soft is
+                                        slower and quieter at the same vibes; setMusic is idempotent)
+apps/cabinets/test/typer-mount.test.ts  + music reaches the engine, + the default reaches it, + the pref
+                                        round-trips under vibe.prefs and a word that is not a mode is
+                                        dropped; the seat case now expects the widened debug()
+```
+
+Nothing in `packages/`, `tape-core`, `cabinet-server`, `launcher`, `catalog/`, `.github/workflows/` or
+`voice/` was touched, and nothing in Ghost's audio. In `main.ts` only the Vibe Typer imports and the body of
+`vibeMenu` changed. No cue, no keystroke, no pitch climb and no duck constant moved.
+
+### Evidence against the standards table
+
+- **ANDON_AUTHORITY (2 → held).** `typer-audio.test.ts` fails the build if `off` ever schedules a voice or if
+  `soft` stops being slower and quieter than `on`; the mount test fails if the setting stops reaching the
+  engine or the pref stops round-tripping.
+- **NAMED_COMPENSATORS (2 → held).** The only irreversible action is the branch push. Compensator:
+  `git push origin --delete cabinet/vibe-typer-s3a2`, owner the coordinator. No npm, no tag, no release, no
+  Pages deploy, no spend.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** Every number in the mode table is a `// Director` constant at the
+  top of its module, and each choice the brief left open is under Decisions below with its reason.
+- **EXTERNAL_VERIFIER (2 → held).** The builder does not review its own diff; the coordinator sends it to a
+  different family. The two assertions that matter are mechanical comparisons between modes, not a reading of
+  how the bed sounds.
+
+### Decisions
+
+1. **The default is `soft`, not `off`.** The brief set it, and the reason is worth writing down: silence would
+   also stop the bed reading as a clock, but it would take G29 with it — the bed carries the vibes climb, and
+   that climb is part of the reward the score pays. `soft` keeps the voice and removes the metronome.
+2. **`soft` keeps a hat and drops the kick, rather than the reverse.** The kick is the low periodic hit a
+   listener counts; the hat is an off-beat tick that reads as texture. Dropping the kick is what stops the bar
+   being countable at all, and it is why `soft` carries no bass note either — the bass shares the kick's voice
+   in `bar()` and is the same low pulse.
+3. **The hat is trimmed to `0.75` and filtered at `4200` Hz in `soft`.** The brief set the bed level at about
+   a quarter of today's and left the hat's own shape open. At `0.05` on the bus the hat is already quiet; the
+   extra trim and the lower cutoff are what turn it from a sizzle into a tick, which is the sound the mode is
+   for. Both sit in `BED_MODES`, so a later pass can move them without touching the scheduler.
+4. **The `ping` cue's beat-joined kick is left exactly as it was.** The brief says to change no cue, and the
+   reasoning holds on its own: that kick is occasional, it fires only when a user message happens to land on a
+   beat, and it cannot be counted. In `soft` it plays at the mode's own quiet level, and in `off` no bar is
+   laid down, so there is no beat for it to find.
+5. **`setMusic` restarts the tempo climb from the new mode's base.** The modes have different base tempos and
+   different steps, so a tempo carried across a switch would be a number from the old scale. The bar already
+   scheduled plays out first, so the switch is heard as the next bar, never as a stutter.
+6. **`debug()` reports the engine's mode, not the resolved option.** Reading it back off the engine is what
+   proves the setting arrived; a mount with no engine yet reports nothing, which is the honest answer and is
+   asserted as `null` in the seat case.
+7. **The music select sits last in the settings row and writes with the patch.** It follows `sound:`, because
+   a player reaches for the mute first and the bed's shape second. Unlike `sound:` it does not write on
+   `change` — the field has no music button for it to disagree with, so the one write in `start()` is enough.
+
+### Left open
+
+- **The bed itself is still procedural.** The ACE-Step beds per stack are still owed (see `HANDOFF.md`); when
+  they land, `BED_MODES` is where a mode picks which bed it plays, and `soft` should get its own bed rather
+  than the same bar with a voice removed.
+- **`soft` has no separate hardcore reading.** Hardcore is the one mode that is meant to hurt (G25), and a
+  player who wants the clock back can set `music: on`. Whether hardcore should force the pulse is the
+  Director's call, not the builder's.

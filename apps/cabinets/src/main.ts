@@ -39,7 +39,14 @@ import {
 
 import { DIFFICULTIES, mountGhost, readPrefs, writePrefs, type Difficulty } from './ghost';
 import { TAPES } from './tapes';
-import { THEMES, THEME_WORDS, type Theme } from './typer-audio';
+import {
+  DEFAULT_MUSIC,
+  isMusicMode,
+  MUSIC_MODES,
+  THEMES,
+  THEME_WORDS,
+  type Theme,
+} from './typer-audio';
 import {
   DEFAULT_FONT,
   TIER_WORDS,
@@ -487,9 +494,9 @@ function shiftEnd(shift: Shift) {
 
 // ——— Vibe Typer ————————————————————————————————————————————————————————————
 // The second cabinet's menu: the levels as products, the endless ladder, the
-// four tier words, a settings row (the type, the keyboard, the sound), the
-// agent's name and the seed. Every choice persists under `vibe.`; no band
-// digits anywhere (G23).
+// four tier words, a settings row (the type, the keyboard, the sound, the
+// music), the agent's name and the seed. Every choice persists under `vibe.`;
+// no band digits anywhere (G23).
 
 /** Tool names off the bundled tapes, so a request can name a thing the player runs (G30). */
 function tapeSeeds(): IntegrationSeed[] {
@@ -590,9 +597,10 @@ function vibeMenu(wrap: HTMLElement) {
   row.append(tier);
 
   // ——— the settings row ————————————————————————————————————————————————————
-  // The type, the keyboard and the sound. Words only; every one persists under
-  // `vibe.`, and the sound reads and writes the same pref as the field's own
-  // button, so the two never disagree.
+  // The type, the keyboard, the sound and the music. Words only; every one
+  // persists under `vibe.`, and the sound reads and writes the same pref as the
+  // field's own button, so the two never disagree. Sound off silences the whole
+  // cabinet; music only shapes the bed under it, and opens on the calm one.
   const settings = document.createElement('div');
   settings.className = 'row';
   const font = document.createElement('select');
@@ -625,7 +633,16 @@ function vibeMenu(wrap: HTMLElement) {
   sound.addEventListener('change', () => {
     writeVibePrefs({ muted: sound.value === 'off' ? 'on' : 'off' });
   });
-  settings.append(font, theme, sound);
+  const music = document.createElement('select');
+  music.setAttribute('aria-label', 'music');
+  for (const mode of MUSIC_MODES) {
+    const o = document.createElement('option');
+    o.value = mode;
+    o.textContent = `music: ${mode}`;
+    music.append(o);
+  }
+  music.value = isMusicMode(prefs.music) ? prefs.music : DEFAULT_MUSIC;
+  settings.append(font, theme, sound, music);
 
   const row2 = document.createElement('div');
   row2.className = 'row';
@@ -662,6 +679,7 @@ function vibeMenu(wrap: HTMLElement) {
       agent: name,
       theme: theme.value as Theme,
       font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
+      music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC,
       muted: sound.value === 'off' ? 'on' : 'off',
       seed: seedBox.value.trim().slice(0, 12),
     });
@@ -673,6 +691,7 @@ function vibeMenu(wrap: HTMLElement) {
       agentName: name,
       theme: theme.value as Theme,
       font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
+      music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC,
       integration: integrationSeasoning(),
       onExit: menu,
       startAudio: true,

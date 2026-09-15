@@ -17,7 +17,14 @@ import {
   VALUE_TOLERANCE,
 } from '@mcp-arcade-cabinets/vibe-typer';
 
-import { FONT_SIZES, mountVibeTyper, type VibeMount } from '../src/vibe-typer';
+import { DEFAULT_MUSIC, isMusicMode } from '../src/typer-audio';
+import {
+  FONT_SIZES,
+  mountVibeTyper,
+  readVibePrefs,
+  writeVibePrefs,
+  type VibeMount,
+} from '../src/vibe-typer';
 
 const STEP = 1 / 60;
 
@@ -232,6 +239,65 @@ describe('the field, mounted', () => {
     expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.request);
     run(mount, 1);
     expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.reply);
+  });
+
+  it('hands the music setting to the engine', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      music: 'off',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: true,
+    });
+    run(mount, 30);
+    expect(mount.debug().music).toBe('off');
+  });
+
+  it('takes the calm bed when nobody has said otherwise', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: true,
+    });
+    run(mount, 30);
+    expect(DEFAULT_MUSIC).toBe('soft');
+    expect(mount.debug().music).toBe(DEFAULT_MUSIC);
+  });
+
+  it('keeps the music choice the menu wrote under vibe.prefs', () => {
+    // The menu writes the select's value with the rest of the patch; a mount
+    // that is given no music reads it back from here.
+    writeVibePrefs({ music: 'on' });
+    expect(readVibePrefs().music).toBe('on');
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: true,
+    });
+    run(mount, 30);
+    expect(mount.debug().music).toBe('on');
+
+    // A word that is not a mode is not a mode: the stored pref is dropped.
+    localStorage.setItem('vibe.prefs', JSON.stringify({ music: 'loud' }));
+    expect(readVibePrefs().music).toBeUndefined();
+    expect(isMusicMode('loud')).toBe(false);
   });
 
   it('stops listening when it is unmounted', () => {
@@ -449,7 +515,15 @@ describe('the endless seat, mounted', () => {
     await flush();
     run(mount, 4);
     await flush();
-    expect(mount.debug()).toEqual({ supplied: 0, asked: 0, accepted: 0, refused: 0 });
+    // No engine was built here (`startAudio` is false and no key was pressed),
+    // so the bed reports nothing at all.
+    expect(mount.debug()).toEqual({
+      supplied: 0,
+      asked: 0,
+      accepted: 0,
+      refused: 0,
+      music: null,
+    });
     expect(root.querySelector('[data-vibe-seat]')).toBeNull();
   });
 });

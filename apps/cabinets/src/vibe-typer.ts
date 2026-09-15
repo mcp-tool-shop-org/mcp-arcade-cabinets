@@ -43,7 +43,15 @@ import {
 import { listPilotModels } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
 import { CONFETTI_MAX, cuesFor, shakeFor, type Cue } from './typer-cues';
-import { createTyperAudio, isTheme, type Theme, type TyperAudio } from './typer-audio';
+import {
+  createTyperAudio,
+  DEFAULT_MUSIC,
+  isMusicMode,
+  isTheme,
+  type MusicMode,
+  type Theme,
+  type TyperAudio,
+} from './typer-audio';
 import { LEAVE_HOLD_MS, readKey } from './typer-keys';
 
 // The feel the Director owns, in one place. High, not extreme (Q3.1). // Director
@@ -198,6 +206,8 @@ export interface VibePrefs {
   theme?: Theme;
   /** The editor type, from the menu's settings row. */
   font?: VibeFont;
+  /** The bed, from the menu's settings row. */
+  music?: MusicMode;
   /** The seed box, as the player left it. */
   seed?: string;
   muted?: 'on' | 'off';
@@ -225,6 +235,7 @@ export function readVibePrefs(): VibePrefs {
     if (typeof o.agent === 'string') out.agent = cleanName(o.agent);
     if (isTheme(o.theme)) out.theme = o.theme;
     if (isVibeFont(o.font)) out.font = o.font;
+    if (isMusicMode(o.music)) out.music = o.music;
     if (typeof o.seed === 'string') out.seed = o.seed.slice(0, 12);
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
@@ -298,6 +309,8 @@ export interface VibeOpts {
   theme: Theme;
   /** The editor type. Left out, the mount takes the stored pref, then `large`. */
   font?: VibeFont;
+  /** The bed. Left out, the mount takes the stored pref, then `soft`. */
+  music?: MusicMode;
   /** Integration snippets built from the bundled tapes (G30). */
   integration: Snippet[];
   onExit: () => void;
@@ -314,7 +327,14 @@ export interface VibeMount {
    * has refused. For the tests only; nothing on the field reads it, and
    * nothing here is ever drawn (G17, G23).
    */
-  debug(): { supplied: number; asked: number; accepted: number; refused: number };
+  debug(): {
+    supplied: number;
+    asked: number;
+    accepted: number;
+    refused: number;
+    /** The bed the engine is playing, or nothing when no engine was built. */
+    music: MusicMode | null;
+  };
 }
 
 interface ChatItem {
@@ -419,6 +439,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   // One property, three readers: the editor, the chat and the beat word.
   const font = opts.font ?? prefs.font ?? DEFAULT_FONT;
   wrap.style.setProperty('--vibe-font', FONT_SIZES[font]);
+  // The bed's shape. Sound off still silences everything; this only shapes
+  // the bed, and its default is the calm one.
+  const music = opts.music ?? prefs.music ?? DEFAULT_MUSIC;
 
   const board = el('div', 'vibe-board');
   const valuationEl = el('span', 'vibe-stat vibe-valuation');
@@ -541,6 +564,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       const base = import.meta.env.BASE_URL || '/';
       audio = createTyperAudio(new AudioContext(), base, planOf(state).seed);
       audio.setTheme(opts.theme);
+      audio.setMusic(music);
       audio.setMuted(muted);
       audio.resume();
     } catch {
@@ -1352,6 +1376,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       asked: seatCounts.asked,
       accepted: seatCounts.accepted,
       refused: seatCounts.refused,
+      music: audio ? audio.music() : null,
     }),
   };
 }
