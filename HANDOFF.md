@@ -1,4 +1,4 @@
-# HANDOFF — Ghost on the Menu, v0.8.0
+# HANDOFF — Ghost on the Menu, v0.8.1
 
 Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **One package is on npm now** — see below.
 
@@ -17,10 +17,10 @@ Tag `v0.8.0` at `d0b17b7`. [GitHub release](https://github.com/mcp-tool-shop-org
 
 ### Open on `main`, untagged
 
-- **`SERVER_VERSION` shipped stale.** `v0.8.0` announces itself as `0.7.0` in the MCP handshake; the constant is hand-written in `cabinet-server/src/server.ts` and the release gate only compared `package.json` against the tag, though `SHIP_GATE.md` names `SERVER_VERSION` explicitly. Fixed on `main` at `03ceb2d`, and the version gate now reads it out of the source and halts on a mismatch (negative-tested). **Cosmetic but visible to every MCP client — worth a `0.8.1` when the Director wants one;** bump the four `package.json`s and `SERVER_VERSION` together, then tag.
+- **`SERVER_VERSION` was stale in `v0.8.0` and is fixed in `v0.8.1`.** `v0.8.0` announced itself as `0.7.0` in the MCP handshake; the release gate now reads the constant out of the source and halts on a mismatch (negative-tested). `0.8.0` on npm keeps the wrong handshake forever — it can only be deprecated — so `0.8.1` is the one to install.
 - **The tracked-tree identity scan is still owed.** The tool is not on this rig. Gates H, I, J and L passed against the real tarball and a targeted grep of the new surface came back empty, but the tree scan did not run.
 - **Grok's review of this diff** — the EXTERNAL_VERIFIER remediation named in `docs/npm-launcher.md`, the only standard scoring below 2.
-- **Bump the GHCR tag** in both READMEs to `0.8.0` once that image is pushed; they correctly still say `0.7.0`.
+- **Bump the GHCR tag** in both READMEs once an `0.8.x` image is pushed; they correctly still say `0.7.0`.
 - Still deferred from v0.7.0: Comfy Cloud polish of `probe.png`, `shelf.png`, `ledger.png`, `boss-archivist*.png`; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as a real mix preset; silent `takeEl.play()`; mix-overlap unasserted; `pnpm film` never captures the end scene; Catalog `source.commit` trails HEAD.
 - **Still parked:** House Call; slice 5 stingers/backdrops; no MCP shift/climb tool; no next-verb MCP tools.
 

@@ -7,8 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-- **`SERVER_VERSION` fix, not yet released.** `v0.8.0` announces itself as `0.7.0` in the MCP handshake — the constant is hand-written and the release gate only checked `package.json` against the tag. Fixed on `main`, and the gate now reads it out of the source and halts on a mismatch. Worth a `0.8.1`.
-- Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the tracked-tree identity scan; Grok's review of the v0.8.0 diff.
+Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the tracked-tree identity scan; Grok's review of the v0.8.0/v0.8.1 diff; the GHCR `0.8.x` image and the README Docker tag that follows it.
+
+## [0.8.1] - 2026-09-14
+
+A patch for the one defect `v0.8.0` shipped, plus the art the npm page was missing.
+
+### Fixed
+
+- **The MCP seat announces its real version.** `v0.8.0` handshook as `0.7.0`: `SERVER_VERSION` is a hand-written constant in `cabinet-server`, and the release gate compared only `package.json` against the tag even though `SHIP_GATE.md` names the constant explicitly. The gate now reads it out of the source and halts on a mismatch, naming the file and the value to set. Negative-tested by reverting the constant.
+
+### Added
+
+- **Hero art on the npm README.** The package page had no image at all. The art is the spread — the player craft firing a fan of amber tracers through teal shockwave rings — selected from six Flux 2 Pro concepts. It lives in the brand repo beside `icon.png` and `readme.png`, quantized to 256 colours (233 kB), referenced by absolute raw URL because npm does not resolve relative image paths. The repo README and its eight translations are untouched.
 
 ## [0.8.0] - 2026-09-14
 
