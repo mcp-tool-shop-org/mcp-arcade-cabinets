@@ -1,4 +1,4 @@
-# HANDOFF — the arcade: Vibe Typer slice 1 landed, Ghost on the Menu at v0.8.2
+# HANDOFF — the arcade: Vibe Typer slices 1 and 2 landed, Ghost on the Menu at v0.8.2
 
 Read this, then `CLAUDE.md`, then `docs/vibe-typer.dispatch.md` (the Director's brief, the research, the lock G23–G30, the levers, the four slices), then `docs/vibe-typer.slice1.md` (what slice 1 built, the band numbers, twenty decisions, and the exact `index.ts` surface the shell consumes), then `docs/vibe-typer.kickoff.md` (the slice-1 brief, kept as the pattern for slice 2's). The Ghost pickup below is unchanged and still `0.8.2`; nothing in Ghost, `tape-core`, `cabinet-server` or the launcher moved.
 
@@ -8,7 +8,15 @@ Read this, then `CLAUDE.md`, then `docs/vibe-typer.dispatch.md` (the Director's 
 - **The README is the arcade's entrance** (cabinet table, the shared chassis, layout, adding a cabinet). Ghost's page is `packages/ghost-on-the-menu/README.md`. Logo: the cabinet render in the brand repo (`readme.png`; the ghost icon is `ghost-readme.png`). Repo description and topics updated by `gh repo edit`. The seven translated READMEs still describe Ghost; **translations run before the next tag, not before** (GPU; the watchdog was down this session).
 - The v0.7.0 dogfood swarm's eighty local branches are merged; their worktrees still sit under `.swarm/worktrees/` with 33 dirty diffs archived as patches in `.swarm/archive/`. Removing them was blocked by the permission classifier; the Director runs the one-liner in the session record if wanted. `.claude/` is git- and prettier-ignored now (builder worktrees live there).
 
-## Next: slice 2, the shell (one Opus brief, from `docs/vibe-typer.dispatch.md` § Build plan)
+## Slice 2, the shell, landed the same day (Opus, `docs/vibe-typer.kickoff-s2.md` → `docs/vibe-typer.slice2.md`, Kimi review `docs/vibe-typer.slice2.review.md`)
+
+The cabinet plays in the browser: `pnpm -F @mcp-arcade-cabinets/cabinets dev`, pick **Vibe Typer** on the switch, pick a product, **Play**. The coordinator played level one end to end with synthetic keystrokes: reply, code, a creep, four pieces in the terminal frame, the deploy ribbon, the standup at valuation 126 with the `seed` milestone and the run's seed. Pages builds both cabinets into `/play/` (`pnpm build:play`); the launcher packs the same bundle, so `npx @mcptoolshop/ghost-on-the-menu` would serve both after the next release — the Director's call whether that is wanted before Vibe Typer has art. The Director has not played it yet; that is the next thing that matters.
+
+## Next: slice 3, the seat and the retro's history (one Opus brief, from `docs/vibe-typer.dispatch.md` § Build plan)
+
+The endless user seat as a lever fill through the say gate, pull path (the launcher's tiered seat: Claude by API key, else an Ollama cloud tag, else local), prefetch, authored fallback; the voice worker on the user's lines; README section and a handbook page; translations before the tag. Then slice 4, the container tools `product`, `ask`, `react`. Art for the preview pieces and ACE-Step beds wait on the Director's word after he plays it on rectangles.
+
+## What slice 2 was briefed as (kept for the record)
 
 `apps/cabinets/src/vibe-typer.ts` with the same mount shape as `mountGhost`; a two-card picker in `main.ts` with Ghost as the default; DOM chat and editor, canvas preview that grows by `state.built`, the scoreboard words from `cabinet.json`; the keystroke audio (LoKey-Typer's `TypewriterAudio` shape with dev-op-typer's five keyboard sample sets under `E:/AI/prototypes/packages/dev-op-typer/DevOpTyper/Assets/Sounds`), a cue table off `state.events`, the procedural bed with tempo on hype; quick sync; Pages. The launcher rides along only after the shell exists (it packs `apps/cabinets/dist`), and the npm package name stays Ghost's. Slice 3 is the endless user seat (pull path) and the retro; slice 4 the container tools `product`, `ask`, `react`.
 
