@@ -1,12 +1,12 @@
-# Kickoff — You're Absolutely Right!, slice 1: the package
+# Kickoff — Vibe Typer, slice 1: the package
 
-Paste-ready brief for one Opus builder. Read `docs/absolutely-right.dispatch.md` first (the brief, the research, the lock G23–G30, the levers, the build plan), then `CLAUDE.md`, then this file. The worked example for every pattern named below is `packages/ghost-on-the-menu`; copy its **shape**, never its game.
+Paste-ready brief for one Opus builder. Read `docs/vibe-typer.dispatch.md` first (the brief, the research, the lock G23–G30, the levers, the build plan), then `CLAUDE.md`, then this file. The worked example for every pattern named below is `packages/ghost-on-the-menu`; copy its **shape**, never its game.
 
 ## Standing frame
 
-- The lock is G23–G30 in the dispatch, plus inherited G8, G12, G14, G17. Every design question is answered there; if it is not, choose the joyful reading and write the choice down in `docs/absolutely-right.slice1.md` under "Decisions".
+- The lock is G23–G30 in the dispatch, plus inherited G8, G12, G14, G17. Every design question is answered there; if it is not, choose the joyful reading and write the choice down in `docs/vibe-typer.slice1.md` under "Decisions".
 - Version stays `0.x`. No new npm package. Nothing in `packages/tape-core`, `packages/ghost-on-the-menu`, `packages/cabinet-server`, `packages/launcher`, `catalog/`, `.github/workflows/release.yml` is edited by this slice. `apps/cabinets` is slice 2, not this one.
-- Work on branch `cabinet/absolutely-right-s1` from `main`. One commit at the end of the slice (`feat: You're Absolutely Right!, slice 1 — the package`), pushed to `origin`. Do not merge; the coordinator merges after review.
+- Work on branch `cabinet/vibe-typer-s1` from `main`. One commit at the end of the slice (`feat: Vibe Typer, slice 1 — the package`), pushed to `origin`. Do not merge; the coordinator merges after review.
 - Gate before the push: `pnpm verify` green from the repo root, including the new play-through. Run the identity scan from the repo root before pushing: `python %USERPROFILE%\.grok\bin\identity-scan.py .` (PowerShell: `python "$env:USERPROFILE\.grok\bin\identity-scan.py" .`); any hit outside `node_modules` halts the push.
 - No spend: no image generation, no audio generation, no cloud model calls. Headless only.
 - Every text line in every lever passes the digit and forbidden-word scan (copy `VOICE_FORBIDDEN` from `packages/ghost-on-the-menu/src/patterns.ts:48` into the new loader; keep the two lists identical, and say so in a comment). Lines are at most twelve words, one sentence, no tool or model names, no digits, nothing cruel. The user is absurd and lovable; the agent is sycophantic and hard-working. Write at least the counts in the lever table below; more is welcome.
@@ -17,14 +17,14 @@ Paste-ready brief for one Opus builder. Read `docs/absolutely-right.dispatch.md`
 | ------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------ |
 | PIN_PER_STEP             | 2     | Seeded sim; every band bar and play-through replays byte-for-byte from `(seed, levers, input)`.                            |
 | ANDON_AUTHORITY          | 2     | The loader halts on any lever fault; the band fails `pnpm test`; `test:play` fails `pnpm verify`.                          |
-| NAMED_COMPENSATORS       | 2     | The slice's only irreversible action is `git push` of a branch; compensator: `git push origin --delete cabinet/absolutely-right-s1`. No skip. |
+| NAMED_COMPENSATORS       | 2     | The slice's only irreversible action is `git push` of a branch; compensator: `git push origin --delete cabinet/vibe-typer-s1`. No skip. |
 | DECOMPOSE_BY_SECRETS     | 2     | Sim, levers, corpus, bots and the play script are separate modules with the dependency arrows listed below.                 |
 | UNCERTAINTY_GATED_HUMANS | 2     | Numbers the Director owns (hardcore drain, hype steps, Copilot window) are data with a `// Director` comment, not code.     |
 | EXTERNAL_VERIFIER        | 2     | The diff is reviewed by a different family from a packet before merge; this builder never reviews its own work.            |
 
 ## Package layout
 
-`packages/absolutely-right/` (`"name": "@mcp-arcade-cabinets/absolutely-right"`, `"private": true`, same `tsconfig.json`, `package.json` scripts and `vitest` wiring as `packages/ghost-on-the-menu`; the root `vitest.config.ts` and `pnpm-workspace.yaml` already glob it).
+`packages/vibe-typer/` (`"name": "@mcp-arcade-cabinets/vibe-typer"`, `"private": true`, same `tsconfig.json`, `package.json` scripts and `vitest` wiring as `packages/ghost-on-the-menu`; the root `vitest.config.ts` and `pnpm-workspace.yaml` already glob it).
 
 ```
 src/
@@ -110,7 +110,7 @@ Determinism: everything random comes from `seed` through `seed.ts`. `createRun` 
 
 ## Lines (src/lines.ts, patterns/user.json, patterns/agent.json, patterns/cabinet.json) — G28
 
-`user.json`: `{ asks: { [stack]: { [tier]: string[] } }, reactions: { [tier]: string[] }, creeps: string[], reviews: string[], dated: string[] }` with at least sixteen asks per stack at tier 0–2 (hardcore reuses tier 2), twelve reactions per tier, twelve creeps, eight reviews, eight dated. Asks may use `{product}` and `{title}`. `agent.json`: `{ replies: string[] (≥ 24), hmm: string[] (≥ 12), compactions: string[] (≥ 8), ships: string[] (≥ 8) }`. `cabinet.json`: `{ name: "You're Absolutely Right!", agentName: 'Claudette', words: { valuation, hype, streak, context } }` (the field words the shell will print; a rename is this file and the package directory). The picker never repeats a line inside a level; `dated` is skipped unless `createRun` gets `dated: true`. The loader rejects any line with a digit, any forbidden word, any tool or model name, more than twelve words, or more than one sentence. Tone: the user is comically absurd and fond of the agent ("can it be more blockchain", "make the button feel premium", "my cousin says use rust"); the agent is sycophantic and eager ("Great idea, adding a duck now", "You're absolutely right, shipping it"). Nothing cruel, nothing that yells (G25).
+`user.json`: `{ asks: { [stack]: { [tier]: string[] } }, reactions: { [tier]: string[] }, creeps: string[], reviews: string[], dated: string[] }` with at least sixteen asks per stack at tier 0–2 (hardcore reuses tier 2), twelve reactions per tier, twelve creeps, eight reviews, eight dated. Asks may use `{product}` and `{title}`. `agent.json`: `{ replies: string[] (≥ 24), hmm: string[] (≥ 12), compactions: string[] (≥ 8), ships: string[] (≥ 8) }`. `cabinet.json`: `{ name: "Vibe Typer", tagline: "You're absolutely right.", agentName: 'Claudette', words: { valuation, hype: 'vibes', streak, context } }` (the field words the shell will print; a rename is this file and the package directory). The picker never repeats a line inside a level; `dated` is skipped unless `createRun` gets `dated: true`. The loader rejects any line with a digit, any forbidden word, any tool or model name, more than twelve words, or more than one sentence. Tone: the user is comically absurd and fond of the agent ("can it be more blockchain", "make the button feel premium", "my cousin says use rust"); the agent is sycophantic and eager ("Great idea, adding a duck now", "You're absolutely right, shipping it"). Nothing cruel, nothing that yells (G25).
 
 ## Corpus (src/corpus.ts, patterns/corpus/*.json, scripts/port-corpus.mjs)
 
@@ -120,7 +120,7 @@ The n-gram model: character trigram counts over all corpus code, add-one smoothi
 
 ## Bots and the play-through (src/play.ts, scripts/play.mjs)
 
-Bots, each `(state, rng) => RunInput`: `idle` (never types), `typist(wpm, errorRate)` (types the next target character at a seeded cadence, mistypes at `errorRate`, backspaces its own errors on the next step, presses Enter at line end), `perfect` (typist at 90 wpm, zero errors). `play(args)` exported from `dist/play.js` as `scripts/play.mjs:208` expects: args `--tier`, `--endless`, `--bot`, `--seed`, `--stack`; runs one level (or endless until over) at a fixed `dt = 1/60`, prints a plain summary (words only, plus the valuation, which is allowed on the board), and exits non-zero on `over: 'context'` for tier 0. Register `absolutely-right` in `scripts/play.mjs:191` beside `ghost` (do not touch the ghost branch), and append `&& pnpm test:play absolutely-right --tier 0 --bot typist:40` to the root `verify` script.
+Bots, each `(state, rng) => RunInput`: `idle` (never types), `typist(wpm, errorRate)` (types the next target character at a seeded cadence, mistypes at `errorRate`, backspaces its own errors on the next step, presses Enter at line end), `perfect` (typist at 90 wpm, zero errors). `play(args)` exported from `dist/play.js` as `scripts/play.mjs:208` expects: args `--tier`, `--endless`, `--bot`, `--seed`, `--stack`; runs one level (or endless until over) at a fixed `dt = 1/60`, prints a plain summary (words only, plus the valuation, which is allowed on the board), and exits non-zero on `over: 'context'` for tier 0. Register `vibe-typer` in `scripts/play.mjs:191` beside `ghost` (do not touch the ghost branch), and append `&& pnpm test:play vibe-typer --tier 0 --bot typist:40` to the root `verify` script.
 
 `SCREEN_FORBIDDEN` in `scripts/play.mjs:18` applies to this cabinet's printed summary too; the summary must pass it.
 
@@ -139,7 +139,7 @@ Bars, every one asserted, all seeds `[1, 2, 3]`, all levels in `levels.json`, al
 - Determinism: same seed, same bot, same input stream twice → deep-equal final state.
 - Copilot: with `perfect` at tier 0 Copilot turns on at least once per level and never in hardcore.
 
-Tune `levels.json` and `context.json` until the bars hold; the numbers are data and the band is the andon. Record the final numbers and the sweep in `docs/absolutely-right.slice1.md`.
+Tune `levels.json` and `context.json` until the bars hold; the numbers are data and the band is the andon. Record the final numbers and the sweep in `docs/vibe-typer.slice1.md`.
 
 ## Tests beyond the band
 
@@ -148,7 +148,7 @@ Tune `levels.json` and `context.json` until the bars hold; the numbers are data 
 ## Deliverables
 
 1. The package, green under `pnpm verify` from the root.
-2. `docs/absolutely-right.slice1.md`: what was built, the corpus port counts and rejects, the band numbers, every decision taken where the dispatch was silent, and what is left for slice 2 (the shell) with the exact `index.ts` surface the shell will consume.
-3. One commit on `cabinet/absolutely-right-s1`, pushed. Identity scan clean. No merge.
+2. `docs/vibe-typer.slice1.md`: what was built, the corpus port counts and rejects, the band numbers, every decision taken where the dispatch was silent, and what is left for slice 2 (the shell) with the exact `index.ts` surface the shell will consume.
+3. One commit on `cabinet/vibe-typer-s1`, pushed. Identity scan clean. No merge.
 
 Do not start the shell. Do not add art, audio files or a Vite entry. Do not touch Ghost.
