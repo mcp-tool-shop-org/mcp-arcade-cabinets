@@ -112,6 +112,11 @@ export class LinePicker {
   review(): string {
     return this.next('review', this.set.user.reviews);
   }
+
+  /** One line of a quick sync: meeting chatter, three to a sync (slice 2). */
+  sync(): string {
+    return this.next('sync', this.set.user.syncs);
+  }
 }
 
 function hashKey(key: string): number {

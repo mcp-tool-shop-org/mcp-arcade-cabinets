@@ -121,6 +121,13 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
     requests.push(request);
   }
   if (requests.length === 0) return null;
+  // The quick sync (slice 2): a meeting between two requests, never in front
+  // of the first and never after the last. Drawn after the requests so the
+  // snippets a level plans are the same with the lever at zero.
+  const syncAt =
+    requests.length >= 2 && rng() < opts.set.levels.syncShare
+      ? 1 + Math.floor(rng() * (requests.length - 1))
+      : undefined;
   return {
     id: def.id,
     product: def.product,
@@ -132,6 +139,7 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
     refillShare: def.refillShare ?? tierDefaults.refillShare,
     messageCost: def.messageCost ?? tierDefaults.messageCost,
     shipBonus: def.shipBonus,
+    ...(syncAt === undefined ? {} : { syncAt }),
     seed: levelSeed,
   };
 }

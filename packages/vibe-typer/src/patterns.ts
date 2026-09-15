@@ -48,6 +48,10 @@ const MIN_ASKS = 16;
 const MIN_REACTIONS = 12;
 const MIN_CREEPS = 12;
 const MIN_REVIEWS = 8;
+/** A quick sync is three of these; twelve is enough that no level repeats one. */
+const MIN_SYNCS = 12;
+/** A sync line is chatter, not a sentence: five words is the ceiling (slice 2). */
+const MAX_SYNC_WORDS = 5;
 const MIN_DATED = 8;
 const MIN_REPLIES = 24;
 const MIN_HMM = 12;
@@ -93,6 +97,8 @@ export interface LevelsSet {
   levels: LevelDef[];
   /** Share of requests that carry a scope creep. */
   creepShare: number;
+  /** Share of levels that get one quick sync between two requests (slice 2). */
+  syncShare: number;
   /** How hard the planner leans toward snippets carrying the player's weak pairs. */
   weakBias: number;
   endless: EndlessDef;
@@ -171,6 +177,8 @@ export interface UserSet {
   reactions: TierLines;
   creeps: string[];
   reviews: string[];
+  /** The quick sync's chatter; the player types three of them (slice 2). */
+  syncs: string[];
   /** Dated jokes; the seed skips them unless the player turns them on (Q5.7). */
   dated: string[];
 }
@@ -362,6 +370,7 @@ function loadLevels(raw: unknown): LevelsSet {
     return def;
   });
   const creepShare = asUnit(req(obj, file, 'creepShare'), file, 'creepShare');
+  const syncShare = asUnit(req(obj, file, 'syncShare'), file, 'syncShare');
   const weakBias = asNumber(req(obj, file, 'weakBias'), file, 'weakBias');
   if (weakBias < 0) fail(file, 'weakBias');
   const endlessRaw = asRecord(req(obj, file, 'endless'), file, 'endless');
@@ -413,7 +422,7 @@ function loadLevels(raw: unknown): LevelsSet {
   };
   if (!(endless.drainGrow >= 1)) fail(file, ekey('drainGrow'));
   if (endless.shipBonus < 0) fail(file, ekey('shipBonus'));
-  return { levels, creepShare, weakBias, endless };
+  return { levels, creepShare, syncShare, weakBias, endless };
 }
 
 function loadScore(raw: unknown): ScoreSet {
@@ -606,8 +615,18 @@ function loadUser(raw: unknown): UserSet {
     reactions: loadTierLines(req(obj, file, 'reactions'), file, 'reactions', MIN_REACTIONS),
     creeps: loadLines(req(obj, file, 'creeps'), file, 'creeps', MIN_CREEPS),
     reviews: loadLines(req(obj, file, 'reviews'), file, 'reviews', MIN_REVIEWS),
+    syncs: loadSyncs(req(obj, file, 'syncs'), file, 'syncs'),
     dated: loadLines(req(obj, file, 'dated'), file, 'dated', MIN_DATED),
   };
+}
+
+/** The sync pool: the gate, plus a word cap, because a meeting line is short. */
+function loadSyncs(raw: unknown, file: string, key: string): string[] {
+  const list = loadLines(raw, file, key, MIN_SYNCS);
+  list.forEach((line, i) => {
+    if (line.split(/\s+/).length > MAX_SYNC_WORDS) fail(file, `${key}.${i}`);
+  });
+  return list;
 }
 
 function loadAgent(raw: unknown): AgentSet {

@@ -6,7 +6,8 @@
   "dependencies": {
     "@mcp-arcade-cabinets/cabinet-server": "workspace:*",
     "@mcp-arcade-cabinets/ghost-on-the-menu": "workspace:*",
-    "@mcp-arcade-cabinets/tape-core": "workspace:*"
+    "@mcp-arcade-cabinets/tape-core": "workspace:*",
+    "@mcp-arcade-cabinets/vibe-typer": "workspace:*"
   },
   "devDependencies": {
     "vite": "^6.1.0"

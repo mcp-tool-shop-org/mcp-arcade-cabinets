@@ -209,6 +209,246 @@
         object-fit: contain;
         background: #000;
       }
+      /* ——— Vibe Typer ——————————————————————————————————————————————
+         The second cabinet: three panes and a board. DOM for the chat and
+         the editor, canvas for the preview. Dark like the rest; nothing
+         blinks, nothing yells. */
+      .cabinet-cards {
+        margin-bottom: 0.5rem;
+      }
+      .cabinet-card .cabinet-line {
+        min-width: 0;
+        flex: 1;
+      }
+      .cabinet-card .tape-name {
+        flex: 0 0 auto;
+      }
+      .vibe {
+        max-width: none;
+      }
+      .vibe-board {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1.1rem;
+        border-bottom: 1px solid #2a2a36;
+        padding-bottom: 0.5rem;
+      }
+      .vibe-stat {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+      }
+      .vibe-word {
+        color: #9a9aa6;
+        font-size: 0.85rem;
+      }
+      .vibe-num {
+        font-variant-numeric: tabular-nums;
+        font-size: 1.15rem;
+        color: #e8a04a;
+      }
+      .vibe-dots {
+        color: #5b8c5a;
+        letter-spacing: 0.15em;
+        min-width: 6rem;
+      }
+      .vibe-context {
+        flex: 1 1 10rem;
+      }
+      .vibe-bar {
+        display: block;
+        flex: 1;
+        height: 0.6rem;
+        background: #1a1a24;
+        border: 1px solid #3a3a4a;
+        min-width: 6rem;
+      }
+      .vibe-bar-fill {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: #5b8c5a;
+        transition: width 0.12s linear;
+      }
+      .vibe-bar-fill.warm {
+        background: #e8a04a;
+      }
+      .vibe-bar-fill.near {
+        background: #a8542a;
+      }
+      .vibe-toast {
+        color: #e8a04a;
+        min-width: 5rem;
+      }
+      .vibe-panes {
+        display: grid;
+        grid-template-columns: minmax(12rem, 1fr) minmax(16rem, 1.4fr) auto;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+      .vibe-pane {
+        border: 1px solid #2a2a36;
+        background: #101018;
+        padding: 0.6rem;
+        min-height: 360px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 0;
+      }
+      .vibe-head {
+        color: #9a9aa6;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #2a2a36;
+        padding-bottom: 0.3rem;
+      }
+      .vibe-scroll {
+        overflow-y: auto;
+        max-height: 320px;
+      }
+      .vibe-lines {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .vibe-lines li {
+        line-height: 1.35;
+      }
+      .vibe-user {
+        color: #7fa3c6;
+      }
+      .vibe-agent {
+        color: #e6e6e6;
+      }
+      .vibe-code {
+        font-family: ui-monospace, monospace;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .vibe-line {
+        color: #6a6a78;
+      }
+      .vibe-line.done {
+        color: #3f5c4a;
+      }
+      .vibe-line.landing {
+        color: #e8a04a;
+      }
+      .vibe-live .pending {
+        color: #6a6a78;
+      }
+      .vibe-live .ok {
+        color: #e6e6e6;
+      }
+      .vibe-live .bad {
+        color: #c4664a;
+        text-decoration: underline;
+      }
+      .vibe-live .shimmer {
+        color: #8a8a9a;
+        animation: vibe-shimmer 1.6s ease-in-out infinite;
+      }
+      @keyframes vibe-shimmer {
+        0%,
+        100% {
+          opacity: 0.45;
+        }
+        50% {
+          opacity: 0.95;
+        }
+      }
+      .vibe-caret {
+        display: inline-block;
+        width: 2px;
+        height: 1.1em;
+        margin-right: -2px;
+        vertical-align: text-bottom;
+        background: #e8a04a;
+        animation: vibe-caret 1s steps(2, start) infinite;
+      }
+      @keyframes vibe-caret {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.2;
+        }
+      }
+      .vibe-tab {
+        align-self: flex-start;
+        border: 1px solid #3a3a4a;
+        color: #9a9aa6;
+        font-size: 0.75rem;
+        padding: 0.1rem 0.4rem;
+      }
+      .vibe-preview-pane {
+        padding: 0.5rem;
+      }
+      canvas.vibe-preview {
+        display: block;
+        width: 480px;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        background: #101018;
+      }
+      .vibe-standup .vibe-standup-preview {
+        max-width: 480px;
+      }
+      .vibe-seed {
+        font-family: ui-monospace, monospace;
+        color: #9a9aa6;
+      }
+      button.linky {
+        border-color: transparent;
+        color: #9a9aa6;
+        padding-left: 0;
+      }
+      .vibe-retro {
+        border-top: 1px solid #2a2a36;
+        padding-top: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .vibe-retro h2 {
+        font-size: 1rem;
+      }
+      .vibe-keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+      .vibe-key {
+        font-family: ui-monospace, monospace;
+        border: 1px solid #3a3a4a;
+        background: #1a1a24;
+        color: #e8a04a;
+        padding: 0.2rem 0.45rem;
+      }
+      @media (max-width: 900px) {
+        .vibe-panes {
+          grid-template-columns: 1fr;
+        }
+        .vibe-pane {
+          min-height: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .vibe-caret,
+        .vibe-live .shimmer {
+          animation: none;
+        }
+      }
       @media (max-width: 640px) {
         main {
           padding: 1rem 0.75rem;
