@@ -9,7 +9,7 @@ sidebar:
 
 ## The field
 
-Three panes and a bar. The **chat** on the left is the user in blue and the agent in the page colour, each line typing itself in. The **editor** in the centre shows the request's code as ghost text; the live line fills in as you type, a caret after what you have typed, a mistyped character coloured and waiting for a backspace. The **preview** on the right is the product: a device frame for the stack (a terminal for shell, a phone for script and sharp, a notebook for python and java, a ledger for tables, a wire for integration) with one block per shipped request, its area proportional to what the request paid. Across the top, the **scoreboard**: valuation, vibes, the streak as dots, and the context bar.
+Three panes and a bar. The **chat** on the left is the user in blue and the agent in the page color, each line typing itself in. The **editor** in the center shows the request's code as ghost text; the live line fills in as you type, a caret after what you have typed, a mistyped character colored and waiting for a backspace. The **preview** on the right is the product: a device frame for the stack (a terminal for shell, a phone for script and sharp, a notebook for python and java, a ledger for tables, a wire for integration) with one block per shipped request, its area proportional to what the request paid. Across the top, the **scoreboard**: valuation, vibes, the streak as dots, and the context bar.
 
 ## The rules
 

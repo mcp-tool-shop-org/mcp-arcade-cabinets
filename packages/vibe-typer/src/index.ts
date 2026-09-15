@@ -28,6 +28,7 @@ export type {
 } from './types';
 
 export {
+  BEATS,
   DEFAULT_PATTERNS,
   lineFault,
   lineTier,
@@ -38,6 +39,11 @@ export {
   STACKS,
   VOICE_FORBIDDEN,
 } from './patterns';
+
+// American English on every player- and reader-facing surface. The test and
+// an offline authoring script read the same list.
+export { BRITISH, britishHit } from './spelling';
+export type { BritishWord } from './spelling';
 export type {
   AgentSet,
   CabinetSet,

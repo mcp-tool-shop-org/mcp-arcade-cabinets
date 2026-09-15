@@ -57,7 +57,7 @@
     },
     {
       "id": "coffee-loyalty",
-      "product": "a loyalty programme for the coffee machine",
+      "product": "a loyalty program for the coffee machine",
       "stack": "java",
       "requests": 4,
       "bandMin": 3,
