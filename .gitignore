@@ -23,3 +23,6 @@ site/public/play/
 .env.*
 !.env.example
 *.pem
+
+# Claude Code worktrees and local settings
+.claude/

@@ -7,3 +7,4 @@ site/
 voice/
 .swarm/
 .swarm/**
+.claude/
