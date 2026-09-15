@@ -69,6 +69,10 @@ function hits(): string[] {
     const text = readFileSync(path.join(SHELL, name), 'utf8');
     text.split('\n').forEach((line, i) => note(`apps/cabinets/src/${name}`, `line ${i + 1}`, line));
   }
+  // The page carries the field's CSS and static strings; it is scanned whole
+  // (the review's second change). A hit in Ghost's half is ours to fix too.
+  const page = readFileSync(path.join(SHELL, '..', 'index.html'), 'utf8');
+  page.split('\n').forEach((line, i) => note('apps/cabinets/index.html', `line ${i + 1}`, line));
   const main = readFileSync(path.join(SHELL, 'main.ts'), 'utf8').split('\n');
   const start = main.findIndex((line) => line.includes('// ——— Vibe Typer'));
   expect(start, 'main.ts still marks where Vibe Typer starts').toBeGreaterThan(0);
@@ -93,6 +97,7 @@ describe('American English', () => {
     expect(britishHit('the packer runs with no parallelism')).toBeNull();
     expect(britishHit('run the analyse step')).toContain('analyse');
     expect(britishHit('the analysis says it is fine')).toBeNull();
+    expect(britishHit('the data analyses show')).toBeNull();
     expect(britishHit('an optimised query')).toContain('optimised');
     expect(britishHit('she is optimistic about it')).toBeNull();
     expect(britishHit('centre the block')).toContain('centre');

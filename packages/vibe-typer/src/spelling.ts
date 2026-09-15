@@ -45,7 +45,7 @@ export const BRITISH: readonly BritishWord[] = [
   { word: 'recognize', re: /\brecognis(e|es|ed|ing|able)\b/i },
   { word: 'authorize', re: /\bauthoris(e|es|ed|ing|ation)\b/i },
   { word: 'contextualize', re: /\bcontextualis(e|es|ed|ing|ation)\b/i },
-  { word: 'analyze', re: /\banalys(e|es|ed|ing)\b/i },
+  { word: 'analyze', re: /\banalys(e|ed|ing)\b/i },
   // -re
   { word: 'center', re: /\bcentres?\b|\bcentred\b/i },
   { word: 'theater', re: /\btheatres?\b/i },
