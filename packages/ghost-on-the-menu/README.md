@@ -1,5 +1,9 @@
 # Ghost on the Menu
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/ghost-readme.png" alt="Ghost on the Menu" width="240" />
+</p>
+
 The cabinet's own page. The repo entrance is the [root README](../../README.md); the manual is the [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/); the npm page is [`packages/launcher/README.md`](../launcher/README.md).
 
 <p align="center">

@@ -338,6 +338,17 @@
       "prompt": "Modern flat vector app icon for a retro arcade game called Ghost on the Menu. A rounded-square badge with a deep navy to near-black gradient and a faint CRT scanline texture. Centered: a bold amber (#e8a04a) ghost glyph with clean stepped pixel edges, smooth and geometric, a retro sprite redrawn by a modern brand studio, two dark eyes, a thin cream (#e8e0c8) halo ring behind it. Soft inner glow, high contrast, crisp edges, generous margins. No letters, no numbers, no text of any kind.",
       "status": "accepted",
       "note": "Director: retro and modern at once; picked A from six on the contact sheet. Glyph check 0.0000019. Siblings rejected: 708a0b4d (neon outline, faceless), 56da295e (hexagon ghost on cassette)."
+    },
+    {
+      "id": "readme-logo-v3",
+      "role": "brand logo: mcp-tool-shop-org/brand/logos/mcp-arcade-cabinets/readme.png (the arcade entrance; replaces readme-logo-v2, which moved to ghost-readme.png, brand 886ad39)",
+      "batch": "Director's own render, 2026-09-15",
+      "job_id": null,
+      "seed": null,
+      "size": "1024x768, RGB, as rendered",
+      "prompt": "Not recorded here: rendered by the Director on Comfy Cloud via partner_generate (bfl/flux-2-pro, per the output filename) and handed over as a file. A dark arcade cabinet with the amber ghost glyph on its screen, one pool of light on the floor.",
+      "route": "bfl/flux-2-pro via Comfy Cloud partner_generate; same BFL developer terms as the licence block above",
+      "approved_by": "Director, 2026-09-15: 'Make this the repo logo.'"
     }
   ],
   "tracks": [
