@@ -20,6 +20,7 @@ import {
 import { DEFAULT_MUSIC, isMusicMode } from '../src/typer-audio';
 import {
   FONT_SIZES,
+  STACK_WORDS,
   mountVibeTyper,
   readVibePrefs,
   writeVibePrefs,
@@ -359,6 +360,74 @@ describe('the field, mounted', () => {
       spy.mockRestore();
     }
     mount = null;
+  });
+});
+
+// ——— the standup ——————————————————————————————————————————————————————————
+//
+// The end card names the product and the stack it was built on, and carries
+// the level's premise under it. Nobody types here: the run is left alone
+// until the context runs out, which is the cheapest way to the card.
+
+/** Let the clock run until the standup is up. Returns false if it never came. */
+function toStandup(m: VibeMount, cap = 6000): boolean {
+  for (let i = 0; i < cap; i++) {
+    m.tick(0.5);
+    if (root.querySelector('.vibe-standup')) return true;
+  }
+  return false;
+}
+
+/** The standup's quiet lines, in the order they were laid down. */
+function standupLines(): string[] {
+  return [...root.querySelectorAll('.vibe-standup p.muted')].map((p) => p.textContent ?? '');
+}
+
+describe('the standup', () => {
+  // Hardcore, because it is the one listed tier where an empty bar is the
+  // end rather than a compaction: below it, a run that nobody types into
+  // refills forever and never reaches a card.
+  it('names the product and its stack, and carries the level’s premise', () => {
+    const plan = planOf(createRun({ seed: 1, tier: 3, endless: false, levelIndex: 0 }));
+    expect(plan.story).not.toBe('');
+    mount = mountVibeTyper(root, {
+      tier: 3,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    expect(toStandup(mount)).toBe(true);
+    expect(root.querySelector('.vibe-standup h1')!.textContent).toBe(
+      `${plan.product} · ${STACK_WORDS[plan.stack]}`,
+    );
+    // The premise sits directly under the heading, before how the run ended.
+    expect(standupLines()[0]).toBe(plan.story);
+    expect(standupLines()[1]).toBe('the context ran out');
+  });
+
+  it('shows no premise in endless, because nobody wrote one', () => {
+    const plan = planOf(createRun({ seed: 1, tier: 0, endless: true }));
+    expect(plan.story).toBe('');
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: true,
+      seed: 1,
+      agentName: 'Claudette',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    expect(toStandup(mount)).toBe(true);
+    expect(root.querySelector('.vibe-standup h1')!.textContent).toContain(
+      ` · ${STACK_WORDS[plan.stack]}`,
+    );
+    expect(standupLines()[0]).toBe('the context ran out');
   });
 });
 

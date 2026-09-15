@@ -97,7 +97,7 @@ const RETRO_PAIRS = 8;
  * never PROD, so the seat stays on there either way. Same switch as
  * `ghost.ts`; the launcher's pack greps the strings this guards.
  */
-const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
+export const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
 
 // The endless seat (G28 as slice 3 amends it). The seat writes a whole
 // request; the code gate accepts or refuses it; a refusal is re-asked once
@@ -107,6 +107,10 @@ const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.
 const ENDLESS_TIMEOUT_MS = 20_000;
 /** How often the shell looks for a daemon while the seat is off. */
 const TAGS_EVERY_MS = 5000;
+/** How long the field's repeated look for a daemon may take. */
+const TAGS_TIMEOUT_MS = 2000;
+/** How long the menu's single look may take before it says the authored user. */
+const SEAT_PROBE_TIMEOUT_MS = 5000;
 /** Asks for one request slot before the shell gives that slot to the corpus. */
 const ENDLESS_TRIES = 2;
 /** Weak pairs the seat is told about. */
@@ -186,6 +190,53 @@ export function bandWord(min: number, max: number): string {
   if (mid <= 2) return 'easy';
   if (mid <= 3.5) return 'warm';
   return 'hot';
+}
+
+// ——— the daemon, read once ————————————————————————————————————————————————
+// One reading of the tag list, shared by the field and the menu, so the name
+// the menu prints is the name the field will sit. Neither of these throws: a
+// daemon that is not there, an answer that is not JSON, a look that timed out
+// and a look that was abandoned are all the same answer — no seat — and the
+// authored pool plays either way (G11).
+
+/**
+ * The models a seat may sit, cloud first, as `listPilotModels` orders them.
+ * Empty when the build cannot reach a daemon at all (Pages), when none is
+ * listening, or when nothing it lists may be seated.
+ */
+export async function probeSeatModels(o: {
+  signal?: AbortSignal;
+  timeoutMs: number;
+}): Promise<string[]> {
+  if (!LOCAL_SEATS) return [];
+  const signals: AbortSignal[] = [AbortSignal.timeout(o.timeoutMs)];
+  if (o.signal) signals.push(o.signal);
+  try {
+    const r = await fetch('/ollama/api/tags', { signal: AbortSignal.any(signals) });
+    if (!r.ok) return [];
+    const body = (await r.json()) as { models?: { name?: string }[] };
+    const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
+    return listPilotModels(names);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The one tag the endless seat will sit, for the menu to name before the run
+ * starts, or `null` for the authored user. The menu is outside the field, so
+ * a tag may be read there (G17); nothing on the field ever names it.
+ *
+ * The seat the route actually takes is the same order this reads: an Ollama
+ * cloud tag first, then a local one. A launcher started with an API key seats
+ * Claude instead, which no tag list can show — the controls row corrects the
+ * name once the first answer lands.
+ */
+export async function probeSeatName(signal?: AbortSignal): Promise<string | null> {
+  const listed = await probeSeatModels(
+    signal ? { signal, timeoutMs: SEAT_PROBE_TIMEOUT_MS } : { timeoutMs: SEAT_PROBE_TIMEOUT_MS },
+  );
+  return listed[0] ?? null;
 }
 
 // ——— prefs ————————————————————————————————————————————————————————————————
@@ -1032,14 +1083,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   };
 
   const probeTags = () => {
-    void fetch('/ollama/api/tags', {
-      signal: AbortSignal.any([tagsCtl.signal, AbortSignal.timeout(2000)]),
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no daemon'))))
-      .then((body: { models?: { name?: string }[] }) => {
-        if (left) return;
-        const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
-        const listed = listPilotModels(names);
+    void probeSeatModels({ signal: tagsCtl.signal, timeoutMs: TAGS_TIMEOUT_MS })
+      .then((listed) => {
+        if (left || tagsCtl.signal.aborted) return;
         if (listed.length === 0) {
           markSeatDown();
           return;
@@ -1276,7 +1322,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     writeWeak(mergeWeak(storedWeak, state.weakBigrams));
     audio?.end();
     const scene = el('section', 'column vibe-standup');
-    scene.append(el('h1', undefined, plan.product));
+    // The product and the stack it was built on, in the menu's own words. The
+    // stack is the one fact the end card was missing: two levels can share a
+    // premise and read as the same job otherwise.
+    scene.append(el('h1', undefined, `${plan.product} · ${STACK_WORDS[plan.stack] ?? plan.stack}`));
     // The level's premise, under its name. An endless level has none.
     if (plan.story !== '') scene.append(el('p', 'muted', plan.story));
     const lastUser = [...state.chat].reverse().find((c) => c.who === 'user');
