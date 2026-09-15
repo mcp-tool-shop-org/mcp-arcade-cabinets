@@ -1,0 +1,440 @@
+[
+  {
+    "id": "cal-jv-d1-001",
+    "stack": "java",
+    "band": 1,
+    "title": "hello world println",
+    "code": "System.out.println(\"Hello, World!\");",
+    "notes": ["Prints the string Hello, World! to standard output."],
+    "topics": ["output", "println"]
+  },
+  {
+    "id": "cal-jv-d1-002",
+    "stack": "java",
+    "band": 1,
+    "title": "integer variable declaration",
+    "code": "int count = 42;\nSystem.out.println(count);",
+    "notes": ["Declares an integer variable and prints its value."],
+    "topics": ["variables", "int", "println"]
+  },
+  {
+    "id": "cal-jv-d1-003",
+    "stack": "java",
+    "band": 1,
+    "title": "string concatenation",
+    "code": "String first = \"Jane\";\nString last = \"Doe\";\nString full = first + \" \" + last;",
+    "notes": ["Concatenates two strings with a space separator into a full name."],
+    "topics": ["string", "concatenation", "variables"]
+  },
+  {
+    "id": "cal-jv-d1-004",
+    "stack": "java",
+    "band": 1,
+    "title": "boolean flag assignment",
+    "code": "boolean isReady = true;\nboolean isComplete = false;\nboolean result = isReady && isComplete;",
+    "notes": ["Declares two boolean flags and combines them with a logical AND."],
+    "topics": ["boolean", "logical-operators", "variables"]
+  },
+  {
+    "id": "cal-jv-d1-005",
+    "stack": "java",
+    "band": 1,
+    "title": "arithmetic expression",
+    "code": "double price = 19.99;\nint quantity = 3;\ndouble total = price * quantity;",
+    "notes": ["Multiplies a price by a quantity to compute a total cost."],
+    "topics": ["arithmetic", "double", "variables"]
+  },
+  {
+    "id": "java-enhanced-for",
+    "stack": "java",
+    "band": 1,
+    "title": "Enhanced for loop",
+    "code": "var colors = List.of(\"red\", \"green\", \"blue\");\nfor (var color : colors) {\n    System.out.println(color.toUpperCase());\n}",
+    "notes": [
+      "The enhanced for loop iterates without an index.",
+      "List.of() creates an immutable list in modern Java."
+    ],
+    "topics": ["for-each", "loop", "collections"]
+  },
+  {
+    "id": "cal-jv-d2-001",
+    "stack": "java",
+    "band": 2,
+    "title": "if else temperature check",
+    "code": "int temp = 35;\nString label;\nif (temp > 30) {\n    label = \"hot\";\n} else {\n    label = \"cool\";\n}\nSystem.out.println(label);",
+    "notes": ["Uses an if-else block to classify a temperature value as hot or cool."],
+    "topics": ["if-else", "conditionals", "variables"]
+  },
+  {
+    "id": "cal-jv-d2-002",
+    "stack": "java",
+    "band": 2,
+    "title": "for loop sum",
+    "code": "int sum = 0;\nfor (int i = 1; i <= 10; i++) {\n    sum += i;\n}\nSystem.out.println(\"Sum: \" + sum);",
+    "notes": ["Sums the integers from 1 to 10 using a for loop and prints the result."],
+    "topics": ["for-loop", "accumulator", "arithmetic"]
+  },
+  {
+    "id": "cal-jv-d2-003",
+    "stack": "java",
+    "band": 2,
+    "title": "while loop countdown",
+    "code": "int n = 5;\nwhile (n > 0) {\n    System.out.println(n);\n    n--;\n}\nSystem.out.println(\"Go!\");",
+    "notes": ["Counts down from 5 to 1 using a while loop then prints Go."],
+    "topics": ["while-loop", "decrement", "println"]
+  },
+  {
+    "id": "cal-jv-d2-004",
+    "stack": "java",
+    "band": 2,
+    "title": "array iteration",
+    "code": "String[] colors = {\"red\", \"green\", \"blue\"};\nfor (String color : colors) {\n    System.out.println(color);\n}\nSystem.out.println(\"Done\");",
+    "notes": ["Iterates over a string array with an enhanced for loop and prints each element."],
+    "topics": ["arrays", "enhanced-for", "iteration"]
+  },
+  {
+    "id": "cal-jv-d2-005",
+    "stack": "java",
+    "band": 2,
+    "title": "simple method definition",
+    "code": "public static int square(int x) {\n    return x * x;\n}\n\npublic static void main(String[] args) {\n    int result = square(7);\n    System.out.println(result);\n}",
+    "notes": ["Defines a static method that squares an integer and calls it from main."],
+    "topics": ["methods", "return-value", "static"]
+  },
+  {
+    "id": "java-stringbuilder",
+    "stack": "java",
+    "band": 2,
+    "title": "StringBuilder loop",
+    "code": "var sb = new StringBuilder();\nfor (int i = 1; i <= 5; i++)\n    sb.append(i).append(i < 5 ? \", \" : \"\\n\");\nSystem.out.print(sb);",
+    "notes": [
+      "StringBuilder avoids costly string concatenation in loops.",
+      "append() returns this, enabling method chaining."
+    ],
+    "topics": ["StringBuilder", "loops", "string-building"]
+  },
+  {
+    "id": "cal-jv-d3-001",
+    "stack": "java",
+    "band": 3,
+    "title": "list filtering with loop",
+    "code": "List<String> names = List.of(\"Alice\", \"Bob\", \"Charlie\", \"Dave\");\nList<String> short_names = new ArrayList<>();\nfor (String name : names) {\n    if (name.length() <= 4) {\n        short_names.add(name);\n    }\n}\nfor (String name : short_names) {\n    System.out.println(name);\n}",
+    "notes": ["Filters a list of names to keep only those with four or fewer characters."],
+    "topics": ["list", "filtering", "enhanced-for", "conditionals"]
+  },
+  {
+    "id": "cal-jv-d3-002",
+    "stack": "java",
+    "band": 3,
+    "title": "switch statement seasons",
+    "code": "public static String getSeason(int month) {\n    return switch (month) {\n        case 12, 1, 2 -> \"winter\";\n        case 3, 4, 5 -> \"spring\";\n        case 6, 7, 8 -> \"summer\";\n        case 9, 10, 11 -> \"autumn\";\n        default -> \"unknown\";\n    };\n}",
+    "notes": ["Uses a switch expression with arrow syntax to map a month number to a season name."],
+    "topics": ["switch-expression", "pattern-matching", "methods"]
+  },
+  {
+    "id": "cal-jv-d3-003",
+    "stack": "java",
+    "band": 3,
+    "title": "map iteration with entry set",
+    "code": "Map<String, Integer> scores = new HashMap<>();\nscores.put(\"Alice\", 95);\nscores.put(\"Bob\", 87);\nscores.put(\"Charlie\", 92);\nfor (Map.Entry<String, Integer> entry : scores.entrySet()) {\n    String msg = entry.getKey() + \": \" + entry.getValue();\n    System.out.println(msg);\n}",
+    "notes": ["Populates a HashMap and iterates its entry set to print each key-value pair."],
+    "topics": ["map", "hashmap", "entry-set", "generics"]
+  },
+  {
+    "id": "cal-jv-d3-004",
+    "stack": "java",
+    "band": 3,
+    "title": "try catch number parsing",
+    "code": "public static int parseOrDefault(String input, int fallback) {\n    try {\n        return Integer.parseInt(input);\n    } catch (NumberFormatException e) {\n        System.err.println(\"Invalid: \" + input);\n        return fallback;\n    }\n}",
+    "notes": ["Attempts to parse a string as an integer and returns a fallback value on failure."],
+    "topics": ["try-catch", "exception-handling", "parsing"]
+  },
+  {
+    "id": "cal-jv-d3-005",
+    "stack": "java",
+    "band": 3,
+    "title": "record with custom method",
+    "code": "public record Rectangle(double width, double height) {\n    public double area() {\n        return width * height;\n    }\n\n    public double perimeter() {\n        return 2 * (width + height);\n    }\n\n    public String describe() {\n        return String.format(\"%.1f x %.1f\", width, height);\n    }\n}",
+    "notes": ["Defines a record with area, perimeter, and describe methods for a rectangle."],
+    "topics": ["records", "methods", "string-format"]
+  },
+  {
+    "id": "java-optional",
+    "stack": "java",
+    "band": 3,
+    "title": "Optional usage",
+    "code": "Optional<String> name = Optional.ofNullable(getInput());\nString display = name\n    .map(String::toUpperCase)\n    .orElse(\"Anonymous\");",
+    "notes": [
+      "Optional avoids null checks with a fluent API.",
+      ":: is a method reference, a shorthand for lambdas."
+    ],
+    "topics": ["Optional", "null-safety", "functional"]
+  },
+  {
+    "id": "java-try-resources",
+    "stack": "java",
+    "band": 3,
+    "title": "Try-with-resources",
+    "code": "try (var reader = new BufferedReader(new FileReader(path))) {\n    String line;\n    while ((line = reader.readLine()) != null)\n        System.out.println(line);\n}",
+    "notes": [
+      "Resources in the try header are auto-closed on exit.",
+      "Practice nested constructors, parentheses, and != null checks."
+    ],
+    "topics": ["try-with-resources", "io", "auto-close"]
+  },
+  {
+    "id": "cal-jv-d4-001",
+    "stack": "java",
+    "band": 4,
+    "title": "enum with abstract method",
+    "code": "public enum Operation {\n    ADD {\n        public double apply(double a, double b) {\n            return a + b;\n        }\n    },\n    SUBTRACT {\n        public double apply(double a, double b) {\n            return a - b;\n        }\n    },\n    MULTIPLY {\n        public double apply(double a, double b) {\n            return a * b;\n        }\n    };\n\n    public abstract double apply(double a, double b);\n}",
+    "notes": [
+      "Defines an enum where each constant implements an abstract apply method for arithmetic."
+    ],
+    "topics": ["enum", "abstract-method", "polymorphism"]
+  },
+  {
+    "id": "cal-jv-d4-002",
+    "stack": "java",
+    "band": 4,
+    "title": "generic pair class",
+    "code": "public class Pair<A, B> {\n    private final A first;\n    private final B second;\n\n    public Pair(A first, B second) {\n        this.first = first;\n        this.second = second;\n    }\n\n    public A getFirst() {\n        return first;\n    }\n\n    public B getSecond() {\n        return second;\n    }\n\n    @Override\n    public String toString() {\n        return \"(\" + first + \", \" + second + \")\";\n    }\n}",
+    "notes": [
+      "Implements a generic Pair class with type parameters for two values and a toString override."
+    ],
+    "topics": ["generics", "class", "encapsulation", "toString"]
+  },
+  {
+    "id": "cal-jv-d4-003",
+    "stack": "java",
+    "band": 4,
+    "title": "iterator implementation",
+    "code": "public class Range implements Iterable<Integer> {\n    private final int start;\n    private final int end;\n\n    public Range(int start, int end) {\n        this.start = start;\n        this.end = end;\n    }\n\n    @Override\n    public Iterator<Integer> iterator() {\n        return new Iterator<>() {\n            private int current = start;\n\n            public boolean hasNext() {\n                return current < end;\n            }\n\n            public Integer next() {\n                return current++;\n            }\n        };\n    }\n}",
+    "notes": ["Implements Iterable with an anonymous Iterator to yield integers in a range."],
+    "topics": ["iterator", "iterable", "anonymous-class", "generics"]
+  },
+  {
+    "id": "cal-jv-d4-004",
+    "stack": "java",
+    "band": 4,
+    "title": "comparator chain sorting",
+    "code": "public static void sortEmployees(List<Employee> employees) {\n    employees.sort(\n        Comparator.comparing(Employee::getDepartment)\n            .thenComparing(Employee::getLastName)\n            .thenComparing(Employee::getFirstName)\n    );\n    for (Employee e : employees) {\n        System.out.printf(\"%s: %s %s%n\",\n            e.getDepartment(),\n            e.getFirstName(),\n            e.getLastName());\n    }\n}",
+    "notes": [
+      "Sorts a list of employees by department, then last name, then first name using chained comparators."
+    ],
+    "topics": ["comparator", "method-reference", "sorting", "printf"]
+  },
+  {
+    "id": "cal-jv-d4-005",
+    "stack": "java",
+    "band": 4,
+    "title": "interface with sealed hierarchy",
+    "code": "public sealed interface Shape\n        permits Circle, Square, Triangle {\n    double area();\n}\n\npublic record Circle(double radius) implements Shape {\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\npublic record Square(double side) implements Shape {\n    public double area() {\n        return side * side;\n    }\n}\n\npublic record Triangle(double base, double height) implements Shape {\n    public double area() {\n        return 0.5 * base * height;\n    }\n}",
+    "notes": ["Defines a sealed Shape interface with three permitted record implementations."],
+    "topics": ["sealed-interface", "records", "polymorphism", "permits"]
+  },
+  {
+    "id": "java-interface-default",
+    "stack": "java",
+    "band": 4,
+    "title": "Interface default method",
+    "code": "public interface Greeter {\n    String greet(String name);\n    default String shout(String name) {\n        return greet(name).toUpperCase();\n    }\n}",
+    "notes": [
+      "default methods let interfaces evolve without breaking implementors.",
+      "Practice braces, parentheses, and method chaining."
+    ],
+    "topics": ["interface", "default-method", "abstraction"]
+  },
+  {
+    "id": "java-stream",
+    "stack": "java",
+    "band": 4,
+    "title": "Stream pipeline",
+    "code": "var result = list.stream()\n    .filter(x -> x % 2 == 0)\n    .map(x -> x * x)\n    .collect(java.util.stream.Collectors.toList());",
+    "notes": ["Pipeline uses lambdas and method chaining.", "Mind arrows, dots, and semicolons."],
+    "topics": ["streams", "lambda", "collect"]
+  },
+  {
+    "id": "cal-jv-d5-001",
+    "stack": "java",
+    "band": 5,
+    "title": "stream pipeline with collectors",
+    "code": "public static Map<String, List<String>> groupByLength(List<String> words) {\n    return words.stream()\n        .filter(w -> w != null && !w.isBlank())\n        .map(String::trim)\n        .collect(Collectors.groupingBy(\n            w -> {\n                if (w.length() <= 3) {\n                    return \"short\";\n                } else if (w.length() <= 6) {\n                    return \"medium\";\n                } else {\n                    return \"long\";\n                }\n            },\n            Collectors.toList()\n        ));\n}",
+    "notes": [
+      "Groups a list of words into short, medium, and long categories using a stream pipeline with groupingBy collector."
+    ],
+    "topics": ["streams", "collectors", "groupingBy", "lambda", "generics"]
+  },
+  {
+    "id": "cal-jv-d5-002",
+    "stack": "java",
+    "band": 5,
+    "title": "generic bounded type utility",
+    "code": "public class MathUtils {\n    public static <T extends Comparable<T>> T clamp(T value, T min, T max) {\n        if (value.compareTo(min) < 0) {\n            return min;\n        }\n        if (value.compareTo(max) > 0) {\n            return max;\n        }\n        return value;\n    }\n\n    public static <T extends Number & Comparable<T>> List<T> filterRange(\n            List<T> items, T lower, T upper) {\n        List<T> result = new ArrayList<>();\n        for (T item : items) {\n            if (item.compareTo(lower) >= 0 && item.compareTo(upper) <= 0) {\n                result.add(item);\n            }\n        }\n        return Collections.unmodifiableList(result);\n    }\n}",
+    "notes": [
+      "Provides generic clamp and filterRange utilities using bounded type parameters with Comparable."
+    ],
+    "topics": ["generics", "bounded-types", "comparable", "utility-class"]
+  },
+  {
+    "id": "cal-jv-d5-003",
+    "stack": "java",
+    "band": 5,
+    "title": "try with resources file processing",
+    "code": "public static Map<String, Long> wordFrequency(Path filePath) throws IOException {\n    Map<String, Long> freq;\n    try (BufferedReader reader = Files.newBufferedReader(filePath)) {\n        freq = reader.lines()\n            .flatMap(line -> Arrays.stream(line.split(\"\\\\s+\")))\n            .map(String::toLowerCase)\n            .filter(word -> !word.isBlank())\n            .collect(Collectors.groupingBy(\n                Function.identity(),\n                Collectors.counting()\n            ));\n    }\n    freq.entrySet().stream()\n        .sorted(Map.Entry.<String, Long>comparingByValue().reversed())\n        .limit(10)\n        .forEach(e -> System.out.printf(\"%s: %d%n\", e.getKey(), e.getValue()));\n    return freq;\n}",
+    "notes": [
+      "Reads a file, computes word frequencies with streams, and prints the top 10 most common words."
+    ],
+    "topics": ["try-with-resources", "streams", "collectors", "file-io", "generics"]
+  },
+  {
+    "id": "cal-jv-d5-004",
+    "stack": "java",
+    "band": 5,
+    "title": "observer pattern with functional interface",
+    "code": "@FunctionalInterface\npublic interface EventListener<T> {\n    void onEvent(T event);\n}\n\npublic class EventBus<T> {\n    private final List<EventListener<T>> listeners = new ArrayList<>();\n\n    public void subscribe(EventListener<T> listener) {\n        Objects.requireNonNull(listener);\n        listeners.add(listener);\n    }\n\n    public void unsubscribe(EventListener<T> listener) {\n        listeners.remove(listener);\n    }\n\n    public void publish(T event) {\n        for (EventListener<T> listener : listeners) {\n            try {\n                listener.onEvent(event);\n            } catch (Exception e) {\n                System.err.println(\"Listener failed: \" + e.getMessage());\n            }\n        }\n    }\n}",
+    "notes": [
+      "Implements a generic event bus with subscribe, unsubscribe, and publish using a functional interface."
+    ],
+    "topics": ["functional-interface", "generics", "observer-pattern", "exception-handling"]
+  },
+  {
+    "id": "cal-jv-d5-005",
+    "stack": "java",
+    "band": 5,
+    "title": "custom exception hierarchy",
+    "code": "public class AppException extends RuntimeException {\n    private final String errorCode;\n\n    public AppException(String errorCode, String message) {\n        super(message);\n        this.errorCode = errorCode;\n    }\n\n    public AppException(String errorCode, String message, Throwable cause) {\n        super(message, cause);\n        this.errorCode = errorCode;\n    }\n\n    public String getErrorCode() {\n        return errorCode;\n    }\n\n    public static class NotFoundException extends AppException {\n        public NotFoundException(String resource, String id) {\n            super(\"NOT_FOUND\", resource + \" not found: \" + id);\n        }\n    }\n\n    public static class ValidationException extends AppException {\n        public ValidationException(String field, String reason) {\n            super(\"VALIDATION\", field + \": \" + reason);\n        }\n    }\n}",
+    "notes": [
+      "Defines a custom exception hierarchy with error codes and nested subclasses for not-found and validation errors."
+    ],
+    "topics": ["exceptions", "inheritance", "nested-class", "constructors"]
+  },
+  {
+    "id": "java-record",
+    "stack": "java",
+    "band": 5,
+    "title": "Record + method",
+    "code": "public record Point(int x, int y) {\n    public String fmt() {\n        return String.format(\"(%d, %d)\", x, y);\n    }\n}",
+    "notes": [
+      "Records are concise data carriers.",
+      "Practice parentheses, commas, braces, and format strings."
+    ],
+    "topics": ["records", "methods", "string-format"]
+  },
+  {
+    "id": "cal-jv-d6-001",
+    "stack": "java",
+    "band": 6,
+    "title": "builder pattern with validation",
+    "code": "public class HttpRequest {\n    private final String method;\n    private final String url;\n    private final Map<String, String> headers;\n    private final String body;\n\n    private HttpRequest(Builder builder) {\n        this.method = builder.method;\n        this.url = builder.url;\n        this.headers = Collections.unmodifiableMap(builder.headers);\n        this.body = builder.body;\n    }\n\n    public static class Builder {\n        private String method = \"GET\";\n        private String url;\n        private final Map<String, String> headers = new LinkedHashMap<>();\n        private String body;\n\n        public Builder url(String url) {\n            this.url = Objects.requireNonNull(url, \"URL must not be null\");\n            return this;\n        }\n\n        public Builder method(String method) {\n            this.method = Objects.requireNonNull(method);\n            return this;\n        }\n\n        public Builder header(String key, String value) {\n            headers.put(\n                Objects.requireNonNull(key),\n                Objects.requireNonNull(value)\n            );\n            return this;\n        }\n\n        public Builder body(String body) {\n            this.body = body;\n            return this;\n        }\n\n        public HttpRequest build() {\n            if (url == null || url.isBlank()) {\n                throw new IllegalStateException(\"URL is required\");\n            }\n            return new HttpRequest(this);\n        }\n    }\n}",
+    "notes": [
+      "Implements the builder pattern for an HttpRequest with fluent setters, validation, and an unmodifiable header map."
+    ],
+    "topics": ["builder-pattern", "nested-class", "validation", "immutability"]
+  },
+  {
+    "id": "cal-jv-d6-002",
+    "stack": "java",
+    "band": 6,
+    "title": "concurrent cache with read write lock",
+    "code": "public class SimpleCache<K, V> {\n    private final Map<K, V> store = new LinkedHashMap<>();\n    private final ReadWriteLock lock = new ReentrantReadWriteLock();\n    private final int maxSize;\n\n    public SimpleCache(int maxSize) {\n        this.maxSize = maxSize;\n    }\n\n    public V get(K key) {\n        lock.readLock().lock();\n        try {\n            return store.get(key);\n        } finally {\n            lock.readLock().unlock();\n        }\n    }\n\n    public void put(K key, V value) {\n        lock.writeLock().lock();\n        try {\n            if (store.size() >= maxSize) {\n                Iterator<K> it = store.keySet().iterator();\n                if (it.hasNext()) {\n                    it.next();\n                    it.remove();\n                }\n            }\n            store.put(key, value);\n        } finally {\n            lock.writeLock().unlock();\n        }\n    }\n\n    public int size() {\n        lock.readLock().lock();\n        try {\n            return store.size();\n        } finally {\n            lock.readLock().unlock();\n        }\n    }\n}",
+    "notes": [
+      "Implements a thread-safe LRU cache using ReadWriteLock with eviction when capacity is exceeded."
+    ],
+    "topics": ["concurrency", "read-write-lock", "generics", "cache", "eviction"]
+  },
+  {
+    "id": "cal-jv-d6-003",
+    "stack": "java",
+    "band": 6,
+    "title": "stream reduce with custom collector",
+    "code": "public class Statistics {\n    private final long count;\n    private final double sum;\n    private final double min;\n    private final double max;\n\n    private Statistics(long count, double sum, double min, double max) {\n        this.count = count;\n        this.sum = sum;\n        this.min = min;\n        this.max = max;\n    }\n\n    public double average() {\n        return count > 0 ? sum / count : 0.0;\n    }\n\n    public static Collector<Double, ?, Statistics> collector() {\n        return Collector.of(\n            () -> new double[]{0, 0, Double.MAX_VALUE, Double.MIN_VALUE},\n            (acc, val) -> {\n                acc[0]++;\n                acc[1] += val;\n                acc[2] = Math.min(acc[2], val);\n                acc[3] = Math.max(acc[3], val);\n            },\n            (a, b) -> {\n                a[0] += b[0];\n                a[1] += b[1];\n                a[2] = Math.min(a[2], b[2]);\n                a[3] = Math.max(a[3], b[3]);\n                return a;\n            },\n            acc -> new Statistics((long) acc[0], acc[1], acc[2], acc[3])\n        );\n    }\n}",
+    "notes": [
+      "Defines a Statistics class with a custom Collector that computes count, sum, min, and max in a single stream pass."
+    ],
+    "topics": ["collector", "streams", "reduce", "lambda", "statistics"]
+  },
+  {
+    "id": "cal-jv-d6-004",
+    "stack": "java",
+    "band": 6,
+    "title": "decorator pattern with generics",
+    "code": "public interface DataSource {\n    String read();\n    void write(String data);\n}\n\npublic class FileDataSource implements DataSource {\n    private final Path path;\n\n    public FileDataSource(Path path) {\n        this.path = path;\n    }\n\n    public String read() {\n        try {\n            return Files.readString(path);\n        } catch (IOException e) {\n            throw new UncheckedIOException(e);\n        }\n    }\n\n    public void write(String data) {\n        try {\n            Files.writeString(path, data);\n        } catch (IOException e) {\n            throw new UncheckedIOException(e);\n        }\n    }\n}\n\npublic class LoggingDecorator implements DataSource {\n    private final DataSource wrapped;\n\n    public LoggingDecorator(DataSource wrapped) {\n        this.wrapped = wrapped;\n    }\n\n    public String read() {\n        System.out.println(\"[LOG] Reading data\");\n        String result = wrapped.read();\n        System.out.printf(\"[LOG] Read %d chars%n\", result.length());\n        return result;\n    }\n\n    public void write(String data) {\n        System.out.printf(\"[LOG] Writing %d chars%n\", data.length());\n        wrapped.write(data);\n    }\n}",
+    "notes": [
+      "Implements the decorator pattern with a DataSource interface, a file-based implementation, and a logging wrapper."
+    ],
+    "topics": ["decorator-pattern", "interface", "delegation", "file-io"]
+  },
+  {
+    "id": "cal-jv-d6-005",
+    "stack": "java",
+    "band": 6,
+    "title": "annotation processing with reflection",
+    "code": "@Retention(RetentionPolicy.RUNTIME)\n@Target(ElementType.FIELD)\npublic @interface JsonField {\n    String value() default \"\";\n}\n\npublic class JsonSerializer {\n    public static String serialize(Object obj) {\n        StringBuilder sb = new StringBuilder(\"{\");\n        Field[] fields = obj.getClass().getDeclaredFields();\n        boolean first = true;\n        for (Field field : fields) {\n            JsonField ann = field.getAnnotation(JsonField.class);\n            if (ann != null) {\n                field.setAccessible(true);\n                if (!first) {\n                    sb.append(\", \");\n                }\n                String key = ann.value().isEmpty()\n                    ? field.getName()\n                    : ann.value();\n                try {\n                    Object val = field.get(obj);\n                    sb.append(String.format(\"\\\"%s\\\": \\\"%s\\\"\", key, val));\n                } catch (IllegalAccessException e) {\n                    throw new RuntimeException(e);\n                }\n                first = false;\n            }\n        }\n        sb.append(\"}\");\n        return sb.toString();\n    }\n}",
+    "notes": [
+      "Defines a custom JsonField annotation and a serializer that uses reflection to build a JSON string from annotated fields."
+    ],
+    "topics": ["annotations", "reflection", "serialization", "custom-annotation"]
+  },
+  {
+    "id": "cal-jv-d7-001",
+    "stack": "java",
+    "band": 7,
+    "title": "completable future pipeline with error handling",
+    "code": "public class AsyncPipeline {\n    private final ExecutorService executor;\n    private final HttpClient client;\n\n    public AsyncPipeline(ExecutorService executor, HttpClient client) {\n        this.executor = executor;\n        this.client = client;\n    }\n\n    public CompletableFuture<Map<String, Object>> fetchAndProcess(List<String> urls) {\n        List<CompletableFuture<String>> futures = urls.stream()\n            .map(url -> CompletableFuture.supplyAsync(() -> {\n                try {\n                    HttpRequest req = HttpRequest.newBuilder()\n                        .uri(URI.create(url))\n                        .timeout(Duration.ofSeconds(10))\n                        .GET()\n                        .build();\n                    HttpResponse<String> resp = client.send(\n                        req, HttpResponse.BodyHandlers.ofString()\n                    );\n                    if (resp.statusCode() != 200) {\n                        throw new RuntimeException(\n                            \"HTTP \" + resp.statusCode() + \" for \" + url\n                        );\n                    }\n                    return resp.body();\n                } catch (IOException | InterruptedException e) {\n                    throw new CompletionException(e);\n                }\n            }, executor))\n            .toList();\n\n        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))\n            .thenApply(v -> {\n                Map<String, Object> results = new LinkedHashMap<>();\n                for (int i = 0; i < urls.size(); i++) {\n                    try {\n                        results.put(urls.get(i), futures.get(i).join());\n                    } catch (CompletionException e) {\n                        results.put(urls.get(i), e.getCause().getMessage());\n                    }\n                }\n                return Collections.unmodifiableMap(results);\n            });\n    }\n}",
+    "notes": [
+      "Fetches multiple URLs concurrently using CompletableFuture with an HttpClient, then aggregates results with error handling."
+    ],
+    "topics": ["completable-future", "async", "http-client", "streams", "error-handling"]
+  },
+  {
+    "id": "cal-jv-d7-002",
+    "stack": "java",
+    "band": 7,
+    "title": "generic repository with specification pattern",
+    "code": "public interface Specification<T> {\n    boolean isSatisfiedBy(T item);\n\n    default Specification<T> and(Specification<T> other) {\n        return item -> this.isSatisfiedBy(item) && other.isSatisfiedBy(item);\n    }\n\n    default Specification<T> or(Specification<T> other) {\n        return item -> this.isSatisfiedBy(item) || other.isSatisfiedBy(item);\n    }\n\n    default Specification<T> not() {\n        return item -> !this.isSatisfiedBy(item);\n    }\n}\n\npublic class InMemoryRepository<T> {\n    private final List<T> items = new ArrayList<>();\n\n    public void add(T item) {\n        Objects.requireNonNull(item);\n        items.add(item);\n    }\n\n    public List<T> findAll(Specification<T> spec) {\n        return items.stream()\n            .filter(spec::isSatisfiedBy)\n            .collect(Collectors.toUnmodifiableList());\n    }\n\n    public Optional<T> findFirst(Specification<T> spec) {\n        return items.stream()\n            .filter(spec::isSatisfiedBy)\n            .findFirst();\n    }\n\n    public long count(Specification<T> spec) {\n        return items.stream()\n            .filter(spec::isSatisfiedBy)\n            .count();\n    }\n\n    public <R extends Comparable<R>> List<T> findSorted(\n            Specification<T> spec, Function<T, R> keyExtractor) {\n        return items.stream()\n            .filter(spec::isSatisfiedBy)\n            .sorted(Comparator.comparing(keyExtractor))\n            .collect(Collectors.toUnmodifiableList());\n    }\n}",
+    "notes": [
+      "Implements the specification pattern with composable predicates and a generic in-memory repository with filtered queries."
+    ],
+    "topics": ["specification-pattern", "generics", "repository", "streams", "default-methods"]
+  },
+  {
+    "id": "cal-jv-d7-003",
+    "stack": "java",
+    "band": 7,
+    "title": "visitor pattern with sealed interfaces",
+    "code": "public sealed interface Expr {\n    record Num(double value) implements Expr {}\n    record Add(Expr left, Expr right) implements Expr {}\n    record Mul(Expr left, Expr right) implements Expr {}\n    record Neg(Expr operand) implements Expr {}\n    record Let(String name, Expr value, Expr body) implements Expr {}\n}\n\npublic class ExprEvaluator {\n    public static double eval(Expr expr, Map<String, Double> env) {\n        return switch (expr) {\n            case Expr.Num n -> n.value();\n            case Expr.Add a -> eval(a.left(), env) + eval(a.right(), env);\n            case Expr.Mul m -> eval(m.left(), env) * eval(m.right(), env);\n            case Expr.Neg n -> -eval(n.operand(), env);\n            case Expr.Let l -> {\n                double val = eval(l.value(), env);\n                Map<String, Double> newEnv = new HashMap<>(env);\n                newEnv.put(l.name(), val);\n                yield eval(l.body(), newEnv);\n            }\n        };\n    }\n\n    public static String prettyPrint(Expr expr) {\n        return switch (expr) {\n            case Expr.Num n -> String.valueOf(n.value());\n            case Expr.Add a -> String.format(\n                \"(%s + %s)\", prettyPrint(a.left()), prettyPrint(a.right())\n            );\n            case Expr.Mul m -> String.format(\n                \"(%s * %s)\", prettyPrint(m.left()), prettyPrint(m.right())\n            );\n            case Expr.Neg n -> String.format(\n                \"(-%s)\", prettyPrint(n.operand())\n            );\n            case Expr.Let l -> String.format(\n                \"let %s = %s in %s\",\n                l.name(), prettyPrint(l.value()), prettyPrint(l.body())\n            );\n        };\n    }\n}",
+    "notes": [
+      "Models an expression tree with sealed records and implements eval and prettyPrint using exhaustive pattern matching switch expressions."
+    ],
+    "topics": [
+      "sealed-interface",
+      "pattern-matching",
+      "visitor-pattern",
+      "recursion",
+      "switch-expression"
+    ]
+  },
+  {
+    "id": "cal-jv-d7-004",
+    "stack": "java",
+    "band": 7,
+    "title": "generic type-safe event system with wildcards",
+    "code": "public class TypedEventBus {\n    private final Map<Class<?>, List<Consumer<?>>> handlers =\n        new ConcurrentHashMap<>();\n\n    public <T> void subscribe(Class<T> eventType, Consumer<T> handler) {\n        handlers.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>())\n            .add(handler);\n    }\n\n    @SuppressWarnings(\"unchecked\")\n    public <T> void publish(T event) {\n        Objects.requireNonNull(event);\n        Class<?> type = event.getClass();\n        while (type != null) {\n            List<Consumer<?>> consumers = handlers.get(type);\n            if (consumers != null) {\n                for (Consumer<?> consumer : consumers) {\n                    try {\n                        ((Consumer<T>) consumer).accept(event);\n                    } catch (ClassCastException e) {\n                        System.err.printf(\n                            \"Handler cast failed for %s: %s%n\",\n                            type.getSimpleName(), e.getMessage()\n                        );\n                    }\n                }\n            }\n            for (Class<?> iface : type.getInterfaces()) {\n                List<Consumer<?>> ifaceHandlers = handlers.get(iface);\n                if (ifaceHandlers != null) {\n                    for (Consumer<?> consumer : ifaceHandlers) {\n                        try {\n                            ((Consumer<T>) consumer).accept(event);\n                        } catch (ClassCastException e) {\n                            System.err.printf(\n                                \"Interface handler failed for %s: %s%n\",\n                                iface.getSimpleName(), e.getMessage()\n                            );\n                        }\n                    }\n                }\n            }\n            type = type.getSuperclass();\n        }\n    }\n\n    public void clear() {\n        handlers.clear();\n    }\n}",
+    "notes": [
+      "Implements a type-safe event bus that walks the class hierarchy and interfaces to dispatch events to matching consumer handlers."
+    ],
+    "topics": ["generics", "wildcards", "concurrency", "type-erasure", "reflection"]
+  },
+  {
+    "id": "cal-jv-d7-005",
+    "stack": "java",
+    "band": 7,
+    "title": "stream-based query builder with method chaining",
+    "code": "public class QueryBuilder<T> {\n    private final List<T> source;\n    private final List<Predicate<T>> filters = new ArrayList<>();\n    private Comparator<T> ordering;\n    private int offset = 0;\n    private int limit = Integer.MAX_VALUE;\n\n    private QueryBuilder(List<T> source) {\n        this.source = Objects.requireNonNull(source);\n    }\n\n    public static <T> QueryBuilder<T> from(List<T> source) {\n        return new QueryBuilder<>(source);\n    }\n\n    public QueryBuilder<T> where(Predicate<T> predicate) {\n        filters.add(Objects.requireNonNull(predicate));\n        return this;\n    }\n\n    public <U extends Comparable<U>> QueryBuilder<T> orderBy(\n            Function<T, U> keyExtractor) {\n        this.ordering = Comparator.comparing(keyExtractor);\n        return this;\n    }\n\n    public QueryBuilder<T> skip(int count) {\n        this.offset = Math.max(0, count);\n        return this;\n    }\n\n    public QueryBuilder<T> take(int count) {\n        this.limit = Math.max(0, count);\n        return this;\n    }\n\n    public List<T> execute() {\n        Stream<T> pipeline = source.stream();\n        for (Predicate<T> filter : filters) {\n            pipeline = pipeline.filter(filter);\n        }\n        if (ordering != null) {\n            pipeline = pipeline.sorted(ordering);\n        }\n        return pipeline\n            .skip(offset)\n            .limit(limit)\n            .collect(Collectors.toUnmodifiableList());\n    }\n\n    public <R> List<R> select(Function<T, R> mapper) {\n        Stream<T> pipeline = source.stream();\n        for (Predicate<T> filter : filters) {\n            pipeline = pipeline.filter(filter);\n        }\n        if (ordering != null) {\n            pipeline = pipeline.sorted(ordering);\n        }\n        return pipeline\n            .skip(offset)\n            .limit(limit)\n            .map(mapper)\n            .collect(Collectors.toUnmodifiableList());\n    }\n}",
+    "notes": [
+      "Implements a LINQ-style query builder with composable where, orderBy, skip, take, and select operations over a generic list."
+    ],
+    "topics": ["builder-pattern", "generics", "streams", "method-chaining", "predicate"]
+  }
+]

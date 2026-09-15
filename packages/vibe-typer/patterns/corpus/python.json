@@ -1,0 +1,464 @@
+[
+  {
+    "id": "cal-py-d1-001",
+    "stack": "python",
+    "band": 1,
+    "title": "print hello world",
+    "code": "print(\"Hello, World!\")",
+    "notes": ["Prints the string Hello, World! to standard output."],
+    "topics": ["print", "strings"]
+  },
+  {
+    "id": "cal-py-d1-002",
+    "stack": "python",
+    "band": 1,
+    "title": "variable assignment and addition",
+    "code": "x = 10\ny = 20\ntotal = x + y\nprint(total)",
+    "notes": ["Assigns two integers, computes their sum, and prints the result."],
+    "topics": ["variables", "arithmetic", "print"]
+  },
+  {
+    "id": "cal-py-d1-003",
+    "stack": "python",
+    "band": 1,
+    "title": "basic string concatenation",
+    "code": "first = \"Alice\"\nlast = \"Smith\"\nfull = first + \" \" + last\nprint(full)",
+    "notes": ["Concatenates a first and last name with a space and prints the full name."],
+    "topics": ["strings", "concatenation", "variables"]
+  },
+  {
+    "id": "cal-py-d1-004",
+    "stack": "python",
+    "band": 1,
+    "title": "integer division and modulo",
+    "code": "a = 17\nb = 5\nq = a // b\nr = a % b\nprint(q, r)",
+    "notes": ["Computes the integer quotient and remainder of 17 divided by 5."],
+    "topics": ["arithmetic", "integer division", "modulo"]
+  },
+  {
+    "id": "cal-py-d1-005",
+    "stack": "python",
+    "band": 1,
+    "title": "boolean comparison",
+    "code": "age = 25\nis_adult = age >= 18\nprint(is_adult)",
+    "notes": ["Checks whether an age value is at least 18 and prints the boolean result."],
+    "topics": ["booleans", "comparison", "variables"]
+  },
+  {
+    "id": "py-for-loop",
+    "stack": "python",
+    "band": 1,
+    "title": "For loop with range",
+    "code": "for i in range(5):\n    print(f\"Step {i + 1} of 5\")",
+    "notes": ["range(n) produces 0 through n-1.", "Practice colons, indentation, and parentheses."],
+    "topics": ["for-loop", "range", "print"]
+  },
+  {
+    "id": "py-fstring",
+    "stack": "python",
+    "band": 1,
+    "title": "F-string formatting",
+    "code": "name = \"Alice\"\nscore = 95.678\nprint(f\"{name} scored {score:.1f}%\")",
+    "notes": [
+      "F-strings embed expressions inside curly braces.",
+      ":.1f formats a float to one decimal place."
+    ],
+    "topics": ["f-string", "formatting", "variables"]
+  },
+  {
+    "id": "cal-py-d2-001",
+    "stack": "python",
+    "band": 2,
+    "title": "simple for loop with accumulator",
+    "code": "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\ntotal = 0\nfor n in numbers:\n    total += n\naverage = total / len(numbers)\nprint(f\"Sum: {total}\")\nprint(f\"Average: {average}\")",
+    "notes": ["Iterates over a list of integers to compute and print the sum and average."],
+    "topics": ["for loop", "lists", "f-strings", "arithmetic"]
+  },
+  {
+    "id": "cal-py-d2-002",
+    "stack": "python",
+    "band": 2,
+    "title": "function returning a greeting",
+    "code": "def greet(name, greeting=\"Hello\"):\n    return f\"{greeting}, {name}!\"\n\nmessage = greet(\"Alice\")\nprint(message)\nmessage = greet(\"Bob\", \"Good morning\")\nprint(message)",
+    "notes": [
+      "Defines a greeting function with a default parameter and calls it twice with different arguments."
+    ],
+    "topics": ["functions", "default arguments", "f-strings"]
+  },
+  {
+    "id": "cal-py-d2-003",
+    "stack": "python",
+    "band": 2,
+    "title": "while loop countdown",
+    "code": "count = 10\nwhile count > 0:\n    print(count)\n    count -= 1\nprint(\"Liftoff!\")",
+    "notes": ["Counts down from 10 to 1 using a while loop and then prints Liftoff."],
+    "topics": ["while loop", "decrement", "print"]
+  },
+  {
+    "id": "cal-py-d2-004",
+    "stack": "python",
+    "band": 2,
+    "title": "list slicing and reversal",
+    "code": "fruits = [\"apple\", \"banana\", \"cherry\", \"date\", \"elderberry\"]\nfirst_three = fruits[:3]\nlast_two = fruits[-2:]\nreversed_fruits = fruits[::-1]\nprint(first_three)\nprint(last_two)\nprint(reversed_fruits)",
+    "notes": ["Demonstrates list slicing to extract sublists and reverse the original list."],
+    "topics": ["lists", "slicing", "reversal"]
+  },
+  {
+    "id": "cal-py-d2-005",
+    "stack": "python",
+    "band": 2,
+    "title": "dictionary iteration",
+    "code": "scores = {\"Alice\": 95, \"Bob\": 82, \"Carol\": 91}\ntotal = 0\nfor name, score in scores.items():\n    total += score\n    print(f\"{name}: {score}\")\naverage = total / len(scores)\nprint(f\"Class average: {average:.1f}\")",
+    "notes": [
+      "Iterates over a dictionary of student scores to print each entry and compute the class average."
+    ],
+    "topics": ["dictionaries", "for loop", "f-strings", "arithmetic"]
+  },
+  {
+    "id": "py-guard-clause",
+    "stack": "python",
+    "band": 2,
+    "title": "Guard clause",
+    "code": "def clamp(x: int, lo: int, hi: int) -> int:\n    if x < lo:\n        return lo\n    if x > hi:\n        return hi\n    return x",
+    "notes": ["Guard clauses keep control-flow flat.", "Note colon, indentation, and comparisons."],
+    "topics": ["functions", "guards", "comparison", "return"]
+  },
+  {
+    "id": "py-try-except",
+    "stack": "python",
+    "band": 2,
+    "title": "Try-except block",
+    "code": "try:\n    value = int(input(\"Enter a number: \"))\nexcept ValueError:\n    print(\"That's not a valid number.\")",
+    "notes": [
+      "try/except prevents crashes from bad input.",
+      "Catch specific exceptions, not bare except."
+    ],
+    "topics": ["exceptions", "error-handling", "try-except"]
+  },
+  {
+    "id": "cal-py-d3-001",
+    "stack": "python",
+    "band": 3,
+    "title": "filter even numbers with list comprehension",
+    "code": "def get_evens(numbers):\n    return [n for n in numbers if n % 2 == 0]\n\ndata = list(range(1, 21))\nevens = get_evens(data)\nprint(f\"Even numbers: {evens}\")\nprint(f\"Count: {len(evens)}\")\nprint(f\"Sum: {sum(evens)}\")",
+    "notes": ["Uses a list comprehension inside a function to filter even numbers from a range."],
+    "topics": ["list comprehension", "functions", "filtering", "modulo"]
+  },
+  {
+    "id": "cal-py-d3-002",
+    "stack": "python",
+    "band": 3,
+    "title": "try except with file reading",
+    "code": "import os\n\ndef read_config(path):\n    if not os.path.exists(path):\n        print(f\"File not found: {path}\")\n        return None\n    try:\n        with open(path, \"r\") as f:\n            content = f.read()\n        return content\n    except PermissionError:\n        print(f\"Permission denied: {path}\")\n        return None",
+    "notes": ["Reads a config file with existence checking and permission error handling."],
+    "topics": ["exception handling", "file I/O", "os module", "functions"]
+  },
+  {
+    "id": "cal-py-d3-003",
+    "stack": "python",
+    "band": 3,
+    "title": "class with constructor and method",
+    "code": "class Rectangle:\n    def __init__(self, width, height):\n        self.width = width\n        self.height = height\n\n    def area(self):\n        return self.width * self.height\n\n    def perimeter(self):\n        return 2 * (self.width + self.height)\n\n    def __repr__(self):\n        return f\"Rectangle({self.width}, {self.height})\"",
+    "notes": ["Defines a Rectangle class with area, perimeter, and string representation methods."],
+    "topics": ["classes", "constructor", "methods", "dunder methods"]
+  },
+  {
+    "id": "cal-py-d3-004",
+    "stack": "python",
+    "band": 3,
+    "title": "nested conditional logic",
+    "code": "def classify_temperature(temp):\n    if temp < 0:\n        category = \"freezing\"\n        warning = True\n    elif temp < 10:\n        category = \"cold\"\n        warning = False\n    elif temp < 25:\n        category = \"comfortable\"\n        warning = False\n    elif temp < 35:\n        category = \"warm\"\n        warning = False\n    else:\n        category = \"extreme heat\"\n        warning = True\n    return {\"category\": category, \"warning\": warning}",
+    "notes": [
+      "Classifies a temperature value into a category and returns a dictionary with a warning flag."
+    ],
+    "topics": ["conditionals", "functions", "dictionaries"]
+  },
+  {
+    "id": "cal-py-d3-005",
+    "stack": "python",
+    "band": 3,
+    "title": "enumerate and zip patterns",
+    "code": "names = [\"Alice\", \"Bob\", \"Carol\", \"Dave\"]\nscores = [88, 95, 72, 91]\n\nresults = []\nfor i, (name, score) in enumerate(zip(names, scores), start=1):\n    passed = \"PASS\" if score >= 75 else \"FAIL\"\n    results.append(f\"{i}. {name}: {score} ({passed})\")\n\nfor line in results:\n    print(line)",
+    "notes": ["Pairs names with scores using zip and enumerate to build formatted result strings."],
+    "topics": ["enumerate", "zip", "tuples", "conditional expression"]
+  },
+  {
+    "id": "py-class-def",
+    "stack": "python",
+    "band": 3,
+    "title": "Class definition",
+    "code": "class Circle:\n    def __init__(self, radius: float):\n        self.radius = radius\n\n    def area(self) -> float:\n        return 3.14159 * self.radius ** 2",
+    "notes": [
+      "__init__ is the constructor; self refers to the instance.",
+      "Practice colons, type hints, and ** for exponentiation."
+    ],
+    "topics": ["classes", "init", "self", "methods"]
+  },
+  {
+    "id": "py-list-comp",
+    "stack": "python",
+    "band": 3,
+    "title": "List comprehension",
+    "code": "evens = [n for n in range(1, 101) if n % 2 == 0]",
+    "notes": ["Comprehensions combine mapping + filtering.", "Watch brackets, % operator, and ==."],
+    "topics": ["list-comprehension", "modulo", "filtering"]
+  },
+  {
+    "id": "cal-py-d4-001",
+    "stack": "python",
+    "band": 4,
+    "title": "recursive fibonacci with memoization",
+    "code": "from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n < 0:\n        raise ValueError(\"n must be non-negative\")\n    if n <= 1:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)\n\ndef fibonacci_sequence(count):\n    results = []\n    for i in range(count):\n        results.append(fibonacci(i))\n    return results\n\nsequence = fibonacci_sequence(20)\nfor i, val in enumerate(sequence):\n    print(f\"F({i}) = {val}\")",
+    "notes": [
+      "Computes Fibonacci numbers using recursion with lru_cache memoization for efficiency."
+    ],
+    "topics": ["recursion", "memoization", "decorators", "functools"]
+  },
+  {
+    "id": "cal-py-d4-002",
+    "stack": "python",
+    "band": 4,
+    "title": "class inheritance with override",
+    "code": "class Shape:\n    def __init__(self, name):\n        self.name = name\n\n    def area(self):\n        raise NotImplementedError(\"Subclasses must implement area()\")\n\n    def describe(self):\n        return f\"{self.name}: area = {self.area():.2f}\"\n\nclass Circle(Shape):\n    def __init__(self, radius):\n        super().__init__(\"Circle\")\n        self.radius = radius\n\n    def area(self):\n        from math import pi\n        return pi * self.radius ** 2\n\nclass Triangle(Shape):\n    def __init__(self, base, height):\n        super().__init__(\"Triangle\")\n        self.base = base\n        self.height = height\n\n    def area(self):\n        return 0.5 * self.base * self.height",
+    "notes": [
+      "Implements shape inheritance with a base class that enforces an area method contract."
+    ],
+    "topics": ["inheritance", "polymorphism", "abstract methods", "super"]
+  },
+  {
+    "id": "cal-py-d4-003",
+    "stack": "python",
+    "band": 4,
+    "title": "generator for prime numbers",
+    "code": "def is_prime(n):\n    if n < 2:\n        return False\n    if n < 4:\n        return True\n    if n % 2 == 0 or n % 3 == 0:\n        return False\n    i = 5\n    while i * i <= n:\n        if n % i == 0 or n % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\ndef prime_generator(limit):\n    for num in range(2, limit + 1):\n        if is_prime(num):\n            yield num\n\nprimes = list(prime_generator(100))\nprint(f\"Found {len(primes)} primes up to 100\")",
+    "notes": [
+      "Uses a generator function to lazily produce prime numbers up to a given limit using trial division."
+    ],
+    "topics": ["generators", "yield", "prime numbers", "algorithms"]
+  },
+  {
+    "id": "cal-py-d4-004",
+    "stack": "python",
+    "band": 4,
+    "title": "context manager for timer",
+    "code": "import time\n\nclass Timer:\n    def __init__(self, label=\"elapsed\"):\n        self.label = label\n        self.start = None\n        self.elapsed = None\n\n    def __enter__(self):\n        self.start = time.perf_counter()\n        return self\n\n    def __exit__(self, exc_type, exc_val, exc_tb):\n        self.elapsed = time.perf_counter() - self.start\n        print(f\"{self.label}: {self.elapsed:.4f}s\")\n        return False\n\nwith Timer(\"sorting\") as t:\n    data = sorted(range(100000, 0, -1))\n\nprint(f\"Completed in {t.elapsed:.4f} seconds\")",
+    "notes": [
+      "Implements a context manager class that measures and reports execution time of a code block."
+    ],
+    "topics": ["context managers", "dunder methods", "timing", "with statement"]
+  },
+  {
+    "id": "cal-py-d4-005",
+    "stack": "python",
+    "band": 4,
+    "title": "dataclass with validation",
+    "code": "from dataclasses import dataclass, field\n\n@dataclass\nclass Employee:\n    name: str\n    department: str\n    salary: float\n    skills: list = field(default_factory=list)\n\n    def __post_init__(self):\n        if self.salary < 0:\n            raise ValueError(\"Salary cannot be negative\")\n        if not self.name.strip():\n            raise ValueError(\"Name cannot be empty\")\n\n    def add_skill(self, skill):\n        if skill not in self.skills:\n            self.skills.append(skill)\n\n    def annual_salary(self):\n        return self.salary * 12\n\nemp = Employee(\"Alice\", \"Engineering\", 8500.0)\nemp.add_skill(\"Python\")\nemp.add_skill(\"SQL\")\nprint(f\"{emp.name}: ${emp.annual_salary():,.2f}/year\")",
+    "notes": [
+      "Defines a dataclass with post-init validation, default factory for mutable fields, and helper methods."
+    ],
+    "topics": ["dataclasses", "validation", "post_init", "field"]
+  },
+  {
+    "id": "py-decorator",
+    "stack": "python",
+    "band": 4,
+    "title": "Simple decorator",
+    "code": "def log_call(fn):\n    def wrapper(*args, **kwargs):\n        print(f\"Calling {fn.__name__}\")\n        return fn(*args, **kwargs)\n    return wrapper",
+    "notes": [
+      "Decorators wrap functions to add behavior.",
+      "Practice *args, **kwargs, and dunder attributes."
+    ],
+    "topics": ["decorators", "functions", "closures"]
+  },
+  {
+    "id": "py-dict",
+    "stack": "python",
+    "band": 4,
+    "title": "Counting",
+    "code": "from collections import Counter\n\ncounts: Counter[str] = Counter()\nfor ch in \"Dev-Op-Typer\":\n    counts[ch] += 1",
+    "notes": [
+      "Counter is a multiset.",
+      "Quotes, types, and indexing build full-keyboard muscle memory."
+    ],
+    "topics": ["dict", "typing", "for-loop"]
+  },
+  {
+    "id": "cal-py-d5-001",
+    "stack": "python",
+    "band": 5,
+    "title": "decorator with arguments for retry logic",
+    "code": "import time\nimport functools\n\ndef retry(max_attempts=3, delay=1.0, exceptions=(Exception,)):\n    def decorator(func):\n        @functools.wraps(func)\n        def wrapper(*args, **kwargs):\n            last_exception = None\n            for attempt in range(1, max_attempts + 1):\n                try:\n                    return func(*args, **kwargs)\n                except exceptions as e:\n                    last_exception = e\n                    if attempt < max_attempts:\n                        wait = delay * (2 ** (attempt - 1))\n                        print(f\"Attempt {attempt} failed: {e}\")\n                        print(f\"Retrying in {wait:.1f}s...\")\n                        time.sleep(wait)\n            raise last_exception\n        return wrapper\n    return decorator\n\n@retry(max_attempts=3, delay=0.5, exceptions=(ValueError,))\ndef unstable_operation(x):\n    import random\n    if random.random() < 0.7:\n        raise ValueError(\"Random failure\")\n    return x * 2",
+    "notes": [
+      "Implements a parameterized retry decorator with exponential backoff and configurable exception filtering."
+    ],
+    "topics": ["decorators", "closures", "retry pattern", "exponential backoff"]
+  },
+  {
+    "id": "cal-py-d5-002",
+    "stack": "python",
+    "band": 5,
+    "title": "binary search tree insertion and traversal",
+    "code": "class TreeNode:\n    def __init__(self, value):\n        self.value = value\n        self.left = None\n        self.right = None\n\nclass BinarySearchTree:\n    def __init__(self):\n        self.root = None\n\n    def insert(self, value):\n        if self.root is None:\n            self.root = TreeNode(value)\n        else:\n            self._insert(self.root, value)\n\n    def _insert(self, node, value):\n        if value < node.value:\n            if node.left is None:\n                node.left = TreeNode(value)\n            else:\n                self._insert(node.left, value)\n        elif value > node.value:\n            if node.right is None:\n                node.right = TreeNode(value)\n            else:\n                self._insert(node.right, value)\n\n    def inorder(self):\n        result = []\n        self._inorder(self.root, result)\n        return result\n\n    def _inorder(self, node, result):\n        if node is not None:\n            self._inorder(node.left, result)\n            result.append(node.value)\n            self._inorder(node.right, result)",
+    "notes": [
+      "Implements a binary search tree with recursive insertion and inorder traversal methods."
+    ],
+    "topics": ["binary search tree", "recursion", "data structures", "tree traversal"]
+  },
+  {
+    "id": "cal-py-d5-003",
+    "stack": "python",
+    "band": 5,
+    "title": "async http fetcher with semaphore",
+    "code": "import asyncio\n\nasync def fetch_url(session, url, semaphore):\n    async with semaphore:\n        try:\n            async with session.get(url) as response:\n                status = response.status\n                data = await response.text()\n                return {\"url\": url, \"status\": status, \"length\": len(data)}\n        except Exception as e:\n            return {\"url\": url, \"status\": -1, \"error\": str(e)}\n\nasync def fetch_all(urls, max_concurrent=5):\n    import aiohttp\n    semaphore = asyncio.Semaphore(max_concurrent)\n    async with aiohttp.ClientSession() as session:\n        tasks = [\n            fetch_url(session, url, semaphore)\n            for url in urls\n        ]\n        results = await asyncio.gather(*tasks)\n    return results\n\ndef run_fetcher(urls):\n    results = asyncio.run(fetch_all(urls))\n    for r in results:\n        if r.get(\"error\"):\n            print(f\"[ERR] {r['url']}: {r['error']}\")\n        else:\n            print(f\"[{r['status']}] {r['url']}: {r['length']} bytes\")",
+    "notes": [
+      "Fetches multiple URLs concurrently using asyncio with a semaphore to limit simultaneous connections."
+    ],
+    "topics": ["asyncio", "semaphore", "concurrency", "aiohttp", "error handling"]
+  },
+  {
+    "id": "cal-py-d5-004",
+    "stack": "python",
+    "band": 5,
+    "title": "property descriptors with validation",
+    "code": "class Validated:\n    def __init__(self, validator, name=None):\n        self.validator = validator\n        self.name = name\n\n    def __set_name__(self, owner, name):\n        self.name = name\n        self.storage_name = f\"_validated_{name}\"\n\n    def __get__(self, obj, objtype=None):\n        if obj is None:\n            return self\n        return getattr(obj, self.storage_name, None)\n\n    def __set__(self, obj, value):\n        validated = self.validator(value)\n        setattr(obj, self.storage_name, validated)\n\ndef positive_number(value):\n    if not isinstance(value, (int, float)):\n        raise TypeError(f\"Expected number, got {type(value).__name__}\")\n    if value <= 0:\n        raise ValueError(f\"Expected positive number, got {value}\")\n    return float(value)\n\nclass Product:\n    price = Validated(positive_number)\n    weight = Validated(positive_number)\n\n    def __init__(self, name, price, weight):\n        self.name = name\n        self.price = price\n        self.weight = weight",
+    "notes": [
+      "Uses descriptor protocol with __set_name__, __get__, and __set__ to create reusable validated attributes."
+    ],
+    "topics": ["descriptors", "properties", "validation", "dunder methods", "metaprogramming"]
+  },
+  {
+    "id": "cal-py-d5-005",
+    "stack": "python",
+    "band": 5,
+    "title": "lru cache implementation with doubly linked list",
+    "code": "class LRUNode:\n    def __init__(self, key, value):\n        self.key = key\n        self.value = value\n        self.prev = None\n        self.next = None\n\nclass LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.cache = {}\n        self.head = LRUNode(None, None)\n        self.tail = LRUNode(None, None)\n        self.head.next = self.tail\n        self.tail.prev = self.head\n\n    def _remove(self, node):\n        node.prev.next = node.next\n        node.next.prev = node.prev\n\n    def _add_to_front(self, node):\n        node.next = self.head.next\n        node.prev = self.head\n        self.head.next.prev = node\n        self.head.next = node\n\n    def get(self, key):\n        if key in self.cache:\n            node = self.cache[key]\n            self._remove(node)\n            self._add_to_front(node)\n            return node.value\n        return -1\n\n    def put(self, key, value):\n        if key in self.cache:\n            self._remove(self.cache[key])\n        node = LRUNode(key, value)\n        self._add_to_front(node)\n        self.cache[key] = node\n        if len(self.cache) > self.capacity:\n            lru = self.tail.prev\n            self._remove(lru)\n            del self.cache[lru.key]",
+    "notes": [
+      "Implements an LRU cache using a hash map and doubly linked list for O(1) get and put operations."
+    ],
+    "topics": ["linked list", "cache", "hash map", "data structures", "algorithms"]
+  },
+  {
+    "id": "cal-py-d6-001",
+    "stack": "python",
+    "band": 6,
+    "title": "abstract base class with registry pattern",
+    "code": "from abc import ABC, abstractmethod\nfrom typing import Dict, Type\n\nclass PluginRegistry:\n    _plugins: Dict[str, Type[\"BasePlugin\"]] = {}\n\n    @classmethod\n    def register(cls, name: str):\n        def decorator(plugin_cls: Type[\"BasePlugin\"]):\n            if name in cls._plugins:\n                raise ValueError(f\"Plugin '{name}' already registered\")\n            cls._plugins[name] = plugin_cls\n            return plugin_cls\n        return decorator\n\n    @classmethod\n    def create(cls, name: str, **kwargs) -> \"BasePlugin\":\n        if name not in cls._plugins:\n            available = \", \".join(sorted(cls._plugins.keys()))\n            raise KeyError(f\"Unknown plugin '{name}'. Available: {available}\")\n        return cls._plugins[name](**kwargs)\n\nclass BasePlugin(ABC):\n    @abstractmethod\n    def execute(self, data: dict) -> dict:\n        pass\n\n    @abstractmethod\n    def validate(self, data: dict) -> bool:\n        pass\n\n@PluginRegistry.register(\"transform\")\nclass TransformPlugin(BasePlugin):\n    def __init__(self, factor: float = 1.0):\n        self.factor = factor\n\n    def execute(self, data: dict) -> dict:\n        return {k: v * self.factor for k, v in data.items() if isinstance(v, (int, float))}\n\n    def validate(self, data: dict) -> bool:\n        return all(isinstance(v, (int, float)) for v in data.values())",
+    "notes": [
+      "Implements a plugin registry using class decorators and abstract base classes for extensible architecture."
+    ],
+    "topics": ["abc", "registry pattern", "decorators", "typing", "design patterns"]
+  },
+  {
+    "id": "cal-py-d6-002",
+    "stack": "python",
+    "band": 6,
+    "title": "thread pool with result collection",
+    "code": "import threading\nfrom concurrent.futures import ThreadPoolExecutor, as_completed\nfrom typing import List, Callable, Any, Dict\n\nclass BatchProcessor:\n    def __init__(self, max_workers: int = 4):\n        self.max_workers = max_workers\n        self.lock = threading.Lock()\n        self.results: Dict[str, Any] = {}\n        self.errors: Dict[str, str] = {}\n\n    def process(self, tasks: Dict[str, Callable[[], Any]]) -> Dict[str, Any]:\n        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:\n            future_to_name = {\n                executor.submit(fn): name\n                for name, fn in tasks.items()\n            }\n            for future in as_completed(future_to_name):\n                name = future_to_name[future]\n                try:\n                    result = future.result(timeout=30)\n                    with self.lock:\n                        self.results[name] = result\n                except Exception as e:\n                    with self.lock:\n                        self.errors[name] = f\"{type(e).__name__}: {e}\"\n        return self.results\n\n    def summary(self) -> str:\n        total = len(self.results) + len(self.errors)\n        lines = [f\"Processed {total} tasks:\"]\n        lines.append(f\"  Success: {len(self.results)}\")\n        lines.append(f\"  Failed: {len(self.errors)}\")\n        for name, err in self.errors.items():\n            lines.append(f\"    {name}: {err}\")\n        return \"\\n\".join(lines)",
+    "notes": [
+      "Implements a thread-safe batch processor using ThreadPoolExecutor with result collection and error tracking."
+    ],
+    "topics": ["threading", "thread pool", "futures", "concurrency", "error handling"]
+  },
+  {
+    "id": "cal-py-d6-003",
+    "stack": "python",
+    "band": 6,
+    "title": "event emitter with typed listeners",
+    "code": "from typing import Callable, Dict, List, Any, Optional\nimport inspect\n\nclass EventEmitter:\n    def __init__(self):\n        self._listeners: Dict[str, List[Callable]] = {}\n        self._once: Dict[str, List[Callable]] = {}\n\n    def on(self, event: str, callback: Callable) -> \"EventEmitter\":\n        if event not in self._listeners:\n            self._listeners[event] = []\n        self._listeners[event].append(callback)\n        return self\n\n    def once(self, event: str, callback: Callable) -> \"EventEmitter\":\n        if event not in self._once:\n            self._once[event] = []\n        self._once[event].append(callback)\n        return self\n\n    def emit(self, event: str, *args: Any, **kwargs: Any) -> bool:\n        handlers = self._listeners.get(event, []).copy()\n        once_handlers = self._once.pop(event, [])\n        handlers.extend(once_handlers)\n        if not handlers:\n            return False\n        for handler in handlers:\n            sig = inspect.signature(handler)\n            try:\n                sig.bind(*args, **kwargs)\n                handler(*args, **kwargs)\n            except TypeError:\n                handler(*args[:len(sig.parameters)])\n        return True\n\n    def off(self, event: str, callback: Optional[Callable] = None) -> None:\n        if callback is None:\n            self._listeners.pop(event, None)\n            self._once.pop(event, None)\n        elif event in self._listeners:\n            self._listeners[event] = [\n                cb for cb in self._listeners[event] if cb is not callback\n            ]",
+    "notes": [
+      "Builds an event emitter supporting on, once, emit, and off with argument introspection for handler safety."
+    ],
+    "topics": ["event emitter", "observer pattern", "inspect", "typing", "callbacks"]
+  },
+  {
+    "id": "cal-py-d6-004",
+    "stack": "python",
+    "band": 6,
+    "title": "json schema validator with nested rules",
+    "code": "from typing import Any, Dict, List, Optional, Union\n\nclass SchemaError(Exception):\n    def __init__(self, path: str, message: str):\n        self.path = path\n        self.message = message\n        super().__init__(f\"{path}: {message}\")\n\ndef validate(data: Any, schema: Dict, path: str = \"$\") -> List[SchemaError]:\n    errors: List[SchemaError] = []\n    expected_type = schema.get(\"type\")\n    type_map = {\"string\": str, \"integer\": int, \"float\": float, \"boolean\": bool, \"list\": list, \"dict\": dict}\n\n    if expected_type and expected_type in type_map:\n        if not isinstance(data, type_map[expected_type]):\n            errors.append(SchemaError(path, f\"expected {expected_type}, got {type(data).__name__}\"))\n            return errors\n\n    if expected_type == \"dict\" and \"properties\" in schema:\n        for key, sub_schema in schema[\"properties\"].items():\n            if key not in data:\n                if sub_schema.get(\"required\", False):\n                    errors.append(SchemaError(f\"{path}.{key}\", \"required field missing\"))\n            else:\n                errors.extend(validate(data[key], sub_schema, f\"{path}.{key}\"))\n\n    if expected_type == \"list\" and \"items\" in schema:\n        for i, item in enumerate(data):\n            errors.extend(validate(item, schema[\"items\"], f\"{path}[{i}]\"))\n\n    if \"min\" in schema and isinstance(data, (int, float)):\n        if data < schema[\"min\"]:\n            errors.append(SchemaError(path, f\"value {data} below minimum {schema['min']}\"))\n\n    return errors",
+    "notes": [
+      "Recursively validates nested data structures against a JSON schema definition with path-aware error reporting."
+    ],
+    "topics": ["validation", "schema", "recursion", "typing", "error handling"]
+  },
+  {
+    "id": "cal-py-d6-005",
+    "stack": "python",
+    "band": 6,
+    "title": "pipeline builder with chained transforms",
+    "code": "from typing import Callable, List, Any, TypeVar, Generic, Optional\nfrom dataclasses import dataclass, field\n\nT = TypeVar(\"T\")\n\n@dataclass\nclass PipelineStep:\n    name: str\n    transform: Callable[[Any], Any]\n    error_handler: Optional[Callable[[Exception], Any]] = None\n\nclass Pipeline(Generic[T]):\n    def __init__(self):\n        self._steps: List[PipelineStep] = []\n        self._log: List[str] = []\n\n    def add(self, name: str, transform: Callable, on_error: Optional[Callable] = None) -> \"Pipeline[T]\":\n        self._steps.append(PipelineStep(name, transform, on_error))\n        return self\n\n    def execute(self, data: T) -> T:\n        result = data\n        for step in self._steps:\n            try:\n                result = step.transform(result)\n                self._log.append(f\"[OK] {step.name}\")\n            except Exception as e:\n                self._log.append(f\"[ERR] {step.name}: {e}\")\n                if step.error_handler:\n                    result = step.error_handler(e)\n                else:\n                    raise RuntimeError(f\"Pipeline failed at '{step.name}': {e}\") from e\n        return result\n\n    def dry_run(self, data: T) -> List[str]:\n        steps = [f\"{i+1}. {s.name}\" for i, s in enumerate(self._steps)]\n        steps.insert(0, f\"Pipeline ({len(self._steps)} steps):\")\n        return steps\n\n    @property\n    def log(self) -> List[str]:\n        return self._log.copy()",
+    "notes": [
+      "Implements a generic pipeline builder with named steps, error handlers, dry run capability, and execution logging."
+    ],
+    "topics": ["pipeline pattern", "generics", "dataclasses", "error handling", "builder pattern"]
+  },
+  {
+    "id": "cal-py-d7-001",
+    "stack": "python",
+    "band": 7,
+    "title": "metaclass with attribute tracking and validation",
+    "code": "from typing import Any, Dict, Set, Tuple, Optional, Callable\nimport functools\n\nclass TrackedMeta(type):\n    _registry: Dict[str, type] = {}\n\n    def __new__(mcs, name: str, bases: Tuple[type, ...], namespace: Dict[str, Any]):\n        validators: Dict[str, Callable] = {}\n        tracked_attrs: Set[str] = set()\n\n        for key, value in list(namespace.items()):\n            if hasattr(value, \"_is_validated\"):\n                validators[key] = value._validator\n                tracked_attrs.add(key)\n\n        original_init = namespace.get(\"__init__\")\n\n        def tracked_init(self, *args, **kwargs):\n            self._change_log = []\n            if original_init:\n                original_init(self, *args, **kwargs)\n\n        def tracked_setattr(self, attr: str, value: Any):\n            if attr.startswith(\"_\"):\n                super(cls, self).__setattr__(attr, value)\n                return\n            if attr in validators:\n                if not validators[attr](value):\n                    raise ValueError(f\"Validation failed for '{attr}': {value!r}\")\n            old = getattr(self, attr, \"<unset>\")\n            super(cls, self).__setattr__(attr, value)\n            if hasattr(self, \"_change_log\"):\n                self._change_log.append((attr, old, value))\n\n        namespace[\"__init__\"] = tracked_init\n        namespace[\"__setattr__\"] = tracked_setattr\n        namespace[\"_validators\"] = validators\n        namespace[\"_tracked_attrs\"] = tracked_attrs\n\n        cls = super().__new__(mcs, name, bases, namespace)\n        mcs._registry[name] = cls\n        return cls\n\ndef validated(validator: Callable[[Any], bool]):\n    def decorator(func):\n        @functools.wraps(func)\n        def wrapper(*args, **kwargs):\n            return func(*args, **kwargs)\n        wrapper._is_validated = True\n        wrapper._validator = validator\n        return wrapper\n    return decorator",
+    "notes": [
+      "Defines a metaclass that tracks attribute changes with a log and applies validation decorators to class attributes."
+    ],
+    "topics": ["metaclasses", "descriptors", "decorators", "validation", "metaprogramming"]
+  },
+  {
+    "id": "cal-py-d7-002",
+    "stack": "python",
+    "band": 7,
+    "title": "async task scheduler with priority queue",
+    "code": "import asyncio\nimport heapq\nfrom dataclasses import dataclass, field\nfrom typing import Any, Callable, Coroutine, Dict, List, Optional\nfrom enum import IntEnum\n\nclass Priority(IntEnum):\n    CRITICAL = 0\n    HIGH = 1\n    NORMAL = 2\n    LOW = 3\n\n@dataclass(order=True)\nclass ScheduledTask:\n    priority: int\n    sequence: int = field(compare=True)\n    name: str = field(compare=False)\n    coro_factory: Callable[[], Coroutine] = field(compare=False, repr=False)\n    result: Optional[Any] = field(default=None, compare=False, repr=False)\n    error: Optional[str] = field(default=None, compare=False, repr=False)\n\nclass AsyncScheduler:\n    def __init__(self, concurrency: int = 3):\n        self._queue: List[ScheduledTask] = []\n        self._semaphore = asyncio.Semaphore(concurrency)\n        self._sequence = 0\n        self._results: Dict[str, Any] = {}\n        self._errors: Dict[str, str] = {}\n\n    def schedule(self, name: str, coro_factory: Callable[[], Coroutine],\n                 priority: Priority = Priority.NORMAL) -> None:\n        task = ScheduledTask(\n            priority=priority.value,\n            sequence=self._sequence,\n            name=name,\n            coro_factory=coro_factory,\n        )\n        heapq.heappush(self._queue, task)\n        self._sequence += 1\n\n    async def _execute_task(self, task: ScheduledTask) -> None:\n        async with self._semaphore:\n            try:\n                task.result = await task.coro_factory()\n                self._results[task.name] = task.result\n            except Exception as e:\n                task.error = f\"{type(e).__name__}: {e}\"\n                self._errors[task.name] = task.error\n\n    async def run_all(self) -> Dict[str, Any]:\n        tasks_to_run = []\n        while self._queue:\n            scheduled = heapq.heappop(self._queue)\n            tasks_to_run.append(self._execute_task(scheduled))\n        await asyncio.gather(*tasks_to_run)\n        return self._results\n\n    def summary(self) -> str:\n        total = len(self._results) + len(self._errors)\n        lines = [f\"Scheduler: {total} tasks ({len(self._errors)} failed)\"]\n        for name, err in self._errors.items():\n            lines.append(f\"  [{name}] {err}\")\n        return \"\\n\".join(lines)",
+    "notes": [
+      "Implements an async task scheduler with priority ordering using heapq and bounded concurrency via semaphore."
+    ],
+    "topics": ["asyncio", "priority queue", "heapq", "dataclasses", "concurrency", "scheduling"]
+  },
+  {
+    "id": "cal-py-d7-003",
+    "stack": "python",
+    "band": 7,
+    "title": "expression parser with recursive descent",
+    "code": "from typing import List, Union, Optional\nfrom dataclasses import dataclass\nfrom enum import Enum, auto\n\nclass TokenType(Enum):\n    NUMBER = auto()\n    PLUS = auto()\n    MINUS = auto()\n    STAR = auto()\n    SLASH = auto()\n    LPAREN = auto()\n    RPAREN = auto()\n    EOF = auto()\n\n@dataclass\nclass Token:\n    type: TokenType\n    value: Optional[float] = None\n\nclass Lexer:\n    def __init__(self, text: str):\n        self.text = text\n        self.pos = 0\n\n    def tokenize(self) -> List[Token]:\n        tokens: List[Token] = []\n        while self.pos < len(self.text):\n            ch = self.text[self.pos]\n            if ch.isspace():\n                self.pos += 1\n            elif ch.isdigit() or ch == \".\":\n                tokens.append(self._read_number())\n            elif ch == \"+\":\n                tokens.append(Token(TokenType.PLUS)); self.pos += 1\n            elif ch == \"-\":\n                tokens.append(Token(TokenType.MINUS)); self.pos += 1\n            elif ch == \"*\":\n                tokens.append(Token(TokenType.STAR)); self.pos += 1\n            elif ch == \"/\":\n                tokens.append(Token(TokenType.SLASH)); self.pos += 1\n            elif ch == \"(\":\n                tokens.append(Token(TokenType.LPAREN)); self.pos += 1\n            elif ch == \")\":\n                tokens.append(Token(TokenType.RPAREN)); self.pos += 1\n            else:\n                raise SyntaxError(f\"Unexpected character: '{ch}' at position {self.pos}\")\n        tokens.append(Token(TokenType.EOF))\n        return tokens\n\n    def _read_number(self) -> Token:\n        start = self.pos\n        while self.pos < len(self.text) and (self.text[self.pos].isdigit() or self.text[self.pos] == \".\"):\n            self.pos += 1\n        return Token(TokenType.NUMBER, float(self.text[start:self.pos]))\n\nclass Parser:\n    def __init__(self, tokens: List[Token]):\n        self.tokens = tokens\n        self.pos = 0\n\n    def parse(self) -> float:\n        result = self._expression()\n        if self.tokens[self.pos].type != TokenType.EOF:\n            raise SyntaxError(\"Unexpected tokens after expression\")\n        return result\n\n    def _expression(self) -> float:\n        result = self._term()\n        while self.tokens[self.pos].type in (TokenType.PLUS, TokenType.MINUS):\n            op = self.tokens[self.pos].type\n            self.pos += 1\n            right = self._term()\n            if op == TokenType.PLUS:\n                result += right\n            else:\n                result -= right\n        return result\n\n    def _term(self) -> float:\n        result = self._factor()\n        while self.tokens[self.pos].type in (TokenType.STAR, TokenType.SLASH):\n            op = self.tokens[self.pos].type\n            self.pos += 1\n            right = self._factor()\n            if op == TokenType.STAR:\n                result *= right\n            else:\n                if right == 0:\n                    raise ZeroDivisionError(\"Division by zero\")\n                result /= right\n        return result\n\n    def _factor(self) -> float:\n        token = self.tokens[self.pos]\n        if token.type == TokenType.NUMBER:\n            self.pos += 1\n            return token.value\n        elif token.type == TokenType.LPAREN:\n            self.pos += 1\n            result = self._expression()\n            if self.tokens[self.pos].type != TokenType.RPAREN:\n                raise SyntaxError(\"Expected closing parenthesis\")\n            self.pos += 1\n            return result\n        elif token.type == TokenType.MINUS:\n            self.pos += 1\n            return -self._factor()\n        raise SyntaxError(f\"Unexpected token: {token}\")",
+    "notes": [
+      "Implements a complete recursive descent parser with lexer for arithmetic expressions supporting operator precedence and parentheses."
+    ],
+    "topics": ["parsing", "recursive descent", "lexer", "tokenizer", "enums", "dataclasses"]
+  },
+  {
+    "id": "cal-py-d7-004",
+    "stack": "python",
+    "band": 7,
+    "title": "generic middleware chain with type hints",
+    "code": "from typing import TypeVar, Generic, Callable, List, Any, Dict, Optional\nfrom dataclasses import dataclass, field\nimport functools\nimport time\n\nT = TypeVar(\"T\")\nR = TypeVar(\"R\")\n\n@dataclass\nclass Context(Generic[T]):\n    request: T\n    metadata: Dict[str, Any] = field(default_factory=dict)\n    errors: List[str] = field(default_factory=list)\n    timings: Dict[str, float] = field(default_factory=dict)\n    halted: bool = False\n\nMiddleware = Callable[[Context[T], Callable[[], None]], None]\n\nclass MiddlewareChain(Generic[T]):\n    def __init__(self):\n        self._middlewares: List[tuple[str, Middleware[T]]] = []\n        self._error_handler: Optional[Callable[[Context[T], Exception], None]] = None\n\n    def use(self, name: str, middleware: Middleware[T]) -> \"MiddlewareChain[T]\":\n        self._middlewares.append((name, middleware))\n        return self\n\n    def on_error(self, handler: Callable[[Context[T], Exception], None]) -> \"MiddlewareChain[T]\":\n        self._error_handler = handler\n        return self\n\n    def execute(self, request: T) -> Context[T]:\n        ctx = Context(request=request)\n        idx = 0\n\n        def advance():\n            nonlocal idx\n            if ctx.halted or idx >= len(self._middlewares):\n                return\n            name, mw = self._middlewares[idx]\n            idx += 1\n            start = time.perf_counter()\n            try:\n                mw(ctx, advance)\n            except Exception as e:\n                ctx.errors.append(f\"{name}: {type(e).__name__}: {e}\")\n                if self._error_handler:\n                    self._error_handler(ctx, e)\n                else:\n                    ctx.halted = True\n            finally:\n                ctx.timings[name] = time.perf_counter() - start\n\n        advance()\n        return ctx\n\ndef logging_middleware(ctx: Context, next_fn: Callable[[], None]) -> None:\n    print(f\"[LOG] Processing: {ctx.request!r}\")\n    next_fn()\n    print(f\"[LOG] Completed with {len(ctx.errors)} errors\")\n\ndef validation_middleware(ctx: Context, next_fn: Callable[[], None]) -> None:\n    if ctx.request is None:\n        ctx.errors.append(\"Request cannot be None\")\n        ctx.halted = True\n        return\n    next_fn()",
+    "notes": [
+      "Implements a generic middleware chain with context passing, timing, error handling, and halt semantics."
+    ],
+    "topics": [
+      "middleware",
+      "generics",
+      "closures",
+      "nonlocal",
+      "chain of responsibility",
+      "timing"
+    ]
+  },
+  {
+    "id": "cal-py-d7-005",
+    "stack": "python",
+    "band": 7,
+    "title": "observable state container with subscriptions",
+    "code": "from typing import TypeVar, Generic, Callable, Dict, List, Any, Optional, Set\nfrom dataclasses import dataclass, field\nimport threading\nimport copy\n\nT = TypeVar(\"T\")\n\n@dataclass\nclass StateChange(Generic[T]):\n    path: str\n    old_value: Any\n    new_value: Any\n    source: str = \"unknown\"\n\nclass ObservableState(Generic[T]):\n    def __init__(self, initial: T, deep_copy: bool = True):\n        self._state = initial\n        self._deep_copy = deep_copy\n        self._lock = threading.RLock()\n        self._subscribers: Dict[str, List[Callable[[StateChange], None]]] = {}\n        self._global_subscribers: List[Callable[[StateChange], None]] = []\n        self._middleware: List[Callable[[StateChange], Optional[StateChange]]] = []\n        self._history: List[StateChange] = []\n        self._max_history = 100\n\n    def get(self, path: str = \"\") -> Any:\n        with self._lock:\n            if not path:\n                return copy.deepcopy(self._state) if self._deep_copy else self._state\n            parts = path.split(\".\")\n            current = self._state\n            for part in parts:\n                if isinstance(current, dict):\n                    current = current[part]\n                elif hasattr(current, part):\n                    current = getattr(current, part)\n                else:\n                    raise KeyError(f\"Invalid path: '{path}' (failed at '{part}')\")\n            return copy.deepcopy(current) if self._deep_copy else current\n\n    def set(self, path: str, value: Any, source: str = \"unknown\") -> None:\n        with self._lock:\n            old_value = self._resolve_path(path)\n            change = StateChange(path=path, old_value=old_value, new_value=value, source=source)\n            for mw in self._middleware:\n                result = mw(change)\n                if result is None:\n                    return\n                change = result\n            self._apply_change(path, change.new_value)\n            self._history.append(change)\n            if len(self._history) > self._max_history:\n                self._history = self._history[-self._max_history:]\n            self._notify(change)\n\n    def subscribe(self, callback: Callable[[StateChange], None],\n                  path: Optional[str] = None) -> Callable[[], None]:\n        with self._lock:\n            if path is None:\n                self._global_subscribers.append(callback)\n                def unsub():\n                    with self._lock:\n                        self._global_subscribers.remove(callback)\n            else:\n                if path not in self._subscribers:\n                    self._subscribers[path] = []\n                self._subscribers[path].append(callback)\n                def unsub():\n                    with self._lock:\n                        self._subscribers[path].remove(callback)\n            return unsub\n\n    def _resolve_path(self, path: str) -> Any:\n        try:\n            return self.get(path)\n        except (KeyError, AttributeError):\n            return None\n\n    def _apply_change(self, path: str, value: Any) -> None:\n        parts = path.split(\".\")\n        current = self._state\n        for part in parts[:-1]:\n            if isinstance(current, dict):\n                current = current[part]\n            else:\n                current = getattr(current, part)\n        if isinstance(current, dict):\n            current[parts[-1]] = value\n        else:\n            setattr(current, parts[-1], value)\n\n    def _notify(self, change: StateChange) -> None:\n        for cb in self._global_subscribers:\n            cb(change)\n        for path, subscribers in self._subscribers.items():\n            if change.path == path or change.path.startswith(f\"{path}.\"):\n                for cb in subscribers:\n                    cb(change)",
+    "notes": [
+      "Implements a thread-safe observable state container with path-based subscriptions, middleware, and change history."
+    ],
+    "topics": [
+      "observer pattern",
+      "generics",
+      "threading",
+      "state management",
+      "deep copy",
+      "middleware"
+    ]
+  }
+]

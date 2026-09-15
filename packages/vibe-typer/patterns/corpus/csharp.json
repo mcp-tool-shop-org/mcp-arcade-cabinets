@@ -1,0 +1,448 @@
+[
+  {
+    "id": "cal-cs-d1-001",
+    "stack": "csharp",
+    "band": 1,
+    "title": "integer variable assignment",
+    "code": "int count = 42;",
+    "notes": ["Declares an integer variable named count and assigns the value 42."],
+    "topics": ["variables", "assignment"]
+  },
+  {
+    "id": "cal-cs-d1-002",
+    "stack": "csharp",
+    "band": 1,
+    "title": "console writeline",
+    "code": "string name = \"Alice\";\nConsole.WriteLine(name);",
+    "notes": ["Prints the value of a string variable to the console."],
+    "topics": ["console", "output", "variables"]
+  },
+  {
+    "id": "cal-cs-d1-003",
+    "stack": "csharp",
+    "band": 1,
+    "title": "boolean flag toggle",
+    "code": "bool active = true;\nactive = !active;",
+    "notes": ["Declares a boolean variable and toggles its value using the logical NOT operator."],
+    "topics": ["boolean", "negation"]
+  },
+  {
+    "id": "cal-cs-d1-004",
+    "stack": "csharp",
+    "band": 1,
+    "title": "arithmetic expression",
+    "code": "double area = 3.14 * radius * radius;",
+    "notes": ["Calculates the area of a circle using the radius variable."],
+    "topics": ["arithmetic", "double", "expressions"]
+  },
+  {
+    "id": "cal-cs-d1-005",
+    "stack": "csharp",
+    "band": 1,
+    "title": "string concatenation",
+    "code": "string first = \"hello\";\nstring second = \"world\";\nstring full = first + \" \" + second;",
+    "notes": ["Joins two strings together with a space separator using the plus operator."],
+    "topics": ["string", "concatenation"]
+  },
+  {
+    "id": "cs-foreach",
+    "stack": "csharp",
+    "band": 1,
+    "title": "Foreach loop",
+    "code": "var names = new[] { \"Alice\", \"Bob\", \"Carol\" };\nforeach (var name in names)\n    Console.WriteLine($\"Hello, {name}!\");",
+    "notes": [
+      "foreach iterates every element without an index variable.",
+      "new[] creates an implicitly typed array."
+    ],
+    "topics": ["foreach", "loop", "collections"]
+  },
+  {
+    "id": "cs-string-interpolation",
+    "stack": "csharp",
+    "band": 1,
+    "title": "String interpolation",
+    "code": "var name = \"Alice\";\nvar total = 42.567;\nConsole.WriteLine($\"{name} owes {total:C2}\");",
+    "notes": [
+      "$ before the string enables {expression} placeholders.",
+      ":C2 formats a number as currency with 2 decimal places."
+    ],
+    "topics": ["string-interpolation", "formatting", "variables"]
+  },
+  {
+    "id": "cal-cs-d2-001",
+    "stack": "csharp",
+    "band": 2,
+    "title": "simple if else block",
+    "code": "int score = 75;\nstring result;\nif (score >= 60)\n    result = \"pass\";\nelse\n    result = \"fail\";\nConsole.WriteLine(result);",
+    "notes": ["Uses a simple if-else to assign pass or fail based on a score threshold."],
+    "topics": ["if-else", "comparison", "branching"]
+  },
+  {
+    "id": "cal-cs-d2-002",
+    "stack": "csharp",
+    "band": 2,
+    "title": "for loop sum",
+    "code": "int total = 0;\nfor (int i = 1; i <= 10; i++)\n    total += i;\nConsole.WriteLine(total);",
+    "notes": ["Sums the integers from 1 to 10 using a for loop with an accumulator variable."],
+    "topics": ["for-loop", "accumulator"]
+  },
+  {
+    "id": "cal-cs-d2-003",
+    "stack": "csharp",
+    "band": 2,
+    "title": "array initialization and access",
+    "code": "int[] values = new int[] { 10, 20, 30, 40, 50 };\nint first = values[0];\nint last = values[values.Length - 1];\nConsole.WriteLine(first);\nConsole.WriteLine(last);",
+    "notes": ["Creates an integer array and accesses the first and last elements by index."],
+    "topics": ["array", "indexing", "initialization"]
+  },
+  {
+    "id": "cal-cs-d2-004",
+    "stack": "csharp",
+    "band": 2,
+    "title": "while loop countdown",
+    "code": "int n = 5;\nwhile (n > 0)\n{\n    Console.WriteLine(n);\n    n--;\n}\nConsole.WriteLine(\"done\");",
+    "notes": ["Counts down from 5 to 1 using a while loop and prints done when finished."],
+    "topics": ["while-loop", "decrement"]
+  },
+  {
+    "id": "cal-cs-d2-005",
+    "stack": "csharp",
+    "band": 2,
+    "title": "list add and count",
+    "code": "var items = new List<string>();\nitems.Add(\"apple\");\nitems.Add(\"banana\");\nitems.Add(\"cherry\");\nint count = items.Count;\nConsole.WriteLine(count);",
+    "notes": ["Creates a generic string list, adds three items, and prints the count."],
+    "topics": ["list", "generics", "add"]
+  },
+  {
+    "id": "cal-cs-d3-001",
+    "stack": "csharp",
+    "band": 3,
+    "title": "method with return value",
+    "code": "public static int Max(int a, int b)\n{\n    if (a >= b)\n        return a;\n    return b;\n}\n\nint result = Max(10, 25);\nConsole.WriteLine($\"Max is {result}\");",
+    "notes": [
+      "Defines a static method that returns the larger of two integers using a simple comparison."
+    ],
+    "topics": ["method", "return", "comparison"]
+  },
+  {
+    "id": "cal-cs-d3-002",
+    "stack": "csharp",
+    "band": 3,
+    "title": "foreach with string interpolation",
+    "code": "var fruits = new List<string> { \"apple\", \"pear\", \"grape\" };\nint index = 0;\nforeach (var fruit in fruits)\n{\n    Console.WriteLine($\"[{index}] {fruit}\");\n    index++;\n}\nConsole.WriteLine($\"Total: {fruits.Count}\");",
+    "notes": [
+      "Iterates over a list of strings with a manual index counter and prints each item with its position."
+    ],
+    "topics": ["foreach", "list", "string-interpolation"]
+  },
+  {
+    "id": "cal-cs-d3-003",
+    "stack": "csharp",
+    "band": 3,
+    "title": "try catch basic exception",
+    "code": "try\n{\n    int value = int.Parse(\"abc\");\n    Console.WriteLine(value);\n}\ncatch (FormatException ex)\n{\n    Console.WriteLine($\"Error: {ex.Message}\");\n}",
+    "notes": [
+      "Attempts to parse an invalid string as an integer and catches the resulting FormatException."
+    ],
+    "topics": ["try-catch", "exception", "parsing"]
+  },
+  {
+    "id": "cal-cs-d3-004",
+    "stack": "csharp",
+    "band": 3,
+    "title": "dictionary lookup with containskey",
+    "code": "var scores = new Dictionary<string, int>\n{\n    [\"Alice\"] = 95,\n    [\"Bob\"] = 82,\n    [\"Carol\"] = 91\n};\nif (scores.ContainsKey(\"Bob\"))\n{\n    Console.WriteLine($\"Bob scored {scores[\"Bob\"]}\");\n}",
+    "notes": [
+      "Creates a dictionary with indexer syntax and conditionally reads a value after checking if the key exists."
+    ],
+    "topics": ["dictionary", "containskey", "indexer"]
+  },
+  {
+    "id": "cal-cs-d3-005",
+    "stack": "csharp",
+    "band": 3,
+    "title": "simple class with constructor",
+    "code": "public class Point\n{\n    public double X { get; }\n    public double Y { get; }\n\n    public Point(double x, double y)\n    {\n        X = x;\n        Y = y;\n    }\n\n    public double DistanceTo(Point other)\n    {\n        double dx = X - other.X;\n        double dy = Y - other.Y;\n        return Math.Sqrt(dx * dx + dy * dy);\n    }\n}",
+    "notes": [
+      "Defines a Point class with read-only properties, a constructor, and a method to calculate distance to another point."
+    ],
+    "topics": ["class", "constructor", "properties", "methods"]
+  },
+  {
+    "id": "cs-async-await",
+    "stack": "csharp",
+    "band": 3,
+    "title": "Async/await",
+    "code": "public async Task<string> GetPageAsync(string url)\n{\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}",
+    "notes": [
+      "async methods return Task<T> and use await for I/O.",
+      "using var disposes the HttpClient when the scope ends."
+    ],
+    "topics": ["async", "await", "Task", "HttpClient"]
+  },
+  {
+    "id": "cs-interface",
+    "stack": "csharp",
+    "band": 3,
+    "title": "Interface definition",
+    "code": "public interface ILogger\n{\n    void Log(string message);\n    void Warn(string message) => Log($\"WARN: {message}\");\n}",
+    "notes": [
+      "Interfaces define a contract that classes must implement.",
+      "Default interface methods provide optional fallback behavior."
+    ],
+    "topics": ["interface", "abstraction", "contracts"]
+  },
+  {
+    "id": "cal-cs-d4-001",
+    "stack": "csharp",
+    "band": 4,
+    "title": "switch expression with pattern matching",
+    "code": "public static string Classify(object value) => value switch\n{\n    int n when n < 0 => \"negative integer\",\n    int n when n == 0 => \"zero\",\n    int n => \"positive integer\",\n    string s when s.Length == 0 => \"empty string\",\n    string s => $\"string of length {s.Length}\",\n    null => \"null value\",\n    _ => $\"unknown type: {value.GetType().Name}\"\n};\n\nConsole.WriteLine(Classify(-5));\nConsole.WriteLine(Classify(\"hello\"));\nConsole.WriteLine(Classify(null));\nConsole.WriteLine(Classify(3.14));",
+    "notes": [
+      "Uses a switch expression with type patterns, when clauses, and a discard pattern to classify objects by type and value."
+    ],
+    "topics": ["switch-expression", "pattern-matching", "when-clause", "type-patterns"]
+  },
+  {
+    "id": "cal-cs-d4-002",
+    "stack": "csharp",
+    "band": 4,
+    "title": "linq query with groupby",
+    "code": "var orders = new List<(string Customer, decimal Amount)>\n{\n    (\"Alice\", 120.50m),\n    (\"Bob\", 85.00m),\n    (\"Alice\", 45.25m),\n    (\"Carol\", 200.00m),\n    (\"Bob\", 33.75m)\n};\n\nvar totals = orders\n    .GroupBy(o => o.Customer)\n    .Select(g => new\n    {\n        Name = g.Key,\n        Total = g.Sum(o => o.Amount)\n    })\n    .OrderByDescending(x => x.Total);\n\nforeach (var t in totals)\n    Console.WriteLine($\"{t.Name}: {t.Total:C}\");",
+    "notes": [
+      "Groups a list of order tuples by customer name, sums each group, and prints the results sorted by total descending."
+    ],
+    "topics": ["linq", "groupby", "anonymous-type", "tuples"]
+  },
+  {
+    "id": "cal-cs-d4-003",
+    "stack": "csharp",
+    "band": 4,
+    "title": "interface implementation with override",
+    "code": "public interface IShape\n{\n    double Area();\n    string Describe() => $\"Shape with area {Area():F2}\";\n}\n\npublic class Circle : IShape\n{\n    public double Radius { get; init; }\n\n    public double Area() => Math.PI * Radius * Radius;\n\n    public override string ToString()\n        => $\"Circle(r={Radius:F2}, area={Area():F2})\";\n}\n\nvar c = new Circle { Radius = 5.0 };\nConsole.WriteLine(c);",
+    "notes": [
+      "Defines an interface with a default method, implements it in a Circle class with an init-only property and custom ToString."
+    ],
+    "topics": ["interface", "default-method", "init", "override"]
+  },
+  {
+    "id": "cal-cs-d4-004",
+    "stack": "csharp",
+    "band": 4,
+    "title": "record with deconstruction",
+    "code": "public record Person(string Name, int Age)\n{\n    public string AgeGroup => Age switch\n    {\n        < 13 => \"child\",\n        < 18 => \"teen\",\n        < 65 => \"adult\",\n        _ => \"senior\"\n    };\n}\n\nvar people = new Person[]\n{\n    new(\"Alice\", 30),\n    new(\"Bob\", 12),\n    new(\"Carol\", 70)\n};\n\nforeach (var (name, age) in people)\n    Console.WriteLine($\"{name} ({age}) => {new Person(name, age).AgeGroup}\");",
+    "notes": [
+      "Defines a record with a computed property using a switch expression and iterates with positional deconstruction."
+    ],
+    "topics": ["record", "deconstruction", "switch-expression", "computed-property"]
+  },
+  {
+    "id": "cal-cs-d4-005",
+    "stack": "csharp",
+    "band": 4,
+    "title": "async task with cancellation",
+    "code": "public async Task<string> FetchDataAsync(\n    string url,\n    CancellationToken ct = default)\n{\n    using var client = new HttpClient();\n    client.Timeout = TimeSpan.FromSeconds(10);\n    try\n    {\n        var response = await client.GetAsync(url, ct);\n        response.EnsureSuccessStatusCode();\n        return await response.Content.ReadAsStringAsync(ct);\n    }\n    catch (OperationCanceledException)\n    {\n        return \"Request was cancelled\";\n    }\n    catch (HttpRequestException ex)\n    {\n        return $\"HTTP error: {ex.Message}\";\n    }\n}",
+    "notes": [
+      "An async method that fetches a URL with timeout and cancellation support, handling both cancellation and HTTP errors."
+    ],
+    "topics": ["async", "await", "cancellation-token", "httpclient", "try-catch"]
+  },
+  {
+    "id": "cs-linq",
+    "stack": "csharp",
+    "band": 4,
+    "title": "LINQ pipeline",
+    "code": "var result = items\n    .Where(x => x % 2 == 0)\n    .Select(x => x * x)\n    .ToList();",
+    "notes": ["LINQ is a fluent query style.", "Mind dots, arrows, and semicolons."],
+    "topics": ["linq", "lambda", "select", "where"]
+  },
+  {
+    "id": "cs-switch-expr",
+    "stack": "csharp",
+    "band": 4,
+    "title": "Switch expression",
+    "code": "string grade = score switch\n{\n    >= 90 => \"A\",\n    >= 80 => \"B\",\n    >= 70 => \"C\",\n    _ => \"F\"\n};",
+    "notes": [
+      "Switch expressions return a value inline.",
+      "_ is the discard pattern (default case)."
+    ],
+    "topics": ["switch-expression", "pattern-matching", "discard"]
+  },
+  {
+    "id": "cal-cs-d5-001",
+    "stack": "csharp",
+    "band": 5,
+    "title": "generic repository with constraints",
+    "code": "public interface IEntity\n{\n    int Id { get; }\n}\n\npublic class Repository<T> where T : class, IEntity\n{\n    private readonly List<T> _store = new();\n\n    public void Add(T entity)\n    {\n        if (_store.Any(e => e.Id == entity.Id))\n            throw new InvalidOperationException(\n                $\"Entity with Id {entity.Id} already exists.\");\n        _store.Add(entity);\n    }\n\n    public T? FindById(int id)\n        => _store.FirstOrDefault(e => e.Id == id);\n\n    public IReadOnlyList<T> GetAll() => _store.AsReadOnly();\n\n    public bool Remove(int id)\n    {\n        var entity = FindById(id);\n        return entity is not null && _store.Remove(entity);\n    }\n}",
+    "notes": [
+      "Implements a generic in-memory repository with type constraints, duplicate detection, and null-conditional removal."
+    ],
+    "topics": ["generics", "constraints", "repository-pattern", "nullable"]
+  },
+  {
+    "id": "cal-cs-d5-002",
+    "stack": "csharp",
+    "band": 5,
+    "title": "event-driven observer pattern",
+    "code": "public class EventBus\n{\n    private readonly Dictionary<string, List<Action<object>>> _handlers = new();\n\n    public void Subscribe(string topic, Action<object> handler)\n    {\n        if (!_handlers.ContainsKey(topic))\n            _handlers[topic] = new List<Action<object>>();\n        _handlers[topic].Add(handler);\n    }\n\n    public void Publish(string topic, object payload)\n    {\n        if (!_handlers.TryGetValue(topic, out var list))\n            return;\n        foreach (var handler in list)\n        {\n            try\n            {\n                handler(payload);\n            }\n            catch (Exception ex)\n            {\n                Console.WriteLine($\"Handler error on '{topic}': {ex.Message}\");\n            }\n        }\n    }\n}",
+    "notes": [
+      "Implements a simple publish-subscribe event bus using a dictionary of topic-keyed handler lists with error isolation."
+    ],
+    "topics": ["events", "observer-pattern", "dictionary", "delegates"]
+  },
+  {
+    "id": "cal-cs-d5-003",
+    "stack": "csharp",
+    "band": 5,
+    "title": "builder pattern with fluent api",
+    "code": "public class QueryBuilder\n{\n    private string _table = \"\";\n    private readonly List<string> _columns = new();\n    private readonly List<string> _conditions = new();\n    private string? _orderBy;\n\n    public QueryBuilder From(string table)\n    {\n        _table = table;\n        return this;\n    }\n\n    public QueryBuilder Select(params string[] cols)\n    {\n        _columns.AddRange(cols);\n        return this;\n    }\n\n    public QueryBuilder Where(string condition)\n    {\n        _conditions.Add(condition);\n        return this;\n    }\n\n    public QueryBuilder OrderBy(string column)\n    {\n        _orderBy = column;\n        return this;\n    }\n\n    public string Build()\n    {\n        var cols = _columns.Count > 0\n            ? string.Join(\", \", _columns) : \"*\";\n        var sql = $\"SELECT {cols} FROM {_table}\";\n        if (_conditions.Count > 0)\n            sql += $\" WHERE {string.Join(\" AND \", _conditions)}\";\n        if (_orderBy is not null)\n            sql += $\" ORDER BY {_orderBy}\";\n        return sql;\n    }\n}",
+    "notes": [
+      "Implements a fluent SQL query builder that chains method calls to construct a SELECT statement with optional WHERE and ORDER BY clauses."
+    ],
+    "topics": ["builder-pattern", "fluent-api", "params", "nullable"]
+  },
+  {
+    "id": "cal-cs-d5-004",
+    "stack": "csharp",
+    "band": 5,
+    "title": "async enumerable with yield",
+    "code": "public async IAsyncEnumerable<int> GeneratePrimesAsync(\n    int limit,\n    [EnumeratorCancellation] CancellationToken ct = default)\n{\n    for (int candidate = 2; candidate <= limit; candidate++)\n    {\n        ct.ThrowIfCancellationRequested();\n        if (await IsPrimeAsync(candidate))\n            yield return candidate;\n    }\n}\n\nprivate Task<bool> IsPrimeAsync(int n)\n{\n    return Task.Run(() =>\n    {\n        if (n < 2) return false;\n        for (int i = 2; i * i <= n; i++)\n        {\n            if (n % i == 0)\n                return false;\n        }\n        return true;\n    });\n}",
+    "notes": [
+      "Generates prime numbers as an async stream using IAsyncEnumerable with cancellation support and offloaded primality checks."
+    ],
+    "topics": ["async-enumerable", "yield", "cancellation", "task-run"]
+  },
+  {
+    "id": "cal-cs-d5-005",
+    "stack": "csharp",
+    "band": 5,
+    "title": "extension methods with generics",
+    "code": "public static class EnumerableExtensions\n{\n    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)\n        where T : class\n    {\n        foreach (var item in source)\n        {\n            if (item is not null)\n                yield return item;\n        }\n    }\n\n    public static IEnumerable<(T Item, int Index)> WithIndex<T>(\n        this IEnumerable<T> source)\n    {\n        int index = 0;\n        foreach (var item in source)\n        {\n            yield return (item, index);\n            index++;\n        }\n    }\n}\n\nvar names = new string?[] { \"Alice\", null, \"Bob\", null, \"Carol\" };\nforeach (var (name, i) in names.WhereNotNull().WithIndex())\n    Console.WriteLine($\"[{i}] {name}\");",
+    "notes": [
+      "Defines two generic extension methods on IEnumerable for null filtering and index pairing, then chains them together."
+    ],
+    "topics": ["extension-methods", "generics", "yield", "tuples", "nullable"]
+  },
+  {
+    "id": "cs-record",
+    "stack": "csharp",
+    "band": 5,
+    "title": "Record + with",
+    "code": "public record User(string Name, int Age);\n\nvar u1 = new User(\"Ada\", 37);\nvar u2 = u1 with { Age = 38 };",
+    "notes": [
+      "Records are immutable-ish data types.",
+      "Practice braces, quotes, and with initializers."
+    ],
+    "topics": ["record", "init", "with-expression"]
+  },
+  {
+    "id": "cal-cs-d6-001",
+    "stack": "csharp",
+    "band": 6,
+    "title": "grouped tuple transform with conditional logic",
+    "code": "public static Dictionary<string, List<(int, double)>> Transform(\n    IEnumerable<(string K, int V, double W)> src)\n{\n    var result = new Dictionary<string, List<(int, double)>>();\n    foreach (var (k, v, w) in src)\n    {\n        if (!result.ContainsKey(k))\n            result[k] = new List<(int, double)>();\n        if (v > 0 && w >= 0.0)\n        {\n            if (v % 2 == 0)\n            {\n                result[k].Add((v, w * 1.5));\n            }\n            else\n            {\n                result[k].Add((v, w * 0.75));\n            }\n        }\n        else if (v < 0)\n        {\n            if (w > 1.0)\n            {\n                result[k].Add((-v, -w));\n            }\n            else\n            {\n                result[k].Add((0, 0.0));\n            }\n        }\n    }\n    return result;\n}",
+    "notes": [
+      "Transforms a sequence of named tuples into grouped lists with conditional value adjustments based on sign and parity."
+    ],
+    "topics": ["dictionary", "tuples", "conditional-logic", "collections"]
+  },
+  {
+    "id": "cal-cs-d6-002",
+    "stack": "csharp",
+    "band": 6,
+    "title": "merge sort with in-place merge",
+    "code": "public static void Merge(int[] a, int lo, int mid, int hi)\n{\n    int[] t = new int[hi - lo + 1];\n    int i = lo, j = mid + 1, k = 0;\n    while (i <= mid && j <= hi)\n    {\n        if (a[i] <= a[j])\n        {\n            t[k++] = a[i++];\n        }\n        else\n        {\n            t[k++] = a[j++];\n        }\n    }\n    while (i <= mid)\n        t[k++] = a[i++];\n    while (j <= hi)\n        t[k++] = a[j++];\n    for (int p = 0; p < t.Length; p++)\n        a[lo + p] = t[p];\n}\n\npublic static void Sort(int[] a, int lo, int hi)\n{\n    if (lo >= hi) return;\n    int mid = lo + (hi - lo) / 2;\n    Sort(a, lo, mid);\n    Sort(a, mid + 1, hi);\n    Merge(a, lo, mid, hi);\n}",
+    "notes": [
+      "Implements merge sort with a helper method that merges two sorted subarrays using a temporary buffer and recursive partitioning."
+    ],
+    "topics": ["merge-sort", "recursion", "arrays", "divide-and-conquer"]
+  },
+  {
+    "id": "cal-cs-d6-003",
+    "stack": "csharp",
+    "band": 6,
+    "title": "matrix multiply with clamping and print",
+    "code": "public static int[,] Multiply(int[,] a, int[,] b)\n{\n    int n = a.GetLength(0);\n    int m = a.GetLength(1);\n    int p = b.GetLength(1);\n    var c = new int[n, p];\n    for (int i = 0; i < n; i++)\n    {\n        for (int j = 0; j < p; j++)\n        {\n            int s = 0;\n            for (int k = 0; k < m; k++)\n            {\n                s += a[i, k] * b[k, j];\n            }\n            c[i, j] = s;\n            if (c[i, j] > 1000)\n            {\n                c[i, j] = 1000;\n            }\n        }\n    }\n    return c;\n}\n\npublic static void Print(int[,] m)\n{\n    for (int i = 0; i < m.GetLength(0); i++)\n    {\n        for (int j = 0; j < m.GetLength(1); j++)\n        {\n            Console.Write($\"{m[i, j],6}\");\n        }\n        Console.WriteLine();\n    }\n}",
+    "notes": [
+      "Multiplies two integer matrices with value clamping at 1000, plus a formatted print method for 2D array display."
+    ],
+    "topics": ["matrix", "nested-loops", "multidimensional-arrays", "clamping"]
+  },
+  {
+    "id": "cal-cs-d6-004",
+    "stack": "csharp",
+    "band": 6,
+    "title": "bfs grid pathfinder with backtracking",
+    "code": "public static List<(int R, int C)> Solve(int[,] g, int n)\n{\n    var q = new Queue<(int R, int C)>();\n    var v = new bool[n, n];\n    var p = new Dictionary<(int, int), (int, int)?>();\n    q.Enqueue((0, 0));\n    v[0, 0] = true;\n    p[(0, 0)] = null;\n    int[] dr = { -1, 1, 0, 0 };\n    int[] dc = { 0, 0, -1, 1 };\n    while (q.Count > 0)\n    {\n        var (r, c) = q.Dequeue();\n        if (r == n - 1 && c == n - 1)\n        {\n            var path = new List<(int, int)>();\n            (int, int)? cur = (r, c);\n            while (cur != null)\n            {\n                path.Add(cur.Value);\n                cur = p[cur.Value];\n            }\n            path.Reverse();\n            return path;\n        }\n        for (int d = 0; d < 4; d++)\n        {\n            int nr = r + dr[d];\n            int nc = c + dc[d];\n            if (nr >= 0 && nr < n && nc >= 0 && nc < n\n                && !v[nr, nc] && g[nr, nc] == 0)\n            {\n                v[nr, nc] = true;\n                p[(nr, nc)] = (r, c);\n                q.Enqueue((nr, nc));\n            }\n        }\n    }\n    return new List<(int, int)>();\n}",
+    "notes": [
+      "Finds the shortest path through a grid using BFS with a predecessor dictionary for path reconstruction via backtracking."
+    ],
+    "topics": ["bfs", "grid", "pathfinding", "dictionary", "tuples", "backtracking"]
+  },
+  {
+    "id": "cal-cs-d6-005",
+    "stack": "csharp",
+    "band": 6,
+    "title": "gaussian elimination with partial pivoting",
+    "code": "public static (double[], int) Solve(double[,] a, int n)\n{\n    var x = new double[n];\n    for (int col = 0; col < n; col++)\n    {\n        int pivot = -1;\n        double best = 0.0;\n        for (int row = col; row < n; row++)\n        {\n            if (Math.Abs(a[row, col]) > best)\n            {\n                best = Math.Abs(a[row, col]);\n                pivot = row;\n            }\n        }\n        if (pivot < 0 || best < 1e-12)\n            return (x, -1);\n        if (pivot != col)\n        {\n            for (int j = 0; j <= n; j++)\n            {\n                (a[col, j], a[pivot, j]) =\n                    (a[pivot, j], a[col, j]);\n            }\n        }\n        for (int row = col + 1; row < n; row++)\n        {\n            double f = a[row, col] / a[col, col];\n            for (int j = col; j <= n; j++)\n                a[row, j] -= f * a[col, j];\n        }\n    }\n    for (int i = n - 1; i >= 0; i--)\n    {\n        x[i] = a[i, n];\n        for (int j = i + 1; j < n; j++)\n            x[i] -= a[i, j] * x[j];\n        x[i] /= a[i, i];\n    }\n    return (x, 0);\n}",
+    "notes": [
+      "Solves a system of linear equations using Gaussian elimination with partial pivoting and back substitution."
+    ],
+    "topics": ["gaussian-elimination", "linear-algebra", "pivoting", "multidimensional-arrays"]
+  },
+  {
+    "id": "cal-cs-d7-001",
+    "stack": "csharp",
+    "band": 7,
+    "title": "sparse matrix multiply with normalization",
+    "code": "for (int i = 0; i < n; i++)\n{\n    for (int j = 0; j < m; j++)\n    {\n        if (a[i][j] > 0)\n        {\n            for (int k = 0; k < p; k++)\n            {\n                if (b[j][k] != 0)\n                {\n                    c[i][k] += a[i][j] * b[j][k];\n                    if (c[i][k] > mx)\n                        mx = c[i][k];\n                    if (c[i][k] < mn)\n                        mn = c[i][k];\n                }\n            }\n        }\n    }\n}\nfor (int i = 0; i < n; i++)\n{\n    for (int k = 0; k < p; k++)\n    {\n        if (mx != mn)\n            c[i][k] = (c[i][k] - mn) / (mx - mn);\n        else\n            c[i][k] = 0.0;\n    }\n}",
+    "notes": [
+      "Multiplies two sparse matrices skipping zero entries, tracks min and max values, then normalizes all results to the 0-1 range."
+    ],
+    "topics": ["matrix-multiplication", "sparse", "normalization", "nested-loops"]
+  },
+  {
+    "id": "cal-cs-d7-002",
+    "stack": "csharp",
+    "band": 7,
+    "title": "sobel edge detection with thresholding",
+    "code": "int[][] kx = new[]\n{\n    new[] { -1, 0, 1 },\n    new[] { -2, 0, 2 },\n    new[] { -1, 0, 1 }\n};\nint[][] ky = new[]\n{\n    new[] { -1, -2, -1 },\n    new[] { 0, 0, 0 },\n    new[] { 1, 2, 1 }\n};\nfor (int y = 1; y < h - 1; y++)\n{\n    for (int x = 1; x < w - 1; x++)\n    {\n        double gx = 0, gy = 0;\n        for (int dy = -1; dy <= 1; dy++)\n        {\n            for (int dx = -1; dx <= 1; dx++)\n            {\n                gx += p[y + dy][x + dx] * kx[dy + 1][dx + 1];\n                gy += p[y + dy][x + dx] * ky[dy + 1][dx + 1];\n            }\n        }\n        o[y][x] = Math.Min(255.0,\n            Math.Sqrt(gx * gx + gy * gy));\n    }\n}\nfor (int y = 0; y < h; y++)\n{\n    for (int x = 0; x < w; x++)\n    {\n        r[y][x] = (o[y][x] > t) ? 1 : 0;\n    }\n}",
+    "notes": [
+      "Applies Sobel edge detection kernels to a pixel array using convolution, then thresholds the gradient magnitude into a binary edge map."
+    ],
+    "topics": ["image-processing", "sobel", "convolution", "edge-detection", "nested-loops"]
+  },
+  {
+    "id": "cal-cs-d7-003",
+    "stack": "csharp",
+    "band": 7,
+    "title": "neural network forward pass with relu",
+    "code": "double ls = 0.0;\nfor (int i = 0; i < n; i++)\n{\n    for (int j = 0; j < q; j++)\n    {\n        double s = b1[j];\n        for (int k = 0; k < f; k++)\n        {\n            if (x[i][k] != 0.0)\n                s += x[i][k] * w1[k][j];\n        }\n        h[j] = s > 0 ? s : s * 0.01;\n    }\n    for (int j = 0; j < c; j++)\n    {\n        double s = b2[j];\n        for (int k = 0; k < q; k++)\n        {\n            if (h[k] != 0.0)\n                s += h[k] * w2[k][j];\n        }\n        o[j] = s;\n    }\n    double mx = o[0];\n    for (int j = 1; j < c; j++)\n    {\n        if (o[j] > mx)\n            mx = o[j];\n    }\n    double sm = 0.0;\n    for (int j = 0; j < c; j++)\n    {\n        o[j] -= mx;\n        sm += o[j] * o[j];\n    }\n    for (int j = 0; j < c; j++)\n        o[j] /= (sm + 1e-9);\n    ls += (1.0 - o[y[i]]) * (1.0 - o[y[i]]);\n}\nls /= n;",
+    "notes": [
+      "Computes a two-layer neural network forward pass with leaky ReLU activation, normalization, and mean squared error loss accumulation."
+    ],
+    "topics": ["neural-network", "forward-pass", "leaky-relu", "loss-function", "nested-loops"]
+  },
+  {
+    "id": "cal-cs-d7-004",
+    "stack": "csharp",
+    "band": 7,
+    "title": "bfs shortest path on adjacency list",
+    "code": "int[] d = new int[n];\nint[] p = new int[n];\nfor (int i = 0; i < n; i++)\n{\n    d[i] = -1;\n    p[i] = -1;\n}\nd[s] = 0;\nvar q = new int[n];\nint qh = 0, qt = 0;\nq[qt++] = s;\nwhile (qh < qt)\n{\n    int u = q[qh++];\n    for (int i = 0; i < g[u].Length; i++)\n    {\n        int v = g[u][i];\n        if (d[v] < 0)\n        {\n            d[v] = d[u] + 1;\n            p[v] = u;\n            q[qt++] = v;\n            if (v == e)\n            {\n                h = 0;\n                for (int c = e; c >= 0; c = p[c])\n                    r[h++] = c;\n                for (int j = h - 1; j >= 0; j--)\n                    o[h - 1 - j] = r[j];\n            }\n        }\n    }\n}",
+    "notes": [
+      "Performs BFS on a graph represented as adjacency arrays, tracking distances and predecessors, with inline path reversal on target discovery."
+    ],
+    "topics": ["bfs", "graph", "shortest-path", "adjacency-list", "arrays"]
+  },
+  {
+    "id": "cal-cs-d7-005",
+    "stack": "csharp",
+    "band": 7,
+    "title": "knapsack dynamic programming with backtrack",
+    "code": "var dp = new int[n + 1][];\nfor (int i = 0; i <= n; i++)\n    dp[i] = new int[c + 1];\nfor (int i = 1; i <= n; i++)\n{\n    for (int j = 0; j <= c; j++)\n    {\n        dp[i][j] = dp[i - 1][j];\n        if (w[i - 1] <= j)\n        {\n            int t = dp[i - 1][j - w[i - 1]] + v[i - 1];\n            if (t > dp[i][j])\n                dp[i][j] = t;\n        }\n    }\n}\nvar s = new List<int>();\nint r = n, k = c;\nwhile (r > 0)\n{\n    if (k > 0 && dp[r][k] != dp[r - 1][k])\n    {\n        s.Add(r - 1);\n        k -= w[r - 1];\n    }\n    r--;\n}\ns.Reverse();\nfor (int i = 0; i < s.Count; i++)\n{\n    int x = s[i];\n    Console.Write($\"[{x}]={v[x]} \");\n}\nConsole.Write($\"=> {dp[n][c]}\");",
+    "notes": [
+      "Solves the 0-1 knapsack problem using bottom-up dynamic programming, then backtracks through the DP table to recover the selected items."
+    ],
+    "topics": ["dynamic-programming", "knapsack", "backtracking", "arrays", "optimization"]
+  }
+]

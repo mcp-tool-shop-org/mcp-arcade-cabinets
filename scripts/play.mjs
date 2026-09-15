@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // `pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1]`
+// `pnpm test:play vibe-typer [--tier 0|1|2|3] [--bot idle|perfect|typist:wpm[:rate]] [--seed n] [--stack name] [--level n] [--endless yes]`
 // A scripted play-through is the acceptance test for a playable slice. Each
 // cabinet registers a `play(args)` that returns a transcript; this runner
 // prints it and exits non-zero if the transcript reports a failure. On !ok it
@@ -9,10 +10,27 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const USAGE = `usage: pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1] [--tapes dir]
+       pnpm test:play vibe-typer [--tier 0|1|2|3] [--bot idle|perfect|typist:wpm[:rate]] [--seed n] [--stack name] [--level n] [--endless yes|no]
 exit: 0 ok · 1 play-through failed · 2 usage · 3 no build`;
 
 const BOTS = ['idle', 'sweeper', 'reader'];
-const FLAGS = new Set(['fixture', 'bot', 'seat', 'tier', 'climb', 'tapes']);
+const FLAGS = new Set([
+  'fixture',
+  'bot',
+  'seat',
+  'tier',
+  'climb',
+  'tapes',
+  'seed',
+  'stack',
+  'level',
+  'endless',
+  'dated',
+]);
+const CABINETS = ['ghost', 'vibe-typer'];
+/** Vibe Typer's bots: the typist carries its speed and its rate of mistypes. */
+const TYPER_BOT = /^(idle|perfect|typist:\d+(\.\d+)?(:\d*\.?\d+)?)$/;
+const TYPER_STACKS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql', 'integration'];
 // Copied from play.ts: the screen may not carry a digit or these words.
 const SCREEN_FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
@@ -179,6 +197,86 @@ export function reportPlay(t, bot = 'reader') {
   return 0;
 }
 
+/**
+ * Vibe Typer's screen is the lines between the three-line header and the
+ * `valuation:` footer. The valuation is allowed on the board (G23); nothing
+ * else on that screen may carry a digit or a barred word.
+ */
+export function typerScreenHit(text) {
+  const lines = String(text).split('\n');
+  const footer = lines.findIndex((l, i) => i >= 3 && l.startsWith('valuation:'));
+  const screen = lines.slice(3, footer === -1 ? undefined : footer);
+  for (const line of screen) {
+    const m = SCREEN_FORBIDDEN.exec(line);
+    if (m) return m[0];
+  }
+  return null;
+}
+
+function requireCount(raw, name) {
+  if (raw === undefined) return undefined;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0) die(`${name} must be a whole number (got ${raw})`);
+  return n;
+}
+
+function requireYesNo(raw, name) {
+  if (raw === undefined) return undefined;
+  if (raw === 'yes' || raw === 'true') return true;
+  if (raw === 'no' || raw === 'false') return false;
+  die(`${name} must be yes or no (got ${raw})`);
+}
+
+/** One Vibe Typer play-through. Returns the exit code. */
+async function playTyper(flags) {
+  if (flags.bot !== undefined && !TYPER_BOT.test(flags.bot)) {
+    die(`unknown bot ${flags.bot}; use idle, perfect or typist:wpm`);
+  }
+  if (flags.stack !== undefined && !TYPER_STACKS.includes(flags.stack)) {
+    die(`unknown stack ${flags.stack}; have: ${TYPER_STACKS.join(', ')}`);
+  }
+  if (flags.fixture !== undefined || flags.seat !== undefined || flags.climb !== undefined) {
+    die(`vibe-typer takes no --fixture, --seat or --climb\n${USAGE}`);
+  }
+  const args = {};
+  const tier = requireTier(flags.tier);
+  if (tier !== undefined) args.tier = tier;
+  if (flags.bot !== undefined) args.bot = flags.bot;
+  const seed = requireCount(flags.seed, 'seed');
+  if (seed !== undefined) args.seed = seed;
+  const level = requireCount(flags.level, 'level');
+  if (level !== undefined) args.level = level;
+  if (flags.stack !== undefined) args.stack = flags.stack;
+  const endless = requireYesNo(flags.endless, 'endless');
+  if (endless !== undefined) args.endless = endless;
+  const dated = requireYesNo(flags.dated, 'dated');
+  if (dated !== undefined) args.dated = dated;
+  if (flags.tapes !== undefined) args.tapes = String(flags.tapes);
+  const file = path.resolve('packages/vibe-typer/dist/play.js');
+  const mod = await import(pathToFileURL(file).href).catch(() => null);
+  if (!mod || typeof mod.play !== 'function') {
+    console.error(
+      'no play-through for vibe-typer: build it first (packages/vibe-typer/dist/play.js must export play(args))',
+    );
+    process.exit(3);
+  }
+  let transcript;
+  try {
+    transcript = await mod.play(args);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  }
+  const hit = typerScreenHit(transcript.text ?? '');
+  if (!transcript.ok || hit) {
+    console.log(String(transcript.text ?? '').replace(/^level shipped$/m, 'FAILED'));
+    console.error(hit ? `leaked (${hit})` : transcript.why || 'play-through failed');
+    return 1;
+  }
+  console.log(transcript.text);
+  return 0;
+}
+
 async function main() {
   const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS);
   if (flags.help) {
@@ -188,7 +286,10 @@ async function main() {
   const cabinet = positional[0];
   if (!cabinet) die(USAGE);
   if (positional.length > 1) die(`unknown argument ${positional[1]}\n${USAGE}`);
-  if (cabinet !== 'ghost') die(`unknown cabinet ${cabinet}; use ghost\n${USAGE}`);
+  if (!CABINETS.includes(cabinet)) {
+    die(`unknown cabinet ${cabinet}; use ${CABINETS.join(' or ')}\n${USAGE}`);
+  }
+  if (cabinet === 'vibe-typer') process.exit(await playTyper(flags));
 
   requireBot(flags.bot);
   const args = {};

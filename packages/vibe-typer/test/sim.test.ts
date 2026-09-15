@@ -1,0 +1,343 @@
+import { describe, expect, it } from 'vitest';
+
+import { DT } from '../src/play';
+import { DEFAULT_PATTERNS, tierContext } from '../src/patterns';
+import { agentNameOf, codeOf, createRun, leversOf, planOf, stepRun } from '../src/sim';
+import type { Event, RunInput, RunState, Tier } from '../src/types';
+import { makeBot } from './helpers';
+
+function step(state: RunState, input: RunInput = {}): RunState {
+  return stepRun(state, input, DT);
+}
+
+function toTyping(state: RunState): void {
+  let guard = 0;
+  while (!state.over && state.beat !== 'reply' && state.beat !== 'code' && guard < 16) {
+    step(state);
+    guard += 1;
+  }
+}
+
+/** Type the current target and press Enter; `mistakeAt` mistypes one character. */
+function sendLine(state: RunState, mistakeAt = -1): void {
+  toTyping(state);
+  const target = state.target;
+  for (let i = 0; i < target.length; i++) {
+    const key = i === mistakeAt ? (target[i] === 'z' ? 'q' : 'z') : target[i]!;
+    step(state, { key });
+  }
+  step(state, { enter: true });
+}
+
+function kinds(events: readonly Event[]): string[] {
+  return events.map((e) => e.kind);
+}
+
+function shipRequest(state: RunState): void {
+  const guard = 400;
+  let n = 0;
+  const index = state.requestIndex;
+  while (!state.over && state.requestIndex === index && n < guard) {
+    if (state.beat === 'reply' || state.beat === 'code') sendLine(state);
+    else step(state);
+    n += 1;
+  }
+}
+
+describe('the beats', () => {
+  it('lands the ask, then the reply, then the code, then the ship', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const request = state.plan.requests[0]!;
+    expect(state.beat).toBe('request');
+    expect(state.chat[0]).toMatchObject({ who: 'user', line: request.ask });
+    expect(state.context).toBeCloseTo(1 - state.plan.messageCost, 10);
+
+    step(state);
+    expect(state.beat).toBe('reply');
+    expect(state.target).toBe(request.reply);
+
+    sendLine(state);
+    expect(state.beat).toBe('code');
+    expect(state.chat.at(-1)).toMatchObject({ who: 'agent', line: request.reply });
+    expect(state.target).toBe(codeOf(state)[0]);
+    expect(state.lineIndex).toBe(0);
+
+    const lines = codeOf(state).length;
+    for (let i = 0; i < lines; i++) sendLine(state);
+    if (state.beat === 'creep') {
+      step(state);
+      sendLine(state);
+    }
+    expect(state.beat).toBe('ship');
+    expect(state.built).toHaveLength(1);
+    expect(state.valuation).toBeGreaterThan(0);
+    expect(state.built[0]!.size).toBeCloseTo(request.value, 6);
+
+    step(state);
+    expect(state.requestIndex).toBe(1);
+    expect(state.beat).toBe('request');
+  });
+
+  it('ends a listed level with shipped and an over event', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    for (let i = 0; i < state.plan.requests.length; i++) shipRequest(state);
+    expect(state.over).toBe(true);
+    expect(state.ended).toBe('shipped');
+    expect(kinds(state.events)).toContain('over');
+    expect(state.built).toHaveLength(state.plan.requests.length);
+    // The last ship carries the near-miss reading and the level's bonus.
+    expect(state.valuation).toBeGreaterThan(state.plan.shipBonus);
+  });
+
+  it('chains the next level in endless and keeps the bar where it is', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: true });
+    const first = state.plan.id;
+    for (let i = 0; i < state.plan.requests.length; i++) shipRequest(state);
+    step(state);
+    expect(state.over).toBe(false);
+    expect(state.levelIndex).toBe(1);
+    expect(state.plan.id).not.toBe(first);
+    expect(state.requestIndex).toBe(0);
+  });
+});
+
+describe('keystrokes', () => {
+  it('records a mistyped character and waits for the backspace', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    const target = state.target;
+    step(state, { key: target[0]! });
+    expect(state.typed).toBe(target[0]);
+    expect(state.errors).toEqual([]);
+    const wrong = target[1] === 'z' ? 'q' : 'z';
+    step(state, { key: wrong });
+    expect(state.typed).toBe(`${target[0]}${wrong}`);
+    expect(state.errors).toEqual([1]);
+    expect(state.streak).toBe(0);
+    expect(state.hype).toBe(1);
+    step(state, { backspace: true });
+    expect(state.errors).toEqual([]);
+    expect(state.typed).toBe(target[0]);
+    // A backspace on an empty buffer is not an error, it is nothing.
+    step(state, { backspace: true });
+    step(state, { backspace: true });
+    expect(state.typed).toBe('');
+  });
+
+  it('sounds every keystroke with the streak as its pitch', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    step(state, { key: state.target[0]! });
+    const event = state.events.find((e) => e.kind === 'key');
+    expect(event).toMatchObject({ kind: 'key', ok: true, pitch: 0 });
+  });
+
+  it('answers a line sent with an error with hmm, and costs nothing else', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    sendLine(state); // the reply, clean
+    const before = { ...state, chat: [...state.chat] };
+    const line = state.lineIndex;
+    const valuation = state.valuation;
+    const context = state.context;
+    sendLine(state, 0);
+    expect(kinds(state.events)).toContain('hmm');
+    expect(state.typed).toBe('');
+    expect(state.errors).toEqual([]);
+    expect(state.lineIndex).toBe(line);
+    expect(state.target).toBe(before.target);
+    expect(state.valuation).toBe(valuation);
+    expect(state.streak).toBe(0);
+    expect(state.hype).toBe(1);
+    expect(state.context).toBeLessThan(context);
+    expect(state.context).toBeGreaterThan(context - 0.05);
+    expect(state.chat.at(-1)!.who).toBe('agent');
+    // And the same line still sends cleanly afterwards.
+    sendLine(state);
+    expect(state.lineIndex === line + 1 || state.beat !== 'code').toBe(true);
+  });
+
+  it('climbs the streak on a clean line and drops it on a bad one', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    sendLine(state);
+    expect(state.streak).toBe(1);
+    sendLine(state);
+    expect(state.streak).toBe(2);
+    sendLine(state, 0);
+    expect(state.streak).toBe(0);
+  });
+});
+
+describe('the context bar', () => {
+  it('compacts inside a listed level and carries on', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    state.context = 0.00001;
+    step(state);
+    expect(kinds(state.events)).toContain('compaction');
+    expect(state.over).toBe(false);
+    expect(state.context).toBe(1);
+    expect(state.hype).toBe(1);
+    expect(state.streak).toBe(0);
+    expect(state.chat.at(-1)!.who).toBe('agent');
+  });
+
+  it('ends the run on an empty bar in endless and in hardcore', () => {
+    const endless = createRun({ seed: 4, tier: 0, endless: true });
+    endless.context = 0.00001;
+    step(endless);
+    expect(endless.over).toBe(true);
+    expect(endless.ended).toBe('context');
+
+    const hard = createRun({ seed: 4, tier: 3, endless: false });
+    hard.context = 0.00001;
+    step(hard);
+    expect(hard.over).toBe(true);
+    expect(hard.ended).toBe('context');
+    expect(kinds(hard.events)).toContain('over');
+  });
+
+  it('burns the bar on a mistyped character in hardcore only', () => {
+    const burn = tierContext(DEFAULT_PATTERNS, 3).hardcoreBurnPerError;
+    const hard = createRun({ seed: 4, tier: 3, endless: false });
+    toTyping(hard);
+    const before = hard.context;
+    step(hard, { key: hard.target[0] === 'z' ? 'q' : 'z' });
+    expect(before - hard.context).toBeGreaterThan(burn * 0.9);
+
+    const easy = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(easy);
+    const was = easy.context;
+    step(easy, { key: easy.target[0] === 'z' ? 'q' : 'z' });
+    expect(was - easy.context).toBeLessThan(burn);
+  });
+});
+
+describe('copilot', () => {
+  it('turns on at the streak, takes a line on tab, and pays less for it', () => {
+    const state = createRun({ seed: 2, tier: 0, endless: false });
+    const bot = makeBot('perfect', 2);
+    let guard = 0;
+    while (!state.over && state.copilot === null && guard < 40000) {
+      step(state, bot(state));
+      guard += 1;
+    }
+    expect(state.copilot).not.toBeNull();
+    while (state.beat !== 'code' && !state.over) step(state, bot(state));
+    const request = state.plan.requests[state.requestIndex]!;
+    step(state, { tab: true });
+    expect(state.typed).toBe(state.target);
+    expect(state.errors).toEqual([]);
+    expect(state.copilot).toBeNull();
+    expect(state.discountShare).toBeGreaterThan(0);
+    const before = state.valuation;
+    shipRequest(state);
+    const paid = state.valuation - before;
+    expect(paid).toBeLessThan(request.value * state.hype + 1e-9 + request.value);
+    expect(state.built.at(-1)!.size).toBeLessThan(request.value);
+  });
+
+  it('never offers copilot in hardcore', () => {
+    const state = createRun({ seed: 2, tier: 3, endless: false });
+    const bot = makeBot('perfect', 2);
+    let guard = 0;
+    while (!state.over && guard < 40000) {
+      step(state, bot(state));
+      expect(state.copilot).toBeNull();
+      guard += 1;
+    }
+  });
+});
+
+describe('scope creep', () => {
+  it('shows the ask a step before the line is typeable', () => {
+    let state = createRun({ seed: 1, tier: 0, endless: false });
+    let found = false;
+    for (let seed = 1; seed <= 12 && !found; seed++) {
+      state = createRun({ seed, tier: 0, endless: false });
+      if (state.plan.requests.some((r) => r.creep)) found = true;
+    }
+    expect(found).toBe(true);
+    const index = state.plan.requests.findIndex((r) => r.creep);
+    for (let i = 0; i < index; i++) shipRequest(state);
+    const request = state.plan.requests[state.requestIndex]!;
+    expect(request.creep).toBeDefined();
+    const lines = codeOf(state).length;
+    sendLine(state); // the reply
+    for (let i = 0; i < lines; i++) sendLine(state);
+    expect(state.beat).toBe('creep');
+    expect(state.chat.at(-1)).toMatchObject({ who: 'user', line: request.creep!.ask });
+    step(state, { key: 'a' }); // the creep frame swallows the keystroke
+    expect(state.typed).toBe('');
+    expect(state.beat).toBe('code');
+    expect(state.target).toBe(request.creep!.line);
+    expect(codeOf(state)).toHaveLength(lines + 1);
+  });
+});
+
+describe('determinism', () => {
+  const stream: RunInput[] = [];
+  for (let i = 0; i < 4000; i++) {
+    stream.push(i % 37 === 0 ? { backspace: true } : i % 11 === 0 ? { enter: true } : {});
+  }
+
+  function run(): RunState {
+    const state = createRun({
+      seed: 8,
+      tier: 1,
+      endless: true,
+      weakBigrams: { '))': 3 },
+      stack: 'python',
+    });
+    const bot = makeBot('typist:55:0.04', 8);
+    for (let i = 0; i < 20000 && !state.over; i++) {
+      step(state, i % 100 === 0 ? stream[i % stream.length]! : bot(state));
+    }
+    return state;
+  }
+
+  it('gives a byte-identical state for the same levers, seed and input', () => {
+    expect(JSON.stringify(run())).toBe(JSON.stringify(run()));
+  });
+
+  it('gives a different run for a different seed', () => {
+    const a = createRun({ seed: 1, tier: 0, endless: false });
+    const b = createRun({ seed: 2, tier: 0, endless: false });
+    expect(JSON.stringify(a.plan.requests.map((r) => r.snippet.id))).not.toBe(
+      JSON.stringify(b.plan.requests.map((r) => r.snippet.id)),
+    );
+  });
+});
+
+describe('the run', () => {
+  it('hands the shell the plan, the code, the levers and the agent name', () => {
+    const state = createRun({ seed: 4, tier: 2 as Tier, endless: false, agentName: 'Bo' });
+    expect(agentNameOf(state)).toBe('Bo');
+    expect(leversOf(state)).toBe(DEFAULT_PATTERNS);
+    expect(planOf(state)).toBe(state.plan);
+    expect(codeOf(state).length).toBeGreaterThan(0);
+    expect(createRun({ seed: 4, tier: 0, endless: false }).plan.tier).toBe(0);
+    expect(agentNameOf(createRun({ seed: 4, tier: 0, endless: false }))).toBe('Claudette');
+  });
+
+  it('drains its events every step and stops stepping once it is over', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    expect(state.events.length).toBeGreaterThan(0);
+    step(state);
+    const after = state.events.length;
+    expect(after).toBeLessThanOrEqual(1);
+    state.over = true;
+    const clock = state.clock;
+    step(state, { key: 'a' });
+    expect(state.clock).toBe(clock);
+    expect(state.events).toEqual([]);
+  });
+
+  it('starts a level at a level the caller names', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false, levelIndex: 3 });
+    expect(state.plan.id).toBe(DEFAULT_PATTERNS.levels.levels[3]!.id);
+    expect(() => createRun({ seed: 4, tier: 0, endless: false, levelIndex: 99 })).toThrow(
+      'patterns/levels.json: levels.99',
+    );
+  });
+});

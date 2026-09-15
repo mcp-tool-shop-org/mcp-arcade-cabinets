@@ -1,0 +1,32 @@
+{
+  "tiers": {
+    "0": {
+      "drainPerSec": 0.004,
+      "drainScale": 1,
+      "messageCost": 0.03,
+      "refillShare": 0.6,
+      "hardcoreBurnPerError": 0
+    },
+    "1": {
+      "drainPerSec": 0.004,
+      "drainScale": 1.3,
+      "messageCost": 0.04,
+      "refillShare": 0.55,
+      "hardcoreBurnPerError": 0
+    },
+    "2": {
+      "drainPerSec": 0.004,
+      "drainScale": 1.7,
+      "messageCost": 0.05,
+      "refillShare": 0.5,
+      "hardcoreBurnPerError": 0
+    },
+    "3": {
+      "drainPerSec": 0.004,
+      "drainScale": 2.4,
+      "messageCost": 0.06,
+      "refillShare": 0.45,
+      "hardcoreBurnPerError": 0.01
+    }
+  }
+}

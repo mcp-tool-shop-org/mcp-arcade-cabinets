@@ -1,0 +1,422 @@
+[
+  {
+    "id": "cal-sq-d1-001",
+    "stack": "sql",
+    "band": 1,
+    "title": "select all columns",
+    "code": "SELECT *\nFROM users;",
+    "notes": ["Retrieves all columns from the users table."],
+    "topics": ["select", "basic-query"]
+  },
+  {
+    "id": "cal-sq-d1-002",
+    "stack": "sql",
+    "band": 1,
+    "title": "insert single row",
+    "code": "INSERT INTO tags (name)\nVALUES ('urgent');",
+    "notes": ["Inserts a single row into the tags table with a name value."],
+    "topics": ["insert", "dml"]
+  },
+  {
+    "id": "cal-sq-d1-003",
+    "stack": "sql",
+    "band": 1,
+    "title": "delete with where",
+    "code": "DELETE FROM sessions\nWHERE expired = true;",
+    "notes": ["Removes all rows from sessions where the expired flag is true."],
+    "topics": ["delete", "where", "dml"]
+  },
+  {
+    "id": "cal-sq-d1-004",
+    "stack": "sql",
+    "band": 1,
+    "title": "simple count",
+    "code": "SELECT COUNT(*) AS total\nFROM orders\nWHERE status = 'shipped';",
+    "notes": ["Counts the number of orders with a shipped status."],
+    "topics": ["aggregate", "count", "where"]
+  },
+  {
+    "id": "cal-sq-d1-005",
+    "stack": "sql",
+    "band": 1,
+    "title": "update single column",
+    "code": "UPDATE products\nSET price = 29.99\nWHERE id = 42;",
+    "notes": ["Updates the price of a single product identified by its id."],
+    "topics": ["update", "set", "where"]
+  },
+  {
+    "id": "sql-insert",
+    "stack": "sql",
+    "band": 1,
+    "title": "INSERT row",
+    "code": "INSERT INTO products (name, price, category)\nVALUES ('Mechanical Keyboard', 89.99, 'peripherals');",
+    "notes": [
+      "INSERT INTO adds a new row to a table.",
+      "Column list and VALUES must match in order and count."
+    ],
+    "topics": ["insert", "values", "dml"]
+  },
+  {
+    "id": "cal-sq-d2-001",
+    "stack": "sql",
+    "band": 2,
+    "title": "inner join with aliases",
+    "code": "SELECT o.id, c.name, o.total,\n    c.email, o.status\nFROM orders o\nINNER JOIN customers c\n    ON c.id = o.customer_id\nWHERE o.total > 100.00\n    AND c.active = true\nORDER BY o.total DESC;",
+    "notes": [
+      "Joins orders with customers on a foreign key, filtering by total and active status."
+    ],
+    "topics": ["join", "inner-join", "aliases", "order-by"]
+  },
+  {
+    "id": "cal-sq-d2-002",
+    "stack": "sql",
+    "band": 2,
+    "title": "group by with having and coalesce",
+    "code": "SELECT department,\n    COUNT(*) AS headcount,\n    ROUND(AVG(salary), 2) AS avg_sal,\n    COALESCE(SUM(bonus), 0) AS total_bonus\nFROM employees\nWHERE hire_date >= '2020-01-01'\nGROUP BY department\nHAVING COUNT(*) >= 5\nORDER BY avg_sal DESC;",
+    "notes": [
+      "Aggregates employee stats per department with rounding, null handling, and a minimum headcount filter."
+    ],
+    "topics": ["group-by", "having", "aggregate", "coalesce"]
+  },
+  {
+    "id": "cal-sq-d2-003",
+    "stack": "sql",
+    "band": 2,
+    "title": "left join with null handling",
+    "code": "SELECT u.name,\n    COALESCE(p.bio, 'No bio') AS bio,\n    COALESCE(p.avatar_url, '/default.png') AS avatar\nFROM users u\nLEFT JOIN profiles p\n    ON p.user_id = u.id\nWHERE u.active = true\nORDER BY u.name;",
+    "notes": [
+      "Left joins users to profiles, substituting defaults for null bio and avatar fields."
+    ],
+    "topics": ["left-join", "coalesce", "null-handling"]
+  },
+  {
+    "id": "cal-sq-d2-004",
+    "stack": "sql",
+    "band": 2,
+    "title": "insert from select with type cast",
+    "code": "INSERT INTO monthly_stats\n    (month, region, total, avg_order)\nSELECT\n    DATE_TRUNC('month', o.created_at),\n    c.region,\n    SUM(o.total)::NUMERIC(12, 2),\n    AVG(o.total)::NUMERIC(10, 2)\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nGROUP BY 1, 2;",
+    "notes": ["Inserts aggregated monthly stats per region using a SELECT with type casts."],
+    "topics": ["insert-select", "type-cast", "aggregate"]
+  },
+  {
+    "id": "cal-sq-d2-005",
+    "stack": "sql",
+    "band": 2,
+    "title": "multi-row values with expressions",
+    "code": "INSERT INTO colors (name, hex, rgb_r, rgb_g, rgb_b)\nVALUES\n    ('red', '#FF0000', 255, 0, 0),\n    ('green', '#00FF00', 0, 255, 0),\n    ('blue', '#0000FF', 0, 0, 255),\n    ('white', '#FFFFFF', 255, 255, 255),\n    ('black', '#000000', 0, 0, 0);",
+    "notes": ["Inserts five color rows with hex codes and RGB components in a single statement."],
+    "topics": ["insert", "multi-row", "values"]
+  },
+  {
+    "id": "sql-join",
+    "stack": "sql",
+    "band": 2,
+    "title": "Inner JOIN",
+    "code": "SELECT o.id, c.name, o.total\nFROM orders o\nINNER JOIN customers c ON c.id = o.customer_id\nWHERE o.total > 100;",
+    "notes": [
+      "JOIN combines rows from two tables on a matching key.",
+      "Table aliases (o, c) keep queries concise."
+    ],
+    "topics": ["join", "inner-join", "aliases"]
+  },
+  {
+    "id": "sql-update",
+    "stack": "sql",
+    "band": 2,
+    "title": "UPDATE with WHERE",
+    "code": "UPDATE employees\nSET salary = salary * 1.05,\n    updated_at = CURRENT_TIMESTAMP\nWHERE department = 'engineering';",
+    "notes": [
+      "Always include a WHERE clause to avoid updating every row.",
+      "Multiple columns are separated by commas in the SET clause."
+    ],
+    "topics": ["update", "set", "where", "dml"]
+  },
+  {
+    "id": "cal-sq-d3-001",
+    "stack": "sql",
+    "band": 3,
+    "title": "cte with subquery filter",
+    "code": "WITH monthly AS (\n    SELECT\n        DATE_TRUNC('month', created_at) AS month,\n        SUM(amount) AS total\n    FROM payments\n    WHERE status = 'completed'\n    GROUP BY DATE_TRUNC('month', created_at)\n)\nSELECT month, total\nFROM monthly\nWHERE total > (\n        SELECT AVG(total) FROM monthly\n    )\nORDER BY month;",
+    "notes": [
+      "Uses a CTE for monthly payment totals, then filters for months above average via a subquery."
+    ],
+    "topics": ["cte", "subquery", "aggregation"]
+  },
+  {
+    "id": "cal-sq-d3-002",
+    "stack": "sql",
+    "band": 3,
+    "title": "correlated subquery with comparison",
+    "code": "SELECT e.name, e.department, e.salary\nFROM employees e\nWHERE e.salary > (\n        SELECT AVG(e2.salary)\n        FROM employees e2\n        WHERE e2.department = e.department\n    )\nORDER BY e.department, e.salary DESC;",
+    "notes": [
+      "Finds employees earning above their department average using a correlated subquery."
+    ],
+    "topics": ["correlated-subquery", "avg", "comparison"]
+  },
+  {
+    "id": "cal-sq-d3-003",
+    "stack": "sql",
+    "band": 3,
+    "title": "case expression with join",
+    "code": "SELECT\n    p.name,\n    p.price,\n    c.name AS category,\n    CASE\n        WHEN p.price < 10.00 THEN 'budget'\n        WHEN p.price < 50.00 THEN 'mid-range'\n        WHEN p.price < 200.00 THEN 'premium'\n        ELSE 'luxury'\n    END AS tier\nFROM products p\nJOIN categories c ON c.id = p.category_id\nWHERE p.active = true\nORDER BY p.price;",
+    "notes": [
+      "Classifies products into pricing tiers using a CASE expression, joined with categories."
+    ],
+    "topics": ["case", "join", "classification"]
+  },
+  {
+    "id": "cal-sq-d3-004",
+    "stack": "sql",
+    "band": 3,
+    "title": "create table with multiple constraints",
+    "code": "CREATE TABLE invoices (\n    id SERIAL PRIMARY KEY,\n    customer_id INTEGER NOT NULL\n        REFERENCES customers(id),\n    amount NUMERIC(10, 2) NOT NULL\n        CHECK (amount > 0),\n    tax NUMERIC(10, 2) DEFAULT 0.00,\n    issued_at TIMESTAMP\n        DEFAULT CURRENT_TIMESTAMP,\n    status VARCHAR(20) DEFAULT 'draft'\n);",
+    "notes": [
+      "Creates an invoices table with primary key, foreign key, check constraint, and default values."
+    ],
+    "topics": ["ddl", "create-table", "constraints", "references"]
+  },
+  {
+    "id": "cal-sq-d3-005",
+    "stack": "sql",
+    "band": 3,
+    "title": "exists with nested in",
+    "code": "SELECT c.id, c.name, c.email\nFROM customers c\nWHERE EXISTS (\n        SELECT 1\n        FROM orders o\n        WHERE o.customer_id = c.id\n            AND o.status IN (\n                'shipped', 'delivered'\n            )\n    )\nORDER BY c.name;",
+    "notes": ["Finds customers who have at least one shipped or delivered order using EXISTS."],
+    "topics": ["exists", "subquery", "in-list"]
+  },
+  {
+    "id": "sql-subquery",
+    "stack": "sql",
+    "band": 3,
+    "title": "Subquery filter",
+    "code": "SELECT name, email\nFROM users\nWHERE id IN (\n  SELECT user_id FROM purchases\n  WHERE amount >= 500\n);",
+    "notes": [
+      "Subqueries let you filter by results from another query.",
+      "IN checks membership against the inner result set."
+    ],
+    "topics": ["subquery", "where-in", "nesting"]
+  },
+  {
+    "id": "cal-sq-d4-001",
+    "stack": "sql",
+    "band": 4,
+    "title": "window functions with partition",
+    "code": "SELECT\n    e.name,\n    e.department,\n    e.salary,\n    RANK() OVER (\n        PARTITION BY e.department\n        ORDER BY e.salary DESC\n    ) AS dept_rank,\n    ROUND(\n        e.salary * 100.0 / SUM(e.salary) OVER (\n            PARTITION BY e.department\n        ), 2\n    ) AS pct_of_dept\nFROM employees e\nWHERE e.active = true\nORDER BY e.department, dept_rank;",
+    "notes": [
+      "Ranks employees by salary within each department and computes their percentage share."
+    ],
+    "topics": ["window-function", "rank", "partition-by"]
+  },
+  {
+    "id": "cal-sq-d4-002",
+    "stack": "sql",
+    "band": 4,
+    "title": "multi-cte with left join",
+    "code": "WITH active_users AS (\n    SELECT id, name, email\n    FROM users\n    WHERE active = true\n),\nrecent_orders AS (\n    SELECT user_id,\n        COUNT(*) AS order_count,\n        MAX(created_at) AS last_order\n    FROM orders\n    WHERE created_at >= CURRENT_DATE\n        - INTERVAL '90 days'\n    GROUP BY user_id\n)\nSELECT a.name, a.email,\n    COALESCE(r.order_count, 0) AS orders_90d,\n    r.last_order\nFROM active_users a\nLEFT JOIN recent_orders r\n    ON r.user_id = a.id\nORDER BY orders_90d DESC;",
+    "notes": ["Chains two CTEs to join active users with their recent 90-day order activity."],
+    "topics": ["cte", "multi-cte", "left-join", "interval"]
+  },
+  {
+    "id": "cal-sq-d4-003",
+    "stack": "sql",
+    "band": 4,
+    "title": "update from derived table",
+    "code": "UPDATE inventory i\nSET quantity = i.quantity - o.qty,\n    updated_at = CURRENT_TIMESTAMP\nFROM (\n    SELECT product_id,\n        SUM(quantity) AS qty\n    FROM order_items\n    WHERE order_id IN (\n            SELECT id FROM orders\n            WHERE status = 'confirmed'\n                AND created_at >= CURRENT_DATE\n                    - INTERVAL '1 day'\n        )\n    GROUP BY product_id\n) o\nWHERE i.product_id = o.product_id\n    AND i.quantity >= o.qty;",
+    "notes": ["Decrements inventory based on confirmed order totals from a nested derived table."],
+    "topics": ["update-from", "subquery", "nested-in"]
+  },
+  {
+    "id": "cal-sq-d4-004",
+    "stack": "sql",
+    "band": 4,
+    "title": "exists and not exists correlated",
+    "code": "SELECT c.id, c.name, c.email\nFROM customers c\nWHERE EXISTS (\n        SELECT 1\n        FROM orders o\n        WHERE o.customer_id = c.id\n            AND o.total >= 500.00\n            AND o.created_at >= CURRENT_DATE\n                - INTERVAL '30 days'\n    )\n    AND NOT EXISTS (\n        SELECT 1\n        FROM complaints cmp\n        WHERE cmp.customer_id = c.id\n            AND cmp.resolved = false\n    )\nORDER BY c.name;",
+    "notes": ["Finds customers with recent large orders who have no unresolved complaints."],
+    "topics": ["exists", "not-exists", "correlated-subquery"]
+  },
+  {
+    "id": "cal-sq-d4-005",
+    "stack": "sql",
+    "band": 4,
+    "title": "upsert with on conflict",
+    "code": "INSERT INTO product_stats (\n    product_id, view_count, last_viewed_at\n)\nSELECT\n    pv.product_id,\n    COUNT(*) AS views,\n    MAX(pv.viewed_at) AS last_view\nFROM page_views pv\nWHERE pv.viewed_at >= CURRENT_DATE\n    - INTERVAL '1 day'\nGROUP BY pv.product_id\nON CONFLICT (product_id)\nDO UPDATE SET\n    view_count = product_stats.view_count\n        + EXCLUDED.view_count,\n    last_viewed_at = GREATEST(\n        product_stats.last_viewed_at,\n        EXCLUDED.last_viewed_at\n    );",
+    "notes": [
+      "Aggregates daily page views and upserts into stats, accumulating counts and keeping the latest timestamp."
+    ],
+    "topics": ["upsert", "on-conflict", "insert-select", "greatest"]
+  },
+  {
+    "id": "sql-cte",
+    "stack": "sql",
+    "band": 4,
+    "title": "CTE + aggregate",
+    "code": "WITH counts AS (\n  SELECT user_id, COUNT(*) AS n\n  FROM events\n  WHERE event_type = 'click'\n  GROUP BY user_id\n)\nSELECT user_id, n\nFROM counts\nORDER BY n DESC\nLIMIT 10;",
+    "notes": ["CTEs make queries readable.", "Practice quotes, commas, and indentation."],
+    "topics": ["cte", "group-by", "order-by"]
+  },
+  {
+    "id": "cal-sq-d5-001",
+    "stack": "sql",
+    "band": 5,
+    "title": "window lag with trend classification",
+    "code": "WITH daily_rev AS (\n    SELECT\n        DATE_TRUNC('day', created_at) AS day,\n        SUM(amount) AS revenue\n    FROM payments\n    WHERE status = 'completed'\n        AND created_at >= CURRENT_DATE\n            - INTERVAL '60 days'\n    GROUP BY DATE_TRUNC('day', created_at)\n)\nSELECT\n    day,\n    revenue,\n    LAG(revenue) OVER (ORDER BY day) AS prev_day,\n    CASE\n        WHEN LAG(revenue) OVER (\n                ORDER BY day\n            ) IS NULL THEN 'N/A'\n        WHEN revenue > LAG(revenue) OVER (\n                ORDER BY day\n            ) * 1.10 THEN 'growth'\n        WHEN revenue < LAG(revenue) OVER (\n                ORDER BY day\n            ) * 0.90 THEN 'decline'\n        ELSE 'stable'\n    END AS trend\nFROM daily_rev\nORDER BY day;",
+    "notes": [
+      "Classifies daily revenue trends by comparing each day to the prior using LAG inside a CASE expression."
+    ],
+    "topics": ["window-function", "lag", "case", "cte"]
+  },
+  {
+    "id": "cal-sq-d5-002",
+    "stack": "sql",
+    "band": 5,
+    "title": "lateral join with date series",
+    "code": "SELECT\n    d.day::DATE,\n    COALESCE(s.total_sales, 0.00) AS total_sales,\n    COALESCE(s.order_count, 0) AS order_count\nFROM GENERATE_SERIES(\n        CURRENT_DATE - INTERVAL '30 days',\n        CURRENT_DATE,\n        '1 day'::INTERVAL\n    ) AS d(day)\nLEFT JOIN LATERAL (\n        SELECT\n            SUM(o.total) AS total_sales,\n            COUNT(*) AS order_count\n        FROM orders o\n        WHERE o.created_at >= d.day\n            AND o.created_at < d.day\n                + INTERVAL '1 day'\n            AND o.status IN (\n                'shipped', 'delivered'\n            )\n    ) s ON true\nORDER BY d.day;",
+    "notes": [
+      "Generates a continuous date range and lateral joins daily order totals, filling gaps with zeros."
+    ],
+    "topics": ["lateral-join", "generate-series", "coalesce"]
+  },
+  {
+    "id": "cal-sq-d5-003",
+    "stack": "sql",
+    "band": 5,
+    "title": "percentile analytics with ntile",
+    "code": "WITH scored AS (\n    SELECT\n        e.id,\n        e.name,\n        e.department,\n        e.salary,\n        NTILE(4) OVER (\n            PARTITION BY e.department\n            ORDER BY e.salary\n        ) AS quartile,\n        PERCENT_RANK() OVER (\n            PARTITION BY e.department\n            ORDER BY e.salary\n        ) AS pct_rank\n    FROM employees e\n    WHERE e.active = true\n)\nSELECT\n    name,\n    department,\n    salary,\n    quartile,\n    ROUND(pct_rank::NUMERIC, 3) AS pct_rank\nFROM scored\nWHERE quartile = 4\nORDER BY department, salary DESC;",
+    "notes": [
+      "Assigns salary quartiles and percent ranks within departments, filtering for top quartile employees."
+    ],
+    "topics": ["ntile", "percent-rank", "window-function", "cte"]
+  },
+  {
+    "id": "cal-sq-d5-004",
+    "stack": "sql",
+    "band": 5,
+    "title": "writeable cte upsert pattern",
+    "code": "WITH incoming AS (\n    SELECT\n        sku,\n        SUM(quantity) AS total_qty,\n        MAX(received_at) AS last_recv\n    FROM shipment_items\n    WHERE shipment_id IN (\n            SELECT id FROM shipments\n            WHERE status = 'arrived'\n                AND processed = false\n        )\n    GROUP BY sku\n),\nupdated AS (\n    UPDATE warehouse_stock ws\n    SET on_hand = ws.on_hand + i.total_qty,\n        last_restock = i.last_recv\n    FROM incoming i\n    WHERE ws.sku = i.sku\n    RETURNING ws.sku\n)\nINSERT INTO warehouse_stock (\n    sku, on_hand, last_restock\n)\nSELECT sku, total_qty, last_recv\nFROM incoming\nWHERE sku NOT IN (\n        SELECT sku FROM updated\n    );",
+    "notes": [
+      "Uses writeable CTEs to update existing stock and insert new SKUs from arrived shipments."
+    ],
+    "topics": ["writeable-cte", "upsert", "returning"]
+  },
+  {
+    "id": "cal-sq-d5-005",
+    "stack": "sql",
+    "band": 5,
+    "title": "grouping sets with filter clause",
+    "code": "SELECT\n    COALESCE(region, '(all)') AS region,\n    COALESCE(category, '(all)') AS category,\n    COUNT(*) AS order_count,\n    SUM(total) AS revenue,\n    ROUND(AVG(total), 2) AS avg_order,\n    COUNT(*) FILTER (\n            WHERE total >= 100.00\n        ) AS large_orders\nFROM orders o\nJOIN products p\n    ON p.id = o.product_id\nWHERE o.created_at >= '2024-01-01'\n    AND o.status <> 'cancelled'\nGROUP BY GROUPING SETS (\n        (region, category),\n        (region),\n        (category),\n        ()\n    )\nORDER BY region NULLS LAST,\n    category NULLS LAST;",
+    "notes": [
+      "Produces subtotals by region, category, combinations, and grand total using GROUPING SETS."
+    ],
+    "topics": ["grouping-sets", "filter-clause", "aggregate"]
+  },
+  {
+    "id": "cal-sq-d6-001",
+    "stack": "sql",
+    "band": 6,
+    "title": "recursive cte for org hierarchy",
+    "code": "WITH RECURSIVE org_tree AS (\n    SELECT\n        id,\n        name,\n        manager_id,\n        1 AS depth,\n        ARRAY[name] AS path\n    FROM employees\n    WHERE manager_id IS NULL\n    UNION ALL\n    SELECT\n        e.id,\n        e.name,\n        e.manager_id,\n        t.depth + 1,\n        t.path || e.name\n    FROM employees e\n    INNER JOIN org_tree t\n        ON t.id = e.manager_id\n    WHERE t.depth < 10\n)\nSELECT\n    id,\n    name,\n    depth,\n    ARRAY_TO_STRING(path, ' > ') AS chain,\n    REPEAT('  ', depth - 1) || name AS indented\nFROM org_tree\nORDER BY path;",
+    "notes": [
+      "Traverses an employee hierarchy recursively, building breadcrumb paths from root to each node."
+    ],
+    "topics": ["recursive-cte", "hierarchy", "array"]
+  },
+  {
+    "id": "cal-sq-d6-002",
+    "stack": "sql",
+    "band": 6,
+    "title": "monthly sales pivot with trend",
+    "code": "WITH monthly AS (\n    SELECT\n        product_id,\n        DATE_TRUNC('month', sold_at) AS month,\n        SUM(quantity) AS qty,\n        SUM(quantity * unit_price) AS revenue\n    FROM sales\n    WHERE sold_at >= DATE_TRUNC('year',\n            CURRENT_DATE)\n    GROUP BY product_id,\n        DATE_TRUNC('month', sold_at)\n),\nranked AS (\n    SELECT\n        m.*,\n        p.name AS product_name,\n        p.category,\n        ROW_NUMBER() OVER (\n            PARTITION BY m.month\n            ORDER BY m.revenue DESC\n        ) AS month_rank,\n        LAG(m.revenue) OVER (\n            PARTITION BY m.product_id\n            ORDER BY m.month\n        ) AS prev_revenue\n    FROM monthly m\n    JOIN products p ON p.id = m.product_id\n)\nSELECT\n    product_name,\n    category,\n    month,\n    revenue,\n    month_rank,\n    CASE\n        WHEN prev_revenue IS NULL THEN 'new'\n        WHEN revenue > prev_revenue * 1.20\n            THEN 'surge'\n        WHEN revenue < prev_revenue * 0.80\n            THEN 'drop'\n        ELSE 'steady'\n    END AS trend\nFROM ranked\nWHERE month_rank <= 5\nORDER BY month, month_rank;",
+    "notes": [
+      "Ranks monthly product sales and classifies revenue trends compared to prior months."
+    ],
+    "topics": ["cte", "window-function", "lag", "case", "rank"]
+  },
+  {
+    "id": "cal-sq-d6-003",
+    "stack": "sql",
+    "band": 6,
+    "title": "plpgsql function for date bucketing",
+    "code": "CREATE OR REPLACE FUNCTION date_bucket_summary(\n    p_start DATE,\n    p_end DATE,\n    p_interval INTERVAL DEFAULT '1 week'\n)\nRETURNS TABLE (\n    bucket_start DATE,\n    bucket_end DATE,\n    order_count BIGINT,\n    total_revenue NUMERIC(12, 2),\n    avg_order NUMERIC(10, 2)\n) AS $$\nBEGIN\n    RETURN QUERY\n    SELECT\n        d.day::DATE AS bucket_start,\n        (d.day + p_interval)::DATE\n            AS bucket_end,\n        COUNT(o.id) AS order_count,\n        COALESCE(SUM(o.total), 0.00)\n            ::NUMERIC(12, 2),\n        COALESCE(AVG(o.total), 0.00)\n            ::NUMERIC(10, 2)\n    FROM GENERATE_SERIES(\n            p_start, p_end, p_interval\n        ) AS d(day)\n    LEFT JOIN orders o\n        ON o.created_at >= d.day\n            AND o.created_at < d.day\n                + p_interval\n    GROUP BY d.day\n    ORDER BY d.day;\nEND;\n$$ LANGUAGE plpgsql;",
+    "notes": [
+      "Creates a PL/pgSQL function that buckets orders into configurable intervals returning summary stats."
+    ],
+    "topics": ["function", "plpgsql", "generate-series", "returns-table"]
+  },
+  {
+    "id": "cal-sq-d6-004",
+    "stack": "sql",
+    "band": 6,
+    "title": "materialized view with multi-cte",
+    "code": "CREATE MATERIALIZED VIEW mv_customer_360 AS\nWITH order_stats AS (\n    SELECT\n        customer_id,\n        COUNT(*) AS total_orders,\n        SUM(total) AS lifetime_value,\n        AVG(total) AS avg_order,\n        MAX(created_at) AS last_order_at\n    FROM orders\n    WHERE status IN ('shipped', 'delivered')\n    GROUP BY customer_id\n),\nsupport_stats AS (\n    SELECT\n        customer_id,\n        COUNT(*) AS ticket_count,\n        AVG(\n            EXTRACT(EPOCH FROM\n                resolved_at - created_at\n            ) / 3600.0\n        ) AS avg_resolution_hrs\n    FROM support_tickets\n    WHERE resolved_at IS NOT NULL\n    GROUP BY customer_id\n)\nSELECT\n    c.id,\n    c.name,\n    c.email,\n    COALESCE(o.total_orders, 0) AS total_orders,\n    COALESCE(o.lifetime_value, 0.00)\n        AS lifetime_value,\n    ROUND(COALESCE(o.avg_order, 0.00), 2)\n        AS avg_order,\n    o.last_order_at,\n    COALESCE(s.ticket_count, 0) AS ticket_count,\n    ROUND(\n        COALESCE(s.avg_resolution_hrs, 0.0)\n            ::NUMERIC, 1\n    ) AS avg_resolution_hrs\nFROM customers c\nLEFT JOIN order_stats o\n    ON o.customer_id = c.id\nLEFT JOIN support_stats s\n    ON s.customer_id = c.id;\n\nCREATE UNIQUE INDEX idx_mv_cust360_id\n    ON mv_customer_360 (id);",
+    "notes": [
+      "Creates a materialized customer 360 view combining order and support metrics with a unique index."
+    ],
+    "topics": ["materialized-view", "cte", "left-join", "index"]
+  },
+  {
+    "id": "cal-sq-d6-005",
+    "stack": "sql",
+    "band": 6,
+    "title": "json aggregation with correlated subquery",
+    "code": "SELECT\n    d.name AS department,\n    JSON_AGG(\n        JSON_BUILD_OBJECT(\n            'id', e.id,\n            'name', e.name,\n            'role', e.role,\n            'salary', e.salary,\n            'skills', (\n                SELECT JSON_AGG(\n                        s.name ORDER BY s.name\n                    )\n                FROM employee_skills es\n                JOIN skills s\n                    ON s.id = es.skill_id\n                WHERE es.employee_id = e.id\n            )\n        ) ORDER BY e.name\n    ) AS members,\n    COUNT(*) AS headcount,\n    ROUND(AVG(e.salary), 2) AS avg_salary,\n    SUM(\n        CASE WHEN e.hire_date >= CURRENT_DATE\n                - INTERVAL '1 year'\n            THEN 1 ELSE 0\n        END\n    ) AS new_hires\nFROM departments d\nJOIN employees e\n    ON e.department_id = d.id\nWHERE d.active = true\nGROUP BY d.id, d.name\nHAVING COUNT(*) >= 3\nORDER BY d.name;",
+    "notes": [
+      "Aggregates employees into nested JSON per department including skills from a correlated subquery."
+    ],
+    "topics": ["json-agg", "json-build-object", "correlated-subquery", "case"]
+  },
+  {
+    "id": "cal-sq-d7-001",
+    "stack": "sql",
+    "band": 7,
+    "title": "recursive graph with cycle detection",
+    "code": "WITH RECURSIVE dep_graph AS (\n    SELECT\n        s.id AS service_id,\n        s.name AS service_name,\n        d.depends_on_id,\n        1 AS depth,\n        ARRAY[s.id] AS visited,\n        false AS is_cycle\n    FROM services s\n    JOIN service_deps d\n        ON d.service_id = s.id\n    WHERE s.name = 'api-gateway'\n    UNION ALL\n    SELECT\n        dg.service_id,\n        dg.service_name,\n        d2.depends_on_id,\n        dg.depth + 1,\n        dg.visited || d2.service_id,\n        d2.depends_on_id = ANY(dg.visited)\n    FROM dep_graph dg\n    JOIN service_deps d2\n        ON d2.service_id = dg.depends_on_id\n    WHERE NOT dg.is_cycle\n        AND dg.depth < 20\n)\nSELECT DISTINCT\n    service_name,\n    dep.name AS dependency,\n    g.depth,\n    g.is_cycle,\n    ARRAY_TO_STRING(\n        ARRAY(\n            SELECT s2.name\n            FROM UNNEST(g.visited)\n                WITH ORDINALITY\n                AS u(sid, ord)\n            JOIN services s2\n                ON s2.id = u.sid\n            ORDER BY u.ord\n        ), ' -> '\n    ) AS chain\nFROM dep_graph g\nJOIN services dep\n    ON dep.id = g.depends_on_id\nORDER BY g.depth, dependency;",
+    "notes": [
+      "Recursively walks a service dependency graph detecting cycles and building named traversal chains."
+    ],
+    "topics": ["recursive-cte", "graph", "cycle-detection", "array", "unnest"]
+  },
+  {
+    "id": "cal-sq-d7-002",
+    "stack": "sql",
+    "band": 7,
+    "title": "conversion funnel with chained ctes",
+    "code": "WITH funnel_events AS (\n    SELECT\n        user_id,\n        event_type,\n        created_at,\n        session_id,\n        ROW_NUMBER() OVER (\n            PARTITION BY user_id,\n                event_type\n            ORDER BY created_at\n        ) AS event_seq\n    FROM analytics_events\n    WHERE event_type IN (\n            'page_view', 'add_to_cart',\n            'checkout_start', 'purchase'\n        )\n        AND created_at >= CURRENT_DATE\n            - INTERVAL '30 days'\n),\nfirst_events AS (\n    SELECT user_id, event_type,\n        created_at, session_id\n    FROM funnel_events\n    WHERE event_seq = 1\n),\nfunnel AS (\n    SELECT\n        pv.user_id,\n        pv.created_at AS viewed_at,\n        ac.created_at AS carted_at,\n        cs.created_at AS checkout_at,\n        pu.created_at AS purchased_at,\n        EXTRACT(EPOCH FROM\n            pu.created_at - pv.created_at\n        ) / 3600.0 AS hrs_to_convert\n    FROM first_events pv\n    LEFT JOIN first_events ac\n        ON ac.user_id = pv.user_id\n            AND ac.event_type\n                = 'add_to_cart'\n    LEFT JOIN first_events cs\n        ON cs.user_id = pv.user_id\n            AND cs.event_type\n                = 'checkout_start'\n    LEFT JOIN first_events pu\n        ON pu.user_id = pv.user_id\n            AND pu.event_type\n                = 'purchase'\n    WHERE pv.event_type = 'page_view'\n)\nSELECT\n    COUNT(*) AS total_viewers,\n    COUNT(carted_at) AS added_to_cart,\n    COUNT(checkout_at) AS started_checkout,\n    COUNT(purchased_at) AS purchased,\n    ROUND(\n        100.0 * COUNT(purchased_at)\n            / NULLIF(COUNT(*), 0), 2\n    ) AS conversion_pct,\n    ROUND(\n        AVG(hrs_to_convert)::NUMERIC, 1\n    ) AS avg_hrs_to_buy\nFROM funnel;",
+    "notes": [
+      "Builds a four-step conversion funnel from analytics events using chained CTEs with window deduplication."
+    ],
+    "topics": ["cte", "funnel-analysis", "window-function", "self-join", "extract"]
+  },
+  {
+    "id": "cal-sq-d7-003",
+    "stack": "sql",
+    "band": 7,
+    "title": "crosstab pivot with case aggregates",
+    "code": "WITH months AS (\n    SELECT GENERATE_SERIES(\n        DATE_TRUNC('month', CURRENT_DATE)\n            - INTERVAL '5 months',\n        DATE_TRUNC('month', CURRENT_DATE),\n        '1 month'::INTERVAL\n    ) AS month_start\n),\nmonthly_sales AS (\n    SELECT\n        p.category,\n        DATE_TRUNC('month', s.sold_at) AS m,\n        SUM(s.quantity * s.unit_price)\n            AS revenue\n    FROM sales s\n    JOIN products p\n        ON p.id = s.product_id\n    WHERE s.sold_at >= (\n            SELECT MIN(month_start)\n            FROM months\n        )\n    GROUP BY p.category,\n        DATE_TRUNC('month', s.sold_at)\n),\npivoted AS (\n    SELECT\n        ms.category,\n        SUM(CASE WHEN ms.m = m0.month_start\n            THEN ms.revenue ELSE 0 END)\n            AS m0_rev,\n        SUM(CASE WHEN ms.m = m1.month_start\n            THEN ms.revenue ELSE 0 END)\n            AS m1_rev,\n        SUM(CASE WHEN ms.m = m2.month_start\n            THEN ms.revenue ELSE 0 END)\n            AS m2_rev,\n        SUM(CASE WHEN ms.m = m3.month_start\n            THEN ms.revenue ELSE 0 END)\n            AS m3_rev,\n        SUM(CASE WHEN ms.m = m4.month_start\n            THEN ms.revenue ELSE 0 END)\n            AS m4_rev,\n        SUM(CASE WHEN ms.m = m5.month_start\n            THEN ms.revenue ELSE 0 END)\n            AS m5_rev\n    FROM monthly_sales ms\n    CROSS JOIN (SELECT month_start FROM months\n                    OFFSET 0 LIMIT 1) m0\n    CROSS JOIN (SELECT month_start FROM months\n                    OFFSET 1 LIMIT 1) m1\n    CROSS JOIN (SELECT month_start FROM months\n                    OFFSET 2 LIMIT 1) m2\n    CROSS JOIN (SELECT month_start FROM months\n                    OFFSET 3 LIMIT 1) m3\n    CROSS JOIN (SELECT month_start FROM months\n                    OFFSET 4 LIMIT 1) m4\n    CROSS JOIN (SELECT month_start FROM months\n                    OFFSET 5 LIMIT 1) m5\n    GROUP BY ms.category\n)\nSELECT\n    category,\n    m0_rev, m1_rev, m2_rev,\n    m3_rev, m4_rev, m5_rev,\n    (m0_rev + m1_rev + m2_rev\n        + m3_rev + m4_rev + m5_rev)\n        AS total\nFROM pivoted\nORDER BY total DESC;",
+    "notes": [
+      "Emulates a crosstab by pivoting six months of category revenue using CASE inside aggregates over cross-joined anchors."
+    ],
+    "topics": ["pivot", "cross-join", "cte", "case", "generate-series"]
+  },
+  {
+    "id": "cal-sq-d7-004",
+    "stack": "sql",
+    "band": 7,
+    "title": "audit trigger with jsonb diff",
+    "code": "CREATE OR REPLACE FUNCTION audit_changes()\nRETURNS TRIGGER AS $$\nDECLARE\n    changed JSONB;\n    old_j JSONB;\n    new_j JSONB;\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        INSERT INTO audit_log (\n                table_name, record_id,\n                operation, old_data,\n                changed_by, changed_at\n            )\n            VALUES (\n                TG_TABLE_NAME, OLD.id,\n                'DELETE', TO_JSONB(OLD),\n                COALESCE(\n                    CURRENT_SETTING(\n                        'app.current_user',\n                        true\n                    ), 'system'\n                ),\n                CURRENT_TIMESTAMP\n            );\n        RETURN OLD;\n    END IF;\n    IF TG_OP = 'INSERT' THEN\n        INSERT INTO audit_log (\n                table_name, record_id,\n                operation, new_data,\n                changed_by, changed_at\n            )\n            VALUES (\n                TG_TABLE_NAME, NEW.id,\n                'INSERT', TO_JSONB(NEW),\n                COALESCE(\n                    CURRENT_SETTING(\n                        'app.current_user',\n                        true\n                    ), 'system'\n                ),\n                CURRENT_TIMESTAMP\n            );\n        RETURN NEW;\n    END IF;\n    old_j := TO_JSONB(OLD);\n    new_j := TO_JSONB(NEW);\n    SELECT JSONB_OBJECT_AGG(\n            key, value\n        )\n        INTO changed\n        FROM JSONB_EACH(new_j)\n        WHERE new_j -> key\n            IS DISTINCT FROM\n            old_j -> key;\n    IF changed IS NOT NULL THEN\n        INSERT INTO audit_log (\n                table_name, record_id,\n                operation, old_data,\n                new_data, changed_fields,\n                changed_by, changed_at\n            )\n            VALUES (\n                TG_TABLE_NAME, NEW.id,\n                'UPDATE', old_j,\n                new_j, changed,\n                COALESCE(\n                    CURRENT_SETTING(\n                        'app.current_user',\n                        true\n                    ), 'system'\n                ),\n                CURRENT_TIMESTAMP\n            );\n    END IF;\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql;\n\nCREATE TRIGGER trg_orders_audit\n    AFTER INSERT OR UPDATE OR DELETE\n    ON orders\n    FOR EACH ROW\n    EXECUTE FUNCTION audit_changes();",
+    "notes": [
+      "Creates a generic audit trigger that logs all DML operations with JSONB diff detection for changed fields."
+    ],
+    "topics": ["trigger", "plpgsql", "audit", "jsonb", "function"]
+  },
+  {
+    "id": "cal-sq-d7-005",
+    "stack": "sql",
+    "band": 7,
+    "title": "recursive bom with cost rollup",
+    "code": "WITH RECURSIVE bom_tree AS (\n    SELECT\n        p.id AS part_id,\n        p.name AS part_name,\n        p.unit_cost,\n        1 AS quantity,\n        p.unit_cost AS line_cost,\n        0 AS depth,\n        ARRAY[p.name] AS path\n    FROM parts p\n    WHERE p.id = 1\n    UNION ALL\n    SELECT\n        child.id,\n        child.name,\n        child.unit_cost,\n        b.qty_required * t.quantity,\n        child.unit_cost\n            * b.qty_required\n            * t.quantity,\n        t.depth + 1,\n        t.path || child.name\n    FROM bom_tree t\n    JOIN bill_of_materials b\n        ON b.parent_part_id = t.part_id\n    JOIN parts child\n        ON child.id = b.child_part_id\n    WHERE t.depth < 15\n        AND NOT (\n            child.id = ANY((\n                SELECT UNNEST(\n                    ARRAY(\n                        SELECT p2.id\n                        FROM UNNEST(t.path)\n                            AS pn\n                        JOIN parts p2\n                            ON p2.name = pn\n                    )\n                )\n            ))\n        )\n),\nrollup AS (\n    SELECT\n        part_id,\n        part_name,\n        depth,\n        quantity,\n        line_cost,\n        SUM(line_cost) OVER ()\n            AS total_cost,\n        ROUND(\n            100.0 * line_cost\n                / NULLIF(\n                    SUM(line_cost)\n                        OVER (), 0\n                ), 2\n        ) AS cost_pct,\n        ARRAY_TO_STRING(\n            path, ' / '\n        ) AS chain\n    FROM bom_tree\n)\nSELECT\n    part_name,\n    depth,\n    quantity,\n    line_cost,\n    cost_pct,\n    chain\nFROM rollup\nORDER BY path;",
+    "notes": [
+      "Explodes a recursive bill of materials with cycle prevention and computes each component cost share of the total."
+    ],
+    "topics": ["recursive-cte", "bill-of-materials", "window-function", "array", "cost-rollup"]
+  }
+]
