@@ -208,10 +208,13 @@ export function integrationSnippets(seeds: readonly IntegrationSeed[]): Snippet[
 /** A corpus with the integration stack seasoned in. The base corpus is untouched. */
 export function withIntegration(corpus: Corpus, snippets: readonly Snippet[]): Corpus {
   if (snippets.length === 0) return corpus;
+  // The model is rebuilt over the seasoned corpus so an integration snippet is
+  // valued by a model that has seen its envelopes (the review's second change).
+  const all = [...corpus.snippets, ...snippets];
   return {
-    snippets: [...corpus.snippets, ...snippets],
+    snippets: all,
     byStack: { ...corpus.byStack, integration: [...snippets] },
-    model: corpus.model,
+    model: buildModel(all.map((x) => x.code)),
   };
 }
 

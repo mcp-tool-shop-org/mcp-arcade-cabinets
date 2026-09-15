@@ -215,8 +215,10 @@ function ship(state: RunState): void {
   const nearMiss = isNearMiss(state.context);
   const before = state.valuation;
   state.valuation = pay(before, piece + bonus, state.hype, state.plan.tier, ctx.set.score);
-  state.built.push({ id: request.snippet.id, size: piece });
-  push(state, { kind: 'piece', size: piece });
+  // The last piece carries the deploy bonus too, so the preview grows by
+  // exactly what the score counts (G24; the review's first change).
+  state.built.push({ id: request.snippet.id, size: piece + bonus });
+  push(state, { kind: 'piece', size: piece + bonus });
   if (last) push(state, { kind: 'ship', nearMiss });
   state.context = refill(state.context, state.plan.refillShare);
   for (const milestone of milestoneCrossed(before, state.valuation, ctx.set.score)) {

@@ -101,7 +101,12 @@ describe('the integration stack', () => {
     const seasoned = withIntegration(DEFAULT_CORPUS, snippets);
     expect(seasoned.byStack.integration!.length).toBe(9);
     expect(DEFAULT_CORPUS.byStack.integration).toBeUndefined();
-    expect(seasoned.model).toBe(DEFAULT_CORPUS.model);
+    expect(seasoned.model).not.toBe(DEFAULT_CORPUS.model);
+    // The seasoned model has seen the envelope, so the envelope costs it less.
+    const envelope = snippets.find((x) => x.band >= 5)!.code;
+    expect(surprisal(seasoned.model, envelope)).toBeLessThan(
+      surprisal(DEFAULT_CORPUS.model, envelope),
+    );
     expect(withIntegration(DEFAULT_CORPUS, [])).toBe(DEFAULT_CORPUS);
   });
 
