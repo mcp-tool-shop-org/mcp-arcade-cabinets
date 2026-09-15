@@ -83,13 +83,14 @@ The accepted snippet is
 `{ id, stack, band: bandMin, title, code, notes, topics: [], ask }`.
 
 **The barred list.** `BARRED_IN_CODE` is `VOICE_FORBIDDEN` **without its digit
-branch**, because an index, a port and a column number are all digits and all
-ordinary in code. Every word of that list is still refused anywhere in a seated
-snippet, comments included — which does mean a seat may not write python's
-`pass`, may not name a variable `score`, and may not write `FAIL` in a shell
-script. Seven shipped corpus snippets carry one of those words; they are corpus,
-not seat, and the gate never sees them. A test asserts the two lists stay in
-step.
+branch**, plus every inflection `FORM_FORBIDDEN` carries, because an index, a
+port and a column number are all digits and all ordinary in code, while a seat
+that may not write `score` may not write `scores` either. Every word of both
+lists is refused anywhere in a seated snippet, comments included — which does
+mean a seat may not write python's `pass`, may not name a variable `score` or
+`passed`, and may not write `FAIL` in a shell script. Seven shipped corpus
+snippets carry one of those words; they are corpus, not seat, and the gate never
+sees them. A test asserts the three lists stay in step.
 
 **The band range.** `bandRange(corpus, set, stack, bandMin, bandMax)` is the
 least and the most any corpus snippet of that stack inside the range is worth by
@@ -395,8 +396,11 @@ template with a title hole, which is what slice one shipped.
 
 `pnpm test:play vibe-typer --endless yes --tier 0 --bot perfect` with the seat
 off is **byte-identical to `main`**: the same level, the same product, the same
-four chat lines, valuation 1829, twenty-one pieces, six levels. So is
-`pnpm test:play vibe-typer --tier 0 --bot typist:40`. Every old bar in
+chat, valuation 1829, twenty-one pieces, six levels. So is
+`pnpm test:play vibe-typer --tier 0 --bot typist:40`, at valuation 66 on the
+story level sub-slice B part two pinned. Both were re-measured against `main`
+after the merge below, by running the same command on a detached `main` and on
+this branch and diffing the two: no difference in either. Every old bar in
 `band.test.ts` holds unchanged.
 
 One bar was added, `describe('endless with a seat')`: for each of the three
@@ -410,6 +414,34 @@ G11's swap, with the seat replaced by the authored ground.
 The sim's own determinism is unchanged and newly re-asserted: an empty buffer
 gives a state that stringifies identically to a run that was never fed, and the
 same feed twice gives a deep-equal final state.
+
+## The merge with main
+
+`main` carried sub-slice A and sub-slice B part two by the time this branch was
+finished. Eight files conflicted and both sides' behavior was kept in every one
+of them; the merge commit's own message lists each conflict and its resolution.
+Two of them are worth repeating here because they are about this sub-slice's
+rules rather than about text:
+
+**One snippet branch, three arms that cannot collide.** `planLevel` now chooses a
+request's snippet three ways: a **fed** one, which is endless only; a **pinned**
+story snippet, which is a listed level only; and a **drawn** one, everything
+else. The endless-only splice sits above the loop and the product override still
+lands after the noun draw, so the seed's stream is untouched in every case.
+
+**The seat's ask needs no special case any more.** Sub-slice B part two gave
+`picker.ask` an `askFor` that already prefers the snippet's own words and falls
+back to the template pool. A seated snippet always has its own, so it flows
+through the same call the corpus does, and this branch's local `fill` went away.
+
+**Two changes the merge itself earned.** `BARRED_IN_CODE` now carries
+`FORM_FORBIDDEN`'s inflections: `main` split the barred words into a base list
+and an inflected one, and a code gate that refused `score` but allowed `scores`
+would have been a silent hole on the seat's side of the same rule. And
+`lineFault` now refuses a non-ASCII line itself, so the gate's own ASCII checks
+on the ask, the title, the notes and the product are no longer the only thing
+catching one; they stay because they run first and name the specific reason, and
+the reason set is unchanged either way — a non-ASCII ask is still `bad-ask`.
 
 ## Decisions
 
