@@ -401,6 +401,120 @@ describe('the quick sync', () => {
   });
 });
 
+describe('the check-in', () => {
+  /** The same levers with a check-in due every half second of frame time. */
+  function fast(every = 0.5): Patterns {
+    return {
+      ...DEFAULT_PATTERNS,
+      levels: { ...DEFAULT_PATTERNS.levels, nagEvery: { min: every, max: every } },
+    };
+  }
+
+  function run(): RunState {
+    return createRun({ levers: fast(), seed: 1, tier: 0, endless: false, levelIndex: 0 });
+  }
+
+  /** Step until a check-in lands, and hand back the step it landed on. */
+  function toNag(state: RunState, cap = 600): number {
+    for (let i = 0; i < cap; i++) {
+      step(state);
+      if (state.events.some((e) => e.kind === 'message' && e.nag === true)) return i;
+    }
+    throw new Error('no check-in landed');
+  }
+
+  it('never lands on the run first line, and lands after it', () => {
+    const state = run();
+    sendLine(state); // the reply, so the code is in hand at line zero
+    expect(state.beat).toBe('code');
+    expect(state.lineIndex).toBe(0);
+    for (let i = 0; i < 240; i++) step(state);
+    expect(state.chat.some((c) => c.nag === true)).toBe(false);
+    sendLine(state); // the first code line is out; the line index moves on
+    toNag(state);
+    const nag = state.chat.find((c) => c.nag === true)!;
+    expect(nag.who).toBe('user');
+    expect(DEFAULT_PATTERNS.user.nags).toContain(nag.line);
+  });
+
+  it('carries the flag on the line and on the event', () => {
+    const state = run();
+    sendLine(state);
+    sendLine(state);
+    toNag(state);
+    const event = state.events.find((e) => e.kind === 'message' && e.nag === true);
+    expect(event).toMatchObject({ kind: 'message', who: 'user', nag: true });
+    expect(state.chat.at(-1)).toMatchObject({ who: 'user', nag: true });
+  });
+
+  it('costs the bar nothing, pays nothing and leaves the streak standing', () => {
+    const state = run();
+    sendLine(state);
+    sendLine(state);
+    const context = state.context;
+    const valuation = state.valuation;
+    const hype = state.hype;
+    const streak = state.streak;
+    const pieces = state.built.length;
+    const steps = toNag(state) + 1;
+    expect(state.valuation).toBe(valuation);
+    expect(state.hype).toBe(hype);
+    expect(state.streak).toBe(streak);
+    expect(state.built).toHaveLength(pieces);
+    // The bar moved by the level's own drain over those frames and by nothing
+    // else: a message that cost the bar would take the level's messageCost.
+    const drained = context - state.context;
+    expect(drained).toBeLessThan(state.plan.messageCost);
+    expect(drained).toBeCloseTo(state.plan.drainPerSec * steps * DT, 6);
+  });
+
+  it('answers once the line in hand is out clean, and not before', () => {
+    const state = run();
+    sendLine(state);
+    sendLine(state);
+    toNag(state);
+    const after = state.chat.length;
+    // A line sent wrong keeps the answer owed: the agent says its own hmm.
+    sendLine(state, 0);
+    expect(DEFAULT_PATTERNS.agent.hmm).toContain(state.chat.at(-1)!.line);
+    expect(state.chat.filter((c) => DEFAULT_PATTERNS.agent.nagReplies.includes(c.line))).toEqual(
+      [],
+    );
+    sendLine(state);
+    const answers = state.chat
+      .slice(after)
+      .filter((c) => c.who === 'agent' && DEFAULT_PATTERNS.agent.nagReplies.includes(c.line));
+    expect(answers).toHaveLength(1);
+    expect(answers[0]!.nag).toBeUndefined();
+  });
+
+  it('holds a second check-in while the first is owed an answer', () => {
+    const state = run();
+    sendLine(state);
+    sendLine(state);
+    toNag(state);
+    for (let i = 0; i < 900; i++) step(state);
+    expect(state.chat.filter((c) => c.nag === true)).toHaveLength(1);
+    // The answer lands with the line, and the next check-in may come after it.
+    sendLine(state);
+    while (!state.over && state.beat !== 'code') sendLine(state);
+    toNag(state);
+    expect(state.chat.filter((c) => c.nag === true)).toHaveLength(2);
+  });
+
+  it('plans the level the same whether the check-ins are on or off', () => {
+    const off: Patterns = {
+      ...DEFAULT_PATTERNS,
+      levels: { ...DEFAULT_PATTERNS.levels, nagEvery: { min: 1e9, max: 1e9 } },
+    };
+    for (const level of [2, 4, 6]) {
+      const a = createRun({ levers: fast(), seed: 3, tier: 0, endless: false, levelIndex: level });
+      const b = createRun({ levers: off, seed: 3, tier: 0, endless: false, levelIndex: level });
+      expect(JSON.stringify(a.plan)).toBe(JSON.stringify(b.plan));
+    }
+  });
+});
+
 describe('determinism', () => {
   const stream: RunInput[] = [];
   for (let i = 0; i < 4000; i++) {
@@ -427,8 +541,10 @@ describe('determinism', () => {
   });
 
   it('gives a different run for a different seed', () => {
-    const a = createRun({ seed: 1, tier: 0, endless: false });
-    const b = createRun({ seed: 2, tier: 0, endless: false });
+    // A drawn level: the first two levels pin their snippets by id, so their
+    // requests are the same at every seed on purpose (slice 3).
+    const a = createRun({ seed: 1, tier: 0, endless: false, levelIndex: 4 });
+    const b = createRun({ seed: 2, tier: 0, endless: false, levelIndex: 4 });
     expect(JSON.stringify(a.plan.requests.map((r) => r.snippet.id))).not.toBe(
       JSON.stringify(b.plan.requests.map((r) => r.snippet.id)),
     );

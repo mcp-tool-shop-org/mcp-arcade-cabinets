@@ -6,6 +6,15 @@
     "valuation": "valuation",
     "hype": "vibes",
     "streak": "streak",
-    "context": "context"
+    "context": "context",
+    "beats": {
+      "request": "the ask",
+      "reply": "your reply",
+      "code": "the code",
+      "creep": "one more thing",
+      "sync": "the meeting",
+      "ship": "shipping it",
+      "compaction": "catching up"
+    }
   }
 }

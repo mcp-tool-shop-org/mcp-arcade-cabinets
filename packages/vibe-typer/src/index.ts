@@ -28,16 +28,23 @@ export type {
 } from './types';
 
 export {
+  BEATS,
   DEFAULT_PATTERNS,
   lineFault,
   lineTier,
   loadPatterns,
   tierContext,
   CORPUS_STACKS,
+  FORM_FORBIDDEN,
   MODEL_FORBIDDEN,
   STACKS,
   VOICE_FORBIDDEN,
 } from './patterns';
+
+// American English on every player- and reader-facing surface. The test and
+// an offline authoring script read the same list.
+export { BRITISH, britishHit } from './spelling';
+export type { BritishWord } from './spelling';
 export type {
   AgentSet,
   CabinetSet,
@@ -96,13 +103,23 @@ export {
   spend,
 } from './context';
 
-export { fill, LinePicker, safeTitle } from './lines';
+export { askFor, fill, LinePicker, safeTitle } from './lines';
 export type { PickerOpts } from './lines';
 
 export { levelDefAt, planLevel } from './level';
 export type { PlanOpts } from './level';
 
-export { agentNameOf, codeOf, createRun, leversOf, nextSeed, planOf, stepRun, syncOf } from './sim';
+export {
+  agentNameOf,
+  codeOf,
+  createRun,
+  leversOf,
+  NAG_SALT,
+  nextSeed,
+  planOf,
+  stepRun,
+  syncOf,
+} from './sim';
 export type { CreateRunOpts } from './sim';
 
 export { hashString, mixSeed, seededRandom, shuffleOrder, weightedPick } from './seed';

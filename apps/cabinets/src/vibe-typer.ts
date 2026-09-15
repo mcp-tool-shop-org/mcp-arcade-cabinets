@@ -25,7 +25,6 @@ import {
   stepRun,
   syncOf,
   NEAR_MISS,
-  type Beat,
   type RunInput,
   type RunState,
   type Snippet,
@@ -73,20 +72,30 @@ const RETRO_EVERY = 3;
 const RETRO_PAIRS = 8;
 
 /**
- * The beat, in words. The enum is never on screen. These are field words and
- * belong beside the others in `patterns/cabinet.json` the next time the
- * package is open (slice 2 could touch it only for the quick sync).
+ * The editor type, in four words. A typing game is read at arm's length and
+ * v0.9.0's editor was too small for it, so `large` is the default and it is
+ * visibly bigger than the `0.95rem` that shipped. One CSS custom property on
+ * `.vibe` carries the chosen length to the editor, the chat and the beat word;
+ * the scoreboard and the preview canvas are not on it.
  * // Director
  */
-const BEAT_WORDS: Record<Beat, string> = {
-  request: 'the ask',
-  reply: 'your reply',
-  code: 'the code',
-  creep: 'one more thing',
-  sync: 'the meeting',
-  ship: 'shipping it',
-  compaction: 'catching up',
+export const VIBE_FONTS = ['small', 'medium', 'large', 'huge'] as const;
+export type VibeFont = (typeof VIBE_FONTS)[number];
+/** // Director */
+export const FONT_SIZES: Record<VibeFont, string> = {
+  small: '0.9rem',
+  medium: '1.05rem',
+  large: '1.25rem',
+  huge: '1.5rem',
 };
+/** // Director */
+export const DEFAULT_FONT: VibeFont = 'large';
+/** Share of the editor's width kept clear either side of the caret. // Director */
+const CARET_MARGIN = 0.2;
+
+export function isVibeFont(value: unknown): value is VibeFont {
+  return typeof value === 'string' && (VIBE_FONTS as readonly string[]).includes(value);
+}
 
 /** The stacks, in words. The menu prints these, never a language's own name. */
 export const STACK_WORDS: Record<string, string> = {
@@ -99,7 +108,7 @@ export const STACK_WORDS: Record<string, string> = {
   integration: 'wires',
 };
 
-/** One palette a stack. The product is drawn in its own colours. */
+/** One palette a stack. The product is drawn in its own colors. */
 const PALETTES: Record<string, string[]> = {
   bash: ['#5b8c5a', '#7aa878', '#3e6b48', '#9ec49a'],
   csharp: ['#6a8aaa', '#8fb0cc', '#47637f', '#a9c6dd'],
@@ -152,6 +161,8 @@ export interface VibePrefs {
   endless?: 'on' | 'off';
   agent?: string;
   theme?: Theme;
+  /** The editor type, from the menu's settings row. */
+  font?: VibeFont;
   /** The seed box, as the player left it. */
   seed?: string;
   muted?: 'on' | 'off';
@@ -176,6 +187,7 @@ export function readVibePrefs(): VibePrefs {
     if (o.endless === 'on' || o.endless === 'off') out.endless = o.endless;
     if (typeof o.agent === 'string') out.agent = cleanName(o.agent);
     if (isTheme(o.theme)) out.theme = o.theme;
+    if (isVibeFont(o.font)) out.font = o.font;
     if (typeof o.seed === 'string') out.seed = o.seed.slice(0, 12);
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
@@ -246,6 +258,8 @@ export interface VibeOpts {
   seed: number;
   agentName: string;
   theme: Theme;
+  /** The editor type. Left out, the mount takes the stored pref, then `large`. */
+  font?: VibeFont;
   /** Integration snippets built from the bundled tapes (G30). */
   integration: Snippet[];
   onExit: () => void;
@@ -351,6 +365,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   // ——— the furniture ——————————————————————————————————————————————————————
   const wrap = el('section', 'column vibe');
+  // One property, three readers: the editor, the chat and the beat word.
+  const font = opts.font ?? prefs.font ?? DEFAULT_FONT;
+  wrap.style.setProperty('--vibe-font', FONT_SIZES[font]);
 
   const board = el('div', 'vibe-board');
   const valuationEl = el('span', 'vibe-stat vibe-valuation');
@@ -387,7 +404,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   chatPane.append(chatHead, chatScroll);
 
   const editorPane = el('section', 'vibe-pane vibe-editor');
-  const beatWord = el('div', 'vibe-head vibe-beat', BEAT_WORDS[state.beat]);
+  const beatWord = el('div', 'vibe-head vibe-beat', words.beats[state.beat]);
   const codeBox = el('div', 'vibe-code');
   const tabHint = el('div', 'vibe-tab', 'Tab');
   tabHint.hidden = true;
@@ -466,7 +483,13 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const pushChat = () => {
     for (let i = chatAt; i < state.chat.length; i++) {
       const line = state.chat[i]!;
-      const node = el('li', line.who === 'user' ? 'vibe-user' : 'vibe-agent', '');
+      const cls =
+        line.who === 'user'
+          ? line.nag === true
+            ? 'vibe-user vibe-nag'
+            : 'vibe-user'
+          : 'vibe-agent';
+      const node = el('li', cls, '');
       chatList.append(node);
       chat.push({ el: node, full: line.line, shown: 0 });
     }
@@ -517,7 +540,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     ].join('|');
     if (sig === lastSig) return;
     lastSig = sig;
-    beatWord.textContent = BEAT_WORDS[state.beat];
+    beatWord.textContent = words.beats[state.beat];
     codeBox.replaceChildren();
     if (state.beat === 'code' || state.beat === 'creep') {
       const lines = codeOf(state);
@@ -543,6 +566,22 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       codeBox.append(el('div', 'vibe-line', ' '));
     }
     tabHint.hidden = state.copilot === null || state.beat === 'request' || state.beat === 'ship';
+    keepCaretInView();
+  };
+
+  /**
+   * A code line never breaks inside a token, so at `huge` a long line runs
+   * past the pane and the box scrolls sideways instead. Keep the caret on
+   * screen when it does. jsdom reports zeros here and the guard skips it.
+   */
+  const keepCaretInView = () => {
+    const caret = codeBox.querySelector('.vibe-caret') as HTMLElement | null;
+    const view = codeBox.clientWidth;
+    if (!caret || view <= 0) return;
+    const x = caret.offsetLeft;
+    const margin = view * CARET_MARGIN;
+    if (x - codeBox.scrollLeft > view - margin) codeBox.scrollLeft = x - view + margin;
+    else if (x - codeBox.scrollLeft < margin) codeBox.scrollLeft = Math.max(0, x - margin);
   };
 
   const drawBoard = (dt: number) => {
@@ -907,6 +946,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     audio?.end();
     const scene = el('section', 'column vibe-standup');
     scene.append(el('h1', undefined, plan.product));
+    // The level's premise, under its name. An endless level has none.
+    if (plan.story !== '') scene.append(el('p', 'muted', plan.story));
     const lastUser = [...state.chat].reverse().find((c) => c.who === 'user');
     scene.append(
       el('p', 'muted', state.ended === 'shipped' ? 'the level shipped' : 'the context ran out'),

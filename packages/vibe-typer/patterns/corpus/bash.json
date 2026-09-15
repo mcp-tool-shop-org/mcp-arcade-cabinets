@@ -4,6 +4,7 @@
     "stack": "bash",
     "band": 1,
     "title": "simple echo greeting",
+    "ask": "the front page should say hello to everyone",
     "code": "echo hello world",
     "notes": ["Prints hello world to standard output using echo."],
     "topics": ["echo", "commands"]
@@ -40,6 +41,7 @@
     "stack": "bash",
     "band": 1,
     "title": "create and remove directory",
+    "ask": "make somewhere for the cat pictures to live",
     "code": "mkdir mydir\nrmdir mydir",
     "notes": ["Creates a directory then removes it when empty."],
     "topics": ["mkdir", "rmdir"]
@@ -49,6 +51,7 @@
     "stack": "bash",
     "band": 1,
     "title": "For loop",
+    "ask": "go through the cat pictures one at a time",
     "code": "for file in *.txt; do\n    echo \"Processing: $file\"\ndone",
     "notes": [
       "for/in iterates over glob matches or word lists.",

@@ -12,7 +12,7 @@
         "my cousin says we need shell things",
         "can you do {title} without me watching",
         "add a loop, loops feel productive",
-        "the folder should feel organised and calm",
+        "the folder should feel organized and calm",
         "make it print something encouraging in the morning",
         "can the computer greet me by name",
         "i saw a terminal in a film, do that",
@@ -51,7 +51,7 @@
         "i want logs that rhyme, investors love rhymes",
         "can {product} deploy itself into a submarine",
         "add a mode where it does everything twice",
-        "the terminal should apologise before it does anything",
+        "the terminal should apologize before it does anything",
         "make it enterprise, whatever that word costs",
         "can it run on a watch, my watch"
       ]
@@ -86,10 +86,10 @@
         "can the script learn my preferences overnight",
         "make {title} but with a decorator on top",
         "i want a pipeline that feels like a waterfall",
-        "can we parallelise it, all of it",
+        "can we parallelize it, all of it",
         "add types, my cousin says types are adult",
         "the model should be tiny but very confident",
-        "can it summarise my emails and my dreams",
+        "can it summarize my emails and my dreams",
         "put {product} in a class, a fancy class",
         "add a retry loop with a hopeful attitude"
       ],
@@ -124,7 +124,7 @@
         "can you make it wiggle, gently",
         "add {title}, my friend has one",
         "i want a counter that counts my wins",
-        "can the colours be more expensive looking",
+        "can the colors be more expensive looking",
         "make the page load before i finish blinking",
         "add a form, forms feel official",
         "can we have dark mode, obviously",
@@ -172,7 +172,7 @@
       "0": [
         "can we keep the ducks in a table",
         "i want to see the newest things first",
-        "add a query that finds my favourite rows",
+        "add a query that finds my favorite rows",
         "can you count them, all of them",
         "make {title} but for the customers table",
         "i want a list of who signed up today",
@@ -306,7 +306,7 @@
         "can the app sync with the cloud, quietly",
         "make an interface so we can swap everything later",
         "i want dependency injection, it sounds medical but good",
-        "add a repository, repositories sound organised",
+        "add a repository, repositories sound organized",
         "can it run on a phone and a fridge",
         "make {title} but with events and handlers everywhere",
         "the app should update itself without asking",
@@ -329,7 +329,7 @@
         "add a mode where it designs the next version",
         "the desktop app should have a boardroom",
         "can we port it to a satellite this quarter",
-        "i want {title} but it should sell licences",
+        "i want {title} but it should sell licenses",
         "make every button a separate product line",
         "can it run on the lift in our building",
         "add an assistant that manages my assistant",
@@ -437,6 +437,38 @@
       "call the press, then call my mother"
     ]
   },
+  "reactionsByTopic": {
+    "print": [
+      "it says things now, out loud, in the terminal",
+      "look at it talking to me",
+      "the words came out, i saw them"
+    ],
+    "strings": [
+      "the words all stick together properly now",
+      "it knows how to say a name",
+      "lovely, the letters are behaving"
+    ],
+    "variables": [
+      "the little names for things, i adore that",
+      "it remembers what i told it",
+      "everything has a label now, very tidy"
+    ],
+    "arithmetic": [
+      "it does the math so i do not have to",
+      "numbers going in, answers coming out",
+      "my accountant will be so relieved"
+    ],
+    "for-loop": [
+      "it does the boring bit over and over",
+      "one line, and it repeats forever, wonderful",
+      "look at it going round and round"
+    ],
+    "functions": [
+      "we can call it whenever we want now",
+      "a little machine i can press, delightful",
+      "reusable, my cousin will be thrilled"
+    ]
+  },
   "creeps": [
     "oh also can it work on my phone",
     "oh also can we add one small button",
@@ -460,6 +492,36 @@
     "this is the best day of the quarter",
     "i want to do the next one immediately",
     "put it on the internet, all of it"
+  ],
+  "reviewsByProduct": {
+    "cat-website": [
+      "the cat has seen it and did not walk away",
+      "the cat's followers are going to be thrilled",
+      "it is beautiful, the cat agrees"
+    ],
+    "duck-rides": [
+      "the ducks are already lining up",
+      "my cousin has ordered a duck to his house",
+      "this is going to change waterfowl forever"
+    ]
+  },
+  "nags": [
+    "how is it going",
+    "any update",
+    "is it live yet",
+    "can i see it",
+    "are you done yet",
+    "my cousin is asking",
+    "just checking in",
+    "how long do you think",
+    "is it nearly there",
+    "status",
+    "still going",
+    "quick one, how far along",
+    "sorry to interrupt",
+    "did that work",
+    "should i tell the investors",
+    "is the fun part soon"
   ],
   "syncs": [
     "sounds good",

@@ -4,6 +4,7 @@
     "stack": "python",
     "band": 1,
     "title": "print hello world",
+    "ask": "{product} should say hello before it asks for money",
     "code": "print(\"Hello, World!\")",
     "notes": ["Prints the string Hello, World! to standard output."],
     "topics": ["print", "strings"]
@@ -22,6 +23,7 @@
     "stack": "python",
     "band": 1,
     "title": "basic string concatenation",
+    "ask": "every duck needs a full name, not just a first",
     "code": "first = \"Alice\"\nlast = \"Smith\"\nfull = first + \" \" + last\nprint(full)",
     "notes": ["Concatenates a first and last name with a space and prints the full name."],
     "topics": ["strings", "concatenation", "variables"]

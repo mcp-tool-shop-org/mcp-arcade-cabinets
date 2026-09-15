@@ -3,7 +3,7 @@
 // default makes a new event kind a type error here before it is a silent
 // nothing on the field (ANDON_AUTHORITY).
 //
-// G25, nothing yells: a mistyped character colours its character and sounds,
+// G25, nothing yells: a mistyped character colors its character and sounds,
 // and shakes nothing. The shake belongs to a line sent wrong and to a
 // compaction, capped and scaled by the length of the line (Q3.1). The full
 // flash is the ship's alone.
@@ -20,6 +20,7 @@ export type CueName =
   | 'sent'
   | 'hmm'
   | 'ping'
+  | 'nag'
   | 'blip'
   | 'pop'
   | 'deploy'
@@ -102,7 +103,10 @@ export function cueFor(event: Event): Cue {
         ? cue('grazed', { flash: FLASH_SHIP, confetti: CONFETTI_MAX })
         : cue('deploy', { flash: FLASH_SHIP, confetti: CONFETTI_MAX });
     case 'message':
-      return event.who === 'user' ? cue('ping') : cue('blip');
+      // A check-in is the user's ping with a second note under it, so it is
+      // heard as the user and not mistaken for the ask (slice 3).
+      if (event.who === 'user') return cue(event.nag === true ? 'nag' : 'ping');
+      return cue('blip');
     case 'compaction':
       return cue('compaction', { shake: SHAKE_COMPACTION });
     case 'milestone':

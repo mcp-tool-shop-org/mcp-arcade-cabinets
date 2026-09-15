@@ -12,7 +12,7 @@
     "That is a smart ask, doing it",
     "Good catch, I will handle the edges",
     "On it, and I will keep it small",
-    "Excellent, this is my favourite kind of work",
+    "Excellent, this is my favorite kind of work",
     "Right away, and I will explain after",
     "Sure thing, this will take a moment",
     "Perfect, I will keep the naming friendly",
@@ -25,7 +25,7 @@
     "Happy to help, starting now",
     "That will be lovely, writing it out",
     "Good thinking, here comes the code",
-    "Marvellous, I will make it sing quietly"
+    "Marvelous, I will make it sing quietly"
   ],
   "hmm": [
     "Hmm, that is not it, let me redo",
@@ -60,5 +60,23 @@
     "Shipped it, exactly as you described",
     "That piece is in, the thing grows",
     "Landed, and nothing is on fire"
+  ],
+  "nagReplies": [
+    "nearly there, one more line",
+    "going beautifully, thank you for asking",
+    "just tidying the last part",
+    "you are going to love this",
+    "almost, and it is looking lovely",
+    "one more line and it is yours",
+    "great question, the answer is soon",
+    "still typing, still delighted",
+    "coming together nicely, i promise",
+    "a moment, i am on the good part",
+    "it is going to be lovely",
+    "no interruption at all, nearly finished",
+    "right on track, thank you for checking",
+    "very close now, honestly",
+    "i am on it, as always",
+    "the hard part is behind us"
   ]
 }

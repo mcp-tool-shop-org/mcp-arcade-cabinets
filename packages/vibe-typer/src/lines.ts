@@ -70,8 +70,18 @@ export class LinePicker {
     return this.set.user.asks[stack][tier];
   }
 
-  /** The user's ask, with {product} and {title} filled from the level and the snippet. */
+  /**
+   * The user's ask for this snippet. A snippet that carries its own `ask`
+   * describes the job its code actually does, so the request and the code are
+   * the same thing (slice 3); a snippet without one falls back to the tier's
+   * template pool, and only that path spends a draw from the bag.
+   */
   ask(stack: Stack, product: string, snippet: Snippet): string {
+    return askFor(snippet, product, this, stack);
+  }
+
+  /** The template pool's next ask, filled. The fallback path of `ask`. */
+  templateAsk(stack: Stack, product: string, snippet: Snippet): string {
     const raw = this.next(`ask.${stack}`, this.askPool(stack));
     return fill(raw, product, snippet);
   }
@@ -80,11 +90,31 @@ export class LinePicker {
     return this.next('reply', this.set.agent.replies);
   }
 
-  reaction(): string {
+  /**
+   * The user's reaction to the piece that just shipped. The first of the
+   * snippet's topics with a pool of its own wins, so the line names what was
+   * built; a snippet whose topics nobody has written for reads the tier pool
+   * as it always did. One bag a topic, so a level never repeats a reaction.
+   */
+  reaction(snippet: Snippet): string {
+    for (const topic of snippet.topics) {
+      const pool = this.set.user.reactionsByTopic[topic];
+      if (pool && pool.length > 0) return this.next(`reaction.topic.${topic}`, pool);
+    }
     return this.next(
       `reaction.${lineTier(this.tier)}`,
       this.set.user.reactions[lineTier(this.tier)],
     );
+  }
+
+  /** A check-in while the player types: costs nothing, changes nothing. */
+  nag(): string {
+    return this.next('nag', this.set.user.nags);
+  }
+
+  /** What the agent says back to a check-in, once the line in hand is out. */
+  nagReply(): string {
+    return this.next('nagReply', this.set.agent.nagReplies);
   }
 
   hmm(): string {
@@ -103,7 +133,10 @@ export class LinePicker {
     return this.next('creep', this.set.user.creeps);
   }
 
-  review(): string {
+  /** The level's review. The product's own pool first, then the generic one. */
+  review(levelId: string): string {
+    const pool = this.set.user.reviewsByProduct[levelId];
+    if (pool && pool.length > 0) return this.next(`review.${levelId}`, pool);
     return this.next('review', this.set.user.reviews);
   }
 
@@ -134,6 +167,23 @@ export function safeTitle(snippet: Snippet): string {
     if (lineFault(word) === null) return word;
   }
   return 'that thing';
+}
+
+/**
+ * The ask for a request: the snippet's own words when it has them, else the
+ * picker's template pool. `{product}` is filled either way; `{title}` cannot
+ * appear in a snippet's own ask, because the loader refuses one that has it.
+ */
+export function askFor(
+  snippet: Snippet,
+  product: string,
+  picker: LinePicker,
+  stack: Stack,
+): string {
+  if (typeof snippet.ask === 'string' && snippet.ask !== '') {
+    return fill(snippet.ask, product, snippet);
+  }
+  return picker.templateAsk(stack, product, snippet);
 }
 
 /** Fill an ask template. Unknown placeholders are left alone by design. */

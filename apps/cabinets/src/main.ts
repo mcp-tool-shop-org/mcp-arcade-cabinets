@@ -41,9 +41,12 @@ import { DIFFICULTIES, mountGhost, readPrefs, writePrefs, type Difficulty } from
 import { TAPES } from './tapes';
 import { THEMES, THEME_WORDS, type Theme } from './typer-audio';
 import {
+  DEFAULT_FONT,
   TIER_WORDS,
+  VIBE_FONTS,
   bandWord,
   cleanName,
+  isVibeFont,
   mountVibeTyper,
   readVibePrefs,
   writeVibePrefs,
@@ -484,8 +487,9 @@ function shiftEnd(shift: Shift) {
 
 // ——— Vibe Typer ————————————————————————————————————————————————————————————
 // The second cabinet's menu: the levels as products, the endless ladder, the
-// four tier words, the agent's name, the keyboard and the
-// seed. Every choice persists under `vibe.`; no band digits anywhere (G23).
+// four tier words, a settings row (the type, the keyboard, the sound), the
+// agent's name and the seed. Every choice persists under `vibe.`; no band
+// digits anywhere (G23).
 
 /** Tool names off the bundled tapes, so a request can name a thing the player runs (G30). */
 function tapeSeeds(): IntegrationSeed[] {
@@ -583,6 +587,23 @@ function vibeMenu(wrap: HTMLElement) {
     tier.append(o);
   }
   tier.value = String(prefs.tier ?? 0);
+  row.append(tier);
+
+  // ——— the settings row ————————————————————————————————————————————————————
+  // The type, the keyboard and the sound. Words only; every one persists under
+  // `vibe.`, and the sound reads and writes the same pref as the field's own
+  // button, so the two never disagree.
+  const settings = document.createElement('div');
+  settings.className = 'row';
+  const font = document.createElement('select');
+  font.setAttribute('aria-label', 'type size');
+  for (const size of VIBE_FONTS) {
+    const o = document.createElement('option');
+    o.value = size;
+    o.textContent = `type: ${size}`;
+    font.append(o);
+  }
+  font.value = isVibeFont(prefs.font) ? prefs.font : DEFAULT_FONT;
   const theme = document.createElement('select');
   theme.setAttribute('aria-label', 'keyboard');
   for (const t of THEMES) {
@@ -592,7 +613,19 @@ function vibeMenu(wrap: HTMLElement) {
     theme.append(o);
   }
   theme.value = prefs.theme ?? 'mechanical';
-  row.append(tier, theme);
+  const sound = document.createElement('select');
+  sound.setAttribute('aria-label', 'sound');
+  for (const state of ['on', 'off'] as const) {
+    const o = document.createElement('option');
+    o.value = state;
+    o.textContent = `sound: ${state}`;
+    sound.append(o);
+  }
+  sound.value = prefs.muted === 'on' ? 'off' : 'on';
+  sound.addEventListener('change', () => {
+    writeVibePrefs({ muted: sound.value === 'off' ? 'on' : 'off' });
+  });
+  settings.append(font, theme, sound);
 
   const row2 = document.createElement('div');
   row2.className = 'row';
@@ -614,7 +647,7 @@ function vibeMenu(wrap: HTMLElement) {
   if (prefs.seed) seedBox.value = prefs.seed;
   const play = button('Play', 'commit');
   row2.append(agent, seedBox, play);
-  wrap.append(row, row2);
+  wrap.append(row, settings, row2);
 
   const start = () => {
     const runs = (prefs.runs ?? 0) + 1;
@@ -628,6 +661,8 @@ function vibeMenu(wrap: HTMLElement) {
       endless: endless ? 'on' : 'off',
       agent: name,
       theme: theme.value as Theme,
+      font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
+      muted: sound.value === 'off' ? 'on' : 'off',
       seed: seedBox.value.trim().slice(0, 12),
     });
     mountVibeTyper(app, {
@@ -637,6 +672,7 @@ function vibeMenu(wrap: HTMLElement) {
       seed,
       agentName: name,
       theme: theme.value as Theme,
+      font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
       integration: integrationSeasoning(),
       onExit: menu,
       startAudio: true,

@@ -9,7 +9,7 @@
 // IDENTICAL. A test compares them character for character; if Ghost's list
 // grows, this one grows with it in the same commit.
 
-import type { Band, Stack, Tier } from './types';
+import type { Band, Beat, Stack, Tier } from './types';
 
 import cabinetJson from '../patterns/cabinet.json';
 import levelsJson from '../patterns/levels.json';
@@ -30,6 +30,32 @@ export const VOICE_FORBIDDEN =
  */
 export const MODEL_FORBIDDEN =
   /\b(claude|gpt|chatgpt|opus|sonnet|haiku|gemini|llama|mistral|qwen|grok|kimi|codex|copilot|cursor|openai|anthropic|ollama|deepseek)\b/i;
+
+/**
+ * Ghost's list bars a word on its boundary, so a plural or a verb form of a
+ * barred word slipped past it (the authoring sample kept `scores`). The list
+ * above must stay identical to Ghost's, so the forms are barred here, beside
+ * it, and `lineFault` reads both. Only the forms that still carry the barred
+ * meaning: `a following` and `holds` are ordinary words in a fond line.
+ */
+export const FORM_FORBIDDEN =
+  /\b(lies|lied|facts|scores|scored|scoring|passes|passed|fails|failed|failing|ghosts)\b/i;
+
+/**
+ * Every beat, so the loader can require a word for each. The `satisfies`
+ * object below is the exhaustiveness check: add a member to `Beat` and this
+ * file stops compiling until the beat is listed here and worded in the lever.
+ */
+const BEAT_KEYS = {
+  request: true,
+  reply: true,
+  code: true,
+  creep: true,
+  sync: true,
+  ship: true,
+  compaction: true,
+} satisfies Record<Beat, true>;
+export const BEATS = Object.keys(BEAT_KEYS) as readonly Beat[];
 
 export const CORPUS_STACKS: readonly Stack[] = [
   'bash',
@@ -52,6 +78,9 @@ const MIN_REVIEWS = 8;
 const MIN_SYNCS = 12;
 /** A sync line is chatter, not a sentence: five words is the ceiling (slice 2). */
 const MAX_SYNC_WORDS = 5;
+/** Check-ins and the agent's answers to them; sixteen of each are authored. */
+const MIN_NAGS = 12;
+const MIN_NAG_REPLIES = 12;
 const MIN_REPLIES = 24;
 const MIN_HMM = 12;
 const MIN_COMPACTIONS = 8;
@@ -61,13 +90,28 @@ export interface CabinetSet {
   name: string;
   tagline: string;
   agentName: string;
-  words: { valuation: string; hype: string; streak: string; context: string };
+  words: {
+    valuation: string;
+    hype: string;
+    streak: string;
+    context: string;
+    /** The beat in words. The enum is never on screen (slice 2's decision 5). */
+    beats: Record<Beat, string>;
+  };
 }
 
 export interface LevelDef {
   id: string;
   product: string;
+  /** The level's premise in one line, through the same gate as every line. */
+  story: string;
   stack: Stack;
+  /**
+   * The level's requests by snippet id, in story order, when the level is
+   * authored end to end. Exactly `requests` ids, all from the level's stack.
+   * Absent, the level draws from its band as it always has.
+   */
+  snippets?: string[];
   requests: number;
   bandMin: Band;
   bandMax: Band;
@@ -100,6 +144,8 @@ export interface LevelsSet {
   syncShare: number;
   /** How hard the planner leans toward snippets carrying the player's weak pairs. */
   weakBias: number;
+  /** Seconds of frame time between two check-ins, drawn per nag (slice 3). */
+  nagEvery: { min: number; max: number };
   endless: EndlessDef;
 }
 
@@ -174,11 +220,16 @@ export type TierLines = Record<'0' | '1' | '2', string[]>;
 export interface UserSet {
   asks: Record<Stack, TierLines>;
   reactions: TierLines;
+  /** Reactions that know what shipped, keyed by a corpus topic (slice 3). */
+  reactionsByTopic: Record<string, string[]>;
   creeps: string[];
   reviews: string[];
+  /** Reviews that name the product, keyed by level id (slice 3). */
+  reviewsByProduct: Record<string, string[]>;
+  /** The check-ins the user sends while you type (slice 3). */
+  nags: string[];
   /** The quick sync's chatter; the player types three of them (slice 2). */
   syncs: string[];
-  /** Dated jokes; the seed skips them unless the player turns them on (Q5.7). */
 }
 
 export interface AgentSet {
@@ -186,6 +237,8 @@ export interface AgentSet {
   hmm: string[];
   compactions: string[];
   ships: string[];
+  /** What the agent says back to a check-in: fond, sycophantic, unbothered. */
+  nagReplies: string[];
 }
 
 export interface ProductsSet {
@@ -278,7 +331,11 @@ export function lineFault(line: string): string | null {
   if (typeof line !== 'string' || line.trim() === '') return 'empty';
   if (line !== line.trim()) return 'padded';
   if (VOICE_FORBIDDEN.test(line)) return 'forbidden word or digit';
+  if (FORM_FORBIDDEN.test(line)) return 'forbidden word or digit';
   if (MODEL_FORBIDDEN.test(line)) return 'names a tool or a model';
+  // A curly quote or a dash from a writing model is not a key on this
+  // keyboard; the line is refused, never straightened (the gate never fixes).
+  if (/[^\x20-\x7e]/.test(line)) return 'not ascii';
   if (line.includes('!')) return 'yells';
   if (/\b[A-Z]{3,}\b/.test(line)) return 'yells';
   const stops = line.match(/[.?]/g) ?? [];
@@ -319,11 +376,18 @@ function loadCabinet(raw: unknown): CabinetSet {
   if (lineFault(tagline) !== null) fail(file, 'tagline');
   if (lineFault(agentName) !== null) fail(file, 'agentName');
   const wordsRaw = asRecord(req(obj, file, 'words'), file, 'words');
-  const words = {} as CabinetSet['words'];
+  const words = { beats: {} as Record<Beat, string> } as CabinetSet['words'];
   for (const key of ['valuation', 'hype', 'streak', 'context'] as const) {
     const word = asString(at(wordsRaw, key, file, `words.${key}`), file, `words.${key}`);
     if (lineFault(word) !== null) fail(file, `words.${key}`);
     words[key] = word;
+  }
+  const beatsRaw = asRecord(at(wordsRaw, 'beats', file, 'words.beats'), file, 'words.beats');
+  for (const beat of BEATS) {
+    const key = `words.beats.${beat}`;
+    const word = asString(at(beatsRaw, beat, file, key), file, key);
+    if (lineFault(word) !== null) fail(file, key);
+    words.beats[beat] = word;
   }
   return { name, tagline, agentName, words };
 }
@@ -342,12 +406,15 @@ function loadLevels(raw: unknown): LevelsSet {
     ids.add(id);
     const product = asString(at(rec, 'product', file, key('product')), file, key('product'));
     if (lineFault(product) !== null) fail(file, key('product'));
+    const story = asString(at(rec, 'story', file, key('story')), file, key('story'));
+    if (lineFault(story) !== null) fail(file, key('story'));
     const bandMin = asBand(at(rec, 'bandMin', file, key('bandMin')), file, key('bandMin'));
     const bandMax = asBand(at(rec, 'bandMax', file, key('bandMax')), file, key('bandMax'));
     if (bandMax < bandMin) fail(file, key('bandMax'));
     const def: LevelDef = {
       id,
       product,
+      story,
       stack: asStack(at(rec, 'stack', file, key('stack')), file, key('stack')),
       requests: asCount(at(rec, 'requests', file, key('requests')), file, key('requests')),
       bandMin,
@@ -365,12 +432,36 @@ function loadLevels(raw: unknown): LevelsSet {
     if (rec.messageCost !== undefined) {
       def.messageCost = asUnit(rec.messageCost, file, key('messageCost'));
     }
+    if (rec.snippets !== undefined) {
+      // A level authored end to end pins its requests by id, in story order.
+      // That the ids exist in the level's stack is a corpus question, and the
+      // loader never reads the corpus: level.test.ts checks it, so a typo
+      // halts `pnpm test` rather than the first play-through that draws it.
+      const pinned = asArray(rec.snippets, file, key('snippets')).map((item, j) =>
+        asString(item, file, `${key('snippets')}.${j}`),
+      );
+      if (pinned.length !== def.requests) fail(file, key('snippets'));
+      const seenIds = new Set<string>();
+      pinned.forEach((snippetId, j) => {
+        if (snippetId.trim() === '' || seenIds.has(snippetId)) {
+          fail(file, `${key('snippets')}.${j}`);
+        }
+        seenIds.add(snippetId);
+      });
+      def.snippets = pinned;
+    }
     return def;
   });
   const creepShare = asUnit(req(obj, file, 'creepShare'), file, 'creepShare');
   const syncShare = asUnit(req(obj, file, 'syncShare'), file, 'syncShare');
   const weakBias = asNumber(req(obj, file, 'weakBias'), file, 'weakBias');
   if (weakBias < 0) fail(file, 'weakBias');
+  const nagRaw = asRecord(req(obj, file, 'nagEvery'), file, 'nagEvery');
+  const nagEvery = {
+    min: asPositive(at(nagRaw, 'min', file, 'nagEvery.min'), file, 'nagEvery.min'),
+    max: asPositive(at(nagRaw, 'max', file, 'nagEvery.max'), file, 'nagEvery.max'),
+  };
+  if (nagEvery.max < nagEvery.min) fail(file, 'nagEvery.max');
   const endlessRaw = asRecord(req(obj, file, 'endless'), file, 'endless');
   const ekey = (k: string) => `endless.${k}`;
   const products = asString(
@@ -420,7 +511,7 @@ function loadLevels(raw: unknown): LevelsSet {
   };
   if (!(endless.drainGrow >= 1)) fail(file, ekey('drainGrow'));
   if (endless.shipBonus < 0) fail(file, ekey('shipBonus'));
-  return { levels, creepShare, syncShare, weakBias, endless };
+  return { levels, creepShare, syncShare, weakBias, nagEvery, endless };
 }
 
 function loadScore(raw: unknown): ScoreSet {
@@ -611,10 +702,28 @@ function loadUser(raw: unknown): UserSet {
   return {
     asks,
     reactions: loadTierLines(req(obj, file, 'reactions'), file, 'reactions', MIN_REACTIONS),
+    reactionsByTopic: loadPools(req(obj, file, 'reactionsByTopic'), file, 'reactionsByTopic'),
     creeps: loadLines(req(obj, file, 'creeps'), file, 'creeps', MIN_CREEPS),
     reviews: loadLines(req(obj, file, 'reviews'), file, 'reviews', MIN_REVIEWS),
+    reviewsByProduct: loadPools(req(obj, file, 'reviewsByProduct'), file, 'reviewsByProduct'),
+    nags: loadLines(req(obj, file, 'nags'), file, 'nags', MIN_NAGS),
     syncs: loadSyncs(req(obj, file, 'syncs'), file, 'syncs'),
   };
+}
+
+/**
+ * A record of named pools — reactions by topic, reviews by product. The
+ * record may be empty; a pool that is there carries at least one line and
+ * every line passes the gate. The halt names the pool and the line.
+ */
+function loadPools(raw: unknown, file: string, key: string): Record<string, string[]> {
+  const obj = asRecord(raw, file, key);
+  const out: Record<string, string[]> = {};
+  for (const name of Object.keys(obj)) {
+    if (name.trim() === '') fail(file, key);
+    out[name] = loadLines(obj[name], file, `${key}.${name}`, 1);
+  }
+  return out;
 }
 
 /** The sync pool: the gate, plus a word cap, because a meeting line is short. */
@@ -634,6 +743,7 @@ function loadAgent(raw: unknown): AgentSet {
     hmm: loadLines(req(obj, file, 'hmm'), file, 'hmm', MIN_HMM),
     compactions: loadLines(req(obj, file, 'compactions'), file, 'compactions', MIN_COMPACTIONS),
     ships: loadLines(req(obj, file, 'ships'), file, 'ships', MIN_SHIPS),
+    nagReplies: loadLines(req(obj, file, 'nagReplies'), file, 'nagReplies', MIN_NAG_REPLIES),
   };
 }
 

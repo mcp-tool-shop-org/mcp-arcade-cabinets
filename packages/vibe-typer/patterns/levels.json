@@ -3,7 +3,9 @@
     {
       "id": "cat-website",
       "product": "a website for my cat",
+      "story": "the cat has a following and needs somewhere to put it",
       "stack": "bash",
+      "snippets": ["cal-sh-d1-005", "cal-sh-d1-001", "sh-for-loop", "cal-sh-d2-002"],
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
@@ -14,7 +16,9 @@
     {
       "id": "duck-rides",
       "product": "Uber but for ducks",
+      "story": "the ducks are ready, the rides are not",
       "stack": "python",
+      "snippets": ["cal-py-d1-001", "cal-py-d1-003", "py-for-loop", "cal-py-d2-002"],
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
@@ -25,6 +29,7 @@
     {
       "id": "fridge-chain",
       "product": "a blockchain for the office fridge",
+      "story": "the office fridge needs a ledger nobody can argue with",
       "stack": "javascript",
       "requests": 4,
       "bandMin": 2,
@@ -36,6 +41,7 @@
     {
       "id": "plant-dashboard",
       "product": "a dashboard for my houseplants",
+      "story": "the houseplants deserve numbers, so the numbers get a home",
       "stack": "sql",
       "requests": 4,
       "bandMin": 2,
@@ -47,6 +53,7 @@
     {
       "id": "self-newsletter",
       "product": "a newsletter that writes itself",
+      "story": "the newsletter must write itself while the writer is asleep",
       "stack": "bash",
       "requests": 4,
       "bandMin": 3,
@@ -57,7 +64,8 @@
     },
     {
       "id": "coffee-loyalty",
-      "product": "a loyalty programme for the coffee machine",
+      "product": "a loyalty program for the coffee machine",
+      "story": "the coffee machine is learning who its regulars are",
       "stack": "java",
       "requests": 4,
       "bandMin": 3,
@@ -69,6 +77,7 @@
     {
       "id": "book-club-metaverse",
       "product": "a metaverse for my book club",
+      "story": "the book club wants a world, and it wants it tonight",
       "stack": "csharp",
       "requests": 4,
       "bandMin": 4,
@@ -80,6 +89,7 @@
     {
       "id": "app-that-rates-apps",
       "product": "an app that rates other apps",
+      "story": "an app to judge the apps, judged by nobody",
       "stack": "python",
       "requests": 4,
       "bandMin": 4,
@@ -92,6 +102,10 @@
   "creepShare": 0.3,
   "syncShare": 0.25,
   "weakBias": 0.35,
+  "nagEvery": {
+    "min": 60,
+    "max": 140
+  },
   "endless": {
     "startBand": 1,
     "bandEvery": 2,
