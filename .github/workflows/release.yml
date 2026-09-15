@@ -100,6 +100,16 @@ jobs:
             echo "next: put every package.json on one version"
             exit 1
           fi
+          # SERVER_VERSION is what the MCP seat reports to a client in its
+          # handshake. It is a hand-written constant, so it drifts silently:
+          # v0.8.0 shipped announcing 0.7.0 because this check did not exist.
+          srv=$(node -p "(require('fs').readFileSync('packages/cabinet-server/src/server.ts','utf8').match(/SERVER_VERSION[^0-9]+([0-9][0-9.]*)/) || ['',''])[1]")
+          echo "SERVER_VERSION: $srv"
+          if [ "$srv" != "$pkg" ]; then
+            echo "SERVER_VERSION is $srv but the packages are $pkg"
+            echo "next: set SERVER_VERSION in packages/cabinet-server/src/server.ts to $pkg"
+            exit 1
+          fi
           if [ "${{ github.event_name }}" = "release" ]; then
             tag="${{ github.event.release.tag_name }}"
             if [ "$tag" != "v$pkg" ]; then
