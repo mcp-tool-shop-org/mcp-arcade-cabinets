@@ -469,7 +469,7 @@
         "reference": "brand ghost-readme.png by raw URL (role reference_image)",
         "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 0.000022794, threshold 0.02",
         "status": "accepted",
-        "note": "the re-roll of the row above, and the better of the two: square-safe composition with wide navy margins, one amber glow at the centre of a cream board, an empty cream speech bubble above. Two adjacent caps carry the glow rather than one, which is the one way it still misses the brief; kept under the rule that a failed re-roll keeps the better of the two, and the two caps read as a single lit spot at README width. The pale rectangle on each amber cap is a flat blank highlight, checked at 4x: no glyph."
+        "note": "the re-roll of the row above, and the better of the two: square-safe composition with wide navy margins, one amber glow at the centre of a cream board, an empty cream speech bubble above. Two adjacent caps carry the glow rather than one, so the image does not meet the brief's one glowing key; kept under the rule that a failed re-roll keeps the better of the two, with the miss stated here, and a third generation left to the Director's approval. The pale rectangle on each amber cap is a flat blank highlight, checked at 4x: no glyph."
       },
       {
         "id": "frame-terminal",

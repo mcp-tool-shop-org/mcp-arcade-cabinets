@@ -522,8 +522,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     for (const kind of DEVICE_KINDS) {
       const img = new Image();
       img.decoding = 'async';
-      img.addEventListener('load', () => frames.set(kind, img));
-      img.addEventListener('error', () => frames.delete(kind));
+      // Each fires once and detaches; a load that lands after unmount writes
+      // into a Map nothing reads any more (the review's first change).
+      img.addEventListener('load', () => frames.set(kind, img), { once: true });
+      img.addEventListener('error', () => frames.delete(kind), { once: true });
       img.src = `${import.meta.env.BASE_URL}vibe/frames/${kind}.png`;
     }
   }

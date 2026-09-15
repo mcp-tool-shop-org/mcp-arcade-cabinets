@@ -450,9 +450,12 @@ never where they land.
 1. **The fit instead of re-rolls.** Spend is the scarce thing; geometry is free and exact. Five re-rolls
    chasing a proportion the model will only approximate would have cost most of the batch and still not
    guaranteed the box. The fit guarantees it, is deterministic, and is recorded per image.
-2. **Two lit caps on the logo, kept.** The brief says one. The first draft lit four and framed too wide; the
-   re-roll lit two adjacent caps in one glow and framed square. The rule for a failed re-roll is to keep the
-   better of the two and say so, and at the width a README renders a logo the two caps read as one lit spot.
+2. **The logo does not meet the brief's one glowing key, and is kept anyway, pending the Director's read.**
+   The brief says one lit key. The first draft lit four and framed too wide; the re-roll lit two adjacent
+   caps in one glow and framed square. Both generations the batch allowed for this image are spent, and the
+   rule for a failed re-roll is to keep the better of the two and say so plainly: this one misses the brief
+   on that point. It is on the brand repo and the package page now because the rest of it is right and a
+   third generation is the Director's spend to approve, not the builder's.
 3. **The ledger is a spiral pad.** It came back as a bound pad rather than an accounting book. Kept, because
    it is the only device in the set with a spine, so it never reads as the laptop, and because the fallback
    rectangles for `ledger` are already a banded strip along the top.
