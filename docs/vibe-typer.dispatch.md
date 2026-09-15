@@ -76,7 +76,7 @@ Inherited without change: G8 (no ranking against other players; the only best is
 
 **G27. Difficulty is a formula and levels climb on it.** `levels.json` names each level's stack (a language), its request count, its band range and its drain; the seed picks requests from the corpus inside the band, biased toward this browser's weak bigrams and never toward a repeat. Endless chains levels with rising bands and drain until the bar empties. (Q1.9, Q2.5, Q3.8.)
 
-**G28. The user and the agent are authored data behind the gate; in endless, the user may be a model.** `user.json` holds the requests, the reactions and the asides by tier and beat; `agent.json` holds the agent's replies, its "hmm", its compaction summaries and its ship lines. Every line passes the same load-time scan as `voice.json` (no digit, no forbidden word) and no line repeats inside a level. Dated memes carry `dated: true` and are skipped unless the player turns them on. Levels are authored end to end. In endless mode a seated model plays the user as a lever fill: the sim offers a closed choice of corpus snippets in band, the model returns one pick and one ask line through the say gate, and may write reactions and asides; it never writes the code the player types, never a punchline in a level, and a late or refused answer is the authored pool. The next ask is prefetched during the current request; the sim never waits (G11, G13). The seat is reached two ways: the launcher's tiered node-side seat (Claude by API key, else an Ollama cloud tag, else local) and the container's stdio tools `product`, `ask`, `react`, so any MCP client can sit in the user's chair. Pages omits the seat. (Q5.1, Q5.5 to Q5.9; G11 to G14, G17; the Director's word of 2026-09-15 on the endless adapter.)
+**G28. The user and the agent are authored data behind the gate; in endless, the user may be a model.** `user.json` holds the requests, the reactions and the asides by tier and beat; `agent.json` holds the agent's replies, its "hmm", its compaction summaries and its ship lines. Every line passes the same load-time scan as `voice.json` (no digit, no forbidden word) and no line repeats inside a level. Dated memes are not in the pool at all: the Director removed the dated-jokes switch on 2026-09-15, so the lines anchor to durable developer experience only. Levels are authored end to end. In endless mode a seated model plays the user as a lever fill: the sim offers a closed choice of corpus snippets in band, the model returns one pick and one ask line through the say gate, and may write reactions and asides; it never writes the code the player types, never a punchline in a level, and a late or refused answer is the authored pool. The next ask is prefetched during the current request; the sim never waits (G11, G13). The seat is reached two ways: the launcher's tiered node-side seat (Claude by API key, else an Ollama cloud tag, else local) and the container's stdio tools `product`, `ask`, `react`, so any MCP client can sit in the user's chair. Pages omits the seat. (Q5.1, Q5.5 to Q5.9; G11 to G14, G17; the Director's word of 2026-09-15 on the endless adapter.)
 
 **G29. The feel budget is high, not extreme, and the sound is the score's voice.** One layered sample per event class; keystroke pitch climbs a semitone per clean line to an octave and holds; the tracer, the build-piece pop, the ship flash and the confetti each have one sound; shake is capped and scaled; the bed's tempo follows hype and holds through a level's last request; spawns and refills land on the bar with a legible hit. (Q3.1 to Q3.5, Q3.7.)
 
@@ -100,17 +100,17 @@ Inherited without change: G8 (no ranking against other players; the only best is
 
 ## Data levers
 
-| File                          | Holds                                                                                        |
-| ----------------------------- | -------------------------------------------------------------------------------------------- |
-| `patterns/cabinet.json`       | display name, the agent's default name, the field words                                      |
-| `patterns/levels.json`        | levels: product, stack, request count, band range, drain, refill, ship bonus; endless ramps  |
-| `patterns/score.json`         | hype steps, streak thresholds, Copilot window and discount, milestones, hardcore multipliers |
-| `patterns/context.json`       | drain per second by tier, cost per user message, refill share, hardcore burn per error       |
-| `patterns/difficulty.json`    | the key map for travel cost, the formula weights, the identifier and bracket weights         |
-| `patterns/user.json`          | requests, reactions, asides, reviews by tier and beat; `dated` flags                         |
-| `patterns/agent.json`         | replies, "hmm" lines, compaction summaries, ship lines                                       |
-| `patterns/products.json`      | nouns and templates for endless product names                                                |
-| `patterns/corpus/<lang>.json` | the ported snippets with band, title, code, notes                                            |
+| File                          | Holds                                                                                          |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| `patterns/cabinet.json`       | display name, the agent's default name, the field words                                        |
+| `patterns/levels.json`        | levels: product, stack, request count, band range, drain, refill, ship bonus; endless ramps    |
+| `patterns/score.json`         | hype steps, streak thresholds, Copilot window and discount, milestones, hardcore multipliers   |
+| `patterns/context.json`       | drain per second by tier, cost per user message, refill share, hardcore burn per error         |
+| `patterns/difficulty.json`    | the key map for travel cost, the formula weights, the identifier and bracket weights           |
+| `patterns/user.json`          | requests, reactions, asides, reviews by tier and beat (no dated pool; removed by the Director) |
+| `patterns/agent.json`         | replies, "hmm" lines, compaction summaries, ship lines                                         |
+| `patterns/products.json`      | nouns and templates for endless product names                                                  |
+| `patterns/corpus/<lang>.json` | the ported snippets with band, title, code, notes                                              |
 
 Every file is validated at load with the same halting loader shape as Ghost's `patterns.ts` and every text line is scanned for digits and forbidden words.
 

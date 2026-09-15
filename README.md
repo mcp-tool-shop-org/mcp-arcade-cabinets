@@ -24,8 +24,8 @@
 
 | Cabinet                                                       | What it is                                                                                                                                                                                                                    | State                                                                                                                                                                                                                                   |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | A short retro shooter. The rig hands you the calls; the calls the agent should not have made are hiding among the honest ones and reveal on the hit. Bosses are the experiment, and a local model can sit in them.            | Shipped, `v0.8.2`. [Play](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **Vibe Typer**                                                | A typing arcade game. You are a hard-working, sycophantic coding agent; your user is a vibe coder whose requests are absurd. Type the code, watch the thing get built, and the valuation rolls up. Levels, endless, hardcore. | In build. Design and lock in [`docs/vibe-typer.dispatch.md`](docs/vibe-typer.dispatch.md).                                                                                                                                              |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | A short retro shooter. The rig hands you the calls; the calls the agent should not have made are hiding among the honest ones and reveal on the hit. Bosses are the experiment, and a local model can sit in them.            | Shipped, `v0.9.0`. [Play](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | A typing arcade game. You are a hard-working, sycophantic coding agent; your user is a vibe coder whose requests are absurd. Type the code, watch the thing get built, and the valuation rolls up. Levels, endless, hardcore. | Shipped, `v0.9.0`. [Play](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Design and lock](docs/vibe-typer.dispatch.md)                                                        |
 | **House Call**                                                | A turn-based calibration game: state a call and a confidence, then the tape reveals what happened.                                                                                                                            | Parked until there is a design that plays. `tape-core` keeps its scoring rules.                                                                                                                                                         |
 
 More cabinets will land here. Each one gets its own package, its own page in the handbook, and its own row in this table.
@@ -45,10 +45,10 @@ The full account is in the handbook's [architecture](https://mcp-tool-shop-org.g
 ```
 packages/tape-core          the tape loader, schema and calibration math
 packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
-packages/vibe-typer         the typing game (in build)
+packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
 packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
-packages/launcher           @mcptoolshop/ghost-on-the-menu: npx play mode and --mcp
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves both cabinets; --mcp is Ghost's server
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -59,7 +59,7 @@ catalog/                    the Docker MCP Catalog entry
 
 ## Play
 
-In the browser: [`/play/`](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/). The published page has no daemon, so the model and voice seats are absent there.
+In the browser: [`/play/`](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/). The page opens on a switch between the two cabinets and remembers which one you played last. The published page has no daemon, so the model and voice seats are absent there.
 
 Locally, with the seats lit, nothing to clone:
 
@@ -67,7 +67,7 @@ Locally, with the seats lit, nothing to clone:
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-That serves the shell on `127.0.0.1` and opens it; `--mcp` runs the cabinet as an MCP server over stdio instead. Node 22 or newer. One package publishes to npm and it is that one; every other package here is private.
+That serves the shell, both cabinets, on `127.0.0.1` and opens it; `--mcp` runs Ghost on the Menu as an MCP server over stdio instead. Node 22 or newer. One package publishes to npm and it is that one; every other package here is private.
 
 To work on the arcade, clone it. You need Node 22 and pnpm 11:
 

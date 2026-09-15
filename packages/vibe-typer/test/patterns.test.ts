@@ -58,7 +58,6 @@ describe('the levers load', () => {
     expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(8);
     expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(12);
     expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(8);
-    expect(DEFAULT_PATTERNS.user.dated.length).toBeGreaterThanOrEqual(8);
   });
 
   it('hardcore borrows tier two and tier three burns', () => {

@@ -11,7 +11,7 @@
 
 - [x] `[all]` SECURITY.md exists — 2026-09-10 (report email, supported versions, response timeline) — executed by `npx @mcptoolshop/shipcheck security-docs` (A1: present + reporting contact, not an empty stub)
 - [x] `[all]` README includes threat model paragraph — 2026-09-10, "Trust and threat model" (data touched, data NOT touched, permissions required) — executed by `npx @mcptoolshop/shipcheck security-docs` (A2: trust/threat-model section present + non-empty; _quality_ is not machine-checkable)
-- [x] `[all]` No secrets, tokens, or credentials — 2026-09-14: **one publishable package now** (`@mcptoolshop/ghost-on-the-menu`, the launcher). Gate I PASSED against its real tarball — 28 files scanned, no credentials in the published surface — and Gate L PASSED (OIDC + `--provenance`, no `NPM_TOKEN` in this repo; `docs/npm-launcher.md`). The tracked-tree identity scan is carried forward from 2026-09-10 and is **owed again before the push**: the tool was not on this rig this session, so it was not run. What was run instead on the new surface: a targeted grep of `packages/launcher`, `docs/npm-launcher.md` and `release.yml` for the operator's identity and rig paths — no hits. The repo holds tapes, code and art only in source or diagnostics output — executed by `npx @mcptoolshop/shipcheck secrets` (scans every publishable tarball; matches redacted; not a manual attestation)
+- [x] `[all]` No secrets, tokens, or credentials — 2026-09-14: **one publishable package now** (`@mcptoolshop/ghost-on-the-menu`, the launcher). Gate I PASSED against its real tarball — 28 files scanned, no credentials in the published surface — and Gate L PASSED (OIDC + `--provenance`, no `NPM_TOKEN` in this repo; `docs/npm-launcher.md`). The tracked-tree identity scan was run on this rig on 2026-09-15 before every push of the Vibe Typer slices and the treatment (RESULT CLEAN each time); the launcher tarball is scanned again before the v0.9.0 tag. What was run instead on the new surface: a targeted grep of `packages/launcher`, `docs/npm-launcher.md` and `release.yml` for the operator's identity and rig paths — no hits. The repo holds tapes, code and art only in source or diagnostics output — executed by `npx @mcptoolshop/shipcheck secrets` (scans every publishable tarball; matches redacted; not a manual attestation)
 - [x] `[all]` No telemetry by default — 2026-09-10: none, stated in README and SECURITY.md — state it explicitly even if obvious
 
 ### Default safety posture
@@ -33,8 +33,8 @@
 
 ## C. Operator Docs
 
-- [x] `[all]` README is current — 2026-09-14: the direction (you are the agent; the shift), four flavored calls, inspect-wave cast, named beds, next-verb queue, silent Catalog volume, Node 22+: what it does, install, usage, supported platforms + runtime versions
-- [x] `[all]` CHANGELOG.md (Keep a Changelog format) — 2026-09-14: 0.7.0 A–D after 0.6.0
+- [x] `[all]` README is current — 2026-09-15: the root README is the arcade's entrance (two cabinets, the shared chassis, layout, play, adding a cabinet); Ghost's page in packages/ghost-on-the-menu/README.md, Vibe Typer's in packages/vibe-typer/README.md, the npm page in packages/launcher/README.md covers both; Node 22+: what it does, install, usage, supported platforms + runtime versions
+- [x] `[all]` CHANGELOG.md (Keep a Changelog format) — 2026-09-15: 0.9.0 (Vibe Typer slices 1–2, the entrance README, the landing page) after 0.8.2
 - [x] `[all]` LICENSE file present — 2026-09-10: MIT; support status in SECURITY.md (0.3.x) and repo states support status
 - [x] `[cli]` `--help` output accurate — 2026-09-10: scripts/play.mjs prints usage on a missing cabinet; film and sweep document their flags in their headers for all commands and flags
 - [ ] `[cli|mcp|desktop]` SKIP: the tools print a transcript or a table; nothing logs secrets because nothing holds any — Logging levels defined: silent / normal / verbose / debug — secrets redacted at all levels
@@ -44,7 +44,7 @@
 ## D. Shipping Hygiene
 
 - [x] `[all]` `verify` script exists — 2026-09-10: pnpm verify = lint, typecheck, test, build, play-through (test + build + smoke in one command)
-- [x] `[all]` Version in manifest matches git tag — 2026-09-14: 0.7.0 in every package.json and SERVER_VERSION; tag v0.7.0 — executed by `npx @mcptoolshop/shipcheck manifest`
+- [x] `[all]` Version in manifest matches git tag — 2026-09-15: 0.9.0 in every package.json (seven) and SERVER_VERSION; tag v0.9.0; release.yml refuses a mismatch — executed by `npx @mcptoolshop/shipcheck manifest`
 - [x] `[all]` Dependency scanning runs in CI — 2026-09-10: pnpm audit --audit-level=high in ci.yml (shipcheck ci: passed) (ecosystem-appropriate) — executed by `npx @mcptoolshop/shipcheck ci` (D3: a recognized scanner is _configured_ in CI, or dependabot is present)
 - [x] `[all]` No known high/critical vulnerabilities — 2026-09-10: pnpm audit reports 0 high/critical (2 moderate, dev-only); Dependabot alerts enabled via API. shipcheck deps cannot parse a pnpm tree (it runs npm audit), so this line is attested from pnpm audit in any dependency tree, and Dependabot alerts are enabled — executed by `npx @mcptoolshop/shipcheck deps` (the OUTCOME: audits **every** tree incl. subtrees, not just the root; `ci` only proves a scanner is configured)
 - [ ] `[all]` SKIP: org rule: no dependabot.yml unless asked; alerts are on — Automated dependency **update** mechanism exists <!-- soft/optional: the org rule restricts the auto-PR bot (CI minutes), NOT alerts. The security outcome is enforced by `shipcheck deps`; the update bot is optional. -->
@@ -58,10 +58,10 @@
 
 ## E. Identity (soft gate — does not block ship)
 
-- [x] `[all]` Logo in README header (brand/logos/mcp-arcade-cabinets/readme.png)
-- [x] `[all]` Translations (polyglot-mcp, 8 languages) — ja, zh, es, fr, hi, it, pt-BR on TranslateGemma 27B, 2026-09-10
-- [x] `[org]` Landing page (@mcptoolshop/site-theme) — site/ with the Starlight handbook and the game at /play/, Pages via pages.yml
-- [x] `[all]` GitHub repo metadata: description, homepage, topics
+- [x] `[all]` Logo in README header (brand/logos/mcp-arcade-cabinets/readme.png) — 2026-09-15: the arcade cabinet render; the ghost icon lives on as ghost-readme.png on Ghost's page; Vibe Typer's own logo is owed
+- [x] `[all]` Translations (polyglot-mcp, 8 languages) — ja, zh, es, fr, hi, it, pt-BR on TranslateGemma 27B, 2026-09-15, regenerated from the arcade-entrance README before the v0.9.0 tag
+- [x] `[org]` Landing page (@mcptoolshop/site-theme) — 2026-09-15: site/ is the arcade (a cabinets section with both games, Inside Vibe Typer, Inside Ghost, play cards), the Starlight handbook with a Vibe Typer page, both cabinets at /play/, Pages via pages.yml
+- [x] `[all]` GitHub repo metadata: description, homepage, topics — 2026-09-15: description names both cabinets; topics gained typing-game, games, monorepo
 
 ---
 

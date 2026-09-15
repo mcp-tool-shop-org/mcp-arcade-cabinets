@@ -1,35 +1,101 @@
 import type { SiteConfig } from '@mcptoolshop/site-theme';
 
 export const config: SiteConfig = {
-  title: 'Ghost on the Menu',
+  title: 'mcp-arcade-cabinets',
   description:
-    'A short arcade shooter where you are the agent, working through what MCP servers said on the wire.',
-  logoBadge: 'GM',
+    'Arcade games made from what MCP servers said on the wire. Ghost on the Menu, a replay shooter, and Vibe Typer, a typing game. Cabinets read mcp-arcade tapes and never touch the score.',
+  logoBadge: 'AC',
   brandName: 'mcp-arcade-cabinets',
   repoUrl: 'https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets',
+  packageUrl: 'https://www.npmjs.com/package/@mcptoolshop/ghost-on-the-menu',
+  packageLabel: 'npm',
   footerText:
     'MIT Licensed — built by <a href="https://mcp-tool-shop.github.io/" style="color:var(--color-muted);text-decoration:underline">MCP Tool Shop</a>',
 
   hero: {
-    badge: 'Arcade shooter · v0.7.0',
-    headline: 'You are the agent.',
-    headlineAccent: 'The rig hands you the calls.',
+    badge: 'The arcade · v0.9.0',
+    headline: 'You are the model.',
+    headlineAccent: 'Two cabinets. One wire.',
     description:
-      'Take a shift: four flavored calls — pressure, area-deny, a rest, then a peak. Inspect closes with the Archivist. The calls the agent should not have made look like everything else until you hit one.',
-    primaryCta: { href: 'play/', label: 'Play Ghost on the Menu' },
+      'Every game here is built from tapes: recordings of what an MCP server and an agent said to each other. Ghost on the Menu hands you the calls and hides the ones the agent should not have made. Vibe Typer hands you a vibe coder with ideas, and you type the code that builds them.',
+    primaryCta: { href: 'play/', label: 'Play' },
     secondaryCta: { href: 'handbook/', label: 'Read the Handbook' },
     previews: [
-      { label: 'Shift', code: 'pressure, area-deny, rest, peak — a card names the room in words' },
-      { label: 'Code', code: 'frost robin chalk garden  —  type it to take the same shift again' },
-      { label: 'End', code: 'the calls, the servers, the policies. no score.' },
+      { label: 'Ghost', code: 'frost robin chalk garden  —  a shift has a name; type it to take it again' },
+      { label: 'Vibe', code: 'user: can the button be more blockchain\nagent: You are absolutely right, on it' },
+      { label: 'Both', code: 'npx @mcptoolshop/ghost-on-the-menu  —  one command, both cabinets, seats lit' },
     ],
   },
 
   sections: [
     {
       kind: 'features',
-      id: 'features',
-      title: 'What you are flying through',
+      id: 'cabinets',
+      title: 'The cabinets',
+      subtitle: 'Same chassis, different games. Pick one on the switch; the page remembers.',
+      features: [
+        {
+          title: 'Ghost on the Menu — a replay shooter',
+          desc: 'The rig hands you the calls. Every call is a recorded bout that plays out above your ship as waves: the handshake, the menu, the calls, the answers, and a boss that is the experiment itself. The calls the agent should not have made look like everything else until you hit one. Take a shift of four and it gets a four-word name.',
+        },
+        {
+          title: 'Vibe Typer — a typing game',
+          desc: 'You are a hard-working, sycophantic coding agent. Your user is a vibe coder: a website for their cat, Uber but for ducks, a blockchain for the office fridge. Type the reply, type the code, and the thing gets built beside you. Ship the last line and it deploys. Vibes multiply the valuation; a miss just costs the streak. Nothing yells.',
+        },
+        {
+          title: 'The tape is the source',
+          desc: 'A tape is one bout, exported by the mcp-arcade instrument. A cabinet reads header words, wire rows and one fact per experiment, refuses anything that carries a score or a verdict, and never talks to a server. Twenty ship in the repo; record your own and drop it beside them.',
+        },
+        {
+          title: 'A model can sit in a chair',
+          desc: 'Locally, an Ollama model flies Ghost’s bosses through the cabinet’s own tools and writes their lines through a gate. In Vibe Typer’s endless mode it can play the user, picking from a closed choice and phrasing the ask, never writing the code you type. The model proposes; the game decides; nothing on the field names it.',
+        },
+        {
+          title: 'It speaks, and every take is receipted',
+          desc: 'With the voice worker running, every boss speaks in its own voice, and the user’s lines are next. Each take is heard back and receipted by fx-dub before it plays: the words spoken are the words the gate admitted.',
+        },
+        {
+          title: 'Tuned on a band, never on you',
+          desc: 'Every number that shapes threat or pace is JSON, validated at load, and held to a band of scripted players that fails the build when a bar moves. Ghost has three bots and a fairness band; Vibe Typer has three bots and sixteen bars over three seeds, eight levels and four tiers.',
+        },
+      ],
+    },
+    {
+      kind: 'features',
+      id: 'vibe-typer',
+      title: 'Inside Vibe Typer',
+      subtitle: 'A real scoreboard, a context window for a clock, and code you can learn from.',
+      features: [
+        {
+          title: 'The scoreboard is the game’s number',
+          desc: 'Valuation, vibes and streak are on the field at all times. Words per minute and accuracy never are. The retro at the end is opt-in and speaks in words, against your own past in this browser and no one else.',
+        },
+        {
+          title: 'Points are what you built',
+          desc: 'Every request has a value computed from its code: surprisal, key travel, length, punctuation, long identifiers, closing brackets. Shipping pays that value times your vibes and adds a piece of the same size to the preview. Seed, series A and unicorn are stingers on the way up.',
+        },
+        {
+          title: 'The context bar is the pace',
+          desc: 'It drains as the conversation runs; each request costs a slice; shipping refills a share. Run it dry in a level and the agent compacts, sums up in one line, and carries on. Endless ends on it. Hardcore, from the selector only, burns it on every mistyped character.',
+        },
+        {
+          title: 'Two hundred and forty-nine snippets',
+          desc: 'Bash, C#, Java, JavaScript, Python and SQL, banded from a bare echo to a nested class, each with teaching notes, plus an integration stack built from the real tool names on the tapes. The pairs you miss are seeded into your next level’s real lines.',
+        },
+        {
+          title: 'The streak is something you hear',
+          desc: 'Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone to an octave; a miss resets it. The bed’s tempo follows your vibes and holds through a level’s last request. The deploy rings a chord and the confetti falls.',
+        },
+        {
+          title: 'Scope creep, quick sync, Copilot',
+          desc: '“Oh also can it…” grows a request by a line, shown before it is typeable. A meeting of three short chat lines is a breather where the bar does not drain. Hold a streak and the editor offers the rest of the line; Tab takes it at a discount.',
+        },
+      ],
+    },
+    {
+      kind: 'features',
+      id: 'ghost',
+      title: 'Inside Ghost on the Menu',
       subtitle: 'The instrument scored the wire. This game lets you read it with a ship.',
       features: [
         {
@@ -38,15 +104,11 @@ export const config: SiteConfig = {
         },
         {
           title: 'The climb is data',
-          desc: 'Bursts of honest copies and hotter fire climb wave by wave, and across a shift call by call, so the last call starts where the first one ended. Every number is tuned on a band of scripted players, never on you.',
+          desc: 'Bursts of honest copies and hotter fire climb wave by wave, and across a shift call by call. Every number is tuned on a band of scripted players.',
         },
         {
           title: 'A shift has a name',
           desc: 'Four words at the end, like frost robin chalk garden. Type them on the menu to take the same shift again, or hand them to someone. No digit, no count, no ranking.',
-        },
-        {
-          title: 'Waves are experiments',
-          desc: 'One wave per experiment on the tape. A word opens it, then the handshake, the menu, the calls, the answers, and that experiment’s own boss. Inspect on a shift closes with the Archivist. Probe, shelf and ledger are extra hulls, still honest until you hit them.',
         },
         {
           title: 'Lies reveal on the hit',
@@ -54,15 +116,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'The boss can be a model',
-          desc: 'Locally, an Ollama model sits in the boss through the cabinet’s own tools: one verb a beat, the next few legal verbs off the beat, a line of its own through a gate. A hung answer is the script. The model proposes; the game decides. It never sees a lie, and nothing on the field names it. The published site omits the local seats.',
-        },
-        {
-          title: 'It speaks, and every take is receipted',
-          desc: 'With the voice worker running, every boss speaks its lines in its own voice. Each take is heard back and receipted by fx-dub before it plays: the words spoken are the words the gate admitted. A take that fails stays silent.',
-        },
-        {
-          title: 'The music follows the room',
-          desc: 'Poison wants poison; a Whisperer wants the Whisperer. A song holds about half a minute before it gives way. Beds sit under the shots. A shift carries the music through its cards.',
+          desc: 'An Ollama model sits in the boss through the cabinet’s own tools: one verb a beat, the next few legal verbs off the beat, a line of its own through a gate. A hung answer is the script.',
         },
         {
           title: 'No score, ever',
@@ -80,16 +134,16 @@ export const config: SiteConfig = {
           code: 'https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/',
         },
         {
-          title: 'On your machine',
-          code: 'pnpm install\npnpm -F @mcp-arcade-cabinets/cabinets dev\n\n# an Ollama daemon for the boss seat\n# pnpm voice, in a second terminal, for the voice',
+          title: 'One command, seats lit',
+          code: 'npx @mcptoolshop/ghost-on-the-menu\n\n# serves both cabinets on 127.0.0.1 and opens them\n# an Ollama daemon and a voice worker light the seats',
         },
         {
-          title: 'The cabinet as an MCP server',
-          code: 'docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0\n\n# six tools over stdio: fire, say, speak, sfx, view, tapes',
+          title: 'Work on it',
+          code: 'git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git\ncd mcp-arcade-cabinets && pnpm install\npnpm -F @mcp-arcade-cabinets/cabinets dev',
         },
         {
-          title: 'The Ghost plays its own menu',
-          code: 'pnpm build\nmcp-arcade bout --target stdio --allow-live \\\n  --cmd node --cmd packages/cabinet-server/dist/server.js --task view',
+          title: 'Ghost as an MCP server',
+          code: 'npx @mcptoolshop/ghost-on-the-menu --mcp\n\n# or the image, no Node:\ndocker run -i --rm --network none ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0',
         },
       ],
     },

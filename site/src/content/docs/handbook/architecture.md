@@ -17,6 +17,8 @@ The design is locked in `docs/study-swarm.dispatch.md` on findings that passed c
 
 Everything else is negotiable; those are not.
 
+Vibe Typer inherits G1, G8, G12, G14 and G17 and adds its own lock, **G23–G30**, in `docs/vibe-typer.dispatch.md`: the scoreboard is the game's number and never the typist's; points correlate with what is built; nothing yells; the context timer is the pace; difficulty is a formula; the user and the agent are authored data behind the gate, with a model allowed as the endless user; the feel budget is high, not extreme; tapes season, never schedule. Its pipeline is the same shape as Ghost's: `createRun` → `stepRun` one keystroke a step → `state.events` drained by the shell into cues → DOM chat and editor, a canvas preview.
+
 ## The pipeline
 
 ```

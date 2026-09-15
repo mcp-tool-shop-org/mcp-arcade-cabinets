@@ -13,12 +13,13 @@ All run from the repo root.
 | ------ | ---- |
 | `pnpm test` | The unit tests and the fairness band (vitest) |
 | `pnpm test:play ghost --fixture <name> [--bot idle\|sweeper\|reader]` | One scripted round; exit 0 on success, 1 on a failed transcript, 2 on usage, 3 when the package is not built |
+| `pnpm test:play vibe-typer [--tier 0\|1\|2\|3] [--bot idle\|perfect\|typist:wpm[:rate]] [--seed n] [--level n] [--stack s] [--endless yes]` | One scripted Vibe Typer level (or an endless run) with a headless typist; the summary carries the valuation and words only; same exit codes |
 | `pnpm film --fixture <name> [--bot b] [--tier 0\|1\|2] [--times 3,8,12] [--out dir]` | Frames of a round to PNG through the renderer |
 | `pnpm sweep [--climb 0..1]` | Every tape at every tier with every bot; prints one line each and a summary table. `--climb 1` plays every tape as the last call of a shift |
 | `pnpm sit [--model a,b] [--fixture <name>] [--tier 0\|1\|2\|3] [--bot b] [--seat mcp\|prompt] [--constrain on\|off] [--say on\|off] [--voice auto\|on\|off] [--speed n] [--lamps keep\|lose]` | Sits a model in the boss seat and the say seat over the cabinet server's tool contract on one scripted round in wall-clock time; prints each beat's call and what the sim made of it, every line and what the gate did with it, and per model: verb collapse, tool suppression, bad verbs, revoked prefetches, late answers. `--seat prompt` is the v0.4.0 bare-prompt path. Needs the local daemon |
 | `pnpm test:play ghost --seat mcp`                                                         | The cabinet server driven in-process by a scripted model (one `fire` a beat, a `say` and a `speak` at each spawn, an `sfx` now and then) with the sweeper as the ship; the transcript footer counts the calls and what the gate refused |
 | `pnpm voice [--check]`                                                                    | Runs the host-side voice worker from the repo's `.venv` (Kokoro speaks, faster-whisper hears it back, fx-dub receipts the pair). `--check` speaks one authored line per boss against a running worker and prints the receipts. The container never carries it |
-| `pnpm verify` | Lint, typecheck, test, build and a play-through, in one command |
+| `pnpm verify` | Lint, typecheck, test, build and both cabinets' play-throughs, in one command |
 | `pnpm build:play` | Builds the shell under `site/public/play/` with the site's base path (CI does this before the site build) |
 | `pnpm -F @mcp-arcade-cabinets/cabinets dev` | The browser shell on a local port |
 

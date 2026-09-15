@@ -3,74 +3,73 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="Ghost on the Menu" width="400" />
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="mcp-arcade-cabinets" width="560" />
 </p>
 
 <p align="center">
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml"><img src="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp-tool-shop-org/mcp-arcade-cabinets" alt="License: MIT" /></a>
-  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
 </p>
 
 <p align="center">
-  <strong>You are the agent. The rig hands you the calls.</strong>
+  <strong>Arcade games made from what MCP servers said on the wire.</strong>
 </p>
 
-**《菜单中的幽灵》**是一款复古射击游戏，其灵感来源于 MCP 服务器在网络上传播的信息。你扮演一名特工，被派往设施深处执行一系列任务。每次遭遇都是 MCP 服务器与特工之间的一次对话记录，这些对话以波浪的形式呈现在你的飞船上方：握手、菜单、对话、回复，以及一个本身就是实验的 Boss。
+**mcp-arcade-cabinets** 是街机游戏集合。每个街机游戏都是基于相同硬件平台构建的一个小型游戏：它读取**磁带**，即 [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) 记录的 MCP 服务器与智能体之间的对战过程，并将这些过程转化为你可以玩的游戏。街机游戏不会与服务器通信，不会加载任何记录，也不会保存任何智能体可以看到的分数。你始终是模型；游戏的不同之处在于它们对你提出的要求。
 
-在这些互动中，存在着代理不应该发起的通话。它们看起来与其他内容没什么不同，直到你击中其中一个。之后，它将在整个回合中属于你。
+[在浏览器中运行](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [阅读手册](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)
 
-[在浏览器中游玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [如何理解一个回合](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+## 街机游戏
 
-## 开始一轮
+| 街机游戏                                                      | 简介                                                                                                                                                         | 状态                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | 一款简短的复古射击游戏。游戏会给你提供指令；智能体本不应该执行的指令会隐藏在正常的指令中，并在命中时显现。Boss 是实验对象，本地模型可以控制它们。            | 已发布，`v0.9.0`。[试玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | 一款打字街机游戏。你是一个勤奋、谄媚的编码智能体；你的用户是一个氛围编码师，他的要求非常荒谬。输入代码，观察游戏构建过程，然后评估结果。关卡、无限、高难度。 | 已发布，`v0.9.0`。[试玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [设计和锁定](docs/vibe-typer.dispatch.md)                                                             |
+| **House Call**                                                | 一款回合制校准游戏：声明一个指令和一个置信度，然后磁带会显示实际发生的情况。                                                                                 | 暂停开发，直到有设计方案可以实现。`tape-core`保留其计分规则。                                                                                                                                                                          |
 
-按住 **Shift** 键，游戏会连续提供四个任务，这些任务来自任务列表，并且不会连续出现两次相同的四个任务。每个任务都是指派给特工执行的服务器，每个任务都是不同的房间：压力、区域防御、休息，然后是高潮。一张卡片会显示下一个服务器、策略以及特工被要求执行的任务和战斗内容——一次坚定的握手、一道横跨通道的屏障、一次高潮之间的休息、一面赭色的目录墙。每次任务都会补充灯光。火焰会随着任务的进行而不断升温；这种升温是热度，而不是新的故事。
+更多街机游戏将在此处推出。每个游戏都有自己的包、手册中的自己的页面以及此表格中的自己的行。
 
-在最后一轮任务结束时，这轮任务会有一个由四个词组成的名称，例如 `frost robin chalk garden`。在菜单中输入该名称，可以再次执行相同的任务，或者将其交给其他人。没有数字、没有计数、没有排名：一轮任务只是一个任务列表，而不是一个排行榜。
+## 每个街机游戏共有的内容
 
-从列表中选择一个录音带。每个录音带都标记为“固定”、“标准”或“实时”；将鼠标悬停在 **i** 上可以查看原因。“标准”是默认的战斗。“实时”旨在让你生存下去。“硬核”是第四个难度级别，只能从选择器中选择。
+- **只输入磁带，不输出任何内容。** `packages/tape-core`加载`mcp-arcade.tape/v1`，拒绝任何包含分数或结论的内容，并提供游戏标题、指令序列和每个原子对应的一个封闭的事实。二十个录音包含在`fixtures/tapes/`中。
+- **无头模拟和精简外壳。** 每个游戏都是一个纯粹的、基于种子的模拟，具有脚本化的游戏流程和一个失败构建的公平性范围。`apps/cabinets`是浏览器外壳，用于加载这些游戏，并且 Pages 在`/play/`处提供这些游戏。
+- **数据控制杆，而不是代码。** 波形、声音、难度、行：每个包的`patterns/`中的 JSON 数据，在加载时进行验证，因此可以在不重新构建的情况下调整游戏。
+- **一个模型座位，位于闸门之后。** 本地或云模型可以坐在街机游戏中（Ghost 中的 Boss，Vibe Typer 无限模式中的用户）。它只会从封闭集合中填充一个控制杆，它编写的每一行都通过词汇闸门，并且字段中没有任何内容可以识别它。街机游戏也可以通过 stdio 作为 MCP 服务器运行，因此智能体也可以是玩家。
+- **一个声音。** 一个主机端工作器（`voice/`）会说出闸门允许的台词，并在播放之前由 [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) 进行确认。
 
-## 游戏玩法
+完整的说明在手册的[架构](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/architecture/)和[安全](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/security/)页面中。
 
-一个 **录音带** 是对一次互动的记录。这款游戏只会读取录音带。它不会与服务器通信，也不会保存得分，也不会告诉你谁赢了。
+## 布局
 
-- **三盏灯。** 一次强力射击或一次潜水阵型可以熄灭一盏灯。抓住一盏从被击倒的 Boss 处笔直坠落的灯，可以重新点亮一盏。你必须移动到灯的下方。全部熄灭将结束本回合。
-- **分散。** 清除一个阵型，一个分散的灯光会笔直坠落。抓住它，你的火力将在几秒钟内扩散。
-- **Boss 是实验，而不是指责。** 无论是否出现问题，低语者、菜单和门卫都会出现在他们的回合中。在一次任务中，检查会与档案管理员结束（一面目录墙）。他们像特工一样自言自语。硬核模式是一盏灯和从第一次射击开始的愤怒。
-- **平行性爆发。** 座位、实时模式和硬核模式会产生爆发，这些爆发会通过真实的副本来增加场上的元素，并使火焰升温，同时音乐也会加速。它们一开始是短暂的，然后随着回合的进行而不断增加，并且在一次任务中，每个任务都会增加。这种增加是数据，它会根据一组预先编写的玩家进行调整，但不会针对你。
-- **线索在于序列。** 谎言看起来、移动或出现的方式与它真实的对应物没有任何不同。真正揭示它的在于它所处的位置：一个额外的阵型、第二个菜单、在菜单之后立即出现的一个单一元素。在一次任务中，额外的结构可以加入房间——一个快速移动的探测器、一道横跨通道的屏障、一叠账本——它们仍然与真实的对应物共享，直到你击中它们。
-- **音乐** 遵循卡片，但一首歌曲在播放完一个循环（大约半分钟）后就会停止。毒药仍然需要毒药；低语者仍然需要低语者。床位于射击和捕捉下方；静音仍然会同时杀死所有东西。一次任务会将音乐带入其卡片中。
-- **结局场景** 会显示磁带、服务器和策略。被捕获的谎言会作为战利品。逃脱的谎言会以其真实的颜色呈现。没有得分，没有计数，没有数字。
-
-## Boss 可以是一个模型
-
-在本地，一个 Ollama 模型，包括一个像 `gpt-oss:120b-cloud` 这样的云标签，可以位于 Boss 中。它不会收到任何提示来自由发挥。它会获得柜子自己的工具：`fire`（每个节拍一个动词：一个扇形、一个倾斜和一个瞄准射击、一次屏住呼吸、雾、一个盘子）、`say`（它自己的一行，穿过一个门：十二个单词，一个句子，没有数字，没有事实性词语，没有工具或模型名称；被拒绝的行会播放 Boss 自己的其中一个）、`speak`，以及只读的 `view` 和 `tapes`。它还可以将接下来的几个合法的动词排队，等待下一个节拍；一个悬而未决的答案就是剧本，而不是停顿。在射击之后，选择器会编写一行封闭的库代码。模型会提出建议；游戏会做出决定。它永远不会看到哪些精灵是谎言，并且场上的任何东西都不会识别它。发布的网站没有守护进程，因此它会省略 Ollama 和 Voice 插件。
-
-如果运行了一个语音工作者，每个 Boss 都会说话：它在出现时会说出它编写的台词，以及模型编写的台词。每次对话都会被语音识别器听到，并在播放之前由 [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) 进行记录，因此所说的词就是门允许的词，没有虚构的对话，也没有漏洞。如果某个对话未能通过记录，则它将保持沉默。
-
-该设施本身就是一个通过 stdio 连接的 MCP 服务器，具有相同的六种工具，因此该工具可以播放《幽灵》自身的菜单；存储库中的四段录音是设施自身录制的。它也以 Docker 镜像的形式提供：
-
-```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
+```
+packages/tape-core          the tape loader, schema and calibration math
+packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
+packages/vibe-typer         the typing game: sim, levers, corpus, bots
+packages/house-call         parked
+packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves both cabinets; --mcp is Ghost's server
+apps/cabinets               the browser shell, served by Pages at /play/
+fixtures/tapes              twenty recordings, tape JSON only
+docs/                       one dispatch (research + lock) and one review per slice
+site/                       the landing page and the Starlight handbook
+voice/                      the Kokoro voice worker and its compose file
+catalog/                    the Docker MCP Catalog entry
 ```
 
-一个捆绑的文件位于 `node:22-alpine`，其中包含工具协议和烘焙好的磁带；它会在不到一秒钟的时间内，在单个 CPU 和两个千兆字节的内存下列出其工具，并且不需要网络即可运行。一个可选的只读卷可以覆盖额外的操作员磁带，这些磁带将添加到那二十个磁带中。目录列表是静止的（网络关闭，图像中没有声音）。Docker MCP 目录条目是在 `catalog/` 下编写的。仅主机模式的本地图像位于 `voice/compose.host.yaml`。
+## 开始游戏
 
-## 操作
+在浏览器中：[`/play/`](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/)。页面会打开一个开关，用于在两个街机游戏之间进行切换，并记住你上次玩的是哪个游戏。发布的页面没有守护进程，因此模型和声音座位在那里不可用。
 
-使用左键和右键（或 A 键和 D 键）进行移动，使用空格键进行射击，使用 F 键进行全屏显示。单击该区域以重新播放相同的磁带。下一个磁带会遍历列表；在一次任务中，下一个任务会选择下一张卡片。声音会在第一次按键或单击时开始；静音、三个感觉预设和一个关闭切换按钮位于该区域下方。难度设置位于“播放”行中（硬核模式是一盏灯和掉落的盘子）。在本地，**Ollama Boss** 和 **Voice** 位于它们旁边，还有一个模型选择器和一些文字，说明每个座位正在做什么。发布的 `/play/` 页面是该区域、声音、感觉、关闭切换和难度设置。
-
-## 本地游玩
-
-一个命令，无需克隆：
+本地，座位已启用，无需克隆：
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-这将在 `127.0.0.1` 上提供该柜子并打开它。与发布的页面不同，这个页面可以访问你自己的机器上的 Ollama 守护进程和一个语音工作器，因此座位会亮起。`--mcp` 会以 MCP 服务器的形式通过 stdio 运行相同的柜子，供特工使用；`--help` 列出了其余部分。Node 22 或更高版本，没有其他要求。
+它提供外壳，两个街机游戏都在`127.0.0.1`上运行，并打开它；`--mcp`将 Ghost on the Menu 作为 MCP 服务器通过 stdio 运行。Node 22 或更高版本。一个包发布到 npm，那就是；这里的每个其他包都是私有的。
 
-要对其进行操作，请克隆它——你需要 Node 22 和 pnpm 11：
+要使用街机游戏，请克隆它。你需要 Node 22 和 pnpm 11：
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git
@@ -79,14 +78,16 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-打开 Vite 打印的地址。十六个录音被包含在仓库中，并从 [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) 导出，该工具与服务器通信并保存录音带。
+`pnpm verify`是闸门：lint、类型、测试、构建以及每个街机游戏的脚本化游戏流程。对于模型座位，请在同一台机器上运行一个 Ollama 守护进程；对于声音，请参阅[`voice/`](voice/)和`pnpm voice`。
 
-对于 Boss 座位，在同一台机器上运行一个 Ollama 守护程序，并勾选 **Ollama Boss**。对于语音，在 `.venv` 中创建一个 Python 3.12 虚拟环境，并安装 `kokoro-onnx`、`faster-whisper` 和 `fx-dub`，将 `KOKORO_DIR` 指向 Kokoro ONNX 权重，并在第二个终端中运行 `pnpm voice`；当工作者响应时，**语音** 框将被启用。两者都不是必需的；已发布的网站也没有这两个选项。
+要玩你自己的服务器，请使用 mcp-arcade 记录一个对战过程，然后将`mcp-arcade tape receipt.json -o your.tape.json`并将其放在固定装置旁边。容器以相同的方式获取只读的磁带卷。
 
-要记录你自己的服务器并播放该录音带，请在那里运行一次互动，然后运行 `mcp-arcade tape receipt.json -o your.tape.json`。
+## 添加街机游戏
+
+新的游戏从`docs/`中的一个分发开始：研究基础、它继承和扩展的锁定、其数据控制杆及其切片。然后是一个遵循上述形状的包、一个在`apps/cabinets`中的挂载、此表格中的一行以及手册中的一个页面。版本保持为`0.x`，直到导演另有指示，并且没有第二个包发布到 npm，除非使用相同的词。
 
 ## 更多
 
-[手册](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) 是手册的其余部分：线索、Boss、难度以及游戏是如何构建的。已发布的内容以及发布时间在 [changelog](CHANGELOG.md) 中。游戏涉及的内容在 [SECURITY.md](SECURITY.md) 中。
+已发布的内容以及发布时间在[变更日志](CHANGELOG.md)中。游戏所涉及的内容在[SECURITY.md](SECURITY.md)中。
 
 MIT 许可。由 [MCP Tool Shop](https://mcp-tool-shop.github.io/) 构建。

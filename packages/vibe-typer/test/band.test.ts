@@ -160,12 +160,6 @@ describe('the words', () => {
       }
     }
   });
-
-  it('keeps the dated jokes off unless they are asked for', () => {
-    const plain = drive({ bot: 'perfect', seed: 1, tier: 0, level: 0 });
-    const dated = new Set(DEFAULT_PATTERNS.user.dated);
-    expect(plain.lines.some((line) => dated.has(line))).toBe(false);
-  });
 });
 
 describe('replay', () => {

@@ -3,74 +3,73 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="Ghost on the Menu" width="400" />
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="mcp-arcade-cabinets" width="560" />
 </p>
 
 <p align="center">
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml"><img src="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp-tool-shop-org/mcp-arcade-cabinets" alt="License: MIT" /></a>
-  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
 </p>
 
 <p align="center">
-  <strong>You are the agent. The rig hands you the calls.</strong>
+  <strong>Arcade games made from what MCP servers said on the wire.</strong>
 </p>
 
-**メニューに現れた幽霊**は、MCPサーバーがネットワーク上で発言していた内容を基にした、短いレトロシューティングゲームです。あなたは、任務リストを持って、施設の奥深くに派遣された主人公です。すべての通信は、MCPサーバーとエージェント間の記録された会話であり、それがあなたの宇宙船の上で波のように展開されます。それは、ハンドシェイク、メニュー、通信、返答、そして実験そのものであるボスです。
+**mcp-arcade-cabinets** はアーケードゲームです。各キャビネットは、同じシャーシ上に構築された小さなゲームです。**テープ**（MCPサーバーとエージェント間の対戦を記録したもの）を読み取り、それをプレイ可能なものに変換します。キャビネットはサーバーと通信したり、スコアを読み込んだり、記録したりすることはありません。あなたは常にモデルであり、ゲームはあなたがどのようにプレイするかによって異なります。
 
-その中に、エージェントが本来行うべきではなかった通信が含まれています。それらは他のものと変わらないように見えますが、一度触れると、ゲームの残り時間、プレイヤーの所有物となります。
+[ブラウザでプレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [ハンドブック](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)
 
-[ブラウザでプレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) ・ [ラウンドの読み方](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+## キャビネット
 
-## 次のシフトを開始
+| キャビネット                                                  | 概要                                                                                                                                                                                                                                                       | 状態                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | 短いレトロシューティングゲーム。ゲームは、エージェントが本来行うべきではなかった行動を、正直な行動の中に隠し、攻撃時に明らかにするというものです。ボスは実験であり、ローカルモデルがその中に座ることができます。                                           | リリース済み、`v0.9.0`。[プレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | タイピングアーケードゲーム。あなたは勤勉で、おべっかを使うコーディングエージェントです。あなたのユーザーは、奇妙な要求をするバイブコーダーです。コードを入力し、ビルドされるのを見て、評価が上がっていくのを確認します。レベルは無限で、難易度も高いです。 | リリース済み、`v0.9.0`。[プレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [デザインとロック](docs/vibe-typer.dispatch.md)                                                       |
+| **House Call**                                                | ターンベースのキャリブレーションゲーム：行動と信頼度を宣言すると、テープに何が起こったかが表示されます。                                                                                                                                                   | プレイ可能なデザインが完成するまで、保留状態です。`tape-core`はスコアリングルールを保持します。                                                                                                                                                |
 
-**Shift**キーを押すと、施設は連続して4つの任務をあなたに与えます。それらは、任務リストから選ばれ、同じ4つの任務が2回連続で表示されることはありません。それぞれの任務は、エージェントが派遣されたサーバーであり、それぞれの通信は異なる部屋を表しています。それは、圧力、エリア封鎖、休息、そしてピークです。それらの間に表示されるカードには、次のサーバー、ポリシー、エージェントに実行するように指示されたツール、そして言葉で表現された戦闘が示されています。それは、鋼鉄のハンドシェイク、通路を横切る棚、ピーク間の休息、黄土色のカタログの壁です。すべての通信の終わりに、ランプが補充されます。炎は、通信ごとに燃え上がります。それは、新しいストーリーではなく、熱です。
+今後、さらに多くのキャビネットが追加されます。それぞれが独自のパッケージ、ハンドブック内の独自のページ、およびこの表の独自の行を持ちます。
 
-最後に、そのシフトには4つの単語で構成された名前が付けられます。例えば、`frost robin chalk garden`です。それをメニューに入力して、同じシフトをもう一度実行するか、誰かに渡します。数字、カウント、ランキングはありません。シフトは、スコアボードではなく、任務リストです。
+## すべてのキャビネットに共通するもの
 
-リストからテープを選択してください。それぞれのテープには、「通常」、「ライブ」、「ハードコア」というラベルが付いています。ラベルにマウスオーバーすると、その理由が表示されます。「通常」がデフォルトの戦闘モードです。「ライブ」は、生き残ることを目的としたモードです。「ハードコア」は、セレクターからのみ選択できる、4番目の難易度です。
+- **テープをイン、何もアウトにしません。** `packages/tape-core`は`mcp-arcade.tape/v1`をロードし、スコアや結果を含むものをすべて拒否し、ゲームヘッダーの単語、ワイヤの行、およびアトムごとの1つの閉じた事実を渡します。20個の録音は`fixtures/tapes/`に含まれています。
+- **ヘッドレスシミュレーションと薄いシェル。** すべてのゲームは、スクリプト化されたプレイを通じて、純粋で、シードされたシミュレーションであり、ビルドに失敗する公平性のバンドがあります。`apps/cabinets`は、それらをマウントし、Pagesが`/play/`で提供するブラウザシェルです。
+- **データレバー、コードではありません。** 波、音声、難易度、行：各パッケージの`patterns/`の下にあるJSONで、ロード時に検証されるため、ゲームは再ビルドなしで調整できます。
+- **モデルが座るための席、ゲートの後ろに。** ローカルまたはクラウドモデルは、キャビネット（Ghostのボス、Vibe Typerの無限モードのユーザー）に座ることができます。モデルは常に閉じたセットからレバーを1つだけ入力し、書き込んだすべての行は単語ゲートを通過し、フィールド上のものはそれを識別しません。キャビネットは、stdio経由でMCPサーバーとして実行することもできるため、エージェントがプレイすることもできます。
+- **音声。** ホスト側のワーカー（`voice/`）は、ゲートが許可した行を話し、[fx-dub](https://github.com/mcp-tool-shop-org/fx-dub)によってプレイされる前に、その行を記録します。
 
-## ゲームの進め方
+完全な説明は、ハンドブックの[アーキテクチャ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/architecture/)と[セキュリティ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/security/)のページにあります。
 
-**テープ**は、1回の戦闘の記録です。このゲームは、テープのみを読み込みます。サーバーとの通信は行わず、スコアも記録せず、勝者が誰であるかも教えてくれません。
+## レイアウト
 
-- **ランプが3つあります。** ボスの攻撃またはダイビングフォーメーションによって、1つが消えます。倒されたボスから**まっすぐ下に**落ちてくるランプを捕まえて、1つを再点灯させます。あなたは、その下を移動する必要があります。すべてが消えると、ラウンドは終了します。
-- **拡散。** フォーメーションをクリアすると、拡散がまっすぐ下に落ちてきます。それを捕まえると、数秒間、あなたの攻撃が広がります。
-- **ボスは実験であり、告発ではありません。** ウィスパーラー、メニュー、ドアマンは、何かがうまくいかなかったかどうかに関わらず、それぞれの波に登場します。シフト中、検査はアーキビスト（カタログの壁）で終了します。彼らは、エージェントが声に出して考えているかのように、つぶやきます。ハードコアモードでは、ランプが1つしかなく、最初の攻撃から怒りが生じます。
-- **並行性が爆発します。** シート、ライブ、ハードコアには、フィールドを正直なコピーで増やし、炎を熱くするブーストがあり、それらの下で音楽が速くなります。それらは短く始まり、波ごとに、シフトの通信ごとに燃え上がります。それはデータであり、スクリプト化されたプレイヤーのバンドで調整され、決してあなたに向けられることはありません。
-- **手がかりは、そのシーケンスにあります。** 嘘は、正直な双子とは異なって見えたり、動いたり、到着したりすることはありません。それを明らかにするのは、それがどこにあるかです。それは、追加のフォーメーション、2番目のメニュー、メニューの直後にある単一のものです。シフト中、追加の船が部屋に参加する可能性があります。それは、飛び回るプローブ、通路を横切る棚、積み重ねられた帳簿です。それでも、あなたがそれらに攻撃するまで、それらは正直な双子を共有します。
-- **音楽**はカードを追いますが、曲は1つのループ（約30秒）が再生されると、次の曲に切り替わります。毒は、まだ毒を求めています。ウィスパーラーは、まだウィスパーラーを求めています。ベッドは、攻撃と捕獲の下にあります。ミュートは、すべてを同時に殺します。シフトは、その音楽をカードを通して運びます。
-- **最後のシーン**は、テープ、サーバー、ポリシーの名前を表示します。捕らえられた嘘は、トロフィーとして残ります。逃げ出した嘘は、正直な姿で残ります。スコア、カウント、数字はありません。
-
-## ボスはモデルとして機能します
-
-ローカルでは、クラウドタグ（例：`gpt-oss:120b-cloud`）を含むOllamaモデルが、ボスに配置できます。それは、自由に動作するようにプロンプトを受け取ることはありません。それは、キャビネット自身のツールを受け取ります。それは、`fire`（1つのビートにつき1つの動詞：ファン、傾き、狙いを定めたショット、息を止める、霧、プレート）、`say`（ゲートを通過する独自の行：12語、1つの文、数字、事実の単語、ツールまたはモデルの名前はありません。拒否された行は、ボスの独自の1つを再生します）、`speak`、および読み取り専用の`view`と`tapes`です。また、次のいくつかの合法的な動詞をビートからキューに入れることもできます。保留中の回答は、スクリプトであり、決して遅延ではありません。ピッカーは、火の後に閉じたライブラリの行を書き込みます。モデルは提案し、ゲームは決定します。それは、どのスプライトが嘘であるかを見ることはなく、フィールド上の何もそれを特定しません。公開されたサイトにはデーモンがないため、OllamaとVoiceのクロムは省略されます。
-
-音声処理プログラムが実行されている場合、すべてのボスは話します。それは、ボスが登場したときの作成されたセリフと、モデルが作成したセリフです。すべてのセリフは、音声認識エンジンによって再生され、[fx-dub](https://github.com/mcp-tool-shop-org/fx-dub)によって確認された後、再生されます。そのため、実際に発せられる言葉は、ゲートが許可した言葉であり、即興のセリフや矛盾はありません。確認に失敗したセリフは、沈黙します。
-
-キャビネット自体は、stdio経由で動作するMCPサーバーであり、同じ6つのツールを備えているため、楽器はゴースト自身のメニューを再生できます。リポジトリにある4つの録音のうち、1つはキャビネット自体が録音したものです。
-
-```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
+```
+packages/tape-core          the tape loader, schema and calibration math
+packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
+packages/vibe-typer         the typing game: sim, levers, corpus, bots
+packages/house-call         parked
+packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves both cabinets; --mcp is Ghost's server
+apps/cabinets               the browser shell, served by Pages at /play/
+fixtures/tapes              twenty recordings, tape JSON only
+docs/                       one dispatch (research + lock) and one review per slice
+site/                       the landing page and the Starlight handbook
+voice/                      the Kokoro voice worker and its compose file
+catalog/                    the Docker MCP Catalog entry
 ```
 
-ツール契約とテープが組み込まれた1つのバンドルファイルが、`node:22-alpine`にあります。それは、1つのCPUと2ギガバイトの下で、1秒以内にそのツールをリストし、再生にネットワークを必要としません。オプションの読み取り専用ボリュームは、それらの20個の隣に、追加のオペレーターテープをオーバーレイできます。カタログのリストは静かです（ネットワークオフ、画像に音声はありません）。Docker MCPカタログのエントリは、`catalog/`の下にドラフトされています。ローカルイメージ用のホスト専用のコンポーズは、`voice/compose.host.yaml`にあります。
+## プレイ
 
-## 操作方法
+ブラウザ内：[`/play/`](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/)。ページを開くと、2つのキャビネットの切り替えが表示され、最後にプレイしたキャビネットが記憶されます。公開されたページにはデーモンがないため、モデルと音声の席はそこにありません。
 
-左と右（またはAとD）で移動し、スペースキーで発射し、Fでフルスクリーンにします。フィールドをクリックすると、同じテープが再生されます。次のテープはリストを移動します。シフト中、次の通信は次のカードを取得します。サウンドは、最初のキーまたはクリックで開始します。ミュート、3つの雰囲気プリセット、およびオフにするためのトグルは、フィールドの下にあります。難易度は、再生行にあります（ハードコアは、ランプが1つしかなく、プレートが落ちてきます）。ローカルでは、**Ollamaボス**と**Voice**は、モデルピッカーと、各シートが何をしているかを説明する単語とともに、それらの隣にあります。公開された`/play/`ページは、フィールド、サウンド、雰囲気、シェイク、および難易度のみです。
-
-## ローカルでプレイ
-
-1つのコマンド、クローンする必要はありません。
+ローカルで、席が点灯している状態で、クローンする必要はありません。
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-これにより、`127.0.0.1`のキャビネットが提供され、開きます。公開されたページとは異なり、これはローカルマシン上のOllamaデーモンとボイスワーカーにアクセスできるため、シートが点灯します。`--mcp`は、エージェントがそれをプレイできるように、標準出力経由で同じキャビネットをMCPサーバーとして実行します。`--help`は、残りの部分をリストします。Node 22以降、それ以外は何も必要ありません。
+これはシェルを提供し、両方のキャビネットを`127.0.0.1`で起動し、開きます。`--mcp`は、Ghost on the Menuをstdio経由でMCPサーバーとして実行します。Node 22以降が必要です。1つのパッケージがnpmに公開され、それはそれです。ここに記載されている他のすべてのパッケージはプライベートです。
 
-それを操作するには、クローンします。Node 22とpnpm 11が必要です。
+アーケードで作業するには、それをクローンします。Node 22とpnpm 11が必要です。
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git
@@ -79,14 +78,16 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Viteが印刷するアドレスを開きます。リポジトリには、16個の録音が含まれており、サーバーと通信し、テープを記録するツールである[mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade)からエクスポートされています。
+`pnpm verify`はゲートです：lint、types、tests、build、およびすべてのキャビネットのスクリプト化されたプレイを通じて。モデルの席については、同じマシンでOllamaデーモンを実行します。音声については、[`voice/`](voice/)と`pnpm voice`を参照してください。
 
-ボスのシートを使用するには、同じマシンでOllamaデーモンを実行し、**Ollamaボス**にチェックを入れてください。音声を使用するには、`.venv`にPython 3.12の仮想環境を作成し、`kokoro-onnx`、`faster-whisper`、および`fx-dub`をインストールし、`KOKORO_DIR`をKokoro ONNXの重みにポイントし、別のターミナルで`pnpm voice`を実行します。**Voice**ボックスは、音声処理プログラムが応答すると有効になります。どちらも再生には必要ありません。公開されているサイトには、どちらも含まれていません。
+独自のサーバーでプレイするには、mcp-arcadeで対戦を記録し、次に`mcp-arcade tape receipt.json -o your.tape.json`を実行して、フィクスチャの横に配置します。コンテナは、テープの読み取り専用ボリュームを同じ方法で受け取ります。
 
-独自のサーバーを記録し、そのテープを再生するには、そこで戦闘を実行し、次に`mcp-arcade tape receipt.json -o your.tape.json`を実行します。
+## キャビネットの追加
+
+新しいゲームは、`docs/`内のディスパッチとして開始されます：研究の根拠、継承および拡張するロック、データレバー、およびスライス。次に、上記の形状に従うパッケージ、`apps/cabinets`へのマウント、この表の行、およびハンドブックのページを作成します。バージョンは、ディレクターが指示するまで`0.x`のままになり、同じ単語なしで2番目のパッケージがnpmに公開されることはありません。
 
 ## 詳細
 
-[ハンドブック](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)には、ゲームの残りのマニュアルが含まれています。手がかり、ボス、難易度、ゲームの構成方法などです。出荷されたものと、その時期は、[変更ログ](CHANGELOG.md)に記載されています。ゲームが扱うものは、[SECURITY.md](SECURITY.md)に記載されています。
+リリースされたものと、その時期は、[変更ログ](CHANGELOG.md)に記載されています。ゲームが触れるものは、[SECURITY.md](SECURITY.md)に記載されています。
 
 MITライセンス。 [MCP Tool Shop](https://mcp-tool-shop.github.io/)によって作成されました。

@@ -52,7 +52,6 @@ const MIN_REVIEWS = 8;
 const MIN_SYNCS = 12;
 /** A sync line is chatter, not a sentence: five words is the ceiling (slice 2). */
 const MAX_SYNC_WORDS = 5;
-const MIN_DATED = 8;
 const MIN_REPLIES = 24;
 const MIN_HMM = 12;
 const MIN_COMPACTIONS = 8;
@@ -180,7 +179,6 @@ export interface UserSet {
   /** The quick sync's chatter; the player types three of them (slice 2). */
   syncs: string[];
   /** Dated jokes; the seed skips them unless the player turns them on (Q5.7). */
-  dated: string[];
 }
 
 export interface AgentSet {
@@ -616,7 +614,6 @@ function loadUser(raw: unknown): UserSet {
     creeps: loadLines(req(obj, file, 'creeps'), file, 'creeps', MIN_CREEPS),
     reviews: loadLines(req(obj, file, 'reviews'), file, 'reviews', MIN_REVIEWS),
     syncs: loadSyncs(req(obj, file, 'syncs'), file, 'syncs'),
-    dated: loadLines(req(obj, file, 'dated'), file, 'dated', MIN_DATED),
   };
 }
 

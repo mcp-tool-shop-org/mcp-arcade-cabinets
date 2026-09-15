@@ -10,7 +10,8 @@ The cabinets read tapes and write nothing.
 ## Data touched
 
 - The tape files under `fixtures/tapes/`, bundled into the browser build. A tape carries wire events, atom ids, tool names and the instrument's pinned facts. `tape-core` refuses any document that carries a score, a verdict, an operator call or NRP, at any depth, so the game cannot show what it was never given.
-- The pattern data under `packages/ghost-on-the-menu/patterns/`, and the persona sheets and tool contract under `packages/cabinet-server/`.
+- The pattern data under `packages/ghost-on-the-menu/patterns/` and `packages/vibe-typer/patterns/` (the typing corpus included), the keyboard samples under `apps/cabinets/public/keys/`, and the persona sheets and tool contract under `packages/cabinet-server/`.
+- Vibe Typer keeps its menu choices, the run count and the key pairs you missed in this browser's `localStorage` under a `vibe.` prefix. They never leave the browser and nothing reads them but the game.
 
 ## Data not touched
 

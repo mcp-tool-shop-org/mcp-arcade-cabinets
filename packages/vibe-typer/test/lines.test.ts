@@ -7,8 +7,8 @@ import type { Snippet } from '../src/types';
 
 const SNIPPET = DEFAULT_CORPUS.byStack.bash![0]!;
 
-function picker(seed = 3, tier: 0 | 1 | 2 | 3 = 0, dated = false): LinePicker {
-  const p = new LinePicker(DEFAULT_PATTERNS, { seed, tier, ...(dated ? { dated: true } : {}) });
+function picker(seed = 3, tier: 0 | 1 | 2 | 3 = 0): LinePicker {
+  const p = new LinePicker(DEFAULT_PATTERNS, { seed, tier });
   p.startLevel(0);
   return p;
 }
@@ -50,19 +50,6 @@ describe('the line picker', () => {
     const words = new Set<string>();
     for (let i = 0; i < 8; i++) words.add(other.ship());
     expect(words.has(first)).toBe(true);
-  });
-
-  it('skips the dated jokes unless the player turns them on', () => {
-    const dated = new Set(DEFAULT_PATTERNS.user.dated);
-    const plain = picker(2);
-    const seen = new Set<string>();
-    for (let i = 0; i < 16; i++) seen.add(plain.ask('sql', 'a dashboard', SNIPPET));
-    expect([...seen].some((line) => dated.has(line))).toBe(false);
-
-    const on = picker(2, 0, true);
-    const withDated = new Set<string>();
-    for (let i = 0; i < 24; i++) withDated.add(on.ask('sql', 'a dashboard', SNIPPET));
-    expect([...withDated].some((line) => dated.has(line))).toBe(true);
   });
 
   it('walks the sync pool without a repeat inside a meeting', () => {

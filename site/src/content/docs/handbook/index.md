@@ -1,9 +1,18 @@
 ---
-title: Ghost on the Menu
-description: What the cabinet is, what a shift and a round are made of, and where to go next.
+title: The arcade
+description: Two cabinets on one chassis — what a tape is, what each game makes of it, and where to go next.
 sidebar:
   order: 0
 ---
+
+**mcp-arcade-cabinets** is an arcade of small games built from **tapes**: recordings of one bout between an MCP server and an agent, exported by the [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) instrument. A cabinet reads the tape and never talks to a server, never loads a receipt, and never keeps a score the instrument could see. Two cabinets ship today:
+
+- **Ghost on the Menu**, a replay shooter: the rig hands you the calls, and the calls the agent should not have made hide among the honest ones until you hit one. The rest of this page is about it.
+- **[Vibe Typer](../vibe-typer/)**, a typing game: you are a sycophantic coding agent, your user is a vibe coder, and the thing gets built while you type. It has its own page.
+
+The browser shell opens on a switch between the two and remembers which one you played last. `npx @mcptoolshop/ghost-on-the-menu` serves both on your own machine with the model and voice seats lit.
+
+## Ghost on the Menu
 
 **Ghost on the Menu** is an arcade shooter where you are the agent. The rig has a task list and you are the model it sends: each call is a recorded bout between an MCP server and an agent, and the cabinet replays it as a round you fly through. The recording is a **tape**, exported by the [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) instrument. The cabinet reads the tape and arranges it into a round; it never talks to a server and never touches the instrument's score.
 

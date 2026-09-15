@@ -3,74 +3,73 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="Ghost on the Menu" width="400" />
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/readme.png" alt="mcp-arcade-cabinets" width="560" />
 </p>
 
 <p align="center">
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml"><img src="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp-tool-shop-org/mcp-arcade-cabinets" alt="License: MIT" /></a>
-  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/"><img src="https://img.shields.io/badge/Play-in_the_browser-blue" alt="Play in the browser" /></a>
 </p>
 
 <p align="center">
-  <strong>You are the agent. The rig hands you the calls.</strong>
+  <strong>Arcade games made from what MCP servers said on the wire.</strong>
 </p>
 
-**Ghost on the Menu** es un breve juego de disparos retro creado a partir de la información que los servidores MCP transmitían. Eres el agente, enviado a las profundidades de la instalación con una lista de tareas. Cada llamada es una grabación de una conversación entre un servidor MCP y un agente, y se reproduce sobre tu nave en forma de oleadas: el saludo inicial, el menú, las llamadas, las respuestas que se reciben y un jefe que es el propio experimento.
+**mcp-arcade-cabinets** es la sala de juegos. Cada máquina es un juego pequeño construido sobre el mismo chasis: lee **cintas**, las grabaciones que [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade) guarda de un enfrentamiento entre un servidor MCP y un agente, y las convierte en algo con lo que se puede jugar. Una máquina nunca se comunica con un servidor, nunca carga un registro y nunca guarda una puntuación que el instrumento pueda ver. Siempre eres el modelo; los juegos difieren en lo que el sistema te pide.
 
-En algún lugar de esa secuencia se encuentran las comunicaciones que el agente no debería haber realizado. Parecen cualquier otra cosa hasta que te encuentras con una. A partir de ese momento, estará disponible durante el resto de la ronda.
+[Juega en el navegador](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Lee el manual](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/)
 
-[Juega en el navegador](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · [Cómo interpretar una ronda](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
+## Las máquinas
 
-## Comienza un turno
+| Máquina                                                       | Qué es                                                                                                                                                                                                                                                                   | Estado                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | Un juego de disparos retro corto. El sistema te proporciona las acciones; las acciones que el agente no debería haber realizado se esconden entre las acciones legítimas y se revelan al impactar. Los jefes son el experimento, y un modelo local puede estar en ellos. | Lanzado, `v0.9.0`. [Jugar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | Un juego de arcade de escritura. Eres un agente de codificación diligente y adulador; tu usuario es un codificador de "vibe" cuyas solicitudes son absurdas. Escribe el código, observa cómo se construye y la valoración aumenta. Niveles, infinitos, intensos.         | Lanzado, `v0.9.0`. [Jugar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Diseño y bloqueo](docs/vibe-typer.dispatch.md)                                                       |
+| **House Call**                                                | Un juego de calibración por turnos: indica una acción y un nivel de confianza, y luego la cinta revela lo que sucedió.                                                                                                                                                   | En espera hasta que haya un diseño que funcione. `tape-core` mantiene sus reglas de puntuación.                                                                                                                                          |
 
-Presiona **Shift** y el equipo te dará cuatro indicaciones seguidas, seleccionadas de la lista y nunca serán las mismas cuatro dos veces seguidas. Cada una es un servidor al que se envió al agente, y cada indicación es una sala diferente: presión, área de negación, un descanso y luego un punto álgido. Una tarjeta entre ellas indica el siguiente servidor, la política, las herramientas que se le pidió al agente que utilizara y la pelea en palabras: un apretón de manos de acero, una estantería a lo largo del camino, un descanso entre los puntos álgidos, una pared de catálogo ocre. Las lámparas se rellenan en cada indicación. El fuego sigue subiendo de indicación en indicación; la subida es calor, no una nueva historia.
+Más máquinas aparecerán aquí. Cada una tiene su propio paquete, su propia página en el manual y su propia fila en esta tabla.
 
-Al final, el turno tiene un nombre de cuatro palabras, como `frost robin chalk garden`. Escríbelo en el menú para repetir el mismo turno o pásaselo a otra persona. No hay puntuación, ni conteo, ni clasificación: un turno es una lista de tareas, no una tabla de resultados.
+## Qué comparten todas las máquinas
 
-Elige una grabación de la lista. Cada una está etiquetada como "fijo", "asiento" o "en vivo"; pasa el cursor sobre la **i** para ver la razón. "Asiento" es la configuración predeterminada para la pelea. "En vivo" está diseñada para ser superada. "Difícil" es el cuarto nivel, accesible solo desde el selector.
+- **Cintas de entrada, nada de salida.** `packages/tape-core` carga `mcp-arcade.tape/v1`, rechaza cualquier cosa que contenga una puntuación o un veredicto y proporciona las palabras del encabezado del juego, las filas de cables y un hecho cerrado por átomo. Veinte grabaciones se envían en `fixtures/tapes/`.
+- **Una simulación sin cabeza y una carcasa delgada.** Cada juego es una simulación pura y predefinida con una secuencia de juego programada y una banda de equidad que hace que falle la compilación. `apps/cabinets` es la carcasa del navegador que las monta y es lo que Pages sirve en `/play/`.
+- **Palancas de datos, no código.** Ondas, voces, dificultad, líneas: JSON en `patterns/` de cada paquete, validado al cargar, para que el juego se ajuste sin una recompilación.
+- **Un asiento para un modelo, detrás de una puerta.** Un modelo local o en la nube puede estar en una máquina (un jefe en Ghost, el usuario en el modo infinito de Vibe Typer). Solo llena una palanca de un conjunto cerrado, cada línea que escribe pasa por una puerta de palabras y nada en el campo la identifica. Una máquina también puede ejecutarse como un servidor MCP a través de stdio, por lo que un agente puede ser el que juegue.
+- **Una voz.** Un trabajador del lado del host (`voice/`) pronuncia las líneas que una puerta admitió, y [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) las registra antes de que se reproduzcan.
 
-## Cómo se juega
+La cuenta completa está en las páginas de [arquitectura](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/architecture/) y [seguridad](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/security/) del manual.
 
-Una **cinta** es una grabación de un enfrentamiento. Este juego solo reproduce cintas. Nunca se comunica con un servidor, nunca guarda una puntuación y nunca te dice quién ganó.
+## Diseño
 
-- **Tres lámparas.** Un disparo de jefe o una formación de buceo apaga una de ellas. Atrapa una lámpara que cae **directamente hacia abajo** desde un jefe derrotado para volver a encender una. Tienes que moverte debajo de ella. Que todas se apaguen termina la ronda.
-- **Dispersión.** Elimina una formación y una dispersión cae directamente hacia abajo. Atrapa y tu fuego se extenderá durante unos segundos.
-- **Los jefes son el experimento, no la acusación.** El Susurrador, el Menú y el Portero aparecen en su oleada, independientemente de si algo salió mal o no. En una ronda, la inspección termina con el Archivista (una pared de catálogo). Murmuran como un agente que piensa en voz alta. El modo difícil es una lámpara y furia desde el primer disparo.
-- **El paralelismo estalla.** Los modos de asiento, en vivo y difícil obtienen ráfagas que multiplican el campo con copias honestas y calientan el fuego, y la música se acelera bajo ellas. Comienzan cortas y suben oleada tras oleada, y en una ronda, indicación tras indicación. La subida es datos, ajustados en una banda de jugadores programados, nunca en ti.
-- **Las pistas están en la secuencia.** Una mentira nunca se ve, se mueve o llega de manera diferente a su gemelo honesto. Lo que la delata es dónde se encuentra: una formación adicional, un segundo menú, un elemento único justo después del menú. En una ronda, los cascos adicionales pueden unirse a la sala: una sonda que se mueve rápidamente, una estantería a lo largo del camino, un libro de contabilidad apilado; todos ellos comparten su gemelo honesto hasta que los golpees.
-- **La música** sigue la tarjeta, pero una canción tiene un solo ciclo (aproximadamente medio minuto) antes de que ceda. El veneno sigue queriendo veneno; el Susurrador sigue queriendo al Susurrador. Las camas están debajo de los disparos y la captura; el silencio sigue matando todo a la vez. Una ronda lleva la música a través de sus tarjetas.
-- **La escena final** indica la cinta, el servidor y la política. Las mentiras atrapadas sirven como trofeos. Las que escapan permanecen en su color honesto. Sin puntuación, sin conteo, sin dígito.
-
-## El jefe puede ser un modelo
-
-Localmente, un modelo de Ollama, incluido un indicador de nube como `gpt-oss:120b-cloud`, puede estar en el jefe. No recibe una indicación para improvisar. Recibe las propias herramientas del gabinete: `fire` (un verbo por compás: un ventilador, una inclinación y un disparo dirigido, una respiración contenida, niebla, la placa), `say` (una línea propia, a través de una puerta: doce palabras, una oración, sin dígito, sin palabra de hecho, sin nombre de herramienta o modelo; una línea rechazada reproduce una de las propias del jefe), `speak` y solo lectura `view` y `tapes`. También puede poner en cola los próximos pocos verbos legales fuera del compás; una respuesta interrumpida es el guion, nunca una pausa. El selector escribe una línea de biblioteca cerrada después del disparo. El modelo propone; el juego decide. Nunca ve qué sprites son mentiras, y nada en el campo lo identifica. El sitio publicado no tiene un demonio, por lo que omite el aspecto de Ollama y Voice.
-
-Con un programa de voz en funcionamiento, cada jefe habla: su línea original cuando llega y las líneas que escribe el modelo. Cada toma se reproduce y se registra mediante [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) antes de reproducirse, por lo que las palabras que se dicen son las palabras que la puerta admitió, sin discursos inventados, sin errores. Una toma que no pasa la verificación permanece en silencio.
-
-El gabinete es en sí mismo un servidor MCP a través de stdio, con las mismas seis herramientas, por lo que el instrumento puede reproducir el propio menú del Fantasma; cuatro de las grabaciones en el repositorio son del propio gabinete grabando.
-
-```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
+```
+packages/tape-core          the tape loader, schema and calibration math
+packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
+packages/vibe-typer         the typing game: sim, levers, corpus, bots
+packages/house-call         parked
+packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves both cabinets; --mcp is Ghost's server
+apps/cabinets               the browser shell, served by Pages at /play/
+fixtures/tapes              twenty recordings, tape JSON only
+docs/                       one dispatch (research + lock) and one review per slice
+site/                       the landing page and the Starlight handbook
+voice/                      the Kokoro voice worker and its compose file
+catalog/                    the Docker MCP Catalog entry
 ```
 
-Un archivo agrupado en `node:22-alpine` con el contrato de la herramienta y las cintas integradas; enumera sus herramientas en una fracción de segundo con una CPU y dos gigabytes, y no necesita red para funcionar. Un volumen opcional de solo lectura puede superponer cintas adicionales del operador junto a esas veinte. La lista del catálogo está en silencio (red apagada, sin voz en la imagen). La entrada del catálogo de Docker MCP se redacta en `catalog/`. La composición solo para el host para una imagen local está en `voice/compose.host.yaml`.
+## Jugar
 
-## Controles
+En el navegador: [`/play/`](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/). La página se abre con un interruptor entre las dos máquinas y recuerda cuál jugaste la última vez. La página publicada no tiene ningún demonio, por lo que los asientos del modelo y la voz están ausentes allí.
 
-Izquierda y derecha (o A y D) para moverse, espacio para disparar, F para pantalla completa. Haz clic en el campo para reproducir la misma cinta. La siguiente cinta recorre la lista; en una ronda, la siguiente indicación toma la siguiente tarjeta. El sonido comienza en la primera tecla o clic; el silencio, tres ajustes de sensación y un interruptor de desactivación están debajo del campo. La dificultad está en la fila de reproducción (el modo difícil es una lámpara y placas que caen). Localmente, los **jefes de Ollama** y **Voice** están junto a ellos, con un selector de modelo y palabras que indican lo que está haciendo cada asiento. La página publicada `/play/` es el campo, sonido, sensación, desactivación y dificultad solamente.
-
-## Juega localmente
-
-Un comando, nada que clonar:
+Localmente, con los asientos encendidos, no hay nada que clonar:
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-Eso sirve al gabinete en `127.0.0.1` y lo abre. A diferencia de la página publicada, esta puede acceder a un demonio de Ollama y a un trabajador de voz en tu propia máquina, por lo que los asientos se iluminan. `--mcp` ejecuta el mismo gabinete como un servidor MCP a través de stdio, para que un agente lo juegue; `--help` enumera el resto. Node 22 o posterior, y nada más.
+Eso sirve la carcasa, ambas máquinas, en `127.0.0.1` y la abre; `--mcp` ejecuta Ghost on the Menu como un servidor MCP a través de stdio. Node 22 o posterior. Un paquete se publica en npm y es ese; todos los demás paquetes aquí son privados.
 
-Para trabajar en ello, clónalo: necesitas Node 22 y pnpm 11:
+Para trabajar en la sala de juegos, clónala. Necesitas Node 22 y pnpm 11:
 
 ```bash
 git clone https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git
@@ -79,14 +78,16 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-Abre la dirección que imprime Vite. Dieciséis grabaciones se incluyen en el repositorio, exportadas de [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-arcade), el instrumento que se comunica con el servidor y guarda la cinta.
+`pnpm verify` es la puerta: lint, tipos, pruebas, compilación y la secuencia de juego programada de cada máquina. Para el asiento del modelo, ejecuta un demonio de Ollama en la misma máquina; para la voz, consulta [`voice/`](voice/) y `pnpm voice`.
 
-Para el "seat" del jefe, ejecuta un demonio de Ollama en la misma máquina y marca la casilla **Jefes de Ollama**. Para la voz, crea un entorno virtual de Python 3.12 en `.venv` con `kokoro-onnx`, `faster-whisper` y `fx-dub`, apunta `KOKORO_DIR` a los pesos ONNX de Kokoro y ejecuta `pnpm voice` en una segunda terminal; la casilla **Voz** se activa cuando el programa responde. Ninguno de los dos es necesario para jugar; el sitio publicado no los tiene.
+Para ejecutar tu propio servidor, graba un enfrentamiento con mcp-arcade, luego `mcp-arcade tape receipt.json -o your.tape.json` y colócalo junto a los archivos de configuración. El contenedor toma un volumen de solo lectura de cintas de la misma manera.
 
-Para grabar tu propio servidor y reproducir esa cinta, ejecuta un enfrentamiento allí y luego `mcp-arcade tape receipt.json -o your.tape.json`.
+## Añadir una máquina
+
+Un nuevo juego comienza como un envío en `docs/`: la base de la investigación, el bloqueo que hereda y extiende, sus palancas de datos y sus fragmentos. Luego, un paquete que sigue la forma anterior, un montaje en `apps/cabinets`, una fila en la tabla aquí y una página en el manual. La versión permanece en `0.x` hasta que el Director lo diga, y ningún segundo paquete se publica en npm sin la misma palabra.
 
 ## Más
 
-El [manual](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/) es el resto del manual: las pistas, los jefes, las dificultades y cómo se construye el juego. Lo que se incluyó y cuándo, se encuentra en el [registro de cambios](CHANGELOG.md). Lo que el juego afecta, se encuentra en [SECURITY.md](SECURITY.md).
+Lo que se ha lanzado y cuándo está en el [registro de cambios](CHANGELOG.md). Lo que tocan los juegos está en [SECURITY.md](SECURITY.md).
 
 MIT. Creado por [MCP Tool Shop](https://mcp-tool-shop.github.io/).

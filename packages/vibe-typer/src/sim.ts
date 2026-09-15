@@ -38,7 +38,6 @@ export interface CreateRunOpts {
   stack?: Stack;
   agentName?: string;
   /** Dated jokes, off by default (Q5.7). */
-  dated?: boolean;
   /** Which listed level to play. Ignored in endless, which has its own ladder. */
   levelIndex?: number;
 }
@@ -102,7 +101,6 @@ export function createRun(opts: CreateRunOpts): RunState {
   const picker = new LinePicker(set, {
     seed: opts.seed,
     tier,
-    ...(opts.dated === true ? { dated: true } : {}),
   });
   const levelOffset = opts.endless ? 0 : (opts.levelIndex ?? 0);
   const weakBigrams = { ...(opts.weakBigrams ?? {}) };

@@ -37,7 +37,6 @@ export interface DriveOpts {
   tier: Tier;
   level?: number;
   endless?: boolean;
-  dated?: boolean;
   maxTicks?: number;
 }
 
@@ -54,7 +53,6 @@ export function drive(opts: DriveOpts): RunReport {
     tier: opts.tier,
     endless: opts.endless === true,
     ...(opts.level !== undefined ? { levelIndex: opts.level } : {}),
-    ...(opts.dated === true ? { dated: true } : {}),
   };
   const state = createRun(create);
   const bot = makeBot(opts.bot, opts.seed);

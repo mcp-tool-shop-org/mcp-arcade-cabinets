@@ -484,7 +484,7 @@ function shiftEnd(shift: Shift) {
 
 // ——— Vibe Typer ————————————————————————————————————————————————————————————
 // The second cabinet's menu: the levels as products, the endless ladder, the
-// four tier words, the agent's name, the dated jokes, the keyboard and the
+// four tier words, the agent's name, the keyboard and the
 // seed. Every choice persists under `vibe.`; no band digits anywhere (G23).
 
 /** Tool names off the bundled tapes, so a request can name a thing the player runs (G30). */
@@ -592,13 +592,7 @@ function vibeMenu(wrap: HTMLElement) {
     theme.append(o);
   }
   theme.value = prefs.theme ?? 'mechanical';
-  const datedLabel = document.createElement('label');
-  const dated = document.createElement('input');
-  dated.type = 'checkbox';
-  dated.checked = prefs.dated === 'on';
-  datedLabel.append(dated, document.createTextNode(' dated jokes'));
-  datedLabel.title = 'The jokes that were funny a while ago. Off by default.';
-  row.append(tier, theme, datedLabel);
+  row.append(tier, theme);
 
   const row2 = document.createElement('div');
   row2.className = 'row';
@@ -633,7 +627,6 @@ function vibeMenu(wrap: HTMLElement) {
       ...(endless ? {} : { level: picked as number }),
       endless: endless ? 'on' : 'off',
       agent: name,
-      dated: dated.checked ? 'on' : 'off',
       theme: theme.value as Theme,
       seed: seedBox.value.trim().slice(0, 12),
     });
@@ -643,7 +636,6 @@ function vibeMenu(wrap: HTMLElement) {
       ...(endless ? {} : { levelIndex: picked as number }),
       seed,
       agentName: name,
-      dated: dated.checked,
       theme: theme.value as Theme,
       integration: integrationSeasoning(),
       onExit: menu,

@@ -1,4 +1,12 @@
-# HANDOFF — the arcade: Vibe Typer slices 1 and 2 landed, Ghost on the Menu at v0.8.2
+# HANDOFF — the arcade at v0.9.0: Vibe Typer shipped beside Ghost on the Menu
+
+**v0.9.0 (2026-09-15, full treatment, published on the Director's word: "Let's give it the full treatment and then we'll publish.")** Tag `v0.9.0`; the GitHub release publishes `@mcptoolshop/ghost-on-the-menu@0.9.0` through `release.yml`, and that package now serves **both** cabinets on `npx` (`--mcp` is still Ghost's server). Pages serves both at `/play/`; the landing page is the arcade (cabinets, Inside Vibe Typer, Inside Ghost, play cards); the handbook has a Vibe Typer page and its index, getting-started, reference, architecture and security pages describe two cabinets. README translations regenerated from the entrance README before the tag. The dated-jokes switch was removed on the Director's word (menu, prefs, sim option, lever pool, tests). Shipcheck: every A–D line checked or SKIP, E complete except Vibe Typer's own logo. Repo-knowledge: thesis, architecture, v0.9.0 release summary, next step and the Vibe Typer lock convention refreshed. Identity scan CLEAN on the tracked tree and on the packed tarball.
+
+**Owed after v0.9.0:** slice 3 (the endless user seat through the say gate, the voice on the user's lines), slice 4 (container tools `product`, `ask`, `react`), art for the preview pieces and a Vibe Typer logo, ACE-Step beds per stack, the GHCR `0.9.x` image, plus Ghost's older leftovers below.
+
+---
+
+# History — the day Vibe Typer landed (2026-09-15, before the tag)
 
 Read this, then `CLAUDE.md`, then `docs/vibe-typer.dispatch.md` (the Director's brief, the research, the lock G23–G30, the levers, the four slices), then `docs/vibe-typer.slice1.md` (what slice 1 built, the band numbers, twenty decisions, and the exact `index.ts` surface the shell consumes), then `docs/vibe-typer.kickoff.md` (the slice-1 brief, kept as the pattern for slice 2's). The Ghost pickup below is unchanged and still `0.8.2`; nothing in Ghost, `tape-core`, `cabinet-server` or the launcher moved.
 

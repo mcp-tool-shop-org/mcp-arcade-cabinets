@@ -25,7 +25,6 @@ const FLAGS = new Set([
   'stack',
   'level',
   'endless',
-  'dated',
 ]);
 const CABINETS = ['ghost', 'vibe-typer'];
 /** Vibe Typer's bots: the typist carries its speed and its rate of mistypes. */
@@ -249,8 +248,6 @@ async function playTyper(flags) {
   if (flags.stack !== undefined) args.stack = flags.stack;
   const endless = requireYesNo(flags.endless, 'endless');
   if (endless !== undefined) args.endless = endless;
-  const dated = requireYesNo(flags.dated, 'dated');
-  if (dated !== undefined) args.dated = dated;
   if (flags.tapes !== undefined) args.tapes = String(flags.tapes);
   const file = path.resolve('packages/vibe-typer/dist/play.js');
   const mod = await import(pathToFileURL(file).href).catch(() => null);

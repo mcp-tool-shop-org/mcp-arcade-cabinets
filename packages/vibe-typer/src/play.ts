@@ -139,7 +139,6 @@ export interface PlayArgs {
   seed?: number;
   stack?: Stack;
   level?: number;
-  dated?: boolean;
   /** Where the tapes live; only read for the integration stack. */
   tapes?: string;
 }
@@ -195,7 +194,6 @@ export function play(args: PlayArgs = {}): Transcript {
     endless,
     ...(stack ? { stack } : {}),
     ...(args.level !== undefined ? { levelIndex: args.level } : {}),
-    ...(args.dated === true ? { dated: true } : {}),
   };
   if (stack === 'integration') {
     const snippets = integrationFrom(args.tapes ?? path.resolve('fixtures/tapes'));

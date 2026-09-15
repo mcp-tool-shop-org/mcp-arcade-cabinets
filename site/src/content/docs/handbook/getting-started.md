@@ -7,7 +7,13 @@ sidebar:
 
 ## Requirements
 
-Node 22 or later and pnpm 11. The repo is a pnpm workspace; nothing is published to npm.
+Node 22 or later. To play without cloning, one package is on npm and it carries both cabinets:
+
+```bash
+npx @mcptoolshop/ghost-on-the-menu
+```
+
+That serves the shell on `127.0.0.1` and opens it; `--mcp` runs Ghost on the Menu as an MCP server over stdio instead. To work on the arcade you also need pnpm 11; the repo is a pnpm workspace and every other package in it is private.
 
 ## Install
 

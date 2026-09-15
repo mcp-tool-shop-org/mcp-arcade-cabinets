@@ -1,6 +1,5 @@
 // G28: the user and the agent are authored data behind the gate. This is the
-// picker. No line repeats inside a level (Q5.9); dated jokes are skipped
-// unless the player turns them on (Q5.7); the pools are keyed by tier and
+// picker. No line repeats inside a level (Q5.9)
 // beat, and hardcore borrows tier two's words.
 
 import { lineFault, lineTier, type Patterns } from './patterns';
@@ -21,8 +20,6 @@ function emptyBag(): Bag {
 export interface PickerOpts {
   seed: number;
   tier: Tier;
-  /** Dated jokes are off unless the player asks for them. */
-  dated?: boolean;
 }
 
 /**
@@ -34,7 +31,6 @@ export class LinePicker {
   private readonly set: Patterns;
   private readonly seed: number;
   private readonly tier: Tier;
-  private readonly dated: boolean;
   private bags = new Map<string, Bag>();
   private level = 0;
 
@@ -42,7 +38,6 @@ export class LinePicker {
     this.set = set;
     this.seed = opts.seed >>> 0;
     this.tier = opts.tier;
-    this.dated = opts.dated === true;
   }
 
   /** New level, new bags: repeats are barred inside a level, not across one. */
@@ -72,8 +67,7 @@ export class LinePicker {
 
   private askPool(stack: Stack): string[] {
     const tier = lineTier(this.tier);
-    const base = this.set.user.asks[stack][tier];
-    return this.dated ? [...base, ...this.set.user.dated] : base;
+    return this.set.user.asks[stack][tier];
   }
 
   /** The user's ask, with {product} and {title} filled from the level and the snippet. */

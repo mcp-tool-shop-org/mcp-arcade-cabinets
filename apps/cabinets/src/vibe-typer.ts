@@ -151,7 +151,6 @@ export interface VibePrefs {
   level?: number;
   endless?: 'on' | 'off';
   agent?: string;
-  dated?: 'on' | 'off';
   theme?: Theme;
   /** The seed box, as the player left it. */
   seed?: string;
@@ -176,7 +175,6 @@ export function readVibePrefs(): VibePrefs {
     }
     if (o.endless === 'on' || o.endless === 'off') out.endless = o.endless;
     if (typeof o.agent === 'string') out.agent = cleanName(o.agent);
-    if (o.dated === 'on' || o.dated === 'off') out.dated = o.dated;
     if (isTheme(o.theme)) out.theme = o.theme;
     if (typeof o.seed === 'string') out.seed = o.seed.slice(0, 12);
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
@@ -247,7 +245,6 @@ export interface VibeOpts {
   levelIndex?: number;
   seed: number;
   agentName: string;
-  dated: boolean;
   theme: Theme;
   /** Integration snippets built from the bundled tapes (G30). */
   integration: Snippet[];
@@ -346,7 +343,6 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     endless: opts.endless,
     weakBigrams: storedWeak,
     agentName,
-    ...(opts.dated ? { dated: true } : {}),
     ...(opts.levelIndex !== undefined && !opts.endless ? { levelIndex: opts.levelIndex } : {}),
     ...(opts.integration.length > 0 ? { integration: opts.integration } : {}),
   });

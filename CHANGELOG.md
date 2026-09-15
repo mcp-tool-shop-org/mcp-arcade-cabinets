@@ -7,13 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the GHCR `0.9.x` image and the README Docker tag that follows it; art for Vibe Typer's preview pieces and a logo for its package page; slice 3 (the endless user seat, the voice on the user's lines) and slice 4 (the container tools `product`, `ask`, `react`).
+
+## [0.9.0] - 2026-09-15
+
+The second cabinet. Vibe Typer is playable in the browser and rides inside the npm package beside Ghost. Design and lock G23–G30 in `docs/vibe-typer.dispatch.md`; each slice's build and its outside review beside it.
+
 ### Added
 
 - **Vibe Typer, slice 1: the package** (`packages/vibe-typer`, private). A second cabinet, headless only: a seeded sim (`createRun` / `stepRun`), the corpus ported from dev-op-typer (249 snippets, six stacks, seven bands, with teaching notes) plus an integration stack built from tape headers and rows, a deterministic difficulty formula (surprisal, bigram travel, length, punctuation, identifier and bracket weight), the scoreboard (valuation, vibes, streak, milestones, Copilot), the context timer (compaction in levels, the end in endless and hardcore), authored user and agent lines behind the same word gate as `voice.json`, three bots and a band of sixteen bars, and `pnpm test:play vibe-typer` in `verify`. Design, research and the lock G23–G30 in `docs/vibe-typer.dispatch.md`; the build in `docs/vibe-typer.slice1.md`. No shell yet; that is slice 2.
 - **Vibe Typer, slice 2: the shell** (`apps/cabinets`). The menu opens on a two-card switch with Ghost selected; Vibe Typer's own menu lists the eight products, Endless, the four tier words, five keyboards, dated jokes, the agent's name and a seed box. The field: the chat in blue and page colour, the editor with ghost text and a caret, the canvas preview that grows by exactly what the score counts, the scoreboard (valuation, vibes, streak dots, the context bar), the standup with the seed and the opt-in retro. Sound: five keyboard sample sets from dev-op-typer with round-robin, detune, a polyphony cap and the streak's semitone climb; an exhaustive cue table; a procedural bed with tempo on vibes, held through a level's last request. Quick sync, the one sim change: a meeting of three short lines between two requests, the bar not draining. Twenty-five shell tests including a jsdom mount test. Build in `docs/vibe-typer.slice2.md`.
 - **The README is the arcade's entrance.** Ghost on the Menu's page moved to `packages/ghost-on-the-menu/README.md`; the repo logo is the cabinet render; repo description and topics follow.
 
-Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the GHCR `0.8.x` image and the README Docker tag that follows it.
+### Changed
+
+- Every package is on `0.9.0`; `SERVER_VERSION` matches. The launcher now serves both cabinets; `--mcp` is still Ghost's server.
+- The landing page is the arcade: a cabinets section with both games, an "Inside Vibe Typer" section, an "Inside Ghost on the Menu" section, and the play cards. The handbook gains a Vibe Typer page and its index, getting-started, reference, architecture and security pages describe two cabinets.
+- The dated-jokes switch was removed on the Director's word; the user's lines anchor to durable developer experience only.
 
 ## [0.8.2] - 2026-09-14
 
