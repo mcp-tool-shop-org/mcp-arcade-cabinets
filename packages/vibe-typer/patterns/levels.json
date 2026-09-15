@@ -1,0 +1,105 @@
+{
+  "levels": [
+    {
+      "id": "cat-website",
+      "product": "a website for my cat",
+      "stack": "bash",
+      "requests": 4,
+      "bandMin": 1,
+      "bandMax": 2,
+      "drainPerSec": 0.0042,
+      "drainRamp": 0.25,
+      "shipBonus": 3
+    },
+    {
+      "id": "duck-rides",
+      "product": "Uber but for ducks",
+      "stack": "python",
+      "requests": 4,
+      "bandMin": 1,
+      "bandMax": 2,
+      "drainPerSec": 0.0048,
+      "drainRamp": 0.25,
+      "shipBonus": 3
+    },
+    {
+      "id": "fridge-chain",
+      "product": "a blockchain for the office fridge",
+      "stack": "javascript",
+      "requests": 4,
+      "bandMin": 2,
+      "bandMax": 3,
+      "drainPerSec": 0.0029,
+      "drainRamp": 0.25,
+      "shipBonus": 8
+    },
+    {
+      "id": "plant-dashboard",
+      "product": "a dashboard for my houseplants",
+      "stack": "sql",
+      "requests": 4,
+      "bandMin": 2,
+      "bandMax": 3,
+      "drainPerSec": 0.003,
+      "drainRamp": 0.3,
+      "shipBonus": 8
+    },
+    {
+      "id": "self-newsletter",
+      "product": "a newsletter that writes itself",
+      "stack": "bash",
+      "requests": 4,
+      "bandMin": 3,
+      "bandMax": 4,
+      "drainPerSec": 0.0017,
+      "drainRamp": 0.3,
+      "shipBonus": 18
+    },
+    {
+      "id": "coffee-loyalty",
+      "product": "a loyalty programme for the coffee machine",
+      "stack": "java",
+      "requests": 4,
+      "bandMin": 3,
+      "bandMax": 4,
+      "drainPerSec": 0.0023,
+      "drainRamp": 0.3,
+      "shipBonus": 18
+    },
+    {
+      "id": "book-club-metaverse",
+      "product": "a metaverse for my book club",
+      "stack": "csharp",
+      "requests": 4,
+      "bandMin": 4,
+      "bandMax": 5,
+      "drainPerSec": 0.0012,
+      "drainRamp": 0.4,
+      "shipBonus": 35
+    },
+    {
+      "id": "app-that-rates-apps",
+      "product": "an app that rates other apps",
+      "stack": "python",
+      "requests": 4,
+      "bandMin": 4,
+      "bandMax": 5,
+      "drainPerSec": 0.001,
+      "drainRamp": 0.4,
+      "shipBonus": 35
+    }
+  ],
+  "creepShare": 0.3,
+  "weakBias": 0.35,
+  "endless": {
+    "startBand": 1,
+    "bandEvery": 2,
+    "drainStart": 0.0046,
+    "drainGrow": 1.06,
+    "products": "products.json",
+    "requests": 4,
+    "refillShare": 0.5,
+    "messageCost": 0.04,
+    "shipBonus": 5
+  }
+}

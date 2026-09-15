@@ -1,0 +1,21 @@
+{
+  "hypeSteps": [
+    { "streak": 0, "hype": 1 },
+    { "streak": 3, "hype": 2 },
+    { "streak": 6, "hype": 3 },
+    { "streak": 10, "hype": 4 },
+    { "streak": 15, "hype": 5 }
+  ],
+  "copilotStreak": 6,
+  "copilotSeconds": 8,
+  "copilotDiscount": 0.4,
+  "milestones": [
+    { "name": "seed", "at": 100 },
+    { "name": "series a", "at": 500 },
+    { "name": "unicorn", "at": 1800 }
+  ],
+  "hardcore": {
+    "hypeCap": 3,
+    "shipMultiplier": 1.5
+  }
+}

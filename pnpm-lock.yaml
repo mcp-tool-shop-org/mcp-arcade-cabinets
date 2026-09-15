@@ -87,6 +87,12 @@ importers:
 
   packages/tape-core: {}
 
+  packages/vibe-typer:
+    dependencies:
+      '@mcp-arcade-cabinets/tape-core':
+        specifier: workspace:*
+        version: link:../tape-core
+
 packages:
 
   '@anthropic-ai/sdk@0.125.0':

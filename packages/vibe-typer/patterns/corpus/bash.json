@@ -1,0 +1,418 @@
+[
+  {
+    "id": "cal-sh-d1-001",
+    "stack": "bash",
+    "band": 1,
+    "title": "simple echo greeting",
+    "code": "echo hello world",
+    "notes": ["Prints hello world to standard output using echo."],
+    "topics": ["echo", "commands"]
+  },
+  {
+    "id": "cal-sh-d1-002",
+    "stack": "bash",
+    "band": 1,
+    "title": "variable assignment and print",
+    "code": "name=developer\necho $name",
+    "notes": ["Assigns a string to a variable and prints it without quotes."],
+    "topics": ["variables", "echo"]
+  },
+  {
+    "id": "cal-sh-d1-003",
+    "stack": "bash",
+    "band": 1,
+    "title": "export environment variable",
+    "code": "export APP_MODE=production\necho $APP_MODE",
+    "notes": ["Exports a variable so child processes can access it."],
+    "topics": ["export", "environment"]
+  },
+  {
+    "id": "cal-sh-d1-004",
+    "stack": "bash",
+    "band": 1,
+    "title": "change directory and list",
+    "code": "cd /tmp\nls\npwd",
+    "notes": ["Changes to the tmp directory and lists its contents."],
+    "topics": ["cd", "ls", "pwd"]
+  },
+  {
+    "id": "cal-sh-d1-005",
+    "stack": "bash",
+    "band": 1,
+    "title": "create and remove directory",
+    "code": "mkdir mydir\nrmdir mydir",
+    "notes": ["Creates a directory then removes it when empty."],
+    "topics": ["mkdir", "rmdir"]
+  },
+  {
+    "id": "sh-for-loop",
+    "stack": "bash",
+    "band": 1,
+    "title": "For loop",
+    "code": "for file in *.txt; do\n    echo \"Processing: $file\"\ndone",
+    "notes": [
+      "for/in iterates over glob matches or word lists.",
+      "Practice do/done keywords and $variable expansion."
+    ],
+    "topics": ["for-loop", "variables", "echo"]
+  },
+  {
+    "id": "cal-sh-d2-001",
+    "stack": "bash",
+    "band": 2,
+    "title": "quoted variable interpolation",
+    "code": "host=\"localhost\"\nport=\"5432\"\ndb=\"appdata\"\nuser=\"admin\"\nurl=\"jdbc:postgresql://${host}:${port}/${db}\"\necho \"connecting as ${user} to ${url}\"\necho \"connection ready\"",
+    "notes": [
+      "Builds a JDBC connection URL from variables using curly-brace expansion inside quotes."
+    ],
+    "topics": ["variables", "quoting", "interpolation"]
+  },
+  {
+    "id": "cal-sh-d2-002",
+    "stack": "bash",
+    "band": 2,
+    "title": "command substitution with date",
+    "code": "stamp=$(date +\"%Y-%m-%d_%H:%M:%S\")\nhost=$(hostname -f)\nkernel=$(uname -r)\necho \"[${stamp}] host=${host}\"\necho \"[${stamp}] kernel=${kernel}\"\necho \"report done\" > \"/tmp/info_${stamp}.txt\"",
+    "notes": [
+      "Captures system info into variables using command substitution and writes a timestamped report."
+    ],
+    "topics": ["command-substitution", "date", "quoting"]
+  },
+  {
+    "id": "cal-sh-d2-003",
+    "stack": "bash",
+    "band": 2,
+    "title": "default parameter expansion",
+    "code": "app_name=\"${1:-myapp}\"\nlog_level=\"${2:-info}\"\nmax_retry=\"${3:-5}\"\nconfig_dir=\"/etc/${app_name}\"\nlog_file=\"/var/log/${app_name}.log\"\necho \"app=${app_name} level=${log_level}\"\necho \"retries=${max_retry} config=${config_dir}\"\necho \"log=${log_file}\"",
+    "notes": [
+      "Uses default parameter expansion to set configurable values with fallback defaults."
+    ],
+    "topics": ["parameter-expansion", "defaults", "variables"]
+  },
+  {
+    "id": "cal-sh-d2-004",
+    "stack": "bash",
+    "band": 2,
+    "title": "heredoc configuration writer",
+    "code": "cat <<'EOF' > /tmp/app.conf\n[server]\nhost = 0.0.0.0\nport = 8080\n\n[logging]\nlevel = info\nformat = json\nEOF\necho \"config written\"",
+    "notes": ["Writes a configuration file using a quoted heredoc to prevent variable expansion."],
+    "topics": ["heredoc", "redirection", "configuration"]
+  },
+  {
+    "id": "cal-sh-d2-005",
+    "stack": "bash",
+    "band": 2,
+    "title": "pipe chain with text processing",
+    "code": "input=\"/var/log/syslog\"\necho \"=== top errors ===\"\ngrep -i \"error\" \"$input\" | sort | uniq -c | sort -rn | head -5\necho \"\"\necho \"=== line count ===\"\nwc -l < \"$input\"\necho \"=== done ===\"",
+    "notes": [
+      "Chains commands with pipes to find and rank the most frequent error lines in a log."
+    ],
+    "topics": ["pipes", "grep", "sort", "uniq", "wc"]
+  },
+  {
+    "id": "sh-array",
+    "stack": "bash",
+    "band": 2,
+    "title": "Array operations",
+    "code": "servers=(\"web01\" \"web02\" \"db01\")\necho \"Count: ${#servers[@]}\"\nfor s in \"${servers[@]}\"; do\n    echo \"Pinging $s\"\ndone",
+    "notes": [
+      "${#arr[@]} returns the array length.",
+      "Always quote ${arr[@]} to handle spaces in elements."
+    ],
+    "topics": ["arrays", "indexing", "length"]
+  },
+  {
+    "id": "sh-if-else",
+    "stack": "bash",
+    "band": 2,
+    "title": "If/else file check",
+    "code": "if [ -f \"$1\" ]; then\n    echo \"File exists: $1\"\nelse\n    echo \"Not found: $1\" >&2\n    exit 1\nfi",
+    "notes": [
+      "-f tests if a path is a regular file.",
+      ">&2 redirects output to stderr for error messages."
+    ],
+    "topics": ["if-else", "test", "conditionals"]
+  },
+  {
+    "id": "cal-sh-d3-001",
+    "stack": "bash",
+    "band": 3,
+    "title": "for loop with nested conditional",
+    "code": "log_dir=\"/var/log\"\ncount=0\nfor entry in \"${log_dir}\"/*.log; do\n  if [ -f \"$entry\" ]; then\n    size=$(stat -c \"%s\" \"$entry\" 2>/dev/null)\n    if [ \"${size:-0}\" -gt 1024 ]; then\n      echo \"large: ${entry} (${size} bytes)\"\n      count=$((count + 1))\n    fi\n  fi\ndone\necho \"found ${count} large files\"",
+    "notes": ["Iterates over log files and reports those exceeding one kilobyte in size."],
+    "topics": ["for-loop", "test", "stat", "nested-conditionals"]
+  },
+  {
+    "id": "cal-sh-d3-002",
+    "stack": "bash",
+    "band": 3,
+    "title": "while read with field parsing",
+    "code": "input_file=\"data.csv\"\nline_num=0\nwhile IFS=',' read -r name email role; do\n  line_num=$((line_num + 1))\n  if [ -z \"$name\" ] || [ -z \"$email\" ]; then\n    echo \"[${line_num}] SKIP: incomplete\" >&2\n    continue\n  fi\n  echo \"[${line_num}] ${name} <${email}> (${role})\"\ndone < \"$input_file\"\necho \"processed ${line_num} lines\"",
+    "notes": ["Reads CSV records line by line and validates required fields before printing."],
+    "topics": ["while-loop", "read", "IFS", "field-parsing"]
+  },
+  {
+    "id": "cal-sh-d3-003",
+    "stack": "bash",
+    "band": 3,
+    "title": "function with local variables",
+    "code": "check_port() {\n  local host=\"$1\"\n  local port=\"$2\"\n  if timeout 2 bash -c \"echo >/dev/tcp/${host}/${port}\" 2>/dev/null; then\n    echo \"[OK]   ${host}:${port}\"\n    return 0\n  else\n    echo \"[FAIL] ${host}:${port}\" >&2\n    return 1\n  fi\n}\ncheck_port \"localhost\" \"22\"\ncheck_port \"localhost\" \"8080\"\necho \"done: exit=$?\"",
+    "notes": ["Defines a function that tests TCP connectivity to a given host and port."],
+    "topics": ["functions", "local", "tcp-check", "return"]
+  },
+  {
+    "id": "cal-sh-d3-004",
+    "stack": "bash",
+    "band": 3,
+    "title": "array iteration with formatted output",
+    "code": "services=(\"nginx\" \"postgres\" \"redis\" \"memcached\")\ntotal=${#services[@]}\nfor i in $(seq 0 $((total - 1))); do\n  svc=\"${services[$i]}\"\n  if command -v \"$svc\" >/dev/null 2>&1; then\n    printf '[%d/%d] %-12s INSTALLED\\n' \"$((i+1))\" \"$total\" \"$svc\"\n  else\n    printf '[%d/%d] %-12s MISSING\\n' \"$((i+1))\" \"$total\" \"$svc\"\n  fi\ndone",
+    "notes": [
+      "Checks installation status of services from an array and prints aligned status output."
+    ],
+    "topics": ["arrays", "for-loop", "printf", "command-check"]
+  },
+  {
+    "id": "cal-sh-d3-005",
+    "stack": "bash",
+    "band": 3,
+    "title": "conditional directory scaffold",
+    "code": "base=\"/opt/myapp\"\nfor sub in bin etc lib var/log var/run; do\n  target=\"${base}/${sub}\"\n  if [ ! -d \"$target\" ]; then\n    mkdir -p \"$target\"\n    chmod 755 \"$target\"\n    echo \"created: ${target}\"\n  else\n    echo \"exists:  ${target}\"\n  fi\ndone\necho \"scaffold complete under ${base}\"",
+    "notes": [
+      "Creates an application directory structure with proper permissions if subdirectories are missing."
+    ],
+    "topics": ["for-loop", "mkdir", "chmod", "test", "conditionals"]
+  },
+  {
+    "id": "sh-function",
+    "stack": "bash",
+    "band": 3,
+    "title": "Shell function",
+    "code": "log() {\n    local level=\"$1\"; shift\n    printf \"[%s] %s\\n\" \"$level\" \"$*\"\n}\nlog INFO \"Deployment started\"",
+    "notes": [
+      "local scopes variables to the function.",
+      "shift removes $1 so $* contains the rest of the args."
+    ],
+    "topics": ["functions", "arguments", "return"]
+  },
+  {
+    "id": "sh-safe",
+    "stack": "bash",
+    "band": 3,
+    "title": "Safer shell",
+    "code": "set -euo pipefail\n\nDIR=\"${1:-.}\"\nfind \"$DIR\" -type f -name \"*.log\" -print0 | xargs -0 wc -l",
+    "notes": ["Pipefail helps surface errors.", "Practice quotes, ${} expansions, and pipes."],
+    "topics": ["set", "pipefail", "variables"]
+  },
+  {
+    "id": "cal-sh-d4-001",
+    "stack": "bash",
+    "band": 4,
+    "title": "csv validator with case matching",
+    "code": "set -euo pipefail\ninput=\"users.csv\"\nvalid=0; invalid=0\nwhile IFS=',' read -r name email role; do\n  if [ -z \"${name}\" ] || [ -z \"${email}\" ]; then\n    echo \"SKIP: empty field\" >&2\n    invalid=$((invalid + 1))\n    continue\n  fi\n  case \"${role}\" in\n    admin|editor|viewer)\n      echo \"OK: ${name} <${email}> [${role}]\"\n      valid=$((valid + 1))\n      ;;\n    *)\n      echo \"BAD: unknown role '${role}'\" >&2\n      invalid=$((invalid + 1))\n      ;;\n  esac\ndone < \"${input}\"\nprintf 'valid=%d invalid=%d total=%d\\n' \"${valid}\" \"${invalid}\" \"$((valid + invalid))\"",
+    "notes": [
+      "Parses a CSV file validating required fields and checking roles against a whitelist."
+    ],
+    "topics": ["while-loop", "case", "IFS", "csv", "validation"]
+  },
+  {
+    "id": "cal-sh-d4-002",
+    "stack": "bash",
+    "band": 4,
+    "title": "argument parser with case and shift",
+    "code": "set -euo pipefail\nverbose=0; dry_run=0\noutput=\"result.txt\"\nmode=\"default\"\nwhile [ \"$#\" -gt 0 ]; do\n  case \"$1\" in\n    -v|--verbose)\n      verbose=1; shift\n      ;;\n    -n|--dry-run)\n      dry_run=1; shift\n      ;;\n    -o|--output)\n      output=\"${2:?missing value for $1}\"\n      shift 2\n      ;;\n    -m|--mode)\n      mode=\"${2:?missing value for $1}\"\n      shift 2\n      ;;\n    --)\n      shift; break\n      ;;\n    -*)\n      echo \"error: unknown flag '$1'\" >&2\n      exit 1\n      ;;\n    *)\n      break\n      ;;\n  esac\ndone\necho \"verbose=${verbose} dry_run=${dry_run}\"\necho \"output=${output} mode=${mode}\"\necho \"remaining args: $*\"",
+    "notes": [
+      "Implements a command line argument parser using the while-case-shift idiom with error handling."
+    ],
+    "topics": ["case", "shift", "argument-parsing", "parameter-expansion"]
+  },
+  {
+    "id": "cal-sh-d4-003",
+    "stack": "bash",
+    "band": 4,
+    "title": "log rotation with age check",
+    "code": "set -euo pipefail\nlog_dir=\"/var/log/myapp\"\nmax_age=30\nnow=$(date +%s)\narchived=0\nfor logfile in \"${log_dir}\"/*.log; do\n  [ -f \"${logfile}\" ] || continue\n  mtime=$(stat -c '%Y' \"${logfile}\" 2>/dev/null)\n  [ -z \"${mtime}\" ] && continue\n  age=$(( (now - mtime) / 86400 ))\n  if [ \"${age}\" -gt \"${max_age}\" ]; then\n    gzip \"${logfile}\"\n    echo \"archived: ${logfile} (${age}d)\"\n    archived=$((archived + 1))\n  fi\ndone\necho \"archived ${archived} file(s)\"",
+    "notes": ["Compresses log files older than a configurable threshold in days."],
+    "topics": ["for-loop", "stat", "arithmetic", "gzip", "log-rotation"]
+  },
+  {
+    "id": "cal-sh-d4-004",
+    "stack": "bash",
+    "band": 4,
+    "title": "service health checker with arrays",
+    "code": "set -euo pipefail\ndeclare -a targets=(\"web:8080\" \"api:3000\" \"db:5432\" \"cache:6379\")\nfailed=0\nfor entry in \"${targets[@]}\"; do\n  host=\"${entry%%:*}\"\n  port=\"${entry##*:}\"\n  if timeout 2 bash -c \"echo >/dev/tcp/${host}/${port}\" 2>/dev/null; then\n    printf '[OK]   %-10s port %s\\n' \"${host}\" \"${port}\"\n  else\n    printf '[FAIL] %-10s port %s\\n' \"${host}\" \"${port}\" >&2\n    failed=$((failed + 1))\n  fi\ndone\nif [ \"${failed}\" -gt 0 ]; then\n  echo \"${failed} service(s) unreachable\" >&2\n  exit 1\nfi\necho \"all services healthy\"",
+    "notes": ["Iterates over host-port pairs and checks TCP reachability with a timeout."],
+    "topics": ["arrays", "parameter-expansion", "tcp-check", "printf"]
+  },
+  {
+    "id": "cal-sh-d4-005",
+    "stack": "bash",
+    "band": 4,
+    "title": "find and replace across files",
+    "code": "set -euo pipefail\nsearch=\"TODO\"\nreplace=\"DONE\"\ntarget_dir=\"${1:-.}\"\nchanged=0; scanned=0\nfor filepath in $(find \"${target_dir}\" -type f -name '*.sh'); do\n  scanned=$((scanned + 1))\n  if grep -q \"${search}\" \"${filepath}\"; then\n    sed -i \"s/${search}/${replace}/g\" \"${filepath}\"\n    echo \"updated: ${filepath}\"\n    changed=$((changed + 1))\n  fi\ndone\nprintf 'scanned=%d changed=%d\\n' \"${scanned}\" \"${changed}\"",
+    "notes": ["Searches shell scripts for a pattern and performs in-place replacement using sed."],
+    "topics": ["find", "grep", "sed", "for-loop", "parameter-expansion"]
+  },
+  {
+    "id": "cal-sh-d5-001",
+    "stack": "bash",
+    "band": 5,
+    "title": "deploy script with rollback trap",
+    "code": "set -euo pipefail\nAPP_DIR=\"/opt/webapp\"\nBACKUP_DIR=\"/opt/backups\"\nRELEASE=\"${1:?usage: deploy.sh <tarball>}\"\nstamp=$(date +\"%Y%m%d_%H%M%S\")\n\nrollback() {\n  echo \"ERROR: deployment failed\" >&2\n  if [ -d \"${BACKUP_DIR}/${stamp}\" ]; then\n    rm -rf \"${APP_DIR}/current\"\n    cp -a \"${BACKUP_DIR}/${stamp}\" \"${APP_DIR}/current\"\n    echo \"rolled back to ${stamp}\"\n  fi\n  exit 1\n}\ntrap rollback ERR\n\nif [ -d \"${APP_DIR}/current\" ]; then\n  mkdir -p \"${BACKUP_DIR}\"\n  cp -a \"${APP_DIR}/current\" \"${BACKUP_DIR}/${stamp}\"\n  echo \"backup: ${BACKUP_DIR}/${stamp}\"\nfi\n\nmkdir -p \"${APP_DIR}/current\"\ntar -xzf \"${RELEASE}\" -C \"${APP_DIR}/current\"\nchmod -R 755 \"${APP_DIR}/current/bin\"\necho \"deployed ${RELEASE} at ${stamp}\"",
+    "notes": ["Deploys a release tarball with automatic rollback on error using a trap handler."],
+    "topics": ["trap", "functions", "set", "deployment", "rollback"]
+  },
+  {
+    "id": "cal-sh-d5-002",
+    "stack": "bash",
+    "band": 5,
+    "title": "parallel task runner with concurrency limit",
+    "code": "set -euo pipefail\nMAX_JOBS=\"${1:-4}\"\njob_count=0\n\nrun_task() {\n  local id=\"${1}\"\n  local delay=\"${2:-1}\"\n  echo \"[start] task ${id} (${delay}s)\"\n  sleep \"${delay}\"\n  echo \"[done]  task ${id}\"\n}\n\nfor i in $(seq 1 12); do\n  delay=$((RANDOM % 3 + 1))\n  run_task \"${i}\" \"${delay}\" &\n  job_count=$((job_count + 1))\n  if [ \"${job_count}\" -ge \"${MAX_JOBS}\" ]; then\n    wait -n 2>/dev/null || true\n    job_count=$((job_count - 1))\n  fi\ndone\nwait\necho \"all ${i} tasks complete\"",
+    "notes": [
+      "Executes tasks in parallel with a configurable concurrency cap using background processes."
+    ],
+    "topics": ["background-jobs", "wait", "functions", "parallelism", "for-loop"]
+  },
+  {
+    "id": "cal-sh-d5-003",
+    "stack": "bash",
+    "band": 5,
+    "title": "ini config parser with associative array",
+    "code": "set -euo pipefail\nconfig_file=\"${1:-app.conf}\"\nsection=\"_global\"\ndeclare -A cfg\n\nwhile IFS= read -r line; do\n  line=\"${line%%#*}\"\n  line=\"${line## }\"; line=\"${line%% }\"\n  [ -z \"${line}\" ] && continue\n  if [[ \"${line}\" =~ ^\\[([a-zA-Z0-9_]+)\\]$ ]]; then\n    section=\"${BASH_REMATCH[1]}\"\n    continue\n  fi\n  if [[ \"${line}\" =~ ^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$ ]]; then\n    key=\"${section}.${BASH_REMATCH[1]}\"\n    cfg[\"${key}\"]=\"${BASH_REMATCH[2]}\"\n  fi\ndone < \"${config_file}\"\n\necho \"parsed ${#cfg[@]} settings:\"\nfor k in \"${!cfg[@]}\"; do\n  printf '  %-30s = %s\\n' \"${k}\" \"${cfg[${k}]}\"\ndone",
+    "notes": [
+      "Parses an INI-style config file into an associative array keyed by section dot name."
+    ],
+    "topics": ["associative-arrays", "regex", "while-loop", "config-parsing", "BASH_REMATCH"]
+  },
+  {
+    "id": "cal-sh-d5-004",
+    "stack": "bash",
+    "band": 5,
+    "title": "recursive directory size scanner",
+    "code": "set -euo pipefail\ntarget=\"${1:-.}\"\nthreshold=\"${2:-1024}\"\n\nscan() {\n  local dir=\"${1}\"\n  local depth=\"${2}\"\n  local prefix=\"\"\n  for ((d=0; d<depth; d++)); do\n    prefix=\"${prefix}  \"\n  done\n  for entry in \"${dir}\"/*; do\n    [ -e \"${entry}\" ] || continue\n    if [ -d \"${entry}\" ]; then\n      local kb\n      kb=$(du -sk \"${entry}\" 2>/dev/null | cut -f1)\n      if [ \"${kb:-0}\" -gt \"${threshold}\" ]; then\n        printf '%s[%dK] %s/\\n' \"${prefix}\" \"${kb}\" \"$(basename \"${entry}\")\"\n        scan \"${entry}\" $((depth + 1))\n      fi\n    fi\n  done\n}\n\necho \"dirs over ${threshold}K in ${target}:\"\nscan \"${target}\" 0",
+    "notes": [
+      "Recursively scans directories printing those exceeding a size threshold in a tree format."
+    ],
+    "topics": ["recursion", "functions", "du", "for-loop", "parameter-expansion"]
+  },
+  {
+    "id": "cal-sh-d5-005",
+    "stack": "bash",
+    "band": 5,
+    "title": "git branch cleanup with protection",
+    "code": "set -euo pipefail\ndry_run=1\nprotected=\"main|develop|release\"\ncount=0\n\n[ \"${1:-}\" = \"--force\" ] && dry_run=0\n\nwhile IFS= read -r branch; do\n  branch=\"${branch## }\"\n  [ -z \"${branch}\" ] && continue\n  if [[ \"${branch}\" =~ ^(${protected})$ ]]; then\n    echo \"[KEEP] ${branch} (protected)\"\n    continue\n  fi\n  if [ \"${dry_run}\" -eq 1 ]; then\n    echo \"[DRY]  would delete: ${branch}\"\n  else\n    if git branch -d \"${branch}\" 2>/dev/null; then\n      echo \"[DEL]  ${branch}\"\n    else\n      echo \"[SKIP] ${branch} (not fully merged)\" >&2\n    fi\n  fi\n  count=$((count + 1))\ndone < <(git branch --merged main 2>/dev/null)\n\necho \"${count} merged branch(es) found\"\n[ \"${dry_run}\" -eq 1 ] && echo \"(pass --force to delete)\"",
+    "notes": [
+      "Lists or removes local git branches merged into main while protecting named branches."
+    ],
+    "topics": ["git", "process-substitution", "regex", "while-loop", "conditionals"]
+  },
+  {
+    "id": "cal-sh-d6-001",
+    "stack": "bash",
+    "band": 6,
+    "title": "multi-environment deploy orchestrator",
+    "code": "set -euo pipefail\ndeclare -A envs=([staging]=\"stg01:2222\" [production]=\"prod01:2222\" [canary]=\"canary01:2222\")\nartifact=\"${1:?usage: deploy <tarball> [env]}\"\ntarget_env=\"${2:-staging}\"\nlog_file=\"/var/log/deploy_$(date +%s).log\"\n\nlog() { printf '[%s] %s\\n' \"$(date +%T)\" \"$*\" | tee -a \"${log_file}\"; }\n\nvalidate() {\n  local f=\"${1}\"\n  [ -f \"${f}\" ] || { log \"ERROR: not found: ${f}\"; return 1; }\n  tar -tzf \"${f}\" >/dev/null 2>&1 || { log \"ERROR: bad tarball: ${f}\"; return 1; }\n}\n\ndeploy_to() {\n  local env=\"${1}\"\n  local spec=\"${envs[${env}]}\"\n  local host=\"${spec%%:*}\"\n  local port=\"${spec##*:}\"\n  log \"deploying to ${env} (${host}:${port})\"\n  if scp -P \"${port}\" \"${artifact}\" \"${host}:/opt/releases/\"; then\n    if ssh -p \"${port}\" \"${host}\" '/opt/bin/activate.sh'; then\n      log \"OK: ${env} deployed\"\n      return 0\n    else\n      log \"FAIL: activation on ${env}\" >&2\n    fi\n  else\n    log \"FAIL: upload to ${env}\" >&2\n  fi\n  return 1\n}\n\nvalidate \"${artifact}\"\nif deploy_to \"${target_env}\"; then\n  log \"deploy to ${target_env} complete\"\nelse\n  log \"deploy to ${target_env} FAILED\" >&2\n  exit 1\nfi",
+    "notes": [
+      "Deploys an artifact to a named environment via SSH with validation and structured logging."
+    ],
+    "topics": ["associative-arrays", "functions", "parameter-expansion", "ssh", "scp", "deployment"]
+  },
+  {
+    "id": "cal-sh-d6-002",
+    "stack": "bash",
+    "band": 6,
+    "title": "log analyzer with severity tracking",
+    "code": "set -euo pipefail\nlog_file=\"${1:-/var/log/app.log}\"\nreport=\"analysis_$(date +%Y%m%d).txt\"\ndeclare -A counts=([INFO]=0 [WARN]=0 [ERROR]=0 [FATAL]=0)\ndeclare -A patterns\n\nwhile IFS= read -r line; do\n  for lvl in INFO WARN ERROR FATAL; do\n    if [[ \"${line}\" == *\"[${lvl}]\"* ]]; then\n      counts[${lvl}]=$(( ${counts[${lvl}]} + 1 ))\n      if [ \"${lvl}\" = \"ERROR\" ] || [ \"${lvl}\" = \"FATAL\" ]; then\n        msg=\"${line##*] }\"\n        msg=\"${msg:0:60}\"\n        if [ -n \"${patterns[${msg}]+x}\" ]; then\n          patterns[\"${msg}\"]=$(( ${patterns[${msg}]} + 1 ))\n        else\n          patterns[\"${msg}\"]=1\n        fi\n      fi\n      break\n    fi\n  done\ndone < \"${log_file}\"\n\n{\n  echo \"=== Severity Counts ===\"\n  for lvl in INFO WARN ERROR FATAL; do\n    printf '%-8s %d\\n' \"${lvl}\" \"${counts[${lvl}]}\"\n  done\n  echo \"\"\n  echo \"=== Error Patterns ===\"\n  for p in \"${!patterns[@]}\"; do\n    printf '%4d  %s\\n' \"${patterns[${p}]}\" \"${p}\"\n  done\n} > \"${report}\"\necho \"report: ${report}\"",
+    "notes": [
+      "Analyzes a log file counting severity levels and grouping unique error patterns into a report."
+    ],
+    "topics": ["associative-arrays", "while-loop", "pattern-matching", "log-analysis", "report"]
+  },
+  {
+    "id": "cal-sh-d6-003",
+    "stack": "bash",
+    "band": 6,
+    "title": "database backup with rotation",
+    "code": "set -euo pipefail\nDB_HOST=\"${DB_HOST:-localhost}\"\nDB_PORT=\"${DB_PORT:-5432}\"\nDB_USER=\"${DB_USER:-postgres}\"\nBKP=\"/var/backups/db\"\nKEEP=14\nts=$(date +%Y%m%d_%H%M%S)\n\nlog() { printf '[%s] %s\\n' \"$(date +%T)\" \"$*\"; }\n\nmkdir -p \"${BKP}\"\nfor db in $(psql -h \"${DB_HOST}\" -p \"${DB_PORT}\" -U \"${DB_USER}\" -At \\\n  -c \"SELECT datname FROM pg_database WHERE NOT datistemplate\"); do\n  out=\"${BKP}/${db}_${ts}.sql.gz\"\n  log \"dumping ${db}\"\n  if pg_dump -h \"${DB_HOST}\" -p \"${DB_PORT}\" -U \"${DB_USER}\" \"${db}\" | gzip > \"${out}\"; then\n    sz=$(du -sh \"${out}\" | cut -f1)\n    log \"OK: ${db} (${sz})\"\n  else\n    log \"FAIL: ${db}\" >&2\n    rm -f \"${out}\"\n  fi\ndone\n\nlog \"pruning backups older than ${KEEP} days\"\nfind \"${BKP}\" -name '*.sql.gz' -mtime +\"${KEEP}\" -exec rm -v {} \\;\n\ntotal=$(find \"${BKP}\" -name '*.sql.gz' | wc -l)\nlog \"${total} backup(s) retained\"",
+    "notes": [
+      "Backs up all non-template PostgreSQL databases with compression and removes old backups."
+    ],
+    "topics": ["postgresql", "backup", "gzip", "find", "for-loop", "functions"]
+  },
+  {
+    "id": "cal-sh-d6-004",
+    "stack": "bash",
+    "band": 6,
+    "title": "interactive task manager with select",
+    "code": "set -euo pipefail\ndeclare -a tasks=()\ncount=0\n\nadd() {\n  tasks+=(\"${1}\")\n  count=$((count + 1))\n  echo \"added #${count}: ${1}\"\n}\n\nlist() {\n  [ \"${count}\" -eq 0 ] && { echo \"(empty)\"; return; }\n  for i in $(seq 0 $((count - 1))); do\n    printf '%3d. %s\\n' \"$((i + 1))\" \"${tasks[${i}]}\"\n  done\n}\n\nremove() {\n  local idx=\"${1}\"\n  if [ \"${idx}\" -lt 0 ] || [ \"${idx}\" -ge \"${count}\" ]; then\n    echo \"invalid index\" >&2; return 1\n  fi\n  echo \"removed: ${tasks[${idx}]}\"\n  unset 'tasks[${idx}]'\n  tasks=(\"${tasks[@]}\")\n  count=$((count - 1))\n}\n\nwhile true; do\n  echo \"\"\n  select action in \"Add\" \"List\" \"Remove\" \"Quit\"; do\n    case \"${action}\" in\n      Add)\n        read -rp \"desc: \" d\n        add \"${d}\"\n        ;;\n      List)\n        list\n        ;;\n      Remove)\n        list\n        read -rp \"number: \" n\n        remove $((n - 1))\n        ;;\n      Quit)\n        echo \"bye\"; exit 0\n        ;;\n    esac\n    break\n  done\ndone",
+    "notes": [
+      "Implements an interactive task list with add, list, and remove via a select menu loop."
+    ],
+    "topics": ["select", "case", "functions", "arrays", "interactive"]
+  },
+  {
+    "id": "cal-sh-d6-005",
+    "stack": "bash",
+    "band": 6,
+    "title": "system resource monitor with alerts",
+    "code": "set -euo pipefail\ninterval=\"${1:-5}\"\nthresh=90\nlog_dir=\"/var/log/monitor\"\nmkdir -p \"${log_dir}\"\n\nget_cpu() {\n  local u\n  u=$(top -bn1 | awk '/Cpu\\(s\\)/{print int($2+$4)}')\n  echo \"${u:-0}\"\n}\n\nget_mem() {\n  local p\n  p=$(free | awk '/Mem:/{printf \"%.0f\",$3/$2*100}')\n  echo \"${p:-0}\"\n}\n\nget_disk() {\n  local p\n  p=$(df / | awk 'NR==2{sub(/%/,\"\",$5);print $5}')\n  echo \"${p:-0}\"\n}\n\nwhile true; do\n  ts=$(date '+%Y-%m-%d %H:%M:%S')\n  cpu=$(get_cpu); mem=$(get_mem); disk=$(get_disk)\n  printf '[%s] CPU=%3d%%  MEM=%3d%%  DISK=%3d%%\\n' \"${ts}\" \"${cpu}\" \"${mem}\" \"${disk}\"\n  for metric in cpu mem disk; do\n    val=\"${!metric}\"\n    if [ \"${val}\" -gt \"${thresh}\" ]; then\n      echo \"ALERT: ${metric}=${val}%%\" | tee -a \"${log_dir}/alerts.log\" >&2\n    fi\n  done\n  sleep \"${interval}\"\ndone",
+    "notes": [
+      "Polls CPU, memory, and disk usage in a loop and logs alerts when thresholds are exceeded."
+    ],
+    "topics": ["monitoring", "functions", "awk", "while-loop", "indirect-expansion"]
+  },
+  {
+    "id": "cal-sh-d7-001",
+    "stack": "bash",
+    "band": 7,
+    "title": "plugin loader with dependency resolution",
+    "code": "set -euo pipefail\ndeclare -A plugin_deps\ndeclare -A plugin_state\ndeclare -a load_order\nPDIR=\"${1:-/opt/plugins}\"\n\nscan() {\n  for mf in \"${PDIR}\"/*/plugin.conf; do\n    [ -f \"${mf}\" ] || continue\n    local n=\"\" d=\"\"\n    while IFS='=' read -r k v; do\n      k=\"${k## }\"; k=\"${k%% }\"\n      v=\"${v## }\"; v=\"${v%% }\"\n      case \"${k}\" in\n        name) n=\"${v}\" ;;\n        depends) d=\"${v}\" ;;\n      esac\n    done < \"${mf}\"\n    [ -n \"${n}\" ] && { plugin_deps[\"${n}\"]=\"${d}\"; plugin_state[\"${n}\"]=0; }\n  done\n}\n\nload() {\n  local nm=\"${1}\"\n  [ \"${plugin_state[${nm}]:-}\" = \"1\" ] && return 0\n  if [ \"${plugin_state[${nm}]:-}\" = \"loading\" ]; then\n    echo \"ERROR: circular dep on ${nm}\" >&2; return 1\n  fi\n  plugin_state[\"${nm}\"]=\"loading\"\n  local ds=\"${plugin_deps[${nm}]:-}\"\n  if [ -n \"${ds}\" ]; then\n    IFS=',' read -ra dl <<< \"${ds}\"\n    for dep in \"${dl[@]}\"; do\n      dep=\"${dep## }\"; dep=\"${dep%% }\"\n      if [ -z \"${plugin_deps[${dep}]+x}\" ]; then\n        echo \"ERROR: unknown dep '${dep}' for '${nm}'\" >&2; return 1\n      fi\n      load \"${dep}\" || return 1\n    done\n  fi\n  local init=\"${PDIR}/${nm}/init.sh\"\n  [ -f \"${init}\" ] && source \"${init}\"\n  plugin_state[\"${nm}\"]=1\n  load_order+=(\"${nm}\")\n  echo \"loaded: ${nm}\"\n}\n\nscan\nfor pn in \"${!plugin_deps[@]}\"; do\n  load \"${pn}\" || echo \"SKIP: ${pn}\" >&2\ndone\necho \"\"\necho \"=== Load Order ===\"\nfor i in $(seq 0 $((${#load_order[@]} - 1))); do\n  printf '%2d. %s\\n' \"$((i + 1))\" \"${load_order[${i}]}\"\ndone",
+    "notes": [
+      "Scans plugin manifests resolving dependencies recursively with circular dependency detection."
+    ],
+    "topics": ["associative-arrays", "recursion", "dependency-resolution", "source", "functions"]
+  },
+  {
+    "id": "cal-sh-d7-002",
+    "stack": "bash",
+    "band": 7,
+    "title": "build system with dependency graph",
+    "code": "set -euo pipefail\ndeclare -A tgt_cmd\ndeclare -A tgt_deps\ndeclare -A tgt_built\nBD=\"${BUILD_DIR:-.build}\"\n\ndefine() {\n  local nm=\"${1}\" dp=\"${2}\" cm=\"${3}\"\n  tgt_cmd[\"${nm}\"]=\"${cm}\"\n  tgt_deps[\"${nm}\"]=\"${dp}\"\n  tgt_built[\"${nm}\"]=0\n}\n\nbuild() {\n  local nm=\"${1}\"\n  [ \"${tgt_built[${nm}]:-0}\" -eq 1 ] && return 0\n  if [ -z \"${tgt_cmd[${nm}]+x}\" ]; then\n    echo \"ERROR: unknown target '${nm}'\" >&2; return 1\n  fi\n  local ds=\"${tgt_deps[${nm}]:-}\"\n  if [ -n \"${ds}\" ]; then\n    IFS=' ' read -ra dl <<< \"${ds}\"\n    for d in \"${dl[@]}\"; do\n      if ! build \"${d}\"; then\n        echo \"ERROR: dep '${d}' failed for '${nm}'\" >&2; return 1\n      fi\n    done\n  fi\n  echo \"==> build: ${nm}\"\n  local cm=\"${tgt_cmd[${nm}]}\"\n  if [ -n \"${cm}\" ]; then\n    if ! eval \"${cm}\"; then\n      echo \"ERROR: '${nm}' failed\" >&2; return 1\n    fi\n  fi\n  tgt_built[\"${nm}\"]=1\n  echo \"==> done: ${nm}\"\n}\n\nmkdir -p \"${BD}\"\ndefine \"clean\" \"\" \"rm -rf ${BD}/*\"\ndefine \"compile\" \"clean\" \"gcc -c src/*.c -o ${BD}/main.o\"\ndefine \"link\" \"compile\" \"gcc ${BD}/main.o -o ${BD}/app\"\ndefine \"test\" \"link\" \"${BD}/app --self-test\"\ndefine \"package\" \"test\" \"tar -czf ${BD}/release.tar.gz -C ${BD} app\"\n\ngoal=\"${1:-package}\"\necho \"goal: ${goal}\"\nif build \"${goal}\"; then\n  echo \"BUILD OK\"\nelse\n  echo \"BUILD FAILED\" >&2; exit 1\nfi",
+    "notes": [
+      "Implements a build system that resolves target dependencies and runs build commands in order."
+    ],
+    "topics": ["associative-arrays", "recursion", "eval", "functions", "build-system"]
+  },
+  {
+    "id": "cal-sh-d7-003",
+    "stack": "bash",
+    "band": 7,
+    "title": "http router with middleware chain",
+    "code": "set -euo pipefail\ndeclare -A routes\ndeclare -a mw_chain\nPORT=\"${1:-8080}\"\nLOG=\"/var/log/httpd_${PORT}.log\"\n\nmw_log() {\n  local m=\"${1}\" p=\"${2}\"\n  printf '[%s] %s %s\\n' \"$(date +%T)\" \"${m}\" \"${p}\" >>\"${LOG}\"\n}\n\nmw_auth() {\n  local m=\"${1}\" p=\"${2}\" h=\"${3}\"\n  if [[ \"${p}\" == /api/* ]]; then\n    if [[ \"${h}\" != *\"Authorization:\"* ]]; then\n      printf 'HTTP/1.1 401 Unauthorized\\r\\n\\r\\n{\"error\":\"no token\"}\\n'\n      return 1\n    fi\n  fi\n}\n\nreg() { routes[\"${1}:${2}\"]=\"${3}\"; }\n\nh_index() { echo '{\"status\":\"ok\"}'; }\nh_health() { echo '{\"up\":true}'; }\nh_users() { echo '{\"users\":[]}'; }\n\nreg \"GET\" \"/\" \"h_index\"\nreg \"GET\" \"/health\" \"h_health\"\nreg \"GET\" \"/api/users\" \"h_users\"\nmw_chain=(\"mw_log\" \"mw_auth\")\n\ndispatch() {\n  local m=\"${1}\" p=\"${2}\" h=\"${3}\"\n  for fn in \"${mw_chain[@]}\"; do\n    \"${fn}\" \"${m}\" \"${p}\" \"${h}\" || return 1\n  done\n  local key=\"${m}:${p}\"\n  if [ -n \"${routes[${key}]+x}\" ]; then\n    printf 'HTTP/1.1 200 OK\\r\\nContent-Type: application/json\\r\\n\\r\\n'\n    \"${routes[${key}]}\"\n  else\n    printf 'HTTP/1.1 404 Not Found\\r\\n\\r\\n{\"error\":\"not found\"}\\n'\n  fi\n}\n\necho \"listening :${PORT}\"\nwhile true; do\n  read -r req\n  m=\"${req%% /*}\"; p=\"${req#* }\"; p=\"${p%% *}\"\n  hdrs=\"\"\n  while IFS= read -r hdr; do\n    [ -z \"${hdr%%$'\\r'}\" ] && break\n    hdrs=\"${hdrs} ${hdr}\"\n  done\n  dispatch \"${m}\" \"${p}\" \"${hdrs}\"\ndone",
+    "notes": [
+      "Implements a basic HTTP router with a pluggable middleware chain for logging and auth."
+    ],
+    "topics": ["associative-arrays", "functions", "middleware", "routing", "http", "while-loop"]
+  },
+  {
+    "id": "cal-sh-d7-004",
+    "stack": "bash",
+    "band": 7,
+    "title": "test runner with tap output",
+    "code": "set -euo pipefail\ndeclare -a t_names\ndeclare -A t_funcs\ndeclare -A t_results\npass=0; fail=0; skip=0\n\nreg_test() { t_names+=(\"${1}\"); t_funcs[\"${1}\"]=\"${2}\"; }\n\nassert_eq() {\n  local exp=\"${1}\" act=\"${2}\" msg=\"${3:-}\"\n  if [ \"${exp}\" != \"${act}\" ]; then\n    echo \"#   expected: '${exp}'\" >&2\n    echo \"#   actual:   '${act}'\" >&2\n    [ -n \"${msg}\" ] && echo \"#   ${msg}\" >&2\n    return 1\n  fi\n}\n\nassert_ok() {\n  local c=\"${1}\" msg=\"${2:-}\"\n  if [ \"${c}\" -ne 0 ]; then\n    echo \"#   want exit 0, got ${c}\" >&2\n    [ -n \"${msg}\" ] && echo \"#   ${msg}\" >&2\n    return 1\n  fi\n}\n\nrun_all() {\n  local total=\"${#t_names[@]}\"\n  echo \"TAP version 14\"\n  echo \"1..${total}\"\n  local idx=0\n  for nm in \"${t_names[@]}\"; do\n    idx=$((idx + 1))\n    local fn=\"${t_funcs[${nm}]}\"\n    if [ -z \"${fn}\" ]; then\n      echo \"ok ${idx} - ${nm} # SKIP\"\n      skip=$((skip + 1)); t_results[\"${nm}\"]=\"skip\"\n      continue\n    fi\n    local out\n    if out=$(\"${fn}\" 2>&1); then\n      echo \"ok ${idx} - ${nm}\"\n      pass=$((pass + 1)); t_results[\"${nm}\"]=\"pass\"\n    else\n      echo \"not ok ${idx} - ${nm}\"\n      fail=$((fail + 1)); t_results[\"${nm}\"]=\"fail\"\n      while IFS= read -r ln; do\n        echo \"# ${ln}\"\n      done <<< \"${out}\"\n    fi\n  done\n  echo \"\"\n  printf '# pass=%d fail=%d skip=%d\\n' \"${pass}\" \"${fail}\" \"${skip}\"\n  [ \"${fail}\" -eq 0 ]\n}\n\nt_add() { assert_eq \"4\" \"$(( 2 + 2 ))\" \"math\"; }\nt_str() { assert_eq \"hello\" \"hello\" \"str\"; }\nt_exit() { true; assert_ok $? \"true\"; }\nt_fail() { assert_eq \"1\" \"2\" \"deliberate\"; }\n\nreg_test \"addition\" \"t_add\"\nreg_test \"string\" \"t_str\"\nreg_test \"exit code\" \"t_exit\"\nreg_test \"expect fail\" \"t_fail\"\nreg_test \"placeholder\" \"\"\n\nrun_all",
+    "notes": [
+      "Implements a TAP test runner with assertion helpers, skip support, and formatted output."
+    ],
+    "topics": ["test-framework", "tap", "functions", "associative-arrays", "assertions"]
+  },
+  {
+    "id": "cal-sh-d7-005",
+    "stack": "bash",
+    "band": 7,
+    "title": "process supervisor with auto-restart",
+    "code": "set -euo pipefail\ndeclare -A pids\ndeclare -A status\ndeclare -A restarts\nMAX_R=3; ALIVE=1\n\nlog() { printf '[%s] %s\\n' \"$(date +%T)\" \"$*\"; }\n\nshutdown() {\n  ALIVE=0; log \"shutting down\"\n  for nm in \"${!pids[@]}\"; do\n    local p=\"${pids[${nm}]}\"\n    kill -0 \"${p}\" 2>/dev/null && { log \"stop ${nm} (${p})\"; kill -TERM \"${p}\" 2>/dev/null; }\n  done\n  wait 2>/dev/null; log \"all stopped\"; exit 0\n}\ntrap shutdown SIGTERM SIGINT\n\nstart() {\n  local nm=\"${1}\" cmd=\"${2}\"\n  eval \"${cmd}\" &\n  pids[\"${nm}\"]=$!\n  status[\"${nm}\"]=\"up\"\n  restarts[\"${nm}\"]=\"${restarts[${nm}]:-0}\"\n  log \"start ${nm} (pid $!)\"\n}\n\ncheck() {\n  for nm in \"${!pids[@]}\"; do\n    local p=\"${pids[${nm}]}\"\n    if ! kill -0 \"${p}\" 2>/dev/null; then\n      wait \"${p}\" 2>/dev/null || true\n      local r=\"${restarts[${nm}]}\"\n      if [ \"${r}\" -ge \"${MAX_R}\" ]; then\n        log \"FAIL: ${nm} max restarts (${MAX_R})\"\n        status[\"${nm}\"]=\"dead\"\n      else\n        restarts[\"${nm}\"]=$((r + 1))\n        log \"WARN: ${nm} died, restart #$((r + 1))\"\n        local c=\"${svcs[${nm}]}\"\n        [ -n \"${c}\" ] && start \"${nm}\" \"${c}\"\n      fi\n    fi\n  done\n}\n\ndeclare -A svcs=(\n  [web]=\"python3 -m http.server 8080\"\n  [worker]=\"bash -c 'while true; do sleep 10; done'\"\n  [cron]=\"bash -c 'while true; do echo tick; sleep 60; done'\"\n)\n\nlog \"supervisor (max_restarts=${MAX_R})\"\nfor nm in \"${!svcs[@]}\"; do\n  start \"${nm}\" \"${svcs[${nm}]}\"\ndone\n\nwhile [ \"${ALIVE}\" -eq 1 ]; do\n  sleep 2; check\n  up=0\n  for nm in \"${!status[@]}\"; do\n    [ \"${status[${nm}]}\" = \"up\" ] && up=$((up + 1))\n  done\n  [ \"${up}\" -eq 0 ] && { log \"no children alive\"; exit 1; }\ndone",
+    "notes": [
+      "Supervises child processes with automatic restart and graceful signal-driven shutdown."
+    ],
+    "topics": ["process-management", "trap", "signals", "associative-arrays", "eval", "supervisor"]
+  }
+]

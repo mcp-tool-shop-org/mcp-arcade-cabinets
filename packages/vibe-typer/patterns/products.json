@@ -1,0 +1,34 @@
+{
+  "nouns": [
+    "ducks",
+    "the office fridge",
+    "book clubs",
+    "houseplants",
+    "the parking spot",
+    "the coffee machine",
+    "neighbourhood cats",
+    "sourdough starters",
+    "bicycles",
+    "laundry",
+    "the lunch queue",
+    "the group chat",
+    "garden gnomes",
+    "tiny boats",
+    "hat collections",
+    "the commute",
+    "weekends",
+    "dog walks"
+  ],
+  "templates": [
+    "Uber but for {noun}",
+    "a blockchain for {noun}",
+    "a social network for {noun}",
+    "an app that rates {noun}",
+    "a marketplace for {noun}",
+    "a subscription box for {noun}",
+    "a dashboard for {noun}",
+    "a loyalty programme for {noun}",
+    "a dating app for {noun}",
+    "a delivery service for {noun}"
+  ]
+}

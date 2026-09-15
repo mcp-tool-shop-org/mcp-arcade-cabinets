@@ -1,0 +1,464 @@
+[
+  {
+    "id": "cal-js-d1-001",
+    "stack": "javascript",
+    "band": 1,
+    "title": "console log greeting",
+    "code": "console.log(\"hello world\");",
+    "notes": ["Prints the string hello world to the console."],
+    "topics": ["console", "strings"]
+  },
+  {
+    "id": "cal-js-d1-002",
+    "stack": "javascript",
+    "band": 1,
+    "title": "const variable assignment",
+    "code": "const name = \"Alice\";\nconst age = 30;\nconsole.log(name, age);",
+    "notes": ["Declares two constants and logs them to the console."],
+    "topics": ["const", "variables"]
+  },
+  {
+    "id": "cal-js-d1-003",
+    "stack": "javascript",
+    "band": 1,
+    "title": "let and arithmetic",
+    "code": "let x = 10;\nlet y = 20;\nlet sum = x + y;\nconsole.log(sum);",
+    "notes": ["Declares two numbers, adds them, and logs the result."],
+    "topics": ["let", "arithmetic"]
+  },
+  {
+    "id": "cal-js-d1-004",
+    "stack": "javascript",
+    "band": 1,
+    "title": "template literal output",
+    "code": "const item = \"book\";\nconst price = 9.99;\nconsole.log(`${item} costs $${price}`);",
+    "notes": ["Uses a template literal to interpolate variables into a string."],
+    "topics": ["template-literals", "variables"]
+  },
+  {
+    "id": "cal-js-d1-005",
+    "stack": "javascript",
+    "band": 1,
+    "title": "boolean and null check",
+    "code": "const value = null;\nconst fallback = value ?? \"default\";\nconsole.log(fallback);",
+    "notes": ["Uses the nullish coalescing operator to provide a fallback for a null value."],
+    "topics": ["nullish-coalescing", "const"]
+  },
+  {
+    "id": "js-map-filter",
+    "stack": "javascript",
+    "band": 1,
+    "title": "Map and filter",
+    "code": "const names = users\n  .filter((u) => u.active)\n  .map((u) => u.name.toUpperCase());",
+    "notes": [
+      "filter keeps matching items; map transforms each one.",
+      "Chaining reads top-to-bottom like a pipeline."
+    ],
+    "topics": ["array", "map", "filter", "arrow-function"]
+  },
+  {
+    "id": "js-ternary",
+    "stack": "javascript",
+    "band": 1,
+    "title": "Ternary expression",
+    "code": "const label = count === 1 ? \"item\" : \"items\";\nconsole.log(`${count} ${label} in cart`);",
+    "notes": [
+      "The ternary operator is a concise if/else expression.",
+      "Practice ===, ?, and : for conditional logic."
+    ],
+    "topics": ["ternary", "conditional", "expression"]
+  },
+  {
+    "id": "cal-js-d2-001",
+    "stack": "javascript",
+    "band": 2,
+    "title": "simple arrow function",
+    "code": "const greet = (name) => {\n  return `Hello, ${name}!`;\n};\n\nconst message = greet(\"World\");\nconsole.log(message);\n\nconst shout = greet(\"JS\").toUpperCase();\nconsole.log(shout);",
+    "notes": [
+      "Defines an arrow function that returns a greeting and demonstrates chaining a string method on the result."
+    ],
+    "topics": ["arrow-function", "template-literals"]
+  },
+  {
+    "id": "cal-js-d2-002",
+    "stack": "javascript",
+    "band": 2,
+    "title": "array spread and rest",
+    "code": "const first = [1, 2, 3];\nconst second = [4, 5, 6];\nconst merged = [...first, ...second];\n\nconsole.log(merged);\nconsole.log(merged.length);\n\nconst [head, ...tail] = merged;\nconsole.log(head);\nconsole.log(tail);",
+    "notes": [
+      "Demonstrates the spread operator for merging arrays and rest syntax for destructuring the first element from the remainder."
+    ],
+    "topics": ["spread", "rest", "destructuring"]
+  },
+  {
+    "id": "cal-js-d2-003",
+    "stack": "javascript",
+    "band": 2,
+    "title": "object shorthand properties",
+    "code": "const name = \"Alice\";\nconst role = \"admin\";\nconst active = true;\n\nconst user = { name, role, active };\n\nconsole.log(user.name);\nconsole.log(user.role);\nconsole.log(user.active);",
+    "notes": [
+      "Creates an object using shorthand property names where the key matches the variable name."
+    ],
+    "topics": ["objects", "shorthand-properties"]
+  },
+  {
+    "id": "cal-js-d2-004",
+    "stack": "javascript",
+    "band": 2,
+    "title": "for of loop with entries",
+    "code": "const fruits = [\"apple\", \"banana\", \"cherry\"];\n\nfor (const [index, fruit] of fruits.entries()) {\n  console.log(`${index}: ${fruit}`);\n}\n\nconst count = fruits.length;\nconsole.log(`Total: ${count}`);",
+    "notes": [
+      "Iterates over an array with index-value pairs using entries and logs each item with its position."
+    ],
+    "topics": ["for-of", "entries", "destructuring"]
+  },
+  {
+    "id": "cal-js-d2-005",
+    "stack": "javascript",
+    "band": 2,
+    "title": "default parameter values",
+    "code": "function createTag(name, color = \"blue\", size = 12) {\n  return { name, color, size };\n}\n\nconst tag1 = createTag(\"info\");\nconst tag2 = createTag(\"warn\", \"yellow\");\nconst tag3 = createTag(\"error\", \"red\", 16);\n\nconsole.log(tag1);\nconsole.log(tag2);\nconsole.log(tag3);",
+    "notes": [
+      "Shows function parameters with default values and how they are overridden when arguments are provided."
+    ],
+    "topics": ["default-parameters", "functions", "objects"]
+  },
+  {
+    "id": "js-destructuring",
+    "stack": "javascript",
+    "band": 2,
+    "title": "Object destructuring",
+    "code": "const { name, age = 0, role = \"guest\" } = user;\nconsole.log(`${name} (${age}) - ${role}`);",
+    "notes": [
+      "Destructuring extracts properties into variables.",
+      "Default values apply when the property is undefined."
+    ],
+    "topics": ["destructuring", "objects", "defaults"]
+  },
+  {
+    "id": "cal-js-d3-001",
+    "stack": "javascript",
+    "band": 3,
+    "title": "map filter chain",
+    "code": "const products = [\n  { name: \"Laptop\", price: 999, inStock: true },\n  { name: \"Mouse\", price: 25, inStock: false },\n  { name: \"Monitor\", price: 450, inStock: true },\n  { name: \"Keyboard\", price: 75, inStock: true },\n  { name: \"Webcam\", price: 60, inStock: false },\n];\n\nconst available = products\n  .filter((p) => p.inStock)\n  .map((p) => `${p.name}: $${p.price}`)\n  .join(\", \");\n\nconsole.log(available);",
+    "notes": [
+      "Filters an array of products to those in stock, maps them to formatted strings, and joins the result into a comma-separated list."
+    ],
+    "topics": ["filter", "map", "join", "arrow-function"]
+  },
+  {
+    "id": "cal-js-d3-002",
+    "stack": "javascript",
+    "band": 3,
+    "title": "promise chain with fetch",
+    "code": "function loadUser(id) {\n  return fetch(`/api/users/${id}`)\n    .then((res) => {\n      if (!res.ok) {\n        throw new Error(`HTTP ${res.status}`);\n      }\n      return res.json();\n    })\n    .then((data) => {\n      console.log(data.name);\n      return data;\n    })\n    .catch((err) => {\n      console.error(err.message);\n    });\n}",
+    "notes": [
+      "Fetches a user by ID using promise chains, checks the response status, parses JSON, and handles errors with catch."
+    ],
+    "topics": ["promises", "fetch", "error-handling"]
+  },
+  {
+    "id": "cal-js-d3-003",
+    "stack": "javascript",
+    "band": 3,
+    "title": "class with getter",
+    "code": "class Rectangle {\n  constructor(width, height) {\n    this.width = width;\n    this.height = height;\n  }\n\n  get area() {\n    return this.width * this.height;\n  }\n\n  toString() {\n    return `${this.width}x${this.height}`;\n  }\n}\n\nconst r = new Rectangle(10, 5);\nconsole.log(r.area);\nconsole.log(r.toString());",
+    "notes": [
+      "Defines a Rectangle class with a computed getter for area and a toString method for display formatting."
+    ],
+    "topics": ["class", "getter", "constructor", "methods"]
+  },
+  {
+    "id": "cal-js-d3-004",
+    "stack": "javascript",
+    "band": 3,
+    "title": "reduce to group by",
+    "code": "const items = [\n  { type: \"fruit\", name: \"apple\" },\n  { type: \"veggie\", name: \"carrot\" },\n  { type: \"fruit\", name: \"banana\" },\n  { type: \"veggie\", name: \"pea\" },\n];\n\nconst grouped = items.reduce((acc, item) => {\n  const key = item.type;\n  acc[key] = acc[key] ?? [];\n  acc[key].push(item.name);\n  return acc;\n}, {});\n\nconsole.log(grouped);",
+    "notes": [
+      "Uses reduce to group an array of objects by their type property into an object of arrays."
+    ],
+    "topics": ["reduce", "grouping", "nullish-coalescing"]
+  },
+  {
+    "id": "cal-js-d3-005",
+    "stack": "javascript",
+    "band": 3,
+    "title": "set and map usage",
+    "code": "const words = [\"hello\", \"world\", \"hello\", \"foo\", \"world\"];\nconst unique = new Set(words);\n\nconst counts = new Map();\nfor (const w of words) {\n  counts.set(w, (counts.get(w) ?? 0) + 1);\n}\n\nconsole.log([...unique]);\nfor (const [word, count] of counts) {\n  console.log(`${word}: ${count}`);\n}",
+    "notes": [
+      "Creates a Set for unique words and a Map to count occurrences, then iterates over both to display results."
+    ],
+    "topics": ["set", "map", "for-of", "iterables"]
+  },
+  {
+    "id": "js-promise-chain",
+    "stack": "javascript",
+    "band": 3,
+    "title": "Promise chain",
+    "code": "fetch(\"/api/data\")\n  .then((res) => res.json())\n  .then((data) => console.log(data.length))\n  .catch((err) => console.error(err.message));",
+    "notes": [
+      ".then() chains async steps; .catch() handles errors.",
+      "Practice arrow functions, dots, and parentheses."
+    ],
+    "topics": ["promises", "then", "catch", "chaining"]
+  },
+  {
+    "id": "js-reduce",
+    "stack": "javascript",
+    "band": 3,
+    "title": "Reduce to map",
+    "code": "const counts = items.reduce((m, x) => {\n  m[x] = (m[x] ?? 0) + 1;\n  return m;\n}, {});",
+    "notes": ["Reduce builds a single value from a list.", "Practice ?? and arrow functions."],
+    "topics": ["array", "reduce", "arrow-function"]
+  },
+  {
+    "id": "cal-js-d4-001",
+    "stack": "javascript",
+    "band": 4,
+    "title": "async await with retry",
+    "code": "async function fetchWithRetry(url, retries = 3) {\n  for (let attempt = 1; attempt <= retries; attempt++) {\n    try {\n      const res = await fetch(url);\n      if (!res.ok) {\n        throw new Error(`HTTP ${res.status}`);\n      }\n      return await res.json();\n    } catch (err) {\n      console.warn(`Attempt ${attempt} failed: ${err.message}`);\n      if (attempt === retries) {\n        throw new Error(`All ${retries} attempts failed`);\n      }\n      await new Promise((r) => setTimeout(r, 1000 * attempt));\n    }\n  }\n}\n\nfetchWithRetry(\"/api/data\")\n  .then((data) => console.log(data))\n  .catch((err) => console.error(err.message));",
+    "notes": [
+      "Implements an async fetch wrapper that retries failed requests with exponential backoff up to a configurable number of attempts."
+    ],
+    "topics": ["async-await", "retry", "error-handling", "fetch"]
+  },
+  {
+    "id": "cal-js-d4-002",
+    "stack": "javascript",
+    "band": 4,
+    "title": "event emitter class",
+    "code": "class EventEmitter {\n  constructor() {\n    this.listeners = new Map();\n  }\n\n  on(event, callback) {\n    if (!this.listeners.has(event)) {\n      this.listeners.set(event, []);\n    }\n    this.listeners.get(event).push(callback);\n    return this;\n  }\n\n  emit(event, ...args) {\n    const handlers = this.listeners.get(event);\n    if (handlers) {\n      for (const fn of handlers) {\n        fn(...args);\n      }\n    }\n    return this;\n  }\n}\n\nconst bus = new EventEmitter();\nbus.on(\"data\", (msg) => console.log(msg));\nbus.emit(\"data\", \"hello\");",
+    "notes": [
+      "Implements a minimal event emitter with listener registration and emission using a Map to store handler arrays."
+    ],
+    "topics": ["class", "map", "events", "spread"]
+  },
+  {
+    "id": "cal-js-d4-003",
+    "stack": "javascript",
+    "band": 4,
+    "title": "closure based counter module",
+    "code": "function createCounter(initial = 0) {\n  let count = initial;\n  const listeners = [];\n\n  function notify() {\n    for (const fn of listeners) {\n      fn(count);\n    }\n  }\n\n  return {\n    increment() {\n      count += 1;\n      notify();\n      return count;\n    },\n    decrement() {\n      count -= 1;\n      notify();\n      return count;\n    },\n    subscribe(fn) {\n      listeners.push(fn);\n    },\n    get value() {\n      return count;\n    },\n  };\n}\n\nconst counter = createCounter(5);\ncounter.subscribe((n) => console.log(`Count: ${n}`));\ncounter.increment();",
+    "notes": [
+      "Creates a counter module using closures to encapsulate private state with increment, decrement, and subscriber notification."
+    ],
+    "topics": ["closures", "module-pattern", "getters"]
+  },
+  {
+    "id": "cal-js-d4-004",
+    "stack": "javascript",
+    "band": 4,
+    "title": "linked list with iterator",
+    "code": "class Node {\n  constructor(value, next = null) {\n    this.value = value;\n    this.next = next;\n  }\n}\n\nclass LinkedList {\n  constructor() {\n    this.head = null;\n  }\n\n  push(value) {\n    this.head = new Node(value, this.head);\n    return this;\n  }\n\n  *[Symbol.iterator]() {\n    let current = this.head;\n    while (current !== null) {\n      yield current.value;\n      current = current.next;\n    }\n  }\n}\n\nconst list = new LinkedList();\nlist.push(3).push(2).push(1);\n\nfor (const val of list) {\n  console.log(val);\n}",
+    "notes": [
+      "Implements a singly linked list with a generator-based Symbol.iterator to enable for-of traversal."
+    ],
+    "topics": ["class", "iterator", "generator", "symbol"]
+  },
+  {
+    "id": "cal-js-d4-005",
+    "stack": "javascript",
+    "band": 4,
+    "title": "debounce utility function",
+    "code": "function debounce(fn, delay) {\n  let timer = null;\n\n  return function debounced(...args) {\n    if (timer !== null) {\n      clearTimeout(timer);\n    }\n    timer = setTimeout(() => {\n      fn.apply(this, args);\n      timer = null;\n    }, delay);\n  };\n}\n\nconst log = debounce((msg) => {\n  console.log(`Debounced: ${msg}`);\n}, 300);\n\nlog(\"first\");\nlog(\"second\");\nlog(\"third\");",
+    "notes": [
+      "Implements a debounce wrapper that delays function execution until a specified period of inactivity has elapsed."
+    ],
+    "topics": ["closures", "timers", "higher-order-functions"]
+  },
+  {
+    "id": "js-async-await",
+    "stack": "javascript",
+    "band": 4,
+    "title": "Async fetch",
+    "code": "export async function getUser(id) {\n  const res = await fetch(`/api/users/${id}`);\n  if (!res.ok) throw new Error(`HTTP ${res.status}`);\n  return await res.json();\n}",
+    "notes": [
+      "Async/await reads like synchronous code.",
+      "Practice template literals and ${} placeholders."
+    ],
+    "topics": ["async", "await", "fetch", "json"]
+  },
+  {
+    "id": "js-class",
+    "stack": "javascript",
+    "band": 4,
+    "title": "ES6 class",
+    "code": "class Timer {\n  constructor(label) {\n    this.label = label;\n    this.start = Date.now();\n  }\n  elapsed() {\n    return Date.now() - this.start;\n  }\n}",
+    "notes": [
+      "Classes group state and behavior together.",
+      "this refers to the current instance inside methods."
+    ],
+    "topics": ["class", "constructor", "methods", "this"]
+  },
+  {
+    "id": "cal-js-d5-001",
+    "stack": "javascript",
+    "band": 5,
+    "title": "async task queue with concurrency",
+    "code": "class TaskQueue {\n  constructor(concurrency = 2) {\n    this.concurrency = concurrency;\n    this.running = 0;\n    this.queue = [];\n  }\n\n  enqueue(task) {\n    return new Promise((resolve, reject) => {\n      this.queue.push({ task, resolve, reject });\n      this.#drain();\n    });\n  }\n\n  async #drain() {\n    while (this.running < this.concurrency && this.queue.length > 0) {\n      const { task, resolve, reject } = this.queue.shift();\n      this.running += 1;\n      try {\n        const result = await task();\n        resolve(result);\n      } catch (err) {\n        reject(err);\n      } finally {\n        this.running -= 1;\n        this.#drain();\n      }\n    }\n  }\n}\n\nconst q = new TaskQueue(2);\nconst delay = (ms) => new Promise((r) => setTimeout(r, ms));\n\nfor (let i = 0; i < 5; i++) {\n  q.enqueue(async () => {\n    await delay(100);\n    console.log(`Task ${i} done`);\n    return i;\n  });\n}",
+    "notes": [
+      "Implements an async task queue that limits concurrent execution to a configurable number of tasks using a private drain method."
+    ],
+    "topics": ["async-await", "class", "concurrency", "private-methods"]
+  },
+  {
+    "id": "cal-js-d5-002",
+    "stack": "javascript",
+    "band": 5,
+    "title": "deep merge objects recursively",
+    "code": "function deepMerge(target, ...sources) {\n  for (const source of sources) {\n    for (const [key, value] of Object.entries(source)) {\n      if (\n        value !== null &&\n        typeof value === \"object\" &&\n        !Array.isArray(value)\n      ) {\n        if (typeof target[key] !== \"object\" || target[key] === null) {\n          target[key] = {};\n        }\n        deepMerge(target[key], value);\n      } else {\n        target[key] = value;\n      }\n    }\n  }\n  return target;\n}\n\nconst defaults = {\n  theme: { color: \"blue\", font: { size: 14, weight: \"normal\" } },\n  debug: false,\n};\n\nconst overrides = {\n  theme: { font: { weight: \"bold\" } },\n  debug: true,\n};\n\nconst config = deepMerge({}, defaults, overrides);\nconsole.log(JSON.stringify(config, null, 2));",
+    "notes": [
+      "Recursively merges multiple source objects into a target, handling nested objects without overwriting sibling keys."
+    ],
+    "topics": ["recursion", "objects", "spread", "type-checking"]
+  },
+  {
+    "id": "cal-js-d5-003",
+    "stack": "javascript",
+    "band": 5,
+    "title": "observable stream with operators",
+    "code": "class Observable {\n  constructor(subscribe) {\n    this._subscribe = subscribe;\n  }\n\n  subscribe(observer) {\n    return this._subscribe(observer);\n  }\n\n  map(fn) {\n    return new Observable((observer) => {\n      return this.subscribe({\n        next(value) {\n          observer.next(fn(value));\n        },\n        error(err) {\n          observer.error(err);\n        },\n        complete() {\n          observer.complete();\n        },\n      });\n    });\n  }\n\n  filter(predicate) {\n    return new Observable((observer) => {\n      return this.subscribe({\n        next(value) {\n          if (predicate(value)) {\n            observer.next(value);\n          }\n        },\n        error(err) {\n          observer.error(err);\n        },\n        complete() {\n          observer.complete();\n        },\n      });\n    });\n  }\n}",
+    "notes": [
+      "Implements a minimal Observable class with map and filter operators that return new Observables by wrapping the subscription chain."
+    ],
+    "topics": ["class", "observer-pattern", "higher-order-functions", "closures"]
+  },
+  {
+    "id": "cal-js-d5-004",
+    "stack": "javascript",
+    "band": 5,
+    "title": "middleware pipeline",
+    "code": "function createPipeline() {\n  const middlewares = [];\n\n  return {\n    use(fn) {\n      middlewares.push(fn);\n      return this;\n    },\n\n    async execute(context) {\n      let index = -1;\n\n      async function dispatch(i) {\n        if (i <= index) {\n          throw new Error(\"next() called multiple times\");\n        }\n        index = i;\n        if (i < middlewares.length) {\n          const fn = middlewares[i];\n          await fn(context, () => dispatch(i + 1));\n        }\n      }\n\n      await dispatch(0);\n      return context;\n    },\n  };\n}\n\nconst pipe = createPipeline();\npipe.use(async (ctx, next) => {\n  ctx.start = Date.now();\n  await next();\n  ctx.elapsed = Date.now() - ctx.start;\n});\npipe.use(async (ctx, next) => {\n  ctx.result = \"processed\";\n  await next();\n});\n\npipe.execute({}).then((ctx) => console.log(ctx));",
+    "notes": [
+      "Builds an async middleware pipeline where each function receives a context and a next callback, similar to Koa-style middleware composition."
+    ],
+    "topics": ["middleware", "async-await", "closures", "pipeline"]
+  },
+  {
+    "id": "cal-js-d5-005",
+    "stack": "javascript",
+    "band": 5,
+    "title": "promise pool parallel limiter",
+    "code": "async function promisePool(tasks, concurrency) {\n  const results = new Array(tasks.length);\n  let nextIndex = 0;\n\n  async function worker() {\n    while (nextIndex < tasks.length) {\n      const index = nextIndex;\n      nextIndex += 1;\n      try {\n        results[index] = await tasks[index]();\n      } catch (err) {\n        results[index] = { error: err.message };\n      }\n    }\n  }\n\n  const workers = [];\n  for (let i = 0; i < Math.min(concurrency, tasks.length); i++) {\n    workers.push(worker());\n  }\n  await Promise.all(workers);\n  return results;\n}\n\nconst tasks = Array.from({ length: 8 }, (_, i) => {\n  return async () => {\n    await new Promise((r) => setTimeout(r, 50));\n    return `result-${i}`;\n  };\n});\n\npromisePool(tasks, 3).then((results) => {\n  console.log(results);\n});",
+    "notes": [
+      "Implements a promise pool that runs async tasks with a fixed concurrency limit using a worker pattern to consume tasks from a shared index."
+    ],
+    "topics": ["async-await", "promise", "concurrency", "worker-pattern"]
+  },
+  {
+    "id": "cal-js-d6-001",
+    "stack": "javascript",
+    "band": 6,
+    "title": "reactive state manager with selectors",
+    "code": "function createStore(initialState) {\n  let state = structuredClone(initialState);\n  const subscribers = new Map();\n  let nextId = 0;\n\n  function getState() {\n    return structuredClone(state);\n  }\n\n  function setState(updater) {\n    const prev = state;\n    state = typeof updater === \"function\"\n      ? updater(structuredClone(prev))\n      : { ...state, ...updater };\n    for (const [, { selector, callback, prev: prevVal }] of subscribers) {\n      const next = selector(state);\n      if (JSON.stringify(next) !== JSON.stringify(prevVal)) {\n        subscribers.get(_).prev = next;\n        callback(next, prevVal);\n      }\n    }\n  }\n\n  function subscribe(selector, callback) {\n    const id = nextId++;\n    const _ = id;\n    subscribers.set(id, {\n      selector,\n      callback,\n      prev: selector(state),\n    });\n    return () => subscribers.delete(id);\n  }\n\n  return { getState, setState, subscribe };\n}",
+    "notes": [
+      "Implements a reactive store with selector-based subscriptions that only notify listeners when their selected slice of state changes."
+    ],
+    "topics": ["state-management", "closures", "map", "selectors", "reactive"]
+  },
+  {
+    "id": "cal-js-d6-002",
+    "stack": "javascript",
+    "band": 6,
+    "title": "proxy based validation schema",
+    "code": "function createSchema(rules) {\n  return {\n    validate(data) {\n      const errors = [];\n      for (const [field, validators] of Object.entries(rules)) {\n        for (const check of validators) {\n          const result = check(data[field], field);\n          if (result !== true) {\n            errors.push({ field, message: result });\n          }\n        }\n      }\n      return { valid: errors.length === 0, errors };\n    },\n\n    wrap(target) {\n      const schema = this;\n      return new Proxy(target, {\n        set(obj, prop, value) {\n          if (rules[prop]) {\n            for (const check of rules[prop]) {\n              const result = check(value, prop);\n              if (result !== true) {\n                throw new TypeError(`${prop}: ${result}`);\n              }\n            }\n          }\n          obj[prop] = value;\n          return true;\n        },\n      });\n    },\n  };\n}\n\nconst required = (val, field) =>\n  val != null && val !== \"\" ? true : `${field} is required`;\nconst minLen = (n) => (val, field) =>\n  typeof val === \"string\" && val.length >= n\n    ? true\n    : `${field} must be at least ${n} chars`;\n\nconst schema = createSchema({\n  name: [required, minLen(2)],\n  email: [required],\n});\n\nconst user = schema.wrap({ name: \"Al\", email: \"a@b.com\" });\nconsole.log(user.name);",
+    "notes": [
+      "Creates a validation schema that can both batch-validate data and wrap objects in a Proxy to enforce constraints on property assignment."
+    ],
+    "topics": ["proxy", "validation", "closures", "higher-order-functions"]
+  },
+  {
+    "id": "cal-js-d6-003",
+    "stack": "javascript",
+    "band": 6,
+    "title": "recursive descent expression parser",
+    "code": "function parse(tokens) {\n  let pos = 0;\n\n  function peek() {\n    return tokens[pos];\n  }\n\n  function consume(expected) {\n    const tok = tokens[pos];\n    if (expected && tok !== expected) {\n      throw new SyntaxError(`Expected ${expected}, got ${tok}`);\n    }\n    pos += 1;\n    return tok;\n  }\n\n  function parseExpr() {\n    let left = parseTerm();\n    while (peek() === \"+\" || peek() === \"-\") {\n      const op = consume();\n      const right = parseTerm();\n      left = { type: \"BinOp\", op, left, right };\n    }\n    return left;\n  }\n\n  function parseTerm() {\n    let left = parsePrimary();\n    while (peek() === \"*\" || peek() === \"/\") {\n      const op = consume();\n      const right = parsePrimary();\n      left = { type: \"BinOp\", op, left, right };\n    }\n    return left;\n  }\n\n  function parsePrimary() {\n    if (peek() === \"(\") {\n      consume(\"(\");\n      const expr = parseExpr();\n      consume(\")\");\n      return expr;\n    }\n    return { type: \"Num\", value: Number(consume()) };\n  }\n\n  return parseExpr();\n}\n\nconst ast = parse([\"(\", \"1\", \"+\", \"2\", \")\", \"*\", \"3\"]);\nconsole.log(JSON.stringify(ast, null, 2));",
+    "notes": [
+      "Implements a recursive descent parser for arithmetic expressions that builds an abstract syntax tree with correct operator precedence."
+    ],
+    "topics": ["parser", "recursion", "ast", "closures"]
+  },
+  {
+    "id": "cal-js-d6-004",
+    "stack": "javascript",
+    "band": 6,
+    "title": "async generator with backpressure",
+    "code": "async function* paginate(fetchPage) {\n  let page = 1;\n  let hasMore = true;\n\n  while (hasMore) {\n    const result = await fetchPage(page);\n    if (result.items.length === 0) {\n      hasMore = false;\n    } else {\n      for (const item of result.items) {\n        yield item;\n      }\n      page += 1;\n      hasMore = result.hasNext;\n    }\n  }\n}\n\nasync function fetchPage(page) {\n  const data = {\n    1: { items: [\"a\", \"b\", \"c\"], hasNext: true },\n    2: { items: [\"d\", \"e\"], hasNext: true },\n    3: { items: [], hasNext: false },\n  };\n  await new Promise((r) => setTimeout(r, 10));\n  return data[page] ?? { items: [], hasNext: false };\n}\n\n(async () => {\n  const gen = paginate(fetchPage);\n  for await (const item of gen) {\n    console.log(item);\n  }\n})();",
+    "notes": [
+      "Uses an async generator to lazily paginate through results one item at a time, only fetching the next page when the consumer is ready."
+    ],
+    "topics": ["async-generator", "for-await-of", "pagination", "backpressure"]
+  },
+  {
+    "id": "cal-js-d6-005",
+    "stack": "javascript",
+    "band": 6,
+    "title": "dependency injection container",
+    "code": "class Container {\n  #registry = new Map();\n  #singletons = new Map();\n\n  register(name, factory, { singleton = false } = {}) {\n    this.#registry.set(name, { factory, singleton });\n    return this;\n  }\n\n  resolve(name) {\n    if (this.#singletons.has(name)) {\n      return this.#singletons.get(name);\n    }\n    const entry = this.#registry.get(name);\n    if (!entry) {\n      throw new Error(`Service \"${name}\" not registered`);\n    }\n    const instance = entry.factory(this);\n    if (entry.singleton) {\n      this.#singletons.set(name, instance);\n    }\n    return instance;\n  }\n\n  has(name) {\n    return this.#registry.has(name);\n  }\n}\n\nconst container = new Container();\n\ncontainer.register(\"config\", () => ({\n  db: \"postgres://localhost/app\",\n  port: 3000,\n}), { singleton: true });\n\ncontainer.register(\"logger\", (c) => {\n  const cfg = c.resolve(\"config\");\n  return {\n    log(msg) {\n      console.log(`[${cfg.port}] ${msg}`);\n    },\n  };\n});\n\nconst logger = container.resolve(\"logger\");\nlogger.log(\"Container ready\");",
+    "notes": [
+      "Implements a dependency injection container with factory registration, lazy singleton support, and recursive dependency resolution."
+    ],
+    "topics": ["dependency-injection", "class", "private-fields", "factory-pattern"]
+  },
+  {
+    "id": "cal-js-d7-001",
+    "stack": "javascript",
+    "band": 7,
+    "title": "virtual dom diff and patch",
+    "code": "function h(tag, props, ...children) {\n  return { tag, props: props ?? {}, children: children.flat() };\n}\n\nfunction diff(oldNode, newNode) {\n  if (typeof oldNode === \"string\" || typeof newNode === \"string\") {\n    if (oldNode !== newNode) {\n      return { type: \"REPLACE\", node: newNode };\n    }\n    return null;\n  }\n  if (oldNode.tag !== newNode.tag) {\n    return { type: \"REPLACE\", node: newNode };\n  }\n  const propPatches = diffProps(oldNode.props, newNode.props);\n  const childPatches = diffChildren(oldNode.children, newNode.children);\n  if (propPatches.length === 0 && childPatches.every((p) => p === null)) {\n    return null;\n  }\n  return { type: \"UPDATE\", propPatches, childPatches };\n}\n\nfunction diffProps(oldProps, newProps) {\n  const patches = [];\n  const allKeys = new Set([\n    ...Object.keys(oldProps),\n    ...Object.keys(newProps),\n  ]);\n  for (const key of allKeys) {\n    if (oldProps[key] !== newProps[key]) {\n      patches.push({\n        key,\n        value: newProps[key] !== undefined ? newProps[key] : null,\n      });\n    }\n  }\n  return patches;\n}\n\nfunction diffChildren(oldChildren, newChildren) {\n  const patches = [];\n  const maxLen = Math.max(oldChildren.length, newChildren.length);\n  for (let i = 0; i < maxLen; i++) {\n    if (i >= oldChildren.length) {\n      patches.push({ type: \"ADD\", node: newChildren[i] });\n    } else if (i >= newChildren.length) {\n      patches.push({ type: \"REMOVE\" });\n    } else {\n      patches.push(diff(oldChildren[i], newChildren[i]));\n    }\n  }\n  return patches;\n}\n\nconst oldTree = h(\"div\", { id: \"app\" },\n  h(\"h1\", null, \"Hello\"),\n  h(\"p\", { class: \"text\" }, \"World\"),\n);\n\nconst newTree = h(\"div\", { id: \"app\" },\n  h(\"h1\", null, \"Hi\"),\n  h(\"p\", { class: \"bold\" }, \"Universe\"),\n  h(\"footer\", null, \"End\"),\n);\n\nconst patches = diff(oldTree, newTree);\nconsole.log(JSON.stringify(patches, null, 2));",
+    "notes": [
+      "Implements a minimal virtual DOM with createElement, recursive tree diffing for nodes, props, and children, producing a patch object describing the changes."
+    ],
+    "topics": ["virtual-dom", "diffing", "recursion", "tree-algorithms"]
+  },
+  {
+    "id": "cal-js-d7-002",
+    "stack": "javascript",
+    "band": 7,
+    "title": "cooperative async scheduler with priorities",
+    "code": "class Scheduler {\n  #queues = { high: [], normal: [], low: [] };\n  #running = false;\n  #concurrency;\n  #active = 0;\n\n  constructor(concurrency = 3) {\n    this.#concurrency = concurrency;\n  }\n\n  schedule(task, priority = \"normal\") {\n    return new Promise((resolve, reject) => {\n      if (!this.#queues[priority]) {\n        throw new Error(`Unknown priority: ${priority}`);\n      }\n      this.#queues[priority].push({\n        task,\n        resolve,\n        reject,\n        enqueued: Date.now(),\n      });\n      this.#flush();\n    });\n  }\n\n  #nextJob() {\n    for (const level of [\"high\", \"normal\", \"low\"]) {\n      if (this.#queues[level].length > 0) {\n        return this.#queues[level].shift();\n      }\n    }\n    return null;\n  }\n\n  async #flush() {\n    while (this.#active < this.#concurrency) {\n      const job = this.#nextJob();\n      if (!job) break;\n      this.#active += 1;\n      (async () => {\n        try {\n          const result = await job.task();\n          job.resolve(result);\n        } catch (err) {\n          job.reject(err);\n        } finally {\n          this.#active -= 1;\n          this.#flush();\n        }\n      })();\n    }\n  }\n\n  get pending() {\n    return Object.values(this.#queues)\n      .reduce((sum, q) => sum + q.length, 0);\n  }\n\n  get activeCount() {\n    return this.#active;\n  }\n}\n\nconst scheduler = new Scheduler(2);\nconst delay = (ms) => new Promise((r) => setTimeout(r, ms));\n\nscheduler.schedule(async () => {\n  await delay(100);\n  console.log(\"high priority done\");\n  return \"high\";\n}, \"high\");\n\nscheduler.schedule(async () => {\n  await delay(50);\n  console.log(\"normal priority done\");\n  return \"normal\";\n}, \"normal\");\n\nscheduler.schedule(async () => {\n  await delay(30);\n  console.log(\"low priority done\");\n  return \"low\";\n}, \"low\");",
+    "notes": [
+      "Implements a cooperative async task scheduler with three priority levels, configurable concurrency, and automatic flushing of the highest-priority queue first."
+    ],
+    "topics": ["scheduler", "async-await", "private-fields", "priority-queue", "concurrency"]
+  },
+  {
+    "id": "cal-js-d7-003",
+    "stack": "javascript",
+    "band": 7,
+    "title": "proxy based reactive computed properties",
+    "code": "function reactive(target) {\n  const deps = new Map();\n  const computed = new Map();\n  let activeEffect = null;\n\n  const handler = {\n    get(obj, prop) {\n      if (computed.has(prop)) {\n        const c = computed.get(prop);\n        if (c.dirty) {\n          const prev = activeEffect;\n          activeEffect = prop;\n          try {\n            c.value = c.fn();\n            c.dirty = false;\n          } finally {\n            activeEffect = prev;\n          }\n        }\n        return c.value;\n      }\n      if (activeEffect !== null) {\n        if (!deps.has(prop)) {\n          deps.set(prop, new Set());\n        }\n        deps.get(prop).add(activeEffect);\n      }\n      return obj[prop];\n    },\n    set(obj, prop, value) {\n      obj[prop] = value;\n      if (deps.has(prop)) {\n        for (const depKey of deps.get(prop)) {\n          if (computed.has(depKey)) {\n            computed.get(depKey).dirty = true;\n          }\n        }\n      }\n      return true;\n    },\n  };\n\n  const proxy = new Proxy(target, handler);\n\n  proxy.$computed = function (name, fn) {\n    computed.set(name, { fn, value: undefined, dirty: true });\n  };\n\n  return proxy;\n}\n\nconst state = reactive({ price: 10, quantity: 5, tax: 0.08 });\n\nstate.$computed(\"subtotal\", () => state.price * state.quantity);\nstate.$computed(\"total\", () => {\n  const sub = state.subtotal;\n  return sub + sub * state.tax;\n});\n\nconsole.log(state.total);\nstate.price = 20;\nconsole.log(state.total);\nstate.quantity = 3;\nconsole.log(state.total);",
+    "notes": [
+      "Builds a reactive system using Proxy that tracks property access during computed evaluation to automatically invalidate cached computed values when dependencies change."
+    ],
+    "topics": ["proxy", "reactive", "computed-properties", "dependency-tracking"]
+  },
+  {
+    "id": "cal-js-d7-004",
+    "stack": "javascript",
+    "band": 7,
+    "title": "finite state machine with guards and actions",
+    "code": "class StateMachine {\n  #current;\n  #config;\n  #context;\n  #listeners = [];\n\n  constructor(config) {\n    this.#config = config;\n    this.#current = config.initial;\n    this.#context = structuredClone(config.context ?? {});\n  }\n\n  get state() {\n    return this.#current;\n  }\n\n  get context() {\n    return structuredClone(this.#context);\n  }\n\n  send(event, payload) {\n    const stateConfig = this.#config.states[this.#current];\n    if (!stateConfig?.on?.[event]) {\n      return this;\n    }\n    const transitions = Array.isArray(stateConfig.on[event])\n      ? stateConfig.on[event]\n      : [stateConfig.on[event]];\n\n    for (const transition of transitions) {\n      const { target, guard, actions } = typeof transition === \"string\"\n        ? { target: transition, guard: null, actions: [] }\n        : transition;\n\n      if (guard) {\n        const guardFn = this.#config.guards?.[guard];\n        if (guardFn && !guardFn(this.#context, { type: event, payload })) {\n          continue;\n        }\n      }\n\n      if (actions) {\n        const actionList = Array.isArray(actions) ? actions : [actions];\n        for (const actionName of actionList) {\n          const actionFn = this.#config.actions?.[actionName];\n          if (actionFn) {\n            actionFn(this.#context, { type: event, payload });\n          }\n        }\n      }\n\n      const prev = this.#current;\n      this.#current = target;\n      for (const fn of this.#listeners) {\n        fn({ from: prev, to: target, event, payload });\n      }\n      return this;\n    }\n    return this;\n  }\n\n  onTransition(fn) {\n    this.#listeners.push(fn);\n    return () => {\n      this.#listeners = this.#listeners.filter((f) => f !== fn);\n    };\n  }\n}\n\nconst machine = new StateMachine({\n  initial: \"idle\",\n  context: { retries: 0, data: null },\n  states: {\n    idle: {\n      on: { FETCH: { target: \"loading\", actions: \"resetRetries\" } },\n    },\n    loading: {\n      on: {\n        SUCCESS: { target: \"done\", actions: \"setData\" },\n        FAILURE: [\n          { target: \"loading\", guard: \"canRetry\", actions: \"incrementRetry\" },\n          { target: \"error\" },\n        ],\n      },\n    },\n    done: { on: { RESET: \"idle\" } },\n    error: { on: { RETRY: \"loading\" } },\n  },\n  guards: {\n    canRetry: (ctx) => ctx.retries < 3,\n  },\n  actions: {\n    resetRetries: (ctx) => { ctx.retries = 0; },\n    incrementRetry: (ctx) => { ctx.retries += 1; },\n    setData: (ctx, evt) => { ctx.data = evt.payload; },\n  },\n});\n\nmachine.onTransition(({ from, to, event }) => {\n  console.log(`${from} -> ${to} [${event}]`);\n});\n\nmachine.send(\"FETCH\");\nmachine.send(\"FAILURE\");\nmachine.send(\"FAILURE\");\nmachine.send(\"FAILURE\");\nmachine.send(\"FAILURE\");\nconsole.log(machine.state);",
+    "notes": [
+      "Implements a finite state machine with guarded transitions, named actions that mutate context, transition listeners, and automatic guard-based fallback handling."
+    ],
+    "topics": ["state-machine", "guards", "actions", "private-fields", "design-patterns"]
+  },
+  {
+    "id": "cal-js-d7-005",
+    "stack": "javascript",
+    "band": 7,
+    "title": "plugin system with lifecycle hooks",
+    "code": "class PluginHost {\n  #plugins = [];\n  #hooks = new Map();\n  #context = {};\n\n  register(plugin) {\n    if (typeof plugin.name !== \"string\") {\n      throw new Error(\"Plugin must have a name\");\n    }\n    if (this.#plugins.some((p) => p.name === plugin.name)) {\n      throw new Error(`Plugin \"${plugin.name}\" already registered`);\n    }\n    this.#plugins.push(plugin);\n    return this;\n  }\n\n  hook(name, fn, { priority = 10 } = {}) {\n    if (!this.#hooks.has(name)) {\n      this.#hooks.set(name, []);\n    }\n    this.#hooks.get(name).push({ fn, priority });\n    this.#hooks.get(name).sort((a, b) => a.priority - b.priority);\n    return this;\n  }\n\n  async runHook(name, data) {\n    const handlers = this.#hooks.get(name) ?? [];\n    let result = data;\n    for (const { fn } of handlers) {\n      const output = await fn(result, this.#context);\n      if (output !== undefined) {\n        result = output;\n      }\n    }\n    return result;\n  }\n\n  async initialize() {\n    for (const plugin of this.#plugins) {\n      if (typeof plugin.setup === \"function\") {\n        await plugin.setup({\n          hook: (name, fn, opts) => this.hook(name, fn, opts),\n          context: this.#context,\n        });\n      }\n    }\n    await this.runHook(\"afterInit\", null);\n  }\n\n  async shutdown() {\n    await this.runHook(\"beforeShutdown\", null);\n    for (const plugin of [...this.#plugins].reverse()) {\n      if (typeof plugin.teardown === \"function\") {\n        await plugin.teardown(this.#context);\n      }\n    }\n    this.#plugins = [];\n    this.#hooks.clear();\n  }\n}\n\nconst host = new PluginHost();\n\nhost.register({\n  name: \"logger\",\n  async setup({ hook, context }) {\n    context.logs = [];\n    hook(\"transform\", async (data, ctx) => {\n      ctx.logs.push(`Processing: ${JSON.stringify(data)}`);\n      return data;\n    }, { priority: 1 });\n    hook(\"afterInit\", async (_, ctx) => {\n      console.log(\"Logger plugin initialized\");\n    });\n  },\n  async teardown(ctx) {\n    console.log(`Total logs: ${ctx.logs.length}`);\n  },\n});\n\nhost.register({\n  name: \"uppercase\",\n  async setup({ hook }) {\n    hook(\"transform\", async (data) => {\n      if (typeof data === \"string\") {\n        return data.toUpperCase();\n      }\n      return data;\n    }, { priority: 5 });\n  },\n});\n\n(async () => {\n  await host.initialize();\n  const result = await host.runHook(\"transform\", \"hello world\");\n  console.log(result);\n  await host.shutdown();\n})();",
+    "notes": [
+      "Implements an async plugin host with prioritized lifecycle hooks, plugin registration, setup and teardown phases, and a waterfall-style hook execution that pipes data through handlers."
+    ],
+    "topics": [
+      "plugin-system",
+      "lifecycle-hooks",
+      "async-await",
+      "private-fields",
+      "design-patterns"
+    ]
+  }
+]
