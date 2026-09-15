@@ -32,6 +32,16 @@ export const MODEL_FORBIDDEN =
   /\b(claude|gpt|chatgpt|opus|sonnet|haiku|gemini|llama|mistral|qwen|grok|kimi|codex|copilot|cursor|openai|anthropic|ollama|deepseek)\b/i;
 
 /**
+ * Ghost's list bars a word on its boundary, so a plural or a verb form of a
+ * barred word slipped past it (the authoring sample kept `scores`). The list
+ * above must stay identical to Ghost's, so the forms are barred here, beside
+ * it, and `lineFault` reads both. Only the forms that still carry the barred
+ * meaning: `a following` and `holds` are ordinary words in a fond line.
+ */
+export const FORM_FORBIDDEN =
+  /\b(lies|lied|facts|scores|scored|scoring|passes|passed|fails|failed|failing|ghosts)\b/i;
+
+/**
  * Every beat, so the loader can require a word for each. The `satisfies`
  * object below is the exhaustiveness check: add a member to `Beat` and this
  * file stops compiling until the beat is listed here and worded in the lever.
@@ -321,7 +331,11 @@ export function lineFault(line: string): string | null {
   if (typeof line !== 'string' || line.trim() === '') return 'empty';
   if (line !== line.trim()) return 'padded';
   if (VOICE_FORBIDDEN.test(line)) return 'forbidden word or digit';
+  if (FORM_FORBIDDEN.test(line)) return 'forbidden word or digit';
   if (MODEL_FORBIDDEN.test(line)) return 'names a tool or a model';
+  // A curly quote or a dash from a writing model is not a key on this
+  // keyboard; the line is refused, never straightened (the gate never fixes).
+  if (/[^\x20-\x7e]/.test(line)) return 'not ascii';
   if (line.includes('!')) return 'yells';
   if (/\b[A-Z]{3,}\b/.test(line)) return 'yells';
   const stops = line.match(/[.?]/g) ?? [];

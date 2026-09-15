@@ -227,6 +227,9 @@ describe('the gate halts', () => {
     expect(lineFault('ship it now. and again')).toBe('more than one sentence');
     expect(lineFault('   ')).toBe('empty');
     expect(lineFault('do it now ')).toBe('padded');
+    expect(lineFault('the scores look great')).toBe('forbidden word or digit');
+    expect(lineFault('it’s live')).toBe('not ascii');
+    expect(lineFault('so — anyway')).toBe('not ascii');
   });
 });
 

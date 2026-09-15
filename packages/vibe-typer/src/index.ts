@@ -35,6 +35,7 @@ export {
   loadPatterns,
   tierContext,
   CORPUS_STACKS,
+  FORM_FORBIDDEN,
   MODEL_FORBIDDEN,
   STACKS,
   VOICE_FORBIDDEN,
