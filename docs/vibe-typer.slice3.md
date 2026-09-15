@@ -280,3 +280,198 @@ before its merge except one, recorded in the C review as not a bypass.
 | Model id      | _pending_                                                                                                                             |
 | Prompt hashes | asks `07a941cf…`, nags `c5b3675a…`, reactions `87de735d…` (per-seat for replies; full hashes in `docs/vibe-typer.author-sample.json`) |
 | Date          | sample 2026-09-15; run _pending_                                                                                                      |
+
+## Sub-slice D, batch one — the logo and the frames
+
+**Branch:** `cabinet/vibe-typer-s3d1`, one commit, not merged. `pnpm verify` and `pnpm build:play` green.
+**Spend:** seven generations of the twelve the Director approved for this batch. The batch he approved was one
+logo and five device frames; no other art was made, and the piece tiles, avatars, milestone cards and backdrop
+stay in later batches on their own approval.
+
+### What was built
+
+```
+apps/cabinets/public/vibe/frames/terminal.png   the five device frames, 960x720 each (480x360 at 2x DPR),
+apps/cabinets/public/vibe/frames/phone.png      dark, empty, one per DEVICE kind. Vite copies public/ whole,
+apps/cabinets/public/vibe/frames/notebook.png   so build:play lands them at site/public/play/vibe/frames/
+apps/cabinets/public/vibe/frames/ledger.png
+apps/cabinets/public/vibe/frames/wires.png
+apps/cabinets/src/vibe-typer.ts                 DeviceKind + DEVICE_KINDS; the frames Map loaded at mount;
+                                                drawPreview draws the image when it is there and drawFrame's
+                                                rectangles until it is
+docs/art/receipts.json                          + the vibe_typer_batch_1 section (route, a pointer to Ghost's
+                                                existing licence block, acceptance, compensators, seven rows)
+.gitignore                                      + docs/art/originals-vibe-1/
+```
+
+Not in this repo: the logo. It goes to `mcp-tool-shop-org/brand` at
+`logos/mcp-arcade-cabinets/vibe-typer-readme.png`, 669x669, beside `ghost-readme.png`, and the coordinator
+commits it there. `packages/vibe-typer/README.md` is lead-owned and was not touched.
+
+### The route
+
+`bfl/flux-2-max` through the official Comfy Cloud MCP (`partner_generate`, the workflow-persist path,
+`Flux2ImageNode`) — the same route as Ghost's brief-1 set and under the same `licence`
+block, which is why the receipts add a section rather than restate the terms: customer-owned Output, commercial use permitted, Output
+never used to train another model, provenance metadata kept.
+
+The reference chain keeps the set on one palette. The logo was generated against the brand's existing
+`ghost-readme.png` (by raw URL), so the two cabinet marks are cousins. The terminal frame took the accepted
+logo as its reference; the other four frames took the terminal. The four went out as one `submit_batch`.
+
+### The prompts, verbatim
+
+**Logo (rejected, seed 7301).**
+
+> In exactly the same chunky flat 16-bit arcade icon style, palette weight and pixel scale as the reference
+> icon: a small blocky computer keyboard seen from a low three-quarter angle, with one single key lit warm
+> amber, and a rounded empty speech bubble floating above it. Warm amber (#e8a04a) and pale cream on a deep
+> navy (#1b2440) ground. Every key is a plain smooth blank block with nothing printed on it. Hard edges, flat
+> colours, no gradients, no photoreal, a soft amber glow on the one lit key only. The speech bubble is
+> completely empty inside. Centred, generous margin, nothing else in frame. No letters, no numbers, no words,
+> no arrows, no symbols, no punctuation, no user interface, no text of any kind anywhere in the image.
+
+**Logo (accepted, seed 7311).**
+
+> In exactly the same chunky flat 16-bit arcade icon style, palette weight and pixel scale as the reference
+> icon: one small blocky computer keyboard seen from a low three-quarter angle, and a rounded empty speech
+> bubble floating above it. Exactly ONE single key on the whole keyboard is lit warm amber (#e8a04a) and
+> glowing, near the middle of the board; every other key is plain pale cream and unlit, a smooth blank block
+> with nothing printed on it. Deep navy (#1b2440) ground. Square composition: the keyboard and the bubble
+> together sit well inside a centred square with wide empty navy margins on the left and the right as well as
+> the top and the bottom, so nothing touches an edge. Hard edges, flat colours, no gradients, no photoreal, a
+> soft amber glow on the one lit key only. The speech bubble is completely empty inside. Nothing else in
+> frame. No letters, no numbers, no words, no arrows, no symbols, no punctuation, no user interface, no text
+> of any kind anywhere in the image.
+
+Every frame prompt opens with the same clause — _In exactly the same chunky flat 16-bit arcade illustration
+style, palette weight and pixel scale as the reference image:_ — and closes with the same one:
+
+> Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no
+> numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the
+> image.
+
+**Terminal (seed 7302).**
+
+> one empty terminal window, drawn perfectly flat and face on, straight at the viewer, no perspective, no
+> tilt, no angle. The window fills the picture, and its screen is one completely empty flat solid near-black
+> (#101018) rectangle covering the whole middle of the image with absolutely nothing inside it: no code, no
+> lines, no cursor, no prompt, no icons, no scanlines, no grid, no glow, no highlight. Only a narrow slate
+> grey (#3a3a4a) bezel and a thin blank title strip carrying three small plain round dots run around the outer
+> edge of the picture, with one small warm amber (#e8a04a) accent on the bezel. The area outside the window is
+> flat near-black (#101018).
+
+**Phone (seed 7303).**
+
+> one empty phone, drawn perfectly flat and face on, straight at the viewer, no perspective, no tilt, no
+> angle. A tall narrow rounded slab standing upright in the exact centre of the picture, running nearly the
+> full height of the image. Its screen is one completely empty flat solid near-black (#101018) rectangle
+> filling almost the whole slab, with absolutely nothing inside it: no icons, no apps, no bars, no clock, no
+> cursor, no glow, no highlight. Only a narrow slate grey (#3a3a4a) body, one small plain blank rounded
+> speaker slot above the screen and one small plain blank rounded bar below it, with one small warm amber
+> (#e8a04a) accent on the body. The area outside the phone is flat near-black (#101018).
+
+**Notebook (seed 7304).**
+
+> one empty open laptop computer, drawn perfectly flat and face on, straight at the screen, no perspective, no
+> tilt, no angle. The open lid fills the picture and its screen is one completely empty flat solid near-black
+> (#101018) rectangle covering the whole middle of the image, with absolutely nothing inside it: no code, no
+> windows, no icons, no cursor, no glow, no highlight. Only a narrow slate grey (#3a3a4a) bezel around the
+> screen and a plain slate base strip lying along the bottom edge of the picture below the lid, with one small
+> warm amber (#e8a04a) accent. The area outside the laptop is flat near-black (#101018).
+
+**Ledger (seed 7305).**
+
+> one empty dark ledger book, drawn perfectly flat and face on, seen straight from directly above, no
+> perspective, no tilt, no angle. The book fills the picture and its open page is one completely empty flat
+> solid near-black (#101018) rectangle covering the whole middle of the image, with absolutely nothing on it:
+> no ruled lines, no columns, no grid, no writing, no figures, no glow, no highlight. Only a narrow slate grey
+> (#3a3a4a) cover edge around the page and a plain banded binding strip lying along the top edge of the
+> picture, with one small warm amber (#e8a04a) accent on the binding. The area outside the book is flat
+> near-black (#101018).
+
+**Wires (seed 7306).**
+
+> one empty wiring diagram panel, drawn perfectly flat and face on, no perspective, no tilt, no angle. Four
+> small plain blank rounded nodes in muted teal (#468080) sit close to the four corners of the picture, joined
+> by thin straight teal lines that run only around the outer margin, hugging the edges of the image. The whole
+> middle of the picture is one completely empty flat solid near-black (#101018) rectangle with absolutely
+> nothing in it: no wires crossing it, no nodes, no boxes, no dots, no glow, no highlight. One small warm
+> amber (#e8a04a) accent on one corner node. The ground everywhere is flat near-black (#101018).
+
+### Per image
+
+| Image    | Seed | Verdict      | Glyph score | What it is, and why                                                                                                                                                              |
+| -------- | ---- | ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| logo     | 7301 | **rejected** | 0.0000017   | Four amber keys lit across the board instead of one, and the board too wide to survive a centered square crop. Not committed anywhere; the Comfy library keeps the job.          |
+| logo     | 7311 | accepted     | 0.0000228   | The re-roll, and the better of the two: wide navy margins, a cream board, an empty cream bubble, one amber glow at the center. Two adjacent caps carry the glow, not one.        |
+| terminal | 7302 | accepted     | 0.0001      | A window face on: slate bezel, a title strip with three round dots and three blank dashes, an amber square, a large flat black screen. The dashes are rectangles, not glyphs.    |
+| phone    | 7303 | accepted     | 0.0000149   | An upright slab: blank speaker slot above, blank bar below, two amber side buttons, a tall flat black screen.                                                                    |
+| notebook | 7304 | accepted     | 0.0001      | An open laptop straight at the lid: one camera dot, a base strip with an amber pad, a large flat black screen.                                                                   |
+| ledger   | 7305 | accepted     | 0.0001      | A spiral-bound pad from above: pale cover edge, wire binding with an amber clip, a flat black page. A pad rather than an account book, kept — it is the one device with a spine. |
+| wires    | 7306 | accepted     | 0.0000192   | Four teal nodes near the corners on thin lines that hug the edges, one amber node, an empty middle. No body at all, which is right for an integration stack.                     |
+
+Glyph scores are `ai-eyes image_contains` on "text, letters, numbers or written words", threshold 0.02. Every
+image passed on the first look. The logo's two amber caps were checked again at 4x: the pale rectangle on each
+is a flat blank highlight, not a legend.
+
+No frame needed a re-roll, so the spend stopped at seven: the logo, its re-roll, the terminal, and the batch of
+four.
+
+### The fit — why five frames cost five generations
+
+The shell packs its blocks into `frameBox()`, and the brief asks the device's empty interior to be at least
+that large at 2x. Flux drew every device a little small for its box, mostly because a title bar or a binding
+eats from the top. Rather than re-roll five images at a cost, each picture is fitted once, on this side, with
+no credits: find the dark region the device's chrome encloses (flood fill from the picture center), scale the
+whole picture uniformly until that region is at least as large as the box in both axes, translate so the two
+are concentric, and draw it onto a 960x720 ground of `#101018` — the same color the shell paints anyway, so
+anything that falls short of an edge is invisible. Per-image scale and offset are in the receipts.
+
+Measured after the fit, inside each packing box: mean luma 0.13 to 1.04 out of 255, and no pixel above 80
+except 0.56 per cent of the wires box, where one amber node sits just inside the left edge. The boxes are flat
+and dark, which is what the blocks need.
+
+### The asset layer, and the fallback rule
+
+`drawPreview` now draws a painted frame when one is loaded and `drawFrame`'s rectangles when one is not. The
+five images load at mount, once, as plain `Image` elements off
+`import.meta.env.BASE_URL + 'vibe/frames/<kind>.png'`; `load` puts the image in a Map, `error` takes it out.
+Nothing ever waits on a load: the first frame of the first level draws on rectangles and swaps to the painting
+when it arrives, which is the same rule Ghost's sprites follow. A Pages build without `vibe/frames/` still
+plays, and jsdom — where no `Image` is ever handed a file — takes the rectangle path, so the mount test needed
+no change and did not get one.
+
+`frameBox()` is untouched, so the packing is identical either way: the art changed what is behind the blocks,
+never where they land.
+
+### Decisions
+
+1. **The fit instead of re-rolls.** Spend is the scarce thing; geometry is free and exact. Five re-rolls
+   chasing a proportion the model will only approximate would have cost most of the batch and still not
+   guaranteed the box. The fit guarantees it, is deterministic, and is recorded per image.
+2. **Two lit caps on the logo, kept.** The brief says one. The first draft lit four and framed too wide; the
+   re-roll lit two adjacent caps in one glow and framed square. The rule for a failed re-roll is to keep the
+   better of the two and say so, and at the width a README renders a logo the two caps read as one lit spot.
+3. **The ledger is a spiral pad.** It came back as a bound pad rather than an accounting book. Kept, because
+   it is the only device in the set with a spine, so it never reads as the laptop, and because the fallback
+   rectangles for `ledger` are already a banded strip along the top.
+4. **The frames are flat and face on, not perspective.** A device seen at an angle cannot hold a rectangular
+   packing area. Every prompt says so three ways.
+5. **Near-black outside the device as well as inside.** The ground matches `#101018`, which is what the canvas
+   is cleared to, so the fit's fill is invisible and a frame that does not reach an edge simply ends.
+6. **The logo went to the brand repo, not to this one.** Ghost's page references its mark by raw URL from
+   `mcp-tool-shop-org/brand`; the Vibe Typer mark sits beside it. The lead owns
+   `packages/vibe-typer/README.md`; this branch does not touch it.
+7. **No other art.** The batch was one logo and five frames. Piece tiles, avatars, milestone cards and the
+   backdrop are later batches on their own approval, and nothing was made while we were in there.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Generation is an irreversible spend, so the compensators are named in
+`docs/art/receipts.json → vibe_typer_batch_1.compensators` with an owner each: nothing enters the repo until it
+is accepted, so a rejected image is a receipt row and a Comfy library entry and nothing else (the rejected logo
+is neither in `apps/`, `packages/` nor the brand repo); and
+`git rm apps/cabinets/public/vibe/frames/<kind>.png` returns the preview to the rectangles with no other
+change, because `drawFrame` is still the fallback. Every generation, accepted or rejected, is a row with its
+job id, seed and prompt, so the spend is auditable at seven of twelve. No skip.

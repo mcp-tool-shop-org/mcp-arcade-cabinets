@@ -10,6 +10,9 @@ __pycache__/
 # 1024 originals for a sprite batch; the cabinet ships 128 px downscales
 docs/art/originals-2/
 
+# 1024 originals for Vibe Typer's first art batch; the cabinet ships the fits
+docs/art/originals-vibe-1/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/

@@ -154,7 +154,9 @@ const PALETTES: Record<string, string[]> = {
   integration: ['#2a5a5a', '#468080', '#1c4040', '#6fa5a5'],
 };
 
-const DEVICE: Record<string, 'phone' | 'terminal' | 'notebook' | 'ledger' | 'wires'> = {
+type DeviceKind = 'phone' | 'terminal' | 'notebook' | 'ledger' | 'wires';
+
+const DEVICE: Record<string, DeviceKind> = {
   bash: 'terminal',
   csharp: 'phone',
   javascript: 'phone',
@@ -163,6 +165,9 @@ const DEVICE: Record<string, 'phone' | 'terminal' | 'notebook' | 'ledger' | 'wir
   java: 'notebook',
   integration: 'wires',
 };
+
+/** One painted frame a device kind, under `vibe/frames/<kind>.png` at 960x720. */
+const DEVICE_KINDS: DeviceKind[] = ['terminal', 'phone', 'notebook', 'ledger', 'wires'];
 
 /** The tiers, in words. Hardcore comes from the selector only (G25, G26). */
 export const TIER_WORDS: { tier: Tier; word: string }[] = [
@@ -508,6 +513,20 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   // ——— the state the shell keeps ————————————————————————————————————————————
   const ctx2d = canvas.getContext('2d');
+  // The painted device frames. A kind whose file is missing, slow, or broken
+  // draws as `drawFrame`'s rectangles instead, so the game never waits on an
+  // image and a Pages build without `vibe/frames/` still plays. Nothing here
+  // runs in jsdom, where `Image` is never handed a loaded file.
+  const frames = new Map<DeviceKind, HTMLImageElement>();
+  if (typeof Image !== 'undefined') {
+    for (const kind of DEVICE_KINDS) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.addEventListener('load', () => frames.set(kind, img));
+      img.addEventListener('error', () => frames.delete(kind));
+      img.src = `${import.meta.env.BASE_URL}vibe/frames/${kind}.png`;
+    }
+  }
   const queue: RunInput[] = [];
   const chat: ChatItem[] = [];
   let chatAt = 0;
@@ -725,7 +744,11 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     const plan = planOf(state);
     const kind = DEVICE[plan.stack] ?? 'terminal';
     const box = frameBox(kind);
-    drawFrame(c, kind, box);
+    const art = frames.get(kind);
+    // The painted frame when it is there, the rectangles until it is. Either
+    // way `box` stays the packing area, so the blocks land in the same place.
+    if (art) c.drawImage(art, 0, 0, PREVIEW_W, PREVIEW_H);
+    else drawFrame(c, kind, box);
     const palette = PALETTES[plan.stack] ?? PALETTES.bash!;
     const layout = packPieces(
       pieces.map((p) => p.size),
