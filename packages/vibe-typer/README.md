@@ -1,5 +1,9 @@
 # Vibe Typer
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/vibe-typer-readme.png" alt="Vibe Typer" width="240" />
+</p>
+
 The cabinet's own page. The repo entrance is the [root README](../../README.md); the manual is the [handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/vibe-typer/); the npm page is [`packages/launcher/README.md`](../launcher/README.md).
 
 <p align="center">
