@@ -26,13 +26,17 @@
 | Pages deploy carrying the new cabinet              | Revert the merge; `pages.yml` redeploys on push       | `/play/` serves Ghost alone            | Claude |
 | Slice branch merge                                 | `git revert -m 1 <merge-sha> && git push origin main` | `main` as before the merge             | Claude |
 
-## The brief (the Director, 2026-09-15)
+## The brief, as decisions (the Director, 2026-09-15)
 
-> The user is a lovable vibe coder whose requests are absurd ("make it more blockchain", "add AI to the button", "like Uber but for ducks"), the agent is a gleeful overachiever, and the payoff for typing the code is spectacle. You finish the snippet and the thing builds on screen, the deploy fires, the confetti and the meme reaction land, the score rolls up with a multiplier. Difficulty climbs as the requests get more unhinged and the code gets longer. Nothing yells at you. Failure is a funny "hmm, that's not it" and a retry, not a loss.
->
-> Tone: gleeful and absurd (the human is comically absurd and the AI agent is hard-working, sycophantic and lovable). A real arcade scoreboard with combos and multipliers, whose points correlate with what's being built. Payoff is that something is built. Levels with an endless option. There should be a context timer, as that's a needed component and it's clever. Just needs to be more joyful than painful. With a painful hardcore mode for the skilled.
+The Director set the game's frame in conversation; it is recorded here as decisions with their reasons, not as his words.
 
-Two earlier drafts were refused for the record: one carried Ghost's grammar with a keyboard (refused as "the same game but typing"), one built its tension from a nagging user, shipped bugs and compaction (refused as "stressful, not fun"). The lock below is built from the brief above, not from either draft.
+- **Tone: gleeful and absurd.** The user is a comically absurd vibe coder whose requests escalate (more blockchain, add AI to the button, a rideshare for ducks); the agent is hard-working, sycophantic and lovable. He chose this over a deadpan register because the joke is on a situation every developer shares, and it must stay fond.
+- **A real arcade scoreboard**, with combos and multipliers, whose points correlate with what is being built. He chose visible numbers because reward escalation is what an arcade runs on; the no-numbers rule is Ghost's lock, not the arcade's.
+- **The payoff is that something is built.** Finishing the code makes the product assemble on screen and deploy, with spectacle.
+- **Difficulty climbs** as the requests get more unhinged and the code gets longer.
+- **Nothing yells.** Failure is a funny miss and a retry, never a loss. Two earlier drafts were refused: one carried Ghost's grammar with a keyboard; one built its tension from a nagging user, shipped bugs and compaction as loss, and read as stressful rather than fun.
+- **Levels with an endless option.**
+- **A context timer**, kept because it is a clever and needed component, made joyful rather than painful in the ordinary tiers, with a painful hardcore mode for the skilled.
 
 ## Research grounding
 
