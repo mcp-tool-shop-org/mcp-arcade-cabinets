@@ -19,9 +19,13 @@ import {
 
 import { DIGIT, NAMES } from '@mcp-arcade-cabinets/cabinet-server/src/browser';
 
+import { CARD_ASPECT } from '../src/typer-cards';
 import { DEFAULT_MUSIC, isMusicMode } from '../src/typer-audio';
 import {
+  CARD_W,
   FONT_SIZES,
+  PREVIEW_H,
+  PREVIEW_W,
   STACK_WORDS,
   mountVibeTyper,
   readVibePrefs,
@@ -53,8 +57,20 @@ function canvasStub(): CanvasRenderingContext2D {
   }) as unknown as CanvasRenderingContext2D;
 }
 
-/** The same stub, with a note of every method the field called on it. */
-function recordingCanvas(calls: string[]): CanvasRenderingContext2D {
+interface Drawn {
+  w: number;
+  h: number;
+  x: number;
+  y: number;
+}
+
+/**
+ * The same stub, with a note of every method the field called on it, and —
+ * when a second list is handed in — the geometry of every `drawImage`. The
+ * preview draws several pictures at several sizes, so the width is what says
+ * which one a call was.
+ */
+function recordingCanvas(calls: string[], drawn?: Drawn[]): CanvasRenderingContext2D {
   const target: Record<string, unknown> = {
     fillStyle: '',
     strokeStyle: '',
@@ -67,6 +83,14 @@ function recordingCanvas(calls: string[]): CanvasRenderingContext2D {
       if (prop in obj) return obj[prop];
       return (...args: unknown[]) => {
         calls.push(prop);
+        if (prop === 'drawImage' && drawn && args.length >= 5) {
+          drawn.push({
+            x: Number(args[1]),
+            y: Number(args[2]),
+            w: Number(args[3]),
+            h: Number(args[4]),
+          });
+        }
         return args.length === 0 ? undefined : undefined;
       };
     },
@@ -137,6 +161,103 @@ function press(key: string): void {
 
 function run(mount: VibeMount, steps: number): void {
   for (let i = 0; i < steps; i++) mount.tick(STEP);
+}
+
+/** The editor draws a space as this, so the page hands one back rather than ' '. */
+const NBSP = String.fromCharCode(0xa0);
+
+/** The target the editor is showing, read off the page rather than the sim. */
+function liveTarget(): string {
+  const live = root.querySelector('.vibe-live');
+  if (!live) return '';
+  return (
+    [...live.children]
+      .filter((node) => !node.classList.contains('vibe-caret'))
+      .map((node) => node.textContent ?? '')
+      .join('')
+      // The editor draws a space as a non-breaking one so a run of them keeps
+      // its width; the key the sim wants back is the ordinary space.
+      .split(NBSP)
+      .join(' ')
+  );
+}
+
+/**
+ * Play whole lines, whatever the field puts up, until the board toasts a
+ * milestone. Reading the target off the page rather than out of the plan is
+ * what lets this walk past a creep or a check-in without knowing they came.
+ */
+function playToMilestone(m: VibeMount, cap = 4000): string {
+  const toast = root.querySelector('.vibe-toast') as HTMLElement;
+  let target = '';
+  for (let i = 0; i < cap; i++) {
+    if ((toast.textContent ?? '') !== '') return toast.textContent ?? '';
+    const next = liveTarget();
+    if (next === '' || next === target) {
+      m.tick(STEP);
+      continue;
+    }
+    target = next;
+    for (const ch of next) {
+      press(ch);
+      m.tick(STEP);
+    }
+    press('Enter');
+    m.tick(STEP);
+    m.tick(STEP);
+  }
+  return toast.textContent ?? '';
+}
+
+/** Play whole lines until the level ends and the standup is up. */
+function playToStandup(m: VibeMount, cap = 4000): boolean {
+  let target = '';
+  for (let i = 0; i < cap; i++) {
+    if (root.querySelector('.vibe-standup')) return true;
+    const next = liveTarget();
+    if (next === '' || next === target) {
+      m.tick(STEP);
+      continue;
+    }
+    target = next;
+    for (const ch of next) {
+      press(ch);
+      m.tick(STEP);
+    }
+    press('Enter');
+    m.tick(STEP);
+    m.tick(STEP);
+  }
+  return false;
+}
+
+/**
+ * Make every `Image` the field builds report itself loaded the moment its
+ * `src` is set. It stays a real `HTMLImageElement`, so the two faces still
+ * append to the chat header as elements.
+ */
+function loadingImages(): { restore: () => void; made: HTMLImageElement[] } {
+  const proto = Image.prototype as unknown as object;
+  const was = Object.getOwnPropertyDescriptor(proto, 'src');
+  const made: HTMLImageElement[] = [];
+  Object.defineProperty(proto, 'src', {
+    configurable: true,
+    get(this: HTMLImageElement) {
+      return this.getAttribute('src') ?? '';
+    },
+    set(this: HTMLImageElement, value: string) {
+      this.setAttribute('src', value);
+      made.push(this);
+      this.dispatchEvent(new Event('load'));
+    },
+  });
+  return {
+    made,
+    restore: () => {
+      if (was) Object.defineProperty(proto, 'src', was);
+      else delete (proto as Record<string, unknown>).src;
+    },
+  };
 }
 
 let mount: VibeMount | null = null;
@@ -287,6 +408,148 @@ describe('the field, mounted', () => {
     expect(head.querySelectorAll('img')).toHaveLength(0);
     expect(head.textContent).toBe(words);
     expect([...head.children].map((node) => node.tagName)).toEqual(['SPAN', 'SPAN', 'SPAN']);
+  });
+
+  it('draws the milestone card over the preview and leaves the toast a plain word', () => {
+    // jsdom hands an `Image` no file, so nothing would ever load and the
+    // preview would always take the word-only path. This subclass is a real
+    // `HTMLImageElement` — it still appends to the header like one — whose
+    // `src` setter fires `load`, which is the one thing a browser does here
+    // and jsdom does not.
+    const calls: string[] = [];
+    const drawn: Drawn[] = [];
+    HTMLCanvasElement.prototype.getContext = vi.fn(() =>
+      recordingCanvas(calls, drawn),
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    const loading = loadingImages();
+    try {
+      mount = mountVibeTyper(root, {
+        tier: 0,
+        endless: true,
+        seed: 1,
+        agentName: 'Sprocket',
+        theme: 'mechanical',
+        integration: [],
+        onExit: () => undefined,
+        startAudio: false,
+      });
+      const toast = root.querySelector('.vibe-toast') as HTMLElement;
+      const word = playToMilestone(mount);
+      // The board's toast is a status line and nothing else: the lever's own
+      // milestone name, as text, in the live region, with no picture on it.
+      expect(DEFAULT_PATTERNS.score.milestones.map((m) => m.name)).toContain(word);
+      expect(toast.textContent).toBe(word);
+      expect(toast.style.backgroundImage).toBe('');
+      expect(toast.classList.contains('carded')).toBe(false);
+      expect(toast.querySelector('img')).toBeNull();
+      expect(toast.getAttribute('role')).toBe('status');
+      expect(toast.getAttribute('aria-live')).toBe('polite');
+
+      // And the card is on the preview, at the width the Director set, at the
+      // aspect the cut writes, centered on both axes.
+      const card = drawn.filter((d) => d.w === CARD_W);
+      expect(card.length).toBeGreaterThan(0);
+      const one = card[0]!;
+      expect(one.h).toBeCloseTo(CARD_W / CARD_ASPECT, 5);
+      expect(one.x).toBeCloseTo((PREVIEW_W - CARD_W) / 2, 5);
+      expect(one.y).toBeCloseTo((PREVIEW_H - CARD_W / CARD_ASPECT) / 2, 5);
+      // The word is drawn over it too, so the picture never has to carry it.
+      expect(calls).toContain('fillText');
+
+      // Both go together when the toast's own clock runs out: the word is
+      // cleared and the card stops being drawn on the same frame, because
+      // they share one clock.
+      run(mount, Math.ceil(2.5 / STEP));
+      expect(toast.textContent).toBe('');
+      const after = drawn.length;
+      run(mount, 10);
+      expect(drawn.slice(after).filter((d) => d.w === CARD_W)).toHaveLength(0);
+
+      // A picture that resolves after the field has gone changes nothing.
+      // Four files are asked for the moment the field is built, so a player
+      // who leaves before they land would otherwise have a handler writing
+      // into a Map that belongs to a field nobody is looking at. The handlers
+      // take the mount's own `left` flag, the same guard the voice's probes
+      // take.
+      //
+      // The `error` half is what this fires, and deliberately: the `load`
+      // half already ran during the play, so re-firing it would write the
+      // same four entries back and prove nothing. An unguarded `error` would
+      // empty the Map, so this is the assertion that fails if the guard goes.
+      const late = loading.made.filter((img) =>
+        (img.getAttribute('src') ?? '').includes('vibe/cards/'),
+      );
+      expect(late).toHaveLength(4);
+      expect(mount.debug().cards).toBe(4);
+      const frozen = root.innerHTML;
+      const drewBefore = drawn.length;
+      mount.unmount();
+      for (const img of late) img.dispatchEvent(new Event('error'));
+      mount.tick(STEP);
+      expect(mount.debug().cards).toBe(4);
+      expect(root.innerHTML).toBe(frozen);
+      expect(drawn.length).toBe(drewBefore);
+      mount = null;
+    } finally {
+      loading.restore();
+    }
+  });
+
+  it('shows the milestone word alone when no card ever loads', () => {
+    // The fallback rule, on the path jsdom takes by itself: no file arrives,
+    // so the preview draws no card and the word does the whole job. This is
+    // the field exactly as it was before this batch.
+    const calls: string[] = [];
+    const drawn: Drawn[] = [];
+    HTMLCanvasElement.prototype.getContext = vi.fn(() =>
+      recordingCanvas(calls, drawn),
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: true,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    const toast = root.querySelector('.vibe-toast') as HTMLElement;
+    const word = playToMilestone(mount);
+    expect(DEFAULT_PATTERNS.score.milestones.map((m) => m.name)).toContain(word);
+    expect(toast.textContent).toBe(word);
+    expect(toast.style.backgroundImage).toBe('');
+    expect(toast.classList.contains('carded')).toBe(false);
+    expect(drawn).toHaveLength(0);
+    expect(calls).not.toContain('drawImage');
+  });
+
+  it('lays the deploy band down as the flat bar, because no ribbon loads here', () => {
+    // The ribbon is drawn with `drawImage` and the flat bar with `fillRect`
+    // plus `fillText`. jsdom loads no file, so the preview must take the bar
+    // path — the same fallback rule the tiles and the faces follow, on the
+    // one piece of the field that was already drawn before this batch.
+    const calls: string[] = [];
+    HTMLCanvasElement.prototype.getContext = vi.fn(() =>
+      recordingCanvas(calls),
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    // Play the level out. It ships, which is what puts the deploy band down.
+    expect(playToStandup(mount)).toBe(true);
+    expect(standupLines()[1]).toBe('the level shipped');
+    expect(calls).toContain('fillRect');
+    expect(calls).toContain('fillText');
+    expect(calls).not.toContain('drawImage');
   });
 
   it('shows the scoreboard and nothing that counts the typist', () => {
@@ -922,6 +1185,8 @@ describe('the endless seat, mounted', () => {
       accepted: 0,
       refused: 0,
       music: null,
+      // jsdom hands an `Image` no file, so the card preload has nothing.
+      cards: 0,
     });
     expect(root.querySelector('[data-vibe-seat]')).toBeNull();
   });

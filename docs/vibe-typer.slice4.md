@@ -1833,3 +1833,478 @@ whose assertion did not carry its own claim.
    it adds the typing cabinet's four lever names and `the ask` is a beat word on this field. The preset is kept
    as its own assertion, because it is a lever's value and is in no list. `DIGIT`, `NAMES` and `VIBE_NAMES` are
    now exported from both barrels so a shell test can hold itself to the same rule the gate holds a line to.
+
+## Sub-slice B, batch three — the milestone cards and the deploy ribbon
+
+**Branch:** `cabinet/vibe-typer-s4b3`, one commit, not merged, not pushed, nothing published. Rebased onto
+`940a5f5` after sub-slice C landed; the two conflicts were both "each side appended" — the mount test's
+imports and this document's sections — and the decisions below are renumbered to follow C's last, 74.
+`pnpm verify`, `pnpm build:play` and `pnpm build:launcher` (both packages) green; `npm pack --dry-run --json`
+on both, measured against a clean build of `main`.
+
+**Spend:** thirteen generations that ran, plus one submit refused before it ran. Four are installed. The
+Director opened the count for this batch as for the two before it, because the cards and the ribbon are the
+moments the game celebrates.
+
+Eight of the thirteen went on the seed card, and seven of those eight lost the same fight twice over. The
+brief asks for a 3:1 banner; the two batches before this one had recorded that the node renders 4:3 whatever
+aspect is asked for; so the first six takes tried to get a 3:1 picture out of a 4:3 frame, either by asking
+for a banner that would survive a crop or by asking for a motif small enough to sit inside one. Neither
+landed, in six generations, because neither is a thing a change list can move. The seventh take stopped
+asking and changed the canvas instead, and the three images after it cost one, two and two.
+
+No other art was made. The backdrop stays in batch four on its own approval.
+
+### What was built
+
+```
+apps/cabinets/public/vibe/cards/seed.png       480x160 RGBA opaque, 35,005 B.
+apps/cabinets/public/vibe/cards/series-a.png   480x160 RGBA opaque, 42,832 B.
+apps/cabinets/public/vibe/cards/unicorn.png    480x160 RGBA opaque, 51,572 B.
+apps/cabinets/public/vibe/cards/deployed.png   640x80 RGBA, ground keyed away, 13,591 B.
+apps/cabinets/scripts/cut-banner.mjs           the cut: one picture in, one banner out at an exact size.
+                                               No dependency; the PNG codec, the ground, the two key
+                                               thresholds and the ink box are imported from
+                                               slice-tiles.mjs and cut-avatar.mjs, not copied.
+apps/cabinets/scripts/cut-banner.d.mts         its types, so the test that pins the aspect math is TS.
+apps/cabinets/scripts/slice-tiles.mjs          KEY_LO and KEY_HI gain an `export`. Nothing else moves.
+apps/cabinets/scripts/slice-tiles.d.mts        + those two.
+apps/cabinets/src/typer-cards.ts               CARD_SLUGS, DEPLOY_SLUG, cardSlugOf — the one table —
+                                               and CARD_ASPECT and RIBBON_ASPECT, the two shapes the
+                                               preview sizes its pictures from.
+apps/cabinets/src/vibe-typer.ts                the four pictures load at the mount; the toast takes a card
+                                               behind its word; drawPreview lays the ribbon down in place
+                                               of the flat bar.
+apps/cabinets/index.html                       untouched. The card is drawn on the canvas, so this
+                                               batch adds no CSS at all and the file is byte-identical
+                                               to main — which is why Ghost's tarball does not move.
+apps/cabinets/test/banner-cut.test.ts          13 tests: the box sources, the aspect fit both ways round,
+                                               the clamp, the two alphas, determinism, the round trip and
+                                               the flat-field refusal.
+apps/cabinets/test/typer-cards.test.ts         7 tests: the table against the shipped lever, both
+                                               ways, and the four installed files against the two
+                                               aspect constants the preview draws from.
+apps/cabinets/test/typer-mount.test.ts         + 3: the card drawn over the preview with the toast
+                                               left a plain word, the word-only path when nothing
+                                               loads, and the deploy band taking the flat-bar path.
+                                               The first of the three also fires the preload's
+                                               handlers after unmount and requires nothing to move.
+docs/art/receipts.json                         + vibe_typer_batch_4: route, the `licence` pointer,
+                                               acceptance, compensators, 18 rows (14 generations or
+                                               submits, 4 installed).
+.gitignore                                     + docs/art/originals-vibe-4/
+```
+
+### The route, and the thing the last two batches had wrong
+
+`bfl/flux-2-max` through the official Comfy Cloud MCP (`partner_generate`, the workflow-persist path,
+`Flux2ImageNode`) — the same route, and under the same `licence` block, as the three batches before this one.
+`submit_batch` was not tried; batch one established that its `medias[]` takes a public URL or an uploaded
+name and not a Comfy output by `prompt_id`, and every generation here chains from a `prompt_id`.
+
+**The node honors `params.width` and `params.height`.** Batch one asked for `2:1` and batch two for `1:1`
+through the tool's own top-level `aspect_ratio`, both came back 1024x768, and both batches wrote that up as
+"the node renders 4:3 whatever aspect is asked for". That is not what is happening: the top-level
+`aspect_ratio` does not reach `Flux2ImageNode`, and `params.width` / `params.height` do, exactly, within
+256..2048 on each side in steps of 32. The bounds are not a guess either — the ribbon was first submitted at
+1280x160 and the node refused it **before it ran**, naming its own config: `Value 160 smaller than min of
+256`, `model.height`, `min 256, max 2048, step 32`. That refusal cost nothing and is a receipt row.
+
+So the cards are generated at 1440x480, an exact 3x downscale to 480x160, and the ribbon at 2048x256, an
+exact 3.2x downscale to 640x80. Nothing in this batch is cropped through its own art.
+
+This is the batch's most portable finding and it is why the seed card cost eight generations rather than two.
+
+### The chain
+
+| Generation    | Reference                     | Why                                                              |
+| ------------- | ----------------------------- | ---------------------------------------------------------------- |
+| seed 7601     | the accepted bash tile sheet  | so the cards sit on the tiles' palette weight and pixel scale    |
+| seed 7602     | seed 7601                     | a three-item change list                                         |
+| seed 7603     | seed 7601                     | a four-item list against the first take, not the failed second   |
+| seed 7604     | the accepted bash tile sheet  | a fresh draw: the composition changed to a full-bleed card       |
+| seed 7605     | seed 7604                     | a three-item change list                                         |
+| seed 7606     | seed 7605                     | a three-item change list                                         |
+| seed 7607     | seed 7606                     | palette and scale only; the canvas changed, so the prompt is new |
+| seed 7608     | seed 7607                     | a two-item change list, on color alone                           |
+| series A 7609 | the accepted seed card (7607) | a fresh draw: a change list cannot turn a plant into a rocket    |
+| unicorn 7610  | the accepted seed card (7607) | a fresh draw, same reason                                        |
+| ribbon 7611   | the accepted seed card (7607) | palette and scale; the subject is new                            |
+| unicorn 7612  | unicorn 7610                  | a two-item change list                                           |
+| ribbon 7613   | ribbon 7611                   | a two-item change list                                           |
+
+Batch two's finding held again, with one correction on its edge. A change list against a reference moves the
+named details and leaves the rest pixel for pixel: both of the re-rolls that landed here (unicorn 7612,
+ribbon 7613) did exactly that, on two items each. What a change list cannot move is **the shape of the
+picture**. Six of them asked, in six different wordings, for the drawing to be smaller or the banner to be
+shorter, and not one of them moved it. A change list edits what is drawn; it does not edit the canvas.
+
+### The prompts, verbatim
+
+All thirteen open with the style clause the tiles and the avatars used, name every color by name and hex,
+and close with batch one's closing clause: "Hard edges, flat colors, no gradients, no reflections, no noise,
+no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels,
+no text of any kind anywhere in the image." Every one of them also bans the frame by name (batch two's
+decision 48). Every prompt is in `docs/art/receipts.json` in full, on its own row, with the job that ran it.
+American English throughout, checked before sending: batch two's `gray` is not repeated here.
+
+**The seed card, take seven**, the one that ships and the reference for the other three:
+
+> In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the
+> reference image, and with exactly the same potted seedling drawn the same way: one wide landscape card that
+> fills the whole picture, corner to corner. The entire background of the picture, every part of it, is one
+> unbroken perfectly flat deep navy (#1b2440) field — exactly the same shade in all four corners and along
+> all four edges, with no vignette, no darker edges, no lighter middle and no shading, and no near-black and
+> no black anywhere in the picture at all. In the left-hand third of the card, and only there, stands one
+> small plain pot with one short straight stem growing out of it and exactly one single leaf on that stem —
+> one leaf, and no other leaf anywhere. Behind the pot sits one round glow drawn as three flat concentric
+> rings of warm amber (#e8a04a) and light cream (#f6d6ac), every ring hard-edged, sitting straight on the
+> deep navy with no gray, no black, no dark edge and no outline of any kind around it. … The right-hand two
+> thirds of the card, from the glow across to the right edge of the picture, is completely empty flat deep
+> navy with nothing drawn on it at all: no lines, no bars, no dashes, no dots, no marks and no shapes of any
+> kind. …
+
+**The series A card, take one**, a fresh draw against that:
+
+> … In the left-hand third of the card, and only there, stands one small plain rocket, exactly where the
+> potted plant stands in the reference and at exactly the same size, with exactly the same round glow of
+> three flat concentric rings of warm amber (#e8a04a) and light cream (#f6d6ac) behind it. The rocket stands
+> upright on a launch stand and is seen straight from the side: a tall rounded body with one pointed nose
+> cone at the top and two small fins at its base, resting on a simple stand of two straight legs and one
+> short crossbar. One single flame comes out from under the rocket, drawn as one plain pointed shape in warm
+> amber (#e8a04a) and light cream (#f6d6ac), with no smoke, no sparks, no exhaust cloud and no trail. …
+
+**The unicorn card, take two**, a two-item list against its own first take:
+
+> … with only two things changed. First, the middle of the glow, everything inside the innermost ring, is one
+> flat deep navy (#1b2440) disc, exactly the same deep navy as the card behind it, so that the light cream
+> (#f6d6ac) unicorn stands against dark navy and reads clearly instead of standing on cream. … Second, the
+> pale slab of cream that spreads out to the right of the glow is gone … The unicorn stays one flat light
+> cream (#f6d6ac) shape, there is no rainbow anywhere, no stars, no sparkles, no twinkles and no small
+> floating shapes around it …
+
+**The deploy ribbon, take one**, whose body is unchanged in the take that ships:
+
+> … one long thin horizontal ribbon lying straight across the middle of a very wide, very short picture, on
+> one unbroken perfectly flat near-black (#101018) field that fills every other part of the picture … One
+> thin light cream (#f6d6ac) line runs the whole length of the ribbon just inside its top edge and another
+> thin light cream (#f6d6ac) line runs the whole length of the ribbon just inside its bottom edge. Between
+> those two cream lines the ribbon is one completely empty flat warm amber field from end to end, with
+> nothing drawn on it at all: no lines, no bars, no dashes, no dots, no marks, no shapes and no shading. At
+> each end the ribbon is folded: a short piece of the band folds back on itself and sits slightly lower than
+> the main band, drawn in deep ochre (#b87a2c) so it reads as the underside of the ribbon, and the very end
+> of each folded piece is cut into a shallow V-shaped notch. …
+
+### Per generation
+
+| Generation     | Seed | Size     | Verdict      | Glyph score | What it is, and why                                                                                                                                                                                    |
+| -------------- | ---- | -------- | ------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| seed 7601      | 7601 | 1024x768 | **rejected** | 0.000013    | A handsome banner and three misses: two leaves where one was asked for, a muddy brown glow, and a drawn banner of 1024x395 — 2.59:1, so a 3:1 cut would have eaten the cream bands.                    |
+| seed 7602      | 7602 | 1024x768 | **rejected** | 0.000015    | A regression. The glow went amber; in exchange a thick cream border appeared around the whole banner, two stray amber lines crossed the empty navy where the word goes, and the aspect did not move.   |
+| seed 7603      | 7603 | 1024x768 | **rejected** | 0.000017    | One leaf at last, cream bands gone. But the glow now spills above and below the strip, the margins came back mid-gray, the pot turned green, and the ink box is 2.49:1 — further away.                 |
+| seed 7604      | 7604 | 1024x768 | **rejected** | 0.000019    | The composition solved and the details left: full-bleed navy, motif in the left third, right two thirds clean. Two leaves again, an orange pot, and a glow a 3:1 crop would clip.                      |
+| seed 7605      | 7605 | 1024x768 | **rejected** | 0.000016    | One leaf landed. "Smaller" did the opposite — the glow grew to about 415 px in a 768 px frame and picked up a dark gray outer ring.                                                                    |
+| seed 7606      | 7606 | 1024x768 | **rejected** | 0.000025    | The gray ring gone, the leaf right, the motif still about half the height where a third was asked for twice. Three generations spent asking for smaller, none of them moved it.                        |
+| seed 7607      | 7607 | 1440x480 | **accepted** | 0.000011    | A real 3:1 card on the first try at the right canvas. One leaf, air above and below the badge, the right two thirds clean. The pot and the outer ring are orange, not amber.                           |
+| seed 7608      | 7608 | 1440x480 | **rejected** | 0.000034    | The one generation spent on the color miss, and it went the wrong way: the glow turned pink and salmon and the pot stayed orange.                                                                      |
+| series A 7609  | 7609 | 1440x480 | **accepted** | 0.000029    | A rocket upright on a two-legged stand with one flame, in the seed card's place at the seed card's size, in the same round badge. Its badge middle came back navy, not cream.                          |
+| unicorn 7610   | 7610 | 1440x480 | **rejected** | 0.000034    | The right drawing with no contrast in it: a cream unicorn on the badge's cream middle, which disappears at the size the toast shows. A pale slab of cream also spread out right.                       |
+| ribbon (first) | 7611 | 1280x160 | **refused**  | —           | `Value 160 smaller than min of 256`, `model.height`. Refused before it ran, nothing charged. The finding that sets the ribbon's canvas.                                                                |
+| ribbon 7611    | 7611 | 2048x256 | **rejected** | 0.0001      | The right ribbon on the wrong ground: folded ends, V notches, two cream lines, an empty middle — and a textured mid-gray field around it. The ribbon is drawn over the preview, so that is a gray box. |
+| unicorn 7612   | 7612 | 1440x480 | **accepted** | 0.0000044   | Both named changes landed and nothing else moved: a flat navy disc behind the cream unicorn, and the cream slab gone. One amber horn, no rainbow, no sparkles.                                         |
+| ribbon 7613    | 7613 | 2048x256 | **accepted** | 0.000015    | Black corner to corner, flat and untextured, which is what the key wants; the ribbon itself unchanged from the take before.                                                                            |
+
+### The misses, stated
+
+Three, and none of them is defended.
+
+1. **The amber is an orange.** The seed card, the unicorn card and the ribbon all came back with an orange
+   where the arcade's warm amber (`#e8a04a`) was named, and the one change list spent on it went past amber
+   into salmon. The orange ships. It is consistent across all four images, which for a set matters more than
+   the hex does, and at the size the toast shows them it reads as the arcade's amber — but it is not the
+   color the brief names and it is not called a style choice here.
+2. **The cards' navy is three navies.** The plates measure `#17314b`, `#21384f` and `#274059` against the
+   `#1b2440` asked for, so the unicorn card's ground is visibly lighter than the seed card's side by side.
+   They are never shown side by side, which is the only reason this ships.
+3. **The badge interiors do not match.** The seed card's glow is filled cream behind the plant; the series A
+   and unicorn badges have a navy middle. The unicorn's navy was asked for deliberately, because a cream
+   unicorn on cream vanished. The seed card was not re-rolled to match it, and that is a spend decision
+   rather than a design one.
+
+The first is the same shape of miss batch one recorded on its python sheet, and the lesson is the same one:
+two generations on a color is the budget, and after that the miss is written down.
+
+### The cut
+
+`apps/cabinets/scripts/cut-banner.mjs` is committed and takes a picture, an output path and a size. It has no
+dependency and no PNG codec of its own: the decoder, the encoder, the ground, the two key thresholds and the
+ink box all come from `slice-tiles.mjs` and `cut-avatar.mjs`. What is new is about eighty lines.
+
+A tile sheet has eight icons to hunt for; an avatar picture has one drawing with air around it; a banner has
+neither problem and one the others do not — the answer has to be a rectangle at a named aspect, because the
+shell draws a word over it at a size it has already chosen.
+
+So **where the drawing is** is a flag rather than an assumption. `--frame` takes the whole picture, which is
+what a card or a ribbon generated at its own aspect is; without it the ink is hunted for, which is what a
+motif drawn inside a 4:3 frame needs. `fitAspect` then grows the short side where the picture has room and
+trims the long side where it does not, centres the result on the box and clamps it inside the picture. All
+four images here were generated at their own aspect, so all four were cut with `--frame` and the fit came out
+a no-op to the pixel; the growing and the trimming are both exercised by the tests instead, against synthetic
+pictures whose answers are known by construction.
+
+There is deliberately **no eight per cent margin**. A portrait is a subject with air around it and wants one;
+a banner is its own edge, and ground padded around a card would read as a dark border against the board.
+
+Alpha parts the two of them again, for batch two's reason — what is underneath.
+
+- A **card** is drawn behind a word on the board, on nothing but the page, so it is opaque and its own navy
+  is the card.
+- The **ribbon** is drawn over the preview, which already carries the device frame and the packed blocks. An
+  opaque ribbon would punch a band of its own ground straight through that picture, so the ribbon's ground is
+  keyed away to nothing over `slice-tiles.mjs`'s own two thresholds and the ribbon floats. Measured on the
+  installed file: 23,668 pixels clear, 27,047 solid, 485 on the ramp between.
+
+It **throws** rather than guessing in two cases: when no rectangle at the aspect fits inside the picture, and
+when the finished cut carries fewer than four distinct colors. The second is this batch's mechanical andon —
+a card that came back as one flat field is a re-roll and never an install — and both have a test.
+
+### The asset layer, and the fallback rule
+
+The four pictures load as plain `Image` elements off `import.meta.env.BASE_URL + 'vibe/cards/<slug>.png'`;
+`load` puts one in a Map keyed by slug, `error` takes it out, and nothing ever waits on a load. That is the
+frames' rule, the tiles' rule and the avatars' rule, and a Pages build without `vibe/cards/` still plays.
+
+The one place this batch parts from the tiles is **when** they are asked for. Tiles are fetched per stack, at
+the first frame of a level in that stack, because a level's stack is known a frame before a piece lands.
+A milestone is not: it is a line the valuation crosses without warning, and a picture fetched at that moment
+would arrive after the toast had gone. So all four are asked for at the mount, in one burst — 143,000 bytes,
+once per field.
+
+**The card is drawn on the preview, and the board's toast is left alone.** The first cut of this batch put
+the card behind the toast's own word as a CSS background, which is a tidy piece of DOM and the wrong place:
+the toast is a status line at the end of the scoreboard row, about 140 px wide, and a 480x160 picture shrunk
+into it reads as a dark smudge with a word on it. The art was invisible at the only size it was ever shown
+at, which means the batch did not do the thing it was made for. So the picture moved to the preview, where
+the ribbon already works and where the game already celebrates, and the toast went back to being exactly
+what it was: the milestone word, as text, in the same live region, announced the same way, with nothing
+behind it and no CSS added anywhere.
+
+`drawPreview` draws the card `CARD_W` wide — 440 of the preview's 480, so a 20 px margin either side — at
+`CARD_ASPECT`, centered on both axes over the packed pieces. The word goes on top of it in the field's own
+face at 28 px, centered on the card's right-hand two thirds, because every card draws its motif in its left
+third and leaves the rest flat navy. That is what makes a card reusable for any wording, and it is why the
+word never lands on the art.
+
+The word on the card is **cream** (`#f6d6ac`), not the near-black the ribbon's word uses. The two are the
+same decision reaching opposite answers for the same reason the ground treatments do: the ribbon's word sits
+on flat amber and the card's word sits on flat navy, so each takes the palette's other end. The coordinator's
+brief called for "the same cream the ribbon's word uses"; the ribbon's word is in fact `#101018`, and cream
+is what that sentence wants on a navy card, so cream is what it is — noted here rather than silently
+reinterpreted.
+
+**One clock, two things.** The card is drawn while `toastLeft > 0`, which is the board's own toast timer, so
+the word and the picture arrive and leave on the same frame and cannot come apart. A short fade either end
+(`CARD_FADE_MS`) is the only movement this batch adds, and under `prefers-reduced-motion: reduce` the card
+shows and hides hard instead — read live with `matchMedia` in the one branch that draws it, rather than
+cached at mount, so a player who changes the setting mid-run gets the answer they asked for. The picture
+itself is a still either way.
+
+**The drawing order** is frame, pieces, card, confetti, ribbon, flash — the order the brief names. The card
+goes over the pieces because it is the celebration and they are the scenery, and under the deploy's confetti
+and ribbon because a deploy that lands during a milestone's two seconds is the louder event.
+
+`CARD_ASPECT` and `RIBBON_ASPECT` live in `typer-cards.ts` rather than the shell, because they are facts
+about the files rather than feel numbers, and a test reads all four installed PNGs off disk and holds them to
+both. A card re-cut at another size fails the suite rather than drawing squashed.
+
+**The ribbon.** `drawPreview` drew a flat amber bar 26px tall with `deployed` at its left. It now draws the
+ribbon the full width of the preview at the file's own 8:1, centered on the same band, with `deployed`
+centered over it — the ribbon has folded ends and an empty middle, so centered is where the word belongs. The
+baseline is the same number in both paths, `PREVIEW_H - 27`, so the word does not move vertically when the
+picture arrives. With no ribbon loaded the old two lines run exactly as they did, word at `x = 16` and all.
+
+**The fallback, everywhere.** A card that is missing, slow or broken leaves the milestone word doing the
+whole job on the board, exactly as it did before this batch; a ribbon that is missing leaves the flat amber
+bar. Neither path waits on anything. jsdom hands an `Image` no file, so that is the path the mount tests take
+by default, and one of them installs a subclass whose `src` setter fires `load` to take the other.
+
+### In the shell
+
+Played end to end against the **built Vibe package bundle** (`packages/launcher-vibe-typer/dist`, served by
+the package's own CLI on a local port), in a real browser, with synthetic `KeyboardEvent('keydown')` typing
+about 20 ms apart. Saved to `film/` (git-ignored):
+
+- `film/cards.png` — 1265x612, the whole field a few frames into a milestone: the seed card at 440 px across
+  the middle of the preview with its badge at full size and `seed` in cream on its empty right half, and the
+  board's toast up at the top right as the plain word `seed` with nothing behind it. Driven by an endless run
+  until the valuation crossed 100.
+- `film/ribbon.png` — 960x720, the preview's own canvas at the deploy on a level-one run: the ribbon across
+  the terminal frame with its folded ends and its two cream lines, `deployed` centered in the empty middle,
+  and the frame and the packed tiles showing through above and below it where the ground was keyed away.
+
+Two notes on the method, because both cost time and will cost it again. The render loop is stopped on the
+frame the picture is wanted, so a two-second state is photographed rather than chased — and that is one-way:
+restoring `requestAnimationFrame` afterwards does not restart a loop that has no callback pending, so a
+frozen run is spent and the next frame needs a fresh one. And a Browser pane that is not on screen suspends
+`requestAnimationFrame` altogether, which stops the field dead; a `MessageChannel` pump standing in for
+`requestAnimationFrame` is not throttled and runs the shell at real speed with real timestamps while the pane
+is hidden.
+
+Read back out of the page at the same time: all four card files answer 200 with the byte counts they were
+installed at, and the board's toast carries the milestone word with an empty `style.backgroundImage` and no
+child element — the status line is a status line again.
+
+### The tarballs
+
+Measured with `npm pack --dry-run --json` on a clean export of `main` at `940a5f5` and on this branch,
+after `pnpm build:launcher` each time. Both figures were re-taken after the rebase, because sub-slice C moved
+the Vibe package underneath them.
+
+| Package                          | Tarball, main | Tarball, here | Δ        | Entries   |
+| -------------------------------- | ------------- | ------------- | -------- | --------- |
+| `@mcptoolshop/vibe-typer`        | 2,491,987 B   | 2,634,977 B   | +142,990 | 131 → 135 |
+| `@mcptoolshop/ghost-on-the-menu` | 6,173,794 B   | 6,173,794 B   | 0        | 63 → 63   |
+
+The Vibe package gains exactly four entries, `dist/play/vibe/cards/{seed,series-a,unicorn,deployed}.png`, and
+their four file sizes come to 143,000 B — so the whole tarball delta is the art, minus a few bytes the
+compressor found. Ghost does not move **at all**, to the byte: drawing the card on the canvas rather than in the DOM
+left `apps/cabinets/index.html` byte-identical to `main`, and that file was the only thing the two builds
+shared that this batch had been touching. Its file list was also read and filtered for anything matching
+`vibe`, which came back empty, rather than trusting `checkDist`'s stray check.
+
+### The sim
+
+Untouched, and mechanically so: `git diff main --stat -- packages/` and `-- scripts/` are both empty, and so
+is `git diff main --stat` over `README*`, `site/`, `CHANGELOG.md`, `catalog/` and `voice/`. After the rebase
+both play-throughs were also run for real on a clean export of `main` at `940a5f5` and on this branch and
+diffed line by line: `pnpm test:play ghost --fixture naive-ndjson` and
+`pnpm test:play vibe-typer --tier 0 --bot typist:40` are byte-identical across the two.
+
+### Decisions
+
+75. **Generate at the aspect; do not crop to it.** Six generations were spent trying to get a 3:1 picture out
+    of a 4:3 frame, three of them asking in three wordings for the drawing to be smaller. None moved it. The
+    fix was one parameter: `params.width` and `params.height` reach `Flux2ImageNode` and are honored, within
+    256..2048 in steps of 32. Every image in this batch after that is generated at its own aspect and cut
+    with a no-op fit. This corrects what batches one and two recorded, and it is the finding worth carrying.
+76. **A change list moves details; it cannot move the canvas.** Batch two's method held for everything it was
+    built for — both re-rolls that landed here moved two named things and left the rest pixel for pixel — and
+    failed six times running on composition. The rule this adds to it: if the thing that is wrong is the shape
+    of the picture rather than something drawn in it, stop writing change lists and change the generation.
+77. **The card is the whole picture.** A card drawn as a banner inside a frame has to be found, cropped and
+    trimmed, and the trim goes through its own art. A card drawn corner to corner is its own edge: the cut is
+    a no-op, the plate is flat, and there is no ground to key or to pad. That is why `frameBox` exists.
+78. **The three cards share a badge and a layout, so they read as a set.** The brief names only the seed
+    card's glow, but the rocket and the unicorn were asked for in the same round badge, in the same place, at
+    the same size. At 48 px the silhouette is most of what a player sees, and three different silhouettes
+    would have read as three different things rather than three rungs of one ladder.
+79. **The motif sits in the left third and the rest of the card is empty.** The brief says the word is drawn
+    over the art; art under a word is a word that cannot be read. Every prompt asks for the right two thirds
+    to be completely empty, and the CSS pads the word off the badge, so the word always lands on flat navy.
+    It is also what lets the cards be reused for any wording, which is what the brief asks the art to allow.
+80. **The word is the toast's own text, behind a background image — not a canvas layer.** A canvas would have
+    had to draw the word itself, which takes it out of the live region, out of the accessibility tree and out
+    of the reach of the test that rules the field's American English. The card is decoration and the word is
+    content, so the card is a background and the word is a text node. It also makes the fallback exact rather
+    than approximate.
+81. **The cards load at the mount, not on demand.** This is the one place this batch breaks the tiles' rule,
+    and the reason is that a milestone has no warning. A stack is known a frame before a piece lands; a
+    valuation line is crossed mid-keystroke, and a picture fetched then would arrive after the toast had
+    gone. Four files, 143,000 bytes, one burst, once per field.
+82. **The ribbon is keyed and the cards are opaque.** Batch two's decision 49 said the ground's treatment
+    follows what is underneath, and this is the same rule reaching the opposite answer twice in one batch: a
+    card sits on the page, so it is opaque; the ribbon sits on the preview over a drawn device frame and
+    drawn blocks, so its ground is keyed away to nothing and it floats. An opaque ribbon would have been a
+    black bar across the picture.
+83. **The word is centered on the ribbon and left-aligned on the flat bar.** The ribbon has folded ends and an
+    empty middle, so centered is where its art puts the word; the flat bar is a plain band and its word has
+    always been at `x = 16`. The baseline is the same number in both paths, so the word does not jump
+    vertically when the picture arrives, and the fallback is byte for byte the two lines that were there.
+84. **The milestone names reach the file names through one table, and it is a `Map`.** `series a` has a space
+    in it and its file is `series-a.png`; nothing but that table holds the two together. A test walks the
+    shipped `score.json` and requires a card for every milestone in it, so a fourth milestone added there
+    fails the suite rather than toasting a word with no picture. It is a `Map` for batch one's decision 43:
+    a plain object answers `constructor` and `toString` out of its prototype.
+85. **`KEY_LO` and `KEY_HI` gained an `export` rather than a second copy.** The ribbon's key has to be the
+    tiles' key or the two will drift. Two `export` keywords on two existing constants is the whole change to
+    `slice-tiles.mjs`, and nothing in its behavior moves.
+86. **The color miss is stated after one re-roll, not chased.** Batch one spent two generations on the
+    python sheet's blue and wrote the miss down; this batch spent one on the amber and did the same. The
+    difference is that here the miss is consistent across all four images, which is what makes it livable:
+    a set that is uniformly a shade off is a set, and a set where one of four has been corrected is not.
+
+87. **The card is drawn on the preview, not behind the toast's word.** The first cut of this batch put it
+    in the board's toast as a CSS background, which is the tidier DOM and the wrong surface: the toast is a
+    status line about 140 px wide at the end of the scoreboard row, and a 480x160 picture shrunk into it
+    reads as a dark smudge. The art was invisible at the only size it was ever shown at, so the batch was
+    not doing the thing it was made for. The ribbon was already the model — the preview is where the game
+    celebrates, and it has the room. So the picture moved there at 440 px with the word over its empty half,
+    the toast went back to being the milestone word and nothing else, and `index.html` came out of the diff
+    entirely, which is also why Ghost's tarball no longer moves by a byte.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Generation is an irreversible spend, so the compensators are named in
+`docs/art/receipts.json → vibe_typer_batch_4.compensators` with an owner each: nothing enters the repo until
+it is accepted, so the nine rejections are receipt rows and Comfy library entries and nothing else, and no
+file of any of them is in `apps/` or `packages/`; the one refused submit produced no job and no file at all;
+`git rm -r apps/cabinets/public/vibe/cards` returns the board to the plain milestone word and the preview to
+the flat amber bar with no other change, because the word is the toast's own text and the bar is still the
+path the preview takes when no ribbon is loaded; and the branch is deletable until it is merged. Every
+generation and the refusal are rows with their job id, seed, full prompt and reference, so the spend is
+auditable at thirteen. No skip.
+
+**PIN_PER_STEP (3).** Every row carries the model slug as the tool accepted it, the seed, the full prompt,
+the job it chained from and the canvas it was generated at — including the refused submit, which carries the
+node's own bounds as the reason. Every installed row carries the box, the rectangle and the alpha treatment
+it was cut with. The cut is a committed script with no dependency and no randomness, so the same picture
+gives the same banner on any machine; a test runs it twice and compares the buffers, and others pin the
+aspect math against synthetic pictures whose answers are known by construction. The milestone-to-file table
+is a pure function of a name with no clock and no seed in it.
+
+**ANDON_AUTHORITY (3).** Five halts. `ai-eyes image_contains` at 0.02 on every generation and on all four
+installed cuts, before anything is installed. `fitAspect` throws rather than guessing when no rectangle at
+the aspect fits. `cutSheet` throws when the finished cut carries fewer than four colors, so a picture that
+came back as one flat field is a re-roll and never an install — a test proves it. `typer-cards.test.ts`
+reads the four installed files off disk and fails if any of them is not the shape the preview sizes it from,
+so a re-cut at another size cannot ship a squashed card. And the shell's own fallback is a halt of the same
+kind at run time: a card that does not load leaves the plain word and a ribbon that does not load leaves the
+flat bar, which three mount tests assert. The node's pre-spend refusal of the
+1280x160 submit is a fifth, and it is the partner's rather than ours; it is recorded because it is what
+established the bounds.
+
+**EXTERNAL_VERIFIER (3).** The glyph check is SigLIP2 through `ai-eyes`, a different model family from the
+BFL model that drew the images, and it never sees the prompt. The cut's tests feed synthetic pictures whose
+boxes are known by construction rather than measured off a generated one. The table test reads the shipped
+`score.json` through the package's own loader rather than a copy of the names. The shell evidence is the
+built Vibe package bundle played in a real browser with the canvas and the DOM read back, not the mount stub.
+The diff review is a different family, per the slice.
+
+### Review (Kimi K2.6, from a packet)
+
+The diff went to Kimi K2.6 as a packet — the lock, the brief and the diff with levers' lines, receipts,
+images and the lockfile omitted. One of its four items is this branch's and was accepted; the other three
+described the base moving rather than anything on this branch, and are recorded as that rather than argued
+with. The packet was cut against a `main` that sub-slice C had already moved, so three of the four read the
+voice's files as missing or changed when what had changed was where the branch was standing.
+
+| #   | Item                                                                                        | Disposition         | Where it landed                                                             |
+| --- | ------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
+| 1   | The card preload's `load` and `error` handlers write into the closed-over Map after unmount | **accepted**        | `apps/cabinets/src/vibe-typer.ts`, `apps/cabinets/test/typer-mount.test.ts` |
+| 2–4 | Three items about the voice's wiring, its tests and its lever                               | **not this branch** | the base had moved; nothing applied                                         |
+
+**Item 1.** Four files are asked for the moment the field is built, and a player who leaves the cabinet
+before they land would have a handler writing into a Map belonging to a field nobody is looking at. The two
+handlers now take the mount's own `left` flag, which is the guard sub-slice C's voice probes take for the
+same reason, and the preload moved from an inline loop to an `askCards()` called just after that flag exists,
+so the guard reads a variable that is already there rather than one hoisted past it.
+
+The assertion that came with it is worth a line, because the obvious one would have been worthless. Asserting
+that a late `load` leaves the DOM alone passes whether or not the guard is there — after `unmount` the tick
+returns early and the root has already been replaced, so nothing would have moved either way. That is exactly
+the shape batch two's review caught twice: a passing test that is not proving what it claims. So the test
+fires the **`error`** half instead, on the four images the preload actually made, and reads the card count
+back off `debug()`: guarded, the four stay; unguarded, `cards.delete` empties the Map. Checked both ways —
+with the guard removed the test fails with `expected +0 to be 4`, and with it restored the file is green.
+`debug()` gained a `cards` count for that, which is the same test-only surface the seat counts already use
+and which nothing on the field reads (G17, G23).

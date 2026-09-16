@@ -30,6 +30,9 @@ export const KINDS: readonly string[];
 export const GROUND: readonly [number, number, number];
 /** Every tile is this, exactly. */
 export const TILE: number;
+/** Alpha ramps from the ground's own alpha to solid between these two values. */
+export const KEY_LO: number;
+export const KEY_HI: number;
 
 export function decodePng(buf: Buffer): RgbaImage;
 export function encodePng(image: RgbaImage): Buffer;
