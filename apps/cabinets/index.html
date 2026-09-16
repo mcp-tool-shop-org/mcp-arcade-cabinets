@@ -243,6 +243,8 @@
       }
       .vibe {
         max-width: none;
+        /* The room's picture hangs off this, so it needs a corner to hang from. */
+        position: relative;
         /*
           The chat header's faces, sized off the settings row's type so the
           header stays in proportion when the player changes it: 1.5x the
@@ -252,6 +254,38 @@
           a `huge` header on one line at 1280 wide.
         */
         --vibe-avatar: clamp(20px, calc(var(--vibe-font, 0.95rem) * 1.5), 32px);
+      }
+      /*
+        The room the field sits in (slice 4B batch four). A pseudo-element and
+        not the wrapper's own `background`, because the picture is shown at an
+        alpha of its own and a background image has none; absolutely
+        positioned, so it is not a flex item of the column it hangs off; and
+        `z-index: -1`, so it sits behind the board, the panes and the controls
+        and on the page's own near-black, which is the ground every contrast
+        number was measured against.
+
+        The panes are left opaque on purpose, so the chat's and the editor's
+        contrast are not merely close to what they were but identical. The
+        room is what shows between them and around them.
+      */
+      .vibe.vibe-backdrop::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-image: var(--vibe-backdrop);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        /*
+          Kept low so the board stays legible: the room is scenery, and the
+          numbers and words in front of it are the game. Measured rather than
+          picked — the contrast table is in the slice doc, and 0.24 was
+          measured and refused because it takes the board's labels under
+          4.5:1. // Director
+        */
+        opacity: 0.18;
+        pointer-events: none;
       }
       .vibe-board {
         display: flex;
@@ -506,11 +540,20 @@
         .vibe-pane {
           min-height: 0;
         }
+        /* The same breakpoint the panes stack at: on one column the room is
+           behind a wall of text and buys nothing. */
+        .vibe.vibe-backdrop::before {
+          display: none;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         .vibe-caret,
         .vibe-live .shimmer {
           animation: none;
+        }
+        /* A player who asked for less movement gets a plain dark field. */
+        .vibe.vibe-backdrop::before {
+          display: none;
         }
       }
       @media (max-width: 640px) {

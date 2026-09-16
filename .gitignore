@@ -25,6 +25,9 @@ docs/art/originals-vibe-4/
 # the flac masters ACE-Step wrote for the bed batch; the cabinet ships the mp3s
 docs/art/originals-vibe-beds/
 
+# the generated backdrop; the cabinet ships the flattened 1280x720 cut
+docs/art/originals-vibe-5/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/

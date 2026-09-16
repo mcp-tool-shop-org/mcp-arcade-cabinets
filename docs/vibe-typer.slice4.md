@@ -2638,3 +2638,369 @@ the one the first cut of this sub-slice tested least.
    edit, and the redundant prefix is gone from `carries` — `dist/play/vibe/` already covers it, and two
    overlapping checks of different strengths is how the weaker one gets trusted. The comment says what is
    checked and why the tarball is the last place a missing bed can be noticed.
+
+## Sub-slice B, batch four — the backdrop
+
+**Branch:** `cabinet/vibe-typer-s4b4` from `9a8aa4b`, one commit, not merged, not pushed, nothing published.
+`pnpm verify`, `pnpm build:play` and `pnpm build:launcher` (both packages) green; `npm pack --dry-run --json`
+on both, measured against a clean build of `main`.
+
+**Spend:** one generation, accepted on the first look. Nothing was re-rolled and nothing was refused.
+
+That is worth a sentence, because the batch before it spent eight on one card. Seven of those eight went on
+getting a 3:1 picture out of a 4:3 frame, and the fix was to ask the node for the canvas rather than to argue
+with it in the prompt. This batch asked for 2048x1152 in the first call and spent its whole budget on the
+drawing.
+
+### What was built
+
+```
+apps/cabinets/public/vibe/field/backdrop.png  1280x720 RGBA opaque, 136,895 B, 32 colors.
+apps/cabinets/scripts/cut-banner.mjs          + `flatten` and the `--flatten N` flag: a coverage-weighted
+                                              median cut over the color histogram. This is the size gate.
+                                              + `flattenArg`, which refuses a flag with nothing usable
+                                              after it rather than skipping the pass in silence.
+apps/cabinets/scripts/cut-banner.d.mts        + its type, and `flatten` on `cutSheet`'s options.
+apps/cabinets/src/vibe-typer.ts               NARROW_PX, and `askBackdrop()` beside `askCards()`.
+apps/cabinets/index.html                      `position: relative` on `.vibe`, the
+                                              `.vibe.vibe-backdrop::before` rule, and one line in each of
+                                              the two media queries that turn it off.
+apps/cabinets/test/banner-cut.test.ts         + 8: the flatten's count, its determinism, that it leaves
+                                              alpha alone, its refusal of a count under two, that it
+                                              splits by coverage rather than by extent, and three on
+                                              `--flatten`'s own validation (the review's item 4).
+apps/cabinets/test/typer-backdrop.test.ts     7 tests: the installed file's size, shape, color count and
+                                              opacity, the stylesheet's alpha and stacking, and the two
+                                              media queries — including the one that holds the shell's
+                                              NARROW_PX and the stylesheet's breakpoint together.
+apps/cabinets/test/typer-mount.test.ts        + 5: the class goes on when the picture loads, stays off
+                                              under reduced motion, stays off on a narrow field, leaves
+                                              nothing behind when the file is missing, and does not go on
+                                              after the field has gone.
+docs/art/receipts.json                        + vibe_typer_batch_5: route, the `licence` pointer,
+                                              acceptance with the contrast table, compensators, 2 rows.
+.gitignore                                    + docs/art/originals-vibe-5/
+```
+
+### The route
+
+`bfl/flux-2-max` through the official Comfy Cloud MCP (`partner_generate`, the workflow-persist path,
+`Flux2ImageNode`) — the same route, and under the same `licence` block, as the four batches before this one.
+Chained from the accepted seed milestone card (job `440d18ae`, seed 7607) by `prompt_id`, for palette weight
+and pixel scale; that card is a cousin of the bash tile sheet, the device frames and the logo, so the room is
+on the same palette as everything else on the field.
+
+**2048x1152, and why not 1280x720.** Batch three established that the node honors `params.width` and
+`params.height` within 256..2048 in steps of 32. 720 is not a multiple of 32, so the shipping size cannot be
+asked for directly; 2048x1152 is the largest exact 16:9 the node will take, and it comes down to 1280x720 by
+exactly 1.6.
+
+### The prompt, verbatim
+
+> In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the
+> reference image: one wide landscape illustration of a small office at night, filling the whole picture
+> corner to corner, seen from behind an empty desk chair. The chair is in the foreground with its back to the
+> viewer, empty, drawn as one flat dark shape. Beyond it stands a dark desk, and on the desk one computer
+> screen seen from behind and slightly to one side with its light spilling forward: the visible face of the
+> screen is one completely flat plain warm amber (#e8a04a) rectangle with absolutely nothing on it — no
+> picture, no lines, no bars, no icons, no dots and no marks of any kind. Behind the desk is a window looking
+> out on a city at night: a few small square lights scattered across dark towers, and nothing else. One plant
+> in a pot stands beside the desk, and a few plain cables run down from the desk to the floor. The whole room
+> is drawn in deep navy (#1b2440) and near-black (#101018), with slate blue (#6a8aaa) on a few edges; the
+> only warm color anywhere is the amber of the screen and the small amber glow it throws on the desk and on
+> the back of the chair. It is a dark picture on purpose: the middle of the picture, where the screen and the
+> desk are, is the lightest part, and the top edge, the bottom edge, the left edge and the right edge are all
+> deep navy and near-black with nothing bright in them at all. Everything is drawn perfectly flat with hard
+> edges and no shading, seen straight on from behind the chair, with no tilted lines and no dramatic angle.
+> There is no border, no outline, no frame, no box and no panel of any kind around the picture. Hard edges,
+> flat colors, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no
+> words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image.
+
+It carries this slice's standing clauses: the style opening, every color by name and hex, the frame banned by
+name (batch two's decision 48), and batch one's closing clause. American English throughout, checked before
+sending.
+
+### The one generation
+
+| Generation | Seed | Size      | Verdict      | Glyph score | What it is                                                                                                                                                                                      |
+| ---------- | ---- | --------- | ------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| backdrop   | 7701 | 2048x1152 | **accepted** | 0.0000032   | Everything the brief named, first look: the empty chair from behind, the amber screen with nothing on its face, a window with a handful of lit city windows, a plant, cables down to the floor. |
+
+The glyph check matters more here than on any picture in this slice, and it is worth saying why rather than
+just quoting the number. This is a room with a computer screen in it and a city full of lit windows behind
+it, which is two invitations to write something. The screen came back as one flat amber rectangle and the
+city's windows came back as plain squares: 0.0000032 on the generation and 0.000010 on the installed cut,
+both three orders of magnitude under the 0.02 threshold, on the first look, with no re-cut and no re-roll.
+
+### The flatten, which is a size gate
+
+Straight off the resize the file was **1,534,868 bytes** against a 300 KB cap — five times over. The cause is
+not the resize and not the encoder: the generation carries **33,330 distinct colors** in a picture that reads
+as about a dozen. That is grain, the prompt bans noise and texture by name, and grain is precisely what a PNG
+cannot compress.
+
+So `cut-banner.mjs` gained `--flatten N`: a median cut over the color histogram — not over the pixels, because
+921,600 pixels and thirty thousand colors are two very different numbers and the boxes only ever need the
+second — splitting each box at its **coverage-weighted** median so a box that is mostly one shade does not
+hand half its entries to a color nobody can see, and mapping every pixel to its box's weighted average.
+Nothing in it is random and every sort is stable, so the same picture gives the same palette on any machine.
+
+Measured across the range before choosing:
+
+| Colors | Bytes       |
+| ------ | ----------- |
+| none   | 1,534,868   |
+| 16     | 130,108     |
+| 24     | 131,434     |
+| 32     | **136,895** |
+| 48     | 145,372     |
+| 64     | 153,497     |
+
+32 ships. Everything from 16 up is comfortably under the cap, so the choice is not about bytes at all: 32 is
+the count at which the room's steps — the wall, the window frame, the sill, the desk, the floor and the glow
+— each still have their own color, and the picture is a flat 16-bit illustration rather than a posterized
+photograph. The size gate is a happy consequence of doing what the prompt asked for in the first place.
+
+### The misses, stated
+
+Two, and neither is defended.
+
+1. **The grain is the cut's problem, not the model's solution.** The prompt bans noise and texture by name
+   and the generation carries both, visible as a mottle on the wall. What ships is flat, but the flatness is
+   `--flatten`'s and not the model's, and at full size the wall reads as a blotchy field rather than a clean
+   one. At the 0.18 the field draws it at, none of that is visible — which is the only reason it ships
+   rather than being re-rolled.
+2. **A soft vignette at the corners**, which the prompt also bans by name. It survives the flatten as a
+   slightly darker ring of colors. It is, if anything, useful at this alpha, because it pushes the room away
+   from the field's edges — but it is not what was asked for and it is not called a style choice here.
+
+### The contrast, measured
+
+The Director set the starting alpha at **0.18** and asked what it costs the chat and the editor. The answer
+is: nothing at all, and that is a fact about the panes rather than about the alpha.
+
+**The panes are left opaque.** `.vibe-pane` keeps `background: #101018`, so the room does not show through
+the chat or the editor and their contrast is not close to what it was but identical: `#e6e6e6` on `#101018`
+is 15.17:1 with the room and 15.17:1 without it. A test holds that hex, so the numbers below cannot quietly
+stop being true when somebody reaches for a translucent pane.
+
+That is also the whole idea, and it is the brief's own words: the backdrop is _the room the field sits in_.
+The panes are the screen furniture; the room is what shows between them, around them and behind the board
+and the controls.
+
+Where the room does show, the composite is `0.18 × backdrop + 0.82 × #0b0b0f`, because the pseudo-element
+sits at `z-index: -1` and lands on the page's own near-black. Measured off the installed file:
+
+| Where                                          | Worst background | label `#9a9aa6` | number `#e8a04a` | page text `#e6e6e6` | dots `#5b8c5a` |
+| ---------------------------------------------- | ---------------- | --------------- | ---------------- | ------------------- | -------------- |
+| the darkest color in the picture (50.1% of it) | `#0a0b10`        | 7.06:1          | 8.95:1           | 15.75:1             | 5.00:1         |
+| the top 15%, where the board row sits          | `#191e25`        | 6.02:1          | 7.62:1           | 13.42:1             | 4.26:1         |
+| the bottom 15%, the controls and the hint      | `#34240c`        | 5.38:1          | 6.81:1           | 11.99:1             | 3.81:1         |
+| no backdrop at all, for reference              | `#0b0b0f`        | 7.06:1          | 8.94:1           | 15.74:1             | 5.00:1         |
+
+"Worst background" is the brightest color covering at least half a per cent of that band, rather than the
+single brightest pixel: the absolute lightest color in the picture is the screen's brightest amber and it
+covers 0.00% of it, so holding the field to it would be measuring against something nobody can see.
+
+Every piece of text on the field stays above 4.5:1 at its worst. The streak dots reach 3.81:1 in the bottom
+band, and never appear there — in the board row, where they do appear, they are 4.26:1, and they are a run of
+bullet characters carrying an `aria-label` rather than text.
+
+**0.24 was measured and not taken**: it drops the board's labels to 4.08:1 against the same measure, which is
+under the line. 0.12 was measured too and is indistinguishable from no room at all in the board row. 0.18 is
+what ships.
+
+### In the shell
+
+`.vibe` gains `position: relative` and a `::before`. That is the whole of it.
+
+The picture is **CSS on a pseudo-element, not a canvas layer**, and the reason is what is in front of it: the
+chat and the editor are DOM panes, and a canvas cannot sit behind a DOM pane without giving the whole field a
+stacking order to keep right. A pseudo-element costs nothing per frame, takes `cover` and `center` for free,
+and — the part that matters most — lets the two media queries live in the stylesheet, so a window dragged
+past the breakpoint answers with no listener and no resize handler anywhere.
+
+It is a pseudo-element rather than the wrapper's own `background` because the picture is shown at an alpha of
+its own and a background image has none; it is absolutely positioned so it is not a flex item of the column
+it hangs off; and it is at `z-index: -1` so it sits behind the board, the panes and the controls and composites
+against the page's near-black, which is the ground every number above was measured on.
+
+**Three things have to be true before the class goes on.** The file has to load, the player must not have
+asked for less movement, and the field must not be narrow. The shell asks `matchMedia` for the last two
+before it asks for the picture at all, so a narrow or a calm client never fetches 137 KB it is not going to
+draw. The stylesheet then carries the same two queries, which is what handles a window that changes after the
+mount.
+
+**Narrow is 900px**, which is not a new number: it is the breakpoint `.vibe-panes` already stacks to one
+column at. On one column the room is behind a wall of text and buys nothing. That number now lives in two
+languages — `NARROW_PX` in the shell and a `@media` block in the stylesheet — so `typer-backdrop.test.ts`
+reads `index.html` and holds them together; change either and the suite says so.
+
+**Missing is the quiet case.** There is no `error` handler, because there is nothing to undo: no element
+stands in for the picture, so a file that never arrives leaves the class off, the custom property unset and
+the field exactly as it was. jsdom is that case by default, which is the path most of the mount suite takes.
+
+**The settings row gains no toggle.** A decision, below.
+
+### In the shell, photographed
+
+Played against the **built Vibe package bundle** (`packages/launcher-vibe-typer/dist`, served by the
+package's own CLI on a local port), in a real browser at 1280x880, with synthetic `KeyboardEvent('keydown')`
+typing about 20 ms apart, stopped two requests into a level-one run. Saved to `film/` (git-ignored):
+
+- `film/backdrop.png` — 1264x593, the field with the room behind it: the window's lit squares across the
+  board row, the desk edge and the floor glow in the gutters between the panes and under the controls, and
+  the three panes sitting opaquely on top of it.
+
+Read back out of the page at the same time: the wrapper carries `vibe-backdrop`, its `--vibe-backdrop` is the
+build's own base plus `vibe/field/backdrop.png`, the computed `::before` is `opacity: 0.18`,
+`background-size: cover`, `background-position: 50% 50%`, `z-index: -1`, and `.vibe-pane`'s computed
+background is `rgb(16, 16, 24)` — opaque, as the contrast table assumes.
+
+One note on the method, because it cost a retake: a `z-index: -1` pseudo-element paints **behind its
+ancestors' backgrounds**, so a capture wrapper with an opaque background of its own hides the room completely.
+The frame above is taken with that wrapper transparent and the page's near-black filled onto the output
+canvas instead, which is what the browser itself does.
+
+### The tarballs
+
+Measured with `npm pack --dry-run --json` on a clean export of `main` at `9a8aa4b` and on this branch, after
+`pnpm build:launcher` each time.
+
+| Package                          | Tarball, main | Tarball, here | Δ        | Entries   |
+| -------------------------------- | ------------- | ------------- | -------- | --------- |
+| `@mcptoolshop/vibe-typer`        | 2,634,977 B   | 2,772,425 B   | +137,448 | 135 → 136 |
+| `@mcptoolshop/ghost-on-the-menu` | 6,173,794 B   | 6,174,310 B   | +516     | 63 → 63   |
+
+The Vibe package gains exactly one entry, `dist/play/vibe/field/backdrop.png`, and 136,895 B of it. Ghost
+gains **no entries at all**: its file list was read and filtered for anything matching `vibe`, which came back
+empty, rather than trusting `checkDist`'s stray check. Its 516 B is the shared `apps/cabinets/index.html`,
+which is the source of both builds and now carries the room's rule — the same thing batch three's first cut
+cost it before that batch moved its drawing to the canvas.
+
+### The sim
+
+Untouched: `git diff main --stat -- packages/` and `-- scripts/` are both empty, and so is
+`git diff main --stat` over `README*`, `site/`, `CHANGELOG.md`, `catalog/` and `voice/`. Both play-throughs
+were run on a clean export of `main` at `9a8aa4b` and on this branch and diffed line by line:
+`pnpm test:play ghost --fixture naive-ndjson` and `pnpm test:play vibe-typer --tier 0 --bot typist:40` are
+byte-identical across the two.
+
+### Decisions
+
+97. **The room is CSS on a pseudo-element, not a canvas layer.** The chat and the editor are DOM panes and a
+    canvas cannot sit behind a DOM pane without the whole field growing a stacking order to keep right. A
+    pseudo-element costs nothing per frame, takes `cover` and `center` for free, and lets both media queries
+    live in the stylesheet — which is why a window dragged past the breakpoint answers correctly with no
+    listener and no resize handler anywhere in the shell.
+98. **The panes stay opaque, and the room is what shows around them.** This is the brief's own framing — the
+    backdrop is the room the field sits in — and it is also the safest possible answer to "the chat and the
+    editor must stay readable": with an opaque pane their contrast is not close to what it was, it is the
+    same number. A translucent pane would have put a picture under the editor's own text, which slice 2 and
+    slice 3 tuned, in exchange for an effect nobody asked for. A test holds the pane's background hex.
+99. **0.18, measured rather than guessed.** The Director's starting number survived measurement and is what
+    ships. Over the darkest half of the picture nothing on the field moves at all; in the board row the
+    worst realistic background takes the labels to 6.02:1 and in the controls row to 5.38:1, both well over
+    4.5:1. 0.24 was measured and refused, because it takes the labels to 4.08:1.
+100.  **The picture is asked for only when it can be drawn.** `matchMedia` is consulted before the `Image` is
+      built, so a narrow window or a player who asked for less movement never fetches 137 KB that the
+      stylesheet is going to hide. The stylesheet carries the same two queries for everything that changes
+      after the mount.
+101.  **Narrow is the breakpoint that already existed.** 900px is where `.vibe-panes` stacks to one column, and
+      a room behind a single column of text buys nothing. The cost of reusing it is that one number now lives
+      in two languages, so a test reads the stylesheet and holds it to the shell's `NARROW_PX`.
+102.  **There is no `error` handler on the backdrop, on purpose.** Everywhere else in this slice a picture that
+      fails has something to undo — a face to remove, a Map entry to delete. This one has nothing: no element
+      stands in for it, so a file that never arrives leaves the class off and the field exactly as it was. The
+      absence is the fallback.
+103.  **`--flatten` is a cut option, not a fourth script.** The backdrop is the same shape of problem
+      `cut-banner.mjs` already solves — one picture in, one landscape rectangle out at an exact size — and the
+      flatten is a pass over the result rather than a different job. A fourth script would have been a fourth
+      copy of the PNG codec's import list.
+104.  **32 colors, and the size gate is a consequence rather than the reason.** Every count from 16 up clears
+      the 300 KB cap, so bytes did not pick the number; 32 is where the room's steps each still have their own
+      color. That the same pass takes 1.5 MB to 137 KB is what makes doing the prompt's own bidding — flat
+      colors, no noise — worth doing in the cut as well as in the prompt.
+105.  **The median cut runs over the histogram and splits at the weighted median.** Thirty thousand colors is a
+      small number and 921,600 pixels is not, and the boxes only ever need the first. Weighting the split by
+      coverage is what keeps a box that is mostly one shade from spending half its palette on colors that
+      cover a handful of pixels — which on a picture that is half near-black is most of them.
+106.  **The settings row gains no toggle this batch.** The two media queries already answer the two reasons a
+      player would want the room off, and they answer without being asked. A third control on a row that slice
+      3 tuned, for a picture drawn at 18 per cent, is a lever looking for a problem. If the Director wants one
+      later it is one checkbox and one class, and the fallback path it would use is already built and tested.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Generation is an irreversible spend, so the compensators are named in
+`docs/art/receipts.json → vibe_typer_batch_5.compensators` with an owner each. Nothing was rejected in this
+batch, so nothing is a receipt row and nothing else; the one generation is installed and its original is
+under the git-ignored `docs/art/originals-vibe-5/`. `git rm -r apps/cabinets/public/vibe/field` returns the
+field to a plain dark page with no other change, because the class only goes on when the picture loads and
+the stylesheet draws nothing without it. The branch is deletable until it is merged. No skip.
+
+**PIN_PER_STEP (3).** The one row carries the model slug as the tool accepted it, the seed, the full prompt,
+the job it chained from and the canvas it was generated at; the installed row carries the box, the rectangle
+and the flatten it was cut with. The cut is a committed script with no dependency and no randomness — the
+median cut sorts stably and takes no seed — so the same picture gives the same 32 colors on any machine, and
+a test holds the installed file to that count. The alpha, the breakpoint and the two media queries are all
+constants in files under review rather than numbers in a comment.
+
+**ANDON_AUTHORITY (3).** Four halts. `ai-eyes image_contains` at 0.02 on the generation and on the installed
+cut, before anything is installed. `cutSheet` still throws when the finished picture carries fewer than four
+colors, so a flatten that collapsed the room to nothing is a re-roll and never an install. `typer-backdrop`
+holds the installed file to its size, its shape, its color count and its opacity, and holds the stylesheet to
+the alpha, the stacking and both media queries — so the room cannot quietly get brighter or start showing on
+a phone. And the shell's own absence rule is a halt at run time: no file, no class, no element, no change.
+
+**EXTERNAL_VERIFIER (3).** The glyph check is SigLIP2 through `ai-eyes`, a different model family from the
+BFL model that drew the image, and it never sees the prompt. The contrast numbers are computed from the
+installed file's own pixels against the WCAG relative-luminance formula, not judged by eye. The breakpoint
+test reads the stylesheet as text rather than trusting the shell's copy of the number. The shell evidence is
+the built Vibe package bundle photographed in a real browser with the computed styles read back. The diff
+review is a different family, per the slice.
+
+### Review (Kimi K2.6, from a packet)
+
+The diff went to Kimi K2.6 as a packet — the lock, the brief and the diff with levers' lines, receipts,
+images and the lockfile omitted — and came back **halt** with four items. The coordinator refused one and
+accepted three. All four are recorded, refusal included.
+
+| #   | Item                                                                                   | Disposition  | Where it landed                                                                 |
+| --- | -------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| 1   | The `// Director` marker on the alpha in `index.html` reads as a quotation             | **refused**  | the marker stays; the comment beside it was rewritten                           |
+| 2   | `askBackdrop`'s comment names the Director in running prose                            | **accepted** | `apps/cabinets/src/vibe-typer.ts`                                               |
+| 3   | A test title in `typer-backdrop.test.ts` names the Director in running prose           | **accepted** | `apps/cabinets/test/typer-backdrop.test.ts`                                     |
+| 4   | `--flatten` with no value, or a value that is not a number, silently skips the flatten | **accepted** | `apps/cabinets/scripts/cut-banner.mjs`, `apps/cabinets/test/banner-cut.test.ts` |
+
+**Item 1, refused.** `/* // Director */` on a constant's own line is this repo's convention for a feel number
+the Director owns, not a quotation of anything he said, and it is on dozens of constants across the shell
+already. The marker stays. What was fair in the item is that a marker on its own says who owns a number and
+nothing about why it is that number, so the comment beside it now carries the decision and its reason: kept
+low so the board stays legible, measured rather than picked, with the contrast table in this document and
+0.24 named as measured and refused.
+
+**Items 2 and 3, accepted.** The marker convention is for a constant's own line. Everywhere else, prose says
+the decision and the reason and does not say whose decision it was — which is this slice's standing rule and
+is the shape every other comment in these four batches already takes. The comment on `askBackdrop` now reads
+"at the low alpha the stylesheet owns", and the test is now called _draws the room low and behind everything,
+so the board stays legible_. Neither says anything new; both say it the way the rest of the file does.
+
+**Item 4, accepted, and it was a real hole.** `Number(undefined)` is `NaN`, `NaN > 0` is false, and
+`cutSheet` skipped the flatten without a word. On this batch's own picture that is the difference between
+136,895 bytes and 1,534,868 going into the repo, with nothing on the terminal to say which one had happened —
+the failure mode is not a crash, it is a file that looks exactly like one that was asked for. `flattenArg` is
+now exported, validates `Number.isInteger(n) && n >= 2`, and throws with the value it was given; the runner
+catches it, writes the message and the usage to stderr and exits 2, **before** it goes looking for the input
+file, so the message is about the flag rather than about a missing picture. Six unit tests cover the bad
+values and the absent flag, and one more runs the script with `spawnSync` and holds it to a non-zero exit, the
+usage on stderr and no `ENOENT` in it.
+
+**One thing item 4 uncovered, fixed with it.** Rewriting the runner showed that two edits from batch three
+had silently failed to apply: the usage string still read `[--frame]` with no mention of `--key`, and the
+`colors` field meant for the run's stdout was never there. Both were non-asserting string replacements
+against a line prettier had already reflowed, so nothing said they had missed. The usage now names all three
+flags and the run prints its color count, which is the number a `--flatten` run most wants to see. It is a
+documentation defect rather than a behavior one — `--key` has worked correctly since batch three and its
+tests have covered it — but it is the second time in this slice that a non-asserting replacement has quietly
+done nothing, and that is worth writing down rather than just fixing.

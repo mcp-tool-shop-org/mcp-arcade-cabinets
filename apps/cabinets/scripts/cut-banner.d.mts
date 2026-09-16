@@ -14,9 +14,11 @@ export function cutBanner(
   options?: { key?: boolean },
 ): RgbaImage;
 export function colorCount(image: RgbaImage, cap?: number): number;
+export function flatten(image: RgbaImage, colors: number): RgbaImage;
+export function flattenArg(argv: readonly string[]): number;
 export function cutSheet(
   image: RgbaImage,
   width: number,
   height: number,
-  options?: { frame?: boolean; key?: boolean },
+  options?: { frame?: boolean; key?: boolean; flatten?: number },
 ): { box: Box; rect: Box; banner: RgbaImage };

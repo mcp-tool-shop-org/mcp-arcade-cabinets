@@ -35,7 +35,15 @@
 //     own ground straight through that picture, so the ribbon's ground is
 //     keyed away with the tiles' own two thresholds and the ribbon floats.
 //
-// Usage: node apps/cabinets/scripts/cut-banner.mjs <in.png> <out.png> <W> <H> [--frame] [--key]
+// `--flatten <n>` is the third knob, and it is a size gate as much as a look
+// one. Every prompt in this slice asks for flat colors and no noise, and the
+// model obliges to the eye and not to the bytes: the backdrop came back with
+// 33,330 distinct colors in what reads as about a dozen, which is grain, and
+// grain is what a PNG cannot compress. Median-cutting the palette back down
+// to the number of colors the picture actually has takes 1.5 MB to 135 KB and
+// removes a miss against the brief at the same time.
+//
+// Usage: node apps/cabinets/scripts/cut-banner.mjs <in.png> <out.png> <W> <H> [--frame] [--key] [--flatten N]
 
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -156,6 +164,103 @@ export function cutBanner(image, rect, width, height, { key = false } = {}) {
   return { width, height, data: out };
 }
 
+/**
+ * Median-cut the picture's palette to at most `colors`, weighted by how much
+ * of the picture each color covers, and map every pixel to its box's average.
+ *
+ * It runs over the histogram rather than over the pixels: a 1280x720 picture
+ * is 921,600 pixels and about thirty thousand distinct colors, and the boxes
+ * only ever need the second number. Nothing here is random and every sort is
+ * stable, so the same picture gives the same palette on any machine.
+ */
+export function flatten(image, colors) {
+  if (!Number.isInteger(colors) || colors < 2) {
+    throw new Error('cut-banner: --flatten takes a whole number of colors, two or more');
+  }
+  const counts = new Map();
+  for (let i = 0; i < image.data.length; i += 4) {
+    const key = (image.data[i] << 16) | (image.data[i + 1] << 8) | image.data[i + 2];
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const all = [...counts].map(([key, n]) => ({
+    r: (key >> 16) & 0xff,
+    g: (key >> 8) & 0xff,
+    b: key & 0xff,
+    n,
+  }));
+  let boxes = [all];
+  while (boxes.length < colors) {
+    // Widest box first, and a box with nothing left to split drops out.
+    boxes.sort((a, b) => spreadOf(b) - spreadOf(a));
+    const big = boxes[0];
+    if (!big || big.length < 2 || spreadOf(big) === 0) break;
+    boxes.shift();
+    const ch = widestOf(big);
+    big.sort((a, b) => a[ch] - b[ch] || a.r - b.r || a.g - b.g || a.b - b.b);
+    // Split at the weighted median, so a box that is mostly one shade does
+    // not hand half its entries to a color nobody can see.
+    const total = big.reduce((s, c) => s + c.n, 0);
+    let run = 0;
+    let cut = 1;
+    for (let i = 0; i < big.length - 1; i++) {
+      run += big[i].n;
+      cut = i + 1;
+      if (run * 2 >= total) break;
+    }
+    boxes.push(big.slice(0, cut), big.slice(cut));
+  }
+  const table = new Map();
+  for (const box of boxes) {
+    const weight = box.reduce((s, c) => s + c.n, 0);
+    const avg = {
+      r: Math.round(box.reduce((s, c) => s + c.r * c.n, 0) / weight),
+      g: Math.round(box.reduce((s, c) => s + c.g * c.n, 0) / weight),
+      b: Math.round(box.reduce((s, c) => s + c.b * c.n, 0) / weight),
+    };
+    for (const c of box) table.set((c.r << 16) | (c.g << 8) | c.b, avg);
+  }
+  const out = Buffer.from(image.data);
+  for (let i = 0; i < out.length; i += 4) {
+    const hit = table.get((out[i] << 16) | (out[i + 1] << 8) | out[i + 2]);
+    if (!hit) continue;
+    out[i] = hit.r;
+    out[i + 1] = hit.g;
+    out[i + 2] = hit.b;
+  }
+  return { width: image.width, height: image.height, data: out };
+}
+
+/** The channel a box covers the widest range of. */
+function widestOf(box) {
+  let pick = 'r';
+  let best = -1;
+  for (const ch of ['r', 'g', 'b']) {
+    let lo = 255;
+    let hi = 0;
+    for (const c of box) {
+      if (c[ch] < lo) lo = c[ch];
+      if (c[ch] > hi) hi = c[ch];
+    }
+    if (hi - lo > best) {
+      best = hi - lo;
+      pick = ch;
+    }
+  }
+  return pick;
+}
+
+/** How wide that channel's range is. */
+function spreadOf(box) {
+  const ch = widestOf(box);
+  let lo = 255;
+  let hi = 0;
+  for (const c of box) {
+    if (c[ch] < lo) lo = c[ch];
+    if (c[ch] > hi) hi = c[ch];
+  }
+  return hi - lo;
+}
+
 /** How many distinct colors a finished banner carries. Stops counting at `cap`. */
 export function colorCount(image, cap = MIN_COLORS) {
   const seen = new Set();
@@ -170,15 +275,22 @@ export function colorCount(image, cap = MIN_COLORS) {
  * The whole cut, picture to one banner, with the boxes for the receipt.
  *
  * `frame` says the drawing fills the picture (a card); without it the ink is
- * hunted for. `key` keys the ground away (the ribbon). Either way the
- * finished banner has to carry more than a couple of colors: a card that came
- * back as one flat field is a re-roll and never an install, and that is the
- * mechanical half of this script's andon.
+ * hunted for. `key` keys the ground away (the ribbon). `flatten` cuts the
+ * palette down to that many colors after the resize, which is where the grain
+ * a generation carries goes. Either way the finished picture has to carry more
+ * than a couple of colors: one that came back as a flat field is a re-roll and
+ * never an install, and that is the mechanical half of this script's andon.
  */
-export function cutSheet(image, width, height, { frame = false, key = false } = {}) {
+export function cutSheet(
+  image,
+  width,
+  height,
+  { frame = false, key = false, flatten: n = 0 } = {},
+) {
   const box = frame ? frameBox(image) : inkBox(image);
   const rect = fitAspect(box, image, width / height);
-  const banner = cutBanner(image, rect, width, height, { key });
+  let banner = cutBanner(image, rect, width, height, { key });
+  if (n > 0) banner = flatten(banner, n);
   const colors = colorCount(banner);
   if (colors < MIN_COLORS) {
     throw new Error(
@@ -190,28 +302,65 @@ export function cutSheet(image, width, height, { frame = false, key = false } = 
 
 // ——— the runner ——————————————————————————————————————————————————————————
 
+const USAGE =
+  'usage: node cut-banner.mjs <in.png> <out.png> <width> <height> [--frame] [--key] [--flatten N]';
+
+/**
+ * The `--flatten N` value, or 0 when the flag is absent.
+ *
+ * It throws rather than falling back, and the reason is what the fallback
+ * looked like: a bare `--flatten`, or one followed by anything that is not a
+ * whole number, became `NaN`; `NaN > 0` is false; so the flatten was skipped
+ * without a word, and a picture five times over its size cap would have gone
+ * into the repo looking exactly like one that had been asked for.
+ */
+export function flattenArg(argv) {
+  const at = argv.indexOf('--flatten');
+  if (at < 0) return 0;
+  const raw = argv[at + 1];
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 2) {
+    throw new Error(
+      'cut-banner: --flatten takes a whole number of colors, two or more; got ' +
+        `${JSON.stringify(raw ?? null)}`,
+    );
+  }
+  return n;
+}
+
 async function main(argv) {
   const frame = argv.includes('--frame');
   const key = argv.includes('--key');
-  const args = argv.filter((a) => !a.startsWith('--'));
+  let flat = 0;
+  try {
+    flat = flattenArg(argv);
+  } catch (err) {
+    process.stderr.write(`${err.message}
+${USAGE}
+`);
+    process.exitCode = 2;
+    return;
+  }
+  const args = argv.filter((a, i) => !a.startsWith('--') && argv[i - 1] !== '--flatten');
   const [from, to, w, h] = args;
   const width = Number(w);
   const height = Number(h);
   if (!from || !to || !Number.isInteger(width) || !Number.isInteger(height)) {
-    process.stderr.write(
-      'usage: node cut-banner.mjs <in.png> <out.png> <width> <height> [--frame]\n',
-    );
+    process.stderr.write(`${USAGE}
+`);
     process.exitCode = 2;
     return;
   }
   const image = decodePng(await readFile(from));
-  const { box, rect, banner } = cutSheet(image, width, height, { frame, key });
+  const { box, rect, banner } = cutSheet(image, width, height, { frame, key, flatten: flat });
   const png = encodePng(banner);
   await writeFile(to, png);
   process.stdout.write(
     `${path.basename(to)}  ${width}x${height}  ${png.length} B` +
       `  box ${box.x},${box.y} ${box.w}x${box.h}` +
-      `  rect ${rect.x},${rect.y} ${rect.w}x${rect.h}\n`,
+      `  rect ${rect.x},${rect.y} ${rect.w}x${rect.h}` +
+      `  colors ${colorCount(banner, Number.MAX_SAFE_INTEGER)}
+`,
   );
 }
 

@@ -24,6 +24,7 @@ import { DEFAULT_MUSIC, isMusicMode } from '../src/typer-audio';
 import {
   CARD_W,
   FONT_SIZES,
+  NARROW_PX,
   PREVIEW_H,
   PREVIEW_W,
   STACK_WORDS,
@@ -229,6 +230,45 @@ function playToStandup(m: VibeMount, cap = 4000): boolean {
     m.tick(STEP);
   }
   return false;
+}
+
+/**
+ * Answer `matchMedia` from a table, so a test can say the player asked for
+ * less movement or is on a narrow window without resizing anything. jsdom's
+ * own `matchMedia` answers `false` to everything, which is the third case.
+ */
+function mediaStub(answers: Record<string, boolean>): { restore: () => void } {
+  const was = window.matchMedia;
+  window.matchMedia = ((query: string) =>
+    ({
+      matches: answers[query] ?? false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList) as typeof window.matchMedia;
+  return { restore: () => (window.matchMedia = was) };
+}
+
+const REDUCE = '(prefers-reduced-motion: reduce)';
+const NARROW = `(max-width: ${NARROW_PX}px)`;
+
+/** The field, mounted with whatever the stubs above are saying. */
+function mountField(): VibeMount {
+  return mountVibeTyper(root, {
+    tier: 0,
+    endless: false,
+    levelIndex: 0,
+    seed: 1,
+    agentName: 'Sprocket',
+    theme: 'mechanical',
+    integration: [],
+    onExit: () => undefined,
+    startAudio: false,
+  });
 }
 
 /**
@@ -522,6 +562,93 @@ describe('the field, mounted', () => {
     expect(toast.classList.contains('carded')).toBe(false);
     expect(drawn).toHaveLength(0);
     expect(calls).not.toContain('drawImage');
+  });
+
+  it('hangs the room behind the field once its picture has loaded', () => {
+    const loading = loadingImages();
+    const media = mediaStub({ [REDUCE]: false, [NARROW]: false });
+    try {
+      mount = mountField();
+      const field = root.querySelector('.vibe') as HTMLElement;
+      expect(field.classList.contains('vibe-backdrop')).toBe(true);
+      // Off the build's own base, so a Pages build under /<repo>/play/ asks
+      // for the right file and a package build asks relatively.
+      expect(field.style.getPropertyValue('--vibe-backdrop')).toBe(
+        `url("${import.meta.env.BASE_URL}vibe/field/backdrop.png")`,
+      );
+      // It is a background on a pseudo-element, so there is no element for it
+      // and nothing in the field's own markup moved to make room.
+      expect(field.querySelector('img.vibe-backdrop')).toBeNull();
+    } finally {
+      media.restore();
+      loading.restore();
+    }
+  });
+
+  it('leaves the room off when the player asked for less movement', () => {
+    const loading = loadingImages();
+    const media = mediaStub({ [REDUCE]: true, [NARROW]: false });
+    try {
+      mount = mountField();
+      const field = root.querySelector('.vibe') as HTMLElement;
+      // The picture would have loaded; it is not even asked for.
+      expect(field.classList.contains('vibe-backdrop')).toBe(false);
+      expect(field.style.getPropertyValue('--vibe-backdrop')).toBe('');
+      expect(loading.made.some((i) => (i.getAttribute('src') ?? '').includes('vibe/field/'))).toBe(
+        false,
+      );
+    } finally {
+      media.restore();
+      loading.restore();
+    }
+  });
+
+  it('leaves the room off on a narrow field', () => {
+    const loading = loadingImages();
+    const media = mediaStub({ [REDUCE]: false, [NARROW]: true });
+    try {
+      mount = mountField();
+      const field = root.querySelector('.vibe') as HTMLElement;
+      expect(field.classList.contains('vibe-backdrop')).toBe(false);
+      expect(field.style.getPropertyValue('--vibe-backdrop')).toBe('');
+      expect(loading.made.some((i) => (i.getAttribute('src') ?? '').includes('vibe/field/'))).toBe(
+        false,
+      );
+    } finally {
+      media.restore();
+      loading.restore();
+    }
+  });
+
+  it('leaves no broken picture behind when the room file is missing', () => {
+    // jsdom's own path: the file is asked for and never arrives. Nothing is
+    // added to the markup, no class goes on, and the field is what it was.
+    mount = mountField();
+    const field = root.querySelector('.vibe') as HTMLElement;
+    expect(field.classList.contains('vibe-backdrop')).toBe(false);
+    expect(field.style.getPropertyValue('--vibe-backdrop')).toBe('');
+    expect(field.querySelectorAll('img')).toHaveLength(2); // the two chat faces, and no more
+  });
+
+  it('does not hang the room after the field has gone', () => {
+    const loading = loadingImages();
+    const media = mediaStub({ [REDUCE]: false, [NARROW]: false });
+    try {
+      mount = mountField();
+      const field = root.querySelector('.vibe') as HTMLElement;
+      const late = loading.made.find((i) => (i.getAttribute('src') ?? '').includes('vibe/field/'));
+      expect(late).toBeDefined();
+      mount.unmount();
+      field.classList.remove('vibe-backdrop');
+      field.style.removeProperty('--vibe-backdrop');
+      late!.dispatchEvent(new Event('load'));
+      expect(field.classList.contains('vibe-backdrop')).toBe(false);
+      expect(field.style.getPropertyValue('--vibe-backdrop')).toBe('');
+      mount = null;
+    } finally {
+      media.restore();
+      loading.restore();
+    }
   });
 
   it('lays the deploy band down as the flat bar, because no ribbon loads here', () => {

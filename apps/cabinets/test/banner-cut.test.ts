@@ -8,9 +8,21 @@
 // should be solid or solid when it should be keyed, and a picture with
 // nothing on it being cut into something rather than refused.
 
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
-import { colorCount, cutBanner, cutSheet, fitAspect, frameBox } from '../scripts/cut-banner.mjs';
+import {
+  colorCount,
+  cutBanner,
+  cutSheet,
+  fitAspect,
+  flatten,
+  flattenArg,
+  frameBox,
+} from '../scripts/cut-banner.mjs';
 import { GROUND, KEY_HI, decodePng, encodePng } from '../scripts/slice-tiles.mjs';
 
 /** A card comes back at its own aspect; a motif inside a 4:3 frame does not. */
@@ -69,6 +81,24 @@ function band(): { width: number; height: number; data: Buffer } {
 
 function alphaAt(image: { width: number; data: Buffer }, x: number, y: number): number {
   return image.data[(y * image.width + x) * 4 + 3]!;
+}
+
+/** A small picture with grain on it, the way a generation comes back. */
+function grainy(): { width: number; height: number; data: Buffer } {
+  const w = 96;
+  const h = 96;
+  const data = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    // Three independent deterministic wobbles, so the picture carries
+    // hundreds of near-identical colors around three tones — which is what
+    // grain is, and what a flat illustration is not.
+    const base = i % 3 === 0 ? 30 : i % 3 === 1 ? 120 : 200;
+    data[i * 4] = base + ((i * 7919) % 17);
+    data[i * 4 + 1] = base + ((i * 104729) % 19);
+    data[i * 4 + 2] = base + ((i * 1299709) % 23);
+    data[i * 4 + 3] = 255;
+  }
+  return { width: w, height: h, data };
 }
 
 describe('the banner cut', () => {
@@ -171,6 +201,106 @@ describe('the banner cut', () => {
     expect(() => cutSheet(blank(CARD.w, CARD.h), 480, 160, { frame: true })).toThrow(
       /no drawing on it/,
     );
+  });
+
+  it('cuts the palette down to the count it is given', () => {
+    // The backdrop came back with 33,330 distinct colors in a picture that
+    // reads as a dozen, which is grain, and grain is what a PNG cannot
+    // compress. This is the pass that takes it back to flat.
+    const noisy = grainy();
+    expect(colorCount(noisy, Number.MAX_SAFE_INTEGER)).toBeGreaterThan(200);
+    const flat = flatten(noisy, 8);
+    expect(colorCount(flat, Number.MAX_SAFE_INTEGER)).toBeLessThanOrEqual(8);
+    expect(flat.width).toBe(noisy.width);
+    expect(flat.height).toBe(noisy.height);
+  });
+
+  it('gives the same palette twice, because the median cut takes no seed', () => {
+    const noisy = grainy();
+    const a = flatten(noisy, 8);
+    const b = flatten(noisy, 8);
+    expect(Buffer.compare(a.data, b.data)).toBe(0);
+  });
+
+  it('leaves alpha alone when it flattens', () => {
+    // The flatten is a palette pass and nothing else: a keyed ribbon that went
+    // through it would otherwise come back with its ground solid.
+    const noisy = grainy();
+    for (let i = 3; i < noisy.data.length; i += 4) noisy.data[i] = i % 8 === 3 ? 0 : 255;
+    const flat = flatten(noisy, 8);
+    for (let i = 3; i < flat.data.length; i += 4) expect(flat.data[i]).toBe(noisy.data[i]);
+  });
+
+  it('refuses a color count that is not a whole number of at least two', () => {
+    const noisy = grainy();
+    expect(() => flatten(noisy, 1)).toThrow(/two or more/);
+    expect(() => flatten(noisy, 2.5)).toThrow(/two or more/);
+  });
+
+  it('keeps the colors that cover the picture, not the ones that do not', () => {
+    // Nine tenths of this picture is one dark tone and one tenth is a bright
+    // one. A cut that split by extent rather than by coverage would spend its
+    // palette on the tenth; both have to survive at two colors.
+    const w = 64;
+    const h = 64;
+    const data = Buffer.alloc(w * h * 4);
+    for (let i = 0; i < w * h; i++) {
+      const bright = i % 10 === 0;
+      data[i * 4] = bright ? 240 : 20;
+      data[i * 4 + 1] = bright ? 200 : 24;
+      data[i * 4 + 2] = bright ? 80 : 36;
+      data[i * 4 + 3] = 255;
+    }
+    const flat = flatten({ width: w, height: h, data }, 2);
+    const seen = new Set<number>();
+    for (let i = 0; i < flat.data.length; i += 4) {
+      seen.add((flat.data[i]! << 16) | (flat.data[i + 1]! << 8) | flat.data[i + 2]!);
+    }
+    expect(seen.size).toBe(2);
+    const tones = [...seen].map((k) => (k >> 16) & 0xff).sort((a, b) => a - b);
+    expect(tones[0]).toBeLessThan(64);
+    expect(tones[1]).toBeGreaterThan(192);
+  });
+
+  it('reads --flatten off the command line, or answers that there is none', () => {
+    expect(flattenArg(['in.png', 'out.png', '480', '160', '--frame'])).toBe(0);
+    expect(flattenArg(['in.png', 'out.png', '--flatten', '32'])).toBe(32);
+    expect(flattenArg(['--flatten', '2', '--frame'])).toBe(2);
+  });
+
+  it('refuses a --flatten with nothing usable after it, rather than skipping it', () => {
+    // This is the whole point of the check. `Number(undefined)` is `NaN`,
+    // `NaN > 0` is false, and the flatten used to be skipped without a word —
+    // which on this batch's picture is the difference between 137 KB and 1.5 MB
+    // going into the repo, with nothing on the terminal to say so.
+    expect(() => flattenArg(['in.png', 'out.png', '--flatten'])).toThrow(/two or more/);
+    expect(() => flattenArg(['--flatten', 'lots'])).toThrow(/two or more/);
+    expect(() => flattenArg(['--flatten', '--frame'])).toThrow(/two or more/);
+    expect(() => flattenArg(['--flatten', '1'])).toThrow(/two or more/);
+    expect(() => flattenArg(['--flatten', '2.5'])).toThrow(/two or more/);
+    expect(() => flattenArg(['--flatten', '-4'])).toThrow(/two or more/);
+  });
+
+  it('leaves the command line non-zero and prints the usage when it refuses', () => {
+    // The throw above is the library's; this is what a person at a terminal
+    // sees, and it is checked by running the script rather than by reading it.
+    const script = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      'scripts',
+      'cut-banner.mjs',
+    );
+    const run = spawnSync(
+      process.execPath,
+      [script, 'no-such-file.png', 'out.png', '1280', '720', '--frame', '--flatten'],
+      { encoding: 'utf8' },
+    );
+    expect(run.status).not.toBe(0);
+    expect(run.stderr).toMatch(/two or more/);
+    expect(run.stderr).toContain('--flatten N');
+    // It refused before it went looking for the file, so the message is about
+    // the flag and not about a missing picture.
+    expect(run.stderr).not.toMatch(/ENOENT/);
   });
 
   it('counts colors up to its cap and no further', () => {

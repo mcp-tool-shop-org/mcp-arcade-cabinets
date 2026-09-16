@@ -85,6 +85,12 @@ const TOAST_MS = 2000;
 const DEPLOY_MID = 33;
 /** A milestone card is drawn this wide over the preview, leaving a margin. */
 export const CARD_W = 440;
+/**
+ * The width at or under which the field is narrow: the panes stack to one
+ * column and the room behind them goes. It is the breakpoint the stylesheet
+ * already uses, and a test reads the stylesheet and holds the two together.
+ */
+export const NARROW_PX = 900;
 /** The card fades in over this and out over this, unless the player asked for calm. */
 const CARD_FADE_MS = 200;
 /** The milestone word over the card: cream, because the card's empty half is navy. */
@@ -754,6 +760,41 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       img.src = `${import.meta.env.BASE_URL}vibe/cards/${slug}.png`;
     }
   };
+  // The room the field sits in. One picture behind everything, at the low
+  // alpha the stylesheet owns, and it is CSS rather than a canvas layer for
+  // one reason: the chat and the editor are DOM panes, and a canvas cannot
+  // sit behind a DOM pane without giving the whole field a stacking order to
+  // maintain. A pseudo-element costs nothing per frame, takes `cover` and
+  // `center` for free, and lets the two media queries turn it off in the
+  // stylesheet, so a window dragged past the breakpoint answers with no
+  // listener at all.
+  //
+  // Three things have to be true before the class goes on: the file has to
+  // load, the player must not have asked for less movement, and the field
+  // must not be narrow. The first is why nothing happens when the file is
+  // missing — there is no element standing in for it and nothing to break.
+  const backdropWelcome = () => {
+    if (typeof matchMedia !== 'function') return true;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    return !matchMedia(`(max-width: ${NARROW_PX}px)`).matches;
+  };
+  const askBackdrop = () => {
+    if (typeof Image === 'undefined' || !backdropWelcome()) return;
+    const img = new Image();
+    img.decoding = 'async';
+    img.addEventListener(
+      'load',
+      () => {
+        if (left) return;
+        wrap.style.setProperty('--vibe-backdrop', `url(${JSON.stringify(img.src)})`);
+        wrap.classList.add('vibe-backdrop');
+      },
+      { once: true },
+    );
+    // No `error` handler: a picture that does not arrive leaves the class off
+    // and the custom property unset, which is the field exactly as it was.
+    img.src = `${import.meta.env.BASE_URL}vibe/field/backdrop.png`;
+  };
   const queue: RunInput[] = [];
   const chat: ChatItem[] = [];
   let chatAt = 0;
@@ -762,6 +803,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   // Asked for here rather than where the Map is built, so the handlers' guard
   // reads a flag that already exists.
   askCards();
+  askBackdrop();
   let over = false;
   let audio: TyperAudio | null = null;
   let muted = prefs.muted === 'on';
