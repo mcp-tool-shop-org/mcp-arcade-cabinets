@@ -12,12 +12,13 @@
     "@anthropic-ai/sdk": "^0.125.0",
     "@mcp-arcade-cabinets/ghost-on-the-menu": "workspace:*",
     "@mcp-arcade-cabinets/tape-core": "workspace:*",
+    "@mcp-arcade-cabinets/vibe-typer": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.6.2"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "pnpm --dir ../.. exec vitest run packages/cabinet-server/test",
-    "build": "esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --log-level=warning --banner:js=\"#!/usr/bin/env node\" && esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --log-level=warning"
+    "build": "esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --log-level=warning --banner:js=\"#!/usr/bin/env node\" && esbuild src/server-vibe.ts --bundle --platform=node --format=esm --outfile=dist/server-vibe.js --log-level=warning --banner:js=\"#!/usr/bin/env node\" && esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --log-level=warning"
   }
 }

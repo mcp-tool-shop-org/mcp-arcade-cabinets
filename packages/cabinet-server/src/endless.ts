@@ -22,42 +22,15 @@ import Anthropic from '@anthropic-ai/sdk';
 import { chatJson, mapTransport, type ChatOpts } from './client';
 import { FORBIDDEN } from './gate';
 import { CLAUDE_MODEL, sayTier, type SayOpts, type SayTier } from './say';
+import { bandWord, LANGUAGE_WORDS, sayablePairs, STACK_WORDS } from './vibe-words';
+
+export { bandWord, LANGUAGE_WORDS, sayablePairs, STACK_WORDS };
 
 /** Frozen system prompt for the endless seat. Same for every level. */
 export const ENDLESS_SYSTEM =
   'You are the user of a coding agent in an arcade cabinet. You cannot write code, ' +
   'you are fond of the agent, and the things you want are absurd and sincere. ' +
   'Answer with one JSON object and nothing else.';
-
-/** How the seat is told which team it is on. A word, never a version. */
-const STACK_WORDS: Record<string, string> = {
-  bash: 'shell',
-  python: 'python',
-  javascript: 'script',
-  csharp: 'sharp',
-  java: 'java',
-  sql: 'tables',
-  integration: 'wires',
-};
-
-/** What the code must actually be written in. */
-const LANGUAGE_WORDS: Record<string, string> = {
-  bash: 'bash',
-  python: 'python',
-  javascript: 'javascript',
-  csharp: 'C sharp',
-  java: 'Java',
-  sql: 'SQL',
-  integration: 'a JSON remote call envelope naming one tool',
-};
-
-/** The band, as a feeling. Nothing on this seat's side ever sees a number. */
-export function bandWord(band: number): string {
-  if (band <= 2) return 'easy';
-  if (band <= 4) return 'warm';
-  if (band <= 6) return 'hot';
-  return 'hotter';
-}
 
 /** What the seat is shown. Words and the product; no tape, no receipt, no score. */
 export interface EndlessView {
@@ -76,17 +49,6 @@ export interface EndlessView {
 export interface EndlessPrompt {
   system: string;
   user: string;
-}
-
-/**
- * A weak pair is two characters out of real code, so it can be a digit or a
- * bracket. The digits are dropped rather than thrown on: they are ordinary
- * here, and the throw below is for a genuine leak in the words.
- */
-function sayablePairs(weak: readonly string[]): string[] {
-  return weak.filter(
-    (p) => typeof p === 'string' && /^[^\W\d_]{2}$|^[a-z()[\]{}.,:;+=<>*/-]{2}$/i.test(p),
-  );
 }
 
 export function endlessPrompt(view: EndlessView): EndlessPrompt {

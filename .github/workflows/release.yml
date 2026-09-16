@@ -164,40 +164,25 @@ jobs:
             fi
             echo "- $dir --version: $got"
           done
-          # The typing cabinet has no MCP server yet. `--mcp` must say so and
-          # leave with 2 — not 0 (which would read as "it worked"), not 1
-          # (which would read as "it broke"), and never a browser.
-          set +e
-          out=$(node packages/launcher-vibe-typer/dist/cli.js --mcp 2>&1)
-          code=$?
-          set -e
-          if [ "$code" != "2" ]; then
-            echo "vibe-typer --mcp left with $code, want 2"
-            echo "next: node packages/launcher-vibe-typer/dist/cli.js --mcp"
-            exit 1
-          fi
-          case "$out" in
-            *"slice 4"*) echo "- vibe-typer --mcp: exit 2, $out" ;;
-            *)
-              echo "vibe-typer --mcp said '$out', which does not name the slice"
-              exit 1
-              ;;
-          esac
 
-      - name: The Ghost seat still lists its tools
+      - name: Both seats list their own tools
         id: mcp
-        working-directory: packages/launcher
         run: |
           set -e
-          # The MCP seat must list its six tools over stdio with no network.
+          # Each MCP seat must list its own tools over stdio with no network,
+          # and neither may list the other's: two cabinets, two contracts,
+          # two stdio entries, and the way that comes back wrong is silently.
           init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
           notified='{"jsonrpc":"2.0","method":"notifications/initialized"}'
           list='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
-          printf '%s\n' "$init" "$notified" "$list" | timeout 30 node dist/cli.js --mcp > /tmp/mcp.out 2>/tmp/mcp.err || true
-          cat /tmp/mcp.err >&2 || true
-          if ! python3 -c '
-          import json, sys
-          need = {"fire", "say", "speak", "sfx", "view", "tapes"}
+          seat() {
+            dir="$1"
+            printf '%s\n' "$init" "$notified" "$list" \
+              | timeout 30 node "$dir/dist/cli.js" --mcp > /tmp/mcp.out 2>/tmp/mcp.err || true
+            cat /tmp/mcp.err >&2 || true
+            if ! WANT="$2" DIR="$dir" python3 -c '
+          import json, os, sys
+          need = set(os.environ["WANT"].split(","))
           found = set()
           for line in sys.stdin.read().splitlines():
               line = line.strip()
@@ -213,13 +198,16 @@ jobs:
                       if isinstance(t, dict) and isinstance(t.get("name"), str):
                           found.add(t["name"])
           if found != need:
-              print("tools/list was", ",".join(sorted(found)) or "(nothing)", "want", ",".join(sorted(need)))
+              print(os.environ["DIR"], "tools/list was", ",".join(sorted(found)) or "(nothing)", "want", ",".join(sorted(need)))
               sys.exit(1)
-          print("tools/list:", ",".join(sorted(found)))
+          print("-", os.environ["DIR"], "tools/list:", ",".join(sorted(found)))
           ' < /tmp/mcp.out; then
-            echo "next: node packages/launcher/dist/cli.js --mcp"
-            exit 1
-          fi
+              echo "next: node $dir/dist/cli.js --mcp"
+              exit 1
+            fi
+          }
+          seat packages/launcher fire,say,speak,sfx,view,tapes
+          seat packages/launcher-vibe-typer view,product,ask,react
 
       - name: Both tarballs carry their cabinet and no sources
         id: tarball
@@ -243,9 +231,9 @@ jobs:
                   gone: ["dist/play/keys/", "dist/play/vibe/"],
                 }
               : {
-                  need: ["dist/cli.js", "dist/cabinet-server.js"],
+                  need: ["dist/cli.js", "dist/cabinet-stdio.js", "dist/cabinet-server.js"],
                   carries: ["dist/play/keys/", "dist/play/vibe/"],
-                  gone: ["dist/play/sprites/", "dist/play/tracks/", "dist/cabinet-stdio.js"],
+                  gone: ["dist/play/sprites/", "dist/play/tracks/"],
                 };
             const need = [...spec.need, "dist/play/index.html", "README.md", "LICENSE"];
             const missing = need.filter((n) => !files.includes(n));
@@ -334,8 +322,8 @@ jobs:
             echo "- version gate: ${{ steps.version.outcome }}"
             echo "- verify: ${{ steps.verify.outcome }}"
             echo "- build: ${{ steps.build.outcome }}"
-            echo "- bin smoke (both --version, vibe --mcp exit 2): ${{ steps.smoke.outcome }}"
-            echo "- Ghost --mcp tools/list: ${{ steps.mcp.outcome }}"
+            echo "- bin smoke (both --version): ${{ steps.smoke.outcome }}"
+            echo "- both --mcp tools/list (six and four): ${{ steps.mcp.outcome }}"
             echo "- tarball contract (both): ${{ steps.tarball.outcome }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -351,8 +339,8 @@ jobs:
             [ "${{ steps.install.outcome }}" = "failure" ] && echo "- next: pnpm install --frozen-lockfile"
             [ "${{ steps.verify.outcome }}" = "failure" ] && echo "- next: pnpm verify"
             [ "${{ steps.build.outcome }}" = "failure" ] && echo "- next: pnpm build:launcher"
-            [ "${{ steps.smoke.outcome }}" = "failure" ] && echo "- next: node packages/launcher-vibe-typer/dist/cli.js --mcp"
-            [ "${{ steps.mcp.outcome }}" = "failure" ] && echo "- next: node packages/launcher/dist/cli.js --mcp"
+            [ "${{ steps.smoke.outcome }}" = "failure" ] && echo "- next: node packages/launcher-vibe-typer/dist/cli.js --version"
+            [ "${{ steps.mcp.outcome }}" = "failure" ] && echo "- next: node packages/launcher/dist/cli.js --mcp, and the same in packages/launcher-vibe-typer"
             [ "${{ steps.tarball.outcome }}" = "failure" ] && echo "- next: cd packages/launcher && npm pack --dry-run, and the same in packages/launcher-vibe-typer"
             [ "${{ steps.publish.outcome }}" = "failure" ] && echo "- next: see docs/npm-launcher.md for what a half-finished publish leaves behind"
           } >> "$GITHUB_STEP_SUMMARY"

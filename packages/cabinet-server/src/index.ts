@@ -6,9 +6,36 @@
 // the sim disposes (G11). Speech is gated generation (G14). The stdio entry
 // is `server.ts`; the shell and `pnpm sit` use the same contract in-process.
 
-export { CONTRACT, enumOf, loadContract, TOOL_NAMES, toolDef, WHISPER } from './contract';
-export type { ToolAnnotations, ToolDef, ToolName, ToolSchema } from './contract';
-export { FORBIDDEN, gateLine, lineKey, NAMES, normalizeLine, SAY_MAX_WORDS } from './gate';
+export {
+  assertCatalogTools,
+  CONTRACT,
+  enumOf,
+  loadContract,
+  TOOL_NAMES,
+  toolDef,
+  VIBE_CONTRACT,
+  VIBE_TOOL_NAMES,
+  vibeToolDef,
+  WHISPER,
+} from './contract';
+export type {
+  AnyToolName,
+  ToolAnnotations,
+  ToolDef,
+  ToolName,
+  ToolSchema,
+  VibeToolName,
+} from './contract';
+export {
+  FORBIDDEN,
+  gateLine,
+  lineKey,
+  NAMES,
+  namesRegex,
+  normalizeLine,
+  SAY_MAX_WORDS,
+  VIBE_NAMES,
+} from './gate';
 export type { GateReason, GateResult } from './gate';
 export { DEFAULT_PERSONAS, LEADS, loadPersonas } from './personas';
 export type { BossKind, Lead, Persona, Personas, VoiceSheet } from './personas';
@@ -48,13 +75,36 @@ export type { SayAnswer, SayCall, SayOpts, SayPrompt, SayTier } from './say';
 // model, for the typing cabinet's endless ladder.
 export {
   askEndlessFor,
-  bandWord,
   ENDLESS_SCHEMA,
   ENDLESS_SYSTEM,
   endlessPrompt,
   parseRequest,
 } from './endless';
 export type { EndlessAnswer, EndlessPrompt, EndlessRequest, EndlessView } from './endless';
+// The typing cabinet's container tools (slice 4): the push path of the same
+// seat. Any MCP client plays the user in endless through these four.
+export { createVibeCabinet, reactFault, splitNotes, tooLong } from './vibe-cabinet';
+export type {
+  AskAnswer,
+  AskRefusal,
+  VibeAsk,
+  VibeCabinet,
+  VibeCallRecord,
+  VibeHost,
+  VibeToolResult,
+} from './vibe-cabinet';
+export {
+  isRepeatAsk,
+  REACT_WINDOW,
+  RECENT_TO_SEAT,
+  recentAsks,
+  vibeHostFor,
+  vibeViewLines,
+  WEAK_TO_SEAT,
+} from './vibe-host';
+export type { VibeLive } from './vibe-host';
+export { VIBE_SEAT_SYSTEM, vibeSeatPrompt } from './vibe-seat';
+export { bandWord, LANGUAGE_WORDS, sayablePairs, STACK_WORDS } from './vibe-words';
 export { seedPool } from './seeds';
 export { createScriptedSeat, SCRIPTED_LINES } from './scripted';
 export type { ScriptedSeat } from './scripted';

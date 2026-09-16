@@ -5,7 +5,7 @@
 // A line that fails is dropped by the caller, and the seed's authored line
 // plays instead, so the scripted floor never leaves.
 
-import { TOOL_NAMES } from './tool-names';
+import { TOOL_NAMES, VIBE_TOOL_NAMES } from './tool-names';
 
 export const SAY_MAX_WORDS = 12;
 
@@ -55,7 +55,21 @@ const VENDOR_NAMES = [
  * feature (G17): nothing on the field may name it. The word `model` itself
  * is allowed: the persona may own being one.
  */
-export const NAMES = new RegExp(`\\b(${[...TOOL_NAMES, ...VENDOR_NAMES].join('|')})\\b`, 'i');
+export function namesRegex(tools: readonly string[]): RegExp {
+  return new RegExp(`\\b(${[...tools, ...VENDOR_NAMES].join('|')})\\b`, 'i');
+}
+
+export const NAMES = namesRegex(TOOL_NAMES);
+
+/**
+ * The same refusal for the typing cabinet's four levers (slice 4). Measured
+ * before adding it, because `view`, `product`, `ask` and `react` are
+ * ordinary English in a way `sfx` and `tapes` are not: of the sixteen
+ * hundred and twenty-one authored reaction and review lines the user can
+ * say, none carries any of the four. The rule therefore costs the authored
+ * pool nothing and closes the same hole on the seat's side.
+ */
+export const VIBE_NAMES = namesRegex(VIBE_TOOL_NAMES);
 
 export type GateReason = 'empty' | 'long' | 'sentences' | 'digit' | 'forbidden' | 'name' | 'repeat';
 
