@@ -1,6 +1,6 @@
 {
   "name": "@mcptoolshop/ghost-on-the-menu",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "An arcade shooter where you are the agent, played against what MCP servers actually said on the wire. Plays in your browser or runs as an MCP server.",
   "license": "MIT",
   "type": "module",

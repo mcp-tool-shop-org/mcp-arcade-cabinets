@@ -41,7 +41,7 @@ export const VIBE_SERVER_NAME = 'vibe-typer';
  * whole graph into this bundle, because the bottom of `server.ts` is a
  * top-level side effect a bundler must keep. The test is the andon.
  */
-export const VIBE_SERVER_VERSION = '0.10.0';
+export const VIBE_SERVER_VERSION = '0.11.0';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 /** `packages/cabinet-server/{src,dist}` → the repo's fixtures, as the shooter resolves it. */

@@ -24,8 +24,8 @@
 
 | キャビネット                                                  | 概要                                                                                                                                                                                                                                                       | 状態                                                                                                                                                                                                                                            |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | 短いレトロシューティングゲーム。ゲームは、エージェントが本来行うべきではなかった行動を、正直な行動の中に隠し、攻撃時に明らかにするというものです。ボスは実験であり、ローカルモデルがその中に座ることができます。                                           | リリース済み、`v0.10.0`。[プレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **[Vibe Typer](packages/vibe-typer/README.md)**               | タイピングアーケードゲーム。あなたは勤勉で、おべっかを使うコーディングエージェントです。あなたのユーザーは、奇妙な要求をするバイブコーダーです。コードを入力し、ビルドされるのを見て、評価が上がっていくのを確認します。レベルは無限で、難易度も高いです。 | リリース済み、`v0.10.0`。[プレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [デザインとロック](docs/vibe-typer.dispatch.md)                                                              |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | 短いレトロシューティングゲーム。ゲームは、エージェントが本来行うべきではなかった行動を、正直な行動の中に隠し、攻撃時に明らかにするというものです。ボスは実験であり、ローカルモデルがその中に座ることができます。                                           | リリース済み、`v0.11.0`。[プレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | タイピングアーケードゲーム。あなたは勤勉で、おべっかを使うコーディングエージェントです。あなたのユーザーは、奇妙な要求をするバイブコーダーです。コードを入力し、ビルドされるのを見て、評価が上がっていくのを確認します。レベルは無限で、難易度も高いです。 | リリース済み、`v0.11.0`。[プレイ](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [デザインとロック](docs/vibe-typer.dispatch.md)                                                              |
 | **House Call**                                                | ターンベースのキャリブレーションゲーム：行動と信頼度を宣言すると、テープに何が起こったかが表示されます。                                                                                                                                                   | プレイ可能なデザインが完成するまで、保留状態です。`tape-core`はスコアリングルールを保持します。                                                                                                                                                 |
 
 今後、さらに多くのキャビネットが追加されます。それぞれが独自のパッケージ、ハンドブック内の独自のページ、およびこの表の独自の行を持ちます。
@@ -47,9 +47,9 @@ packages/tape-core          the tape loader, schema and calibration math
 packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
-packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/cabinet-server     both cabinets as stdio MCP servers; the say gate and the code gate; personas
 packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
-packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; --mcp is its server
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -72,7 +72,7 @@ npx @mcptoolshop/ghost-on-the-menu
 npx @mcptoolshop/vibe-typer
 ```
 
-各キャビネットはそれぞれ独立したパッケージです。各コマンドは、`127.0.0.1`上でゲームを実行し、起動します。Ghostの`--mcp`は、代わりにstdio経由でMCPサーバーとして実行します。Vibe Typerのコンテナツールはスライス4であり、その`--mcp`はそのことを示し、終了します。Node 22以降が必要です。これらの2つのパッケージのみがnpmに公開されており、それ以外のパッケージはすべて非公開です。また、この2つのキャビネット間の切り替えは、Pagesのビルドでのみ行われます。
+各キャビネットはそれぞれ独立したパッケージです。各コマンドは、`127.0.0.1`上でゲームを起動し、各キャビネットの`--mcp`が、標準入出力経由でそのキャビネットをMCPサーバーとして実行します。Ghostの6つのツールは、ボスにモデルを配置し、Vibe Typerの4つのツール（`view`、`product`、`ask`、`react`）は、任意のMCPクライアントをユーザーの席に配置して、無限に実行します。Node 22以降が必要です。これらの2つのパッケージのみがnpmに公開されており、それ以外のパッケージはすべて非公開です。また、2つのキャビネット間の切り替えは、Pagesのビルドでのみ可能です。
 
 アーケードで作業するには、それをクローンします。Node 22とpnpm 11が必要です。
 

@@ -1,6 +1,6 @@
 {
   "name": "mcp-arcade-cabinets",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "description": "The arcade: games made from what MCP servers said on the wire. Cabinets read mcp-arcade tapes and never touch the score. Ghost on the Menu (shipped), Vibe Typer (in build).",
   "license": "MIT",

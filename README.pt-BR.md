@@ -24,8 +24,8 @@
 
 | Gabinete                                                      | O que é                                                                                                                                                                                                                                                     | Estado                                                                                                                                                                                                                                    |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | Um jogo de tiro retrô curto. O sistema fornece as ações; as ações que o agente não deveria ter feito estão escondidas entre as ações honestas e são reveladas no momento do acerto. Os chefes são o experimento, e um modelo local pode estar neles.        | Lançado, `v0.10.0`. [Jogar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **[Vibe Typer](packages/vibe-typer/README.md)**               | Um jogo de arcade de digitação. Você é um agente de codificação trabalhador e subserviente; seu usuário é um codificador de vibrações cujos pedidos são absurdos. Digite o código, observe a construção e a avaliação aumenta. Níveis, infinitos, intensos. | Lançado, `v0.10.0`. [Jogar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [Design e bloqueio](docs/vibe-typer.dispatch.md)                                                             |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | Um jogo de tiro retrô curto. O sistema fornece as ações; as ações que o agente não deveria ter feito estão escondidas entre as ações honestas e são reveladas no momento do acerto. Os chefes são o experimento, e um modelo local pode estar neles.        | Lançado, `v0.11.0`. [Jogar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | Um jogo de arcade de digitação. Você é um agente de codificação trabalhador e subserviente; seu usuário é um codificador de vibrações cujos pedidos são absurdos. Digite o código, observe a construção e a avaliação aumenta. Níveis, infinitos, intensos. | Lançado, `v0.11.0`. [Jogar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [Design e bloqueio](docs/vibe-typer.dispatch.md)                                                             |
 | **House Call**                                                | Um jogo de calibração baseado em turnos: declare uma ação e um nível de confiança, então a fita revela o que aconteceu.                                                                                                                                     | Em espera até que haja um design que funcione. `tape-core` mantém suas regras de pontuação.                                                                                                                                               |
 
 Mais gabinetes serão adicionados aqui. Cada um tem seu próprio pacote, sua própria página no manual e sua própria linha nesta tabela.
@@ -47,9 +47,9 @@ packages/tape-core          the tape loader, schema and calibration math
 packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
-packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/cabinet-server     both cabinets as stdio MCP servers; the say gate and the code gate; personas
 packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
-packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; --mcp is its server
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -72,7 +72,7 @@ npx @mcptoolshop/ghost-on-the-menu
 npx @mcptoolshop/vibe-typer
 ```
 
-Cada conjunto de arquivos é um pacote independente. Cada comando executa o jogo correspondente em `127.0.0.1` e o abre. O `--mcp` do Ghost executa-o como um servidor MCP através do stdio; as ferramentas de contêiner do Vibe Typer são da versão 4, portanto, o `--mcp` indica isso e encerra o processo. Versão 22 ou superior do Node. Esses dois pacotes são os únicos disponíveis no npm; todos os outros pacotes aqui são privados, e a alternância entre os dois conjuntos de arquivos ocorre apenas durante a construção das Páginas.
+Cada gabinete é um pacote independente. Cada comando executa o jogo correspondente em `127.0.0.1` e o abre, e o `--mcp` de cada um executa esse gabinete como um servidor MCP através do stdio: as seis ferramentas do Ghost colocam um modelo no lugar do chefe; as quatro ferramentas do Vibe Typer (`view`, `product`, `ask`, `react`) colocam qualquer cliente MCP no lugar do utilizador para uma execução interminável. Node 22 ou versão mais recente. Esses dois pacotes são os únicos no npm; todos os outros pacotes aqui são privados, e a alternância entre os dois gabinetes só ocorre na construção do Pages.
 
 Para trabalhar no arcade, clone-o. Você precisa do Node 22 e do pnpm 11:
 

@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Slice 4 of Vibe Typer, in sub-slices. Builds, numbers and the outside reviews in `docs/vibe-typer.slice4.md`.
+Nothing yet.
+
+## [0.11.0] - 2026-09-16
+
+Slice 4 of Vibe Typer: the container tools, the rest of the look, the voice on the user's lines, beds per stack, and the editor on another family. Builds, numbers and the outside reviews in `docs/vibe-typer.slice4.md` and the `docs/vibe-typer.slice4*.review.md` files beside it. The backdrop was generated and dropped before the merge; its spend is on record. The user of Vibe Typer is a man with an overgrown beard and messy hair, in the avatar, the voice and the voice sheet.
 
 ### Added
 

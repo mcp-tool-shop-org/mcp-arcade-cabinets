@@ -24,8 +24,8 @@
 
 | कैबिनेट                                                 | यह क्या है                                                                                                                                                                                                          | स्थिति                                                                                                                                                                                                                               |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **[मेनू पर भूत](packages/ghost-on-the-menu/README.md)** | एक छोटा रेट्रो शूटर। रिग आपको कॉल देता है; एजेंट को जिन कॉल नहीं करनी चाहिए थीं, वे ईमानदार लोगों के बीच छिपी हुई हैं और हिट पर प्रकट होती हैं। बॉस प्रयोग हैं, और एक स्थानीय मॉडल उनमें बैठ सकता है।               | जारी, `v0.10.0`। [खेलें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [डॉकर](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **[वाइब टाइपर](packages/vibe-typer/README.md)**         | एक टाइपिंग आर्केड गेम। आप एक मेहनती, चापलूस कोडिंग एजेंट हैं; आपका उपयोगकर्ता एक वाइब कोडर है जिसके अनुरोध बेतुके हैं। कोड टाइप करें, देखें कि चीज़ कैसे बनती है, और मूल्यांकन ऊपर चला जाता है। स्तर, अंतहीन, कठिन। | जारी, `v0.10.0`। [खेलें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [डिजाइन और लॉक](docs/vibe-typer.dispatch.md)                                                               |
+| **[मेनू पर भूत](packages/ghost-on-the-menu/README.md)** | एक छोटा रेट्रो शूटर। रिग आपको कॉल देता है; एजेंट को जिन कॉल नहीं करनी चाहिए थीं, वे ईमानदार लोगों के बीच छिपी हुई हैं और हिट पर प्रकट होती हैं। बॉस प्रयोग हैं, और एक स्थानीय मॉडल उनमें बैठ सकता है।               | जारी, `v0.11.0`। [खेलें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [डॉकर](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[वाइब टाइपर](packages/vibe-typer/README.md)**         | एक टाइपिंग आर्केड गेम। आप एक मेहनती, चापलूस कोडिंग एजेंट हैं; आपका उपयोगकर्ता एक वाइब कोडर है जिसके अनुरोध बेतुके हैं। कोड टाइप करें, देखें कि चीज़ कैसे बनती है, और मूल्यांकन ऊपर चला जाता है। स्तर, अंतहीन, कठिन। | जारी, `v0.11.0`। [खेलें](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [डिजाइन और लॉक](docs/vibe-typer.dispatch.md)                                                               |
 | **House Call**                                          | एक टर्न-आधारित अंशांकन गेम: एक कॉल और एक आत्मविश्वास बताएं, फिर टेप बताता है कि क्या हुआ।                                                                                                                           | जब तक कि कोई ऐसा डिज़ाइन न हो जो खेले, तब तक रोक दिया गया। `tape-core` अपने स्कोरिंग नियमों को बनाए रखता है।                                                                                                                         |
 
 अधिक कैबिनेट यहां आएंगे। प्रत्येक का अपना पैकेज, हैंडबुक में इसका अपना पृष्ठ और इस तालिका में इसकी अपनी पंक्ति होगी।
@@ -47,9 +47,9 @@ packages/tape-core          the tape loader, schema and calibration math
 packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
-packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/cabinet-server     both cabinets as stdio MCP servers; the say gate and the code gate; personas
 packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
-packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; --mcp is its server
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -72,7 +72,7 @@ npx @mcptoolshop/ghost-on-the-menu
 npx @mcptoolshop/vibe-typer
 ```
 
-प्रत्येक कैबिनेट अपना पैकेज है। प्रत्येक कमांड `127.0.0.1` पर अपना गेम परोसता है और इसे खोलता है। भूत का `--mcp` इसे stdio पर एक एमसीपी सर्वर के रूप में चलाता है; वाइब टाइपर के कंटेनर उपकरण स्लाइस 4 हैं, इसलिए इसका `--mcp` ऐसा कहता है और बाहर निकल जाता है। नोड 22 या नया। ये दो पैकेज ही npm पर हैं; यहां प्रत्येक अन्य पैकेज निजी है, और दो कैबिनेटों के बीच स्विच केवल पेज बिल्ड है।
+प्रत्येक कैबिनेट एक अलग पैकेज है। प्रत्येक कमांड `127.0.0.1` पर अपना गेम चलाता है और उसे खोलता है, और प्रत्येक का `--mcp` उस कैबिनेट को stdio पर एक एमसीपी सर्वर के रूप में चलाता है: घोस्ट के छह उपकरण बॉस की सीट पर एक मॉडल रखते हैं; वाइब टाइपर के चार (`view`, `product`, `ask`, `react`) किसी भी एमसीपी क्लाइंट को उपयोगकर्ता की सीट पर असीमित समय के लिए चलाते हैं। नोड 22 या उससे नया संस्करण। ये दो पैकेज ही npm पर उपलब्ध हैं; यहां मौजूद अन्य सभी पैकेज निजी हैं, और इन दोनों कैबिनेटों के बीच स्विच केवल पेजेस बिल्ड में ही होता है।
 
 आर्केड पर काम करने के लिए, इसे क्लोन करें। आपको नोड 22 और pnpm 11 की आवश्यकता है:
 

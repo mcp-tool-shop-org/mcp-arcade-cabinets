@@ -24,8 +24,8 @@
 
 | 街机游戏                                                      | 它是什么                                                                                                                                                   | 状态                                                                                                                                                                                                                                    |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | 一款简短的复古射击游戏。游戏会给你提供指令；智能体本不应该执行的指令会隐藏在正常的指令中，并在命中时显现。Boss 是实验对象，本地模型可以控制它们。          | 已发布，`v0.10.0`。[试玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **[Vibe Typer](packages/vibe-typer/README.md)**               | 一款打字街机游戏。你是一个勤奋、谄媚的编码智能体；你的用户是一个氛围编码师，他的要求非常荒谬。输入代码，观察程序被构建，然后评估结果。关卡、无限、高难度。 | 已发布，`v0.10.0`。[试玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [设计和锁定](docs/vibe-typer.dispatch.md)                                                                    |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | 一款简短的复古射击游戏。游戏会给你提供指令；智能体本不应该执行的指令会隐藏在正常的指令中，并在命中时显现。Boss 是实验对象，本地模型可以控制它们。          | 已发布，`v0.11.0`。[试玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | 一款打字街机游戏。你是一个勤奋、谄媚的编码智能体；你的用户是一个氛围编码师，他的要求非常荒谬。输入代码，观察程序被构建，然后评估结果。关卡、无限、高难度。 | 已发布，`v0.11.0`。[试玩](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [设计和锁定](docs/vibe-typer.dispatch.md)                                                                    |
 | **House Call**                                                | 一款回合制校准游戏：声明一个指令和一个置信度，然后录音带会显示发生了什么。                                                                                 | 暂停开发，直到有设计方案可以实现。`tape-core`保留其计分规则。                                                                                                                                                                           |
 
 更多街机游戏将会陆续推出。每个游戏都有自己的包，手册中的自己的页面，以及此表格中的自己的行。
@@ -47,9 +47,9 @@ packages/tape-core          the tape loader, schema and calibration math
 packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
-packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/cabinet-server     both cabinets as stdio MCP servers; the say gate and the code gate; personas
 packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
-packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; --mcp is its server
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -72,7 +72,7 @@ npx @mcptoolshop/ghost-on-the-menu
 npx @mcptoolshop/vibe-typer
 ```
 
-每个街机游戏都是一个独立的包。每个命令都在`127.0.0.1`上提供其游戏并打开它。Ghost 的`--mcp`会将其作为 MCP 服务器通过 stdio 运行；Vibe Typer 的容器工具是切片 4，因此其`--mcp`会显示这一点并退出。Node 22 或更高版本。这两个包是唯一在 npm 上的包；这里的每个其他包都是私有的，并且在两个街机游戏之间的切换仅在 Pages 构建中进行。
+Each cabinet is its own package. Each command serves its game on `127.0.0.1` and opens it, and each one's `--mcp` runs that cabinet as an MCP server over stdio instead: Ghost's six tools put a model in the boss's seat; Vibe Typer's four (`view`, `product`, `ask`, `react`) put any MCP client in the user's chair for an endless run. Node 22 or newer. Those two packages are the only ones on npm; every other package here is private, and the switch between the two cabinets is the Pages build only.
 
 要使用街机游戏，请克隆它。你需要 Node 22 和 pnpm 11：
 
