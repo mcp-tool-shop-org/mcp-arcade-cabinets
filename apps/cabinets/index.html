@@ -143,6 +143,24 @@
         font-size: 0.85rem;
         min-width: 4.5rem;
       }
+      /* The level list, grouped: one quiet heading a stack, its rows under it.
+         The same type as a row's difficulty word, so the heading names the
+         group without shouting over the products. */
+      .vibe-levels {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        max-width: 640px;
+      }
+      .vibe-group {
+        color: #9a9aa6;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin: 0.65rem 0 0.1rem;
+      }
+      .vibe-levels > .vibe-group:first-child {
+        margin-top: 0;
+      }
       .tape-info {
         position: relative;
         width: 1.25rem;

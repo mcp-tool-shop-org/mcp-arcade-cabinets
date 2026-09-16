@@ -77,7 +77,7 @@ The brief for the art, in this order:
 1. **A Vibe Typer logo** for `packages/vibe-typer/README.md` and the brand repo (`logos/mcp-arcade-cabinets/vibe-typer-readme.png`, 669×669 like the ghost icon): a small keyboard with one glowing key and a speech bubble, amber on navy, no text.
 2. **Preview device frames** per stack, 480×360 at 2×, dark, empty: a terminal, a phone, a notebook, a ledger, a wire diagram. The pieces keep drawing as blocks inside them, in the level's palette.
 3. **Piece art**: eight small tiles per stack the packer can use instead of flat blocks (a function, a table, a button, a route), 128×128, limited palette, no glyphs or digits in any image.
-4. **Avatars**: the user (a person at a laptop, warm, a little chaotic) and Claudette (a friendly terminal face), 128×128, for the chat header.
+4. **Avatars**: the user (a person at a laptop, warm, a little chaotic) and Sprocket (a friendly terminal face), 128×128, for the chat header.
 5. **Milestone cards** for seed, series A and unicorn, and a deploy ribbon.
 6. **A backdrop** for the field, 1280×720, an office at night with the glow of one screen.
 
@@ -99,3 +99,30 @@ Reference-image chaining keeps the set on one palette, as Ghost's receipts descr
 ## What the previous session left thin, so nobody repeats it
 
 The asks were templates with a title hole, so the code rarely matched the request; the reactions did not know what shipped; the levels were bands, not stories; there were no nags; endless was a corpus walk with a noun list, not a model; British spellings shipped in a level name; the editor type was small; the preview was rectangles. All of it is this slice.
+
+## Sub-slice F — one package per cabinet (the Director's decision, 2026-09-15)
+
+`0.9.0` shipped both cabinets inside `@mcptoolshop/ghost-on-the-menu`, which made the name wrong. The Director decided that each cabinet ships as its own npm package, and that the arcade bundle stays on Pages. This lands before `0.10.0`.
+
+**The packages.**
+
+| Package                            | Directory                        | Carries                                            | `--mcp`                                                    |
+| ---------------------------------- | -------------------------------- | -------------------------------------------------- | ---------------------------------------------------------- |
+| `@mcptoolshop/ghost-on-the-menu`   | `packages/launcher`              | Ghost only, its sprites and tracks, the tapes      | Ghost's stdio server, as today                             |
+| `@mcptoolshop/vibe-typer`          | `packages/launcher-vibe-typer`   | Vibe Typer only, the keyboard sets, the tapes      | Prints that the cabinet's tools ship with slice 4, exits 2 |
+| `@mcptoolshop/mcp-arcade-cabinets` | (placeholder only, no directory) | Nothing; the name is reserved for a bundle if ever | —                                                          |
+
+The README for `packages/launcher-vibe-typer` is already written (the coordinator moved the Vibe Typer content there so nothing is lost); the Ghost README is Ghost-only again. Placeholder folders for the two new names sit at `E:/AI/vibe-typer-placeholder/` and `E:/AI/mcp-arcade-cabinets-placeholder/`, ready for the Director's `npm publish <dir> --access public`; the name must exist before Trusted Publishing can be configured on it (the `npm-placeholder` skill; never read a fresh 404 as proof a name is free).
+
+**The build.**
+
+- `apps/cabinets` gets a build-time `VITE_CABINET` of `all` (default; Pages), `ghost` or `vibe`. With one cabinet the switch is not rendered, the menu is that cabinet's, and the other cabinet's module is not imported, so tree-shaking drops it. The pack's Ghost-marker grep (`data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, `Ollama bosses`) applies to the Ghost build; the Vibe build gets its own marker check (its menu title and a keys path).
+- Public assets are split by cabinet at pack time: the Ghost package copies `sprites/` and `tracks/`, the Vibe package copies `keys/`; both copy `tapes/`. Measure and record both tarballs in the slice doc; the Ghost one should shrink by the keyboard sets, the Vibe one should be under a megabyte plus the tapes.
+- `packages/launcher/scripts/build.mjs` takes `--cabinet ghost|vibe` and an output package directory; `packages/launcher-vibe-typer` has its own `package.json` (name, bin `vibe-typer`, description, keywords, `files`, `engines`, `publishConfig`, `repository.directory`), `LICENSE` copied at pack, and a thin `scripts/build.mjs` that calls the shared one. Both packages declare zero runtime dependencies. The CLI source is shared; the cabinet is a constant baked at bundle time. Ports: Ghost keeps 7777, Vibe takes 7778.
+- `--mcp` in the Vibe package exits 2 with one sentence naming slice 4; no server is bundled.
+
+**The release.** `release.yml` publishes both packages in one job under the existing version gate (root, every package, `SERVER_VERSION`, the tag), in a `bash -e` loop that is idempotent over already-published `name@version` so a rerun only publishes stragglers. Trusted Publishing is per package on npmjs.com, keyed to this repo and the filename `release.yml` with no environment; the Director configures it for `@mcptoolshop/vibe-typer` after the placeholder exists. The smoke step runs `--version` on both and `--mcp` on Ghost only. The tarball check covers both.
+
+**The docs (lead-authored, not the builder's).** Root README's cabinet table and play section, both package pages, the handbook's getting-started and Vibe Typer pages, the landing page's usage cards, `CLAUDE.md`'s publish rule (two packages on the Director's word), `docs/npm-launcher.md`'s compensators table gaining the second package, the changelog.
+
+**Sequencing.** Build after sub-slices A–C are merged so `main.ts` is edited by one hand at a time. Gate: `pnpm verify`, `pnpm build:play`, `pnpm build:launcher` for both packages, `npm pack --dry-run` on both, identity scan on both tarballs. Do not publish; `0.10.0` is cut by the coordinator through the full treatment's Phase 7 once the Director has configured Trusted Publishing on the new name.

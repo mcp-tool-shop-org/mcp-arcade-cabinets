@@ -287,6 +287,722 @@ before its merge except one, recorded in the C review as not a bypass.
 | Persona hashes | the run's: asks `d1e35eac…`, nags `9ac3cb51…`, reactions `2973d802…`, replies `7b7663c3…`; every `run` slot's per-call hashes are in its receipt under `packages/vibe-typer/authoring/` |
 | Date           | sample 2026-09-15; the persona read and the full run 2026-09-15 into 2026-09-16                                                                                                         |
 
+## Sub-slice A, part two — the bed
+
+**Branch:** `cabinet/vibe-typer-s3a2`, one commit, not merged. `pnpm verify` and `pnpm build:play` green.
+
+### The decision, and why
+
+The Director played the cabinet and found the music under the context bar stressful. The decision: **the bed
+must never read as a countdown.** Vibe Typer's tension is a reward, not a punishment — the lock's G25 says
+nothing yells, and the brief-as-decisions in `docs/vibe-typer.dispatch.md` puts the joy in what gets built,
+not in what is running out. What shipped in v0.9.0 was a four-beat kick-and-hat bar at ninety-six beats a
+minute whose tempo climbs with vibes; a steady kick under a draining bar is a clock, and that is exactly the
+reading the game does not want.
+
+So the bed becomes a setting with a calm default, and the pulse is kept only for the players who ask for it by
+name. G29 still holds in the two modes that play: the tempo follows the vibes and holds through a level's last
+request, so the bed is still the score's voice — it is only the voice that sounds like a metronome that is
+gone. `sound: off` still silences the whole cabinet; `music` only shapes the bed under it.
+
+### The three modes
+
+`MUSIC_MODES` and `BED_MODES` at the top of `apps/cabinets/src/typer-audio.ts`, all `// Director`.
+`DEFAULT_MUSIC` is `soft`.
+
+| Mode           | Bed level | Base tempo | Vibes step | Kick and bass | Hat gain | Hat filter | What it is                           |
+| -------------- | --------- | ---------- | ---------- | ------------- | -------- | ---------- | ------------------------------------ |
+| `on`           | `0.16`    | `96`       | `0.06`     | yes           | `1`      | `6000` Hz  | exactly the bed that shipped         |
+| `soft` default | `0.05`    | `80`       | `0.03`     | no            | `0.75`   | `4200` Hz  | a quiet tick, half the climb         |
+| `off`          | `0`       | —          | —          | no            | —        | —          | no bed at all; every cue still plays |
+
+- **`on`** is the v0.9.0 bed unchanged: `BED_LEVEL 0.16`, `BED_BPM 96`, `BED_HYPE 0.06`, the kick, the
+  two-note bass and the hat. Those three constants now describe this mode and nothing else.
+- **`soft`** drops the kick voice entirely — it is the one that reads as a countdown — and keeps the hat,
+  quieter and filtered lower so it is a tick rather than a hiss. The bed bus sits at `0.05`, a little under a
+  quarter of `on`'s, the base tempo is `80`, and each step of vibes moves the tempo half as far. At five times
+  vibes the bar is `0.67` seconds a beat against `on`'s `0.50`. The deploy duck and the drop to base tempo
+  through a sync both still apply.
+- **`off`** schedules nothing: `tick()` returns before the bar, the deploy duck is a no-op, and the bed bus is
+  ramped to silence. Every cue still plays, and the keystroke engine, the pitch climb and the duck constants
+  are untouched. With no bar laid down there are no beats for a user message to land on, so the beat-joined
+  kick in the `ping` cue never fires either.
+
+Switching at run time takes effect on the next bar: the bar already scheduled plays out, the bed gain moves at
+once through `setBed`, and the tempo climb restarts from the new mode's base because the scale it climbs on
+changed. Setting the same mode twice does nothing the second time.
+
+### What was built
+
+```
+apps/cabinets/src/typer-audio.ts        MUSIC_MODES / MusicMode / isMusicMode / DEFAULT_MUSIC / BedMode /
+                                        BED_MODES; TyperAudio.setMusic() and .music(); bar() reads the mode
+                                        (the kick is conditional, the hat is scaled and filtered by it);
+                                        tick() reads the mode's bpm, hype and level and returns early on
+                                        off; duck() is a no-op on off
+apps/cabinets/src/vibe-typer.ts         VibePrefs.music with validation in readVibePrefs; VibeOpts.music;
+                                        the mount resolves opts.music ?? prefs.music ?? DEFAULT_MUSIC and
+                                        calls audio.setMusic() right after setTheme in ensureAudio;
+                                        debug() reports the engine's mode, or nothing when there is none
+apps/cabinets/src/main.ts               the music select in vibeMenu's settings row, persisted with the patch
+apps/cabinets/test/typer-audio.test.ts  new: a recording AudioContext and six cases (the default; off lays
+                                        down nothing; off still plays a cue; the kick is on's alone; soft is
+                                        slower and quieter at the same vibes; setMusic is idempotent)
+apps/cabinets/test/typer-mount.test.ts  + music reaches the engine, + the default reaches it, + the pref
+                                        round-trips under vibe.prefs and a word that is not a mode is
+                                        dropped; the seat case now expects the widened debug()
+```
+
+Nothing in `packages/`, `tape-core`, `cabinet-server`, `launcher`, `catalog/`, `.github/workflows/` or
+`voice/` was touched, and nothing in Ghost's audio. In `main.ts` only the Vibe Typer imports and the body of
+`vibeMenu` changed. No cue, no keystroke, no pitch climb and no duck constant moved.
+
+### Evidence against the standards table
+
+- **ANDON_AUTHORITY (2 → held).** `typer-audio.test.ts` fails the build if `off` ever schedules a voice or if
+  `soft` stops being slower and quieter than `on`; the mount test fails if the setting stops reaching the
+  engine or the pref stops round-tripping.
+- **NAMED_COMPENSATORS (2 → held).** The only irreversible action is the branch push. Compensator:
+  `git push origin --delete cabinet/vibe-typer-s3a2`, owner the coordinator. No npm, no tag, no release, no
+  Pages deploy, no spend.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** Every number in the mode table is a `// Director` constant at the
+  top of its module, and each choice the brief left open is under Decisions below with its reason.
+- **EXTERNAL_VERIFIER (2 → held).** The builder does not review its own diff; the coordinator sends it to a
+  different family. The two assertions that matter are mechanical comparisons between modes, not a reading of
+  how the bed sounds.
+
+### Decisions
+
+1. **The default is `soft`, not `off`.** The brief set it, and the reason is worth writing down: silence would
+   also stop the bed reading as a clock, but it would take G29 with it — the bed carries the vibes climb, and
+   that climb is part of the reward the score pays. `soft` keeps the voice and removes the metronome.
+2. **`soft` keeps a hat and drops the kick, rather than the reverse.** The kick is the low periodic hit a
+   listener counts; the hat is an off-beat tick that reads as texture. Dropping the kick is what stops the bar
+   being countable at all, and it is why `soft` carries no bass note either — the bass shares the kick's voice
+   in `bar()` and is the same low pulse.
+3. **The hat is trimmed to `0.75` and filtered at `4200` Hz in `soft`.** The brief set the bed level at about
+   a quarter of today's and left the hat's own shape open. At `0.05` on the bus the hat is already quiet; the
+   extra trim and the lower cutoff are what turn it from a sizzle into a tick, which is the sound the mode is
+   for. Both sit in `BED_MODES`, so a later pass can move them without touching the scheduler.
+4. **The `ping` cue's beat-joined kick is left exactly as it was.** The brief says to change no cue, and the
+   reasoning holds on its own: that kick is occasional, it fires only when a user message happens to land on a
+   beat, and it cannot be counted. In `soft` it plays at the mode's own quiet level, and in `off` no bar is
+   laid down, so there is no beat for it to find.
+5. **`setMusic` restarts the tempo climb from the new mode's base.** The modes have different base tempos and
+   different steps, so a tempo carried across a switch would be a number from the old scale. The bar already
+   scheduled plays out first, so the switch is heard as the next bar, never as a stutter.
+6. **`debug()` reports the engine's mode, not the resolved option.** Reading it back off the engine is what
+   proves the setting arrived; a mount with no engine yet reports nothing, which is the honest answer and is
+   asserted as `null` in the seat case.
+7. **The music select sits last in the settings row and writes with the patch.** It follows `sound:`, because
+   a player reaches for the mute first and the bed's shape second. Unlike `sound:` it does not write on
+   `change` — the field has no music button for it to disagree with, so the one write in `start()` is enough.
+
+### Left open
+
+- **The bed itself is still procedural.** The ACE-Step beds per stack are still owed (see `HANDOFF.md`); when
+  they land, `BED_MODES` is where a mode picks which bed it plays, and `soft` should get its own bed rather
+  than the same bar with a voice removed.
+- **`soft` has no separate hardcore reading.** Hardcore is the one mode that is meant to hurt (G25), and a
+  player who wants the clock back can set `music: on`. Whether hardcore should force the pulse is the
+  Director's call, not the builder's.
+
+---
+
+## Sub-slice E — the menu by stack, the seat on the endless entry, the premise
+
+Branch `cabinet/vibe-typer-s3e`, cut from `cabinet/vibe-typer-s3a2` (the bed) rather than `main`, because both
+edit `vibeMenu` and the merge should be a merge, not a rewrite. Nothing the bed added was touched: the
+`music:` select is where it left it and `setMusic` was not read.
+
+### What was built
+
+**The level list is grouped by stack.** The flat list of products is now one quiet heading a stack — the stack
+word from `STACK_WORDS`, the same word the row used to carry — with that stack's levels under it. A row is a
+product and a difficulty word and nothing else. The endless entry sits under a heading of its own and names
+the seat that will sit it.
+
+**The grouping rule, exactly.** Stacks are printed in `STACKS` order, which is `CORPUS_STACKS` and then
+`integration` — shell, sharp, java, script, python, tables, wires. A stack with no listed level gets no
+heading; a stack with one level gets a heading like any other. Inside a group the levels are in `levels.json`
+order, untouched. A stack the levers grow that this shell has no word for still gets a heading, after the
+known ones, printed with its own key rather than dropped. The pick is still an index into `levels.levels` and
+still persists as `vibe.prefs.level`, so the mount's contract is exactly what it was — the menu's shape moved,
+its output did not. Nothing reads a count of levels anywhere: eight levels and sixteen paint the same way.
+
+**The probe rule, exactly.** On Pages (`LOCAL_SEATS` false) the endless row reads `the authored user` and the
+menu makes no call at all. Where a daemon is reachable the row opens on `looking for a daemon` and the menu
+takes **one** look — `GET /ollama/api/tags`, five seconds, no retry loop; the field keeps its own five-second
+loop and is unchanged in that. The answer is read through `listPilotModels`, cloud tags first, and the first
+name is the one printed: `the user is <tag>`. Nothing listed, no daemon, a timeout, or `vibe.prefs.seat` set to
+`off` all read `the authored user`. Play abandons the look, and a menu that has been replaced (the switch, or
+the cabinet card) is never written to.
+
+The reading itself is now one function, `probeSeatModels`, exported from `apps/cabinets/src/vibe-typer.ts` and
+used by both the menu and the field's `probeTags`, so the name the menu prints is the name the field will sit.
+It never throws: a daemon that is not there, an answer that is not JSON, a look that timed out and a look that
+was abandoned are all the same answer — no seat — and the authored pool plays either way. `probeSeatName` is
+the menu's one-line wrapper over it.
+
+**The standup.** B2's premise under the product heading is confirmed by test, and the heading now carries the
+stack beside the product: `a website for my cat · shell`. Endless gets the same heading shape and no premise,
+because nobody wrote it one. The retro's order is untouched: weak pairs, then consistency, then speed as a
+word, and never against another player.
+
+### Files
+
+```
+apps/cabinets/src/main.ts               vibeMenu is exported; the level list is grouped (groupList/addRow,
+                                        the byStack map and the STACKS order); the endless row gains a third
+                                        column and the one-look probe; SEAT_LOOKING / SEAT_AUTHORED; the
+                                        page's root is resolved once and the bootstrap runs only when it is
+                                        there
+apps/cabinets/src/vibe-typer.ts         LOCAL_SEATS exported; TAGS_TIMEOUT_MS and SEAT_PROBE_TIMEOUT_MS
+                                        named; probeSeatModels and probeSeatName added; probeTags rewritten
+                                        onto the shared reader; the standup heading carries the stack word
+apps/cabinets/index.html                .vibe-levels and .vibe-group, beside the .tape-* rules
+apps/cabinets/test/typer-menu.test.ts   new: eight cases over the painted menu
+apps/cabinets/test/typer-mount.test.ts  + the standup names the product and its stack and carries the
+                                        premise, + endless shows no premise
+```
+
+Ghost is byte-identical: `ghostMenu`, `menu()`, the switch, the shift path and every Ghost rule in
+`index.html` are untouched. No lever was edited — nothing under `packages/vibe-typer/patterns/` moved — and
+`drawPreview`, `drawFrame` and `frameBox` were not opened. No new dependency.
+
+### The tests
+
+`apps/cabinets/test/typer-menu.test.ts` (jsdom, the mount stubbed so Play is a pref write and a call, not a
+game):
+
+- one heading a stack that has a level, in the corpus order, with `every stack` last;
+- every level under its own stack in the levers' order, with its difficulty word beside it, one column a row,
+  and every listed level on the menu exactly once — all computed from `levels.levels`, never from a count, so
+  the sixteen-level rewrite lands without touching this file;
+- no digit anywhere in the list, headings included (G23);
+- a level picked in the **second** group persists that level's index and hands the mount the same one;
+- the endless row's seat column: `looking for a daemon`, then `the user is kimi-test:cloud` from a two-tag
+  daemon (the cloud tag, not the local one that sorts first by name); `the authored user` when nothing
+  answers; `the authored user` when this browser turned the seat off; and, with `LOCAL_SEATS` false, `the
+authored user` from the first paint with no call made at all.
+
+`typer-mount.test.ts` gains the standup pair. Both let the context run out rather than typing a level, which
+is the cheapest way to the card; the listed one runs at hardcore, because that is the one listed tier where an
+empty bar is the end rather than a compaction.
+
+### Verification
+
+`pnpm verify` green: eslint and prettier clean, six typechecks clean, **622 tests in 50 files** (612 before),
+both play-throughs unchanged — Ghost's round on `naive-ndjson`, Vibe Typer shipping `cat-website` at valuation
+66 with four pieces. `pnpm build:play` green.
+
+The marker gate still discriminates, measured on both bundles after this change: the Pages build carries `the
+authored user` and **not** `the user is ` or `data-vibe-seat`, so the menu's probe is dead-code-eliminated
+there along with the seat chrome; the launcher build (`pnpm build:launcher`) carries both. `looking for a
+daemon` survives in Pages only as the field's own `seat: looking for a daemon`, exactly as before.
+
+### Evidence against the standards table
+
+- **ANDON_AUTHORITY (2 → held).** The menu test fails the build if a stack loses its heading, if a level moves
+  out of its group or order, if a digit reaches the list, if a pick stops persisting its index, or if the seat
+  column says something other than the four things it may say.
+- **NAMED_COMPENSATORS (2 → held).** The only irreversible action is the branch push. Compensator:
+  `git push origin --delete cabinet/vibe-typer-s3e`, owner the coordinator. No npm, no tag, no release, no
+  Pages deploy, no spend.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** The two timeouts are named constants beside the seat's own; every
+  choice the brief left open is under Decisions below with its reason.
+- **EXTERNAL_VERIFIER (2 → held).** The builder does not review its own diff; the coordinator sends it to a
+  different family. Every assertion here is a mechanical comparison against the levers, not a reading of how
+  the menu looks.
+
+### Decisions
+
+1. **The heading carries the stack word, so the row drops it.** Printing both would say the same word on every
+   row of a group. The row keeps the difficulty word, because that is the one thing that differs inside a
+   group and it is what a player picks on.
+2. **`STACKS` is the order, not a list written here.** `STACKS` is `CORPUS_STACKS` and then `integration`,
+   which is the order the brief asked for and is already the package's own answer to "what are the stacks."
+   Writing the order into the shell would be a second copy to drift.
+3. **An unknown stack still gets a heading.** The levers are data and a sibling is rewriting them; a stack this
+   shell has no word for prints under its own key, after the known ones, rather than silently losing its
+   levels. It costs three lines and it cannot be the reason a level goes missing.
+4. **The endless entry gets its own heading, `every stack`.** Without one it would hang under the last stack's
+   heading and read as one more level of that stack. It keeps `climbing` as its difficulty word, so its seat
+   is the third column exactly as the brief has it.
+5. **The menu takes one look, the field keeps its loop.** A menu is a still page and a player sits on it; a
+   five-second poll there would be a background loop nobody asked for, and the field starts its own the moment
+   a run begins. The one look is bounded twice — five seconds, and Play aborts it.
+6. **The tag is printed on the menu and never on the field.** G17 protects the field. The menu is outside it,
+   as the controls row is, and a player choosing endless is owed the name of what will sit in the chair before
+   they commit to a run. The standup still says `the user was a model` and no more.
+7. **`probeSeatModels` is shared and returns a list; `probeSeatName` takes the first.** The field posts the
+   whole list to `/cabinet/endless` and the route picks; the menu needs one name. One reading, two shapes. The
+   field's own timeout stays two seconds and the menu's is five, which is the only thing the two callers
+   disagree about.
+8. **What the menu names is the Ollama seat, and a Claude seat can outrank it.** `sayTier` takes an
+   `ANTHROPIC_API_KEY` first, then a cloud tag, then a local one. A tag list cannot show an API key, so a
+   launcher started with one will seat Claude where the menu named a daemon tag. The menu names what it can
+   see, and the controls row corrects it once the first answer lands — a wrong name before the run is a small
+   lie, and printing no name at all would be a larger one.
+9. **The seat pref is read, but the menu does not offer to change it.** `vibe.prefs.seat` is the field's
+   checkbox and belongs beside the field's own controls; the menu reports what that choice means for the run
+   about to start and stays a menu.
+10. **The probe never throws.** Every failure is the same answer — the authored pool — and a reader that
+    reports "no seat" instead of raising is what let `probeTags` lose its own duplicated `catch`.
+11. **`vibeMenu` is exported and the bootstrap is guarded, rather than the menu moving to its own module.** The
+    brief asked for the smallest change that keeps `menu()` byte-identical for Ghost. The page's root is
+    resolved once into `root` and `menu()` runs only when it is there; `app` is unchanged for every caller. A
+    test that imports the module for the menu alone now runs none of the page.
+12. **The standup's heading joins the two with a middle dot.** The same separator the milestone line uses, and
+    it keeps the stack legible as a second fact rather than a subtitle. It is one more word on a card that
+    already names the product, the premise and how the run ended.
+13. **The standup tests run the context out instead of typing a level.** Typing four requests in jsdom would
+    make two slow tests that fail for reasons that have nothing to do with the card. The listed one runs at
+    hardcore because below it an empty bar is a compaction and an untyped run refills forever.
+14. **The menu test stubs the mount and computes its expectations from the levers.** Nothing in it names a
+    product, a stack or a number of levels, so the sixteen-level rewrite lands under it without an edit.
+
+### Left open
+
+- **The menu does not say which tier the seat would sit** (Claude, cloud or local), only the name it can see.
+  The honest fix is a route that reports the seat without asking it for a request; that is a launcher change,
+  not a shell one, and it waits for the Director.
+- **Nothing here pins the endless entry's position.** It is last because the stacks come first; if a later pass
+  wants endless at the top, that is a one-line move and a decision about what the menu is for.
+
+## Sub-slice D, batch one — the logo and the frames
+
+**Branch:** `cabinet/vibe-typer-s3d1`, one commit, not merged. `pnpm verify` and `pnpm build:play` green.
+**Spend:** seven generations of the twelve the Director approved for this batch. The batch he approved was one
+logo and five device frames; no other art was made, and the piece tiles, avatars, milestone cards and backdrop
+stay in later batches on their own approval.
+
+### What was built
+
+```
+apps/cabinets/public/vibe/frames/terminal.png   the five device frames, 960x720 each (480x360 at 2x DPR),
+apps/cabinets/public/vibe/frames/phone.png      dark, empty, one per DEVICE kind. Vite copies public/ whole,
+apps/cabinets/public/vibe/frames/notebook.png   so build:play lands them at site/public/play/vibe/frames/
+apps/cabinets/public/vibe/frames/ledger.png
+apps/cabinets/public/vibe/frames/wires.png
+apps/cabinets/src/vibe-typer.ts                 DeviceKind + DEVICE_KINDS; the frames Map loaded at mount;
+                                                drawPreview draws the image when it is there and drawFrame's
+                                                rectangles until it is
+docs/art/receipts.json                          + the vibe_typer_batch_1 section (route, a pointer to Ghost's
+                                                existing licence block, acceptance, compensators, seven rows)
+.gitignore                                      + docs/art/originals-vibe-1/
+```
+
+Not in this repo: the logo. It goes to `mcp-tool-shop-org/brand` at
+`logos/mcp-arcade-cabinets/vibe-typer-readme.png`, 669x669, beside `ghost-readme.png`, and the coordinator
+commits it there. `packages/vibe-typer/README.md` is lead-owned and was not touched.
+
+### The route
+
+`bfl/flux-2-max` through the official Comfy Cloud MCP (`partner_generate`, the workflow-persist path,
+`Flux2ImageNode`) — the same route as Ghost's brief-1 set and under the same `licence`
+block, which is why the receipts add a section rather than restate the terms: customer-owned Output, commercial use permitted, Output
+never used to train another model, provenance metadata kept.
+
+The reference chain keeps the set on one palette. The logo was generated against the brand's existing
+`ghost-readme.png` (by raw URL), so the two cabinet marks are cousins. The terminal frame took the accepted
+logo as its reference; the other four frames took the terminal. The four went out as one `submit_batch`.
+
+### The prompts, verbatim
+
+**Logo (rejected, seed 7301).**
+
+> In exactly the same chunky flat 16-bit arcade icon style, palette weight and pixel scale as the reference
+> icon: a small blocky computer keyboard seen from a low three-quarter angle, with one single key lit warm
+> amber, and a rounded empty speech bubble floating above it. Warm amber (#e8a04a) and pale cream on a deep
+> navy (#1b2440) ground. Every key is a plain smooth blank block with nothing printed on it. Hard edges, flat
+> colours, no gradients, no photoreal, a soft amber glow on the one lit key only. The speech bubble is
+> completely empty inside. Centred, generous margin, nothing else in frame. No letters, no numbers, no words,
+> no arrows, no symbols, no punctuation, no user interface, no text of any kind anywhere in the image.
+
+**Logo (accepted, seed 7311).**
+
+> In exactly the same chunky flat 16-bit arcade icon style, palette weight and pixel scale as the reference
+> icon: one small blocky computer keyboard seen from a low three-quarter angle, and a rounded empty speech
+> bubble floating above it. Exactly ONE single key on the whole keyboard is lit warm amber (#e8a04a) and
+> glowing, near the middle of the board; every other key is plain pale cream and unlit, a smooth blank block
+> with nothing printed on it. Deep navy (#1b2440) ground. Square composition: the keyboard and the bubble
+> together sit well inside a centred square with wide empty navy margins on the left and the right as well as
+> the top and the bottom, so nothing touches an edge. Hard edges, flat colours, no gradients, no photoreal, a
+> soft amber glow on the one lit key only. The speech bubble is completely empty inside. Nothing else in
+> frame. No letters, no numbers, no words, no arrows, no symbols, no punctuation, no user interface, no text
+> of any kind anywhere in the image.
+
+Every frame prompt opens with the same clause — _In exactly the same chunky flat 16-bit arcade illustration
+style, palette weight and pixel scale as the reference image:_ — and closes with the same one:
+
+> Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no
+> numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the
+> image.
+
+**Terminal (seed 7302).**
+
+> one empty terminal window, drawn perfectly flat and face on, straight at the viewer, no perspective, no
+> tilt, no angle. The window fills the picture, and its screen is one completely empty flat solid near-black
+> (#101018) rectangle covering the whole middle of the image with absolutely nothing inside it: no code, no
+> lines, no cursor, no prompt, no icons, no scanlines, no grid, no glow, no highlight. Only a narrow slate
+> grey (#3a3a4a) bezel and a thin blank title strip carrying three small plain round dots run around the outer
+> edge of the picture, with one small warm amber (#e8a04a) accent on the bezel. The area outside the window is
+> flat near-black (#101018).
+
+**Phone (seed 7303).**
+
+> one empty phone, drawn perfectly flat and face on, straight at the viewer, no perspective, no tilt, no
+> angle. A tall narrow rounded slab standing upright in the exact centre of the picture, running nearly the
+> full height of the image. Its screen is one completely empty flat solid near-black (#101018) rectangle
+> filling almost the whole slab, with absolutely nothing inside it: no icons, no apps, no bars, no clock, no
+> cursor, no glow, no highlight. Only a narrow slate grey (#3a3a4a) body, one small plain blank rounded
+> speaker slot above the screen and one small plain blank rounded bar below it, with one small warm amber
+> (#e8a04a) accent on the body. The area outside the phone is flat near-black (#101018).
+
+**Notebook (seed 7304).**
+
+> one empty open laptop computer, drawn perfectly flat and face on, straight at the screen, no perspective, no
+> tilt, no angle. The open lid fills the picture and its screen is one completely empty flat solid near-black
+> (#101018) rectangle covering the whole middle of the image, with absolutely nothing inside it: no code, no
+> windows, no icons, no cursor, no glow, no highlight. Only a narrow slate grey (#3a3a4a) bezel around the
+> screen and a plain slate base strip lying along the bottom edge of the picture below the lid, with one small
+> warm amber (#e8a04a) accent. The area outside the laptop is flat near-black (#101018).
+
+**Ledger (seed 7305).**
+
+> one empty dark ledger book, drawn perfectly flat and face on, seen straight from directly above, no
+> perspective, no tilt, no angle. The book fills the picture and its open page is one completely empty flat
+> solid near-black (#101018) rectangle covering the whole middle of the image, with absolutely nothing on it:
+> no ruled lines, no columns, no grid, no writing, no figures, no glow, no highlight. Only a narrow slate grey
+> (#3a3a4a) cover edge around the page and a plain banded binding strip lying along the top edge of the
+> picture, with one small warm amber (#e8a04a) accent on the binding. The area outside the book is flat
+> near-black (#101018).
+
+**Wires (seed 7306).**
+
+> one empty wiring diagram panel, drawn perfectly flat and face on, no perspective, no tilt, no angle. Four
+> small plain blank rounded nodes in muted teal (#468080) sit close to the four corners of the picture, joined
+> by thin straight teal lines that run only around the outer margin, hugging the edges of the image. The whole
+> middle of the picture is one completely empty flat solid near-black (#101018) rectangle with absolutely
+> nothing in it: no wires crossing it, no nodes, no boxes, no dots, no glow, no highlight. One small warm
+> amber (#e8a04a) accent on one corner node. The ground everywhere is flat near-black (#101018).
+
+### Per image
+
+| Image    | Seed | Verdict      | Glyph score | What it is, and why                                                                                                                                                              |
+| -------- | ---- | ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| logo     | 7301 | **rejected** | 0.0000017   | Four amber keys lit across the board instead of one, and the board too wide to survive a centered square crop. Not committed anywhere; the Comfy library keeps the job.          |
+| logo     | 7311 | accepted     | 0.0000228   | The re-roll, and the better of the two: wide navy margins, a cream board, an empty cream bubble, one amber glow at the center. Two adjacent caps carry the glow, not one.        |
+| terminal | 7302 | accepted     | 0.0001      | A window face on: slate bezel, a title strip with three round dots and three blank dashes, an amber square, a large flat black screen. The dashes are rectangles, not glyphs.    |
+| phone    | 7303 | accepted     | 0.0000149   | An upright slab: blank speaker slot above, blank bar below, two amber side buttons, a tall flat black screen.                                                                    |
+| notebook | 7304 | accepted     | 0.0001      | An open laptop straight at the lid: one camera dot, a base strip with an amber pad, a large flat black screen.                                                                   |
+| ledger   | 7305 | accepted     | 0.0001      | A spiral-bound pad from above: pale cover edge, wire binding with an amber clip, a flat black page. A pad rather than an account book, kept — it is the one device with a spine. |
+| wires    | 7306 | accepted     | 0.0000192   | Four teal nodes near the corners on thin lines that hug the edges, one amber node, an empty middle. No body at all, which is right for an integration stack.                     |
+
+Glyph scores are `ai-eyes image_contains` on "text, letters, numbers or written words", threshold 0.02. Every
+image passed on the first look. The logo's two amber caps were checked again at 4x: the pale rectangle on each
+is a flat blank highlight, not a legend.
+
+No frame needed a re-roll, so the spend stopped at seven: the logo, its re-roll, the terminal, and the batch of
+four.
+
+### The fit — why five frames cost five generations
+
+The shell packs its blocks into `frameBox()`, and the brief asks the device's empty interior to be at least
+that large at 2x. Flux drew every device a little small for its box, mostly because a title bar or a binding
+eats from the top. Rather than re-roll five images at a cost, each picture is fitted once, on this side, with
+no credits: find the dark region the device's chrome encloses (flood fill from the picture center), scale the
+whole picture uniformly until that region is at least as large as the box in both axes, translate so the two
+are concentric, and draw it onto a 960x720 ground of `#101018` — the same color the shell paints anyway, so
+anything that falls short of an edge is invisible. Per-image scale and offset are in the receipts.
+
+Measured after the fit, inside each packing box: mean luma 0.13 to 1.04 out of 255, and no pixel above 80
+except 0.56 per cent of the wires box, where one amber node sits just inside the left edge. The boxes are flat
+and dark, which is what the blocks need.
+
+### The asset layer, and the fallback rule
+
+`drawPreview` now draws a painted frame when one is loaded and `drawFrame`'s rectangles when one is not. The
+five images load at mount, once, as plain `Image` elements off
+`import.meta.env.BASE_URL + 'vibe/frames/<kind>.png'`; `load` puts the image in a Map, `error` takes it out.
+Nothing ever waits on a load: the first frame of the first level draws on rectangles and swaps to the painting
+when it arrives, which is the same rule Ghost's sprites follow. A Pages build without `vibe/frames/` still
+plays, and jsdom — where no `Image` is ever handed a file — takes the rectangle path, so the mount test needed
+no change and did not get one.
+
+`frameBox()` is untouched, so the packing is identical either way: the art changed what is behind the blocks,
+never where they land.
+
+### Decisions
+
+1. **The fit instead of re-rolls.** Spend is the scarce thing; geometry is free and exact. Five re-rolls
+   chasing a proportion the model will only approximate would have cost most of the batch and still not
+   guaranteed the box. The fit guarantees it, is deterministic, and is recorded per image.
+2. **The logo does not meet the brief's one glowing key, and is kept anyway, pending the Director's read.**
+   The brief says one lit key. The first draft lit four and framed too wide; the re-roll lit two adjacent
+   caps in one glow and framed square. Both generations the batch allowed for this image are spent, and the
+   rule for a failed re-roll is to keep the better of the two and say so plainly: this one misses the brief
+   on that point. It is on the brand repo and the package page now because the rest of it is right and a
+   third generation is the Director's spend to approve, not the builder's.
+3. **The ledger is a spiral pad.** It came back as a bound pad rather than an accounting book. Kept, because
+   it is the only device in the set with a spine, so it never reads as the laptop, and because the fallback
+   rectangles for `ledger` are already a banded strip along the top.
+4. **The frames are flat and face on, not perspective.** A device seen at an angle cannot hold a rectangular
+   packing area. Every prompt says so three ways.
+5. **Near-black outside the device as well as inside.** The ground matches `#101018`, which is what the canvas
+   is cleared to, so the fit's fill is invisible and a frame that does not reach an edge simply ends.
+6. **The logo went to the brand repo, not to this one.** Ghost's page references its mark by raw URL from
+   `mcp-tool-shop-org/brand`; the Vibe Typer mark sits beside it. The lead owns
+   `packages/vibe-typer/README.md`; this branch does not touch it.
+7. **No other art.** The batch was one logo and five frames. Piece tiles, avatars, milestone cards and the
+   backdrop are later batches on their own approval, and nothing was made while we were in there.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Generation is an irreversible spend, so the compensators are named in
+`docs/art/receipts.json → vibe_typer_batch_1.compensators` with an owner each: nothing enters the repo until it
+is accepted, so a rejected image is a receipt row and a Comfy library entry and nothing else (the rejected logo
+is neither in `apps/`, `packages/` nor the brand repo); and
+`git rm apps/cabinets/public/vibe/frames/<kind>.png` returns the preview to the rectangles with no other
+change, because `drawFrame` is still the fallback. Every generation, accepted or rejected, is a row with its
+job id, seed and prompt, so the spend is auditable at seven of twelve. No skip.
+
+## Sub-slice F — one package per cabinet
+
+**Branch:** `cabinet/vibe-typer-s3f`, one commit, not merged, not pushed, nothing published. `pnpm verify`,
+`pnpm build:play` and `pnpm build:launcher` (both packages) green; `npm pack --dry-run` and an identity scan on
+both packed tarballs clean.
+
+`0.9.0` shipped both cabinets inside `@mcptoolshop/ghost-on-the-menu`, which made the name wrong: a player who
+ran `npx @mcptoolshop/ghost-on-the-menu` got a switch with a typing game on it. The Director decided on
+2026-09-15 that each cabinet ships as its own npm package and the arcade bundle stays on Pages. This is the
+packaging for that; the public pages were written by the lead and are not touched here.
+
+### What was built
+
+```
+apps/cabinets/src/env.d.ts                  VITE_CABINET: 'all' | 'ghost' | 'vibe'
+apps/cabinets/vite.config.ts                defines import.meta.env.VITE_CABINET as a literal in every
+                                            build, and halts on a value it does not know
+apps/cabinets/src/main.ts                   HAS_GHOST / HAS_VIBE, switchMenu() lifted out of menu(), and
+                                            menu() as an if/else chain the bundler can fold
+packages/vibe-typer/src/corpus.ts           /* #__PURE__ */ on DEFAULT_CORPUS
+packages/vibe-typer/src/patterns.ts         /* #__PURE__ */ on DEFAULT_PATTERNS
+packages/launcher/scripts/build.mjs         --cabinet ghost|vibe, --out, --check; the per-cabinet public
+                                            split, layout and marker gate; exports pack() and checkDist()
+packages/launcher/package.json              pack:dist and prepack name the cabinet; prepack checks
+packages/launcher/src/serve.ts              voiceUrl may be null, which does not proxy /voice at all
+packages/launcher-vibe-typer/package.json   @mcptoolshop/vibe-typer, bin vibe-typer, zero dependencies
+packages/launcher-vibe-typer/src/cli.ts     port 7778, the endless seat, --mcp exits 2
+packages/launcher-vibe-typer/scripts/build.mjs   calls the shared pack with --cabinet vibe
+packages/launcher-vibe-typer/test/cli.test.ts    the flags, and --mcp naming slice 4 and leaving with 2
+packages/launcher-vibe-typer/test/serve.test.ts  what this package serves, and what it does not carry
+packages/launcher-vibe-typer/{LICENSE,tsconfig.json}
+package.json                                build:launcher builds both; :ghost and :vibe do one each
+.github/workflows/release.yml               the version gate over every manifest, both bins smoked, both
+                                            tarballs checked, one idempotent publish loop
+pnpm-lock.yaml                              the new workspace package and nothing else
+```
+
+Eighteen tests added (seven on the arguments, eleven on the route); the suite is 640 across 52 files.
+
+### `VITE_CABINET`
+
+`all` is the default — the dev server, Pages and the arcade bundle — and it is what
+`pnpm -F @mcp-arcade-cabinets/cabinets dev` and `pnpm build:play` get. `ghost` and `vibe` exist for the two npm
+packages. With one cabinet the switch is not rendered at all, the menu is that cabinet's, and the other
+cabinet is not in the bundle.
+
+Three things make the fold actually happen, and all three are load-bearing:
+
+1. **The value is `define`d, not left to Vite's `VITE_` handling.** Vite only substitutes a `VITE_*` key that
+   is actually set, so an unset `import.meta.env.VITE_CABINET` would survive into the bundle as a property
+   read — and a property read is not something Rollup can fold. `vite.config.ts` defines it every time, and
+   halts on a value outside the three, because a typo in a pack script would otherwise ship both cabinets
+   inside a package named for one.
+2. **An if/else chain, no early returns.** Rollup folds a chain on constant conditions down to the live
+   branch. `if (!HAS_GHOST) { …; return; }` would leave the code after it standing, and with it the reference
+   that keeps the other cabinet alive.
+3. **`switchMenu` is its own function, and so is the cards list.** The stored `cabinet` pref is read only
+   inside `switchMenu`, which a single-cabinet build folds away — that is what stops
+   `readVibePrefs().cabinet` from resurrecting the switch for a browser that last played the other game. The
+   cards list became `cabinetCards()` for the same reason: as a module constant it named the typing cabinet's
+   levers from a line that a Ghost build could not drop.
+
+**The two `/* #__PURE__ */` annotations are the fourth thing, and they are where the saving actually came
+from.** With the branch alone, a Ghost build still carried the entire typing corpus — 249 snippets, a fifth of
+a megabyte — because `export const DEFAULT_CORPUS = loadCorpus({…})` is a top-level call that can throw, so a
+bundler must assume it matters and keeps it, and with it the six JSON imports. Marking the two constructions
+pure says the only thing those calls do is produce a value. Where something reads them — the cabinet, every
+test, the play-through — they run exactly as before and still halt on the first bad lever. Measured: the Ghost
+shell went from 480,282 B to 218,879 B with those two comments and nothing else.
+
+| Shell build                           | `assets/index-*.js` | Against `all` |
+| ------------------------------------- | ------------------- | ------------- |
+| `all`, launcher (local seats on)      | 538,303 B           | —             |
+| `ghost`, launcher                     | 218,879 B           | −319,424 B    |
+| `vibe`, launcher                      | 448,115 B           | −90,188 B     |
+| `all`, Pages (`build:play`, no seats) | 531,654 B           | —             |
+
+Checked by grep on each bundle: the Ghost shell has none of `data-vibe-seat`, `/cabinet/endless`,
+`cal-sq-d1-001`, `Claudette` or `Vibe Typer`; the Vibe shell has none of `data-local-seats`, `Ollama bosses`,
+`/ollama/api/generate`, `/cabinet/say`, `sprites/`, `tracks/` or `Ghost on the Menu`.
+
+### The pack script
+
+`packages/launcher/scripts/build.mjs` is now shared by both packages and takes `--cabinet ghost|vibe`, an
+optional `--out <package dir>`, and `--check`. It defaults to `ghost` into `packages/launcher`, which is what
+it did before. `packages/launcher-vibe-typer/scripts/build.mjs` imports `pack` and `checkDist` from it and
+passes `vibe`; there is one pack script, one marker gate and one public split, so a rule added for one package
+cannot go missing from the other.
+
+**The public split.** Vite copies `public/` whole, so the built shell always has all four asset directories.
+The copy into `dist/play` filters by top-level directory: Ghost takes `sprites/` and `tracks/`, Vibe takes
+`keys/` and `vibe/`, and both take the twenty tapes. What the other cabinet would have carried is then checked
+for by name, so a filter that stopped working is a halt and not a bigger tarball nobody reads.
+
+**The marker needles**, per package. The `absent` half is what the split added: a string only the other
+cabinet's code carries must not be in this bundle, because the way "both cabinets in one package" comes back
+is silently, through a shell built without `VITE_CABINET`.
+
+| Package                          | Must be in the play bundle                                                      | Must not be      |
+| -------------------------------- | ------------------------------------------------------------------------------- | ---------------- |
+| `@mcptoolshop/ghost-on-the-menu` | `data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, `Ollama bosses` | `data-vibe-seat` |
+| `@mcptoolshop/vibe-typer`        | `data-vibe-seat`, `/cabinet/endless`, `/ollama/api/tags`                        | `Ollama bosses`  |
+
+**`prepack` checks; it no longer rebuilds.** With one package, `prepack: node scripts/build.mjs` was right.
+With two it is a trap: `pnpm build:launcher` packs Ghost and then Vibe, so the built shell left on disk belongs
+to whichever went last, and a `prepack` that rebuilt from it would quietly reassemble the _other_ package out
+of the wrong shell — at `npm publish` time, which is the one moment nothing may be quietly reassembled.
+`checkDist` runs the same layout, stray and marker gates over the dist that is already there. A stale,
+incomplete or wrong-cabinet dist still halts before the irreversible step, and the trap is gone. Proved both
+ways on this rig: with the Vibe shell on disk, `node scripts/build.mjs --cabinet ghost` halts naming the three
+missing needles, and `--check` on each package passes.
+
+### The tarballs
+
+Measured on this rig, `npm pack --dry-run --json`, at version `0.9.0` (the release is the coordinator's).
+
+| Package                          | Files | Packed  | Unpacked | Shell js | Public                          | Tapes  |
+| -------------------------------- | ----- | ------- | -------- | -------- | ------------------------------- | ------ |
+| `@mcptoolshop/ghost-on-the-menu` | 63    | 5.76 MB | 7.94 MB  | 214 kB   | sprites 462 kB, tracks 5,041 kB | 139 kB |
+| `@mcptoolshop/vibe-typer`        | 72    | 0.98 MB | 2.13 MB  | 438 kB   | keys 332 kB, vibe frames 475 kB | 139 kB |
+
+`0.9.0` as published was 103 files and 6.4 MB packed in one package. Ghost is now 63 files and 5.76 MB — it
+lost the five keyboard sets, the device frames and the typing bundle. Vibe is under a megabyte packed with the
+tapes included, and carries no `cabinet-stdio.js`, which is the 1.5 MB that would have come with an MCP server
+it does not have yet.
+
+Identity scan: **CLEAN** on both packed tarballs (unpacked and scanned as a directory) and on the tracked
+tree.
+
+### The release
+
+One job, one gate, one loop, and the filename stays `release.yml` — npm pins Trusted Publishing to it, now for
+two packages, with no `environment:` on either side.
+
+- **The version gate** walks `package.json`, `apps/*/package.json` and `packages/*/package.json` and requires
+  one version across all of them, then `SERVER_VERSION`, then the tag. It used to compare two files. The shell
+  and the sim are bundled _into_ the packages, so a package left behind ships inside a tarball that claims the
+  new version.
+- **The smoke** runs `--version` on both bins, and `--mcp` on both in the way each one means it: Ghost lists
+  its six tools over stdio, and Vibe must leave with exactly 2 and say a line naming slice 4. Not 0, which
+  would read as "it worked", and not 1, which would read as "it broke".
+- **The tarball contract** runs over both directories with a per-package list of what must be there, what must
+  be carried (`sprites/` and `tracks/`, or `keys/` and `vibe/`), and what must be gone.
+- **The publish loop** is one `bash -e` over the two package directories and is idempotent: `npm view
+<name>@<version> version` succeeding means that exact version is already on the registry, so the package is
+  skipped. A half-finished publish — the first package up, the second refused — used to be a dead end, because
+  npm will not take a version string twice and there is no undoing the first after 72 hours. Now the rerun
+  publishes only the straggler. `--provenance --access public` on both.
+
+The workflow was not run and nothing was published. `workflow_dispatch` still dry-runs by default, and now
+dry-runs both.
+
+### Compensators — the second package
+
+`docs/npm-launcher.md`'s table is binding and unchanged for `@mcptoolshop/ghost-on-the-menu`. These are the
+same rows for the new name; the lead owns that file and the coordinator folds them in.
+
+| Action                                                     | Undo                                                                                                             | State afterwards                                                                                | Owner    |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| `npm publish @mcptoolshop/vibe-typer` (within 72 h)        | `npm unpublish @mcptoolshop/vibe-typer@<v>`                                                                      | Version gone; **that exact version string can never be republished**                            | Director |
+| `npm publish @mcptoolshop/vibe-typer` (after 72 h)         | `npm deprecate @mcptoolshop/vibe-typer@<v> "<why>"`                                                              | Version stays on the registry forever; installs print the reason                                | Director |
+| The placeholder publish, which **creates the name**        | `npm deprecate …@0.0.0 "placeholder"`, or `npm unpublish` within 72 h                                            | The name is held for good either way. `npm owner add/rm` transfers it; it is never released     | Director |
+| Trusted Publishing set up for the second name on npmjs.com | Remove the trusted publisher in that package's npm settings                                                      | CI can no longer publish that package; the other package and everything published are untouched | Director |
+| `gh release create` — **now publishes TWO packages**       | `gh release delete <tag>` deletes the release, **neither npm version**; use the npm rows above, once per package | The tag survives a release delete; both npm versions survive both                               | Director |
+| A publish loop that got one package up and not the other   | Re-run the workflow: the loop skips what is already on the registry                                              | Only the straggler is published; the first package is untouched and its version is not retaken  | Director |
+
+**The fifth row is the one to read twice, and it got heavier.** Cutting a release used to publish one package.
+It now publishes two, and neither is undoable after 72 hours.
+
+### Decisions
+
+1. **`prepack` checks instead of packing.** The reason is above and it is the change most likely to be
+   questioned: it looks like a weakening of a gate. It is not — the same layout, stray and marker checks run,
+   over the artifact that will actually be published. What it removes is a rebuild that, with two packages,
+   reads from whichever shell happened to be built last.
+2. **The two `/* #__PURE__ */` annotations in `packages/vibe-typer`.** Behavior-neutral by construction: they
+   permit a bundler to drop an unused binding and change nothing where the binding is used. Without them the
+   brief's "the other cabinet's module is not imported at all" is not true, and the Ghost package ships the
+   typing corpus. 261,403 B of the Ghost shell's saving is these two comments.
+3. **The same annotation was NOT added to `packages/ghost-on-the-menu/src/patterns.ts`.** The brief says
+   Ghost's game code is untouched, and it is. Measured cost of holding that line: the Vibe shell carries
+   Ghost's 54 kB of pattern levers, which is **29,571 B** of its bundle (448,115 B with the line held,
+   418,544 B with the annotation added — tried, measured, reverted). One comment for the coordinator or a
+   later Ghost-side branch to take.
+4. **The Vibe package does not light the say seat.** `sayModule: null`, `endlessModule` pointing at the same
+   bundled `cabinet-server.js`. The say seat is the shooter's grammar — a boss's line over a wave — and this
+   cabinet has no bosses. `/cabinet/say` answers 503 in this package, which is what the route already says
+   when there is no module.
+5. **The Vibe package does not proxy `/voice` either, and that goes beyond the brief's list.** Nothing on the
+   typing cabinet's page calls `/voice` (grep: zero hits in `vibe-typer.ts` and `typer-audio.ts`, four in
+   `ghost.ts`), and its package page documents one environment variable. `voiceUrl` in `ServeOpts` may now be
+   null, which 404s the prefix before a socket is opened — the same answer the allowlist already gives a path
+   it does not name. Ghost passes a real URL and is unchanged. One line to flip if the coordinator wants it
+   lit.
+6. **`anthropicKey: null` in the Vibe package.** Not a cost decision: the menu names the seat from the
+   daemon's own tag list (`probeSeatName` reads `/ollama/api/tags`), so a Claude tier sitting behind it would
+   put a name on screen that did not write the line. It would also spend a player's key on a game whose page
+   says it makes no network call of its own. The dev server still sits the full tiered seat.
+7. **`--mcp` leaves with 2 and says which slice.** An agent that pointed a client at `vibe-typer --mcp` must
+   not get a browser. The line names slice 4, goes to stderr, and the CI smoke asserts both the code and the
+   word.
+8. **`build:launcher` builds both; `build:launcher:ghost` and `:vibe` build one.** `verify` is unchanged —
+   it does not pack, and making it pack twice would put two vite builds on every local gate for no finding.
+9. **No new dependencies.** `pnpm-lock.yaml` moves by six lines: the new workspace package and its `esbuild`
+   devDependency, which is the same one the Ghost launcher already had. Neither package has a `dependencies`
+   block, and neither may grow one.
+10. **The version stays `0.9.0` in both manifests.** The bump to `0.10.0` is the release, which is the
+    coordinator's through the full treatment, after the Director has configured Trusted Publishing on
+    `@mcptoolshop/vibe-typer`. The version gate requires every manifest to agree, so the bump is one edit
+    across the workspace and the gate will say if one is missed.
+
+### Standards
+
+**ANDON_AUTHORITY (3).** Five gates already halted before the irreversible step; the split adds two that are
+specific to it. The pack halts when the shell it was given belongs to the other cabinet (proved on this rig,
+three needles named), and when the dist carries the other cabinet's public directories. Each names the command
+that fixes it. The tarball contract in CI re-asks both questions of the artifact itself.
+
+**NAMED_COMPENSATORS (3).** The table above, six rows, an owner each, including the row the split created: a
+publish loop that got one package up and not the other. No skip is available for `npm publish` and none is
+taken.
+
+**DECOMPOSE_BY_SECRETS (3).** This sub-slice is the standard: what changes together is packaged together, and
+what a player of one cabinet never touches is not in their tarball. `VITE_CABINET` and the public split are
+the same decision made at two layers, and the marker gate is how each layer proves the other happened.
+
+**EXTERNAL_VERIFIER (1).** Unchanged and still the weak one: CI runs both built bins in a different process on
+a different machine than the one that wrote them, which catches a broken bundle, but nothing of a different
+family reads this diff inside the workflow. **Remediation:** the different-family review from a packet before
+merge, as every sub-slice of this slice has had. Owner: the coordinator. Target: this sub-slice's merge.
+
+**PIN_PER_STEP (2), UNCERTAINTY_GATED_HUMANS (2).** As `docs/npm-launcher.md` scores them, unchanged. The
+human checkpoint is still the release itself, and it now gates two names at once — which is the argument for
+writing the sixth compensator row rather than discovering it during a half-finished publish.
+
 ## Sub-slice B, part three — the full run and the sixteen levels
 
 **Date:** 2026-09-15 into 2026-09-16. **Builder:** Opus (this sub-slice). **Coordinator:** Claude (Fable 5.1).

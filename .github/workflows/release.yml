@@ -1,4 +1,9 @@
-# Publish the launcher to npm.
+# Publish the cabinets to npm — one package per cabinet.
+#
+# `@mcptoolshop/ghost-on-the-menu` from packages/launcher and
+# `@mcptoolshop/vibe-typer` from packages/launcher-vibe-typer. One job, one
+# gate, one loop: a release publishes both or neither, and a rerun publishes
+# only what is not on the registry yet.
 #
 # Fires on a published release only, so it costs nothing until a release is
 # cut, and does not count against the two push-triggered workflows the house
@@ -9,15 +14,16 @@
 # this repo and there must not be one: the trust is pinned on npmjs.com to
 # this repository AND this filename.
 #
-# THE FILENAME IS LOAD-BEARING TWICE OVER. It is `release.yml` because that
-# is the org convention for the TP-configured workflow, and because npm
-# pins the trust to it. Renaming this file breaks publishing until the
-# trust is re-pointed on npmjs.com.
+# THE FILENAME IS LOAD-BEARING TWICE OVER, AND NOW FOR TWO PACKAGES. It is
+# `release.yml` because that is the org convention for the TP-configured
+# workflow, and because npm pins the trust to it — separately for each
+# package. Renaming this file breaks publishing for both until both trusts
+# are re-pointed on npmjs.com.
 #
-# The package must already EXIST on npm before a trusted publisher can be
+# A package must already EXIST on npm before a trusted publisher can be
 # configured for it — npm has no equivalent of PyPI's pending publishers,
-# for the access page and for `npm trust` alike. The first version is
-# therefore published by hand; see docs/npm-launcher.md.
+# for the access page and for `npm trust` alike. The first version of each
+# is therefore published by hand; see docs/npm-launcher.md.
 #
 # Standards compliance, including the compensators table that `npm publish`
 # requires: docs/npm-launcher.md.
@@ -88,18 +94,34 @@ jobs:
         id: install
         run: pnpm install --frozen-lockfile
 
-      - name: Version matches the tag
+      - name: One version across the repo, and it matches the tag
         id: version
         run: |
-          pkg=$(node -p "require('./packages/launcher/package.json').version")
+          set -e
           root=$(node -p "require('./package.json').version")
-          echo "package=$pkg" >> "$GITHUB_OUTPUT"
-          echo "launcher: $pkg / root: $root"
-          if [ "$pkg" != "$root" ]; then
-            echo "packages/launcher is $pkg but the repo is $root"
+          echo "package=$root" >> "$GITHUB_OUTPUT"
+          echo "root: $root"
+          # Every package.json in the workspace, not just the two published
+          # ones: the shell and the sim are bundled INTO the packages, so a
+          # package left behind ships inside a tarball that claims the new
+          # version. The published pair is checked by the same loop.
+          bad=0
+          for manifest in package.json apps/*/package.json packages/*/package.json; do
+            # A glob that matched nothing is passed through as its own text.
+            [ -e "$manifest" ] || continue
+            v=$(node -p "require('./$manifest').version || ''")
+            [ -z "$v" ] && continue
+            echo "- $manifest: $v"
+            if [ "$v" != "$root" ]; then
+              echo "$manifest is $v but the repo is $root"
+              bad=1
+            fi
+          done
+          if [ "$bad" != "0" ]; then
             echo "next: put every package.json on one version"
             exit 1
           fi
+          pkg="$root"
           # SERVER_VERSION is what the MCP seat reports to a client in its
           # handshake. It is a hand-written constant, so it drifts silently:
           # v0.8.0 shipped announcing 0.7.0 because this check did not exist.
@@ -124,23 +146,49 @@ jobs:
         id: verify
         run: pnpm verify
 
-      - name: Build the package
+      - name: Build both packages
         id: build
         run: pnpm build:launcher
 
-      - name: The built bin runs
+      - name: Both built bins run
         id: smoke
+        run: |
+          set -e
+          want="${{ steps.version.outputs.package }}"
+          for dir in packages/launcher packages/launcher-vibe-typer; do
+            got=$(node "$dir/dist/cli.js" --version)
+            if [ "$got" != "$want" ]; then
+              echo "$dir/dist/cli.js --version said $got, package.json says $want"
+              echo "next: pnpm build:launcher"
+              exit 1
+            fi
+            echo "- $dir --version: $got"
+          done
+          # The typing cabinet has no MCP server yet. `--mcp` must say so and
+          # leave with 2 — not 0 (which would read as "it worked"), not 1
+          # (which would read as "it broke"), and never a browser.
+          set +e
+          out=$(node packages/launcher-vibe-typer/dist/cli.js --mcp 2>&1)
+          code=$?
+          set -e
+          if [ "$code" != "2" ]; then
+            echo "vibe-typer --mcp left with $code, want 2"
+            echo "next: node packages/launcher-vibe-typer/dist/cli.js --mcp"
+            exit 1
+          fi
+          case "$out" in
+            *"slice 4"*) echo "- vibe-typer --mcp: exit 2, $out" ;;
+            *)
+              echo "vibe-typer --mcp said '$out', which does not name the slice"
+              exit 1
+              ;;
+          esac
+
+      - name: The Ghost seat still lists its tools
+        id: mcp
         working-directory: packages/launcher
         run: |
           set -e
-          got=$(node dist/cli.js --version)
-          want="${{ steps.version.outputs.package }}"
-          if [ "$got" != "$want" ]; then
-            echo "dist/cli.js --version said $got, package.json says $want"
-            echo "next: pnpm build:launcher"
-            exit 1
-          fi
-          echo "--version: $got"
           # The MCP seat must list its six tools over stdio with no network.
           init='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
           notified='{"jsonrpc":"2.0","method":"notifications/initialized"}'
@@ -173,60 +221,103 @@ jobs:
             exit 1
           fi
 
-      - name: The tarball carries the shell and no sources
+      - name: Both tarballs carry their cabinet and no sources
         id: tarball
-        working-directory: packages/launcher
         run: |
           set -e
-          npm pack --dry-run --json > /tmp/pack.json
-          node -e '
-          const pack = require("/tmp/pack.json")[0];
-          const files = pack.files.map((f) => f.path);
-          const need = [
-            "dist/cli.js",
-            "dist/cabinet-stdio.js",
-            "dist/cabinet-server.js",
-            "dist/play/index.html",
-            "README.md",
-            "LICENSE",
-          ];
-          const missing = need.filter((n) => !files.includes(n));
-          if (missing.length) {
-            console.log("tarball is missing: " + missing.join(", "));
-            console.log("next: pnpm build:launcher");
-            process.exit(1);
-          }
-          const leaked = files.filter((f) => /\.tsx?$|\.map$|^src\/|^test\/|tsconfig/.test(f));
-          if (leaked.length) {
-            console.log("tarball carries sources: " + leaked.join(", "));
-            console.log("next: check the files field in packages/launcher/package.json");
-            process.exit(1);
-          }
-          const tapes = files.filter((f) => f.startsWith("dist/tapes/")).length;
-          if (tapes < 20) {
-            console.log("tarball has " + tapes + " tapes, want 20");
-            console.log("next: pnpm build:launcher");
-            process.exit(1);
-          }
-          console.log(
-            "- tarball: " + pack.entryCount + " files" +
-            ", " + tapes + " tapes" +
-            ", packed " + (pack.size / 1048576).toFixed(1) + " MB" +
-            ", unpacked " + (pack.unpackedSize / 1048576).toFixed(1) + " MB",
-          );
-          ' | tee -a "$GITHUB_STEP_SUMMARY"
+          for dir in packages/launcher packages/launcher-vibe-typer; do
+            ( cd "$dir" && npm pack --dry-run --json ) > /tmp/pack.json
+            PACK_DIR="$dir" node -e '
+            const dir = process.env.PACK_DIR;
+            const pack = require("/tmp/pack.json")[0];
+            const files = pack.files.map((f) => f.path);
+            // Each package carries its own cabinet and only its own. The
+            // "gone" list is what the split added: 0.9.0 shipped both
+            // cabinets inside the package named for one, and the way that
+            // comes back is silently, through a shell built without
+            // VITE_CABINET.
+            const spec = dir === "packages/launcher"
+              ? {
+                  need: ["dist/cli.js", "dist/cabinet-stdio.js", "dist/cabinet-server.js"],
+                  carries: ["dist/play/sprites/", "dist/play/tracks/"],
+                  gone: ["dist/play/keys/", "dist/play/vibe/"],
+                }
+              : {
+                  need: ["dist/cli.js", "dist/cabinet-server.js"],
+                  carries: ["dist/play/keys/", "dist/play/vibe/"],
+                  gone: ["dist/play/sprites/", "dist/play/tracks/", "dist/cabinet-stdio.js"],
+                };
+            const need = [...spec.need, "dist/play/index.html", "README.md", "LICENSE"];
+            const missing = need.filter((n) => !files.includes(n));
+            if (missing.length) {
+              console.log(dir + " tarball is missing: " + missing.join(", "));
+              console.log("next: pnpm build:launcher");
+              process.exit(1);
+            }
+            const thin = spec.carries.filter((p) => !files.some((f) => f.startsWith(p)));
+            if (thin.length) {
+              console.log(dir + " tarball carries no " + thin.join(", "));
+              console.log("next: pnpm build:launcher");
+              process.exit(1);
+            }
+            const other = files.filter((f) => spec.gone.some((p) => f === p || f.startsWith(p)));
+            if (other.length) {
+              console.log(dir + " tarball carries the other cabinet: " + other.slice(0, 5).join(", "));
+              console.log("next: check the public split in packages/launcher/scripts/build.mjs");
+              process.exit(1);
+            }
+            const leaked = files.filter((f) => /\.tsx?$|\.map$|^src\/|^test\/|tsconfig/.test(f));
+            if (leaked.length) {
+              console.log(dir + " tarball carries sources: " + leaked.join(", "));
+              console.log("next: check the files field in " + dir + "/package.json");
+              process.exit(1);
+            }
+            const tapes = files.filter((f) => f.startsWith("dist/tapes/")).length;
+            if (tapes < 20) {
+              console.log(dir + " tarball has " + tapes + " tapes, want 20");
+              console.log("next: pnpm build:launcher");
+              process.exit(1);
+            }
+            console.log(
+              "- " + dir + ": " + pack.entryCount + " files" +
+              ", " + tapes + " tapes" +
+              ", packed " + (pack.size / 1048576).toFixed(1) + " MB" +
+              ", unpacked " + (pack.unpackedSize / 1048576).toFixed(1) + " MB",
+            );
+            ' | tee -a "$GITHUB_STEP_SUMMARY"
+          done
 
-      - name: Publish
+      # One loop over both package directories, and it is idempotent on
+      # purpose. A publish that half-succeeded — the first package on the
+      # registry, the second refused — used to be a dead end, because npm
+      # will not take a version string twice and there is no undoing the
+      # first after 72 hours. `npm view <name>@<version> version` succeeding
+      # means that exact version is already there, so a rerun skips it and
+      # publishes only the straggler.
+      - name: Publish both
         id: publish
         if: github.event_name == 'release' || inputs.dry_run == false
-        working-directory: packages/launcher
-        run: npm publish --provenance --access public
+        run: |
+          set -e
+          for dir in packages/launcher packages/launcher-vibe-typer; do
+            name=$(node -p "require('./$dir/package.json').name")
+            version=$(node -p "require('./$dir/package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "- $name@$version is already on the registry; skipping"
+              continue
+            fi
+            echo "- publishing $name@$version"
+            ( cd "$dir" && npm publish --provenance --access public )
+          done
 
-      - name: Dry run
+      - name: Dry run both
         id: dry
         if: github.event_name != 'release' && inputs.dry_run != false
-        working-directory: packages/launcher
-        run: npm publish --provenance --access public --dry-run
+        run: |
+          set -e
+          for dir in packages/launcher packages/launcher-vibe-typer; do
+            ( cd "$dir" && npm publish --provenance --access public --dry-run )
+          done
 
       - name: Job summary
         if: always()
@@ -243,8 +334,9 @@ jobs:
             echo "- version gate: ${{ steps.version.outcome }}"
             echo "- verify: ${{ steps.verify.outcome }}"
             echo "- build: ${{ steps.build.outcome }}"
-            echo "- bin smoke (--version, --mcp tools/list): ${{ steps.smoke.outcome }}"
-            echo "- tarball contract: ${{ steps.tarball.outcome }}"
+            echo "- bin smoke (both --version, vibe --mcp exit 2): ${{ steps.smoke.outcome }}"
+            echo "- Ghost --mcp tools/list: ${{ steps.mcp.outcome }}"
+            echo "- tarball contract (both): ${{ steps.tarball.outcome }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Next local command
@@ -253,12 +345,14 @@ jobs:
           {
             echo "## Publish / npm failed"
             echo "Nothing was published unless the publish step itself is the one that failed."
+            echo "That step is idempotent: re-running it publishes only the package that is not on the registry yet."
             echo "Re-run the failing gate locally:"
             [ "${{ steps.version.outcome }}" = "failure" ] && echo "- next: put every package.json on the tag's version"
             [ "${{ steps.install.outcome }}" = "failure" ] && echo "- next: pnpm install --frozen-lockfile"
             [ "${{ steps.verify.outcome }}" = "failure" ] && echo "- next: pnpm verify"
             [ "${{ steps.build.outcome }}" = "failure" ] && echo "- next: pnpm build:launcher"
-            [ "${{ steps.smoke.outcome }}" = "failure" ] && echo "- next: node packages/launcher/dist/cli.js --mcp"
-            [ "${{ steps.tarball.outcome }}" = "failure" ] && echo "- next: cd packages/launcher && npm pack --dry-run"
+            [ "${{ steps.smoke.outcome }}" = "failure" ] && echo "- next: node packages/launcher-vibe-typer/dist/cli.js --mcp"
+            [ "${{ steps.mcp.outcome }}" = "failure" ] && echo "- next: node packages/launcher/dist/cli.js --mcp"
+            [ "${{ steps.tarball.outcome }}" = "failure" ] && echo "- next: cd packages/launcher && npm pack --dry-run, and the same in packages/launcher-vibe-typer"
             [ "${{ steps.publish.outcome }}" = "failure" ] && echo "- next: see docs/npm-launcher.md for what a half-finished publish leaves behind"
           } >> "$GITHUB_STEP_SUMMARY"

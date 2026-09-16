@@ -578,7 +578,7 @@ describe('the run', () => {
     expect(planOf(state)).toBe(state.plan);
     expect(codeOf(state).length).toBeGreaterThan(0);
     expect(createRun({ seed: 4, tier: 0, endless: false }).plan.tier).toBe(0);
-    expect(agentNameOf(createRun({ seed: 4, tier: 0, endless: false }))).toBe('Claudette');
+    expect(agentNameOf(createRun({ seed: 4, tier: 0, endless: false }))).toBe('Sprocket');
   });
 
   it('drains its events every step and stops stepping once it is over', () => {

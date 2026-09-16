@@ -1,8 +1,8 @@
 # The npm launcher
 
-`@mcptoolshop/ghost-on-the-menu` — the cabinet as one published package, two ways to run.
+`@mcptoolshop/ghost-on-the-menu` — the cabinet as one published package, two ways to run. Since sub-slice F of slice 3 (2026-09-15, `docs/vibe-typer.slice3.md` § Sub-slice F) there is a second: `@mcptoolshop/vibe-typer` from `packages/launcher-vibe-typer`, one package per cabinet, built by the same pack script (`scripts/build.mjs --cabinet ghost|vibe`), gated by the same marker check per package, and published by the same `release.yml` in one idempotent loop. The history below is the Ghost launcher's and still holds for it; the second package's rows are in the compensators table.
 
-**The Director lifted the never-npm rule for this package on 2026-09-14, and for this package only.** `tape-core`, `ghost-on-the-menu`, `cabinet-server` and `cabinets` stay `"private": true` and are not on any registry. What changed is narrow and is written into `CLAUDE.md`: one launcher publishes, the rest do not.
+**The Director lifted the never-npm rule for this package on 2026-09-14, and on 2026-09-15 decided that each cabinet ships as its own package and nothing ships as a bundle.** `tape-core`, `ghost-on-the-menu`, `vibe-typer`, `cabinet-server` and `cabinets` stay `"private": true` and are not on any registry. What changed is narrow and is written into `CLAUDE.md`: two launchers publish, the rest do not.
 
 ## Why a launcher and not the game
 
@@ -51,14 +51,18 @@ The traversal tests are worth a line. They were written with `fetch` first and p
 
 Every irreversible call, its undo, and what the undo leaves behind.
 
-| Action                                                      | Undo                                                                                                   | State afterwards                                                                            | Owner    |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | -------- |
-| `npm publish` (within 72 h)                                 | `npm unpublish @mcptoolshop/ghost-on-the-menu@<v>`                                                     | Version gone; **that exact version string can never be republished**                        | Director |
-| `npm publish` (after 72 h)                                  | `npm deprecate @mcptoolshop/ghost-on-the-menu@<v> "<why>"`                                             | Version stays on the registry forever; installs print the reason                            | Director |
-| The `0.0.0` placeholder publish, which **creates the name** | `npm deprecate …@0.0.0 "placeholder"`, or `npm unpublish` within 72 h                                  | The name is held for good either way. `npm owner add/rm` transfers it; it is never released | Director |
-| Trusted Publishing set up on npmjs.com                      | Remove the trusted publisher in the npm package settings                                               | CI can no longer publish; nothing already published changes                                 | Director |
-| `gh release create` — **now also publishes to npm**         | `gh release delete <tag>` deletes the release, **not the npm version**; use the npm rows above as well | The tag survives a release delete; the npm version survives both                            | Director |
-| `git push --tags`                                           | `git push --delete origin <tag>`                                                                       | Anyone who fetched the tag keeps it                                                         | Director |
+| Action                                                       | Undo                                                                                                   | State afterwards                                                                            | Owner    |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | -------- |
+| `npm publish` (within 72 h)                                  | `npm unpublish @mcptoolshop/ghost-on-the-menu@<v>`                                                     | Version gone; **that exact version string can never be republished**                        | Director |
+| `npm publish` (after 72 h)                                   | `npm deprecate @mcptoolshop/ghost-on-the-menu@<v> "<why>"`                                             | Version stays on the registry forever; installs print the reason                            | Director |
+| `npm publish` of `@mcptoolshop/vibe-typer` (within 72 h)     | `npm unpublish @mcptoolshop/vibe-typer@<v>`                                                            | As above, for the second package                                                            | Director |
+| `npm publish` of `@mcptoolshop/vibe-typer` (after 72 h)      | `npm deprecate @mcptoolshop/vibe-typer@<v> "<why>"`                                                    | As above, for the second package                                                            | Director |
+| The `@mcptoolshop/vibe-typer@0.0.0` placeholder (2026-09-15) | `npm deprecate @mcptoolshop/vibe-typer@0.0.0 "placeholder"` after the first real publish               | The name is held for good; the placeholder prints its reason                                | Director |
+| A publish loop that got one package up and not the other     | Fix the cause and rerun `release.yml`; the loop skips a `name@version` already on the registry         | Both packages at the version; the first is never republished                                | Claude   |
+| The `0.0.0` placeholder publish, which **creates the name**  | `npm deprecate …@0.0.0 "placeholder"`, or `npm unpublish` within 72 h                                  | The name is held for good either way. `npm owner add/rm` transfers it; it is never released | Director |
+| Trusted Publishing set up on npmjs.com                       | Remove the trusted publisher in the npm package settings                                               | CI can no longer publish; nothing already published changes                                 | Director |
+| `gh release create` — **now also publishes to npm**          | `gh release delete <tag>` deletes the release, **not the npm version**; use the npm rows above as well | The tag survives a release delete; the npm version survives both                            | Director |
+| `git push --tags`                                            | `git push --delete origin <tag>`                                                                       | Anyone who fetched the tag keeps it                                                         | Director |
 
 **The fifth row is the change to an existing ritual and the one to read twice.** Cutting a GitHub release used to be undoable — delete the release, retag, move on. It now triggers an npm publish that is not undoable after 72 hours. A release is a heavier act in this repo than it was yesterday.
 

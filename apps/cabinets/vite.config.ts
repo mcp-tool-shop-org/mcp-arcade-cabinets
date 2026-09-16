@@ -498,6 +498,30 @@ function cabinetEndless(): Plugin {
   };
 }
 
+/**
+ * Which cabinets this build carries. `all` is the default everywhere — the
+ * dev server, Pages, and the arcade bundle — and the two single-cabinet
+ * values exist for the npm packages, one per cabinet.
+ *
+ * It is `define`d rather than left to Vite's own `VITE_` handling on
+ * purpose. Vite only substitutes a `VITE_*` key that is actually set, so an
+ * unset `import.meta.env.VITE_CABINET` would survive into the bundle as a
+ * property read, and a property read is not something Rollup can fold. With
+ * this define the value is a string literal in every build, the branch in
+ * `main.ts` folds, and the cabinet that is not in this build is dropped with
+ * everything it reaches. A value this does not recognize is a halt, not a
+ * silent `all`: a typo in a pack script would otherwise ship both cabinets
+ * inside a package named for one.
+ */
+const CABINETS = ['all', 'ghost', 'vibe'] as const;
+const cabinet = process.env.VITE_CABINET ?? 'all';
+if (!(CABINETS as readonly string[]).includes(cabinet)) {
+  throw new Error(
+    `VITE_CABINET is "${cabinet}"; it must be one of ${CABINETS.join(', ')}\n` +
+      'next: VITE_CABINET=all pnpm -F @mcp-arcade-cabinets/cabinets build',
+  );
+}
+
 // The shell is built two ways: relative-base for the package's own dist, and
 // under the landing site at /<repo>/play/ for GitHub Pages (PLAY_BASE and
 // PLAY_OUT are set by the root `build:play` script). The say middleware and
@@ -506,6 +530,7 @@ function cabinetEndless(): Plugin {
 export default defineConfig({
   base: process.env.PLAY_BASE ?? './',
   build: { outDir: process.env.PLAY_OUT ?? 'dist', emptyOutDir: true },
+  define: { 'import.meta.env.VITE_CABINET': JSON.stringify(cabinet) },
   plugins: [devAllowlists(), cabinetSay(), cabinetEndless()],
   server: {
     proxy: {

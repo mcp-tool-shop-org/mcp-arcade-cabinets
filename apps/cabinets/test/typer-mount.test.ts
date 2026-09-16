@@ -17,7 +17,15 @@ import {
   VALUE_TOLERANCE,
 } from '@mcp-arcade-cabinets/vibe-typer';
 
-import { FONT_SIZES, mountVibeTyper, type VibeMount } from '../src/vibe-typer';
+import { DEFAULT_MUSIC, isMusicMode } from '../src/typer-audio';
+import {
+  FONT_SIZES,
+  STACK_WORDS,
+  mountVibeTyper,
+  readVibePrefs,
+  writeVibePrefs,
+  type VibeMount,
+} from '../src/vibe-typer';
 
 const STEP = 1 / 60;
 
@@ -133,7 +141,7 @@ describe('the field, mounted', () => {
       endless: false,
       levelIndex: 0,
       seed: 1,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       integration: [],
       onExit: () => undefined,
@@ -165,7 +173,7 @@ describe('the field, mounted', () => {
       endless: false,
       levelIndex: 0,
       seed: 1,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       integration: [],
       onExit: () => undefined,
@@ -184,7 +192,7 @@ describe('the field, mounted', () => {
     expect(chat.textContent ?? '').not.toBe('');
     expect(/\d/.test(chat.textContent ?? '')).toBe(false);
     // The agent's name is in the header, and the header is words too.
-    expect(root.querySelector('.vibe-chat .vibe-head')!.textContent).toContain('Claudette');
+    expect(root.querySelector('.vibe-chat .vibe-head')!.textContent).toContain('Sprocket');
   });
 
   it('shows the scoreboard and nothing that counts the typist', () => {
@@ -193,7 +201,7 @@ describe('the field, mounted', () => {
       endless: false,
       levelIndex: 0,
       seed: 1,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       integration: [],
       onExit: () => undefined,
@@ -217,7 +225,7 @@ describe('the field, mounted', () => {
       endless: false,
       levelIndex: 0,
       seed: 1,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       font: 'huge',
       integration: [],
@@ -234,13 +242,72 @@ describe('the field, mounted', () => {
     expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.reply);
   });
 
+  it('hands the music setting to the engine', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      music: 'off',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: true,
+    });
+    run(mount, 30);
+    expect(mount.debug().music).toBe('off');
+  });
+
+  it('takes the calm bed when nobody has said otherwise', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: true,
+    });
+    run(mount, 30);
+    expect(DEFAULT_MUSIC).toBe('soft');
+    expect(mount.debug().music).toBe(DEFAULT_MUSIC);
+  });
+
+  it('keeps the music choice the menu wrote under vibe.prefs', () => {
+    // The menu writes the select's value with the rest of the patch; a mount
+    // that is given no music reads it back from here.
+    writeVibePrefs({ music: 'on' });
+    expect(readVibePrefs().music).toBe('on');
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: true,
+    });
+    run(mount, 30);
+    expect(mount.debug().music).toBe('on');
+
+    // A word that is not a mode is not a mode: the stored pref is dropped.
+    localStorage.setItem('vibe.prefs', JSON.stringify({ music: 'loud' }));
+    expect(readVibePrefs().music).toBeUndefined();
+    expect(isMusicMode('loud')).toBe(false);
+  });
+
   it('stops listening when it is unmounted', () => {
     mount = mountVibeTyper(root, {
       tier: 0,
       endless: false,
       levelIndex: 0,
       seed: 1,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       integration: [],
       onExit: () => undefined,
@@ -270,7 +337,7 @@ describe('the field, mounted', () => {
       endless: false,
       levelIndex: 0,
       seed: 1,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       integration: [],
       onExit: () => {
@@ -293,6 +360,74 @@ describe('the field, mounted', () => {
       spy.mockRestore();
     }
     mount = null;
+  });
+});
+
+// ——— the standup ——————————————————————————————————————————————————————————
+//
+// The end card names the product and the stack it was built on, and carries
+// the level's premise under it. Nobody types here: the run is left alone
+// until the context runs out, which is the cheapest way to the card.
+
+/** Let the clock run until the standup is up. Returns false if it never came. */
+function toStandup(m: VibeMount, cap = 6000): boolean {
+  for (let i = 0; i < cap; i++) {
+    m.tick(0.5);
+    if (root.querySelector('.vibe-standup')) return true;
+  }
+  return false;
+}
+
+/** The standup's quiet lines, in the order they were laid down. */
+function standupLines(): string[] {
+  return [...root.querySelectorAll('.vibe-standup p.muted')].map((p) => p.textContent ?? '');
+}
+
+describe('the standup', () => {
+  // Hardcore, because it is the one listed tier where an empty bar is the
+  // end rather than a compaction: below it, a run that nobody types into
+  // refills forever and never reaches a card.
+  it('names the product and its stack, and carries the level’s premise', () => {
+    const plan = planOf(createRun({ seed: 1, tier: 3, endless: false, levelIndex: 0 }));
+    expect(plan.story).not.toBe('');
+    mount = mountVibeTyper(root, {
+      tier: 3,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    expect(toStandup(mount)).toBe(true);
+    expect(root.querySelector('.vibe-standup h1')!.textContent).toBe(
+      `${plan.product} · ${STACK_WORDS[plan.stack]}`,
+    );
+    // The premise sits directly under the heading, before how the run ended.
+    expect(standupLines()[0]).toBe(plan.story);
+    expect(standupLines()[1]).toBe('the context ran out');
+  });
+
+  it('shows no premise in endless, because nobody wrote one', () => {
+    const plan = planOf(createRun({ seed: 1, tier: 0, endless: true }));
+    expect(plan.story).toBe('');
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: true,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    expect(toStandup(mount)).toBe(true);
+    expect(root.querySelector('.vibe-standup h1')!.textContent).toContain(
+      ` · ${STACK_WORDS[plan.stack]}`,
+    );
+    expect(standupLines()[0]).toBe('the context ran out');
   });
 });
 
@@ -364,7 +499,7 @@ function mountEndless(): VibeMount {
     tier: 0,
     endless: true,
     seed: SEED,
-    agentName: 'Claudette',
+    agentName: 'Sprocket',
     theme: 'mechanical',
     integration: [],
     onExit: () => undefined,
@@ -440,7 +575,7 @@ describe('the endless seat, mounted', () => {
       endless: false,
       levelIndex: 0,
       seed: SEED,
-      agentName: 'Claudette',
+      agentName: 'Sprocket',
       theme: 'mechanical',
       integration: [],
       onExit: () => undefined,
@@ -449,7 +584,15 @@ describe('the endless seat, mounted', () => {
     await flush();
     run(mount, 4);
     await flush();
-    expect(mount.debug()).toEqual({ supplied: 0, asked: 0, accepted: 0, refused: 0 });
+    // No engine was built here (`startAudio` is false and no key was pressed),
+    // so the bed reports nothing at all.
+    expect(mount.debug()).toEqual({
+      supplied: 0,
+      asked: 0,
+      accepted: 0,
+      refused: 0,
+      music: null,
+    });
     expect(root.querySelector('[data-vibe-seat]')).toBeNull();
   });
 });

@@ -43,7 +43,15 @@ import {
 import { listPilotModels } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
 import { CONFETTI_MAX, cuesFor, shakeFor, type Cue } from './typer-cues';
-import { createTyperAudio, isTheme, type Theme, type TyperAudio } from './typer-audio';
+import {
+  createTyperAudio,
+  DEFAULT_MUSIC,
+  isMusicMode,
+  isTheme,
+  type MusicMode,
+  type Theme,
+  type TyperAudio,
+} from './typer-audio';
 import { LEAVE_HOLD_MS, readKey } from './typer-keys';
 
 // The feel the Director owns, in one place. High, not extreme (Q3.1). // Director
@@ -89,7 +97,7 @@ const RETRO_PAIRS = 8;
  * never PROD, so the seat stays on there either way. Same switch as
  * `ghost.ts`; the launcher's pack greps the strings this guards.
  */
-const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
+export const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
 
 // The endless seat (G28 as slice 3 amends it). The seat writes a whole
 // request; the code gate accepts or refuses it; a refusal is re-asked once
@@ -99,6 +107,10 @@ const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.
 const ENDLESS_TIMEOUT_MS = 20_000;
 /** How often the shell looks for a daemon while the seat is off. */
 const TAGS_EVERY_MS = 5000;
+/** How long the field's repeated look for a daemon may take. */
+const TAGS_TIMEOUT_MS = 2000;
+/** How long the menu's single look may take before it says the authored user. */
+const SEAT_PROBE_TIMEOUT_MS = 5000;
 /** Asks for one request slot before the shell gives that slot to the corpus. */
 const ENDLESS_TRIES = 2;
 /** Weak pairs the seat is told about. */
@@ -154,7 +166,9 @@ const PALETTES: Record<string, string[]> = {
   integration: ['#2a5a5a', '#468080', '#1c4040', '#6fa5a5'],
 };
 
-const DEVICE: Record<string, 'phone' | 'terminal' | 'notebook' | 'ledger' | 'wires'> = {
+type DeviceKind = 'phone' | 'terminal' | 'notebook' | 'ledger' | 'wires';
+
+const DEVICE: Record<string, DeviceKind> = {
   bash: 'terminal',
   csharp: 'phone',
   javascript: 'phone',
@@ -163,6 +177,9 @@ const DEVICE: Record<string, 'phone' | 'terminal' | 'notebook' | 'ledger' | 'wir
   java: 'notebook',
   integration: 'wires',
 };
+
+/** One painted frame a device kind, under `vibe/frames/<kind>.png` at 960x720. */
+const DEVICE_KINDS: DeviceKind[] = ['terminal', 'phone', 'notebook', 'ledger', 'wires'];
 
 /** The tiers, in words. Hardcore comes from the selector only (G25, G26). */
 export const TIER_WORDS: { tier: Tier; word: string }[] = [
@@ -178,6 +195,53 @@ export function bandWord(min: number, max: number): string {
   if (mid <= 2) return 'easy';
   if (mid <= 3.5) return 'warm';
   return 'hot';
+}
+
+// ——— the daemon, read once ————————————————————————————————————————————————
+// One reading of the tag list, shared by the field and the menu, so the name
+// the menu prints is the name the field will sit. Neither of these throws: a
+// daemon that is not there, an answer that is not JSON, a look that timed out
+// and a look that was abandoned are all the same answer — no seat — and the
+// authored pool plays either way (G11).
+
+/**
+ * The models a seat may sit, cloud first, as `listPilotModels` orders them.
+ * Empty when the build cannot reach a daemon at all (Pages), when none is
+ * listening, or when nothing it lists may be seated.
+ */
+export async function probeSeatModels(o: {
+  signal?: AbortSignal;
+  timeoutMs: number;
+}): Promise<string[]> {
+  if (!LOCAL_SEATS) return [];
+  const signals: AbortSignal[] = [AbortSignal.timeout(o.timeoutMs)];
+  if (o.signal) signals.push(o.signal);
+  try {
+    const r = await fetch('/ollama/api/tags', { signal: AbortSignal.any(signals) });
+    if (!r.ok) return [];
+    const body = (await r.json()) as { models?: { name?: string }[] };
+    const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
+    return listPilotModels(names);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The one tag the endless seat will sit, for the menu to name before the run
+ * starts, or `null` for the authored user. The menu is outside the field, so
+ * a tag may be read there (G17); nothing on the field ever names it.
+ *
+ * The seat the route actually takes is the same order this reads: an Ollama
+ * cloud tag first, then a local one. A launcher started with an API key seats
+ * Claude instead, which no tag list can show — the controls row corrects the
+ * name once the first answer lands.
+ */
+export async function probeSeatName(signal?: AbortSignal): Promise<string | null> {
+  const listed = await probeSeatModels(
+    signal ? { signal, timeoutMs: SEAT_PROBE_TIMEOUT_MS } : { timeoutMs: SEAT_PROBE_TIMEOUT_MS },
+  );
+  return listed[0] ?? null;
 }
 
 // ——— prefs ————————————————————————————————————————————————————————————————
@@ -198,6 +262,8 @@ export interface VibePrefs {
   theme?: Theme;
   /** The editor type, from the menu's settings row. */
   font?: VibeFont;
+  /** The bed, from the menu's settings row. */
+  music?: MusicMode;
   /** The seed box, as the player left it. */
   seed?: string;
   muted?: 'on' | 'off';
@@ -225,6 +291,7 @@ export function readVibePrefs(): VibePrefs {
     if (typeof o.agent === 'string') out.agent = cleanName(o.agent);
     if (isTheme(o.theme)) out.theme = o.theme;
     if (isVibeFont(o.font)) out.font = o.font;
+    if (isMusicMode(o.music)) out.music = o.music;
     if (typeof o.seed === 'string') out.seed = o.seed.slice(0, 12);
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
@@ -298,6 +365,8 @@ export interface VibeOpts {
   theme: Theme;
   /** The editor type. Left out, the mount takes the stored pref, then `large`. */
   font?: VibeFont;
+  /** The bed. Left out, the mount takes the stored pref, then `soft`. */
+  music?: MusicMode;
   /** Integration snippets built from the bundled tapes (G30). */
   integration: Snippet[];
   onExit: () => void;
@@ -314,7 +383,14 @@ export interface VibeMount {
    * has refused. For the tests only; nothing on the field reads it, and
    * nothing here is ever drawn (G17, G23).
    */
-  debug(): { supplied: number; asked: number; accepted: number; refused: number };
+  debug(): {
+    supplied: number;
+    asked: number;
+    accepted: number;
+    refused: number;
+    /** The bed the engine is playing, or nothing when no engine was built. */
+    music: MusicMode | null;
+  };
 }
 
 interface ChatItem {
@@ -419,6 +495,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   // One property, three readers: the editor, the chat and the beat word.
   const font = opts.font ?? prefs.font ?? DEFAULT_FONT;
   wrap.style.setProperty('--vibe-font', FONT_SIZES[font]);
+  // The bed's shape. Sound off still silences everything; this only shapes
+  // the bed, and its default is the calm one.
+  const music = opts.music ?? prefs.music ?? DEFAULT_MUSIC;
 
   const board = el('div', 'vibe-board');
   const valuationEl = el('span', 'vibe-stat vibe-valuation');
@@ -508,6 +587,22 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   // ——— the state the shell keeps ————————————————————————————————————————————
   const ctx2d = canvas.getContext('2d');
+  // The painted device frames. A kind whose file is missing, slow, or broken
+  // draws as `drawFrame`'s rectangles instead, so the game never waits on an
+  // image and a Pages build without `vibe/frames/` still plays. Nothing here
+  // runs in jsdom, where `Image` is never handed a loaded file.
+  const frames = new Map<DeviceKind, HTMLImageElement>();
+  if (typeof Image !== 'undefined') {
+    for (const kind of DEVICE_KINDS) {
+      const img = new Image();
+      img.decoding = 'async';
+      // Each fires once and detaches; a load that lands after unmount writes
+      // into a Map nothing reads any more (the review's first change).
+      img.addEventListener('load', () => frames.set(kind, img), { once: true });
+      img.addEventListener('error', () => frames.delete(kind), { once: true });
+      img.src = `${import.meta.env.BASE_URL}vibe/frames/${kind}.png`;
+    }
+  }
   const queue: RunInput[] = [];
   const chat: ChatItem[] = [];
   let chatAt = 0;
@@ -541,6 +636,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       const base = import.meta.env.BASE_URL || '/';
       audio = createTyperAudio(new AudioContext(), base, planOf(state).seed);
       audio.setTheme(opts.theme);
+      audio.setMusic(music);
       audio.setMuted(muted);
       audio.resume();
     } catch {
@@ -725,7 +821,11 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     const plan = planOf(state);
     const kind = DEVICE[plan.stack] ?? 'terminal';
     const box = frameBox(kind);
-    drawFrame(c, kind, box);
+    const art = frames.get(kind);
+    // The painted frame when it is there, the rectangles until it is. Either
+    // way `box` stays the packing area, so the blocks land in the same place.
+    if (art) c.drawImage(art, 0, 0, PREVIEW_W, PREVIEW_H);
+    else drawFrame(c, kind, box);
     const palette = PALETTES[plan.stack] ?? PALETTES.bash!;
     const layout = packPieces(
       pieces.map((p) => p.size),
@@ -1008,14 +1108,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   };
 
   const probeTags = () => {
-    void fetch('/ollama/api/tags', {
-      signal: AbortSignal.any([tagsCtl.signal, AbortSignal.timeout(2000)]),
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no daemon'))))
-      .then((body: { models?: { name?: string }[] }) => {
-        if (left) return;
-        const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
-        const listed = listPilotModels(names);
+    void probeSeatModels({ signal: tagsCtl.signal, timeoutMs: TAGS_TIMEOUT_MS })
+      .then((listed) => {
+        if (left || tagsCtl.signal.aborted) return;
         if (listed.length === 0) {
           markSeatDown();
           return;
@@ -1252,7 +1347,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     writeWeak(mergeWeak(storedWeak, state.weakBigrams));
     audio?.end();
     const scene = el('section', 'column vibe-standup');
-    scene.append(el('h1', undefined, plan.product));
+    // The product and the stack it was built on, in the menu's own words. The
+    // stack is the one fact the end card was missing: two levels can share a
+    // premise and read as the same job otherwise.
+    scene.append(el('h1', undefined, `${plan.product} · ${STACK_WORDS[plan.stack] ?? plan.stack}`));
     // The level's premise, under its name. An endless level has none.
     if (plan.story !== '') scene.append(el('p', 'muted', plan.story));
     const lastUser = [...state.chat].reverse().find((c) => c.who === 'user');
@@ -1352,6 +1450,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       asked: seatCounts.asked,
       accepted: seatCounts.accepted,
       refused: seatCounts.refused,
+      music: audio ? audio.music() : null,
     }),
   };
 }

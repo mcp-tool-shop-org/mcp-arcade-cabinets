@@ -131,6 +131,10 @@ All `// Director`, all at the top of their module, all named in the code.
 `DETUNE 0.03`, `POLYPHONY 6`, `ERROR_GAIN 0.6`, `ERROR_RATE 0.7`, `DUCK 0.5` with `DUCK_S 0.7`, `MASTER 0.9`,
 `BED_LEVEL 0.16`, `TAIL_CAP 0.7`, `END_TAIL 1.6`, `BEAT_WINDOW 0.08`.
 
+`BED_BPM`, `BED_HYPE` and `BED_LEVEL` now describe the **`on`** music mode only. Slice 3 made the bed a
+setting with `soft` as the default, and `BED_MODES` in the same module carries the numbers for all three:
+see `docs/vibe-typer.slice3.md` § Sub-slice A, part two.
+
 **`vibe-typer.ts`** — `STEP 1/60`, `MAX_STEPS 8`, `CREEP_HOLD_MS 600`, `POP_MS 240` from `POP_FROM 1.3`,
 `ROLLUP_MS 400`, `FLASH_MS 120`, `TOAST_MS 2000`, `CHAT_CPS 90`, `WARM_AT 0.25`, `PREVIEW_W 480` ×
 `PREVIEW_H 360` at `PREVIEW_DPR 2`, `STEADY_CV 0.45`, `BRISK_CPS 5.5`, `SLOW_CPS 2.5`, `WEAK_DECAY 0.5`,

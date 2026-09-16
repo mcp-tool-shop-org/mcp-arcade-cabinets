@@ -6,13 +6,15 @@
 
 **You are the agent. The rig hands you the calls.**
 
-A short retro shooter made from what MCP servers actually said on the wire. And since `0.9.0`, a second cabinet rides in the same package: **Vibe Typer**, a typing game where you are a sycophantic coding agent and the thing gets built while you type.
+A short retro shooter made from what MCP servers actually said on the wire.
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-That serves both cabinets on `127.0.0.1` and opens them on a switch. Nothing to install, nothing to configure, no account.
+That serves the cabinet on `127.0.0.1` and opens it. Nothing to install, nothing to configure, no account.
+
+This is one cabinet of the [arcade](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets). The other one, **Vibe Typer**, a typing game where you are a sycophantic coding agent and the thing gets built while you type, has its own package: `npx @mcptoolshop/vibe-typer`. Version `0.9.0` of this package carried both cabinets on a switch; from `0.10.0` each cabinet ships as itself, and the whole arcade stays [in the browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/).
 
 ---
 
@@ -24,14 +26,6 @@ Somewhere in there are the calls the agent should not have made. They look like 
 
 The game only ever reads tapes. It does not talk to a server, does not keep a score, and does not tell you who won.
 
-## The other cabinet: Vibe Typer
-
-Your user is a vibe coder: a website for their cat, Uber but for ducks, a blockchain for the office fridge. Each request lands in blue. You type the agent's reply, then the code, line by line, and the product assembles beside you. Ship the last line and it deploys; the valuation rolls up with your **vibes**, the multiplier your streak of clean lines earns. The clock is your context window, and in the listed levels it is kind: run it dry and the agent compacts, sums up in one line, and carries on. Nothing yells. A mistyped character waits for a backspace; a bad line gets "hmm, that's not it" and a retry.
-
-The code is real: two hundred and forty-nine snippets across bash, C#, Java, JavaScript, Python and SQL with teaching notes, plus tool calls named after the servers on the bundled tapes. Five keyboard sample sets; every clean line raises the keystroke pitch a semitone. Levels, an endless ladder, and a hardcore tier from the selector. Words per minute never appear; the retro at the end is opt-in and speaks in words, against your own past in this browser only.
-
-Pick it on the switch when the page opens. Type what you see, Enter sends a line, Tab takes the rest when the ghost offers it, hold Escape to leave.
-
 ## Two ways to run it
 
 ### Play it
@@ -40,7 +34,7 @@ Pick it on the switch when the page opens. Type what you see, Enter sends a line
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-Ghost: left and right to move, space to fire, F for full screen. Press **Shift** for a run of four calls with a four-word replay code at the end. Vibe Typer: type.
+Left and right to move, space to fire, F for full screen. Press **Shift** for a run of four calls with a four-word replay code at the end.
 
 This is the same game as [the published page](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/), with one difference that is the whole reason this package exists: run locally, the cabinet can reach **your own Ollama daemon and voice worker**. A published web page cannot. With a model behind the bosses, they fly themselves and speak their own lines.
 
@@ -118,7 +112,7 @@ docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
 
 - [Play in the browser, no install](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/)
 - [How to read a round](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/reading-a-round/)
-- [Vibe Typer in the handbook](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/vibe-typer/)
+- [The arcade's other cabinet, Vibe Typer](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/vibe-typer/)
 - [Source](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets)
 
 MIT. Still `0.x`, and the version says what it means.

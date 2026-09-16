@@ -229,7 +229,15 @@ export function withIntegration(corpus: Corpus, snippets: readonly Snippet[]): C
   };
 }
 
-export const DEFAULT_CORPUS: Corpus = loadCorpus({
+// The annotation is what lets a Ghost-only bundle drop this. `loadCorpus`
+// can throw, so a bundler must assume the call matters and keeps it — and
+// with it every corpus file, a fifth of a megabyte of snippets, inside a
+// package named for the other cabinet. Marking it pure says the only thing
+// this call does is produce a value: when nothing reads `DEFAULT_CORPUS`,
+// the call and the six JSON imports go. Where something does read it — the
+// typing cabinet, every test, the play-through — it runs exactly as before
+// and still halts on a bad lever.
+export const DEFAULT_CORPUS: Corpus = /* #__PURE__ */ loadCorpus({
   bash: bashJson,
   csharp: csharpJson,
   java: javaJson,

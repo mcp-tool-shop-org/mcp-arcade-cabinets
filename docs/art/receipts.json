@@ -417,5 +417,165 @@
       "seconds": 32,
       "file": "apps/cabinets/public/tracks/breather.mp3"
     }
-  ]
+  ],
+  "vibe_typer_batch_1": {
+    "brief": "docs/vibe-typer.kickoff-s3.md, sub-slice D, batch one (the logo and the five device frames)",
+    "generated_on": "2026-09-15",
+    "route": {
+      "provider": "bfl",
+      "model": "bfl/flux-2-max",
+      "via": "Comfy Cloud partner_generate (workflow-persist path, Flux2ImageNode); the four non-terminal frames went out as one submit_batch",
+      "references": "the logo was generated first against the brand's ghost-readme.png so the two cabinet marks share a family; the terminal frame took the logo as its reference and the other four frames took the terminal, so the set stays on one palette",
+      "approved_by": "Director: one logo and five device frames, at most twelve generations (six images plus at most one re-roll each). Spent seven.",
+      "spend": "7 of 12 — logo (rejected), logo re-roll (accepted), terminal, then phone, notebook, ledger and wires in one batch. No frame needed a re-roll."
+    },
+    "licence": "the licence block above applies unchanged: BFL developer terms (customer-owned Output, commercial use permitted, Output never used to train another model, provenance metadata kept), the BFL Flux API service terms, and the Comfy terms. Re-verify on the day of any public deploy.",
+    "acceptance": {
+      "glyph_check": "ai-eyes image_contains, query \"text, letters, numbers or written words\", threshold 0.02; every accepted image scored at or below 0.0001",
+      "dimensions": "the logo is exactly 669x669; every frame is exactly 960x720, which is the preview at 480x360 CSS px and 2x DPR",
+      "file_size": "every PNG is under 600 KB (43-199 KB)",
+      "packing_area": "the fit below guarantees the device's empty interior covers frameBox() for its kind, at 2x. Measured after the fit: mean luma 0.13-1.04 of 255 inside the box, and no pixel above 80 except 0.56 per cent of the wires box, where one amber node sits just inside the left edge.",
+      "fit": "a lead-side step, not a generation: the picture is scaled uniformly so the dark interior the device encloses (found by flood-filling from the picture centre) is at least as large as frameBox() in both axes, then translated so the two are concentric, then drawn onto a 960x720 ground of #101018. Per-image scale and offset are in each row. This cost no credits and is what kept the batch at seven.",
+      "human_look": "Claude (Opus 5), 2026-09-15, notes per image below",
+      "installed": "apps/cabinets/public/vibe/frames/<kind>.png at 960x720; the logo in mcp-tool-shop-org/brand at logos/mcp-arcade-cabinets/vibe-typer-readme.png, committed there by the coordinator. The 1024x768 originals and the fits are kept beside them in docs/art/originals-vibe-1/, which is git-ignored like originals-2/, and every job stays in the Comfy asset library by job id."
+    },
+    "compensators": {
+      "generation": "a spend, not undoable. Compensator: nothing enters the repo until it is accepted, so a rejected image is a receipt row and a library entry and nothing else. Owner: Claude.",
+      "rejected_image": "the rejected logo (job c2da867f) was never written into apps/, packages/ or the brand repo. Its local file is under the git-ignored originals directory; the Comfy library keeps the job as the record of what was paid for. Owner: Claude.",
+      "installed_frames": "`git rm apps/cabinets/public/vibe/frames/<kind>.png` puts the preview back on the rectangles with no other change, because drawFrame is still the fallback. Owner: coordinator."
+    },
+    "images": [
+      {
+        "id": "vibe-typer-logo",
+        "role": "Vibe Typer logo: brand logos/mcp-arcade-cabinets/vibe-typer-readme.png, 669x669, beside ghost-readme.png; the cabinet page and the brand repo",
+        "batch": 1,
+        "job_id": "c2da867f-eb1e-4b56-bc6e-5e6875b07f01",
+        "seed": 7301,
+        "size": "1024x768 (aspect 1:1 requested; the node rendered 4:3)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade icon style, palette weight and pixel scale as the reference icon: a small blocky computer keyboard seen from a low three-quarter angle, with one single key lit warm amber, and a rounded empty speech bubble floating above it. Warm amber (#e8a04a) and pale cream on a deep navy (#1b2440) ground. Every key is a plain smooth blank block with nothing printed on it. Hard edges, flat colours, no gradients, no photoreal, a soft amber glow on the one lit key only. The speech bubble is completely empty inside. Centred, generous margin, nothing else in frame. No letters, no numbers, no words, no arrows, no symbols, no punctuation, no user interface, no text of any kind anywhere in the image.",
+        "reference": "brand ghost-readme.png by raw URL (role reference_image)",
+        "status": "rejected",
+        "note": "four amber keys lit across the board, not one, and the board is too wide for a centered square crop. Not committed anywhere; kept in the Comfy library by job id as the record of the spend."
+      },
+      {
+        "id": "vibe-typer-logo",
+        "role": "Vibe Typer logo: brand logos/mcp-arcade-cabinets/vibe-typer-readme.png, 669x669, beside ghost-readme.png",
+        "batch": 1,
+        "job_id": "c3a37dcd-029f-4a86-ac66-5f6b89651439",
+        "seed": 7311,
+        "size": "1024x768 as rendered; centre-cropped to 768x768 and downscaled to 669x669 (Lanczos)",
+        "file": "mcp-tool-shop-org/brand: logos/mcp-arcade-cabinets/vibe-typer-readme.png (199 KB)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade icon style, palette weight and pixel scale as the reference icon: one small blocky computer keyboard seen from a low three-quarter angle, and a rounded empty speech bubble floating above it. Exactly ONE single key on the whole keyboard is lit warm amber (#e8a04a) and glowing, near the middle of the board; every other key is plain pale cream and unlit, a smooth blank block with nothing printed on it. Deep navy (#1b2440) ground. Square composition: the keyboard and the bubble together sit well inside a centred square with wide empty navy margins on the left and the right as well as the top and the bottom, so nothing touches an edge. Hard edges, flat colours, no gradients, no photoreal, a soft amber glow on the one lit key only. The speech bubble is completely empty inside. Nothing else in frame. No letters, no numbers, no words, no arrows, no symbols, no punctuation, no user interface, no text of any kind anywhere in the image.",
+        "reference": "brand ghost-readme.png by raw URL (role reference_image)",
+        "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 0.000022794, threshold 0.02",
+        "status": "accepted",
+        "note": "the re-roll of the row above, and the better of the two: square-safe composition with wide navy margins, one amber glow at the centre of a cream board, an empty cream speech bubble above. Two adjacent caps carry the glow rather than one, so the image does not meet the brief's one glowing key; kept under the rule that a failed re-roll keeps the better of the two, with the miss stated here, and a third generation left to the Director's approval. The pale rectangle on each amber cap is a flat blank highlight, checked at 4x: no glyph."
+      },
+      {
+        "id": "frame-terminal",
+        "role": "preview device frame, terminal stack(s) per DEVICE in apps/cabinets/src/vibe-typer.ts",
+        "batch": 1,
+        "job_id": "236f6759-8700-4a02-8c67-194dd687b537",
+        "seed": 7302,
+        "size": "1024x768 as rendered; fitted to 960x720 (480x360 at 2x DPR)",
+        "file": "apps/cabinets/public/vibe/frames/terminal.png (123 KB)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the reference image: one empty terminal window, drawn perfectly flat and face on, straight at the viewer, no perspective, no tilt, no angle. The window fills the picture, and its screen is one completely empty flat solid near-black (#101018) rectangle covering the whole middle of the image with absolutely nothing inside it: no code, no lines, no cursor, no prompt, no icons, no scanlines, no grid, no glow, no highlight. Only a narrow slate grey (#3a3a4a) bezel and a thin blank title strip carrying three small plain round dots run around the outer edge of the picture, with one small warm amber (#e8a04a) accent on the bezel. The area outside the window is flat near-black (#101018). Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image.",
+        "reference": "the accepted logo, job c3a37dcd-029f-4a86-ac66-5f6b89651439 (role reference_image)",
+        "fit": {
+          "interior": "(108,167,744x416)",
+          "scale": 1.1538,
+          "offset": "(-74,-73)",
+          "box_mean_luma": 0.74,
+          "box_max_luma": 63
+        },
+        "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 0.0001, threshold 0.02",
+        "status": "accepted",
+        "note": "a wide window seen face on: slate bezel, a thin title strip with three plain round dots and three small blank dashes, one amber square at the right, and a large flat black screen. The dashes are plain rectangles, not glyphs."
+      },
+      {
+        "id": "frame-phone",
+        "role": "preview device frame, phone stack(s) per DEVICE in apps/cabinets/src/vibe-typer.ts",
+        "batch": 1,
+        "job_id": "8cf57d85-ddd8-4d6e-a922-706aa750268b",
+        "seed": 7303,
+        "size": "1024x768 as rendered; fitted to 960x720 (480x360 at 2x DPR)",
+        "file": "apps/cabinets/public/vibe/frames/phone.png (63 KB)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the reference image: one empty phone, drawn perfectly flat and face on, straight at the viewer, no perspective, no tilt, no angle. A tall narrow rounded slab standing upright in the exact centre of the picture, running nearly the full height of the image. Its screen is one completely empty flat solid near-black (#101018) rectangle filling almost the whole slab, with absolutely nothing inside it: no icons, no apps, no bars, no clock, no cursor, no glow, no highlight. Only a narrow slate grey (#3a3a4a) body, one small plain blank rounded speaker slot above the screen and one small plain blank rounded bar below it, with one small warm amber (#e8a04a) accent on the body. The area outside the phone is flat near-black (#101018). Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image.",
+        "reference": "the terminal frame, job 236f6759-8700-4a02-8c67-194dd687b537 (role reference_image)",
+        "fit": {
+          "interior": "(352,137,255x435)",
+          "scale": 1.2874,
+          "offset": "(-137,-96)",
+          "box_mean_luma": 0.73,
+          "box_max_luma": 66
+        },
+        "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 1.4874e-05, threshold 0.02",
+        "status": "accepted",
+        "note": "a chunky upright phone: slate body, a blank speaker slot above the screen and a blank bar below it, two amber side buttons, and a tall flat black screen. The fit crops the bottom corners, which reads as the phone running past the edge of the pane."
+      },
+      {
+        "id": "frame-notebook",
+        "role": "preview device frame, notebook stack(s) per DEVICE in apps/cabinets/src/vibe-typer.ts",
+        "batch": 1,
+        "job_id": "fcd67d36-0d60-43b7-93b4-4c52e1108c45",
+        "seed": 7304,
+        "size": "1024x768 as rendered; fitted to 960x720 (480x360 at 2x DPR)",
+        "file": "apps/cabinets/public/vibe/frames/notebook.png (70 KB)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the reference image: one empty open laptop computer, drawn perfectly flat and face on, straight at the screen, no perspective, no tilt, no angle. The open lid fills the picture and its screen is one completely empty flat solid near-black (#101018) rectangle covering the whole middle of the image, with absolutely nothing inside it: no code, no windows, no icons, no cursor, no glow, no highlight. Only a narrow slate grey (#3a3a4a) bezel around the screen and a plain slate base strip lying along the bottom edge of the picture below the lid, with one small warm amber (#e8a04a) accent. The area outside the laptop is flat near-black (#101018). Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image.",
+        "reference": "the terminal frame, job 236f6759-8700-4a02-8c67-194dd687b537 (role reference_image)",
+        "fit": {
+          "interior": "(118,130,723x424)",
+          "scale": 1.2264,
+          "offset": "(-108,-59)",
+          "box_mean_luma": 0.13,
+          "box_max_luma": 40
+        },
+        "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 0.0001, threshold 0.02",
+        "status": "accepted",
+        "note": "an open laptop seen straight at the lid: slate bezel with one small camera dot, a base strip along the bottom with an amber pad, and a large flat black screen."
+      },
+      {
+        "id": "frame-ledger",
+        "role": "preview device frame, ledger stack(s) per DEVICE in apps/cabinets/src/vibe-typer.ts",
+        "batch": 1,
+        "job_id": "8428cd96-8cf6-4229-b65a-ea09aae3640e",
+        "seed": 7305,
+        "size": "1024x768 as rendered; fitted to 960x720 (480x360 at 2x DPR)",
+        "file": "apps/cabinets/public/vibe/frames/ledger.png (174 KB)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the reference image: one empty dark ledger book, drawn perfectly flat and face on, seen straight from directly above, no perspective, no tilt, no angle. The book fills the picture and its open page is one completely empty flat solid near-black (#101018) rectangle covering the whole middle of the image, with absolutely nothing on it: no ruled lines, no columns, no grid, no writing, no figures, no glow, no highlight. Only a narrow slate grey (#3a3a4a) cover edge around the page and a plain banded binding strip lying along the top edge of the picture, with one small warm amber (#e8a04a) accent on the binding. The area outside the book is flat near-black (#101018). Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image.",
+        "reference": "the terminal frame, job 236f6759-8700-4a02-8c67-194dd687b537 (role reference_image)",
+        "fit": {
+          "interior": "(167,150,627x431)",
+          "scale": 1.1137,
+          "offset": "(-55,-47)",
+          "box_mean_luma": 1.04,
+          "box_max_luma": 30
+        },
+        "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 0.0001, threshold 0.02",
+        "status": "accepted",
+        "note": "a spiral-bound pad seen from above: a pale cover edge, a wire binding along the top with an amber clip, a second amber tab at the foot, and a large flat black page. Reads as a pad rather than an accounting book; kept because it is the one device in the set with a binding, so it stays distinct from the laptop, and the fallback rectangles for `ledger` are the same banded strip along the top."
+      },
+      {
+        "id": "frame-wires",
+        "role": "preview device frame, wires stack(s) per DEVICE in apps/cabinets/src/vibe-typer.ts",
+        "batch": 1,
+        "job_id": "cf60a22c-f2b3-4ed2-ac58-9edaf8b4de9c",
+        "seed": 7306,
+        "size": "1024x768 as rendered; fitted to 960x720 (480x360 at 2x DPR)",
+        "file": "apps/cabinets/public/vibe/frames/wires.png (43 KB)",
+        "prompt": "In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the reference image: one empty wiring diagram panel, drawn perfectly flat and face on, no perspective, no tilt, no angle. Four small plain blank rounded nodes in muted teal (#468080) sit close to the four corners of the picture, joined by thin straight teal lines that run only around the outer margin, hugging the edges of the image. The whole middle of the picture is one completely empty flat solid near-black (#101018) rectangle with absolutely nothing in it: no wires crossing it, no nodes, no boxes, no dots, no glow, no highlight. One small warm amber (#e8a04a) accent on one corner node. The ground everywhere is flat near-black (#101018). Hard edges, flat colours, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image.",
+        "reference": "the terminal frame, job 236f6759-8700-4a02-8c67-194dd687b537 (role reference_image)",
+        "fit": {
+          "interior": "(138,118,682x466)",
+          "scale": 1.0557,
+          "offset": "(-26,-11)",
+          "box_mean_luma": 0.85,
+          "box_max_luma": 220
+        },
+        "glyph_check": "ai-eyes image_contains \"text, letters, numbers or written words\" = 1.9188e-05, threshold 0.02",
+        "status": "accepted",
+        "note": "four teal nodes near the corners joined by thin teal lines that hug the edges, one amber node on the left run, and an empty middle. No device body at all, which is right for an integration stack."
+      }
+    ]
+  }
 }
