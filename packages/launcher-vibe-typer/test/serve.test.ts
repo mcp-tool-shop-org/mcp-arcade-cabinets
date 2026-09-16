@@ -4,9 +4,10 @@
 // tests it as a server. This file tests the shape THIS package stands it up
 // in, which is the thing the split introduced and the thing a reviewer of
 // one package cannot see from the other: the typing cabinet's own files are
-// served, the shooter's are not there to be served, `/voice` is not proxied
-// because nothing here calls it, and the climb out of the shell directory is
-// refused exactly as it is in the other package.
+// served, the shooter's are not there to be served, `/voice` is proxied to
+// the worker on the same allowlist the shooter's package uses (slice 4C), and
+// the climb out of the shell directory is refused exactly as it is in the
+// other package.
 
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import type { Server } from 'node:http';
@@ -80,14 +81,15 @@ beforeAll(async () => {
   const upPort = await listenFrom(upstream, 24_511);
   upstreamBase = `http://127.0.0.1:${upPort}`;
 
-  // Exactly what `src/cli.ts` builds: no say seat, no voice worker, no key.
+  // Exactly what `src/cli.ts` builds: no say seat, no key, and the voice
+  // worker pointed at the same stand-in so a leak past the allowlist shows.
   cabinet = createCabinetServer({
     playDir: play,
     sayModule: null,
     endlessModule: null,
     ollamaUrl: upstreamBase,
-    voiceUrl: null,
-    voiceToken: null,
+    voiceUrl: upstreamBase,
+    voiceToken: 'a-bearer-the-page-never-sees',
     anthropicKey: null,
   });
   const port = await listenFrom(cabinet, 24_611);
@@ -167,18 +169,38 @@ describe('the vibe-typer package as it is served', () => {
     expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual(['GET /api/tags']);
   });
 
-  it('does not proxy the voice worker at all, and opens no socket trying', async () => {
+  it('passes the worker calls the voice makes, and adds the bearer here', async () => {
     seen.length = 0;
     for (const voice of ['/voice/health', '/voice/stats', '/voice/audio/0123abcd.wav']) {
       const res = await fetch(`${base}${voice}`);
-      expect(res.status, voice).toBe(404);
+      expect(res.status, voice).toBe(200);
     }
     const speak = await fetch(`${base}/voice/speak`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{}',
     });
-    expect(speak.status).toBe(404);
+    expect(speak.status).toBe(200);
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'GET /health',
+      'GET /stats',
+      'GET /audio/0123abcd.wav',
+      'POST /speak',
+    ]);
+    // The bearer is the server's, never the page's.
+    expect(seen.every((s) => s.auth === 'Bearer a-bearer-the-page-never-sees')).toBe(true);
+  });
+
+  it('404s everything on the worker that is off the allowlist', async () => {
+    seen.length = 0;
+    for (const bad of ['/voice/audio/../../secret.txt', '/voice/voices', '/voice/audio/x.wav']) {
+      const res = await fetch(`${base}${bad}`);
+      expect(res.status, bad).toBe(404);
+    }
+    for (const bad of ['/voice/health', '/voice/stats']) {
+      const res = await fetch(`${base}${bad}`, { method: 'POST', body: '{}' });
+      expect(res.status, bad).toBe(404);
+    }
     expect(seen).toEqual([]);
   });
 

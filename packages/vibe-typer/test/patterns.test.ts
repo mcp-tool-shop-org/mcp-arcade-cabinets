@@ -249,6 +249,44 @@ describe('the gate halts', () => {
     expect(() => loadPatterns(bad)).toThrow('patterns/cabinet.json: words.beats.ship');
   });
 
+  it('halts on a voice lever the worker would refuse', () => {
+    const noBlock = clone(RAW) as Record<string, unknown>;
+    delete (noBlock.cabinet as Record<string, unknown>).voice;
+    expect(() => loadPatterns(noBlock)).toThrow('patterns/cabinet.json: voice');
+
+    for (const preset of ['', 'af bella', 'af/bella', '_bella']) {
+      const bad = clone(RAW) as Record<string, unknown>;
+      ((bad.cabinet as Record<string, unknown>).voice as { user: { preset: string } }).user.preset =
+        preset;
+      expect(() => loadPatterns(bad), preset).toThrow('patterns/cabinet.json: voice.user.preset');
+    }
+
+    for (const rate of [0.49, 2.01, 'quick']) {
+      const bad = clone(RAW) as Record<string, unknown>;
+      ((bad.cabinet as Record<string, unknown>).voice as { user: { rate: unknown } }).user.rate =
+        rate;
+      expect(() => loadPatterns(bad), String(rate)).toThrow(
+        'patterns/cabinet.json: voice.user.rate',
+      );
+    }
+
+    for (const loudness of [-24.1, 12.1, null]) {
+      const bad = clone(RAW) as Record<string, unknown>;
+      (
+        (bad.cabinet as Record<string, unknown>).voice as { user: { loudness: unknown } }
+      ).user.loudness = loudness;
+      expect(() => loadPatterns(bad), String(loudness)).toThrow(
+        'patterns/cabinet.json: voice.user.loudness',
+      );
+    }
+
+    for (const gap of [0.09, 3.01, 'half']) {
+      const bad = clone(RAW) as Record<string, unknown>;
+      ((bad.cabinet as Record<string, unknown>).voice as { maxGap: unknown }).maxGap = gap;
+      expect(() => loadPatterns(bad), String(gap)).toThrow('patterns/cabinet.json: voice.maxGap');
+    }
+  });
+
   it('names the reason a line cannot be said', () => {
     expect(lineFault('can it be more blockchain')).toBeNull();
     expect(lineFault('add 3 ducks')).toBe('forbidden word or digit');
@@ -258,6 +296,34 @@ describe('the gate halts', () => {
     expect(lineFault('the scores look great')).toBe('forbidden word or digit');
     expect(lineFault('it’s live')).toBe('not ascii');
     expect(lineFault('so — anyway')).toBe('not ascii');
+  });
+});
+
+describe('the user has one voice', () => {
+  it('is the preset the lever names and the sheet names, which are the same', () => {
+    const { preset, rate, loudness } = DEFAULT_PATTERNS.cabinet.voice.user;
+    expect(rate).toBeGreaterThanOrEqual(0.5);
+    expect(rate).toBeLessThanOrEqual(2);
+    expect(loudness).toBeLessThanOrEqual(12);
+    expect(DEFAULT_PATTERNS.cabinet.voice.maxGap).toBeGreaterThan(0);
+
+    // The writing brief a model is given and the lever the cabinet plays are
+    // two files; a person is one. `## The voice` in the sheet is the tie.
+    const sheet = readFileSync(
+      path.resolve(__dirname, '..', 'patterns', 'voice', 'user.md'),
+      'utf8',
+    );
+    const section = /\n## The voice\n([\s\S]*?)\n## /.exec(sheet);
+    expect(section, 'the sheet has no "## The voice" section').not.toBeNull();
+    const named = /`([A-Za-z0-9_-]+)`/.exec(section![1]!);
+    expect(named, 'the sheet names no preset').not.toBeNull();
+    expect(named![1]).toBe(preset);
+  });
+
+  it("is not one of the shooter's three", () => {
+    expect(['bf_emma', 'am_michael', 'bm_george']).not.toContain(
+      DEFAULT_PATTERNS.cabinet.voice.user.preset,
+    );
   });
 });
 

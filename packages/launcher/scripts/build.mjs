@@ -100,6 +100,11 @@ const CABINETS = {
       ['data-vibe-seat', 'the endless seat mount mark'],
       ['/cabinet/endless', 'the endless seat'],
       ['/ollama/api/tags', 'the daemon probe'],
+      // Since slice 4C this package stands a `/voice` proxy. A shell built
+      // without the voice chrome would leave that proxy with no caller, and
+      // the player would get a cabinet whose user never speaks with no sign
+      // that anything is missing — so the mark is checked like the seat's.
+      ['data-vibe-voice', 'the voice mount mark'],
     ],
     absent: [['Ollama bosses', "the shooter's Ollama checkbox"]],
   },

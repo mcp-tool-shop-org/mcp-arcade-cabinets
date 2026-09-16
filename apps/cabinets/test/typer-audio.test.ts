@@ -10,6 +10,8 @@ import {
   BED_MODES,
   createTyperAudio,
   DEFAULT_MUSIC,
+  DUCK,
+  DUCK_S,
   isMusicMode,
   MUSIC_MODES,
   type MusicMode,
@@ -216,6 +218,62 @@ describe('the music setting', () => {
     expect(BED_MODES.off.level).toBe(0);
     // And the vibes still move it, which is what keeps it the score's voice.
     expect(beatSeconds('soft', 5)).toBeLessThan(beatSeconds('soft', 1));
+  });
+
+  it('holds the bed down while a take plays and lets it back up after', () => {
+    const { ctx, audio } = build();
+    audio.setMusic('on');
+    const own = ctx.gains[BED_GAIN]!.ramps.at(-1)!;
+    expect(own).toBeCloseTo(BED_MODES.on.level, 6);
+
+    audio.setBedDuck(true);
+    const ducked = ctx.gains[BED_GAIN]!.ramps.at(-1)!;
+    expect(ducked).toBeLessThan(own);
+    expect(ducked).toBeCloseTo(BED_MODES.on.level * DUCK, 6);
+
+    // The cue duck's timer runs out under the take and does not lift it.
+    ctx.currentTime += DUCK_S + 1;
+    audio.tick(1 / 60, 1, false);
+    expect(ctx.gains[BED_GAIN]!.ramps.at(-1)!).toBeCloseTo(BED_MODES.on.level * DUCK, 6);
+
+    audio.setBedDuck(false);
+    expect(ctx.gains[BED_GAIN]!.ramps.at(-1)!).toBeCloseTo(own, 6);
+
+    // Asking twice for what it is already doing writes nothing.
+    const wrote = ctx.gains[BED_GAIN]!.ramps.length;
+    audio.setBedDuck(false);
+    expect(ctx.gains[BED_GAIN]!.ramps.length).toBe(wrote);
+  });
+
+  it('has no bed to hold down when the music is off, and plays the keys anyway', () => {
+    const { ctx, audio } = build();
+    audio.setMusic('off');
+    const wrote = ctx.gains[BED_GAIN]!.ramps.length;
+    audio.setBedDuck(true);
+    expect(ctx.gains[BED_GAIN]!.ramps.length).toBe(wrote);
+    // The keystroke is the score's voice (G29): the take never touches it.
+    const key: Cue = {
+      name: 'key',
+      pitch: 3,
+      size: 0,
+      shake: 0,
+      flash: 0,
+      confetti: 0,
+      toast: '',
+    };
+    audio.play(key);
+    expect(ctx.started.length).toBeGreaterThan(0);
+    audio.setBedDuck(false);
+  });
+
+  it('keeps the take duck through a change of bed', () => {
+    const { ctx, audio } = build();
+    audio.setMusic('on');
+    audio.setBedDuck(true);
+    audio.setMusic('soft');
+    expect(ctx.gains[BED_GAIN]!.ramps.at(-1)!).toBeCloseTo(BED_MODES.soft.level * DUCK, 6);
+    audio.setBedDuck(false);
+    expect(ctx.gains[BED_GAIN]!.ramps.at(-1)!).toBeCloseTo(BED_MODES.soft.level, 6);
   });
 
   it('does nothing the second time the same mode is set', () => {

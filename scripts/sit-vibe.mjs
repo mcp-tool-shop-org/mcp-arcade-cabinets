@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// `pnpm sit --cabinet vibe-typer [--seat pull|mcp] [--model a:cloud,b:cloud]
+// `pnpm sit --cabinet vibe-typer [--seat none|pull|mcp] [--model a:cloud,b:cloud]
 //           [--levels 3] [--tier 0] [--bot perfect] [--seed 1]
-//           [--ollama http://127.0.0.1:11434]`
+//           [--ollama http://127.0.0.1:11434]
+//           [--voice auto|on|off] [--voice-url http://127.0.0.1:7788]`
 //
 // Sits a model in the endless user's chair (G28 as the slice-3 kickoff
 // amends it) and measures what it writes.
@@ -26,6 +27,15 @@
 // ten sampled asks with their code for the Director to read, and the run's
 // own summary.
 //
+// `--voice` (slice 4C) measures the other half: the user's own lines, sent to
+// the host-side worker exactly as the shell sends them, receipted by fx-dub,
+// and put through the shipped timing rule against the run's own clock. With
+// the voice on the levels are played in wall-clock time rather than as fast
+// as the loop will go, because a rule about whether a take came back before
+// its beat was over is not a rule a tight loop can measure. Nothing is
+// played here: the receipt is the artifact. `--seat none` is the plain case
+// — the authored corpus plays and no model is asked for anything.
+//
 // A development tool. Nothing here is a test, nothing here is on screen, and
 // nothing here writes to the repo.
 import path from 'node:path';
@@ -33,9 +43,10 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
-const USAGE = `usage: pnpm sit --cabinet vibe-typer [--seat pull|mcp] [--model a:cloud,b:cloud]
+const USAGE = `usage: pnpm sit --cabinet vibe-typer [--seat none|pull|mcp] [--model a:cloud,b:cloud]
           [--levels 3] [--tier 0|1|2|3] [--bot perfect|typist:wpm[:rate]] [--seed n]
-          [--ollama http://127.0.0.1:11434] [--samples 10]`;
+          [--ollama http://127.0.0.1:11434] [--samples 10]
+          [--voice auto|on|off] [--voice-url http://127.0.0.1:7788]`;
 
 const FLAGS = new Set([
   'cabinet',
@@ -47,10 +58,23 @@ const FLAGS = new Set([
   'seed',
   'ollama',
   'samples',
+  'voice',
+  'voice-url',
 ]);
 
-/** The two seats. `pull` is slice 3's path and stays the default, unchanged. */
-const SEATS = new Set(['pull', 'mcp']);
+/**
+ * The seats. `pull` is slice 3's path and stays the default, unchanged;
+ * `none` asks no model anything and plays the authored corpus, which is what
+ * a voice measurement wants under it.
+ */
+const SEATS = new Set(['none', 'pull', 'mcp']);
+
+/** The worker's own default port. */
+const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
+/** Frames the wall-clock loop may fall behind before it stops catching up. */
+const MAX_STEPS = 8;
+/** The shell's creep hold, in seconds, so the beats line up with the game. */
+const CREEP_HOLD_S = 0.6;
 
 /** Requests per level the ladder asks for; the levers own the real number. */
 const DEFAULT_LEVELS = 3;
@@ -137,7 +161,12 @@ export async function main(argv) {
   const seed = args.seed === undefined ? 1 : Number(args.seed);
   if (!Number.isFinite(seed)) die(`seed must be a number (got ${args.seed})`);
   const seatKind = args.seat ?? 'pull';
-  if (!SEATS.has(seatKind)) die(`seat must be pull or mcp (got ${args.seat})`);
+  if (!SEATS.has(seatKind)) die(`seat must be none, pull or mcp (got ${args.seat})`);
+  const voiceArg = args.voice ?? 'auto';
+  if (!['auto', 'on', 'off'].includes(voiceArg)) {
+    die(`unknown voice ${voiceArg}; use auto, on or off`);
+  }
+  const voiceUrl = (args['voice-url'] ?? DEFAULT_VOICE_URL).replace(/\/$/, '');
   const botSpec = args.bot ?? 'perfect';
   const ollama = (args.ollama ?? 'http://127.0.0.1:11434').replace(/\/$/, '');
   const models = String(args.model ?? 'qwen3-coder:480b-cloud')
@@ -184,8 +213,221 @@ export async function main(argv) {
   const parsedBot = vt.parseBot(botSpec);
   if (!parsedBot) die(`unknown bot ${botSpec}; use perfect, idle or typist:wpm[:rate]`);
 
-  for (const model of models) {
-    await (seatKind === 'mcp' ? sitMcp(model) : sit(model));
+  // --- the voice (G15, slice 4C) ------------------------------------------
+  //
+  // The worker is asked once, before anything plays. `auto` is on when it
+  // answers and off, said plainly, when it does not.
+  const health = voiceArg === 'off' ? null : await cs.voiceHealth({ url: voiceUrl });
+  const voiceOn = voiceArg === 'on' || (voiceArg === 'auto' && health !== null);
+  if (voiceArg !== 'off' && !health) {
+    console.log(
+      voiceArg === 'on'
+        ? 'voice: no worker answered, and --voice on asks anyway (pnpm voice)'
+        : 'voice: no worker, playing silent (pnpm voice)',
+    );
+  }
+
+  /**
+   * One run's voice. The drain mirrors the shell's exactly: a `message`
+   * event carries who said it and whether it was a check-in but not the
+   * words, and the sim pushes the chat line and the event together, so the
+   * tail of the chat is this step's lines in order. Nothing is played here;
+   * the receipt is the artifact.
+   */
+  function voiceFor(state) {
+    const sheet = vt.leversOf(state).cabinet.voice;
+    const takes = [];
+    let seq = 0;
+    // The play hook cannot tell the two ways of playing apart on its own, so
+    // the stats do it: each counter only ever moves by one per play.
+    let onBeat = 0;
+    let atBoundary = 0;
+    const voicer = cs.createVibeVoicer({
+      speak: async (job) => {
+        const t0 = Date.now();
+        const a = await cs.speakLine(job, { url: voiceUrl });
+        takes.push({ job, a, ms: Date.now() - t0, at: state.clock });
+        return a;
+      },
+      // Nothing is played here; the receipt is the artifact. `done` is left
+      // alone on purpose, so the queue behind a take waits out the take's own
+      // measured length — which is what the shell's element would have done.
+      play: (_url, job) => {
+        const take = takes.find((t) => t.job === job);
+        if (take) take.playedAt = state.clock;
+      },
+    });
+    const send = (text, line) => {
+      seq += 1;
+      voicer.job({ text, kind: 'user', line, seq, voice: sheet.user, maxGap: sheet.maxGap });
+    };
+    return {
+      voicer,
+      takes,
+      drain() {
+        if (!voiceOn) return;
+        const said = state.events.filter((e) => e.kind === 'message');
+        const shipped = state.events.some((e) => e.kind === 'ship');
+        const from = state.chat.length - said.length;
+        said.forEach((event, i) => {
+          const chat = state.chat[from + i];
+          if (!chat) return;
+          const line = cs.vibeVoiceLine({
+            who: event.who,
+            nag: event.nag === true,
+            beat: state.beat,
+            shipped,
+          });
+          if (line) send(chat.line, line);
+        });
+      },
+      tick() {
+        if (!voiceOn) return;
+        voicer.tick(state.beat, state.over);
+        const st = voicer.stats();
+        const mark = (how) => {
+          const last = [...takes].reverse().find((t) => t.playedAt !== undefined && !t.how);
+          if (last) last.how = how;
+        };
+        if (st.playedOnBeat > onBeat) {
+          onBeat = st.playedOnBeat;
+          mark('on the beat');
+        }
+        if (st.playedAtBoundary > atBoundary) {
+          atBoundary = st.playedAtBoundary;
+          mark('at the next ask');
+        }
+      },
+      /**
+       * The run's opening ask, which `createRun` says before any step runs
+       * and which is therefore in no step's events. The shell holds it for
+       * the checkbox; here the voice is decided before the run starts.
+       */
+      open() {
+        if (!voiceOn) return;
+        const first = [...state.chat].reverse().find((line) => line.who === 'user');
+        if (first) send(first.line, 'ask');
+      },
+    };
+  }
+
+  /**
+   * One level, played in wall-clock time, so a receipt that came back after
+   * its beat had gone is a receipt that came back after its beat had gone.
+   * The accumulator, the step cap and the creep hold are the shell's.
+   */
+  async function playLive(state, bot, voice) {
+    const at = state.levelIndex;
+    let acc = 0;
+    let held = 0;
+    let last = Date.now();
+    while (!state.over && state.levelIndex === at) {
+      await new Promise((r) => setTimeout(r, 8));
+      const now = Date.now();
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (state.beat === 'creep') {
+        held += dt;
+        if (held < CREEP_HOLD_S) {
+          voice.tick();
+          continue;
+        }
+      } else {
+        held = 0;
+      }
+      acc = Math.min(acc + dt, vt.DT * MAX_STEPS);
+      let steps = 0;
+      while (acc >= vt.DT && steps < MAX_STEPS && !state.over) {
+        acc -= vt.DT;
+        steps += 1;
+        vt.stepRun(state, bot(state), vt.DT);
+        voice.drain();
+        if (state.beat === 'creep') break;
+      }
+      voice.tick();
+    }
+    voice.tick();
+  }
+
+  /** One level, as fast as the loop will run it. The path without a voice. */
+  function playFast(state, bot) {
+    const at = state.levelIndex;
+    let guard = 0;
+    while (!state.over && state.levelIndex === at && guard < 400000) {
+      vt.stepRun(state, bot(state), vt.DT);
+      guard += 1;
+    }
+  }
+
+  /** What every take did, and what refused the ones that were refused. */
+  function reportVoice(voice) {
+    if (!voiceOn) return;
+    const { takes, voicer } = voice;
+    console.log('');
+    console.log('voice (per take: which line, ms to the receipt, the receipt, when it played)');
+    for (const t of takes) {
+      const r = t.a.receipt;
+      const when = t.playedAt === undefined ? 'not played' : (t.how ?? 'played');
+      const checks = r ? `${r.checks.filter((c) => c.ok).length}/${r.checks.length} checks` : '';
+      const kept = r?.cached ? 'cached' : r ? `tts ${r.tts_s}s asr ${r.asr_s}s` : '';
+      console.log(
+        `  ${String(t.job.line).padEnd(9)} ${String(t.ms + 'ms').padEnd(8)} ${String(t.a.status).padEnd(15)} ${kept} ${checks} ${when}`,
+      );
+    }
+    const st = voicer.stats();
+    console.log('');
+    console.log(`lines voiced: ${st.asked}`);
+    console.log(`receipt ok: ${st.voiced} (${st.cached} of them cached)`);
+    console.log(`receipt failed: ${st.receiptFailed}`);
+    console.log(`refused by the worker: ${st.refused} (no worker ${st.noWorker})`);
+    console.log(`played on the beat: ${st.playedOnBeat}`);
+    console.log(`played at the next ask: ${st.playedAtBoundary}`);
+    console.log(`dropped: ${st.dropped}; replaced at the worker: ${st.replaced}`);
+    console.log(
+      `mean to the receipt: ${st.asked ? Math.round(st.msSum / st.asked) : '-'} ms (worker ${health ? health.engine : 'not answering'})`,
+    );
+    const refused = takes.filter((t) => t.a.receipt && !t.a.receipt.ok);
+    console.log('');
+    if (refused.length === 0) {
+      console.log('no take was refused');
+    } else {
+      console.log('refused takes, and the check that refused each one');
+      for (const t of refused) {
+        console.log(`  ${JSON.stringify(t.job.text)}`);
+        for (const c of t.a.receipt.checks.filter((c) => !c.ok)) {
+          console.log(`    ${c.check}: ${c.detail}`);
+        }
+        console.log(`    heard: ${JSON.stringify(t.a.receipt.heard)}`);
+      }
+    }
+  }
+
+  /** No seat at all: the authored corpus plays, and the user speaks it. */
+  async function sitNone() {
+    const state = vt.createRun({ seed, tier, endless: true });
+    const bot = vt.botFor(parsedBot, seed);
+    const voice = voiceFor(state);
+    console.log('');
+    console.log(`Vibe Typer, the authored user: voice ${voiceOn ? 'on' : 'off'}`);
+    voice.open();
+    for (let i = 0; i < levels && !state.over; i += 1) {
+      if (voiceOn) await playLive(state, bot, voice);
+      else playFast(state, bot);
+    }
+    console.log('');
+    console.log(`the run: ${state.ended ?? 'still going, the levels asked for are done'}`);
+    console.log(`levels: ${state.levelIndex + 1}`);
+    console.log(`valuation: ${Math.round(state.valuation)}`);
+    console.log(`pieces: ${state.built.length}`);
+    reportVoice(voice);
+  }
+
+  if (seatKind === 'none') {
+    await sitNone();
+  } else {
+    for (const model of models) {
+      await (seatKind === 'mcp' ? sitMcp(model) : sit(model));
+    }
   }
 
   async function sit(model) {
@@ -272,21 +514,15 @@ export async function main(argv) {
       }
     }
 
-    /** Play until the level in hand is finished, or the run ends. */
-    function play() {
-      const at = state.levelIndex;
-      let guard = 0;
-      while (!state.over && state.levelIndex === at && guard < 400000) {
-        vt.stepRun(state, bot(state), vt.DT);
-        guard += 1;
-      }
-    }
+    const voice = voiceFor(state);
 
     console.log('');
-    console.log(`Vibe Typer, the endless seat: ${model}`);
+    console.log(`Vibe Typer, the endless seat: ${model} (voice ${voiceOn ? 'on' : 'off'})`);
+    voice.open();
     for (let i = 0; i < levels && !state.over; i += 1) {
       await fill(state.levelIndex + 1);
-      play();
+      if (voiceOn) await playLive(state, bot, voice);
+      else playFast(state, bot);
     }
 
     const ms = spread(latency);
@@ -312,6 +548,7 @@ export async function main(argv) {
     console.log(`valuation: ${Math.round(state.valuation)}`);
     console.log(`pieces: ${state.built.length}`);
     console.log(`requests the seat wrote and the run played: ${seated} of ${state.used.length}`);
+    reportVoice(voice);
   }
 
   // --- the push path: the model pulls the cabinet's four levers ------------
@@ -427,20 +664,15 @@ export async function main(argv) {
       }
     }
 
-    function play() {
-      const at = state.levelIndex;
-      let guard = 0;
-      while (!state.over && state.levelIndex === at && guard < 400000) {
-        vt.stepRun(state, bot(state), vt.DT);
-        guard += 1;
-      }
-    }
+    const voice = voiceFor(state);
 
     console.log('');
-    console.log(`Vibe Typer, the container tools: ${model}`);
+    console.log(`Vibe Typer, the container tools: ${model} (voice ${voiceOn ? 'on' : 'off'})`);
+    voice.open();
     for (let i = 0; i < levels && !state.over; i += 1) {
       await fill(state.levelIndex + 1);
-      play();
+      if (voiceOn) await playLive(state, bot, voice);
+      else playFast(state, bot);
     }
 
     const ms = spread(latency);
@@ -468,6 +700,7 @@ export async function main(argv) {
     console.log(`valuation: ${Math.round(state.valuation)}`);
     console.log(`pieces: ${state.built.length}`);
     console.log(`requests the seat wrote and the run played: ${seated} of ${state.used.length}`);
+    reportVoice(voice);
   }
 }
 

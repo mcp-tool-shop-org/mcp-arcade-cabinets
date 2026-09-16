@@ -41,6 +41,14 @@ import {
   type Tier,
 } from '@mcp-arcade-cabinets/vibe-typer';
 import { listPilotModels } from '@mcp-arcade-cabinets/ghost-on-the-menu';
+import {
+  createVibeVoicer,
+  speakLine,
+  vibeVoiceLine,
+  voiceHealth,
+  type SpeakAnswer,
+  type VibeVoiceJob,
+} from '@mcp-arcade-cabinets/cabinet-server/src/browser';
 
 import { CONFETTI_MAX, cuesFor, shakeFor, type Cue } from './typer-cues';
 import { PIECE_KINDS, pieceKindOf, type PieceKind } from './typer-tiles';
@@ -112,6 +120,9 @@ const TAGS_EVERY_MS = 5000;
 const TAGS_TIMEOUT_MS = 2000;
 /** How long the menu's single look may take before it says the authored user. */
 const SEAT_PROBE_TIMEOUT_MS = 5000;
+
+/** How often the shell asks whether a voice worker is up. Ghost's cadence. */
+const VOICE_PROBE_MS = 5000;
 /** Asks for one request slot before the shell gives that slot to the corpus. */
 const ENDLESS_TRIES = 2;
 /** Weak pairs the seat is told about. */
@@ -274,6 +285,8 @@ export interface VibePrefs {
   last?: number;
   /** Whether the endless user is played by a model, when one can be reached. */
   seat?: 'on' | 'off';
+  /** Whether the user's lines are spoken, when a worker can be reached. */
+  voice?: 'on' | 'off';
 }
 
 export function readVibePrefs(): VibePrefs {
@@ -298,6 +311,7 @@ export function readVibePrefs(): VibePrefs {
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
     if (typeof o.last === 'number' && Number.isFinite(o.last)) out.last = o.last >>> 0;
     if (o.seat === 'on' || o.seat === 'off') out.seat = o.seat;
+    if (o.voice === 'on' || o.voice === 'off') out.voice = o.voice;
     return out;
   } catch {
     return {};
@@ -373,6 +387,16 @@ export interface VibeOpts {
   onExit: () => void;
   /** True when the mount follows a click, so the sound may start at once. */
   startAudio: boolean;
+  /**
+   * The voice worker's client, replaced in a test. Left out, the shell talks
+   * to the worker at `/voice`, which the launcher and the dev server proxy
+   * and Pages does not have at all.
+   */
+  voice?: {
+    health?: () => Promise<{ engine: string } | null>;
+    speak?: (job: VibeVoiceJob) => Promise<SpeakAnswer>;
+    play?: (url: string, job: VibeVoiceJob) => void;
+  };
 }
 
 export interface VibeMount {
@@ -604,6 +628,29 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     controls.setAttribute('data-vibe-seat', 'on');
     controls.append(seatLabel, seatStat);
   }
+  // The voice (G15, slice 4C): the user speaks their own lines through the
+  // host-side worker, and every take is heard back and receipted before it
+  // plays. Off and disabled until the worker answers a probe; Pages never
+  // has one, and a story level has a user too, so this is not the seat's
+  // checkbox and does not wait on endless. The status is words beside it:
+  // nothing here names the engine, the preset or a count (G17, G23).
+  const voiceLabel = el('label');
+  const voiceBox = document.createElement('input');
+  voiceBox.type = 'checkbox';
+  voiceBox.checked = false;
+  voiceBox.disabled = true;
+  voiceLabel.append(voiceBox, document.createTextNode(' Voice'));
+  voiceLabel.title =
+    'Your user says their asks, their check-ins and their reactions out loud through the local voice worker (pnpm voice); every take is heard back and receipted before it plays, and you type the replies as always.';
+  const voiceStat = el('span', 'muted seat', '');
+  liveStatus(voiceStat, 'voice');
+  if (LOCAL_SEATS) {
+    // The pack's second mark, for the voice half: the Vibe package now stands
+    // a `/voice` proxy, and a shell built without this chrome would leave that
+    // proxy with no caller. The gate greps for this and halts if it is gone.
+    controls.setAttribute('data-vibe-voice', 'on');
+    controls.append(voiceLabel, voiceStat);
+  }
 
   const hint = el(
     'p',
@@ -693,6 +740,193 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     } catch {
       audio = null;
     }
+  };
+
+  // ——— the voice (G15, slice 4C) ————————————————————————————————————————————
+  //
+  // The user's line goes to the worker the moment it lands; the chat shows it
+  // at once either way and nothing on the field waits. The worker speaks it,
+  // hears it back and runs fx-dub's receipt; a take whose receipt failed is
+  // never played. `createVibeVoicer` owns when a take may play — this block
+  // is only the client, the checkbox and the speaker.
+
+  const voiceSheet = levers.cabinet.voice;
+  /** The nth user line of this run. Nothing draws it; the stats read it. */
+  let voiceSeq = 0;
+  let voiceProbe = 0;
+  let workerUp = false;
+  /** A worker that answered and then went away does not re-arm the box. */
+  let voiceSawDown = false;
+  const takeEl = typeof Audio === 'undefined' ? null : new Audio();
+  if (takeEl) takeEl.volume = 0.9;
+  /**
+   * What the voicer is waiting on: the take in the air is over when the
+   * element says so. The queue behind it will not move until this is called,
+   * so it is called on every way a take can end — including a stop.
+   */
+  let takeDone: (() => void) | null = null;
+  const finishTake = () => {
+    const f = takeDone;
+    takeDone = null;
+    f?.();
+  };
+  const duckBeds = (on: boolean) => {
+    audio?.setBedDuck(on);
+  };
+  const stopTake = () => {
+    finishTake();
+    if (!takeEl) return;
+    try {
+      // Only when there is something to stop: a media element that has never
+      // been handed a take has nothing to pause, and asking anyway is how a
+      // headless run ends up printing a stack about it.
+      if (!takeEl.paused) takeEl.pause();
+      if (takeEl.getAttribute('src')) takeEl.removeAttribute('src');
+    } catch {
+      /* a player whose browser will not pause a take is not a player who
+         loses the mount over it; the bed still comes back up below. */
+    }
+    duckBeds(false);
+  };
+  if (takeEl) {
+    for (const ev of ['play', 'playing'] as const) {
+      takeEl.addEventListener(ev, () => {
+        if (!left && !muted) duckBeds(true);
+      });
+    }
+    for (const ev of ['pause', 'ended'] as const) {
+      takeEl.addEventListener(ev, () => {
+        if (!left) duckBeds(false);
+        finishTake();
+      });
+    }
+    // A playback error ends the take like any other ending: the bed has to
+    // come back up, or it stays held down until the next take plays.
+    takeEl.addEventListener('error', () => {
+      if (!left) duckBeds(false);
+      finishTake();
+    });
+  }
+  const markVoiceDown = () => {
+    const wasOn = voiceBox.checked;
+    if (workerUp) voiceSawDown = true;
+    workerUp = false;
+    voiceBox.disabled = true;
+    voiceBox.checked = false;
+    if (wasOn) stopTake();
+    voiceStat.textContent = 'voice: no worker (pnpm voice)';
+  };
+  const askHealth = opts.voice?.health ?? (() => voiceHealth({ url: '/voice', timeoutMs: 2000 }));
+  const probeVoice = () => {
+    void askHealth()
+      .then((h) => {
+        if (left) return;
+        if (h) {
+          const firstUp = !workerUp && !voiceSawDown;
+          workerUp = true;
+          voiceBox.disabled = false;
+          if (firstUp && prefs.voice === 'on') {
+            voiceBox.checked = true;
+            voiceStat.textContent = 'voice on';
+          } else if (!voiceBox.checked) {
+            voiceStat.textContent = 'voice ready';
+          }
+          return;
+        }
+        markVoiceDown();
+      })
+      .catch(() => {
+        if (left) return;
+        markVoiceDown();
+      })
+      .finally(() => {
+        if (left) return;
+        voiceProbe = window.setTimeout(probeVoice, VOICE_PROBE_MS);
+      });
+  };
+  if (LOCAL_SEATS) probeVoice();
+
+  const voicer = createVibeVoicer({
+    speak: opts.voice?.speak ?? ((job) => speakLine(job, { url: '/voice' })),
+    play:
+      opts.voice?.play ??
+      ((url, _job, done) => {
+        // Mute silences the take, not the receipt: the line was still spoken,
+        // heard back and receipted, and the numbers say so. Nothing is
+        // audible, so nothing behind it waits either.
+        if (left || !voiceBox.checked || !takeEl || muted) {
+          done();
+          return;
+        }
+        stopTake();
+        takeDone = done;
+        takeEl.muted = false;
+        // The url the receipt names is the worker's own; the proxy mounts it
+        // under `/voice` for both the dev server and the launcher.
+        takeEl.src = `/voice${url}`;
+        void takeEl.play().catch(() => {
+          duckBeds(false);
+          finishTake();
+        });
+      }),
+    onStatus: (text) => {
+      if (!left) voiceStat.textContent = text;
+    },
+  });
+
+  /**
+   * The run's opening ask. `createRun` says it before any step runs, so it is
+   * in the chat but was never in a step's events and the drain below cannot
+   * see it. It is also said before the worker has answered its first probe,
+   * so it waits here for the checkbox rather than being dropped: the first
+   * thing the user says is the one line a player is certain to be reading.
+   * If the reply beat is gone before the box comes on, so is the ask.
+   */
+  let openAsk: string | null = null;
+  const takeOpenAsk = () => {
+    if (openAsk === null) return;
+    if (state.beat !== 'request' && state.beat !== 'reply') {
+      openAsk = null;
+      return;
+    }
+    if (!voiceBox.checked) return;
+    const text = openAsk;
+    openAsk = null;
+    voiceLine({ who: 'user', nag: false, text, shipped: false, beat: 'request' });
+  };
+
+  voiceBox.addEventListener('change', () => {
+    writeVibePrefs({ voice: voiceBox.checked ? 'on' : 'off' });
+    voiceStat.textContent = voiceBox.checked ? 'voice on' : 'voice off';
+    if (!voiceBox.checked) stopTake();
+  });
+
+  /** One user line, handed to the worker if this is a line the user says. */
+  const voiceLine = (facts: {
+    who: 'user' | 'agent';
+    nag: boolean;
+    text: string;
+    shipped: boolean;
+    /** The beat the line belongs to. The beat in hand unless it is said so. */
+    beat?: (typeof state)['beat'];
+  }) => {
+    if (left || !voiceBox.checked) return;
+    const line = vibeVoiceLine({
+      who: facts.who,
+      nag: facts.nag,
+      beat: facts.beat ?? state.beat,
+      shipped: facts.shipped,
+    });
+    if (!line) return;
+    voiceSeq += 1;
+    voicer.job({
+      text: facts.text,
+      kind: 'user',
+      line,
+      seq: voiceSeq,
+      voice: voiceSheet.user,
+      maxGap: voiceSheet.maxGap,
+    });
   };
 
   // ——— the panes, drawn ————————————————————————————————————————————————————
@@ -976,6 +1210,25 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   const drainEvents = () => {
     const cues = cuesFor(state.events);
+    // The user's lines of this step, in order. The `message` event carries
+    // who said it and whether it was a check-in but not the words, and the
+    // sim pushes the chat line and the event together — so the tail of the
+    // chat, as many entries as there are message events, is this step's, in
+    // the order it was said.
+    const said = state.events.filter((e) => e.kind === 'message');
+    const shipped = state.events.some((e) => e.kind === 'ship');
+    const from = state.chat.length - said.length;
+    said.forEach((event, i) => {
+      if (event.kind !== 'message') return;
+      const line = state.chat[from + i];
+      if (!line) return;
+      voiceLine({
+        who: event.who,
+        nag: event.nag === true,
+        text: line.line,
+        shipped,
+      });
+    });
     for (const event of state.events) {
       if (event.kind === 'piece') {
         // The kind is read here because here is the only place the shipped
@@ -1287,6 +1540,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       const y = (rng() * 2 - 1) * shake;
       editorPane.style.transform = shake > 0.1 ? `translate(${x}px, ${y}px)` : '';
     }
+    // The voice's own frame: a receipted take plays here, on its beat or at
+    // the next ask, and the run ending drops whatever is still in hand.
+    takeOpenAsk();
+    voicer.tick(state.beat, over || state.over);
     const hold = state.requestIndex >= planOf(state).requests.length - 1;
     // A meeting is a breather: the bed drops to base tempo for it (Q3.7).
     audio?.tick(dt, state.beat === 'sync' ? 1 : state.hype, hold);
@@ -1506,6 +1763,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     seatBusy = false;
     tagsCtl.abort();
     if (tagsTimer) window.clearTimeout(tagsTimer);
+    if (voiceProbe) window.clearTimeout(voiceProbe);
+    stopTake();
     if (raf) cancelAnimationFrame(raf);
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
@@ -1516,6 +1775,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   }
 
   pushChat();
+  // The opening ask, held for the checkbox (see `takeOpenAsk`).
+  openAsk = [...state.chat].reverse().find((line) => line.who === 'user')?.line ?? null;
   drawEditor();
   drawBoard(0);
   drawPreview(0);

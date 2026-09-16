@@ -2,6 +2,10 @@
   "name": "Vibe Typer",
   "tagline": "You're absolutely right.",
   "agentName": "Sprocket",
+  "voice": {
+    "user": { "preset": "am_echo", "rate": 1.0, "loudness": -4 },
+    "maxGap": 0.5
+  },
   "words": {
     "valuation": "valuation",
     "hype": "vibes",
