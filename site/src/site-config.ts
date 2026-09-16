@@ -87,7 +87,11 @@ export const config: SiteConfig = {
         },
         {
           title: 'The streak is something you hear',
-          desc: 'Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone to an octave; a miss resets it. The bed is soft by default so nothing reads as a countdown; turn the pulse on and its tempo follows your vibes. The deploy rings a chord and the confetti falls.',
+          desc: 'Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone to an octave; a miss resets it. The bed is soft by default so nothing reads as a countdown; turn the music on and the level’s stack gets its own recorded bed, seven of them in one key, the tempo on your vibes. The deploy rings a chord and the confetti falls.',
+        },
+        {
+          title: 'The look, and the voice',
+          desc: 'Painted pieces pop into a device drawn for the stack: a terminal, a phone, a notebook, a ledger, a wiring panel. The user and the agent have faces in the chat header, a milestone lands as a card over the preview, and the deploy is a ribbon. With the local voice worker running, the user says his asks, his one-more-things, his check-ins and his reactions out loud, every take receipted before it plays.',
         },
         {
           title: 'Scope creep, check-ins, quick sync, Copilot',
@@ -142,7 +146,11 @@ export const config: SiteConfig = {
         },
         {
           title: 'Vibe Typer, the endless user seated',
-          code: 'npx @mcptoolshop/vibe-typer\n\n# serves Vibe Typer on 127.0.0.1 and opens it\n# an Ollama daemon seats a model as the user in endless',
+          code: 'npx @mcptoolshop/vibe-typer\n\n# serves Vibe Typer on 127.0.0.1 and opens it\n# an Ollama daemon seats a model as the user in endless\n# a voice worker speaks the user’s lines',
+        },
+        {
+          title: 'Vibe Typer as an MCP server',
+          code: 'npx @mcptoolshop/vibe-typer --mcp\n\n# four tools: view, product, ask, react\n# any MCP client sits as the user in an endless run',
         },
         {
           title: 'Work on it',
