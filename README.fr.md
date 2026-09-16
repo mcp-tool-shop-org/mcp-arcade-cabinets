@@ -22,20 +22,20 @@
 
 ## Les bornes
 
-| Borne                                                         | Ce que c’est                                                                                                                                                                                                                                                                | État                                                                                                                                                                                                                                    |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | Un court jeu de tir rétro. Le système vous fournit les actions ; les actions que l’agent n’aurait pas dû effectuer sont cachées parmi les actions légitimes et se révèlent lors de l’impact. Les boss sont l’expérience, et un modèle local peut y être placé.              | Publié, `v0.9.0`. [Jouer](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **[Vibe Typer](packages/vibe-typer/README.md)**               | Un jeu d’arcade de saisie. Vous êtes un agent de codage travailleur et obséquieux ; votre utilisateur est un codeur de « vibe » dont les demandes sont absurdes. Tapez le code, regardez la création se construire et l’évaluation augmenter. Niveaux, infinis, difficiles. | Publié, `v0.9.0`. [Jouer](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Conception et verrouillage](docs/vibe-typer.dispatch.md)                                             |
-| **House Call**                                                | Un jeu d’étalonnage au tour par tour : indiquez une action et un niveau de confiance, puis la cassette révèle ce qui s’est passé.                                                                                                                                           | En attente jusqu’à ce qu’une conception qui fonctionne soit disponible. `tape-core` conserve ses règles de notation.                                                                                                                    |
+| Borne                                                         | Ce que c’est                                                                                                                                                                                                                                                                 | État                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | Un court jeu de tir rétro. Le système vous fournit les actions ; les actions que l’agent n’aurait pas dû effectuer sont cachées parmi les actions légitimes et se révèlent lors de l’impact. Les boss sont l’expérience, et un modèle local peut y participer.               | Publié, `v0.9.0`. [Jouer](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | Un jeu d’arcade de saisie. Vous êtes un agent de codage travailleur et obséquieux ; votre utilisateur est un codeur de « vibe » dont les demandes sont absurdes. Tapez le code, regardez le programme se construire et l’évaluation augmenter. Niveaux, infinis, difficiles. | Publié, `v0.9.0`. [Jouer](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [Conception et verrouillage](docs/vibe-typer.dispatch.md)                                                    |
+| **House Call**                                                | Un jeu d’étalonnage au tour par tour : indiquez une action et un niveau de confiance, puis la cassette révèle ce qui s’est passé.                                                                                                                                            | En attente jusqu’à ce qu’il existe une conception qui fonctionne. `tape-core` conserve ses règles de notation.                                                                                                                          |
 
 D’autres bornes seront ajoutées ici. Chacune aura son propre package, sa propre page dans le manuel et sa propre ligne dans ce tableau.
 
 ## Ce que toutes les bornes ont en commun
 
-- **Des cassettes en entrée, rien en sortie.** `packages/tape-core` charge `mcp-arcade.tape/v1`, rejette tout ce qui contient un score ou un verdict, et fournit les mots d’en-tête du jeu, les lignes de câblage et un seul fait concret par atome. Vingt enregistrements sont inclus dans `fixtures/tapes/`.
-- **Une simulation sans tête et une interface simplifiée.** Chaque jeu est une simulation pure et initialisée avec un déroulement scripté et une plage de tolérance qui fait échouer la construction. `apps/cabinets` est l’interface du navigateur qui les monte et c’est ce que Pages sert à `/play/`.
-- **Des leviers de données, pas de code.** Ondes, voix, difficulté, lignes : JSON dans `patterns/` de chaque package, validé au chargement, de sorte que le jeu est ajusté sans reconstruction.
-- **Une place pour un modèle, derrière une porte.** Un modèle local ou cloud peut être placé dans une borne (un boss dans Ghost, l’utilisateur dans le mode infini de Vibe Typer). Il ne remplit jamais qu’un levier d’un ensemble fermé, chaque ligne qu’il écrit passe une porte de mots, et rien sur le champ ne l’identifie. Une borne peut également fonctionner comme un serveur MCP via stdio, de sorte qu’un agent peut être celui qui joue.
+- **Des cassettes en entrée, rien en sortie.** `packages/tape-core` charge `mcp-arcade.tape/v1`, rejette tout ce qui contient un score ou un verdict, et fournit les mots d’en-tête du jeu, les lignes de code et un seul fait concret par atome. Vingt enregistrements sont inclus dans `fixtures/tapes/`.
+- **Une simulation sans tête et une interface simplifiée.** Chaque jeu est une simulation pure et initialisée avec un déroulement scripté et une plage de tolérance qui fait échouer la construction. `apps/cabinets` est l’interface du navigateur qui les monte et c’est ce que Pages sert à l’adresse `/play/`.
+- **Des leviers de données, pas de code.** Ondes, voix, difficulté, lignes : JSON dans le `patterns/` de chaque package, validé au chargement, de sorte que le jeu est ajusté sans reconstruction.
+- **Une place pour un modèle, derrière une porte.** Un modèle local ou cloud peut être placé dans une borne (un boss dans Ghost, l’utilisateur dans le mode infini de Vibe Typer). Il ne remplit jamais qu’un levier d’un ensemble fermé, chaque ligne qu’il écrit passe une porte de mots, et rien sur le terrain ne l’identifie. Une borne peut également fonctionner comme un serveur MCP via stdio, de sorte qu’un agent peut être celui qui joue.
 - **Une voix.** Un processus côté hôte (`voice/`) prononce les lignes qu’une porte a autorisées, enregistrées par [fx-dub](https://github.com/mcp-tool-shop-org/fx-dub) avant qu’elles ne soient jouées.
 
 Le compte rendu complet se trouve dans les pages [architecture](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/architecture/) et [sécurité](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/security/) du manuel.
@@ -48,7 +48,8 @@ packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
 packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
-packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves both cabinets; --mcp is Ghost's server
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -67,7 +68,11 @@ Localement, avec les emplacements activés, rien à cloner :
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-Cela sert l’interface, les deux bornes, sur `127.0.0.1` et l’ouvre ; `--mcp` exécute Ghost on the Menu en tant que serveur MCP via stdio. Node 22 ou version ultérieure. Un package est publié sur npm et c’est celui-ci ; tous les autres packages ici sont privés.
+```bash
+npx @mcptoolshop/vibe-typer
+```
+
+Chaque borne est son propre package. Chaque commande sert son jeu sur `127.0.0.1` et l’ouvre. Le `--mcp` de Ghost l’exécute en tant que serveur MCP via stdio ; les outils de conteneur de Vibe Typer sont la tranche 4, de sorte que son `--mcp` l’indique et se termine. Node 22 ou version ultérieure. Ces deux packages sont les seuls sur npm ; tous les autres packages ici sont privés, et le commutateur entre les deux bornes est uniquement la construction de Pages.
 
 Pour travailler sur l’arcade, clonez-la. Vous avez besoin de Node 22 et de pnpm 11 :
 
@@ -78,13 +83,13 @@ pnpm install
 pnpm -F @mcp-arcade-cabinets/cabinets dev
 ```
 
-`pnpm verify` est la porte : lint, types, tests, construction et déroulement scripté de chaque borne. Pour l’emplacement du modèle, exécutez un démon Ollama sur la même machine ; pour la voix, consultez [`voice/`](voice/) et `pnpm voice`.
+`pnpm verify` est la porte : lint, types, tests, construction et le déroulement scripté de chaque borne. Pour l’emplacement du modèle, exécutez un démon Ollama sur la même machine ; pour la voix, consultez [`voice/`](voice/) et `pnpm voice`.
 
 Pour jouer à votre propre serveur, enregistrez un affrontement avec mcp-arcade, puis `mcp-arcade tape receipt.json -o your.tape.json` et placez-le à côté des éléments de test. Le conteneur prend un volume en lecture seule de cassettes de la même manière.
 
 ## Ajout d’une borne
 
-Un nouveau jeu commence comme une tâche dans `docs/` : la base de recherche, le verrou qu’il hérite et étend, ses leviers de données et ses tranches. Ensuite, un package qui suit la forme ci-dessus, un montage dans `apps/cabinets`, une ligne dans le tableau ici et une page dans le manuel. La version reste `0.x` jusqu’à ce que le directeur en décide autrement, et aucun deuxième package n’est publié sur npm sans le même mot.
+Un nouveau jeu commence comme une tâche dans `docs/` : la base de recherche, le verrou qu’il hérite et étend, ses leviers de données et ses tranches. Ensuite, un package qui suit la forme ci-dessus, un montage dans `apps/cabinets`, une ligne dans le tableau ici et une page dans le manuel. La version reste `0.x` jusqu’à ce que le directeur en décide autrement, et aucun troisième package n’est ajouté à npm sans le même mot.
 
 ## Plus d’informations
 

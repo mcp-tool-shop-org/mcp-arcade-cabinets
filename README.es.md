@@ -25,7 +25,7 @@
 | Máquina                                                       | Qué es                                                                                                                                                                                                                                                                   | Estado                                                                                                                                                                                                                                   |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[Ghost on the Menu](packages/ghost-on-the-menu/README.md)** | Un juego de disparos retro corto. El sistema te proporciona las acciones; las acciones que el agente no debería haber realizado se esconden entre las acciones legítimas y se revelan al impactar. Los jefes son el experimento, y un modelo local puede estar en ellos. | Lanzado, `v0.9.0`. [Jugar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Docker](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) |
-| **[Vibe Typer](packages/vibe-typer/README.md)**               | Un juego de arcade de escritura. Eres un agente de codificación diligente y adulador; tu usuario es un codificador de "vibe" cuyas solicitudes son absurdas. Escribe el código, observa cómo se construye y la valoración aumenta. Niveles, infinitos, intensos.         | Lanzado, `v0.9.0`. [Jugar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/ghost-on-the-menu` · [Diseño y bloqueo](docs/vibe-typer.dispatch.md)                                                       |
+| **[Vibe Typer](packages/vibe-typer/README.md)**               | Un juego de arcade de escritura. Eres un agente de codificación diligente y adulador; tu usuario es un codificador de "vibe" cuyas solicitudes son absurdas. Escribe el código, observa cómo se construye y la valoración aumenta. Niveles, infinitos, intensos.         | Lanzado, `v0.9.0`. [Jugar](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/) · `npx @mcptoolshop/vibe-typer` · [Diseño y bloqueo](docs/vibe-typer.dispatch.md)                                                              |
 | **House Call**                                                | Un juego de calibración por turnos: indica una acción y un nivel de confianza, y luego la cinta revela lo que sucedió.                                                                                                                                                   | En espera hasta que haya un diseño que funcione. `tape-core` mantiene sus reglas de puntuación.                                                                                                                                          |
 
 Más máquinas aparecerán aquí. Cada una tiene su propio paquete, su propia página en el manual y su propia fila en esta tabla.
@@ -48,7 +48,8 @@ packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
 packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
-packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves both cabinets; --mcp is Ghost's server
+packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -67,7 +68,11 @@ Localmente, con los asientos encendidos, no hay nada que clonar:
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-Eso sirve la carcasa, ambas máquinas, en `127.0.0.1` y la abre; `--mcp` ejecuta Ghost on the Menu como un servidor MCP a través de stdio. Node 22 o posterior. Un paquete se publica en npm y es ese; todos los demás paquetes aquí son privados.
+```bash
+npx @mcptoolshop/vibe-typer
+```
+
+Cada módulo constituye un paquete independiente. Cada comando ejecuta su juego en `127.0.0.1` y lo abre. El programa `--mcp` de Ghost lo ejecuta como un servidor MCP a través de stdio; las herramientas de contenedor de Vibe Typer son la versión 4, por lo que su `--mcp` lo indica y se cierra. Versión 22 o posterior de Node. Estos dos paquetes son los únicos que se encuentran en npm; todos los demás paquetes son privados y el cambio entre los dos módulos solo se realiza durante la compilación de Pages.
 
 Para trabajar en la sala de juegos, clónala. Necesitas Node 22 y pnpm 11:
 
