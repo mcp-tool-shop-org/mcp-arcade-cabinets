@@ -68,3 +68,7 @@ the network off under one CPU and two gigabytes, the app layer scans clean, and 
 `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0` for `linux/amd64` and `linux/arm64` (manifest list `sha256:312068b2bc8465454c77ef0e4c19dbb9ceb2ebee74dfc9efe60d5a25f5105346`, 229 MB on amd64). The typing
 cabinet's server has no voice hook, so `VOICE_URL` and `VOICE_TOKEN` apply to Ghost only. A Vibe entry in the
 Docker MCP Catalog is a separate registry PR, the Director's, with `CABINET=vibe` in its `run.env`.
+
+The 0.11.1 image (the release that carries the proofread and the server constants at 0.11.1) is manifest list
+`sha256:f8c9d22e868f31b152c74a55677f3a35e21563712161947011488592c7a36676`, amd64 and arm64, pulled back from
+the registry and smoked the same way: both cabinets list their tools with the network off.
