@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MCP_EXIT, MCP_LINE, main, parseArgs, version } from '../src/cli';
+import { main, parseArgs, version } from '../src/cli';
 
 describe('the vibe-typer launcher arguments', () => {
   it('plays in the browser when asked for nothing, on its own port', () => {
@@ -44,13 +44,16 @@ describe('the vibe-typer launcher arguments', () => {
 });
 
 /**
- * `--mcp` is the one place the two packages deliberately part. Ghost hands
- * stdio to its cabinet server; this one has no tools yet, and the point of
- * the test is that it says so and leaves with a code an agent can read,
- * rather than falling through to the browser or pretending to be a server.
+ * `--mcp` hands stdio to this cabinet's own server since slice 4 — the four
+ * levers `view`, `product`, `ask` and `react`, not the shooter's six. Here
+ * the packed server is not on disk, so what the test can assert is the half
+ * that belongs to this file: it says the server is missing and leaves with
+ * one, rather than falling through to the browser. That the built bin lists
+ * exactly four tools over stdio is CI's tarball-and-smoke job, and the
+ * server's own test drives it end to end.
  */
-describe('--mcp before the cabinet has tools', () => {
-  it('names the slice, leaves with 2, and starts nothing', async () => {
+describe('--mcp with no packed server beside it', () => {
+  it('says so, leaves with one, and never opens a browser', async () => {
     const wrote: string[] = [];
     const err = process.stderr.write.bind(process.stderr);
     const out = process.stdout.write.bind(process.stdout);
@@ -70,11 +73,15 @@ describe('--mcp before the cabinet has tools', () => {
       process.stderr.write = err;
       process.stdout.write = out;
     }
-    expect(process.exitCode).toBe(MCP_EXIT);
+    expect(process.exitCode).toBe(1);
     process.exitCode = before;
-    expect(wrote.join('')).toContain(MCP_LINE);
-    expect(MCP_LINE).toMatch(/slice 4/);
-    // Nothing on stdout: an agent that pointed a client here reads stderr.
+    expect(wrote.join('')).toContain('cabinet server missing from this package');
+    // Nothing on stdout: under --mcp it belongs to the MCP transport.
     expect(stdout).toBe('');
+  });
+
+  it('is a mode of its own, not a fallback to the game', () => {
+    expect(parseArgs(['--mcp']).mode).toBe('mcp');
+    expect(parseArgs(['--mcp', '--no-open']).mode).toBe('mcp');
   });
 });

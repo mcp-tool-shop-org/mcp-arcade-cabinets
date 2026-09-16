@@ -8,6 +8,11 @@
 // it. What is local to this file is what actually differs between the two
 // cabinets — the port, the usage, what `--mcp` does, and which seats the
 // server is asked to light.
+//
+// With `--mcp` this is the typing cabinet's stdio server instead of the
+// browser, so a client can sit in the user's chair and send the requests
+// the agent types. In that mode stdout belongs to the MCP transport and
+// nothing else may be written there.
 
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -21,6 +26,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 /** Laid down by `scripts/build.mjs`, beside this file, inside the package. */
 const PLAY_DIR = path.resolve(here, 'play');
 const ENDLESS_MODULE = path.resolve(here, 'cabinet-server.js');
+const MCP_SERVER = path.resolve(here, 'cabinet-stdio.js');
+const TAPES_DIR = path.resolve(here, 'tapes');
 
 const DEFAULT_PORT = 7778;
 const DEFAULT_OLLAMA = 'http://127.0.0.1:11434';
@@ -34,21 +41,13 @@ export interface Args {
   bad?: string;
 }
 
-/**
- * What `--mcp` says. The cabinet's own tools — `product`, `ask`, `react` —
- * are slice 4, and no server for them is bundled here. Saying so and
- * leaving is better than a flag that quietly plays the game instead: an
- * agent that pointed a client at this would otherwise get a browser.
- */
-export const MCP_LINE = "vibe-typer has no MCP server yet; the cabinet's tools ship with slice 4.";
-/** Not 1. An agent reading exit codes can tell "not built yet" from "it broke". */
-export const MCP_EXIT = 2;
-
 const USAGE = `vibe-typer — a typing arcade game where you are the coding agent
 
   npx @mcptoolshop/vibe-typer            play it in your browser
+  npx @mcptoolshop/vibe-typer --mcp      run it as an MCP server
 
 Options
+  --mcp             speak MCP on stdio instead of opening the game
   --port <n>        port to listen on (default ${DEFAULT_PORT}; takes the next
                     free one when that is busy)
   --no-open         start the server but do not open a browser
@@ -57,6 +56,8 @@ Options
 
 Environment
   OLLAMA_URL        the daemon the endless user sits at (default ${DEFAULT_OLLAMA})
+  CABINET_TAPES     a directory of tapes to season the wires stack with,
+                    instead of the bundled ones
 
 The server listens on ${HOST} only. The daemon is reached through a fixed
 allowlist: the model list and chat. Nothing else is proxied.`;
@@ -113,6 +114,38 @@ export function openBrowser(url: string): void {
   } catch {
     /* Same. */
   }
+}
+
+/** Hand stdio to the cabinet server and live exactly as long as it does. */
+function runMcp(): void {
+  if (!existsSync(MCP_SERVER)) {
+    process.stderr.write('cabinet server missing from this package\n');
+    process.exitCode = 1;
+    return;
+  }
+  const env = { ...process.env };
+  // The bundled tapes live in the package; the repo layout the server
+  // resolves by default is not there. An explicit CABINET_TAPES wins.
+  if (!env.CABINET_TAPES && existsSync(TAPES_DIR)) env.CABINET_TAPES = TAPES_DIR;
+  const child = spawn(process.execPath, [MCP_SERVER], { stdio: 'inherit', env });
+  const forward = (signal: NodeJS.Signals) => {
+    process.on(signal, () => {
+      if (!child.killed) child.kill(signal);
+    });
+  };
+  forward('SIGINT');
+  forward('SIGTERM');
+  child.on('error', (err: Error) => {
+    process.stderr.write(`cabinet server did not start: ${err.message}\n`);
+    process.exitCode = 1;
+  });
+  child.on('exit', (code, signal) => {
+    if (signal) {
+      process.kill(process.pid, signal);
+      return;
+    }
+    process.exitCode = code ?? 0;
+  });
 }
 
 /** Stand the shell up and open it. */
@@ -179,8 +212,7 @@ export async function main(argv: readonly string[]): Promise<void> {
     return;
   }
   if (args.mode === 'mcp') {
-    process.stderr.write(`${MCP_LINE}\n`);
-    process.exitCode = MCP_EXIT;
+    runMcp();
     return;
   }
   await runPlay(args);

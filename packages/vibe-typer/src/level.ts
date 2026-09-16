@@ -168,7 +168,13 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
   const taken = buffer.length > 0 ? buffer.splice(0, Math.min(def.requests, buffer.length)) : [];
   // The noun list was drawn above, inside `levelDefAt`, so the stream is
   // the same whether or not a seat is sitting. The override lands after.
-  const product = taken.length > 0 && opts.product !== undefined ? opts.product : def.product;
+  //
+  // It no longer waits on a fed request. Slice 4 gives the container a
+  // `product` tool of its own, so a client can name the thing it wants
+  // built before it has written a line of code for it; tying the name to a
+  // snippet would have made that call do nothing. Endless only, still: the
+  // listed levels' products are authored and are the band's ground.
+  const product = opts.endless && opts.product !== undefined ? opts.product : def.product;
   const requests: Request[] = [];
   const pinned = def.snippets;
   for (let i = 0; i < def.requests; i++) {

@@ -316,6 +316,24 @@ function textFault(line: string): string | null {
   return british === null ? null : `spelling: ${british}`;
 }
 
+/**
+ * Why this product name cannot be the next level's, or null. The same three
+ * checks in the same order the gate's last step applies, lifted out so the
+ * container's `product` tool (slice 4) runs the one implementation rather
+ * than a second copy that could drift from it.
+ *
+ * The reason is safe to say out loud: it is a rule, never the offending
+ * text, and it never carries a digit. A spelling hit names the word it
+ * found, so a caller that shows a reason to a model maps that one.
+ */
+export function productFault(product: string): string | null {
+  if (TEXT_NOT_ASCII.test(product)) return 'not ascii';
+  const fault = textFault(product);
+  if (fault !== null) return fault;
+  if (words(product) > MAX_PRODUCT_WORDS) return 'too many words';
+  return null;
+}
+
 function shapeOf(candidate: unknown): SeatRequest | null {
   if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) return null;
   const o = candidate as Record<string, unknown>;
@@ -409,10 +427,8 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
     if (fault !== null) return refuse('bad-notes', fault);
   }
   if (seat.product !== undefined) {
-    if (TEXT_NOT_ASCII.test(seat.product)) return refuse('bad-product', 'not ascii');
-    const fault = textFault(seat.product);
+    const fault = productFault(seat.product);
     if (fault !== null) return refuse('bad-product', fault);
-    if (words(seat.product) > MAX_PRODUCT_WORDS) return refuse('bad-product', 'too many words');
     return { ok: true, snippet, product: seat.product };
   }
   return { ok: true, snippet };

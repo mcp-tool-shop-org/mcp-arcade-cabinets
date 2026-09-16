@@ -75,6 +75,16 @@ interface RunContext {
   supplied: Snippet[];
   /** The product the seat named for the level its buffer is filling, or null. */
   suppliedProduct: string | null;
+  /**
+   * One line a seat wrote for the user to say at the next ship, in place of
+   * the authored reaction — or of the review, when that ship is the deploy
+   * (slice 4's container tools). A single slot on purpose: a client that
+   * read the view and is reacting to the request in hand is one beat ahead,
+   * which is what keeps the sim from ever waiting on it (G11, G13). The
+   * slot is not on `RunState`, so a run that is never fed one stringifies
+   * exactly as it always did.
+   */
+  reaction: string | null;
 }
 
 /** Lines in a quick sync. Three is a meeting; more is a level. */
@@ -133,6 +143,54 @@ export function feedRequests(state: RunState, items: readonly Snippet[], product
   if (product !== undefined && product !== '' && ctx.suppliedProduct === null) {
     ctx.suppliedProduct = product;
   }
+}
+
+/**
+ * Name the product the next endless level builds, with no request attached
+ * (slice 4). `feedRequests` already carries a product beside its snippets;
+ * this is the same lever on its own, because the container's `product` tool
+ * is a call of its own and a client may name the thing before it has written
+ * anything for it. The first name offered for a level wins, as it does
+ * there, and the planner drops it once that level has been planned.
+ */
+export function feedProduct(state: RunState, product: string): 'set' | 'already set' {
+  const ctx = runs.get(state);
+  if (!ctx) return 'already set';
+  if (ctx.suppliedProduct !== null) return 'already set';
+  const name = product.trim();
+  if (name === '') return 'already set';
+  ctx.suppliedProduct = name;
+  return 'set';
+}
+
+/**
+ * Leave one line for the user to say at the next ship (slice 4). It takes
+ * the place of the authored reaction, or of the review when that ship is
+ * the level's deploy. One slot: a second line before the ship is dropped,
+ * exactly as a second sound is dropped in the shooter next door.
+ */
+export function feedReaction(state: RunState, line: string): 'waiting' | 'dropped' {
+  const ctx = runs.get(state);
+  if (!ctx) return 'dropped';
+  if (ctx.reaction !== null) return 'dropped';
+  const text = line.trim();
+  if (text === '') return 'dropped';
+  ctx.reaction = text;
+  return 'waiting';
+}
+
+/**
+ * The product a seat has named for the next level, or null. The container's
+ * `view` shows the next level the name it will actually carry, which is this
+ * when a client has named one and the drawn one otherwise.
+ */
+export function suppliedProductOf(state: RunState): string | null {
+  return runs.get(state)?.suppliedProduct ?? null;
+}
+
+/** True while a seat's line is waiting for the next ship. Bookkeeping, never a fact. */
+export function reactionWaiting(state: RunState): boolean {
+  return runs.get(state)?.reaction !== null && runs.get(state)?.reaction !== undefined;
 }
 
 /** How many gated requests are waiting. The shell's prefetch bookkeeping. */
@@ -261,6 +319,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     nagReplyPending: false,
     supplied: [],
     suppliedProduct: null,
+    reaction: null,
   };
   runs.set(state, ctx);
   startNagClock(state, ctx);
@@ -352,10 +411,16 @@ function ship(state: RunState): void {
     push(state, { kind: 'milestone', name: milestone.name });
   }
   say(state, 'agent', ctx.picker.ship());
+  // A seat's line, if one is waiting, takes this beat and the authored pool
+  // keeps its place in the bag for the next one. With no seat the call below
+  // is the call it has always been, on the draw it has always been (a test
+  // asserts a never-fed run stringifies identically).
+  const seated = ctx.reaction;
+  ctx.reaction = null;
   say(
     state,
     'user',
-    last ? ctx.picker.review(state.plan.id) : ctx.picker.reaction(request.snippet),
+    seated ?? (last ? ctx.picker.review(state.plan.id) : ctx.picker.reaction(request.snippet)),
   );
   setStreak(state, state.streak + 1);
   state.beat = 'ship';
@@ -400,7 +465,6 @@ function advance(state: RunState): void {
   // The seat's buffer, if a seat is sitting. `planLevel` splices off what
   // it takes, so an empty buffer costs one property read and changes
   // nothing: every draw below is the draw it always was.
-  const before = ctx.supplied.length;
   const plan = planLevel({
     set: ctx.set,
     corpus: ctx.corpus,
@@ -415,7 +479,11 @@ function advance(state: RunState): void {
     ...(ctx.suppliedProduct !== null ? { product: ctx.suppliedProduct } : {}),
     ...(ctx.opts.stack ? { stack: ctx.opts.stack } : {}),
   });
-  if (ctx.supplied.length !== before) ctx.suppliedProduct = null;
+  // A product names the level it was offered for, and that level has now
+  // been planned — with or without requests behind it, since slice 4 lets a
+  // client name the product on its own. Holding it any longer would put one
+  // seat's name on every level after it.
+  ctx.suppliedProduct = null;
   if (!plan) {
     state.over = true;
     state.ended = 'shipped';

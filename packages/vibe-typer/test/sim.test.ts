@@ -6,11 +6,15 @@ import {
   agentNameOf,
   codeOf,
   createRun,
+  feedProduct,
+  feedReaction,
   feedRequests,
   leversOf,
   planOf,
+  reactionWaiting,
   stepRun,
   suppliedCount,
+  suppliedProductOf,
   syncOf,
 } from '../src/sim';
 import { endlessPeek } from '../src/level';
@@ -692,5 +696,127 @@ describe("the seat's requests", () => {
     expect(state.over).toBe(true);
     expect(planOf(state).requests.map((r) => r.snippet.id)).toEqual(before);
     expect(suppliedCount(state)).toBe(4);
+  });
+});
+
+// The two levers slice 4's container tools pull that the pull path never
+// needed: a product with no request behind it, and one line for the user to
+// say at the next ship.
+describe("the seat's product, on its own", () => {
+  it('names the next endless level with nothing else fed', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    const drawn = endlessPeek({ set: DEFAULT_PATTERNS, seed: 5, tier: 0, levelIndex: 1 }).product;
+    expect(feedProduct(state, 'a diary for houseplants')).toBe('set');
+    expect(suppliedProductOf(state)).toBe('a diary for houseplants');
+    expect(suppliedCount(state)).toBe(0);
+    // The level in hand is fixed at level start and never moves (G26).
+    expect(planOf(state).product).not.toBe('a diary for houseplants');
+    finishLevel(state);
+    expect(state.levelIndex).toBe(1);
+    expect(planOf(state).product).toBe('a diary for houseplants');
+    expect(planOf(state).product).not.toBe(drawn);
+    // Every request of that level is still the corpus, drawn as it always
+    // was: naming a product buys the name and nothing else.
+    expect(planOf(state).requests.every((r) => !r.snippet.id.startsWith('seat-'))).toBe(true);
+    expect(planOf(state).requests.every((r) => !r.ask.includes('{product}'))).toBe(true);
+  });
+
+  it('keeps the first name offered and drops the name once its level has been planned', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    expect(feedProduct(state, 'a diary for houseplants')).toBe('set');
+    expect(feedProduct(state, 'a hat rental for crows')).toBe('already set');
+    expect(feedProduct(state, '   ')).toBe('already set');
+    finishLevel(state);
+    expect(planOf(state).product).toBe('a diary for houseplants');
+    expect(suppliedProductOf(state)).toBeNull();
+    // Not every level after it: a name belongs to one level.
+    finishLevel(state);
+    expect(planOf(state).product).toBe(
+      endlessPeek({ set: DEFAULT_PATTERNS, seed: 5, tier: 0, levelIndex: 2 }).product,
+    );
+  });
+
+  it('changes nothing in a run that is never given one', () => {
+    const plain = createRun({ seed: 9, tier: 0, endless: true });
+    const bot = makeBot('perfect', 9);
+    for (let i = 0; i < 60000 && !plain.over; i++) step(plain, bot(plain));
+    const same = createRun({ seed: 9, tier: 0, endless: true });
+    const bot2 = makeBot('perfect', 9);
+    for (let i = 0; i < 60000 && !same.over; i++) {
+      expect(suppliedProductOf(same)).toBeNull();
+      step(same, bot2(same));
+    }
+    expect(JSON.stringify(same)).toBe(JSON.stringify(plain));
+  });
+});
+
+describe("the seat's reaction", () => {
+  /**
+   * Ship one request and return the user's reaction to it. The span also
+   * carries the next request's ask, because the step that advances a beat
+   * says it, so the reaction is the first user line and not the last.
+   */
+  function shipAndHear(state: RunState): string {
+    const before = state.chat.length;
+    shipRequest(state);
+    const said = state.chat.slice(before).filter((line) => line.who === 'user');
+    return said.length > 0 ? said[0]!.line : '';
+  }
+
+  it('lands at the next ship in place of the authored reaction', () => {
+    const seated = createRun({ seed: 5, tier: 0, endless: true });
+    const plain = createRun({ seed: 5, tier: 0, endless: true });
+    expect(feedReaction(seated, 'that is so much better than i asked for')).toBe('waiting');
+    expect(reactionWaiting(seated)).toBe(true);
+    expect(shipAndHear(seated)).toBe('that is so much better than i asked for');
+    expect(reactionWaiting(seated)).toBe(false);
+    const authored = shipAndHear(plain);
+    expect(authored).not.toBe('that is so much better than i asked for');
+    // One line, one ship: the next ship is the authored pool again, and the
+    // seat's line is in the chat exactly once.
+    expect(shipAndHear(seated)).not.toBe('that is so much better than i asked for');
+    expect(
+      seated.chat.filter((line) => line.line === 'that is so much better than i asked for'),
+    ).toHaveLength(1);
+  });
+
+  it('takes the review at the deploy, and only one line waits at a time', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    const last = planOf(state).requests.length - 1;
+    while (!state.over && state.requestIndex < last) shipRequest(state);
+    expect(state.requestIndex).toBe(last);
+    expect(feedReaction(state, 'it is everything i wanted and nothing i asked for')).toBe(
+      'waiting',
+    );
+    expect(feedReaction(state, 'a second line before the ship')).toBe('dropped');
+    expect(feedReaction(state, '   ')).toBe('dropped');
+    const before = state.chat.length;
+    shipRequest(state);
+    const said = state.chat.slice(before).filter((line) => line.who === 'user');
+    expect(said.map((line) => line.line)).toContain(
+      'it is everything i wanted and nothing i asked for',
+    );
+    expect(said.map((line) => line.line)).not.toContain('a second line before the ship');
+  });
+
+  it('changes nothing at all in a run that is never given one', () => {
+    const plain = createRun({ seed: 8, tier: 0, endless: true });
+    const bot = makeBot('typist:40:0.03', 8);
+    for (let i = 0; i < 90000 && !plain.over; i++) step(plain, bot(plain));
+    const same = createRun({ seed: 8, tier: 0, endless: true });
+    const bot2 = makeBot('typist:40:0.03', 8);
+    for (let i = 0; i < 90000 && !same.over; i++) {
+      expect(reactionWaiting(same)).toBe(false);
+      step(same, bot2(same));
+    }
+    expect(JSON.stringify(same)).toBe(JSON.stringify(plain));
+  });
+
+  it('is not on the state, so a fed run and an unfed one differ only in what was said', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    feedReaction(state, 'that is so much better than i asked for');
+    // The slot lives beside the run, not in it: nothing a player could save
+    // or replay carries a line that has not been said yet.
+    expect(JSON.stringify(state)).not.toContain('so much better than i asked for');
   });
 });

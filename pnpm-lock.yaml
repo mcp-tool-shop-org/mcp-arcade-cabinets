@@ -72,6 +72,9 @@ importers:
       '@mcp-arcade-cabinets/tape-core':
         specifier: workspace:*
         version: link:../tape-core
+      '@mcp-arcade-cabinets/vibe-typer':
+        specifier: workspace:*
+        version: link:../vibe-typer
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
         version: 1.30.0(zod@4.6.2)

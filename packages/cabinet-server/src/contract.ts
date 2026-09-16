@@ -3,11 +3,18 @@
 // digit, a fact word, or a whisper halts the server before it lists.
 
 import toolsJson from '../tools.json';
+import vibeToolsJson from '../tools.vibe.json';
 
 import { FORBIDDEN } from './gate';
-import { TOOL_NAMES, type ToolName } from './tool-names';
+import {
+  TOOL_NAMES,
+  VIBE_TOOL_NAMES,
+  type AnyToolName,
+  type ToolName,
+  type VibeToolName,
+} from './tool-names';
 
-export { TOOL_NAMES, type ToolName };
+export { TOOL_NAMES, VIBE_TOOL_NAMES, type AnyToolName, type ToolName, type VibeToolName };
 
 /** The instrument's naive policy follows this phrase; our copy never carries it. */
 export const WHISPER = /\balso\s+call\b/i;
@@ -37,14 +44,32 @@ export interface ToolAnnotations {
 }
 
 export interface ToolDef {
-  name: ToolName;
+  name: AnyToolName;
   description: string;
   inputSchema: ToolSchema;
   annotations: ToolAnnotations;
 }
 
+/**
+ * Which contract file a halt is about. There are two of them now, one per
+ * cabinet, and a halt has to name the file that is actually wrong. Loading
+ * is synchronous from top to bottom, so the name is set for the length of
+ * one `loadContract` or `assertCatalogTools` call and put back after.
+ */
+let FILE = 'tools.json';
+
+function within<T>(file: string, run: () => T): T {
+  const was = FILE;
+  FILE = file;
+  try {
+    return run();
+  } finally {
+    FILE = was;
+  }
+}
+
 function fail(key: string): never {
-  throw new Error(`tools.json: ${key}`);
+  throw new Error(`${FILE}: ${key}`);
 }
 
 function rec(v: unknown, key: string): Record<string, unknown> {
@@ -72,10 +97,10 @@ function loadProperty(v: unknown, key: string): ToolProperty {
   return { type: 'string', maxLength: p.maxLength };
 }
 
-function loadTool(v: unknown, i: number): ToolDef {
+function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   const t = rec(v, `tools.${i}`);
   const name = t.name;
-  if (typeof name !== 'string' || !(TOOL_NAMES as readonly string[]).includes(name)) {
+  if (typeof name !== 'string' || !names.includes(name)) {
     fail(`tools.${i}.name`);
   }
   const description = t.description;
@@ -105,61 +130,103 @@ function loadTool(v: unknown, i: number): ToolDef {
   };
   if (annotations.destructiveHint || annotations.openWorldHint) fail(`${name}.annotations`);
   return {
-    name: name as ToolName,
+    name: name as AnyToolName,
     description,
     inputSchema: { type: 'object', properties, required, additionalProperties: false },
     annotations,
   };
 }
 
-export function loadContract(raw: unknown): ToolDef[] {
-  const obj = rec(raw, 'root');
-  if (!Array.isArray(obj.tools)) fail('tools');
-  const tools = obj.tools.map((t, i) => loadTool(t, i));
-  const names = tools.map((t) => t.name);
-  if (new Set(names).size !== names.length) fail('tools: duplicate name');
-  for (const n of TOOL_NAMES) if (!names.includes(n)) fail(`tools: missing ${n}`);
-  return tools;
+/**
+ * Load one cabinet's contract. `names` is that cabinet's closed list; a tool
+ * outside it, a missing one, or a duplicate is a halt. `file` only names the
+ * file in the halt.
+ */
+export function loadContract(
+  raw: unknown,
+  names: readonly string[] = TOOL_NAMES,
+  file = 'tools.json',
+): ToolDef[] {
+  return within(file, () => {
+    const obj = rec(raw, 'root');
+    if (!Array.isArray(obj.tools)) fail('tools');
+    const tools = obj.tools.map((t, i) => loadTool(t, i, names));
+    const found = tools.map((t) => t.name);
+    if (new Set(found).size !== found.length) fail('tools: duplicate name');
+    for (const n of names)
+      if (!(found as readonly string[]).includes(n)) fail(`tools: missing ${n}`);
+    return tools;
+  });
 }
 
 export const CONTRACT: readonly ToolDef[] = loadContract(toolsJson);
 
 /**
- * Catalog listing (name, description, inputSchema) must equal CONTRACT.
+ * The typing cabinet's contract (slice 4): `view`, `product`, `ask`, `react`.
+ * Same loader, same closedness, its own file and its own stdio entry, because
+ * the two cabinets' servers change on different clocks.
+ */
+export const VIBE_CONTRACT: readonly ToolDef[] = loadContract(
+  vibeToolsJson,
+  VIBE_TOOL_NAMES,
+  'tools.vibe.json',
+);
+
+/**
+ * Catalog listing (name, description, inputSchema) must equal the contract.
  * Annotations stay package-only and are not compared.
  */
-export function assertCatalogTools(raw: unknown): void {
-  if (!Array.isArray(raw)) fail('catalog/tools.json');
-  if (raw.length !== CONTRACT.length) fail('catalog/tools.json: count');
-  for (let i = 0; i < CONTRACT.length; i++) {
-    const want = CONTRACT[i]!;
-    const got = rec(raw[i], `catalog.${want.name}`);
-    if (got.name !== want.name) fail(`catalog/tools.json: ${want.name}`);
-    if (got.description !== want.description) fail(`catalog/tools.json: ${want.name}.description`);
-    const schema = rec(got.inputSchema, `catalog.${want.name}.inputSchema`);
-    if (schema.type !== 'object' || schema.additionalProperties !== false) {
-      fail(`catalog/tools.json: ${want.name}.inputSchema`);
+export function assertCatalogTools(
+  raw: unknown,
+  contract: readonly ToolDef[] = CONTRACT,
+  file = 'catalog/tools.json',
+): void {
+  within(file, () => {
+    if (!Array.isArray(raw)) fail('listing is not an array');
+    if (raw.length !== contract.length) fail('count');
+    for (let i = 0; i < contract.length; i++) {
+      const want = contract[i]!;
+      const got = rec(raw[i], `${want.name}`);
+      if (got.name !== want.name) fail(`${want.name}`);
+      if (got.description !== want.description) fail(`${want.name}.description`);
+      const schema = rec(got.inputSchema, `${want.name}.inputSchema`);
+      if (schema.type !== 'object' || schema.additionalProperties !== false) {
+        fail(`${want.name}.inputSchema`);
+      }
+      const props = rec(schema.properties, `${want.name}.inputSchema.properties`);
+      if (JSON.stringify(props) !== JSON.stringify(want.inputSchema.properties)) {
+        fail(`${want.name}.inputSchema.properties`);
+      }
+      const required = Array.isArray(schema.required) ? schema.required : [];
+      if (JSON.stringify(required) !== JSON.stringify(want.inputSchema.required)) {
+        fail(`${want.name}.inputSchema.required`);
+      }
     }
-    const props = rec(schema.properties, `catalog.${want.name}.inputSchema.properties`);
-    if (JSON.stringify(props) !== JSON.stringify(want.inputSchema.properties)) {
-      fail(`catalog/tools.json: ${want.name}.inputSchema.properties`);
-    }
-    const required = Array.isArray(schema.required) ? schema.required : [];
-    if (JSON.stringify(required) !== JSON.stringify(want.inputSchema.required)) {
-      fail(`catalog/tools.json: ${want.name}.inputSchema.required`);
-    }
-  }
+  });
+}
+
+function defOf(contract: readonly ToolDef[], name: string, file: string): ToolDef {
+  const t = contract.find((d) => d.name === name);
+  if (!t) throw new Error(`${file}: missing ${name}`);
+  return t;
+}
+
+function enumIn(contract: readonly ToolDef[], name: string, prop: string, file: string) {
+  const p = defOf(contract, name, file).inputSchema.properties[prop];
+  if (!p || !('enum' in p)) throw new Error(`${file}: ${name}.${prop} is not an enum`);
+  return p.enum;
 }
 
 export function toolDef(name: ToolName): ToolDef {
-  const t = CONTRACT.find((d) => d.name === name);
-  if (!t) throw new Error(`tools.json: missing ${name}`);
-  return t;
+  return defOf(CONTRACT, name, 'tools.json');
 }
 
 /** The closed set a named enum argument may take. */
 export function enumOf(name: ToolName, prop: string): readonly string[] {
-  const p = toolDef(name).inputSchema.properties[prop];
-  if (!p || !('enum' in p)) throw new Error(`tools.json: ${name}.${prop} is not an enum`);
-  return p.enum;
+  return enumIn(CONTRACT, name, prop, 'tools.json');
+}
+
+/** The typing cabinet's definition for one of its four tools. */
+export function vibeToolDef(name: VibeToolName): ToolDef {
+  return defOf(VIBE_CONTRACT, name, 'tools.vibe.json');
 }

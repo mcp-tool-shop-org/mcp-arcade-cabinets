@@ -210,19 +210,31 @@ export async function chatTools(
   system: string,
   user: string,
   tools: readonly ToolDef[],
-  extra: { format?: object; num_predict?: number } = {},
+  extra: { format?: object; num_predict?: number; timeoutMs?: number } = {},
 ): Promise<ChatAnswer> {
   const fmt = extra.format ? { format: extra.format } : {};
+  // A caller that asks for a whole snippet rather than one verb needs more
+  // than the three and eight seconds one verb is given (slice 4, measured:
+  // a slow cloud tag writing code times out on both budgets and the seat
+  // never answers at all). Absent, the budgets are the ones the boss seat
+  // has always used, so nothing on that path moves.
+  const wait = extra.timeoutMs ? { timeoutMs: extra.timeoutMs } : {};
   if (!thinkers.has(opts.model)) {
-    const short = extra.num_predict ? { ...SHORT, num_predict: extra.num_predict } : SHORT;
+    const short = {
+      ...SHORT,
+      ...(extra.num_predict ? { num_predict: extra.num_predict } : {}),
+      ...wait,
+    };
     const first = await chatOnce(opts, system, user, tools, short, fmt);
     const empty = first.calls.length === 0 && first.content.trim() === '';
     if (!empty || first.thinking === '') return first;
     thinkers.add(opts.model);
   }
-  const low = extra.num_predict
-    ? { ...LOW, num_predict: Math.max(LOW.num_predict, extra.num_predict) }
-    : LOW;
+  const low = {
+    ...LOW,
+    ...(extra.num_predict ? { num_predict: Math.max(LOW.num_predict, extra.num_predict) } : {}),
+    ...wait,
+  };
   return chatOnce(opts, system, user, tools, low, fmt);
 }
 

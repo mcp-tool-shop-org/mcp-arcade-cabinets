@@ -45,7 +45,16 @@ const repo = path.resolve(launcher, '..', '..');
 
 const SHELL = path.join(repo, 'apps', 'cabinets', 'dist');
 const SERVER_BUNDLE = path.join(repo, 'packages', 'cabinet-server', 'dist', 'index.js');
-const STDIO_BUNDLE = path.join(repo, 'packages', 'cabinet-server', 'dist', 'server.js');
+/**
+ * The stdio cabinet server each package's `--mcp` hands stdio to, one per
+ * cabinet. Two entries, not one with a flag: the two cabinets' servers
+ * change on different clocks, and a flag would put the shooter's sim, its
+ * tape menu and its voice probe inside the typing cabinet's package.
+ */
+const STDIO_BUNDLES = {
+  ghost: path.join(repo, 'packages', 'cabinet-server', 'dist', 'server.js'),
+  vibe: path.join(repo, 'packages', 'cabinet-server', 'dist', 'server-vibe.js'),
+};
 const TAPES = path.join(repo, 'fixtures', 'tapes');
 
 /** Every public directory the shell ships, so the copy can leave the rest out. */
@@ -70,8 +79,8 @@ const CABINETS = {
   ghost: {
     pkgDir: path.join(repo, 'packages', 'launcher'),
     name: '@mcptoolshop/ghost-on-the-menu',
-    /** The stdio cabinet server (`--mcp`). Vibe's tools ship with slice 4. */
-    stdio: true,
+    /** The stdio cabinet server (`--mcp`): `fire`, `say`, `speak`, `sfx`, `view`, `tapes`. */
+    stdio: 'ghost',
     public: ['sprites', 'tracks'],
     needles: [
       ['data-local-seats', 'the seats mount mark'],
@@ -84,7 +93,8 @@ const CABINETS = {
   vibe: {
     pkgDir: path.join(repo, 'packages', 'launcher-vibe-typer'),
     name: '@mcptoolshop/vibe-typer',
-    stdio: false,
+    /** Its own four levers since slice 4: `view`, `product`, `ask`, `react`. */
+    stdio: 'vibe',
     public: ['keys', 'vibe'],
     needles: [
       ['data-vibe-seat', 'the endless seat mount mark'],
@@ -149,7 +159,7 @@ function layoutOf(spec) {
   return [
     'cli.js',
     'cabinet-server.js',
-    ...(spec.stdio ? ['cabinet-stdio.js'] : []),
+    'cabinet-stdio.js',
     path.join('play', 'index.html'),
     'tapes',
     ...spec.public.map((dir) => path.join('play', dir)),
@@ -247,21 +257,18 @@ export async function pack({ cabinet, out }) {
     {
       from: SERVER_BUNDLE,
       to: path.join(dist, 'cabinet-server.js'),
-      what: spec.stdio
-        ? 'the cabinet-server bundle (the say seat)'
-        : 'the cabinet-server bundle (the endless seat)',
+      what:
+        spec.stdio === 'ghost'
+          ? 'the cabinet-server bundle (the say seat)'
+          : 'the cabinet-server bundle (the endless seat)',
       next: 'pnpm -F @mcp-arcade-cabinets/cabinet-server build',
     },
-    ...(spec.stdio
-      ? [
-          {
-            from: STDIO_BUNDLE,
-            to: path.join(dist, 'cabinet-stdio.js'),
-            what: 'the stdio cabinet server (--mcp)',
-            next: 'pnpm -F @mcp-arcade-cabinets/cabinet-server build',
-          },
-        ]
-      : []),
+    {
+      from: STDIO_BUNDLES[spec.stdio],
+      to: path.join(dist, 'cabinet-stdio.js'),
+      what: `the stdio cabinet server (--mcp), ${spec.stdio}`,
+      next: 'pnpm -F @mcp-arcade-cabinets/cabinet-server build',
+    },
     {
       from: TAPES,
       to: path.join(dist, 'tapes'),

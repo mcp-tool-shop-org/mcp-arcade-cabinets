@@ -21,6 +21,13 @@ const PKG = path.resolve(HERE, '..');
 const PATTERNS = path.join(PKG, 'patterns');
 const CORPUS = path.join(PATTERNS, 'corpus');
 const SHELL = path.resolve(PKG, '..', '..', 'apps', 'cabinets', 'src');
+const ROOT = path.resolve(PKG, '..', '..');
+/**
+ * The typing cabinet's MCP contract and its catalog mirror. A tool
+ * description is read by every client that lists this cabinet, which makes
+ * it as reader-facing as a level name (slice 4).
+ */
+const CONTRACTS = ['packages/cabinet-server/tools.vibe.json', 'catalog/tools.vibe.json'] as const;
 
 /** Every hit as `<file>: <key path> — <word>`, so the failure says where. */
 function hits(): string[] {
@@ -43,6 +50,11 @@ function hits(): string[] {
   for (const name of readdirSync(PATTERNS)) {
     if (!name.endsWith('.json')) continue;
     walk(`patterns/${name}`, '', JSON.parse(readFileSync(path.join(PATTERNS, name), 'utf8')));
+  }
+
+  // The typing cabinet's tool contract, walked the same way as a lever.
+  for (const file of CONTRACTS) {
+    walk(file, '', JSON.parse(readFileSync(path.join(ROOT, file), 'utf8')));
   }
 
   // The corpus, titles and prose only. `code` is the typed target.

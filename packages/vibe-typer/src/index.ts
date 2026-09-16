@@ -122,6 +122,7 @@ export {
   MAX_LINES,
   MAX_NOTES,
   MAX_PRODUCT_WORDS,
+  productFault,
   VALUE_TOLERANCE,
 } from './codegate';
 export type {
@@ -137,14 +138,18 @@ export {
   codeOf,
   corpusOf,
   createRun,
+  feedProduct,
+  feedReaction,
   feedRequests,
   leversOf,
   NAG_SALT,
   nextSeed,
   planOf,
+  reactionWaiting,
   stepRun,
   suppliedAsks,
   suppliedCount,
+  suppliedProductOf,
   syncOf,
 } from './sim';
 export type { CreateRunOpts } from './sim';
