@@ -20,7 +20,9 @@
     "sit": "node scripts/sit.mjs",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:play ghost --fixture naive-ndjson && pnpm test:play vibe-typer --tier 0 --bot typist:40",
     "build:play": "cross-env PLAY_BASE=/mcp-arcade-cabinets/play/ PLAY_OUT=../../site/public/play pnpm -F @mcp-arcade-cabinets/cabinets build",
-    "build:launcher": "pnpm -F @mcp-arcade-cabinets/cabinet-server build && cross-env VITE_LOCAL_SEATS=true pnpm -F @mcp-arcade-cabinets/cabinets build && pnpm -F @mcptoolshop/ghost-on-the-menu pack:dist",
+    "build:launcher": "pnpm run build:launcher:ghost && pnpm run build:launcher:vibe",
+    "build:launcher:ghost": "pnpm -F @mcp-arcade-cabinets/cabinet-server build && cross-env VITE_LOCAL_SEATS=true VITE_CABINET=ghost pnpm -F @mcp-arcade-cabinets/cabinets build && pnpm -F @mcptoolshop/ghost-on-the-menu pack:dist",
+    "build:launcher:vibe": "pnpm -F @mcp-arcade-cabinets/cabinet-server build && cross-env VITE_LOCAL_SEATS=true VITE_CABINET=vibe pnpm -F @mcp-arcade-cabinets/cabinets build && pnpm -F @mcptoolshop/vibe-typer pack:dist",
     "voice": "node scripts/voice.mjs"
   },
   "devDependencies": {

@@ -70,8 +70,14 @@ export interface ServeOpts {
   endlessModule?: string | null;
   /** The player's Ollama daemon. */
   ollamaUrl: string;
-  /** The host-side voice worker (`pnpm voice`), when they run one. */
-  voiceUrl: string;
+  /**
+   * The host-side voice worker (`pnpm voice`), when they run one. Null does
+   * not proxy `/voice` at all: the path 404s before a socket is opened, the
+   * same as any other call the allowlist does not name. The typing cabinet
+   * has no voice, so its package passes null rather than standing a proxy
+   * up that nothing on the page will ever call.
+   */
+  voiceUrl: string | null;
   /** The worker's bearer. Added here; the browser never holds it. */
   voiceToken: string | null;
   /** Sits the Claude tier of the say seat. Never reaches the browser. */
@@ -482,18 +488,15 @@ export function createCabinetServer(opts: ServeOpts): Server {
       const up = upstreamFor(req.url);
       if (up) {
         const rest = restAfter(PREFIXES[up], req.url);
-        if (!allowed(up, req.method ?? 'GET', rest)) {
+        const base = up === 'ollama' ? opts.ollamaUrl : opts.voiceUrl;
+        // No upstream configured is the same answer as a path off the
+        // allowlist: 404, and no socket opened towards anything.
+        if (!base || !allowed(up, req.method ?? 'GET', rest)) {
           sendJson(res, 404, { error: 'not found' });
           req.resume();
           return;
         }
-        await proxy(
-          req,
-          res,
-          up === 'ollama' ? opts.ollamaUrl : opts.voiceUrl,
-          rest,
-          up === 'voice' ? opts.voiceToken : null,
-        );
+        await proxy(req, res, base, rest, up === 'voice' ? opts.voiceToken : null);
         return;
       }
       if (req.method !== 'GET' && req.method !== 'HEAD') {

@@ -804,7 +804,11 @@ export function tierContext(set: Patterns, tier: Tier): ContextTier {
   return set.context.tiers[String(tier) as '0' | '1' | '2' | '3'];
 }
 
-export const DEFAULT_PATTERNS: Patterns = loadPatterns({
+// Pure for the same reason `DEFAULT_CORPUS` is: see the note there. The
+// levers are read by the cabinet, the tests and the play-through, and the
+// loader still halts on the first bad key for all of them. It is only a
+// bundle that carries the other cabinet that gets to drop this.
+export const DEFAULT_PATTERNS: Patterns = /* #__PURE__ */ loadPatterns({
   cabinet: cabinetJson,
   levels: levelsJson,
   score: scoreJson,

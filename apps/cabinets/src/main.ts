@@ -143,24 +143,43 @@ function difficultySelect(value: Difficulty, locked: boolean): HTMLSelectElement
 
 type CabinetId = 'ghost' | 'vibe';
 
-/** The switch at the top: two cards, Ghost first and selected by default. */
-const CABINETS: { id: CabinetId; name: string; line: string }[] = [
-  {
-    id: 'ghost',
-    name: 'Ghost on the Menu',
-    line: 'A replay shooter on an mcp-arcade tape.',
-  },
-  { id: 'vibe', name: VIBE.cabinet.name, line: VIBE.cabinet.tagline },
-];
+// ——— which cabinets this build carries ———————————————————————————————————
+// `VITE_CABINET` is a string literal in every bundle (see the `define` in
+// `vite.config.ts`), so these two are `true`/`false` constants by the time
+// Rollup reads them and the `menu()` chain below folds to the one branch
+// that is live. That is the whole mechanism: in a `ghost` build nothing
+// references `vibeMenu`, so `./vibe-typer` and everything it reaches — the
+// typing mount, `typer-audio`, `typer-cues`, `typer-keys`, the levers — is
+// never in the graph, and the same the other way round. The pack script
+// then leaves that cabinet's public files out of the package as well, and
+// its marker gate greps for the proof.
+const HAS_GHOST = import.meta.env.VITE_CABINET !== 'vibe';
+const HAS_VIBE = import.meta.env.VITE_CABINET !== 'ghost';
 
-function menu() {
-  app.replaceChildren();
+/**
+ * The switch at the top: two cards, Ghost first and selected by default.
+ * A function and not a module-level constant so that the only thing naming
+ * the typing cabinet's levers on this path is `switchMenu`, which a
+ * single-cabinet build folds away.
+ */
+function cabinetCards(): { id: CabinetId; name: string; line: string }[] {
+  return [
+    {
+      id: 'ghost',
+      name: 'Ghost on the Menu',
+      line: 'A replay shooter on an mcp-arcade tape.',
+    },
+    { id: 'vibe', name: VIBE.cabinet.name, line: VIBE.cabinet.tagline },
+  ];
+}
+
+/** Both cabinets: the switch, and the picked one's menu under it. */
+function switchMenu(body: HTMLElement) {
+  const CABINETS = cabinetCards();
   let picked: CabinetId = readVibePrefs().cabinet ?? 'ghost';
   const cards = document.createElement('ul');
   cards.className = 'tape-list cabinet-cards';
   const rows: HTMLLIElement[] = [];
-  const body = document.createElement('section');
-  body.className = 'column';
   const paint = () => {
     rows.forEach((row, i) => row.classList.toggle('picked', CABINETS[i]!.id === picked));
     body.replaceChildren();
@@ -185,6 +204,27 @@ function menu() {
   });
   app.append(cards, body);
   paint();
+}
+
+// An if/else chain and no early returns, deliberately: Rollup folds a chain
+// on constant conditions down to the live branch, where an `if (…) return`
+// would leave the code after it — and its reference to the other cabinet —
+// standing. The stored `cabinet` pref is read only inside `switchMenu`, so
+// a browser that last played the other cabinet cannot bring the switch back
+// in a build that carries one.
+function menu() {
+  app.replaceChildren();
+  const body = document.createElement('section');
+  body.className = 'column';
+  if (HAS_GHOST && HAS_VIBE) {
+    switchMenu(body);
+  } else if (HAS_GHOST) {
+    app.append(body);
+    ghostMenu(body);
+  } else {
+    app.append(body);
+    vibeMenu(body);
+  }
 }
 
 function ghostMenu(wrap: HTMLElement) {
