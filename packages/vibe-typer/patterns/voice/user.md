@@ -56,6 +56,13 @@ five years. A hyphenated internal name for their own product, ever: they call
 it what it is, in words. Nothing abstract or poetic — no herds of text, no word
 crumbs, no sentence farms. They are a founder, not a poet.
 
+And, in a check-in while the agent types, in the one-more-thing, and in a
+review that is not written for one product: any piece at all. Those lines are
+drawn without knowing what was asked, so "is the greeting ready" lands under a
+request for a sorted list and reads as nonsense. There he asks whether it is
+done, whether he can look, whether the investors should hear, and never what
+it is. A reaction to a shipped piece knows its piece and may name it.
+
 ## Twenty lines that are the voice
 
 Sourced: **sample** is the `kimi-k2.6:cloud` column of

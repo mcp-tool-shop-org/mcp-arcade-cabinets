@@ -121,8 +121,11 @@ describe('the line picker', () => {
   it('keeps every check-in and every answer inside the gate', () => {
     for (const line of DEFAULT_PATTERNS.user.nags) expect(lineFault(line)).toBeNull();
     for (const line of DEFAULT_PATTERNS.agent.nagReplies) expect(lineFault(line)).toBeNull();
-    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(50);
-    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(50);
+    // The floors after the proofread: a level draws a few of each and never
+    // repeats one, so the floor is that handful with room, not the size the
+    // authoring run happened to write.
+    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(16);
+    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
   });
 
   it('reacts to the piece by its topic when a topic has been written for', () => {

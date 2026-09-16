@@ -47,7 +47,7 @@
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
-      "drainPerSec": 0.00544,
+      "drainPerSec": 0.0051,
       "drainRamp": 0.25,
       "shipBonus": 3,
       "snippets": ["cal-sq-d1-002", "cal-sq-d1-001", "cal-sq-d2-005", "cal-sq-d1-003"]

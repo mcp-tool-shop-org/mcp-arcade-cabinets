@@ -206,7 +206,10 @@ const PRODUCT_PHRASE = {
  * floor slice one shipped. A key is a path into the lever — `user.creeps` is a
  * flat list, `user.reactions.0` is tier zero's list, `user.asks.bash.1` is the
  * warm tier's templates for the shell stack. The loader's `MIN_*` constants
- * are raised to these same numbers, so the size holds from here on.
+ * were these same numbers until the proofread after 0.11.0 cut the pools that
+ * are drawn blind to the lines that make sense against any request and set
+ * the floors to what a level's draw needs; a run still writes up to these
+ * targets, under the sheets' rule that such a line never names a piece.
  */
 const POOL_TARGETS = {
   'user.reactions.0': 36,

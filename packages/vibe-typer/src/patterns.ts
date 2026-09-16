@@ -70,26 +70,33 @@ export const STACKS: readonly Stack[] = [...CORPUS_STACKS, 'integration'];
 export const LINE_TIERS = ['0', '1', '2'] as const;
 export const TIER_KEYS = ['0', '1', '2', '3'] as const;
 export const MAX_WORDS = 12;
-// The pool floors. Slice one set them at the size it had written by hand;
-// slice three's authoring run raised every pool to three times that, and these
-// constants were raised with it so the size is a halt from here on rather than
-// a promise. A pool that falls under its floor fails the load, which fails the
-// build. The numbers are the same ones `scripts/author.mjs` tops up to.
-const MIN_ASKS = 48;
+// The pool floors. A floor is a no-repeat guarantee: a level draws at most a
+// handful of lines from each pool and never repeats one inside the level, so
+// the floor is that handful with room, and a pool that falls under it fails
+// the load, which fails the build. Slice three's authoring run had raised the
+// floors to three times the hand-written size; the coordinator's proofread
+// after 0.11.0 (the Director read the game and the lines were nonsense) cut
+// every pool that lands against a request to the lines that make sense
+// against any request, and set the floors back to what the draw needs. Size
+// was never quality, and the pools that are drawn blind — the agent's replies,
+// ship lines and check-in answers, the user's check-ins, creeps and generic
+// reviews — may not name a piece the request did not ask for; a test holds
+// that rule now. `scripts/author.mjs` tops pools up to these same numbers.
+const MIN_ASKS = 8;
 const MIN_REACTIONS = 36;
-const MIN_CREEPS = 36;
-const MIN_REVIEWS = 24;
+const MIN_CREEPS = 12;
+const MIN_REVIEWS = 12;
 /** A quick sync is three of these; a level must never repeat one. */
 const MIN_SYNCS = 36;
 /** A sync line is chatter, not a sentence: five words is the ceiling (slice 2). */
 const MAX_SYNC_WORDS = 5;
-/** Check-ins and the agent's answers to them; fifty of each is the floor. */
-const MIN_NAGS = 50;
-const MIN_NAG_REPLIES = 50;
-const MIN_REPLIES = 72;
-const MIN_HMM = 36;
+/** Check-ins and the agent's answers to them: a level draws a few of each. */
+const MIN_NAGS = 16;
+const MIN_NAG_REPLIES = 12;
+const MIN_REPLIES = 16;
+const MIN_HMM = 12;
 const MIN_COMPACTIONS = 24;
-const MIN_SHIPS = 24;
+const MIN_SHIPS = 8;
 
 /**
  * The user's delivery, authored data (slice 4C). One preset speaks every one

@@ -67,21 +67,27 @@ describe('the levers load', () => {
     // wrote and what the loader's MIN_* constants now refuse to go under.
     for (const stack of STACKS) {
       for (const tier of ['0', '1', '2'] as const) {
-        expect(DEFAULT_PATTERNS.user.asks[stack][tier].length, stack).toBeGreaterThanOrEqual(48);
+        // The six corpus stacks keep their forty-eight template asks a tier as
+        // the fallback behind the per-snippet asks; the integration stack writes
+        // its asks from the tool the code calls, and its template pool is the
+        // eight generic lines that play when a tool cannot be named on the field.
+        expect(DEFAULT_PATTERNS.user.asks[stack][tier].length, stack).toBeGreaterThanOrEqual(
+          stack === 'integration' ? 8 : 48,
+        );
       }
     }
     for (const tier of ['0', '1', '2'] as const) {
       expect(DEFAULT_PATTERNS.user.reactions[tier].length).toBeGreaterThanOrEqual(36);
     }
-    expect(DEFAULT_PATTERNS.agent.replies.length).toBeGreaterThanOrEqual(72);
-    expect(DEFAULT_PATTERNS.agent.hmm.length).toBeGreaterThanOrEqual(36);
+    expect(DEFAULT_PATTERNS.agent.replies.length).toBeGreaterThanOrEqual(16);
+    expect(DEFAULT_PATTERNS.agent.hmm.length).toBeGreaterThanOrEqual(12);
     expect(DEFAULT_PATTERNS.agent.compactions.length).toBeGreaterThanOrEqual(24);
-    expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(24);
-    expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(36);
-    expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(24);
+    expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(8);
+    expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(12);
+    expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(12);
     expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(36);
-    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(50);
-    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(50);
+    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(16);
+    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
   });
 
   it('gives every corpus topic a reaction and every level a review', () => {

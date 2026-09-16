@@ -50,6 +50,13 @@ pantry, the garden or the furniture: a pie, a peach, a pinecone, a drawer, a
 shelf, a windowsill. Those are someone else's life; Sprocket's life is the
 thing on the screen.
 
+And, in a reply to an ask, a line at the ship, or an answer to a check-in: any
+piece at all. Those lines are drawn without knowing what was asked, so a reply
+that says the greeting is almost ready lands under a request for a sorted list
+and reads as nonsense. In those three pools Sprocket acknowledges and commits
+and never says what is being built; the image allowance above is for the lines
+that know their piece.
+
 ## Twenty lines that are the voice
 
 Sourced: **sample** is the `kimi-k2.6:cloud` column of

@@ -183,6 +183,24 @@ function envelope(tool: string, band: 1 | 3 | 5): string {
 }
 
 /**
+ * The user's ask for an integration snippet, written from the tool the code
+ * actually calls (the coordinator's proofread after 0.11.0: the template
+ * pool this stack fell back to was a list of wire-this-to-that lines with no
+ * relation to the code, and it read as nonsense on the field). Null when the
+ * tool's name cannot be said on the field (a digit, a barred word), in which
+ * case the template pool plays as before.
+ */
+export function integrationAsk(tool: string, band: 1 | 3 | 5): string | null {
+  const ask =
+    band === 1
+      ? `get {product} to call ${tool} and show me what it says`
+      : band === 3
+        ? `make {product} send ${tool} a proper request this time`
+        : `wire {product} to ${tool} with the whole envelope, every field`;
+  return lineFault(ask.split('{product}').join('it')) === null ? ask : null;
+}
+
+/**
  * Build the integration stack from tape headers and rows: one line per
  * envelope tier per tool name. Names that read as a probe are skipped; a
  * name is a name, never a fact and never a receipt (G30).
@@ -200,6 +218,7 @@ export function integrationSnippets(seeds: readonly IntegrationSeed[]): Snippet[
         const id = `int-${server}-${tool}-${band}`;
         if (seen.has(id)) continue;
         seen.add(id);
+        const ask = integrationAsk(tool, band);
         out.push({
           id,
           stack: 'integration',
@@ -208,6 +227,7 @@ export function integrationSnippets(seeds: readonly IntegrationSeed[]): Snippet[
           code: envelope(tool, band),
           notes: [`server ${server}`, `policy ${seed.policy}`],
           topics: ['integration', server],
+          ...(ask === null ? {} : { ask }),
         });
       }
     }

@@ -3121,3 +3121,34 @@ both the look the prompt asked for and the only way it fits.
      that pass does not start from nothing. The lesson for the next art batch is the one this batch is: a
      brief that says what a picture is _of_ is not the same as a brief that says whose it is, and on a field
      with characters on it the second question is the one that decides whether the picture belongs.
+
+## After 0.11.0 — the lead's proofread of the pools (2026-09-16)
+
+The Director played the published 0.11.0 and read nonsense on the field: a reply promising a greeting under a
+request for a sandwich ledger, a check-in asking whether the ducks were moving, an integration ask about a
+hinge asking a door to creak. The lead read every pool by hand rather than dispatching a model, and the fault
+was structural rather than a stray line: six pools are drawn with no knowledge of the request (the agent's
+replies, ship lines and check-in answers; the user's check-ins, one-more-things and generic reviews), and the
+authoring run had filled them with lines that name a piece. Every gate on those lines had checked form and
+none had checked sense; both editor passes had judged voice; the outside reviews had read diffs. Nobody had
+read the game as a player.
+
+**What changed, on `main` after the tag.** Each blind pool was cut to the lines that make sense against any
+request, by explicit keep-lists (`agent.replies` 84 → 23, `agent.ships` 24 → 9, `agent.nagReplies` 58 → 15,
+`agent.hmm` 36 → 16, `user.nags` 50 → 20, `user.creeps` 36 → 14); the 24 generic reviews were rewritten by the
+lead as 12 that praise the work and never a piece. `packages/vibe-typer/test/lines-neutral.test.ts` refuses
+any piece noun in those six pools from now on, and both voice sheets carry the rule under "What they never
+say", so the next authoring pass writes to it. The loader's floors are what a level's draw needs (a handful
+with room, never a repeat inside a level) rather than the size the run wrote; `author.mjs` keeps its higher
+targets for a future run under the new rule. The integration stack's asks are written from the tool the code
+calls (`integrationAsk` in `corpus.ts`: "get {product} to call the weather tool and show me what it says",
+gated by `lineFault`), and its template pool is eight generic lines a tier that play only when a tool's name
+cannot be said on the field. The hardcore bar tipped on `sandwich-ledger` (level three, seed one) because the
+shorter replies are shorter typed text, which is time on that clock; per the band's own doctrine the level
+moved and not the bar, `drainPerSec` 0.00544 → 0.0051, the value sub-slice D part one had measured with margin
+over three seeds. A design look at that level is still owed; it sits two ten-thousandths of drain from its
+cliff either way.
+
+**What this teaches, for the next slice.** A pool that is drawn blind may carry only lines that are true of
+every request. Variety in those pools is worth less than sense. And a content slice is read as a player
+before it is released, by the lead, not measured into shipping.
