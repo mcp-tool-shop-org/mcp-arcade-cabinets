@@ -51,6 +51,7 @@ import {
 } from '@mcp-arcade-cabinets/cabinet-server/src/browser';
 
 import { CONFETTI_MAX, cuesFor, shakeFor, type Cue } from './typer-cues';
+import { CARD_ASPECT, CARD_SLUGS, DEPLOY_SLUG, RIBBON_ASPECT, cardSlugOf } from './typer-cards';
 import { PIECE_KINDS, pieceKindOf, type PieceKind } from './typer-tiles';
 import {
   createTyperAudio,
@@ -79,13 +80,23 @@ const ROLLUP_MS = 400;
 const FLASH_MS = 120;
 /** A milestone word sits on the board this long. */
 const TOAST_MS = 2000;
+/** The middle of the deploy band, from the bottom of the preview. Unchanged. */
+const DEPLOY_MID = 33;
+/** A milestone card is drawn this wide over the preview, leaving a margin. */
+export const CARD_W = 440;
+/** The card fades in over this and out over this, unless the player asked for calm. */
+const CARD_FADE_MS = 200;
+/** The milestone word over the card: cream, because the card's empty half is navy. */
+const CARD_WORD = '#f6d6ac';
+/** The milestone word's size on the card, in the field's own face. */
+const CARD_FONT = '28px system-ui, sans-serif';
 /** Characters a second a chat line types itself in at. */
 const CHAT_CPS = 90;
 /** The bar turns warm here, and hot at the near miss the package names. */
 const WARM_AT = 0.25;
 /** The preview, in CSS pixels, drawn at twice that. */
-const PREVIEW_W = 480;
-const PREVIEW_H = 360;
+export const PREVIEW_W = 480;
+export const PREVIEW_H = 360;
 const PREVIEW_DPR = 2;
 /** Clean lines whose lengths wander less than this read as steady (G27). */
 const STEADY_CV = 0.45;
@@ -415,6 +426,8 @@ export interface VibeMount {
     refused: number;
     /** The bed the engine is playing, or nothing when no engine was built. */
     music: MusicMode | null;
+    /** Milestone cards and ribbons the preload has in hand. */
+    cards: number;
   };
 }
 
@@ -701,11 +714,51 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       img.src = `${import.meta.env.BASE_URL}vibe/tiles/${key}.png`;
     }
   };
+  // The milestone cards and the deploy ribbon, on the same rule again: a file
+  // that is missing, slow or broken leaves the word alone and the flat bar
+  // alone. These four are asked for at the mount rather than when they are
+  // wanted, which is the one place this batch parts from the tiles' rule: a
+  // level's stack is known a frame before a piece lands, but a milestone is a
+  // line the valuation crosses without warning, and a picture fetched at that
+  // moment would arrive after the toast had gone.
+  //
+  // The two handlers are guarded by the mount's `left` flag, the same guard
+  // the voice's probes take: four files are asked for the moment the field is
+  // built, and a player who leaves before they land would otherwise have a
+  // `load` write into a Map that belongs to a field nobody is looking at.
+  const cards = new Map<string, HTMLImageElement>();
+  const askCards = () => {
+    if (typeof Image === 'undefined') return;
+    for (const slug of [...CARD_SLUGS.values(), DEPLOY_SLUG]) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.addEventListener(
+        'load',
+        () => {
+          if (left) return;
+          cards.set(slug, img);
+        },
+        { once: true },
+      );
+      img.addEventListener(
+        'error',
+        () => {
+          if (left) return;
+          cards.delete(slug);
+        },
+        { once: true },
+      );
+      img.src = `${import.meta.env.BASE_URL}vibe/cards/${slug}.png`;
+    }
+  };
   const queue: RunInput[] = [];
   const chat: ChatItem[] = [];
   let chatAt = 0;
   let acc = 0;
   let left = false;
+  // Asked for here rather than where the Map is built, so the handlers' guard
+  // reads a flag that already exists.
+  askCards();
   let over = false;
   let audio: TyperAudio | null = null;
   let muted = prefs.muted === 'on';
@@ -714,6 +767,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   let flash = 0;
   let flashLeft = 0;
   let toastLeft = 0;
+  /** The card the preview is showing, for as long as the toast's word is up. */
+  let card: HTMLImageElement | null = null;
   let rolled = 0;
   /** Seconds the creep frame has been held, in sim frame time (never the wall clock). */
   let creepHeld = 0;
@@ -1051,7 +1106,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     barFill.classList.toggle('near', state.context < NEAR_MISS);
     if (toastLeft > 0) {
       toastLeft = Math.max(0, toastLeft - dt * 1000);
-      if (toastLeft === 0) toast.textContent = '';
+      if (toastLeft === 0) {
+        toast.textContent = '';
+        card = null;
+      }
     }
   };
 
@@ -1146,6 +1204,37 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       }
       c.globalAlpha = 1;
     });
+    // The milestone card, over the pieces and under everything the deploy
+    // throws. It is drawn for exactly as long as the board's word is up, on
+    // the board's own clock, so the two cannot come apart: the word says
+    // which milestone, the card is the picture of it, and a card that is
+    // missing or has not loaded leaves the word doing the whole job.
+    //
+    // The word sits on the card's right half because every card draws its
+    // motif in its left third and leaves the rest flat navy, which is what
+    // makes a card reusable for any wording. It is cream rather than the
+    // near-black the ribbon's word uses, for the same reason in reverse: the
+    // ribbon's word sits on amber and this one sits on navy.
+    if (card && toastLeft > 0) {
+      const h = CARD_W / CARD_ASPECT;
+      const x = (PREVIEW_W - CARD_W) / 2;
+      const y = (PREVIEW_H - h) / 2;
+      const calm =
+        typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // A short fade either end, and a hard show and hide when the player
+      // asked for less movement. The picture itself is still either way.
+      const fade = calm
+        ? 1
+        : Math.max(0, Math.min(1, (TOAST_MS - toastLeft) / CARD_FADE_MS, toastLeft / CARD_FADE_MS));
+      c.globalAlpha = fade;
+      c.drawImage(card, x, y, CARD_W, h);
+      c.fillStyle = CARD_WORD;
+      c.font = CARD_FONT;
+      c.textAlign = 'center';
+      c.fillText(toast.textContent ?? '', x + CARD_W * 0.66, y + h / 2 + 10);
+      c.textAlign = 'left';
+      c.globalAlpha = 1;
+    }
     // The confetti, seeded, and the ribbon in words.
     specks = specks.filter((s) => s.life > 0);
     for (const s of specks) {
@@ -1159,11 +1248,26 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       c.globalAlpha = 1;
     }
     if (shipped) {
-      c.fillStyle = '#e8a04a';
-      c.fillRect(0, PREVIEW_H - 46, PREVIEW_W, 26);
-      c.fillStyle = '#101018';
-      c.font = '16px system-ui, sans-serif';
-      c.fillText('deployed', 16, PREVIEW_H - 27);
+      // The painted ribbon when it is there, the flat bar until it is. The
+      // word is drawn either way and at the same baseline: the ribbon has
+      // folded ends and an empty middle, so it takes the word centered, while
+      // the flat bar is a band and keeps the word where it has always been.
+      const ribbon = cards.get(DEPLOY_SLUG);
+      if (ribbon) {
+        const h = PREVIEW_W / RIBBON_ASPECT;
+        c.drawImage(ribbon, 0, PREVIEW_H - DEPLOY_MID - h / 2, PREVIEW_W, h);
+        c.fillStyle = '#101018';
+        c.font = '16px system-ui, sans-serif';
+        c.textAlign = 'center';
+        c.fillText('deployed', PREVIEW_W / 2, PREVIEW_H - 27);
+        c.textAlign = 'left';
+      } else {
+        c.fillStyle = '#e8a04a';
+        c.fillRect(0, PREVIEW_H - 46, PREVIEW_W, 26);
+        c.fillStyle = '#101018';
+        c.font = '16px system-ui, sans-serif';
+        c.fillText('deployed', 16, PREVIEW_H - 27);
+      }
     }
     if (flashLeft > 0) {
       flashLeft = Math.max(0, flashLeft - dt * 1000);
@@ -1203,8 +1307,14 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       shipped = true;
     }
     if (cue.toast !== '') {
+      // The board's toast is a status line and stays one: the milestone word,
+      // in the same live region, announced the same way, with nothing behind
+      // it. The picture goes where the game celebrates — over the preview,
+      // the size the preview can carry it at — and the two share one clock.
       toast.textContent = cue.toast;
       toastLeft = TOAST_MS;
+      const slug = cardSlugOf(cue.toast);
+      card = (slug === null ? undefined : cards.get(slug)) ?? null;
     }
   };
 
@@ -1791,6 +1901,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       accepted: seatCounts.accepted,
       refused: seatCounts.refused,
       music: audio ? audio.music() : null,
+      cards: cards.size,
     }),
   };
 }

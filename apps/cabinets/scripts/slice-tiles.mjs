@@ -40,9 +40,13 @@ export const GROUND = [0x10, 0x10, 0x18];
 
 /** A pixel counts as ink for the projection when its brightest channel clears this. */
 const INK = 48;
-/** Alpha ramps from the ground's own alpha to solid between these two values. */
-const KEY_LO = 34;
-const KEY_HI = 56;
+/**
+ * Alpha ramps from the ground's own alpha to solid between these two values.
+ * Exported because the banner cut keys the deploy ribbon's ground with the
+ * same two numbers: one key, two callers, so they cannot drift apart.
+ */
+export const KEY_LO = 34;
+export const KEY_HI = 56;
 /**
  * The ground is not keyed away to nothing: it is keyed down to a translucent
  * plate. A tile is drawn over a packed block in one of the stack's four
