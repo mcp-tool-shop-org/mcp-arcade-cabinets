@@ -77,7 +77,7 @@ The brief for the art, in this order:
 1. **A Vibe Typer logo** for `packages/vibe-typer/README.md` and the brand repo (`logos/mcp-arcade-cabinets/vibe-typer-readme.png`, 669×669 like the ghost icon): a small keyboard with one glowing key and a speech bubble, amber on navy, no text.
 2. **Preview device frames** per stack, 480×360 at 2×, dark, empty: a terminal, a phone, a notebook, a ledger, a wire diagram. The pieces keep drawing as blocks inside them, in the level's palette.
 3. **Piece art**: eight small tiles per stack the packer can use instead of flat blocks (a function, a table, a button, a route), 128×128, limited palette, no glyphs or digits in any image.
-4. **Avatars**: the user (a person at a laptop, warm, a little chaotic) and Claudette (a friendly terminal face), 128×128, for the chat header.
+4. **Avatars**: the user (a person at a laptop, warm, a little chaotic) and Sprocket (a friendly terminal face), 128×128, for the chat header.
 5. **Milestone cards** for seed, series A and unicorn, and a deploy ribbon.
 6. **A backdrop** for the field, 1280×720, an office at night with the glow of one screen.
 

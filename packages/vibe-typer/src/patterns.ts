@@ -26,7 +26,7 @@ export const VOICE_FORBIDDEN =
 
 /**
  * No line names the thing that writes it (G17). The agent's own name is
- * `Claudette`, which no word here matches on a boundary.
+ * `Sprocket`, which no word here matches on a boundary.
  */
 export const MODEL_FORBIDDEN =
   /\b(claude|gpt|chatgpt|opus|sonnet|haiku|gemini|llama|mistral|qwen|grok|kimi|codex|copilot|cursor|openai|anthropic|ollama|deepseek)\b/i;
