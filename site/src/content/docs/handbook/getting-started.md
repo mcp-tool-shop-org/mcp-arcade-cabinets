@@ -7,13 +7,17 @@ sidebar:
 
 ## Requirements
 
-Node 22 or later. To play without cloning, one package is on npm and it carries both cabinets:
+Node 22 or later. To play without cloning, each cabinet is its own package on npm:
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-That serves the shell on `127.0.0.1` and opens it; `--mcp` runs Ghost on the Menu as an MCP server over stdio instead. To work on the arcade you also need pnpm 11; the repo is a pnpm workspace and every other package in it is private.
+```bash
+npx @mcptoolshop/vibe-typer
+```
+
+Each one serves its cabinet on `127.0.0.1` and opens it, with the local seats lit when an Ollama daemon is running. For Ghost, `--mcp` runs the cabinet as an MCP server over stdio instead; Vibe Typer's container tools are slice 4, so its `--mcp` says so and exits. The arcade with both cabinets on one switch is the Pages build only. To work on the arcade you also need pnpm 11; the repo is a pnpm workspace and every other package in it is private.
 
 ## Install
 

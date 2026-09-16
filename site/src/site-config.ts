@@ -23,7 +23,10 @@ export const config: SiteConfig = {
     previews: [
       { label: 'Ghost', code: 'frost robin chalk garden  —  a shift has a name; type it to take it again' },
       { label: 'Vibe', code: 'user: can the button be more blockchain\nagent: You are absolutely right, on it' },
-      { label: 'Both', code: 'npx @mcptoolshop/ghost-on-the-menu  —  one command, both cabinets, seats lit' },
+      {
+        label: 'npm',
+        code: 'npx @mcptoolshop/ghost-on-the-menu  —  or  —  npx @mcptoolshop/vibe-typer',
+      },
     ],
   },
 
@@ -134,8 +137,12 @@ export const config: SiteConfig = {
           code: 'https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/',
         },
         {
-          title: 'One command, seats lit',
-          code: 'npx @mcptoolshop/ghost-on-the-menu\n\n# serves both cabinets on 127.0.0.1 and opens them\n# an Ollama daemon and a voice worker light the seats',
+          title: 'Ghost on the Menu, seats lit',
+          code: 'npx @mcptoolshop/ghost-on-the-menu\n\n# serves Ghost on 127.0.0.1 and opens it\n# an Ollama daemon and a voice worker light the seats',
+        },
+        {
+          title: 'Vibe Typer, the endless user seated',
+          code: 'npx @mcptoolshop/vibe-typer\n\n# serves Vibe Typer on 127.0.0.1 and opens it\n# an Ollama daemon seats a model as the user in endless',
         },
         {
           title: 'Work on it',
