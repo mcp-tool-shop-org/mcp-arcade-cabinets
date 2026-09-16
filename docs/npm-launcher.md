@@ -1,8 +1,8 @@
 # The npm launcher
 
-`@mcptoolshop/ghost-on-the-menu` — the cabinet as one published package, two ways to run.
+`@mcptoolshop/ghost-on-the-menu` — the cabinet as one published package, two ways to run. Since sub-slice F of slice 3 (2026-09-15, `docs/vibe-typer.slice3.md` § Sub-slice F) there is a second: `@mcptoolshop/vibe-typer` from `packages/launcher-vibe-typer`, one package per cabinet, built by the same pack script (`scripts/build.mjs --cabinet ghost|vibe`), gated by the same marker check per package, and published by the same `release.yml` in one idempotent loop. The history below is the Ghost launcher's and still holds for it; the second package's rows are in the compensators table.
 
-**The Director lifted the never-npm rule for this package on 2026-09-14, and for this package only.** `tape-core`, `ghost-on-the-menu`, `cabinet-server` and `cabinets` stay `"private": true` and are not on any registry. What changed is narrow and is written into `CLAUDE.md`: one launcher publishes, the rest do not.
+**The Director lifted the never-npm rule for this package on 2026-09-14, and on 2026-09-15 decided that each cabinet ships as its own package and nothing ships as a bundle.** `tape-core`, `ghost-on-the-menu`, `vibe-typer`, `cabinet-server` and `cabinets` stay `"private": true` and are not on any registry. What changed is narrow and is written into `CLAUDE.md`: two launchers publish, the rest do not.
 
 ## Why a launcher and not the game
 
