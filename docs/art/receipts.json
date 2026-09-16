@@ -2201,5 +2201,45 @@
         "note": "the first job, run alone to prove the route, the tags and the acceptance chain before seven were spent. It did all three, and it also found the thing the brief could not have known: asking ACE-Step for 38 seconds gives about 30 seconds of music and then silence, which is not a 38 second loop. So the seven were asked for at 52 and cut down. Its own transcript was already empty, which is what said the tags were carrying the no-vocals rule."
       }
     ]
+  },
+  "vibe_typer_batch_5": {
+    "brief": "docs/vibe-typer.kickoff-s4.md, sub-slice B, batch four (a backdrop for the field, 1280x720, an office at night, drawn behind the panes at low alpha). Generated, measured, and dropped on the Director's read before it merged. This key is the record of the spend; nothing from it is in the cabinet.",
+    "generated_on": "2026-09-16",
+    "route": {
+      "provider": "bfl",
+      "model": "bfl/flux-2-max",
+      "via": "Comfy Cloud partner_generate (workflow-persist path, Flux2ImageNode), one call.",
+      "references": "the accepted seed milestone card from batch three (job 440d18ae-c92e-4f03-a71a-504d3cc0ba57, seed 7607) by prompt_id, for palette weight and pixel scale.",
+      "aspect": "2048x1152 through params.width and params.height, which batch three established the node honors within 256..2048 in steps of 32. 1280x720 cannot be asked for directly because 720 is not a multiple of 32; 2048x1152 is the largest exact 16:9 the node takes.",
+      "approved_by": "Director: batches three and four of sub-slice B are approved, each with the generation count open as the earlier batches were, because the backdrop is the room the whole field sits in. The same reader then withdrew it: the scene had no fiction in it, because an office is nobody's in this game, so the picture was a mood rather than a place and had no business on the field. Dropped before the merge.",
+      "spend": "1 generation, accepted on the look and then dropped on the read. It is on record here because a spend is a spend whether or not it ships, and because the next art batch should know what this one cost and why it was refused: not for how it was drawn, but for what it was of."
+    },
+    "licence": "see the top-level `licence` block of this file; the route, the provider and the terms are the same as the four batches before this one. The original is kept under docs/art/originals-vibe-5/ (git-ignored) and in the Comfy library by job id, which is where the provenance clause is satisfied for a picture that never entered the repo.",
+    "installed": "nothing; the batch was dropped on the Director's read before the merge",
+    "acceptance": {
+      "glyph_check": "ai-eyes image_contains, query \"text, letters, numbers or written words\", threshold 0.02: 0.0000032 on the generation and 0.000010 on the 1280x720 cut that was made and not kept. Both are three orders of magnitude under the threshold, on the first look. This mattered more here than on any picture in the slice, because a room with a computer screen and a city full of lit windows is two invitations to write something, and neither took it.",
+      "alpha": "the cut was measured at 0.12, 0.18 and 0.24 against the page's own #0b0b0f before it was dropped, and 0.18 was the number that held: over the darkest color, which covered 50.1% of the picture, nothing on the field moved at all, and over the brightest color covering at least half a per cent of the board's band the labels were 6.02:1 and the numbers 7.62:1. 0.24 was refused at 4.08:1. The table is in docs/vibe-typer.slice4.md. None of it ships; it is recorded because the next backdrop, if there is one, starts from a measured alpha rather than from a guess.",
+      "misses": "two were found before the drop and neither is why it was dropped. The generation carried 33,330 distinct colors in a picture that reads as a dozen, which is grain, and the prompt bans noise and texture by name; and it carried a soft vignette at the corners, which the prompt also bans by name. The reason it was dropped is in `approved_by`: the scene had no fiction."
+    },
+    "compensators": {
+      "generation": "a spend, not undoable, and in this batch not recovered either. Compensator: nothing entered the repo. No PNG, no CSS, no shell code and no test from this batch is in the cabinet; the original is under the git-ignored docs/art/originals-vibe-5/ and in the Comfy library under job 527cc75c-5322-457e-a01d-045bcfc43696, which is the whole of what survives it. Owner: Claude.",
+      "the_drop": "the branch that built it, `cabinet/vibe-typer-s4b4`, is left unmerged rather than deleted, so the work is recoverable if a later pass wants the picture with a fiction attached to it. Owner: coordinator.",
+      "this_record": "reverting this commit removes the record and nothing else; it touches two documents and no code. Owner: coordinator."
+    },
+    "images": [
+      {
+        "id": "backdrop-7701",
+        "role": "the field's backdrop, first and only take — generated, measured, dropped",
+        "batch": 5,
+        "job_id": "527cc75c-5322-457e-a01d-045bcfc43696",
+        "seed": 7701,
+        "size": "2048x1152 as rendered (params.width 2048, params.height 1152 — honored exactly)",
+        "reference": "the accepted seed milestone card, job 440d18ae-c92e-4f03-a71a-504d3cc0ba57, by prompt_id",
+        "verdict": "dropped",
+        "glyph_score": 3.2106e-6,
+        "note": "Everything the brief named, on the first look: an office at night seen from behind an empty desk chair, one screen glowing amber with nothing on its face, a window with a handful of lit city windows, a plant, cables down to the floor. It was drawn well and it was the wrong thing to draw. Whose office it is, is a question the game has no answer to: the cabinet's fiction is a user who asks and an agent who types, and neither of them lives in this room. Dropped on the Director's read.",
+        "prompt": "In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the reference image: one wide landscape illustration of a small office at night, filling the whole picture corner to corner, seen from behind an empty desk chair. The chair is in the foreground with its back to the viewer, empty, drawn as one flat dark shape. Beyond it stands a dark desk, and on the desk one computer screen seen from behind and slightly to one side with its light spilling forward: the visible face of the screen is one completely flat plain warm amber (#e8a04a) rectangle with absolutely nothing on it — no picture, no lines, no bars, no icons, no dots and no marks of any kind. Behind the desk is a window looking out on a city at night: a few small square lights scattered across dark towers, and nothing else. One plant in a pot stands beside the desk, and a few plain cables run down from the desk to the floor. The whole room is drawn in deep navy (#1b2440) and near-black (#101018), with slate blue (#6a8aaa) on a few edges; the only warm color anywhere is the amber of the screen and the small amber glow it throws on the desk and on the back of the chair. It is a dark picture on purpose: the middle of the picture, where the screen and the desk are, is the lightest part, and the top edge, the bottom edge, the left edge and the right edge are all deep navy and near-black with nothing bright in them at all. Everything is drawn perfectly flat with hard edges and no shading, seen straight on from behind the chair, with no tilted lines and no dramatic angle. There is no border, no outline, no frame, no box and no panel of any kind around the picture. Hard edges, flat colors, no gradients, no reflections, no noise, no texture, no vignette. No letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the image."
+      }
+    ]
   }
 }
