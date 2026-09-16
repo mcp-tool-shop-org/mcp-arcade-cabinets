@@ -107,6 +107,8 @@ jobs:
           # version. The published pair is checked by the same loop.
           bad=0
           for manifest in package.json apps/*/package.json packages/*/package.json; do
+            # A glob that matched nothing is passed through as its own text.
+            [ -e "$manifest" ] || continue
             v=$(node -p "require('./$manifest').version || ''")
             [ -z "$v" ] && continue
             echo "- $manifest: $v"
