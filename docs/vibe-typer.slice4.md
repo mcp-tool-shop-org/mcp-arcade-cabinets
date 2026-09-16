@@ -3050,3 +3050,74 @@ tests were thinnest on — the path that runs when something has already gone wr
    assertions in `familyClash`'s block, and exercised live both ways: corrupting one `-pools.json`
    receipt makes `edit --pool user.creeps` exit 2 naming the file, and the same command with
    `--same-family "<reason>"` runs and pins both the reason and the filename in its receipt.
+
+## Sub-slice B, batch four — the backdrop (dropped)
+
+Generated, measured, and withdrawn on the Director's read before it merged. Nothing from this batch is in the
+cabinet: no picture, no CSS, no shell code, no test. This section and `vibe_typer_batch_5` in
+`docs/art/receipts.json` are the whole of what survives it, and they are here because a spend is a spend
+whether or not it ships.
+
+### What was generated
+
+One image, one generation, accepted on the look. `bfl/flux-2-max` through the official Comfy Cloud MCP, job
+`527cc75c-5322-457e-a01d-045bcfc43696`, seed 7701, chained from the accepted seed milestone card by
+`prompt_id` for palette weight and pixel scale. Rendered at 2048x1152, because 720 is not a multiple of 32
+and the node takes width and height in steps of 32 up to 2048; it came down to 1280x720 by exactly 1.6.
+
+An office at night seen from behind an empty desk chair: one screen glowing amber with nothing at all on its
+face, a window with a handful of lit city windows, a plant, cables down to the floor, the whole room in deep
+navy and near-black with the screen's glow the only warm thing in it. The full prompt is in the receipt.
+
+The glyph check was the part that mattered and it passed clean: **0.0000032** on the generation and
+**0.000010** on the 1280x720 cut, both three orders of magnitude under the 0.02 threshold, on the first look.
+A room with a computer screen in it and a city full of lit windows behind it is two invitations to write
+something, and neither was taken — the screen came back a flat amber rectangle and the city's windows came
+back plain squares.
+
+Two misses were found before the drop, and neither is why it was dropped. The generation carried **33,330
+distinct colors** in a picture that reads as about a dozen, which is grain, and the prompt bans noise and
+texture by name; and it carried a soft vignette at the corners, which the prompt also bans by name.
+
+### The alpha that was measured
+
+The picture was to be drawn behind the field at a low alpha, and the number was measured rather than picked,
+against the page's own `#0b0b0f`. None of this ships. It is written down because the next backdrop, if there
+is ever one, should start from a measured alpha instead of a guess — and because the measurement is the
+reason 0.18 was the number and 0.24 was not.
+
+| Where                                          | Worst background | label `#9a9aa6` | number `#e8a04a` | page text `#e6e6e6` | dots `#5b8c5a` |
+| ---------------------------------------------- | ---------------- | --------------- | ---------------- | ------------------- | -------------- |
+| the darkest color in the picture (50.1% of it) | `#0a0b10`        | 7.06:1          | 8.95:1           | 15.75:1             | 5.00:1         |
+| the top 15%, where the board row sits          | `#191e25`        | 6.02:1          | 7.62:1           | 13.42:1             | 4.26:1         |
+| the bottom 15%, the controls and the hint      | `#34240c`        | 5.38:1          | 6.81:1           | 11.99:1             | 3.81:1         |
+| no backdrop at all, which is what ships        | `#0b0b0f`        | 7.06:1          | 8.94:1           | 15.74:1             | 5.00:1         |
+
+"Worst background" is the brightest color covering at least half a per cent of that band, rather than the
+single brightest pixel: the lightest color in the picture is the screen's brightest amber and covers 0.00% of
+it, so holding the field to it would be measuring against something nobody can see. At 0.18 every piece of
+text on the field stayed above 4.5:1. **0.24 was measured and refused**, because it takes the board's labels
+to 4.08:1, under the line.
+
+Two other things were measured and are worth carrying even though the picture is not. The panes are opaque
+(`#101018`), so a backdrop behind them costs the chat and the editor exactly nothing — 15.17:1 either way —
+and any future one should keep that rather than reaching for a translucent pane. And the file was 1,534,868
+bytes straight off the resize against a 300 KB cap, entirely because of the grain: a coverage-weighted median
+cut of the palette to 32 colors took it to 136,895 bytes and removed the noise miss at the same time. A flat
+illustration that arrives with thirty thousand colors in it has not been drawn flat, and flattening it is
+both the look the prompt asked for and the only way it fits.
+
+### Decisions
+
+100. **The backdrop is dropped, and the reason is fiction rather than craft.** The picture was well drawn, it
+     was glyph-free on the first look, and the alpha behind it was measured and safe. It still had no place on
+     the field, because it was briefed as a mood and not as anyone's room: this cabinet's fiction is a user
+     who asks and an agent who types, and an office with an empty chair in it belongs to neither of them. A
+     player looking at it would have had a question — whose desk is that — that the game has no answer to,
+     and scenery that raises a question the game cannot answer is worse than no scenery. So it was withdrawn
+     on the Director's read rather than defended, and nothing from it entered the cabinet. The branch that
+     built it is left unmerged rather than deleted, so a later pass that has a fiction to attach can have the
+     picture; the spend, the prompt, the job id and the measurements are on record here and in the receipt so
+     that pass does not start from nothing. The lesson for the next art batch is the one this batch is: a
+     brief that says what a picture is _of_ is not the same as a brief that says whose it is, and on a field
+     with characters on it the second question is the one that decides whether the picture belongs.
