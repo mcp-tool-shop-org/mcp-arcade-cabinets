@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Nothing yet.
+Slice 4 of Vibe Typer, in sub-slices. Builds, numbers and the outside reviews in `docs/vibe-typer.slice4.md`.
+
+### Added
+
+- **Vibe Typer as an MCP server.** `npx @mcptoolshop/vibe-typer --mcp` now speaks MCP on stdio: an endless run plays inside it under a typist at a human pace, and any MCP client sits in the user's chair through four tools, `view`, `product`, `ask` and `react`, all answered in words. The contract is `packages/cabinet-server/tools.vibe.json`, mirrored into `catalog/tools.vibe.json`, with its own stdio entry beside Ghost's. `ask` goes through the same code gate the local seat does and refuses a repeat; `react` holds one line for the next ship; a refusal answers the rule in one word and never the code. One fact-blind test per tool. `pnpm sit --cabinet vibe-typer --seat mcp` measures a live model through the contract and prints ten sampled asks. The Vibe tarball grows by the bundled server (73 files, 1.49 MB packed).
+
+### Changed
+
+- `release.yml` smokes both `--mcp` tool lists (six and four) and requires the stdio bundle in both tarballs.
+- The Ghost package and its server are unchanged; the Docker image still carries Ghost's six tools only.
 
 ## [0.10.0] - 2026-09-16
 

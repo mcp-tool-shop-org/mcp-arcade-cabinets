@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-The cabinet is also an MCP server. Its tools are the levers a model uses to make the game alive, and the same contract sits behind the local shell's seats. The lock it builds on is G11 to G18 in `docs/cabinet-server.dispatch.md`; the decisions and the measured numbers are in `docs/cabinet-server.md` and `docs/cabinet-voice.md`.
+Each cabinet is also an MCP server. Its tools are the levers a model uses to make the game alive, and the same contract sits behind the local shell's seats. Ghost's six tools put a model in the boss's seat; Vibe Typer's four put any MCP client in the user's chair. The lock they build on is G11 to G18 in `docs/cabinet-server.dispatch.md`; the decisions and the measured numbers are in `docs/cabinet-server.md`, `docs/cabinet-voice.md` and, for the typing cabinet, `docs/vibe-typer.slice4.md`.
 
 ## The tools
 
@@ -23,6 +23,19 @@ The cabinet is also an MCP server. Its tools are the levers a model uses to make
 **The seat proposes; the sim disposes.** Every call is a proposal the seeded sim admits or ignores at the next beat. The sim never waits on a tool.
 
 **Fact-blind by construction.** The tools reach a host of seven methods that return words, and nothing else. No method returns a fact, a lie flag, a count, a score, a verdict or a tape row, so no tool can. A test runs the same call sequence on a tape and on a twin with one fact flipped and requires identical tool output and an identical round.
+
+## The typing cabinet's tools
+
+`npx @mcptoolshop/vibe-typer --mcp` is the second server. `packages/cabinet-server/tools.vibe.json` is its contract, loaded by the same loader under the same rules, and mirrored into `catalog/tools.vibe.json`. An endless run plays inside the server under a typist bot at a human pace, and the client is the vibe coder: it writes for the level after the one being typed, so nothing ever waits on it.
+
+| Tool      | Argument                                                | What the cabinet does with it                                                                                                                                                                                       |
+| --------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `view`    | none                                                    | The closed view in words: the thing being built, the team and language the next level wants, how hard it should feel, the last few asks, the weak letter pairs, whether the next level wants a name and has room |
+| `product` | `product` (gated, at most eight words)                  | The next level's product; the first name offered wins                                                                                                                                                              |
+| `ask`     | `ask`, `code`, `title`, `notes` (one string, a note a line) | One request for the next level, through the code gate and the word gate; queued, or refused with the reason in one word; never a repeat; the corpus fills what the client does not                                 |
+| `react`   | `text` (gated)                                          | One line the user says at the next ship, or the review at the deploy; a second before the ship is dropped                                                                                                            |
+
+The same rules as Ghost's, and for the same reasons: the seat proposes and the seeded sim disposes; no tool returns a valuation, a count or a tape row; a refusal answers the rule that was broken and never the code or the line; nothing on the field names the model. `pnpm sit --cabinet vibe-typer --seat mcp` drives the contract in-process with a live model and prints what it wrote.
 
 ## The say gate
 
@@ -72,7 +85,7 @@ KOKORO_DIR=/path/to/kokoro VOICE_TOKEN=<token> VOICE_HOST=0.0.0.0 pnpm voice
 docker run -i --rm -e VOICE_URL=http://host.docker.internal:7788 -e VOICE_TOKEN=<token> mcp-arcade-cabinets
 ```
 
-Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0`.
+Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0`. The image is Ghost's; the typing cabinet's server ships inside its npm package and has no image yet.
 
 ## Not in this layer
 

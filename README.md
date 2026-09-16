@@ -47,9 +47,9 @@ packages/tape-core          the tape loader, schema and calibration math
 packages/ghost-on-the-menu  the shooter: sim, patterns, bots, render
 packages/vibe-typer         the typing game: sim, levers, corpus, bots
 packages/house-call         parked
-packages/cabinet-server     the cabinets as a stdio MCP server; the say gate; personas
+packages/cabinet-server     both cabinets as stdio MCP servers; the say gate and the code gate; personas
 packages/launcher           @mcptoolshop/ghost-on-the-menu: npx serves Ghost; --mcp is its server
-packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; the pack script is shared
+packages/launcher-vibe-typer  @mcptoolshop/vibe-typer: npx serves Vibe Typer; --mcp is its server
 apps/cabinets               the browser shell, served by Pages at /play/
 fixtures/tapes              twenty recordings, tape JSON only
 docs/                       one dispatch (research + lock) and one review per slice
@@ -72,7 +72,7 @@ npx @mcptoolshop/ghost-on-the-menu
 npx @mcptoolshop/vibe-typer
 ```
 
-Each cabinet is its own package. Each command serves its game on `127.0.0.1` and opens it. Ghost's `--mcp` runs it as an MCP server over stdio instead; Vibe Typer's container tools are slice 4, so its `--mcp` says so and exits. Node 22 or newer. Those two packages are the only ones on npm; every other package here is private, and the switch between the two cabinets is the Pages build only.
+Each cabinet is its own package. Each command serves its game on `127.0.0.1` and opens it, and each one's `--mcp` runs that cabinet as an MCP server over stdio instead: Ghost's six tools put a model in the boss's seat; Vibe Typer's four (`view`, `product`, `ask`, `react`) put any MCP client in the user's chair for an endless run. Node 22 or newer. Those two packages are the only ones on npm; every other package here is private, and the switch between the two cabinets is the Pages build only.
 
 To work on the arcade, clone it. You need Node 22 and pnpm 11:
 

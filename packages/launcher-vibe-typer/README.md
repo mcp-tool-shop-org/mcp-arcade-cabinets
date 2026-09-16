@@ -45,20 +45,39 @@ Type what you see. Enter sends a line. Backspace fixes. Tab takes the rest of a 
 
 Node 22 or newer, and nothing else. The server binds `127.0.0.1` and only `127.0.0.1`. No telemetry, no analytics, no network call of its own. Your choices and the key pairs you missed stay in your browser's storage and never leave it.
 
-In endless mode a local model can play the user through a word gate, writing the requests, the check-ins and the code behind a code gate; it needs an [Ollama](https://ollama.com) daemon on `127.0.0.1:11434`, reached through a fixed allowlist. Without one, endless draws from the authored pool. `--mcp` is reserved for the cabinet's own MCP tools and says so until they ship.
+In endless mode a local model can play the user through a word gate, writing the requests, the check-ins and the code behind a code gate; it needs an [Ollama](https://ollama.com) daemon on `127.0.0.1:11434`, reached through a fixed allowlist. Without one, endless draws from the authored pool.
+
+## As an MCP server
+
+```bash
+npx @mcptoolshop/vibe-typer --mcp
+```
+
+That speaks MCP on stdio instead of opening the game, and the seat it offers is the user's chair. An endless run plays inside it under a typist at a human pace; your client is the vibe coder, writing for the level after the one being typed. Four tools, all answered in words:
+
+| Tool      | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `view`    | Read-only. The thing being built, the team and the language the next level wants, how hard it should feel, the last few asks, the letter pairs the typist fumbles, whether the next level still wants a name, and whether it has room. Never a number.                                                                                                                                                                                              |
+| `product` | Name the next thing to build, in at most eight words. The first name offered wins.                                                                                                                                                                                                                                                                                                                                                                  |
+| `ask`     | One request for the agent to type: the ask in your own voice, the code, a title, and up to three teaching notes. It goes through the same code gate the local seat does: the language `view` named, at most twelve lines and eighty columns, plain keyboard characters, nothing that names a tool, a model or a company, a difficulty inside the band, and never a repeat. Refused, it is dropped with the reason in one word and the corpus plays. |
+| `react`   | One line the user says when the next piece ships, or the review when the level deploys. Twelve words, one sentence, no digit.                                                                                                                                                                                                                                                                                                                       |
+
+The gate accepts or refuses; it never fixes. Nothing waits on the client: a late or refused request means the level draws from the corpus as it always did. No tool returns a valuation, a count or a tape row, and nothing on the field names the model. The server needs no network to list or to play.
 
 ## Options
 
 ```
+--mcp             speak MCP on stdio instead of opening the game
 --port <n>        port to listen on (default 7778; takes the next free one)
 --no-open         start the server but do not open a browser
 -h, --help        the usage
 -v, --version     the version
 ```
 
-| Environment  |                                                                        |
-| ------------ | ---------------------------------------------------------------------- |
-| `OLLAMA_URL` | the daemon the endless user sits at (default `http://127.0.0.1:11434`) |
+| Environment     |                                                                                                |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `OLLAMA_URL`    | the daemon the endless user sits at (default `http://127.0.0.1:11434`)                         |
+| `CABINET_TAPES` | with `--mcp`: a directory of tapes to season the wires stack with, instead of the bundled ones |
 
 ## Where this comes from
 
