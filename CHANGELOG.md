@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.11.1] - 2026-09-16
+
+The Director played 0.11.0 and read it. Three things followed, all on the published page before this tag: the agent's face moved to the editor, the pools that are drawn blind were proofread by hand, and the Docker image carries both cabinets.
+
 ### Changed
 
 - **The agent's face heads the editor**, its own pane, beside the beat word; the chat header keeps the user's face before the product and never names the user. Read off the published 0.11.0 by the Director: the agent belongs beside your reply, not beside the user.

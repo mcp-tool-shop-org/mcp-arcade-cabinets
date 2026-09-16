@@ -45,7 +45,7 @@ With a voice worker running, every boss speaks: its authored line when it arrive
 The cabinet is itself an MCP server over stdio, with the same six tools, so the instrument can play the Ghost's own menu; four of the recordings in the repo are the cabinet recording itself. It ships as a Docker image too:
 
 ```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.1
 ```
 
 One bundled file on `node:22-alpine` with the tool contract and the tapes baked in; it lists its tools within a fraction of a second under one CPU and two gigabytes and needs no network to play. An optional read-only volume can overlay extra operator tapes beside those twenty. The Catalog listing is silent (network off, no voice in the image). The Docker MCP Catalog entry is drafted under `catalog/`. Host-only compose for a local image lives at `voice/compose.host.yaml`.

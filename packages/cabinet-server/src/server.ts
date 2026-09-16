@@ -39,7 +39,7 @@ export const VOICE_AUTH_FRESH_MS = 1000;
 export const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
 
 export const SERVER_NAME = 'ghost-on-the-menu';
-export const SERVER_VERSION = '0.11.0';
+export const SERVER_VERSION = '0.11.1';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 /** `packages/cabinet-server/{src,dist}` → the repo's fixtures. Baked into the image later. */

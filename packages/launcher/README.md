@@ -107,7 +107,7 @@ The tapes are recorded by [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-
 There is also a Docker image of the MCP server, if you would rather not have Node. The [packages page](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) lists the tags:
 
 ```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.1
 ```
 
 - [Play in the browser, no install](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/)
