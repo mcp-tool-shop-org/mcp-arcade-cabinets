@@ -43,7 +43,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'Vibe Typer — a typing game',
-          desc: 'You are a hard-working, sycophantic coding agent. Your user is a vibe coder: a website for their cat, Uber but for ducks, a blockchain for the office fridge. Type the reply, type the code, and the thing gets built beside you. Ship the last line and it deploys. Vibes multiply the valuation; a miss just costs the streak. Nothing yells.',
+          desc: 'You are a hard-working, sycophantic coding agent. Your user is a vibe coder: a website for their cat, a rideshare for ducks, a bot that argues with the thermostat. Sixteen stories, each four pieces of real code in order. Type the reply, type the code, and the thing gets built beside you while the user checks in. Ship the last line and it deploys. Vibes multiply the valuation; a miss just costs the streak. Nothing yells.',
         },
         {
           title: 'The tape is the source',
@@ -51,7 +51,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'A model can sit in a chair',
-          desc: 'Locally, an Ollama model flies Ghost’s bosses through the cabinet’s own tools and writes their lines through a gate. In Vibe Typer’s endless mode it can play the user, picking from a closed choice and phrasing the ask, never writing the code you type. The model proposes; the game decides; nothing on the field names it.',
+          desc: 'Locally, an Ollama model flies Ghost’s bosses through the cabinet’s own tools and writes their lines through a gate. In Vibe Typer’s endless mode it plays the user and writes the product, the asks and the code you type, behind a mechanical code gate and the same word gate as every authored line. The model proposes; the game decides; nothing on the field names it.',
         },
         {
           title: 'It speaks, and every take is receipted',
@@ -59,7 +59,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'Tuned on a band, never on you',
-          desc: 'Every number that shapes threat or pace is JSON, validated at load, and held to a band of scripted players that fails the build when a bar moves. Ghost has three bots and a fairness band; Vibe Typer has three bots and sixteen bars over three seeds, eight levels and four tiers.',
+          desc: 'Every number that shapes threat or pace is JSON, validated at load, and held to a band of scripted players that fails the build when a bar moves. Ghost has three bots and a fairness band; Vibe Typer has three bots and a band over three seeds, sixteen levels and four tiers, the check-ins and the seated endless among its bars.',
         },
       ],
     },
@@ -67,7 +67,7 @@ export const config: SiteConfig = {
       kind: 'features',
       id: 'vibe-typer',
       title: 'Inside Vibe Typer',
-      subtitle: 'A real scoreboard, a context window for a clock, and code you can learn from.',
+      subtitle: 'A real scoreboard, a context window for a clock, sixteen stories, and code you can learn from.',
       features: [
         {
           title: 'The scoreboard is the game’s number',
@@ -83,15 +83,15 @@ export const config: SiteConfig = {
         },
         {
           title: 'Two hundred and forty-nine snippets',
-          desc: 'Bash, C#, Java, JavaScript, Python and SQL, banded from a bare echo to a nested class, each with teaching notes, plus an integration stack built from the real tool names on the tapes. The pairs you miss are seeded into your next level’s real lines.',
+          desc: 'Bash, C#, Java, JavaScript, Python and SQL, banded from a bare echo to a nested class, each with teaching notes and an ask written for the job it does, plus an integration stack built from the real tool names on the tapes. The pairs you miss are seeded into your next level’s real lines.',
         },
         {
           title: 'The streak is something you hear',
-          desc: 'Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone to an octave; a miss resets it. The bed’s tempo follows your vibes and holds through a level’s last request. The deploy rings a chord and the confetti falls.',
+          desc: 'Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone to an octave; a miss resets it. The bed is soft by default so nothing reads as a countdown; turn the pulse on and its tempo follows your vibes. The deploy rings a chord and the confetti falls.',
         },
         {
-          title: 'Scope creep, quick sync, Copilot',
-          desc: '“Oh also can it…” grows a request by a line, shown before it is typeable. A meeting of three short chat lines is a breather where the bar does not drain. Hold a streak and the editor offers the rest of the line; Tab takes it at a discount.',
+          title: 'Scope creep, check-ins, quick sync, Copilot',
+          desc: '“Oh also can it…” grows a request by a line, shown before it is typeable. “Is it live yet” lands while you type and costs nothing but a reply. A meeting of three short chat lines is a breather where the bar does not drain. Hold a streak and the editor offers the rest of the line; Tab takes it at a discount.',
         },
       ],
     },

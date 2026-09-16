@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Still owed: Comfy polish of probe/shelf/ledger/Archivist; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as mix; silent take; film end-scene; Catalog pin lag; the GHCR `0.9.x` image and the README Docker tag that follows it; art for Vibe Typer's preview pieces and a logo for its package page; slice 3 (the endless user seat, the voice on the user's lines) and slice 4 (the container tools `product`, `ask`, `react`).
+Slice 3 of Vibe Typer, and one package per cabinet. Builds and reviews in `docs/vibe-typer.slice3.md` and the `docs/vibe-typer.slice3*.review.md` files beside it.
+
+### Added
+
+- **Sixteen story levels.** Each level is one product, four pieces of real code pinned in order (the setup, two escalations, the deploy with a twist) and a premise the standup shows; two per corpus stack, a third for python and javascript, two on the integration stack. The menu is grouped by stack with a difficulty word. Every snippet in the corpus carries its own ask, so the request describes the job the code does.
+- **Check-ins.** During the code the user asks "is it live yet" at a seeded interval; the agent answers once the line in hand is out. No context cost, no streak change, no value; the band proves it with a run compared byte for byte against the same run with check-ins off.
+- **Reactions that know what shipped, reviews that name the product**, and every pool three times its slice-1 size, written by `kimi-k2.6:cloud` from two voice sheets (`packages/vibe-typer/patterns/voice/`) through the word gate and an editor pass, by `packages/vibe-typer/scripts/author.mjs` with receipts under `authoring/`. A forty-line sample from three models sits in `docs/vibe-typer.author-sample.md`.
+- **Endless on a model (G28 amended).** With a local daemon, a seated model writes the product, the asks and the code the player types, behind a mechanical code gate (`packages/vibe-typer/src/codegate.ts`) and the word gate; `/cabinet/endless` on the dev server and the launcher; the shell prefetches and falls back to the corpus silently; the seat is named on the menu's endless entry and in the controls row, never on the field. `pnpm sit --cabinet vibe-typer` measures a seat live.
+- **American English with a test** over every lever, the corpus titles and notes, and the shell; the gate also refuses non-ASCII characters and the inflected forms of the barred words.
+- **A settings row**: type size (large by default, applied through one CSS variable, no mid-token wraps), keyboard, sound, a music setting (soft by default: no kick under the draining bar; on and off), and the agent's name, which defaults to Sprocket.
+- **Art through Comfy Cloud**: the Vibe Typer logo and five device frames (terminal, phone, notebook, ledger, wires) with the rectangles as fallback; receipts in `docs/art/receipts.json`.
+- **`@mcptoolshop/vibe-typer`** from `packages/launcher-vibe-typer`: each cabinet is its own npm package; `VITE_CABINET` builds one cabinet's shell; the pack script is shared and split by cabinet; `release.yml` publishes both under one version gate with an idempotent loop.
+
+### Changed
+
+- `@mcptoolshop/ghost-on-the-menu` is Ghost only again; the arcade with both cabinets on one switch is the Pages build.
+- The beat words moved into `cabinet.json`; the bed's `on` mode is the v0.9.0 bed.
 
 ## [0.9.0] - 2026-09-15
 
