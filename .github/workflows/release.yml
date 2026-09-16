@@ -225,7 +225,7 @@ jobs:
             // comes back is silently, through a shell built without
             // VITE_CABINET.
             //
-            // The typing cabinet's recorded beds are checked one file at a
+            // The typing cabinet recorded beds are checked one file at a
             // time, in "need", and not as a "carries" prefix: a prefix only
             // proves that SOME file under it shipped, and six beds out of
             // seven would pass that while one stack played no music. A bed
