@@ -4,7 +4,7 @@
     "stack": "bash",
     "band": 1,
     "title": "simple echo greeting",
-    "ask": "the front page should say hello to everyone",
+    "ask": "have {product} say hello to visitors",
     "code": "echo hello world",
     "notes": ["Prints hello world to standard output using echo."],
     "topics": ["echo", "commands"]
@@ -16,7 +16,8 @@
     "title": "variable assignment and print",
     "code": "name=developer\necho $name",
     "notes": ["Assigns a string to a variable and prints it without quotes."],
-    "topics": ["variables", "echo"]
+    "topics": ["variables", "echo"],
+    "ask": "use her name in the greeting"
   },
   {
     "id": "cal-sh-d1-003",
@@ -25,7 +26,8 @@
     "title": "export environment variable",
     "code": "export APP_MODE=production\necho $APP_MODE",
     "notes": ["Exports a variable so child processes can access it."],
-    "topics": ["export", "environment"]
+    "topics": ["export", "environment"],
+    "ask": "tell {product} it is in production mode"
   },
   {
     "id": "cal-sh-d1-004",
@@ -34,14 +36,15 @@
     "title": "change directory and list",
     "code": "cd /tmp\nls\npwd",
     "notes": ["Changes to the tmp directory and lists its contents."],
-    "topics": ["cd", "ls", "pwd"]
+    "topics": ["cd", "ls", "pwd"],
+    "ask": "look inside the temp folder for {product}"
   },
   {
     "id": "cal-sh-d1-005",
     "stack": "bash",
     "band": 1,
     "title": "create and remove directory",
-    "ask": "make somewhere for the cat pictures to live",
+    "ask": "make a live folder then delete it",
     "code": "mkdir mydir\nrmdir mydir",
     "notes": ["Creates a directory then removes it when empty."],
     "topics": ["mkdir", "rmdir"]
@@ -51,7 +54,7 @@
     "stack": "bash",
     "band": 1,
     "title": "For loop",
-    "ask": "go through the cat pictures one at a time",
+    "ask": "show every toy she has reviewed",
     "code": "for file in *.txt; do\n    echo \"Processing: $file\"\ndone",
     "notes": [
       "for/in iterates over glob matches or word lists.",
@@ -68,7 +71,8 @@
     "notes": [
       "Builds a JDBC connection URL from variables using curly-brace expansion inside quotes."
     ],
-    "topics": ["variables", "quoting", "interpolation"]
+    "topics": ["variables", "quoting", "interpolation"],
+    "ask": "assemble the address {product} uses to connect"
   },
   {
     "id": "cal-sh-d2-002",
@@ -79,7 +83,8 @@
     "notes": [
       "Captures system info into variables using command substitution and writes a timestamped report."
     ],
-    "topics": ["command-substitution", "date", "quoting"]
+    "topics": ["command-substitution", "date", "quoting"],
+    "ask": "make {product} save the moment it goes live"
   },
   {
     "id": "cal-sh-d2-003",
@@ -90,7 +95,8 @@
     "notes": [
       "Uses default parameter expansion to set configurable values with fallback defaults."
     ],
-    "topics": ["parameter-expansion", "defaults", "variables"]
+    "topics": ["parameter-expansion", "defaults", "variables"],
+    "ask": "give {product} a backup plan when nothing is set"
   },
   {
     "id": "cal-sh-d2-004",
@@ -99,7 +105,8 @@
     "title": "heredoc configuration writer",
     "code": "cat <<'EOF' > /tmp/app.conf\n[server]\nhost = 0.0.0.0\nport = 8080\n\n[logging]\nlevel = info\nformat = json\nEOF\necho \"config written\"",
     "notes": ["Writes a configuration file using a quoted heredoc to prevent variable expansion."],
-    "topics": ["heredoc", "redirection", "configuration"]
+    "topics": ["heredoc", "redirection", "configuration"],
+    "ask": "write the settings file for {product} in one go"
   },
   {
     "id": "cal-sh-d2-005",
@@ -110,7 +117,8 @@
     "notes": [
       "Chains commands with pipes to find and rank the most frequent error lines in a log."
     ],
-    "topics": ["pipes", "grep", "sort", "uniq", "wc"]
+    "topics": ["pipes", "grep", "sort", "uniq", "wc"],
+    "ask": "find the most common errors in {product} logs"
   },
   {
     "id": "sh-array",
@@ -122,7 +130,8 @@
       "${#arr[@]} returns the array length.",
       "Always quote ${arr[@]} to handle spaces in elements."
     ],
-    "topics": ["arrays", "indexing", "length"]
+    "topics": ["arrays", "indexing", "length"],
+    "ask": "make {product} greet every friend my cat has"
   },
   {
     "id": "sh-if-else",
@@ -134,7 +143,8 @@
       "-f tests if a path is a regular file.",
       ">&2 redirects output to stderr for error messages."
     ],
-    "topics": ["if-else", "test", "conditionals"]
+    "topics": ["if-else", "test", "conditionals"],
+    "ask": "check if {product} has the file it needs"
   },
   {
     "id": "cal-sh-d3-001",
@@ -143,7 +153,8 @@
     "title": "for loop with nested conditional",
     "code": "log_dir=\"/var/log\"\ncount=0\nfor entry in \"${log_dir}\"/*.log; do\n  if [ -f \"$entry\" ]; then\n    size=$(stat -c \"%s\" \"$entry\" 2>/dev/null)\n    if [ \"${size:-0}\" -gt 1024 ]; then\n      echo \"large: ${entry} (${size} bytes)\"\n      count=$((count + 1))\n    fi\n  fi\ndone\necho \"found ${count} large files\"",
     "notes": ["Iterates over log files and reports those exceeding one kilobyte in size."],
-    "topics": ["for-loop", "test", "stat", "nested-conditionals"]
+    "topics": ["for-loop", "test", "stat", "nested-conditionals"],
+    "ask": "find the biggest stories hiding in the logs"
   },
   {
     "id": "cal-sh-d3-002",
@@ -152,7 +163,8 @@
     "title": "while read with field parsing",
     "code": "input_file=\"data.csv\"\nline_num=0\nwhile IFS=',' read -r name email role; do\n  line_num=$((line_num + 1))\n  if [ -z \"$name\" ] || [ -z \"$email\" ]; then\n    echo \"[${line_num}] SKIP: incomplete\" >&2\n    continue\n  fi\n  echo \"[${line_num}] ${name} <${email}> (${role})\"\ndone < \"$input_file\"\necho \"processed ${line_num} lines\"",
     "notes": ["Reads CSV records line by line and validates required fields before printing."],
-    "topics": ["while-loop", "read", "IFS", "field-parsing"]
+    "topics": ["while-loop", "read", "IFS", "field-parsing"],
+    "ask": "read the list of who gets the news"
   },
   {
     "id": "cal-sh-d3-003",
@@ -161,7 +173,8 @@
     "title": "function with local variables",
     "code": "check_port() {\n  local host=\"$1\"\n  local port=\"$2\"\n  if timeout 2 bash -c \"echo >/dev/tcp/${host}/${port}\" 2>/dev/null; then\n    echo \"[OK]   ${host}:${port}\"\n    return 0\n  else\n    echo \"[FAIL] ${host}:${port}\" >&2\n    return 1\n  fi\n}\ncheck_port \"localhost\" \"22\"\ncheck_port \"localhost\" \"8080\"\necho \"done: exit=$?\"",
     "notes": ["Defines a function that tests TCP connectivity to a given host and port."],
-    "topics": ["functions", "local", "tcp-check", "return"]
+    "topics": ["functions", "local", "tcp-check", "return"],
+    "ask": "see if {product} can reach its cousin today"
   },
   {
     "id": "cal-sh-d3-004",
@@ -172,7 +185,8 @@
     "notes": [
       "Checks installation status of services from an array and prints aligned status output."
     ],
-    "topics": ["arrays", "for-loop", "printf", "command-check"]
+    "topics": ["arrays", "for-loop", "printf", "command-check"],
+    "ask": "check which helpers {product} has and which are missing"
   },
   {
     "id": "cal-sh-d3-005",
@@ -183,7 +197,8 @@
     "notes": [
       "Creates an application directory structure with proper permissions if subdirectories are missing."
     ],
-    "topics": ["for-loop", "mkdir", "chmod", "test", "conditionals"]
+    "topics": ["for-loop", "mkdir", "chmod", "test", "conditionals"],
+    "ask": "build a home for every issue part"
   },
   {
     "id": "sh-function",
@@ -195,7 +210,8 @@
       "local scopes variables to the function.",
       "shift removes $1 so $* contains the rest of the args."
     ],
-    "topics": ["functions", "arguments", "return"]
+    "topics": ["functions", "arguments", "return"],
+    "ask": "make a logger for {product} that labels each line"
   },
   {
     "id": "sh-safe",
@@ -204,7 +220,8 @@
     "title": "Safer shell",
     "code": "set -euo pipefail\n\nDIR=\"${1:-.}\"\nfind \"$DIR\" -type f -name \"*.log\" -print0 | xargs -0 wc -l",
     "notes": ["Pipefail helps surface errors.", "Practice quotes, ${} expansions, and pipes."],
-    "topics": ["set", "pipefail", "variables"]
+    "topics": ["set", "pipefail", "variables"],
+    "ask": "turn on the careful mode for {product} cleanup"
   },
   {
     "id": "cal-sh-d4-001",
@@ -215,7 +232,8 @@
     "notes": [
       "Parses a CSV file validating required fields and checking roles against a whitelist."
     ],
-    "topics": ["while-loop", "case", "IFS", "csv", "validation"]
+    "topics": ["while-loop", "case", "IFS", "csv", "validation"],
+    "ask": "read the user list for {product} and check roles"
   },
   {
     "id": "cal-sh-d4-002",
@@ -226,7 +244,8 @@
     "notes": [
       "Implements a command line argument parser using the while-case-shift idiom with error handling."
     ],
-    "topics": ["case", "shift", "argument-parsing", "parameter-expansion"]
+    "topics": ["case", "shift", "argument-parsing", "parameter-expansion"],
+    "ask": "teach {product} to understand my little instructions"
   },
   {
     "id": "cal-sh-d4-003",
@@ -235,7 +254,8 @@
     "title": "log rotation with age check",
     "code": "set -euo pipefail\nlog_dir=\"/var/log/myapp\"\nmax_age=30\nnow=$(date +%s)\narchived=0\nfor logfile in \"${log_dir}\"/*.log; do\n  [ -f \"${logfile}\" ] || continue\n  mtime=$(stat -c '%Y' \"${logfile}\" 2>/dev/null)\n  [ -z \"${mtime}\" ] && continue\n  age=$(( (now - mtime) / 86400 ))\n  if [ \"${age}\" -gt \"${max_age}\" ]; then\n    gzip \"${logfile}\"\n    echo \"archived: ${logfile} (${age}d)\"\n    archived=$((archived + 1))\n  fi\ndone\necho \"archived ${archived} file(s)\"",
     "notes": ["Compresses log files older than a configurable threshold in days."],
-    "topics": ["for-loop", "stat", "arithmetic", "gzip", "log-rotation"]
+    "topics": ["for-loop", "stat", "arithmetic", "gzip", "log-rotation"],
+    "ask": "shrink {product} logs that are older than thirty days"
   },
   {
     "id": "cal-sh-d4-004",
@@ -244,7 +264,8 @@
     "title": "service health checker with arrays",
     "code": "set -euo pipefail\ndeclare -a targets=(\"web:8080\" \"api:3000\" \"db:5432\" \"cache:6379\")\nfailed=0\nfor entry in \"${targets[@]}\"; do\n  host=\"${entry%%:*}\"\n  port=\"${entry##*:}\"\n  if timeout 2 bash -c \"echo >/dev/tcp/${host}/${port}\" 2>/dev/null; then\n    printf '[OK]   %-10s port %s\\n' \"${host}\" \"${port}\"\n  else\n    printf '[FAIL] %-10s port %s\\n' \"${host}\" \"${port}\" >&2\n    failed=$((failed + 1))\n  fi\ndone\nif [ \"${failed}\" -gt 0 ]; then\n  echo \"${failed} service(s) unreachable\" >&2\n  exit 1\nfi\necho \"all services healthy\"",
     "notes": ["Iterates over host-port pairs and checks TCP reachability with a timeout."],
-    "topics": ["arrays", "parameter-expansion", "tcp-check", "printf"]
+    "topics": ["arrays", "parameter-expansion", "tcp-check", "printf"],
+    "ask": "see if every door is open for us"
   },
   {
     "id": "cal-sh-d4-005",
@@ -253,7 +274,8 @@
     "title": "find and replace across files",
     "code": "set -euo pipefail\nsearch=\"TODO\"\nreplace=\"DONE\"\ntarget_dir=\"${1:-.}\"\nchanged=0; scanned=0\nfor filepath in $(find \"${target_dir}\" -type f -name '*.sh'); do\n  scanned=$((scanned + 1))\n  if grep -q \"${search}\" \"${filepath}\"; then\n    sed -i \"s/${search}/${replace}/g\" \"${filepath}\"\n    echo \"updated: ${filepath}\"\n    changed=$((changed + 1))\n  fi\ndone\nprintf 'scanned=%d changed=%d\\n' \"${scanned}\" \"${changed}\"",
     "notes": ["Searches shell scripts for a pattern and performs in-place replacement using sed."],
-    "topics": ["find", "grep", "sed", "for-loop", "parameter-expansion"]
+    "topics": ["find", "grep", "sed", "for-loop", "parameter-expansion"],
+    "ask": "find every note that still needs work in the letters"
   },
   {
     "id": "cal-sh-d5-001",
@@ -262,7 +284,8 @@
     "title": "deploy script with rollback trap",
     "code": "set -euo pipefail\nAPP_DIR=\"/opt/webapp\"\nBACKUP_DIR=\"/opt/backups\"\nRELEASE=\"${1:?usage: deploy.sh <tarball>}\"\nstamp=$(date +\"%Y%m%d_%H%M%S\")\n\nrollback() {\n  echo \"ERROR: deployment failed\" >&2\n  if [ -d \"${BACKUP_DIR}/${stamp}\" ]; then\n    rm -rf \"${APP_DIR}/current\"\n    cp -a \"${BACKUP_DIR}/${stamp}\" \"${APP_DIR}/current\"\n    echo \"rolled back to ${stamp}\"\n  fi\n  exit 1\n}\ntrap rollback ERR\n\nif [ -d \"${APP_DIR}/current\" ]; then\n  mkdir -p \"${BACKUP_DIR}\"\n  cp -a \"${APP_DIR}/current\" \"${BACKUP_DIR}/${stamp}\"\n  echo \"backup: ${BACKUP_DIR}/${stamp}\"\nfi\n\nmkdir -p \"${APP_DIR}/current\"\ntar -xzf \"${RELEASE}\" -C \"${APP_DIR}/current\"\nchmod -R 755 \"${APP_DIR}/current/bin\"\necho \"deployed ${RELEASE} at ${stamp}\"",
     "notes": ["Deploys a release tarball with automatic rollback on error using a trap handler."],
-    "topics": ["trap", "functions", "set", "deployment", "rollback"]
+    "topics": ["trap", "functions", "set", "deployment", "rollback"],
+    "ask": "release the new {product} and undo if it breaks"
   },
   {
     "id": "cal-sh-d5-002",
@@ -273,7 +296,8 @@
     "notes": [
       "Executes tasks in parallel with a configurable concurrency cap using background processes."
     ],
-    "topics": ["background-jobs", "wait", "functions", "parallelism", "for-loop"]
+    "topics": ["background-jobs", "wait", "functions", "parallelism", "for-loop"],
+    "ask": "run {product} tasks many at once but not too many"
   },
   {
     "id": "cal-sh-d5-003",
@@ -284,7 +308,8 @@
     "notes": [
       "Parses an INI-style config file into an associative array keyed by section dot name."
     ],
-    "topics": ["associative-arrays", "regex", "while-loop", "config-parsing", "BASH_REMATCH"]
+    "topics": ["associative-arrays", "regex", "while-loop", "config-parsing", "BASH_REMATCH"],
+    "ask": "read the {product} settings file by section and key"
   },
   {
     "id": "cal-sh-d5-004",
@@ -295,7 +320,8 @@
     "notes": [
       "Recursively scans directories printing those exceeding a size threshold in a tree format."
     ],
-    "topics": ["recursion", "functions", "du", "for-loop", "parameter-expansion"]
+    "topics": ["recursion", "functions", "du", "for-loop", "parameter-expansion"],
+    "ask": "find the bulky folders inside {product} and show them"
   },
   {
     "id": "cal-sh-d5-005",
@@ -306,7 +332,8 @@
     "notes": [
       "Lists or removes local git branches merged into main while protecting named branches."
     ],
-    "topics": ["git", "process-substitution", "regex", "while-loop", "conditionals"]
+    "topics": ["git", "process-substitution", "regex", "while-loop", "conditionals"],
+    "ask": "clean up the old versions of {product} safely"
   },
   {
     "id": "cal-sh-d6-001",
@@ -317,7 +344,15 @@
     "notes": [
       "Deploys an artifact to a named environment via SSH with validation and structured logging."
     ],
-    "topics": ["associative-arrays", "functions", "parameter-expansion", "ssh", "scp", "deployment"]
+    "topics": [
+      "associative-arrays",
+      "functions",
+      "parameter-expansion",
+      "ssh",
+      "scp",
+      "deployment"
+    ],
+    "ask": "push {product} to staging and then to production"
   },
   {
     "id": "cal-sh-d6-002",
@@ -328,7 +363,8 @@
     "notes": [
       "Analyzes a log file counting severity levels and grouping unique error patterns into a report."
     ],
-    "topics": ["associative-arrays", "while-loop", "pattern-matching", "log-analysis", "report"]
+    "topics": ["associative-arrays", "while-loop", "pattern-matching", "log-analysis", "report"],
+    "ask": "count the warnings and errors in {product} logs"
   },
   {
     "id": "cal-sh-d6-003",
@@ -339,7 +375,8 @@
     "notes": [
       "Backs up all non-template PostgreSQL databases with compression and removes old backups."
     ],
-    "topics": ["postgresql", "backup", "gzip", "find", "for-loop", "functions"]
+    "topics": ["postgresql", "backup", "gzip", "find", "for-loop", "functions"],
+    "ask": "back up {product} data and erase the ancient ones"
   },
   {
     "id": "cal-sh-d6-004",
@@ -350,7 +387,8 @@
     "notes": [
       "Implements an interactive task list with add, list, and remove via a select menu loop."
     ],
-    "topics": ["select", "case", "functions", "arrays", "interactive"]
+    "topics": ["select", "case", "functions", "arrays", "interactive"],
+    "ask": "let me add and remove tasks for {product}"
   },
   {
     "id": "cal-sh-d6-005",
@@ -361,7 +399,8 @@
     "notes": [
       "Polls CPU, memory, and disk usage in a loop and logs alerts when thresholds are exceeded."
     ],
-    "topics": ["monitoring", "functions", "awk", "while-loop", "indirect-expansion"]
+    "topics": ["monitoring", "functions", "awk", "while-loop", "indirect-expansion"],
+    "ask": "watch {product} breathe and yell if it wheezes"
   },
   {
     "id": "cal-sh-d7-001",
@@ -372,7 +411,8 @@
     "notes": [
       "Scans plugin manifests resolving dependencies recursively with circular dependency detection."
     ],
-    "topics": ["associative-arrays", "recursion", "dependency-resolution", "source", "functions"]
+    "topics": ["associative-arrays", "recursion", "dependency-resolution", "source", "functions"],
+    "ask": "load {product} plugins in order after checking their cousins"
   },
   {
     "id": "cal-sh-d7-002",
@@ -383,7 +423,8 @@
     "notes": [
       "Implements a build system that resolves target dependencies and runs build commands in order."
     ],
-    "topics": ["associative-arrays", "recursion", "eval", "functions", "build-system"]
+    "topics": ["associative-arrays", "recursion", "eval", "functions", "build-system"],
+    "ask": "build {product} pieces in the right dependency order"
   },
   {
     "id": "cal-sh-d7-003",
@@ -394,7 +435,8 @@
     "notes": [
       "Implements a basic HTTP router with a pluggable middleware chain for logging and auth."
     ],
-    "topics": ["associative-arrays", "functions", "middleware", "routing", "http", "while-loop"]
+    "topics": ["associative-arrays", "functions", "middleware", "routing", "http", "while-loop"],
+    "ask": "teach {product} to answer different doors politely"
   },
   {
     "id": "cal-sh-d7-004",
@@ -405,7 +447,8 @@
     "notes": [
       "Implements a TAP test runner with assertion helpers, skip support, and formatted output."
     ],
-    "topics": ["test-framework", "tap", "functions", "associative-arrays", "assertions"]
+    "topics": ["test-framework", "tap", "functions", "associative-arrays", "assertions"],
+    "ask": "check if {product} pieces work as expected"
   },
   {
     "id": "cal-sh-d7-005",
@@ -416,6 +459,7 @@
     "notes": [
       "Supervises child processes with automatic restart and graceful signal-driven shutdown."
     ],
-    "topics": ["process-management", "trap", "signals", "associative-arrays", "eval", "supervisor"]
+    "topics": ["process-management", "trap", "signals", "associative-arrays", "eval", "supervisor"],
+    "ask": "babysit {product} workers and wake them if they nap"
   }
 ]

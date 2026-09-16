@@ -70,21 +70,26 @@ export const STACKS: readonly Stack[] = [...CORPUS_STACKS, 'integration'];
 export const LINE_TIERS = ['0', '1', '2'] as const;
 export const TIER_KEYS = ['0', '1', '2', '3'] as const;
 export const MAX_WORDS = 12;
-const MIN_ASKS = 16;
-const MIN_REACTIONS = 12;
-const MIN_CREEPS = 12;
-const MIN_REVIEWS = 8;
-/** A quick sync is three of these; twelve is enough that no level repeats one. */
-const MIN_SYNCS = 12;
+// The pool floors. Slice one set them at the size it had written by hand;
+// slice three's authoring run raised every pool to three times that, and these
+// constants were raised with it so the size is a halt from here on rather than
+// a promise. A pool that falls under its floor fails the load, which fails the
+// build. The numbers are the same ones `scripts/author.mjs` tops up to.
+const MIN_ASKS = 48;
+const MIN_REACTIONS = 36;
+const MIN_CREEPS = 36;
+const MIN_REVIEWS = 24;
+/** A quick sync is three of these; a level must never repeat one. */
+const MIN_SYNCS = 36;
 /** A sync line is chatter, not a sentence: five words is the ceiling (slice 2). */
 const MAX_SYNC_WORDS = 5;
-/** Check-ins and the agent's answers to them; sixteen of each are authored. */
-const MIN_NAGS = 12;
-const MIN_NAG_REPLIES = 12;
-const MIN_REPLIES = 24;
-const MIN_HMM = 12;
-const MIN_COMPACTIONS = 8;
-const MIN_SHIPS = 8;
+/** Check-ins and the agent's answers to them; fifty of each is the floor. */
+const MIN_NAGS = 50;
+const MIN_NAG_REPLIES = 50;
+const MIN_REPLIES = 72;
+const MIN_HMM = 36;
+const MIN_COMPACTIONS = 24;
+const MIN_SHIPS = 24;
 
 export interface CabinetSet {
   name: string;
@@ -777,10 +782,15 @@ export function loadPatterns(raw: unknown): Patterns {
   }
   const levels = loadLevels(obj.levels);
   const user = loadUser(obj.user);
-  // A level's stack must have asks; the integration stack is planned, never listed.
+  // A level's stack must have asks. The integration stack may be listed as of
+  // slice 3 — two of the sixteen levels are about wiring the little tools
+  // together — but it has no corpus file: it is built from tape headers at
+  // play time, so there is no id in it that a story could pin. A listed
+  // integration level therefore draws its four requests from its band, and a
+  // pinned list on one is the halt.
   for (const [i, def] of levels.levels.entries()) {
     if (!user.asks[def.stack]) fail('user.json', `asks.${def.stack}`);
-    if (def.stack === 'integration') fail('levels.json', `levels.${i}.stack`);
+    if (def.stack === 'integration' && def.snippets) fail('levels.json', `levels.${i}.snippets`);
   }
   return {
     cabinet: loadCabinet(obj.cabinet),

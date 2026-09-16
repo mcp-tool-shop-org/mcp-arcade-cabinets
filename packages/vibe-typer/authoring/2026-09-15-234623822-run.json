@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-234623822",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "applied": true,
+  "wallMs": 474137,
+  "slots": {
+    "nags": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "prompts": [
+        "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+        "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+        "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+        "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+        "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+        "b0fce1e74ba69b5a7ffe6503c4ee4930f78eba0b4f7989f1f0b3a6ec6913f0e9",
+        "ffb1af1f51427a00ed48c940e68cfa73969e533e7f92a959984cb7f9ec767e73",
+        "42abd07f97e9114f01ce6b32b66b14d63049d138671f6e8c314a4a93a340db5f",
+        "c6469f95c55b8a7f2358b8423762f6c997a66ab0b143c9024524592ad1e2c34f",
+        "1b71f234753f717e0d20146533705c37d5b04f2233599e17874c8cb9619fdc8a"
+      ],
+      "requested": 300,
+      "kept": 100,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {},
+      "ms": 1235306,
+      "tokens": {
+        "in": 7071,
+        "out": 43139
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 416512
+    },
+    "pools": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "prompts": [
+        "87634857e17a7ac6e4b459cf3f89ab1df7aa815870154e766f6b3392fb05f0f8",
+        "a0e41f8e9b49e4edd1031e28b07d68c0793a9b15dbb04d4c345efaf839df29b0"
+      ],
+      "requested": 6,
+      "kept": 2,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {
+        "names a tool or a model": 1
+      },
+      "ms": 102614,
+      "tokens": {
+        "in": 1414,
+        "out": 3524
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 57619
+    }
+  }
+}

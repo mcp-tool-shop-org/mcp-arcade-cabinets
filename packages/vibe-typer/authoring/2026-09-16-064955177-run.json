@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-064955177",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 40,
+  "revoice": true,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "a6ff3197248c563f8ca6b0ae8b56b99d8978a15d02777cbd0a7ce7221e504c93"
+  },
+  "applied": true,
+  "calls": 1,
+  "wallMs": 414079,
+  "slots": {
+    "pools": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": ["9fcf79c4c1f042ba0d6e14d794c60472f9afc6f2d19d6df2ae43609e6871cec0"],
+      "calls": 1,
+      "requested": 120,
+      "kept": 40,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {
+        "names a tool or a model": 1
+      },
+      "ms": 414074,
+      "tokens": {
+        "in": 777,
+        "out": 16739
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 414078
+    }
+  }
+}

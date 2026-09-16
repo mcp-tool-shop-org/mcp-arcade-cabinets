@@ -195,11 +195,15 @@ export function play(args: PlayArgs = {}): Transcript {
     ...(stack ? { stack } : {}),
     ...(args.level !== undefined ? { levelIndex: args.level } : {}),
   };
-  if (stack === 'integration') {
-    const snippets = integrationFrom(args.tapes ?? path.resolve('fixtures/tapes'));
-    if (snippets.length === 0) return fail('no tapes for the integration stack', 'no tapes');
-    opts.integration = snippets;
+  // The tapes are read for every run, not only for a run forced to the
+  // integration stack: two of the sixteen listed levels are integration
+  // levels, so the stack has to be there before a level asks for it. A run
+  // that forced the stack and found no tapes is still the one hard failure.
+  const snippets = integrationFrom(args.tapes ?? path.resolve('fixtures/tapes'));
+  if (stack === 'integration' && snippets.length === 0) {
+    return fail('no tapes for the integration stack', 'no tapes');
   }
+  if (snippets.length > 0) opts.integration = snippets;
   let state: RunState;
   try {
     state = createRun(opts);

@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-053014036",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 40,
+  "revoice": true,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "60690cb21754e61208fefe267adb4cb45983fe0cba1042cc5d37001aded2bdae"
+  },
+  "applied": true,
+  "calls": 18,
+  "wallMs": 2671750,
+  "slots": {
+    "stories": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": [
+        "79da47030db75fb4aa7e8e660f1b9540baeb26ca3796a64bab1e6eff9439e2c7",
+        "c7ee075cb9a6519418e6cc58063f54a40bdb5940a9502f6a43be2fcdba8c3b3f",
+        "9fd311755b6438e70da76e34b73e8cfe2e189d3cec83d38e7aa126653b21f992",
+        "ad4a960dba1ff3cf72bfa68e6147cda4173bf592053b9285a6fb394dcc39173c",
+        "cad610f236e5d68a1eb6c8e93375ea11337c1a46535bd7c7eef234314b032f8f",
+        "f1c21f060824e7c44cd5ac2aae0e78b7c3085b0622af36f4b06b20feefaf622f",
+        "88812164c9fb3b4cdcf2d138da7b3f523caf9febd538887584b65adf046c60c0",
+        "0dccf5c12f79a06e72a3bb374e77391205dfcbf6a627a62de5f6503bfc29cdc6",
+        "6950d8ec83dd296ee6890466887195a5b00a09e83d53090e2760f5eac0c31cfb",
+        "c83baa851288cda373213496ed63c4d4da8f3fc2ee3a7674e5235b287ab80b9c",
+        "fcf1621d3a4d80f1fd821499aff09d26fb4e75c45998f6e7534ad98f7df46eb9",
+        "79e455485efa556b095e7da898de28f6911c7f1d4479e68850c9fd217019ac08",
+        "3114c48da5cfd4a842c4bcb2eefee8de37314b502f225636f7854385b1c7a0c4",
+        "0a121bbe6368bec594813b352a724a450e831e1d03dd83c26fee27c3ed36969c",
+        "f94d5127e98f61f418661606cd6317b8b59dca14f62236eaa9c9400cabf5bb7e",
+        "6b9d13e30e2a91e3930083bd4a9219e22040f4647b53584f565e4c261b0a1e6f",
+        "f498046d62a3235f7a9890bf70ec44475f45d2ebaee45a2ba21bf7b631e373b2",
+        "d3ccaa767bfe46be2eaf17d6eae23dfaae4b46e3da56768bf73fa12712360480"
+      ],
+      "calls": 18,
+      "requested": 216,
+      "kept": 72,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {},
+      "ms": 7779016,
+      "tokens": {
+        "in": 62997,
+        "out": 252935
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 2671749
+    }
+  }
+}

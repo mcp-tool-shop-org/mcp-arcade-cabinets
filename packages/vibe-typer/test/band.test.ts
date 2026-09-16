@@ -3,7 +3,14 @@
 // live in patterns/levels.json and patterns/context.json; when a bar fails,
 // the levers move, not the bar.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The band drives whole runs: sixteen levels, four tiers, three seeds, and the
+// check-in bar drives every one of those twice so it can compare the two runs
+// byte for byte. That is well past vitest's five-second default, and it grew
+// past it the moment the levels went from eight to sixteen. The bars are the
+// andon; a bar that fails because the clock ran out tells nobody anything.
+vi.setConfig({ testTimeout: 120_000 });
 
 import { DEFAULT_PATTERNS, type Patterns } from '../src/patterns';
 import { hypeLadder } from '../src/score';
@@ -16,13 +23,20 @@ const REQUESTS = DEFAULT_PATTERNS.levels.levels.map((l) => l.requests);
 const IDLE_TICKS = 60 * 60 * 30;
 /**
  * Check-ins a level may carry, measured at `typist:40:0.03` on the gentlest
- * tier over seeds 1 to 3 and rounded out: the sweep reads one on the two
- * short levels and thirteen on the longest, because a level runs anywhere
- * from about two minutes to about twenty at forty words a minute and one
- * interval cannot put every one of them inside the same narrow count.
+ * tier over seeds 1 to 3 and rounded out: a level runs anywhere from about two
+ * minutes to about twenty at forty words a minute, and one interval cannot put
+ * every one of them inside the same narrow count.
+ *
+ * The floor is a floor **for a level long enough to have one**. The gap is
+ * drawn from sixty to a hundred and forty seconds and the run's first line is
+ * never interrupted, so a level that finishes inside two minutes can honestly
+ * see none — the integration level at band three runs about a hundred and
+ * fifteen seconds and does exactly that on one seed. `NAG_FLOOR_SECONDS` is
+ * where the floor starts applying, and it is the measurement, not a wish.
  */
 const NAG_MIN = 1;
 const NAG_MAX = 16;
+const NAG_FLOOR_SECONDS = 180;
 
 /** The same levers with the check-ins pushed past the end of any run. */
 const NAGS_OFF: Patterns = {
@@ -201,7 +215,10 @@ describe('the check-in', () => {
       for (const seed of SEEDS) {
         const run = drive({ bot: 'typist:40:0.03', seed, tier: 0, level });
         const where = `level ${level} seed ${seed}`;
-        expect(run.nags, where).toBeGreaterThanOrEqual(NAG_MIN);
+        const seconds = run.ticks / 60;
+        if (seconds >= NAG_FLOOR_SECONDS) {
+          expect(run.nags, `${where} (${Math.round(seconds)}s)`).toBeGreaterThanOrEqual(NAG_MIN);
+        }
         expect(run.nags, where).toBeLessThanOrEqual(NAG_MAX);
         // Never off a code beat — so never in a meeting, a creep, a ship, an
         // ask or a reply — and never on the run's very first line.

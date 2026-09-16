@@ -1,0 +1,177 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-003546907",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 40,
+  "revoice": true,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "60690cb21754e61208fefe267adb4cb45983fe0cba1042cc5d37001aded2bdae"
+  },
+  "applied": true,
+  "calls": 41,
+  "wallMs": 5749532,
+  "slots": {
+    "stories": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": [
+        "79da47030db75fb4aa7e8e660f1b9540baeb26ca3796a64bab1e6eff9439e2c7",
+        "e8d1bd4da8677dc41d2513b2b09b6f9d17355ae9e9dcbf6f2d935f17e992df00",
+        "d5581f6016024897bbbe9aed33d190e59920cc533131cf6eeea41e93b0876fc5",
+        "9586dd472f9b968f130af824ccfdaa35a8d5749f7516d4d2aa1231a38c7a7979",
+        "74fa8be08d33119d6fbd56eb75aac22ee83c36b5f29b1dd77719b7d46bb5d1a5",
+        "9129c4025a3d4228b77d1e0064274951f20c428384324630e327db0b2d644384",
+        "a99550745196e2ebc95d77a01ba95c451e1ea0b0c7afbf1a31087ae61fec955b",
+        "1a4cf5c0c3ba1da171a214010c65b391dee692e3a4a92db038dee8400b51085a",
+        "f2e61277aa7c04161612119dbe030b82b474449d620f9bb4aeaaf38af727edef",
+        "7398061c60a52a7b201552b843653222deb5626978cb5cf2948ffca07306cd32",
+        "824835b283124849c2f158c0eceb1dc8298ce01315da04da03d4cf5035f3fb3a",
+        "282c94beb1b18ec0d71b8fcac3590823ccf4b1c9dff3bee6cbd8ca64719fb7e4",
+        "a097fd4cb93f7c5fc96d44d8d7adfe0cdcf5fba09f6b0a0e45a65780490a5fff",
+        "29b82104ff4e4ea42c5d4b1f1f8f23c5d7c04f2fc7aeaa9edd3ded434fba1bf6",
+        "b546efa0d093b25b6edcd3ec4b65bb0fab31f83b8001c67f9ac71df1c117f441",
+        "f7c3ef0f8e9990470b1bd3f6f649db082d1ecd3fd2a6fde5b756f12760aa4bef",
+        "7cd99fd11f83ef12881768227c84b66b8d7d19086aec4585ea8e3a2939f44955"
+      ],
+      "calls": 17,
+      "requested": 208,
+      "kept": 72,
+      "missing": 0,
+      "waits": 1,
+      "dropped": {
+        "too many words": 6,
+        "forbidden word or digit": 1
+      },
+      "ms": 7128118,
+      "tokens": {
+        "in": 58941,
+        "out": 228547
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 2692640
+    },
+    "asks": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": [
+        "ef6800e6b349294ccc122327dc3be2702eceb1c2d26f23239d596fccafd4cfe7",
+        "f8bd95a6d775fe24e9bd193f69420e62a0680bf6343c060b6f419d313be616f7",
+        "a9ff83814a26f868319a4c22c3d7fb6a4ab39ce8a971d2c424b76666061c5f06",
+        "92e07ef109c3490ed6329ae77a952b911996efd8a2d0a05f12ff2d280269123a",
+        "390458c050afe53a550bb11631674328e11f01c853ef10ed0caa412787cf3198",
+        "406016345014c2b52b1c0e7059a80758a9ca524b82971a7afe13479dae17c75b"
+      ],
+      "calls": 6,
+      "requested": 516,
+      "kept": 172,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {
+        "forbidden word or digit": 2
+      },
+      "ms": 2199202,
+      "tokens": {
+        "in": 49569,
+        "out": 87687
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 700015
+    },
+    "nags": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": [
+        "6ef738ab7ec7adeee23efb297f98a4b0e3c3cfdef4e06702bc3a3ca195dd9995",
+        "6ef738ab7ec7adeee23efb297f98a4b0e3c3cfdef4e06702bc3a3ca195dd9995",
+        "923b8726a3151e7c64095b8691e74b0d75b83864a2c29be316a0104d16dfa7ca",
+        "b5cf97a9b1f19e602e36dd9540d62ae2e5655b03bcce2b945c9f203097a14644"
+      ],
+      "calls": 4,
+      "requested": 324,
+      "kept": 108,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {},
+      "ms": 930075,
+      "tokens": {
+        "in": 7179,
+        "out": 33011
+      },
+      "cost": null,
+      "errors": ["user.nags: re-voiced to 46 lines, under its floor of 50; the old pool was kept"],
+      "wallMs": 534753
+    },
+    "reactions": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": [
+        "74748d9cabb23b0bc6ad5e064aaff3a1dfd9d55b47b62fd5dd1817d318ca86d4",
+        "b5398a3112aaccda6b4aa2eea4750e6dd120227ad6e4ba83411aeb1b6820fe39",
+        "a74f64a7bbcc13467512f32e1f5a86072b3f02e09835894fa542c271e3fd2890",
+        "d7abfa45430ff4a9207c87d929e39419565cfb4b0900d15bedbf8c254a6fcb4d",
+        "754ea3a26589f7172d94daa876597dcda1bf0f6dd995fb945e1f721fc4de31a2",
+        "f9ca28ae9e41804946104fa664fb60666f9ce02566f3632c86c77abd7c909946",
+        "2d5e3a62ce75dee9aa05c9365f4e6dfa66aa006d6a624321c80e26095e52f092",
+        "e9ea33297ab8cfdfaa9661d02f74215068d9de0c819bec0b73f4024c568a9a7a",
+        "8e23f3215b85e5eb9413c98464f5bcbe4219779db60e200133afb9d8288d2cc0",
+        "cafdcbc0f7aa2e8ce39b42ab229f60a2b51d9884fddc42ec410a5489a65176fc",
+        "6e2be3d4a873a58447fffda75f09818ab2fa80de480eb272de10c1c610e411f5",
+        "64c14d601d2faeea7ab9c126a2b48cfd3d22d2aee43e1ad5ceb734d9604a3684",
+        "c854dce4d708015cfab432a967241414c09e6d441836656bffbe0d41b31fe2b3"
+      ],
+      "calls": 13,
+      "requested": 1494,
+      "kept": 497,
+      "missing": 1,
+      "waits": 0,
+      "dropped": {
+        "forbidden word or digit": 14,
+        "surplus": 3,
+        "names a tool or a model": 1
+      },
+      "ms": 5894598,
+      "tokens": {
+        "in": 33673,
+        "out": 196256
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 1644026
+    },
+    "reviews": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": ["deb6cc40b1a33abb9e2912daf465533c0e5a656cc60d0d1361ac877a40cdb30c"],
+      "calls": 1,
+      "requested": 48,
+      "kept": 16,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {},
+      "ms": 178059,
+      "tokens": {
+        "in": 1942,
+        "out": 9066
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 178059
+    }
+  }
+}

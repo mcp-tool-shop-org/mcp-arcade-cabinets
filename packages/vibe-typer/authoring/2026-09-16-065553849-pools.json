@@ -1,0 +1,116 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-065553849",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": [
+      "19649e1ae0fcdf928561c078fafbce67d05485f40bc50ee10daf97b4770533dd",
+      "58fe8983185850252f108074ff7810b285b448517eebc7b8755a08fd6893cbe6",
+      "b2d19aa683f4026f5537be4d94cc510b74c70f020419f7ff38a7de43b2b21eb4",
+      "4e23d30a6b0ae79e2cc8a46e84bf82cba3c43ff571d1df644a2cd279ad711ad2",
+      "b57552ac14b9b678203dd332a00fcf363ba1eab5860a6538fedacc1229027a70"
+    ],
+    "calls": 5,
+    "requested": 207,
+    "kept": 69,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "names a tool or a model": 2
+    },
+    "ms": 1588032,
+    "tokens": {
+      "in": 9091,
+      "out": 34068
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 504897
+  },
+  "candidates": {
+    "agent.replies": [
+      "You are absolutely right, on it.",
+      "Happy to, this will look lovely.",
+      "Happy to add this next part.",
+      "Absolutely right, wiring it up now.",
+      "Great idea, I will keep it tidy.",
+      "You are right, adding the final sparkle.",
+      "Happy to, this will move beautifully.",
+      "Love this direction, adding the greeting.",
+      "Happy to, the countdown is starting.",
+      "Love this, the button is getting a glow.",
+      "Happy to, the greeting is almost ready.",
+      "Love this direction, the shape is finding its form.",
+      "Happy to, teaching the loop its step.",
+      "Love this, the greeting is landing now."
+    ],
+    "agent.hmm": [
+      "Hmm, that line slipped away from me.",
+      "Hmm, I gave that comma too much room.",
+      "Hmm, I typed the order backward just then.",
+      "Hmm, I let the greeting lose its warmth.",
+      "Hmm, the margin and I misjudged the gap.",
+      "Hmm, that tag opened without a partner.",
+      "Hmm, I misheard the shape in my haste.",
+      "Hmm, I pushed the alignment a hair off.",
+      "Hmm, I mixed the foreground into the background.",
+      "Hmm, I left a stray line behind me.",
+      "Hmm, I nudged the center off its mark.",
+      "Hmm, the block nested where it does not belong.",
+      "Hmm, I tangled the wires near the top."
+    ],
+    "agent.compactions": [
+      "Here is what we have built so far.",
+      "Keeping the lines that sing, dropping the rest.",
+      "Tidying the workspace, keeping our progress safe.",
+      "The shape is strong and the lines are neat.",
+      "We have a button that greets and a table.",
+      "The lines are neat and the brackets agree.",
+      "The work so far is solid and bright.",
+      "I am compacting the good work so far.",
+      "Together we made a tidy little machine.",
+      "The screen has a greeting and a button.",
+      "Everything is neat and nothing is loose.",
+      "I am keeping our progress close and tidy.",
+      "The button glows and the table is ready.",
+      "This is where we are and it is good."
+    ],
+    "agent.ships": [
+      "It is live and it looks wonderful",
+      "The button is breathing and ready for clicks",
+      "You will love how this one turned out",
+      "It is knitted together and looking lovely",
+      "It is on screen and already friendly",
+      "The background is wide and softly breathing",
+      "This one practically waves when you arrive",
+      "Nothing wobbles and everything stays where it belongs",
+      "It stands up straight and greets you",
+      "It is ready and waiting for a click",
+      "The hum is steady and the glow is soft",
+      "It is finished and it is fond",
+      "It is out there and doing its job",
+      "The build is live and looking lovely"
+    ],
+    "agent.nagReplies": [
+      "Right here and typing happily away.",
+      "You will love this next part.",
+      "The last touches are landing gently.",
+      "It is practically breathing on its own.",
+      "Hmm, the brackets and I disagreed.",
+      "Keeping it tidy and very nearly done.",
+      "The color just settled into place.",
+      "One more line and it glows.",
+      "Wiring up the last little connection.",
+      "The table is lining up beautifully.",
+      "Building the corner a little depth.",
+      "This loop is getting a nice rhythm.",
+      "The font just said hello.",
+      "The layout is behaving nicely."
+    ]
+  }
+}

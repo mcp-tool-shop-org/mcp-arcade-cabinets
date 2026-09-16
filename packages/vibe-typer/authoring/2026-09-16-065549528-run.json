@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-065549528",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 40,
+  "revoice": false,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "a6ff3197248c563f8ca6b0ae8b56b99d8978a15d02777cbd0a7ce7221e504c93"
+  },
+  "applied": true,
+  "calls": 1,
+  "wallMs": 439283,
+  "slots": {
+    "premises": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": ["243522adff9b9c0cdb8261657abfa8c3e35440d62576e604452aac576cfab930"],
+      "calls": 1,
+      "requested": 48,
+      "kept": 16,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {},
+      "ms": 439279,
+      "tokens": {
+        "in": 2911,
+        "out": 15746
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 439283
+    }
+  }
+}

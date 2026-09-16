@@ -264,22 +264,29 @@ before its merge except one, recorded in the C review as not a bypass.
 
 ### The two halts, and what waits behind them
 
-1. **The writing model.** `docs/vibe-typer.author-sample.md` holds the forty lines from `kimi-k2.6:cloud`,
+1. **The writing model — lifted 2026-09-15.** The Director picked `kimi-k2.6:cloud` and asked that the writing
+   model be given a role and a personality. Both are in `## Sub-slice B, part three` below, with the run's
+   receipts. What follows is the halt as it stood.
+
+   `docs/vibe-typer.author-sample.md` holds the forty lines from `kimi-k2.6:cloud`,
    `openai/gpt-6-astra` (OpenRouter) and `mistral-large-3:675b-cloud`; `deepseek-v3.1:671b-cloud` answered
    410 (retired) and is in the receipt only. The pick, the model id, the prompt hash and the date go in the
    table below before `node packages/vibe-typer/scripts/author.mjs run --model <spec> --apply` is executed.
    Behind it: the full authoring pass (asks for every snippet, sixteen level stories with pinned snippets,
    fifty nags and replies, reactions per topic, reviews per product, every pool to three times its size),
    then sub-slice E (the menu grouped by stack, the endless entry naming its seat, the premise on the standup).
+
 2. **The art.** Sub-slice D is Comfy MCP spend and waits on a yes per batch; rectangles are the fallback and
    the cabinet plays on them today.
 
-| Receipt       | Value                                                                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| The pick      | _pending the Director's read of the sample_                                                                                           |
-| Model id      | _pending_                                                                                                                             |
-| Prompt hashes | asks `07a941cf…`, nags `c5b3675a…`, reactions `87de735d…` (per-seat for replies; full hashes in `docs/vibe-typer.author-sample.json`) |
-| Date          | sample 2026-09-15; run _pending_                                                                                                      |
+| Receipt        | Value                                                                                                                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The pick       | **`kimi-k2.6:cloud`** — the funniest and most specific of the three columns; slow, and that was accepted                                                                                |
+| Model id       | `ollama:kimi-k2.6:cloud`, through the local daemon at `http://127.0.0.1:11434`, temperature 0.9, no per-token cost                                                                      |
+| Prompt hashes  | the sample's, pre-persona: asks `07a941cf…`, nags `c5b3675a…`, reactions `87de735d…` (per-seat for replies; full hashes in `docs/vibe-typer.author-sample.json`)                        |
+| Persona hashes | the run's: asks `d1e35eac…`, nags `9ac3cb51…`, reactions `2973d802…`, replies `7b7663c3…`; every `run` slot's per-call hashes are in its receipt under `packages/vibe-typer/authoring/` |
+| Voice hashes   | the coherence pass's: `patterns/voice/user.md` `b57134ea182872df…`, `patterns/voice/agent.md` `60690cb21754e612…`; both are in every receipt that pass wrote                            |
+| Date           | sample 2026-09-15; the persona read and the full run 2026-09-15 into 2026-09-16; the coherence pass 2026-09-16                                                                          |
 
 ## Sub-slice A, part two — the bed
 
@@ -996,3 +1003,1259 @@ merge, as every sub-slice of this slice has had. Owner: the coordinator. Target:
 **PIN_PER_STEP (2), UNCERTAINTY_GATED_HUMANS (2).** As `docs/npm-launcher.md` scores them, unchanged. The
 human checkpoint is still the release itself, and it now gates two names at once — which is the argument for
 writing the sixth compensator row rather than discovering it during a half-finished publish.
+
+## Sub-slice B, part three — the full run and the sixteen levels
+
+**Date:** 2026-09-15 into 2026-09-16. **Builder:** Opus (this sub-slice). **Coordinator:** Claude (Fable 5.1).
+**Director:** Mike. **Branch:** `cabinet/vibe-typer-s3b3`, one commit, not merged.
+
+The halt is lifted. The Director read `docs/vibe-typer.author-sample.md` and picked **`kimi-k2.6:cloud`** through
+the local Ollama daemon — the funniest and most specific of the three columns, and slow, which was accepted. He
+also asked that the writing model be given a role and a personality if that would help the lines. Both are in
+this run: the persona below went into the system prompt in front of the existing rules, every mechanical rule
+was kept, and the full pass then wrote the levers as data through `--apply`.
+
+Nothing here was typed into a lever by hand. The eight new level definitions and their products were written by
+this builder (see Decision 1); every **line** in the repo that this sub-slice adds came out of the model and
+through the gate.
+
+### The persona
+
+`PERSONA` at the top of `packages/vibe-typer/scripts/author.mjs`, prose, in front of the register and the rules:
+
+> You are the staff comedy writer on a workplace sitcom about a small software startup that is always one week
+> away from either greatness or the end. You have been in that writers room for six seasons. You love the
+> developers you write about: you were one before the room hired you, you still read their forums late at
+> night, and you think their patience is the funniest and kindest thing on television. You write fond
+> absurdity, never satire with teeth.
+>
+> What the room keeps you for:
+>
+> - the joke is on a situation the whole audience has been in, never on a person who is in it
+> - a violation is only funny while it stays benign, so the stakes stay small and nobody in the scene gets hurt
+> - a punchline lands in eight words and dies in twenty
+> - the specific beats the general every time: one small named thing is funny, a whole category is not
+> - warmth is the engine, and the writer is never the cleverest person in the room
+
+It is a **role**, not a person: naming an invented writer risked naming a real one. No company, product,
+language, library, model or tool appears in it, and every mechanical rule that followed it in the sample's
+prompt is unchanged — twelve words, no digit, no exclamation, no capitals-only word, no brand or model or tool
+name, American English, JSON only, no dated jokes.
+
+**The ten-line dry read first.** `sample --model ollama:kimi-k2.6:cloud` was run once to a scratch path outside
+the repo before the full pass, exactly as the brief asks. It kept **forty of forty** and the gate dropped
+nothing at all — so the persona did not cost the prompt its discipline. It took 895.5 s for its four calls
+(the pre-persona sample took 754.7 s), 4,329 tokens in and 30,455 out.
+
+### The receipts
+
+| Receipt        | Value                                                                                                                            |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| The pick       | `kimi-k2.6:cloud`, through the local Ollama daemon at `http://127.0.0.1:11434`, no per-token cost                                |
+| Route          | `ollama`, `/api/chat` with `stream: true`, temperature 0.9, ten-minute per-call timeout                                          |
+| Persona hashes | asks `d1e35eac5c07b9e3…`, nags `9ac3cb51821e5433…`, reactions `2973d8024a13aa43…`, replies `7b7663c36bebb448…`                   |
+| Voice hashes   | user `b57134ea182872df…` (part four, unchanged), agent `a6ff3197248c563f…` (part five tightened it, from `60690cb21754e612…`)    |
+| Run stamps     | `2026-09-15-201349721` (the six slots) and `2026-09-15-234623822` (the top-up), both in `packages/vibe-typer/authoring/`         |
+| Date           | sample 2026-09-15; the persona read and the full run 2026-09-15 into 2026-09-16; the coherence pass and its finishing 2026-09-16 |
+
+The four hashes above are the sample's, which is the replay of the Director's read under the persona. Each
+`run` slot hashes its own prompt per call — the material differs per call, since a chunk carries its own
+snippets or topics — and every one of those hashes is in the run receipt under `slots.<name>.prompts`.
+
+### The run
+
+Two invocations, both `--apply`, both at `--concurrency 4`.
+
+| Slot        | Chunk                | Calls | Candidates asked | Kept  | Dropped, by the gate's own reason                                                                         | Wall          |
+| ----------- | -------------------- | ----- | ---------------- | ----- | --------------------------------------------------------------------------------------------------------- | ------------- |
+| `stories`   | one call a level     | 16    | 208              | 72    | `surplus` 57 (the picks and asks keys, read out of the raw answer instead)                                | 2,394 s       |
+| `asks`      | ten snippets a call  | 22    | 576              | 192   | `too many words` 17, `forbidden word or digit` 1                                                          | 1,462 s       |
+| `nags`      | ten check-ins a call | 10    | 300              | 98    | `more than one sentence` 19                                                                               | 504 s         |
+| `reactions` | twelve topics a call | 42    | 1,494            | 498   | `more than one sentence` 6, `too many words` 2                                                            | 2,364 s       |
+| `reviews`   | eight levels a call  | 2     | 48               | 16    | none                                                                                                      | 101 s         |
+| `pools`     | twelve lines a call  | 85    | 2,724            | 906   | `names a tool or a model` 56, `more than one sentence` 6, `forbidden word or digit` 4, `too many words` 2 | 5,407 s       |
+| **run one** |                      | 177   | 5,350            | 1,782 |                                                                                                           | **203.9 min** |
+| `nags`      | ten check-ins a call | 10    | 300              | 100   | none                                                                                                      | 442 s         |
+| `pools`     | twelve lines a call  | 2     | 6                | 2     | `names a tool or a model` 1                                                                               | 32 s          |
+| **top-up**  |                      | 12    | 306              | 102   |                                                                                                           | **7.9 min**   |
+
+**189 calls, 194,640 prompt tokens, 1,290,340 completion tokens, no per-token cost.** Three hours and
+fifty-two minutes of wall clock including the dry read, on top of a first attempt that was killed (below). Most
+of the completion tokens are the model thinking; the kept lines are about thirty thousand characters.
+
+Three things in that table are worth reading twice.
+
+- **`names a tool or a model` is the biggest single drop, and all of it is in `pools`.** Fifty-seven candidates
+  named a real language, library or tool. Every one was in an ask-template pool, where the prompt has to gesture
+  at a stack without naming it — `STACK_WORDS` says "the black window with the blinking line in it" rather than
+  the shell's name — and the model reached for the real name anyway about one time in forty. The gate caught all
+  of them; none was edited into passing.
+- **`more than one sentence` is the check-ins.** Nineteen of the first fifty check-in candidates ran to two
+  sentences, which is the register asking for more room than the lever gives it. The top-up asked again and lost
+  none, because by then the pool had absorbed the short ones and the model was answering a shorter brief.
+- **Nothing British, nothing shouted, no digit on a line the player will read.** Across 5,656 candidates the
+  British check fired zero times and the yell check fired zero times. That list has now survived four models and
+  two prompts.
+
+### The first attempt, and what it taught
+
+The run was first started as **two processes** — `stories,asks` on one and `nags,reactions,reviews,pools` on the
+other, chosen because those two sets touch disjoint lever files — each at `--concurrency 4`. Eight calls in
+flight is more than the cloud tag's request slots, and it answered **HTTP 429, "timed out waiting for a
+concurrent request slot"**. The `nags` slot kept twenty of fifty before anyone noticed. Both processes were
+killed, `user.json` and `agent.json` were reverted to `main`, the two receipt files were deleted, and the run
+was restarted as one process once the script had learned to wait (Decision 3). Fifty-five minutes, and no line
+from it is in the repo.
+
+### The sixteen levels
+
+Two per corpus stack, a third for python and javascript, and two integration levels. Ordered easy to hot by
+band. The eight that already existed kept their id, product, stack and band range; the model re-pinned their
+four snippets and re-wrote their premise, like the eight new ones.
+
+| #   | id                    | product                                  | stack       | band | story (the standup's premise)                                    | pinned, in story order                                             |
+| --- | --------------------- | ---------------------------------------- | ----------- | ---- | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 0   | `cat-website`         | a website for my cat                     | bash        | 1–2  | this website is for my cat, mittens                              | `cal-sh-d1-001`, `sh-for-loop`, `cal-sh-d2-004`, `cal-sh-d1-003`   |
+| 1   | `duck-rides`          | Uber but for ducks                       | python      | 1–2  | my new rideshare helps ducks who hate long walks                 | `cal-py-d1-003`, `cal-py-d1-005`, `cal-py-d2-005`, `cal-py-d2-003` |
+| 2   | `handwriting-rater`   | a website that rates your handwriting    | javascript  | 1–2  | my cursive is finally ready for public critical feedback         | `cal-js-d1-001`, `cal-js-d2-003`, `js-map-filter`, `cal-js-d2-001` |
+| 3   | `sandwich-ledger`     | a ledger of every sandwich i have eaten  | sql         | 1–2  | i am building a ledger of every sandwich i have eaten.           | `sql-insert`, `cal-sq-d2-005`, `cal-sq-d2-002`, `cal-sq-d2-004`    |
+| 4   | `fridge-chain`        | a blockchain for the office fridge       | javascript  | 2–3  | i want a blockchain for the office fridge.                       | `cal-js-d2-003`, `cal-js-d3-004`, `cal-js-d3-001`, `cal-js-d3-005` |
+| 5   | `plant-dashboard`     | a dashboard for my houseplants           | sql         | 2–3  | i need a dashboard to track my houseplants before they unionize. | `cal-sq-d3-004`, `cal-sq-d2-003`, `cal-sq-d3-003`, `cal-sq-d2-004` |
+| 6   | `lost-sock-platform`  | an enterprise platform for lost socks    | java        | 2–3  | our enterprise platform for lost socks just got funding.         | `cal-jv-d2-004`, `cal-jv-d3-002`, `cal-jv-d3-003`, `cal-jv-d2-003` |
+| 7   | `hourly-praise`       | a desktop app that praises you hourly    | csharp      | 2–3  | i want a desktop app that praises me every hour.                 | `cal-cs-d2-005`, `cal-cs-d2-001`, `cal-cs-d3-002`, `cal-cs-d3-003` |
+| 8   | `tool-finder`         | a tool that finds tools for tools        | integration | 3    | i need a tool that finds tools for our tools                     | _drawn from the band_                                              |
+| 9   | `self-newsletter`     | a newsletter that writes itself          | bash        | 3–4  | i want a newsletter that writes itself every morning             | `cal-sh-d3-005`, `cal-sh-d3-002`, `cal-sh-d4-001`, `cal-sh-d4-005` |
+| 10  | `coffee-loyalty`      | a loyalty program for the coffee machine | java        | 3–4  | i need a loyalty program for the coffee machine by demo day.     | `cal-jv-d3-003`, `cal-jv-d3-002`, `cal-jv-d4-001`, `cal-jv-d3-004` |
+| 11  | `thermostat-debate`   | a bot that argues with my thermostat     | python      | 3–4  | the bot learns how the thermostat feels each morning.            | `cal-py-d3-004`, `cal-py-d3-002`, `cal-py-d4-004`, `py-class-def`  |
+| 12  | `book-club-metaverse` | a metaverse for my book club             | csharp      | 4–5  | my book club needs its own metaverse now                         | `cal-cs-d5-001`, `cal-cs-d4-004`, `cal-cs-d5-002`, `cal-cs-d4-002` |
+| 13  | `app-that-rates-apps` | an app that rates other apps             | python      | 4–5  | i think we need an app that rates apps                           | `cal-py-d5-002`, `cal-py-d5-003`, `cal-py-d5-001`, `cal-py-d5-005` |
+| 14  | `opinion-market`      | a marketplace for slightly used opinions | javascript  | 4–5  | i need a marketplace for slightly used opinions.                 | `cal-js-d4-003`, `cal-js-d4-002`, `cal-js-d5-002`, `cal-js-d5-004` |
+| 15  | `one-button-company`  | one button that runs the entire company  | integration | 5    | i want one button that runs everything we own.                   | _drawn from the band_                                              |
+
+The eight new products are this builder's, because the script has no step that invents one (Decision 1). Each is
+eight words or fewer, names no company, and passes the gate and the spelling test like every other lever string.
+
+**The integration stack may now be listed.** `loadPatterns` used to halt on any level whose stack was
+`integration`, for a good reason: that stack has no corpus file, because it is built from tape headers and rows
+at play time (G30). The halt is now narrower and says the real thing — a listed integration level may not pin
+`snippets`, because there is no id in that stack for a story to pin — and three places learned to season the
+corpus the way the shell always has: `play.ts` reads the tapes for every run rather than only for a run forced
+to that stack, `test/helpers.ts` seasons the band from `fixtures/tapes`, and `level.test.ts` seasons from four
+fixed tool names. The two integration levels draw their four requests from their band, and the authoring run
+wrote them a premise and nothing else.
+
+### The pools
+
+Every pool is at least three times the size slice one shipped, and the loader's `MIN_*` constants were raised to
+those same numbers, so the size is a halt from here on rather than a promise.
+
+| Pool                          | Slice one | Now | Floor |
+| ----------------------------- | --------- | --- | ----- |
+| `user.asks[stack][tier]` × 21 | 16        | 48  | 48    |
+| `user.reactions[tier]` × 3    | 12        | 36  | 36    |
+| `user.creeps`                 | 12        | 36  | 36    |
+| `user.reviews`                | 8         | 24  | 24    |
+| `user.syncs`                  | 12        | 36  | 36    |
+| `user.nags`                   | 16        | 59  | 50    |
+| `agent.nagReplies`            | 16        | 113 | 50    |
+| `agent.replies`               | 24        | 72  | 72    |
+| `agent.hmm`                   | 12        | 36  | 36    |
+| `agent.compactions`           | 8         | 24  | 24    |
+| `agent.ships`                 | 8         | 24  | 24    |
+
+Beside them: **246 of the 249 corpus snippets carry their own `ask`** (56 of those written by a level story, the
+rest by the `asks` slot); **498 topics** — every topic word the corpus uses — carry three reactions each; and
+**all sixteen levels** carry three reviews each.
+
+### The sweep, and the numbers it set
+
+`packages/vibe-typer/scripts/sweep-levels.mjs` (`pnpm -F @mcp-arcade-cabinets/vibe-typer sweep:levels`), a
+sibling of Ghost's `scripts/sweep.mjs`: it bundles the package in process with esbuild, drives every listed level
+at a bot and a tier over seeds 1–3, and prints seconds, compactions, pieces, valuation and check-ins. `--suggest`
+prints the drain each level would want.
+
+The tuning rule is slice one's, restated as something you can measure. Slice one set each level's drain so the
+bar covers about 1.6 requests at forty words a minute; across its eight levels that came out as
+`drainPerSec × seconds ≈ 0.93` at tier zero, within six percent on six of the eight. `BAR_BUDGET = 0.93` in the
+sweep is that constant, and `want = 0.93 / seconds` is the suggestion.
+
+Tier zero, `typist:40:0.03`, seeds 1–3, after tuning. Seconds and valuation are means; compactions are summed
+over the three seeds; check-ins are per seed.
+
+| #   | id                    | drain   | secs | comp | val | check-ins  | ends    |
+| --- | --------------------- | ------- | ---- | ---- | --- | ---------- | ------- |
+| 0   | `cat-website`         | 0.0042  | 138  | 0    | 55  | 1, 1, 1    | shipped |
+| 1   | `duck-rides`          | 0.0048  | 216  | 0    | 63  | 1, 2, 2    | shipped |
+| 2   | `handwriting-rater`   | 0.0040  | 230  | 0    | 60  | 2, 2, 2    | shipped |
+| 3   | `sandwich-ledger`     | 0.0028  | 332  | 0    | 124 | 3, 3, 2    | shipped |
+| 4   | `fridge-chain`        | 0.0020  | 460  | 0    | 195 | 4, 5, 3    | shipped |
+| 5   | `plant-dashboard`     | 0.0022  | 427  | 0    | 153 | 4, 3, 3    | shipped |
+| 6   | `lost-sock-platform`  | 0.0030  | 306  | 0    | 143 | 3, 2, 2    | shipped |
+| 7   | `hourly-praise`       | 0.0033  | 283  | 0    | 97  | 3, 3, 2    | shipped |
+| 8   | `tool-finder`         | 0.0073  | 128  | 0    | 30  | 0, 1, 2    | shipped |
+| 9   | `self-newsletter`     | 0.0017  | 580  | 0    | 246 | 7, 5, 5    | shipped |
+| 10  | `coffee-loyalty`      | 0.0023  | 437  | 0    | 200 | 3, 4, 4    | shipped |
+| 11  | `thermostat-debate`   | 0.0017  | 542  | 0    | 187 | 5, 5, 5    | shipped |
+| 12  | `book-club-metaverse` | 0.0012  | 811  | 0    | 363 | 7, 7, 8    | shipped |
+| 13  | `app-that-rates-apps` | 0.00062 | 1500 | 0    | 466 | 13, 14, 14 | shipped |
+| 14  | `opinion-market`      | 0.00098 | 947  | 0    | 345 | 8, 9, 9    | shipped |
+| 15  | `one-button-company`  | 0.0053  | 177  | 0    | 74  | 1, 1, 1    | shipped |
+
+The same sixteen at hardcore with the clean ninety-word typist, which is the bar that moved most: every level
+ships, none compacts, 60 s (`cat-website`) to 651 s (`app-that-rates-apps`). At tier one nothing compacts except
+`one-button-company` once across three seeds; at tier two the forty-word typist compacts on most levels and
+still ships every one, which is what the hot tier is for.
+
+**Three of the eight existing levels were re-tuned, and the reason is on the record.** `fridge-chain`
+0.0029 → 0.0020, `plant-dashboard` 0.0030 → 0.0022 and `app-that-rates-apps` 0.0010 → 0.00062. All three lost
+the hardcore bar — `app-that-rates-apps` ran the context out on all three seeds, the other two on one seed each
+— because their stories pinned longer pieces than their old bands drew, and because seasoning the integration
+stack into the corpus rebuilds the difficulty model over a slightly larger corpus and moves every value a
+little. The bar is the andon: the levels moved, not the bar. `cat-website`, `duck-rides`, `self-newsletter`,
+`coffee-loyalty` and `book-club-metaverse` kept the numbers slice one gave them.
+
+### The band
+
+Every bar green, over all sixteen levels, four tiers, three seeds — 17 tests in `band.test.ts`, 607 in the
+suite.
+
+| Bar                                                                  | Result                                                       |
+| -------------------------------------------------------------------- | ------------------------------------------------------------ |
+| idle never ships, and compacts at tiers 0–2 and ends at tier 3       | holds, sixteen levels                                        |
+| `typist:40:0.03` ships every level clean at tier 0                   | holds, no compaction anywhere                                |
+| `typist:40:0.03` ships every level at tier 1, at most one compaction | holds                                                        |
+| `typist:60:0.02` ships every level at tier 2, at most one compaction | holds                                                        |
+| `perfect` beats hardcore clean on every level and seed               | holds, after the three re-tunings above                      |
+| `typist:40:0.03` runs out on at least half the levels at tier 3      | holds                                                        |
+| endless, six levels clean and two for a forty                        | holds, and the seated bar with it                            |
+| the check-in count a level                                           | holds — see the bar's new floor below                        |
+| a check-in never lands off a code beat nor on the run's first line   | holds, zero faults, every tier, listed and endless           |
+| nags on against nags off: the same run to the byte                   | holds, 192 pairs (four tiers × sixteen levels × three seeds) |
+| the valuation never falls, hype stays on the ladder                  | holds                                                        |
+| no digit and no barred word on any chat line at any tier             | holds                                                        |
+| the same seed gives the same run                                     | holds                                                        |
+| Copilot lights at least once a level at tier 0, never in hardcore    | holds                                                        |
+
+**One bar was widened, with the measurement beside it.** The check-in bar was `[1, 16]` a level. It is now "at
+most sixteen, and at least one on a level that runs three minutes or more" (`NAG_FLOOR_SECONDS = 180`). The gap
+between check-ins is drawn from sixty to a hundred and forty seconds of frame time and the run's very first line
+is never interrupted, so a level that finishes inside two minutes can honestly see none: `tool-finder` runs about
+128 seconds and sees zero on seed 1. The ceiling did not move — the longest level reads fourteen at tier zero and
+fifteen at tier two, both inside sixteen. The floor is a floor for a level long enough to have one, which is the
+honest shape of that bar rather than a number no short level can meet.
+
+### What was pruned, and what was not
+
+**Nothing was pruned.** Every line in the levers is a line the model wrote and the gate kept. Nothing was plainly
+broken: no line names a real thing (the gate refused fifty-seven that tried), no line is nonsense for its snippet
+in a way this builder could point at, and the duplicates the gate would not see are the four pins below rather
+than lines. The coherence pass the coordinator has dispatched on top of this branch re-voices the lines; what
+follows is what that pass, and the Director's read, should know.
+
+1. **Four snippets are pinned into two levels each**, so a player who plays both types the same piece twice:
+   `cal-js-d2-003` (`handwriting-rater` and `fridge-chain`), `cal-sq-d2-004` (`sandwich-ledger` and
+   `plant-dashboard`), `cal-jv-d3-002` and `cal-jv-d3-003` (`lost-sock-platform` and `coffee-loyalty`). Fifty-two
+   unique ids over fifty-six pins. Each level plans with its own `used` set and a listed run plays one level, so
+   nothing collides inside a run; it is a content repeat, not a fault. The fix is a cross-level `used` set in the
+   `stories` slot and a re-run of that slot, which is a script change and another forty minutes of model time.
+2. **Three snippets have no ask of their own** and read the template pool, which is the fallback the contract
+   describes: `cal-sh-d2-002`, `py-for-loop`, `cal-py-d2-002`. All three were pinned into a level before this run
+   and were un-pinned by it, so the `asks` slot skipped them on the way past. 246 of 249 carry their own.
+3. **`tool-finder` is written as a slug in its own reviews** — "tool-finder is the only tool i trust completely".
+   The review prompt shows the model the level id beside the brand-free phrase and asks it to name the product;
+   for fifteen of the sixteen levels the id reads as ordinary words once the hyphens go ("this cat website", "the
+   fridge chain"), and for this one it does not. One for the coherence pass.
+4. **Nineteen of the first fifty check-ins ran to two sentences** and were dropped rather than cut. The pool is
+   fifty-nine, which is over its floor, so nothing was lost but the candidates are in the receipt if a shorter
+   one is wanted.
+
+### Decisions
+
+Where the brief was silent, the choice and the reason.
+
+1. **The eight new products and the eight new level definitions are this builder's, not the model's.** The brief
+   allows either and asks which. `author.mjs` has no step that invents a product, and adding one would have meant
+   a new slot, a new prompt and a new hash before a line of content could be written — and the `stories` and
+   `reviews` slots both need the product to exist before they run, so it could not have been folded into either.
+   The eight are eight words or fewer, brand-free, gate-clean and American, and they are in the table above.
+2. **The persona names a role, not a person.** The brief asks for "a named role"; an invented writer's name risks
+   being a real person's, and the prompt already bars naming real things. "The staff comedy writer on a workplace
+   sitcom about a small software startup" is the name, and the sketch is what the room keeps them for.
+3. **A busy cloud tag is a queue, not a refusal.** `callOllama` now raises `busy` on HTTP 429 and `callModel`
+   waits it out — six times, twenty seconds doubling to a three-minute cap, with jitter — without spending the
+   one ordinary retry. Before this, a 429 became a dropped slot and thirty lines the Director paid wall-clock for
+   and never saw. The receipt counts the waits per slot; this run waited twice, both in `stories`.
+4. **`--concurrency` is a flag and its default is one.** The sample's sequential walk is the default, so nothing
+   about the pinned replay changed by adding it. `mapLimit` returns results in the order asked, never the order
+   they finished, so the lever a run writes is the same file at any width — which is the property that makes the
+   flag safe, and it has three tests. This run used four. Eight was tried and the cloud said no (above).
+5. **The run applies a slot at a time, and writes the candidates either way.** `saveLevers` runs after every slot
+   rather than once at the end, and the `<stamp>-<slot>.json` candidate file is written whether or not the run
+   applied. A three-hour run that dies in its third hour must not throw away the four slots that landed, and an
+   applied run that kept no record of what it did **not** take is the one run nobody can read afterwards.
+6. **A snippet a story pins is marked pinned the moment the story is written**, not when the lever is saved.
+   `stories` and `asks` run in the same invocation and `ctx.pinned` was built at process start from the levels as
+   they then stood; without this the `asks` slot would have asked a second time for every snippet the new stories
+   had just pinned, and written over the story's own words.
+7. **`slotPools` reaches into the levers by a dotted path.** `user.creeps` is a flat list, `user.reactions.0` is
+   tier zero's, `user.asks.bash.1` is one of twenty-one template pools. The old slot could only see flat lists,
+   so it would have asked for thirty-three lines to top a three-entry record of tiers up to thirty-six and
+   written them nowhere useful. `poolAt`/`setPoolAt` walk the path; a path that is not there reads as empty,
+   which is what lets a pool the run has never written before be topped up from zero.
+8. **The prompt gestures at a stack, it never names one.** `STACK_WORDS` describes each stack the way a vibe
+   coder would — the black window with the blinking line, the page in a browser with buttons that move, the
+   tables where the records are kept — because the system prompt bars naming a real language and these pools are
+   the user's own words. The gate still caught fifty-seven candidates that named one anyway.
+9. **A level whose stack has no corpus file gets the premise and nothing else.** `slotStories` sends
+   `premisePrompt` instead of `storyPrompt` when the level's in-band pool holds fewer than four pieces: there is
+   nothing to show the writer and nothing to pin. Before this, such a level was an error line in the report and
+   kept whatever placeholder premise it had.
+10. **The listed-integration halt was narrowed rather than deleted.** `levels.<i>.stack` became
+    `levels.<i>.snippets`: the thing that is actually impossible is pinning an id in a stack that has no ids
+    until a tape is read, and that is now what the loader says. `patterns.test.ts` proves both halves — an
+    integration level with no pins loads, one with pins does not.
+11. **The band seasons its corpus from the repo's fixture tapes.** The shell has always seasoned every run from
+    the bundled tapes; the band never did, which meant the band measured a slightly different corpus from the one
+    the game plays. Two integration levels forced the question and the answer is the one that closes the gap.
+    Its cost is the three re-tunings above, since a rebuilt difficulty model moves every value a little.
+12. **The check-in tests moved from level zero to level one.** They reach a legal check-in by sending two whole
+    lines; level zero's story now opens on a one-line piece, so the second line there ships the piece instead of
+    moving the line index. Level one opens on four lines. The rule under test did not change.
+13. **Three tests were re-pointed at drawn levels rather than relaxed.** Weak-pair bias, a different seed giving a
+    different run, and the line picker's no-repeat walk all assumed a level draws its snippets. Fourteen of the
+    sixteen now pin theirs, by design, so those three ask an endless level instead — which draws, and is what
+    they were always really about.
+14. **`sweep-levels.mjs` is a sibling, not an extension of `pnpm sweep`.** Ghost's sweep rewrites tape headers and
+    reads lamps; this one drives bots over levels and reads seconds. They share a shape and nothing else, and
+    Ghost is untouched by this sub-slice.
+
+### Verification
+
+```
+pnpm verify        lint · six typechecks · 48 test files, 607 tests · five builds ·
+                   test:play ghost --fixture naive-ndjson · test:play vibe-typer --tier 0 --bot typist:40
+pnpm build:play    green, site/public/play/ written (git-ignored)
+pnpm format        run over every file this sub-slice touched
+node packages/vibe-typer/scripts/sweep-levels.mjs   sixteen levels, four tiers, three seeds
+```
+
+Ghost's play-through prints what it printed before, to the line. Vibe Typer's prints the new writing:
+
+```
+Vibe Typer
+level cat-website stack bash tier easy bot typist:40 seed 1 endless no
+level shipped
+product a website for my cat
+stack bash
+agent Claudette
+agent Happy to help, starting now
+user each avatar should wear a tiny hat.
+agent The chart charts what the heart feels.
+user my cat finally has her own digital kingdom.
+valuation: 45
+pieces: 4
+levels: 1
+compactions: 0
+```
+
+And an integration level plays, which is the thing that was impossible before this sub-slice:
+
+```
+$ pnpm test:play vibe-typer --tier 0 --bot typist:40 --level 8
+level tool-finder stack integration tier easy bot typist:40 seed 1 endless no
+level shipped
+product a tool that finds tools for tools
+stack integration
+user tool-finder is the only tool i trust completely.
+valuation: 29
+pieces: 4
+```
+
+Both screens scan clean: no digit and no barred word.
+
+Nothing in `packages/ghost-on-the-menu`, `tape-core`, `cabinet-server`, `launcher`, `catalog/`,
+`.github/workflows/`, `site/`, `voice/` or `apps/cabinets/` was touched — the shell is sub-slices A2 and E's this
+session, and this sub-slice never opened it.
+
+## Sub-slice B, part four — the coherence pass
+
+**Date:** 2026-09-16. **Builder:** Opus (this sub-slice). **Coordinator:** Claude (Fable 5.1).
+**Director:** Mike. **Branch:** `cabinet/vibe-typer-s3b4`, branched from `cabinet/vibe-typer-s3b3` and
+merged with `main`, one commit on top of the merge, not merged.
+
+### The decision, and why
+
+The full authoring run of part three wrote every line through a hundred and eighty-nine small
+independent calls. Each call knew the system prompt and nothing another call had written. The
+Director judged the result before reading it: lines written by a hundred and eighty-nine strangers
+will not read as one user and one agent, and the run was far slower than it needed to be. The
+coordinator owns that miss — the brief set the gate and the receipt and never set the chunk size or
+any mechanism for the voice.
+
+This pass re-voices the authored lines so that one character wrote them. It keeps the structure the
+run produced — the sixteen levels, their products, their pinned pieces, their premises — and changes
+who is writing them.
+
+Here is the problem in one screen. Level one at tier zero, seed one, before the pass; five different
+calls wrote these five agent lines and no two of them are the same character.
+
+```
+agent My pleasure, I have housed the data in a teacup.
+agent The colors now smell like old books.
+agent I gave it eyelashes and a soul.
+agent I am making the bug a small pet.
+agent The chart charts what the heart feels.
+```
+
+The user had the same problem from the other side. `the text herd is grazing peacefully in the green
+field.` and `a whole sentence farm blooming with commas and promises.` are lines a poet wrote, not a
+founder who says `is it live yet` and `my cousin is asking`.
+
+### The two voice sheets
+
+`packages/vibe-typer/patterns/voice/user.md` and `packages/vibe-typer/patterns/voice/agent.md`.
+Prose, committed, meant to be read and revised by the Director. Each says who the character is, how
+they talk, their tics, what they never say, and twenty lines that are the voice — chosen from the
+`kimi-k2.6:cloud` column of `docs/vibe-typer.author-sample.md`, which is the register the Director
+picked, and from the best of part three's asks, nags, creeps, reactions and reviews, with the source
+named per line.
+
+They run to four hundred and three hundred and forty words of prose against the brief's guide of
+three hundred. The overrun is "what they never say" in both, and that is the section doing the work:
+it is where the sheet rules out abstract poetry in the user's mouth, a hyphenated internal name for
+their own product, and anything from the agent that reads as a status report. Trimming to the guide
+would have trimmed the half that fixed the run.
+
+Both sheets are hashed into every receipt — user `b57134ea182872df…`, agent `60690cb21754e612…` — so
+a replay is pinned to the sheet as well as to the prompt, and a sheet the Director revises makes a
+different run that the receipt can tell apart. (Part five below tightened the agent sheet, and its
+hash is `a6ff3197248c563f…` from there on. The receipts table above carries both.)
+
+### What the script learned
+
+`--chunk <n>` (forty) and `--concurrency <n>` (two) on `run`, plus `--revoice` and a new `edit`
+subcommand. Three mechanisms, and the middle one is the one that mattered:
+
+1. **The voice sheet rides in the system prompt**, after the persona and before the rules, on every
+   call that writes a line. A slot writing the user's lines carries `user.md`; a slot writing the
+   agent's carries `agent.md`.
+2. **The lines already kept ride in the user prompt.** Every slot keeps a memory of what it has
+   written in this run and hands the last hundred and twenty lines to the next call of that slot,
+   under a heading saying they are finished, to keep their voice and not to repeat them in words or
+   in meaning. This is the mechanism the run did not have.
+3. **A chunk is cut evenly.** `chunkEven` splits fifty-two items at a chunk of forty into two calls
+   of twenty-six rather than a call of forty and a call of twelve: two calls either way, and a thin
+   second call writes from a thin brief.
+
+Two shapes changed with them. The sixteen premises are now one call with all sixteen products in
+front of the writer, where the run wrote each premise inside its own level's call; and a level's
+four requests are written in one call under the premise that opens them, with a cross-level `used`
+set so no piece is pinned twice. The `sample` command is untouched and carries no sheet on purpose:
+its four prompt hashes are the ones the Director read a model from and the ones the receipts table
+above pins.
+
+### The run
+
+Three invocations of `run --model ollama:kimi-k2.6:cloud --revoice --concurrency 4 --apply` and one
+of `edit`. The second and third exist because of defects this pass found in itself; both are under
+Decisions with what they taught.
+
+| Invocation | Stamp                  | Slots                                   | Calls | Wall      |
+| ---------- | ---------------------- | --------------------------------------- | ----- | --------- |
+| one        | `2026-09-16-003546907` | stories, asks, nags, reactions, reviews | 41    | 95.8 min  |
+| two        | `2026-09-16-021204884` | asks and nags again, then pools         | 63    | 130.7 min |
+| three      | `2026-09-16-053014036` | stories again                           | 18    | 44.5 min  |
+| editor     | `2026-09-16-042440000` | every pool, read whole                  | 27    | 63.0 min  |
+
+The slots that wrote what shipped, all at a chunk of forty:
+
+| Slot        | Calls | Candidates asked | Kept  | Dropped, by the gate's own reason                                | Wall        |
+| ----------- | ----- | ---------------- | ----- | ---------------------------------------------------------------- | ----------- |
+| `stories`   | 18    | 216              | 72    | none                                                             | 2,672 s     |
+| `asks`      | 6     | 579              | 193   | too many words 20, forbidden word or digit 2                     | 873 s       |
+| `nags`      | 4     | 324              | 108   | none                                                             | 1,153 s     |
+| `reactions` | 13    | 1,494            | 497   | forbidden word or digit 14, surplus 3, names a tool or a model 1 | 1,644 s     |
+| `reviews`   | 1     | 48               | 16    | none                                                             | 178 s       |
+| `pools`     | 53    | 4,476            | 1,490 | names a tool or a model 37, forbidden word or digit 5            | 5,814 s     |
+| **shipped** | 95    | 7,137            | 2,376 |                                                                  | **203 min** |
+
+**Ninety-five calls wrote what shipped, against part three's hundred and eighty-nine, for more
+content** — a re-voice writes every pool at its floor where part three topped its pools up from
+sixteen, so this pass asked for seven thousand candidates where the run asked for five and a half
+thousand. Fifty-four more calls were spent on the two remedies and the third stories invocation, and
+twenty-seven on the editor: a hundred and seventy-six calls in all, most of them ones a run that
+knew what this one learned would not make again.
+
+**The wall clock is thinking tokens, not calls, and that is this pass's finding.** A forty-item call
+on this tag spends about a hundred and seventy tokens for every line it keeps, and roughly nine
+tenths of them are the model thinking before it writes anything. Forty items a call is cheaper per
+line than twelve — the model thinks once about forty lines instead of four times about ten — but it
+is about a fifth off, not nine tenths off, because re-voicing the same number of lines costs the
+same number of thoughts. The brief asked for a tenth of the calls; a tenth of the calls does not buy
+a tenth of the time. Anything that would has to write fewer lines or turn the thinking down, and
+turning the thinking down changes the register the Director picked.
+
+`--concurrency` ran at four, not the two the brief named. Four is the width part three proved over a
+hundred and eighty-nine calls; the refusal it hit was at eight, and the script has waited out a busy
+queue since part three. At two, this pass measured out longer than the run it exists to fix. The
+default in the script is two as the brief set it, and every receipt records the width it ran at.
+
+### The editor pass
+
+`edit --model ollama:kimi-k2.6:cloud --concurrency 4 --apply`, stamp `2026-09-16-042440000`. One
+call reads a whole pool with its voice sheet in front of it and answers with the numbers of the
+lines to drop and a clause each. It never rewrites and never suggests a replacement: the gate keeps
+or drops and never mends, and an editor that could rewrite would be the one place in this pass where
+a line nobody wrote in one sitting could still reach a lever. A drop is refused when it would take
+the pool under the loader's floor, and the receipt names the line and the refusal.
+
+**Twenty-seven calls, sixty-three minutes, a hundred and fourteen lines dropped, sixty-three refused
+at a floor.**
+
+| Pool                          | Lines read | Floor | Dropped | Refused at the floor |
+| ----------------------------- | ---------- | ----- | ------- | -------------------- |
+| `user.asks.<stack>`, seven    | 156 each   | 48    | 32      | 44                   |
+| `user.reactions`, three tiers | 119        | 36    | 8       | 5                    |
+| `user.creeps`                 | 40         | 36    | 3       | 0                    |
+| `user.reviews`                | 28         | 24    | 4       | 3                    |
+| `user.syncs`                  | 40         | 36    | 4       | 1                    |
+| `user.nags`                   | 54         | 50    | 4       | 5                    |
+| `agent.replies`               | 75         | 72    | 3       | 0                    |
+| `agent.hmm`                   | 40         | 36    | 3       | 0                    |
+| `agent.compactions`           | 28         | 24    | 4       | 0                    |
+| `agent.ships`                 | 28         | 24    | 4       | 1                    |
+| `agent.nagReplies`            | 54         | 50    | 4       | 3                    |
+| `user.reactionsByTopic`       | 1,479      | 1     | 39      | 1                    |
+| `user.reviewsByProduct`       | 48         | 1     | 2       | 0                    |
+
+A sample of what it called and why; the full list, line by line with its pool, is in the receipt.
+
+| Line                                          | Pool                | Why it went                           |
+| --------------------------------------------- | ------------------- | ------------------------------------- |
+| my neighbor asked for a trombone              | `user.creeps`       | not the character                     |
+| the valuation rolled up and i cried.          | `user.reviews`      | not the character                     |
+| the hover state just asked about my day.      | `user.reactions`    | not the character                     |
+| the color changed and so did i.               | `user.reactions`    | not the character                     |
+| is it alive yet                               | `user.nags`         | already in the list, said another way |
+| Brilliant, the pinecone collects some dust    | `agent.replies`     | not the character                     |
+| You are absolutely right, one more line.      | `agent.replies`     | makes no sense where it is used       |
+| Our little village is built so far.           | `agent.compactions` | not the character                     |
+| Hmm, I measured twice and cut once poorly.    | `agent.hmm`         | not the character                     |
+| the brain made of light now recognizes ducks. | `reactionsByTopic`  | not the character                     |
+| i finally know where all my sandwiches go.    | `reviewsByProduct`  | makes no sense where it is used       |
+| make the typed words show up green            | `user.asks.bash`    | already in the list, said another way |
+
+Two things the refusals say. A re-voiced pool is written four lines over its floor by design
+(`REVOICE_SPARE`), so the editor had four to spend on most pools and spent them; the sixty-three
+refusals are lines it would have dropped and could not, and each is named in the receipt for a pass
+that writes a bigger pool first. The one place it had real room is `reactionsByTopic` — three lines
+a topic against a floor of one — and there it dropped thirty-nine.
+
+### The read
+
+Level one, tier zero, seed one, a forty-word typist, in play order. The code titles are the pieces
+the player types between the lines.
+
+```
+standup   make a website for my cat
+product   a website for my cat
+
+user      have a website for my cat say hello to visitors
+agent     Brilliant, I am knitting the background.
+code      simple echo greeting
+agent     Built and sitting pretty.
+user      the form is a very polite parrot.
+
+user      use her name in the greeting
+agent     Love this direction, the pie cools on the sill
+code      variable assignment and print
+agent     It is out and breathing easy.
+user      the product now holds a thing for later.
+
+user      show every toy she has reviewed
+agent     Great idea, the peach has a fresh stem
+code      For loop
+user      can i peek now
+agent     The countdown is almost running now.
+agent     Landed and looking rather cozy.
+user      the repeated task has its own rhythm.
+
+user      make a live folder then delete it
+agent     On it, adding a sparkle trail now.
+code      create and remove directory
+user      oh also the ducks should wear hats
+agent     Landed and the lights are on.
+user      my cat now has a working contact form.
+
+review    my cat has never looked more professional.
+review    the website for my cat understands his brand.
+```
+
+Ten asks from three other levels, with the premise that opens each:
+
+```
+self-newsletter     write a newsletter that writes itself
+                    build a home for every issue part
+                    read the list of who gets the news
+                    find the biggest stories hiding in the logs
+                    see if every door is open for us
+
+book-club-metaverse open a world for our book club
+                    shape our room into a circle
+                    add a profile for each member
+                    allow members to shout in rooms
+
+opinion-market      trade opinions on our marketplace
+                    chain the opinions one to another
+                    count how many trades each opinion has
+```
+
+Two lines in that read are still not Sprocket — `the pie cools on the sill` and `the peach has a
+fresh stem` are the second clause of a reply that should be about the work. The editor named their
+sibling (`the pinecone collects some dust`) and dropped it, and was refused on the rest because
+`agent.replies` sits three over a floor of seventy-two. That is the argument for writing the reply
+pool at more than four spare next time, and it is the residual this pass leaves.
+
+### What part three flagged, and what became of it
+
+1. **Four pieces pinned into two levels each.** Fixed at the root: the `stories` slot carries one
+   `used` set across all sixteen levels, filtered into each level's pool before the call and checked
+   again as the answers fold in, with a re-ask for a level whose four were taken. Fifty-six pins over
+   fifty-six unique ids. `level.test.ts` now carries `pins no piece into two levels`, which failed on
+   the branch before this pass ran and passes after it.
+2. **Three snippets with no ask of their own.** All two hundred and forty-nine carry one now. Two
+   tests in `lines.test.ts` read a snippet without an ask to prove the template fallback; that case
+   is built rather than found now, the way `NO_TOPIC_POOL` beside it already was. The rule under test
+   did not change.
+3. **`tool-finder` read as a slug in its own reviews** — and so did seven other levels, which part
+   three did not catch. The review prompt showed the model the level id beside the product; it now
+   shows an ordinal label and says the label is a label. A second lock rides in the gate:
+   `slugGate` refuses any line naming a level by its id. No review names a slug now; `tool-finder`'s
+   reads `it finds my wrench a tiny wrench friend.`
+4. **The eight products written by a builder rather than a model.** Read against the user sheet, all
+   eight hold: they are what the thing is, in words a founder would use, at eight words or fewer.
+   None was re-voiced. One of the other eight did not hold — see the next item.
+5. **`duck-rides` carried a real company on a player-facing surface.** The script has always swapped
+   it for a brand-free phrase before sending a prompt; the level itself still said the brand, and the
+   standup and every review read it. `slotStories` now writes that swap into the lever, so the
+   product is `a rideshare for ducks`. The other fifteen were read against `BRAND_NAMES` the same way
+   and none matched. `PRODUCT_PHRASE` stays as the guard.
+6. **The agent's default name.** `main` carries Sprocket and the merge brought it; the voice sheet is
+   Sprocket's, the prompts say Sprocket, and no line names the agent at all — `MODEL_FORBIDDEN` and
+   the gate see to that, and the play-through header prints `agent Sprocket`.
+7. **`band.test.ts` keeps its long timeout.** Untouched.
+
+### The sweep, and the numbers it set
+
+New pins are new lengths, so the bar moved and the levels moved with it. Part three's rule —
+`drainPerSec × seconds ≈ 0.93` at tier zero — is the measure, and `sweep:levels --suggest` is where
+the numbers come from. Eight levels fell outside it after the re-pick and took the suggestion:
+
+| #   | id                    | drain before | drain now | budget now |
+| --- | --------------------- | ------------ | --------- | ---------- |
+| 0   | `cat-website`         | 0.0042       | 0.00921   | 0.930      |
+| 1   | `duck-rides`          | 0.0048       | 0.00415   | 0.930      |
+| 2   | `handwriting-rater`   | 0.004        | 0.00384   | 0.929      |
+| 3   | `sandwich-ledger`     | 0.0028       | 0.00544   | 0.930      |
+| 4   | `fridge-chain`        | 0.002        | 0.00234   | 0.929      |
+| 6   | `lost-sock-platform`  | 0.003        | 0.00294   | 0.929      |
+| 10  | `coffee-loyalty`      | 0.0023       | 0.00217   | 0.931      |
+| 13  | `app-that-rates-apps` | 0.00062      | 0.00062   | 0.931      |
+
+The other eight kept the numbers they had and all sixteen now read between 0.883 and 0.942. The one
+bar that actually failed before the re-tune was hardcore on `duck-rides`; the rest moved because the
+rule says so, not because a bar broke. The bar is the andon: the levels move, not the bar.
+
+### Verification
+
+```
+pnpm verify        lint · six typechecks · 52 test files, 647 tests · five builds ·
+                   test:play ghost --fixture naive-ndjson · test:play vibe-typer --tier 0 --bot typist:40
+pnpm build:play    green, site/public/play/ written (git-ignored)
+sweep-levels.mjs   sixteen levels, four tiers, three seeds, every budget inside the rule
+```
+
+Every band bar holds over all sixteen levels, four tiers and three seeds — the levers changed and
+the band reads them. The spelling test walks every new line and fires nothing. Both play-through
+screens scan clean: no digit, no barred word, no model or tool name.
+
+Ghost's play-through prints what it printed before, to the line. Vibe Typer's prints the new writing:
+
+```
+Vibe Typer
+level cat-website stack bash tier easy bot typist:40 seed 1 endless no
+level shipped
+product a website for my cat
+stack bash
+agent Sprocket
+agent On it, adding a sparkle trail now.
+user oh also the ducks should wear hats
+agent Landed and the lights are on.
+user my cat now has a working contact form.
+valuation: 20
+pieces: 4
+levels: 1
+compactions: 0
+```
+
+Nothing in `packages/ghost-on-the-menu`, `tape-core`, `cabinet-server`, `launcher`,
+`launcher-vibe-typer`, `catalog/`, `.github/workflows/`, `site/`, `voice/` or `apps/cabinets/` was
+touched.
+
+### Decisions
+
+Where the brief was silent, or where this pass departed from it, the choice and the reason.
+
+1. **The memory is the fix; the chunk size is not.** The brief named forty items a call as the
+   mechanism. Forty items a call cuts the call count in half and the token count by about a fifth,
+   and on its own it would have produced forty strangers instead of a hundred and eighty-nine. What
+   makes the pass work is the sheet plus the hundred and twenty lines a call gets handed of what the
+   slot has already kept. The two together are why the pools stopped repeating themselves and why the
+   sixteen premises no longer open the same way.
+2. **A pool written by two calls must have them one after another.** The first invocation lost eight
+   of fifty-four check-ins: both calls of that pool were in flight together, so neither could see
+   what the other kept, and dedupe took the pool under its floor. The `settle` andon caught it — it
+   kept the old pool and said so in the report rather than writing a lever the loader would refuse —
+   and the remedy is two-part: the `nags` slot runs its calls at a width of one, and `slotPools`
+   orders every pool's first call ahead of every pool's second so a key's two calls are a whole round
+   apart. That is the second invocation, and it is why the shipped numbers come from it.
+3. **Re-voicing re-pins, so the pinned set is rebuilt and not merged.** `ctx.pinned` is seeded from
+   the levels at process start, which is right for a top-up and wrong for a re-voice: twenty-one
+   pieces that were pinned before the run and are not pinned now were skipped by the `asks` slot and
+   kept an ask from the pass before. `slotStories` rebuilds the set in revoice mode. Found by
+   counting the first invocation's `asks` keys against the corpus.
+4. **A third invocation, for a flaw the read exposed.** Three of the fourteen pinned levels opened
+   all four of their requests with the same word, and one of the three was the level the Director is
+   asked to read. `picksPrompt` now says the four are read one after another and may not open alike,
+   and at most one may open on the token. The re-run cost forty-four minutes and eight more drain
+   re-tunes, and it is the difference between four requests and a form.
+5. **The gate gained one authoring-only rule, and it drops rather than mends.** `slugGate` refuses a
+   line that names a level by its id. It lives in the script, not in `lineFault`: it is a fact about
+   how these prompts are keyed, not a rule about what a line in this game may say, and the game's
+   loader should not learn it.
+6. **The editor drops and never rewrites, and never below a floor.** Both halves are the same
+   argument. The gate keeps or drops and never mends; an editor that could rewrite would put a line
+   into a lever that no single sitting wrote, which is the defect this pass exists to remove. And a
+   pool the editor took under its floor would be a lever the loader refuses, so the floor check runs
+   before the drop and the refusal is recorded with the line.
+7. **`--revoice` is a flag, and topping up stays the default.** Part three's receipts replay against
+   the old behavior, and a run that tops a pool up from below is still the right thing when a floor
+   is raised. Re-voicing replaces; topping up appends; the receipt says which the run did.
+8. **The candidate count stayed at three.** It is the gate's whole margin — the slot keeps the first
+   of three that passes — and cutting it to two would have cut a third off the wall clock by making
+   the gate more likely to leave a pool short. The wall clock was not worth that.
+9. **The drains are this builder's hand, and only the drains.** Every line in every lever came out of
+   the model and through the gate. `drainPerSec` is a tuning number the sweep measures and prints,
+   the brief names re-tuning as this sub-slice's job, and the table above is the eight it moved with
+   the reading beside each one.
+
+### Standards evidence
+
+- **PIN_PER_STEP (2 → held).** Every call's own prompt hash is in its slot receipt, as before, and
+  the two voice sheets are now hashed into the run receipt beside the model, the temperature, the
+  chunk and the width. A sheet the Director edits makes a different run and the receipt shows it.
+- **ANDON_AUTHORITY (2 → 3).** The `settle` halt is new and it fired in anger: a pool that came back
+  under its floor kept the lines it had, wrote the reason into the report, and the run carried on
+  rather than leaving a lever the loader would refuse. The editor's floor check is the same halt on
+  the other side. `pins no piece into two levels` is a new bar that failed on the branch this one
+  started from and passes now, which is the receipt that the fix is real.
+- **NAMED_COMPENSATORS (2 → held).** The only irreversible action here is the branch push.
+  Compensator: `git push origin --delete cabinet/vibe-typer-s3b4`, owner the coordinator. No npm, no
+  tag, no release, no Pages deploy, no spend — the writing model runs through the local daemon at no
+  per-token cost.
+- **DECOMPOSE_BY_SECRETS (2 → held).** The voice lives in two prose files the Director owns; the
+  mechanism lives in the script; the lines live in the levers; the numbers live in `levels.json`.
+  Changing the voice changes two files and re-runs, and touches no code.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** The sheets are written to be revised — that is what the
+  word cap in the brief was for — and the read above is the checkpoint. Where this pass departed from
+  the brief, the departure is a numbered decision with the measurement behind it rather than a quiet
+  change.
+- **EXTERNAL_VERIFIER (2 → held).** The writing model is not the coordinator's family and not the
+  builder's. The gate, the spelling test, the band and the sweep are mechanical and do not ask the
+  builder whether the writing reads as one voice. The editor is the same model family that wrote the
+  lines, which is the weak seam: it is a second read, not an independent one. **Remediation:** the
+  different-family review from a packet before merge, as every sub-slice of this slice has had.
+  Owner: the coordinator. Target: this sub-slice's merge.
+
+### Part five — finishing
+
+**Date:** 2026-09-16. **Builder:** Opus (this part). **Coordinator:** Claude (Fable 5.1).
+**Director:** Mike. **Branch:** `cabinet/vibe-typer-s3b4`, one commit on top of part four's, not
+merged.
+
+The Director read what part four shipped and chose to finish it rather than start over. The user's
+voice holds and Sprocket's mostly holds; two pools were written against the wrong brief and a dozen
+of Sprocket's lines carry an image that is not about the work. This part is those three things and
+one hardening the review asked for.
+
+1. **The quick-sync pool was written in the user's voice and should not have been.** Part four
+   pointed `user.md` at `user.syncs` and got the user's tics back: `oh also`, `tiny thing`, `my
+cousin is watching`. A sync is three lines of meeting chatter the player types between two
+   requests, and the shell never says which of the two people in the meeting said it, so a line only
+   one of them could have said is the wrong line.
+2. **The sixteen level premises were restatements of the product.** `make a website for my cat`
+   above a product that already reads `a website for my cat`. A premise is the situation that makes
+   the four requests under it a story, not the instruction they already are.
+3. **Sprocket's one small image went to the pantry.** The sheet allowed "one image per line at most,
+   and it is small and domestic", and the writing model took the invitation: the pie cools on the
+   sill, the peach has a fresh stem, the work is safe inside my drawer.
+4. **The script took a flag nobody knows and a chunk size that is not a number.** Both from the
+   different-family review of part four.
+
+#### The calls
+
+Every call on `ollama:kimi-k2.6:cloud` at `--chunk 40 --concurrency 4`, through the local daemon at
+no per-token cost.
+
+| Invocation                              | Stamp                  | Calls  | Wall         |
+| --------------------------------------- | ---------------------- | ------ | ------------ |
+| `pools --pool user.syncs --revoice`     | `2026-09-16-064955177` | 1      | 6.9 min      |
+| `premises`                              | `2026-09-16-065549528` | 1      | 7.3 min      |
+| `pools --pool agent --spare 14`         | `2026-09-16-065553849` | 5      | 8.4 min      |
+| `pools --pool agent.replies --spare 30` | `2026-09-16-070436992` | 1      | 2.2 min      |
+| `edit --pool agent`                     | `2026-09-16-070658709` | 5      | 12.5 min     |
+| `pools --pool agent --spare 26`         | `2026-09-16-072036588` | 5      | 12.2 min     |
+| `edit --pool agent`, again              | `2026-09-16-073306669` | 5      | 11.2 min     |
+| **total**                               |                        | **23** | **60.7 min** |
+
+The first three touch `user.json`, `levels.json` and `agent.json` and nothing of each other's, and
+`saveLevers` writes only the files a run marked, so they ran side by side; that is why the elapsed
+time is less than the sum. Everything after them writes `agent.json` and had to follow in order.
+
+**Twenty-three calls, against the hundred and seventy-six part four spent and the hundred and
+eighty-nine of the run before it.** That is what `--pool` buys: this part re-wrote two pools and
+sixteen premises and read five pools back, and never asked the model for a line it was not going to
+change. Five hundred and thirty-nine candidates asked for, a hundred and seventy-nine kept, and
+sixteen premises on top.
+
+#### The quick sync
+
+`run --only pools --pool user.syncs --revoice`, one call, forty lines asked for and forty kept
+against a floor of thirty-six; one candidate fell to `names a tool or a model` and none to the
+five-word cap. Two things are new in the script and both are the same argument — a sync is neither
+character:
+
+- **The slot has its own prompt.** Meeting chatter between two people who like each other, at most
+  five words, reading the same whoever says it, with the four lines slice two named as the exemplars
+  (`sounds good`, `will do`, `can you share your screen`, `let me find the link`). It asks for no
+  request, no praise, no product, and says most lines end with nothing at all.
+- **The slot carries neither voice sheet.** `systemFor(null)` — the persona and the rules and
+  nothing else, the same system prompt the `sample` command uses. Every other slot carries the
+  sheet for the character it writes; this one has no character to carry.
+
+The pool as it now stands, all forty, in the order the lever holds them:
+
+```
+sounds good                  that clarifies things
+will do                      appreciate the heads up
+can you share your screen?   is it loading?
+let me find the link         do you see it?
+one sec                      is this the draft?
+got it                       mind sharing again
+almost there                 still loading here
+thanks for that              i see the arrow
+see it now                   can we test audio?
+that makes sense             is this better now?
+just a moment                let me know when
+there we go                  ready to go
+works for me                 should we start?
+same here                    is everyone here
+no worries                   almost ready
+see you then                 that is the one
+talk soon                    no rush at all
+ready when you are           same page now
+same link as before          makes total sense
+let me know                  checking on my end
+```
+
+Seven of the forty are questions and thirty-three are not, which is the "no question mark habit" the
+brief asked for rather than a ban.
+
+**The rule is now a test.** `patterns.test.ts` reads the tics out of `patterns/voice/user.md` itself
+— every backtick span under "Their tics" — and fails if any sync line carries one. A tic is held as
+a shape rather than a fixed string: its first three words, so `my cousin is asking` also catches `my
+cousin is watching`, which is the line part four's pool actually had. A second case runs the same
+check over `user.nags` and `user.creeps` and asserts it finds hits there, so a rule that stopped
+measuring anything would fail rather than pass quietly. The first case failed on the pool part four
+shipped and passes on this one.
+
+#### The level premises
+
+`run --only premises`, one call, forty-eight candidates for sixteen premises and sixteen kept, none
+dropped. `premises` is a new slot that writes the line above the product and touches nothing else —
+the pins and the four requests of every level are part four's and are staying.
+
+Three things are in the prompt that were not in part four's:
+
+- **The four pinned requests of each level are listed under its product**, so the writer can see the
+  tale the premise has to open. Part four showed the product alone, and sixteen times the writer
+  wrote the product back.
+- **The premise is named as the situation and barred from being the instruction.** The standup
+  already prints the product on the next line and the requests come after, so the premise never
+  repeats the product and never opens on a verb telling the agent to build anything.
+- **Two premises of the right shape are given as exemplars**, for two of the products in the list.
+
+And `premiseGate` is the lock behind the ask: a candidate opening on `make`, `build`, `launch`,
+`create`, `track` or any of the other verbs the old premises opened on is dropped rather than mended,
+the same way `slugGate` refuses a line that names a level by its id.
+
+The sixteen, in the order the player meets them:
+
+| the premise                                           | the product it opens                     |
+| ----------------------------------------------------- | ---------------------------------------- |
+| my cousin is asking about the cat again.              | a website for my cat                     |
+| the ducks commute farther than i do.                  | a rideshare for ducks                    |
+| these loops and swirls need a proper audience.        | a website that rates your handwriting    |
+| i am eating more sandwiches than i can remember.      | a ledger of every sandwich i have eaten  |
+| my yogurt keeps disappearing before noon.             | a blockchain for the office fridge       |
+| my windowsill is crowded and the leaves are worried.  | a dashboard for my houseplants           |
+| the dryer is eating socks and i have proof.           | an enterprise platform for lost socks    |
+| the workday is long and my ego is soft.               | a desktop app that praises you hourly    |
+| my tools have needs and i am out of answers.          | a tool that finds tools for tools        |
+| we have news and nobody here can write.               | a newsletter that writes itself          |
+| the coffee machine sees more traffic than the lobby.  | a loyalty program for the coffee machine |
+| the thermostat and i are no longer speaking.          | a bot that argues with my thermostat     |
+| the book club wants to meet inside the computer.      | a metaverse for my book club             |
+| my phone is full and most of it is bad.               | an app that rates other apps             |
+| everybody here has an opinion and nowhere to sell it. | a marketplace for slightly used opinions |
+| decisions are everywhere and buttons are not.         | one button that runs the entire company  |
+
+None of them is a command, none repeats its product, and no two open the same way. The two that
+carry the user's own tics — `my cousin is asking` on level one, `my yogurt` on the fridge — are the
+sheet doing its job: a premise is the user speaking, and those are the words the sheet says they
+reach for.
+
+#### Sprocket's image
+
+The sheet said, of how Sprocket talks: _One image per line at most, and it is small and domestic._
+The writing model read "domestic" and went to the kitchen. What came back was the pie cooling on the
+sill, the peach with a fresh stem, the pinecone collecting dust, the work safe inside the drawer, the
+garden going underneath, the button under a blanket, the cookie tray sliding out, the cloud wanting a
+cozy nest, the info box offering tea, the subtitle carrying a basket, the leaf drifting down, the
+mountain that is now a pillow, the vine climbing the margin. Twenty-two lines in all: twelve in
+`agent.replies` alone, three in `hmm`, three in `compactions`, four in `nagReplies` and none at all
+in `ships`, which is the one agent pool that came through part four clean.
+
+**The sheet's diff, in prose.** The sentence above is gone, and two passages stand in its place.
+
+In _How they talk_: concrete now means the work in hand and nothing else — the shape, the line, the
+button, the table, the greeting, the countdown, the color. Sprocket may still reach for one small
+image a line, and only when the image is **about the thing being built**: the background is knitted,
+the loop is given a little rhythm, the greeting is taught a name. The bar is written as a test the
+writer can apply to its own line — _if a line would read the same in a kitchen as in a chat about a
+button, it is the wrong line_ — and the three rooms it is barred from are named: no pantry, no
+garden, no furniture, nothing cooling on a sill, ripening on a stem, growing in a bed, gathering dust
+on a shelf or put away in a drawer.
+
+In _What they never say_, the same list again as a refusal, with the six words that actually came
+back in part four's pools: a pie, a peach, a pinecone, a drawer, a shelf, a windowsill. _Those are
+someone else's life; Sprocket's life is the thing on the screen._
+
+The twenty exemplar lines at the foot of the sheet were read against the new rule and all twenty
+hold, so none was replaced; every image in them is already about the work.
+
+**The top-up, under the tightened sheet.** `run --only pools --pool agent --spare 14`, then a second
+call at `--pool agent.replies --spare 30`, so the editor would have room to drop every off-voice line
+without a pool hitting the loader's floor:
+
+| Pool                | Floor | Before | Asked for | Kept | After | Over the floor |
+| ------------------- | ----- | ------ | --------- | ---- | ----- | -------------- |
+| `agent.replies`     | 72    | 72     | 14 + 18   | 32   | 102   | 30             |
+| `agent.hmm`         | 36    | 37     | 13        | 13   | 50    | 14             |
+| `agent.compactions` | 24    | 24     | 14        | 14   | 38    | 14             |
+| `agent.ships`       | 24    | 24     | 14        | 14   | 38    | 14             |
+| `agent.nagReplies`  | 50    | 50     | 14        | 14   | 64    | 14             |
+
+Six calls in ten and a half minutes: two hundred and sixty-one candidates, eighty-seven kept, two
+dropped by the gate for naming a tool or a model, two lost to dedupe against lines the pool already
+held. **`agent.replies` was topped up twice on purpose, and that is part four's residual answered.**
+Part four wrote every pool four lines over its floor, which left the editor four drops and made it
+refuse sixty-three; twelve of `agent.replies`'s own lines carry the image tic, so a pool fourteen
+over its floor would have been refused on the last of them. Thirty over is the room the pool needed.
+
+Every line that came back is about the work: `Love this, the button is getting a glow`, `Happy to,
+teaching the loop its step`, `Hmm, that tag opened without a partner`, `The lines are neat and the
+brackets agree`, `Nothing wobbles and everything stays where it belongs`.
+
+**The editor, over the agent pools only.** `edit --pool agent --concurrency 4 --apply`, five calls,
+twelve and a half minutes. It read each whole pool with the tightened sheet in front of it and named
+the numbers to drop; it never rewrote a line and it was refused at a floor exactly as before.
+
+| Pool                | Read | Floor | Dropped | Refused at the floor | Left |
+| ------------------- | ---- | ----- | ------- | -------------------- | ---- |
+| `agent.replies`     | 102  | 72    | 30      | 2                    | 72   |
+| `agent.hmm`         | 50   | 36    | 14      | 8                    | 36   |
+| `agent.compactions` | 38   | 24    | 10      | 0                    | 28   |
+| `agent.ships`       | 38   | 24    | 11      | 0                    | 27   |
+| `agent.nagReplies`  | 64   | 50    | 14      | 9                    | 50   |
+| **total**           | 292  |       | **79**  | **19**               |      |
+
+**Seventy-nine lines dropped, and the tic is the reason for most of them.** A sample with the
+editor's own clause, the full list line by line in the receipt:
+
+| Line                                                 | Pool                | Why it went                           |
+| ---------------------------------------------------- | ------------------- | ------------------------------------- |
+| Love this direction, the pie cools on the sill       | `agent.replies`     | not the character                     |
+| Great idea, the peach has a fresh stem               | `agent.replies`     | not the character                     |
+| You are absolutely right, the vine climbs the margin | `agent.replies`     | not the character                     |
+| Great idea, the tab is now a hammock                 | `agent.replies`     | not the character                     |
+| Brilliant, the page gets a fresh apron               | `agent.replies`     | not the character                     |
+| On it, the frog sits on a lily                       | `agent.replies`     | not the character                     |
+| Great idea, the towel fluffs itself up               | `agent.replies`     | not the character                     |
+| On it, and keeping it small                          | `agent.replies`     | already in the list, said another way |
+| Hmm, I watered the wrong row in the garden.          | `agent.hmm`         | not the character                     |
+| Hmm, I salted when I should have sugared.            | `agent.hmm`         | not the character                     |
+| The work is safe inside my drawer.                   | `agent.compactions` | not the character                     |
+| Sweeping up the crumbs and saving cake.              | `agent.compactions` | not the character                     |
+| Landed and looking rather cozy.                      | `agent.ships`       | not the character                     |
+| Your fern is tucked in nicely.                       | `agent.nagReplies`  | not the character                     |
+| The jam is almost spread now.                        | `agent.nagReplies`  | not the character                     |
+| Hmm, the brackets and I disagreed.                   | `agent.nagReplies`  | makes no sense where it is used       |
+
+Both of the two lines part four's read left standing — `the pie cools on the sill` and `the peach
+has a fresh stem` — are in that list. So is every one of the twenty-two the scan found, and
+fifty-seven more the scan could not see because they carry no pantry word at all: the snail in a top
+hat, the grid that is now a picnic, the bird that chirps when you linger, the living room of our
+work. The tightened sheet is what let the editor name them; the widened pool is what let it drop
+them.
+
+**And then it hit three floors anyway.** Nineteen lines it named could not go, because
+`agent.replies`, `agent.hmm` and `agent.nagReplies` had been drained to exactly their floor by the
+drops before them. A lever sitting at its floor is one dedupe away from a lever the loader refuses,
+and nineteen lines the editor has already called off-voice are nineteen lines the player still
+reads. So the agent pools were written up again — `--pool agent --spare 26`, five calls, twelve
+minutes, three hundred and sixty-nine candidates and a hundred and twenty-three kept — and read a
+second time.
+
+**The second read dropped fifty-two more and was refused nothing.**
+
+| Pool                | Read | Floor | Dropped | Refused | Final | Over the floor |
+| ------------------- | ---- | ----- | ------- | ------- | ----- | -------------- |
+| `agent.replies`     | 98   | 72    | 14      | 0       | 84    | 12             |
+| `agent.hmm`         | 62   | 36    | 15      | 0       | 47    | 11             |
+| `agent.compactions` | 50   | 24    | 7       | 0       | 43    | 19             |
+| `agent.ships`       | 50   | 24    | 6       | 0       | 44    | 20             |
+| `agent.nagReplies`  | 76   | 50    | 10      | 0       | 66    | 16             |
+| **total**           | 336  |       | **52**  | **0**   |       |                |
+
+It took the nineteen it had been refused — `Hmm, I set the table with two left forks.`, `The tail is
+wagging nicely now.`, `Hmm, the brackets and I disagreed.` in the wrong pool — and thirty-three more
+from the fresh writing: the footer that gets a teddy, the error message in a sweater, the sunset, the
+snack bar, and eight duplicates of lines the pool already had. **Every pool now sits between eleven
+and twenty lines over its floor, and nothing the editor named is still in a lever.**
+
+One image survived both reads: `On it, giving every button a blanket.` The tightened sheet allows an
+image when it is about the thing being built, and that one is about the button. It is the rule
+working rather than the rule failing, and it is the only line in the five pools a pantry scan still
+finds.
+
+#### What the script refuses now
+
+The review of part four asked for two refusals, and both are in `author-lib.mjs` where a test can
+reach them without the script's `main()` running. `Fail`, `parseArgv` and `runOpts` moved there with
+them; `author.mjs` keeps its own flag sets, its usage and its defaults and hands them in.
+
+- **An unknown `--` flag dies with the usage.** It always did when it had a value; `--nope` at the
+  end of the line died saying it was **missing a value**, which names the wrong defect and sends the
+  reader looking for a value that was never going to help. The flag name is now checked against the
+  two sets — the ones that take a value and the ones that are their own answer — before the value is
+  taken, so an unknown flag reads as one wherever it sits. A value handed to `--apply` is refused
+  for the same reason, and an unknown single-dash flag no longer walks quietly into the positional
+  words to be reported as an unknown command.
+- **`--chunk`, `--concurrency`, `--temperature` and `--timeout` must be numbers.** `Number('four')`
+  is `NaN`, and `NaN` went straight into a chunk size, a width, a temperature and a timeout, where
+  it becomes a call that asks for nothing or waits forever. Every one goes through `Number.isFinite`
+  now and dies with one reason line naming the flag and what it was handed: `--chunk wants a number,
+not "four"`. An empty value and `Infinity` are refused the same way.
+
+Eleven cases in `test/author.test.ts` cover the two refusals — seven over `parseArgv`, four over
+`runOpts` — with four more over `poolFilter`, the matcher behind the new `--pool`.
+
+#### The read
+
+Level one, tier zero, seed one, a forty-word typist, in play order — the same read part four printed,
+so the two can be set side by side. The code titles are the pieces the player types between the
+lines.
+
+```
+standup   my cousin is asking about the cat again.
+product   a website for my cat
+
+user      have a website for my cat say hello to visitors
+agent     Great idea, keeping it tidy as I go.
+code      simple echo greeting
+agent     It is knitted together and looking lovely
+user      the form is a very polite parrot.
+
+user      use her name in the greeting
+agent     Love this, the greeting is landing now.
+code      variable assignment and print
+agent     You will love how this one turned out
+user      the product now holds a thing for later.
+
+user      show every toy she has reviewed
+agent     You read my mind, on it
+code      For loop
+user      can i peek now
+agent     The layer is stacking just as asked.
+agent     The animation loops without a stutter
+user      the repeated task has its own rhythm.
+
+user      make a live folder then delete it
+agent     Great idea, adding that now
+code      create and remove directory
+user      oh also the ducks should wear hats
+agent     The glow sits right behind it
+user      my cat now has a working contact form.
+
+review    my cat has never looked more professional.
+review    my cat now has a working contact form.
+```
+
+The standup opens on a situation now rather than on the instruction, and every Sprocket line in it is
+about the work in hand: the greeting, the layer, the animation, the glow, the thing knitted together.
+The pie and the peach are gone. The user's four requests and the four pieces are part four's,
+untouched.
+
+#### The sweep, and the numbers it set
+
+The lines the player types changed — forty new sync lines with their own lengths — so the bar moved
+and the levels moved with it. Part three's rule, `drainPerSec × seconds ≈ 0.93` at tier zero, is
+still the measure, and `sweep:levels --suggest` is still where the numbers come from. Fifteen levels
+took the suggestion:
+
+| #   | id                    | drain before | drain now | budget now |
+| --- | --------------------- | ------------ | --------- | ---------- |
+| 0   | `cat-website`         | 0.00921      | 0.01      | 0.930      |
+| 1   | `duck-rides`          | 0.00415      | 0.00427   | 0.931      |
+| 2   | `handwriting-rater`   | 0.00384      | 0.00406   | 0.930      |
+| 4   | `fridge-chain`        | 0.00234      | 0.00239   | 0.930      |
+| 5   | `plant-dashboard`     | 0.0022       | 0.00217   | 0.929      |
+| 6   | `lost-sock-platform`  | 0.00294      | 0.00304   | 0.930      |
+| 7   | `hourly-praise`       | 0.0033       | 0.00343   | 0.930      |
+| 8   | `tool-finder`         | 0.0073       | 0.00744   | 0.930      |
+| 9   | `self-newsletter`     | 0.0017       | 0.00179   | 0.933      |
+| 10  | `coffee-loyalty`      | 0.00217      | 0.00221   | 0.930      |
+| 11  | `thermostat-debate`   | 0.0017       | 0.00175   | 0.931      |
+| 12  | `book-club-metaverse` | 0.0012       | 0.00122   | 0.932      |
+| 13  | `app-that-rates-apps` | 0.00062      | 0.00062   | 0.930      |
+| 14  | `opinion-market`      | 0.00098      | 0.00097   | 0.926      |
+| 15  | `one-button-company`  | 0.0053       | 0.00544   | 0.930      |
+
+**The sixteenth is the andon firing, and it is worth reading twice.** `sandwich-ledger` was moved to
+its suggested `0.00571` with the rest, and `band.test.ts` failed on the spot: _hardcore is beatable
+by a clean ninety words a minute_ — level three, seed one, ended by context rather than shipped. The
+suggestion is a rule about how much of the bar a level should cover; the bar is what the game is. So
+`sandwich-ledger` went back to `0.00544` and reads 0.887, outside the rule and inside the bar. The
+bar is the andon: the levels move, not the bar, and where the two disagree the bar wins.
+
+#### Verification
+
+```
+pnpm verify        lint · six typechecks · 52 test files, 664 tests · five builds ·
+                   test:play ghost --fixture naive-ndjson · test:play vibe-typer --tier 0 --bot typist:40
+pnpm build:play    green, site/public/play/ written (git-ignored)
+sweep-levels.mjs   sixteen levels, four tiers, three seeds
+```
+
+Six hundred and sixty-four tests against part four's six hundred and forty-seven: seventeen new, the
+eleven over the two flag refusals, four over `poolFilter`, and the two over the sync pool's tics.
+Every band bar holds over all sixteen levels, four tiers and three seeds. The spelling test walks
+every new line and fires nothing. Both play-through screens scan clean: no digit, no barred word, no
+model or tool name. Ghost's play-through prints what it printed before, to the line.
+
+Nothing in `packages/ghost-on-the-menu`, `tape-core`, `cabinet-server`, `launcher`,
+`launcher-vibe-typer`, `catalog/`, `.github/workflows/`, `site/`, `voice/` or `apps/cabinets/` was
+touched. Of the levers, `user.json` changed in one field (`syncs`), `levels.json` in two (`story` and
+`drainPerSec`), `agent.json` in five pools, and the corpus not at all.
+
+#### Decisions
+
+Where this part went past the brief, the choice and the reason.
+
+1. **`--pool` and `--spare` are new flags, and they are what made this part one call a pool.** The
+   brief asks for the sync pool re-voiced "in one call" and the agent pools topped up "by at least
+   twelve lines each". Neither was reachable: `--only pools` writes all thirty-one pools, and a
+   top-up computes what a pool is short of its target, which for a pool already at its target is
+   nothing. `--pool <key>` narrows a slot to named pools, matching a name whole or as the head of a
+   branch, so `--pool agent` is the five agent pools and `--pool user.syncs` is one. `--spare <n>`
+   is how far over its floor a pool is written; it defaults to the four a re-voice always had and to
+   none on a top-up, so a run with neither flag writes exactly what it wrote before.
+2. **`premises` is a slot of its own rather than a re-run of `stories`.** `stories` re-picks the
+   four pieces of every level and writes the four requests under the new premise, which is right
+   when the levels are being built and wrong here: the pins and the asks of part four hold and only
+   the line above them was off. `premises` writes the sixteen premises and nothing else, and it is
+   not in the default pass — asking for `premises` and `stories` in one run would write the story
+   twice.
+3. **The premise gate drops a line that opens on an instruction.** The prompt says a premise is the
+   situation and not the request, and the prompt alone is a preference. `premiseGate` refuses a
+   candidate opening on `make`, `build`, `launch`, `create`, `track` and the two dozen other verbs
+   the old premises opened on. Like `slugGate` it lives in the script and not in `lineFault` — it is
+   a fact about what a premise is, not a rule about what a line in this game may say — and like
+   every other gate rule it drops rather than mends.
+4. **The premises call sees each level's four pinned requests.** Part four showed the writer the
+   product alone and got the product back sixteen times. A premise is the line those four requests
+   sit under, so the writer has to see them; the prompt lists them under each product and names two
+   premises of the right shape as exemplars.
+5. **`agent.nagReplies` is written by the pools slot when it is named, and by the nags slot
+   otherwise.** The nags slot writes one reply to each check-in that passed, which reads as one
+   exchange in the receipt — but `LinePicker.nagReply()` draws from the flat pool with no reference
+   to which check-in fired, so a reply written beside its check-in and a reply written on its own
+   are the same thing at play time. Growing the pool alone is therefore sound, and the pairing is
+   kept for the pass that writes both.
+6. **The two lever passes ran side by side.** `premises` touches `levels.json` and the agent top-up
+   touches `agent.json`; `saveLevers` writes only the files a run marked, so two runs over disjoint
+   levers cannot overwrite one another. The receipt of each names the width it ran at. The sync
+   re-voice ran beside them on `user.json`, which is disjoint from both.
+7. **The editor read the agent pools and nothing else.** The user pools were edited in part four and
+   are unchanged here except for `user.syncs`, which was written fresh in this part and has its own
+   test. Re-reading eleven pools that nothing has touched would cost an hour and could only take
+   lines out of a pool the Director has already read.
+8. **The editor ran twice, and the second run is the answer to its own first.** The brief asks for
+   the pools topped up so the editor can drop without hitting a floor. Fourteen over the floor was
+   not enough: the first read named ninety-eight lines and could only take seventy-nine, because
+   three pools reached their floor while it was still naming. Rather than ship three levers sitting
+   at exactly the number the loader refuses to go under, the pools were written up again and read
+   again. The second read was refused nothing, and every pool ends between eleven and twenty over.
+   The lesson for the next pass is the size, not the pass count: a pool carrying a tic the sheet has
+   just outlawed needs room for every line of it, and that is more than a fixed spare can guess.
+9. **`sandwich-ledger` keeps a drain the rule says is wrong.** Covered above: the suggestion failed
+   the hardcore bar. The bar is the andon.
+10. **The drains are this builder's hand, and only the drains.** Unchanged from part four. Every line
+    in every lever came out of the model and through the gate; `drainPerSec` is a tuning number the
+    sweep measures and prints, and the table above is the fifteen it moved with the reading beside
+    each one.
+
+#### Standards evidence
+
+- **PIN_PER_STEP (2 → held).** Every call in this part carries its own prompt hash in its slot
+  receipt, and every run receipt carries both voice-sheet hashes beside the model, the temperature,
+  the chunk and the width. The agent sheet's hash moved when this part tightened it, which is the
+  receipt saying the writing changed because the sheet changed. **Two fields were missing and are
+  added here:** `--spare` and `--pool` change what a run writes and were not in the receipt, so a
+  narrowed run would have replayed as the full pass. They are pinned from now on; the four
+  invocations of this part predate the field, and the table above is what pins them.
+- **ANDON_AUTHORITY (2 → 3).** Four halts, and three of them fired in anger. `settle` still refuses
+  to write a re-voiced pool under the loader's floor. `premiseGate` is new and drops a premise that
+  opens on an instruction, which is the defect this part exists to fix, made mechanical. The new
+  sync test failed on the pool part four shipped and passes on this one, with a sibling case
+  asserting the same check still finds tics in the user's own pools — a rule that stopped measuring
+  would fail rather than pass quietly. And **`band.test.ts` stopped a re-tune**: the sweep's
+  suggested drain for `sandwich-ledger` made hardcore unbeatable at ninety clean words a minute, the
+  bar said so, and the number went back rather than the bar moving.
+- **NAMED_COMPENSATORS (2 → held).** The only irreversible action is the branch push. Compensator:
+  `git push origin --delete cabinet/vibe-typer-s3b4`, owner the coordinator. No npm, no tag, no
+  release, no Pages deploy, no spend — the writing model runs through the local daemon at no
+  per-token cost.
+- **DECOMPOSE_BY_SECRETS (2 → held).** Tightening Sprocket's voice was an edit to one prose file the
+  Director owns, followed by a re-run. No code changed for it. The command line moved into
+  `author-lib.mjs` on the same argument: what a flag is called belongs with the parsing, and the
+  parsing belongs where a test can reach it without running the script.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** The Director read part four and chose to finish it rather
+  than start over; this part is that decision carried out, with the read below as the next
+  checkpoint. Every departure from the brief is a numbered decision above with the reason.
+- **EXTERNAL_VERIFIER (2 → held).** Unchanged and still the weak seam: the editor is the same model
+  family that wrote the lines, so it is a second read rather than an independent one. The gate, the
+  spelling test, the band, the sweep and the two new tests are mechanical. **Remediation:** the
+  different-family review from a packet before merge. Owner: the coordinator. Target: this
+  sub-slice's merge.

@@ -1,0 +1,657 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-201349721",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "prompts": [
+      "eb3ef7bc78ca27d1554dc5f9655a2124fb64ee02082551eee16f0804d20cbe50",
+      "1fe239dab1633b32474dc542f4972990f061805c9f60951f0bb2fa4b08e6de15",
+      "fce0ed3ff3853973e1d44780b78d177f2cd468377184de1bc1ffe2bcf7bcf8e5",
+      "4f54790533637787ee751bc958f9aabb7d979dce585249c9c50441ff5ee6723e",
+      "74ad3b1bf76e3073f31ebda35c0219691c42ad1ba23f986f15a9eca4b9bc98c5",
+      "1ba51fe9495801fbf9e5bedd041e306776a9dbc853da40b0e1bd8798b94a8af5",
+      "9561bb4247c520f6df6d9d5c66bd3af3e3728c164f253a5762bede27ffb53845",
+      "ab46c8182915bbef576a52350e64020f5c536e0277f481759136016c652df063",
+      "796685358996056c21061539a1d230827ad6dbadb57a949ad6cfa006da9d4d16",
+      "9d76294edeac92713f4865bab165cc84bb1dfeebff784f3b1e7e3b03e6547b7d",
+      "1e5b5b14cc94958d17adb9cfb339fd7aa70d4b7935eca5cd8fea096a3270f877",
+      "0e621bd88a72d5ac024f78a99994091da9d242c2a22ccdb16be58cd2646913ee",
+      "7d8fc004a69d9c9efa7ae60788bcdfa5d5803512ea325808c353885645ad07aa",
+      "4468daf15c390a4ca9b11f00228835bf40aa8b8a5b7cdc96ee6c5cdbc5856b09",
+      "eb0649024a660b579239077a2792a913bf65f77d06c95d0684717aa16cab0546",
+      "b1f783dc0b3e77262635f070a8b82dde582aaa0fa62ed4bb06376025e306ec6b"
+    ],
+    "requested": 208,
+    "kept": 72,
+    "missing": 0,
+    "waits": 2,
+    "dropped": {
+      "surplus": 57
+    },
+    "ms": 9355446,
+    "tokens": {
+      "in": 33324,
+      "out": 207791
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 2393659
+  },
+  "candidates": {
+    "cat-website": {
+      "story": "this website is for my cat, mittens",
+      "alternates": ["mittens wants more than just hello", "time to take mittens global"],
+      "raw": {
+        "story": [
+          "this website is for my cat, mittens",
+          "mittens wants more than just hello",
+          "time to take mittens global"
+        ],
+        "picks": ["cal-sh-d1-001", "sh-for-loop", "cal-sh-d2-004", "cal-sh-d1-003"],
+        "asks": {
+          "cal-sh-d1-001": [
+            "build {product} with a welcome message",
+            "make {product} say hello world",
+            "give {product} a greeting"
+          ],
+          "sh-for-loop": [
+            "list every text post on {product}",
+            "show all blog entries for {product}",
+            "process the writing on {product}"
+          ],
+          "cal-sh-d2-004": [
+            "add a settings file to {product}",
+            "write configuration for {product}",
+            "give {product} a preferences page"
+          ],
+          "cal-sh-d1-003": [
+            "deploy {product} to production",
+            "push {product} live right now",
+            "set {product} to production mode"
+          ]
+        }
+      },
+      "picks": ["cal-sh-d1-001", "sh-for-loop", "cal-sh-d2-004", "cal-sh-d1-003"],
+      "asks": {
+        "cal-sh-d1-001": "build {product} with a welcome message",
+        "sh-for-loop": "list every text post on {product}",
+        "cal-sh-d2-004": "add a settings file to {product}",
+        "cal-sh-d1-003": "deploy {product} to production"
+      }
+    },
+    "duck-rides": {
+      "story": "my new rideshare helps ducks who hate long walks",
+      "alternates": [
+        "the drivers need names, permits, and stars just like us",
+        "tonight we launch, assuming nobody checks the regulations"
+      ],
+      "raw": {
+        "story": [
+          "my new rideshare helps ducks who hate long walks",
+          "the drivers need names, permits, and stars just like us",
+          "tonight we launch, assuming nobody checks the regulations"
+        ],
+        "picks": ["cal-py-d1-003", "cal-py-d1-005", "cal-py-d2-005", "cal-py-d2-003"],
+        "asks": {
+          "cal-py-d1-003": [
+            "create a full name for the driver",
+            "join the first and last name together",
+            "make a driver profile name from two parts"
+          ],
+          "cal-py-d1-005": [
+            "check if the duck driver is at least eighteen",
+            "verify the duck meets the minimum age requirement",
+            "confirm the driver is old enough to work"
+          ],
+          "cal-py-d2-005": [
+            "list each driver rating and the pond average",
+            "print every duck rating and the overall average",
+            "show all names and ratings with the flock mean"
+          ],
+          "cal-py-d2-003": [
+            "deploy {product} with a countdown to liftoff",
+            "start a ten second launch countdown for {product}",
+            "count down from ten and then announce liftoff"
+          ]
+        }
+      },
+      "picks": ["cal-py-d1-003", "cal-py-d1-005", "cal-py-d2-005", "cal-py-d2-003"],
+      "asks": {
+        "cal-py-d1-003": "create a full name for the driver",
+        "cal-py-d1-005": "check if the duck driver is at least eighteen",
+        "cal-py-d2-005": "list each driver rating and the pond average",
+        "cal-py-d2-003": "deploy {product} with a countdown to liftoff"
+      }
+    },
+    "handwriting-rater": {
+      "story": "my cursive is finally ready for public critical feedback",
+      "alternates": [
+        "every loop and descender needs its own review board",
+        "if the site panics we will just yell louder"
+      ],
+      "raw": {
+        "story": [
+          "my cursive is finally ready for public critical feedback",
+          "every loop and descender needs its own review board",
+          "if the site panics we will just yell louder"
+        ],
+        "picks": ["cal-js-d1-001", "cal-js-d2-003", "js-map-filter", "cal-js-d2-001"],
+        "asks": {
+          "cal-js-d1-001": [
+            "print a welcome message for {product}",
+            "yes and hello to everyone out there",
+            "a warm greeting blinks inside the console"
+          ],
+          "cal-js-d2-003": [
+            "create a user profile for {product}",
+            "yes a profile makes it feel official",
+            "a tiny profile card blinks into existence"
+          ],
+          "js-map-filter": [
+            "filter active samples and uppercase them for {product}",
+            "yes the good samples get big letters",
+            "the active samples suddenly speak in capitals"
+          ],
+          "cal-js-d2-001": [
+            "greet the user and shout the result for {product}",
+            "yes whisper first then yell for emphasis",
+            "a quiet hello then a loud one"
+          ]
+        }
+      },
+      "picks": ["cal-js-d1-001", "cal-js-d2-003", "js-map-filter", "cal-js-d2-001"],
+      "asks": {
+        "cal-js-d1-001": "print a welcome message for {product}",
+        "cal-js-d2-003": "create a user profile for {product}",
+        "js-map-filter": "filter active samples and uppercase them for {product}",
+        "cal-js-d2-001": "greet the user and shout the result for {product}"
+      }
+    },
+    "sandwich-ledger": {
+      "story": "i am building a ledger of every sandwich i have eaten.",
+      "alternates": ["every entry needs a name and a price.", "let us make it beautiful."],
+      "raw": {
+        "story": [
+          "i am building a ledger of every sandwich i have eaten.",
+          "every entry needs a name and a price.",
+          "let us make it beautiful."
+        ],
+        "picks": ["sql-insert", "cal-sq-d2-005", "cal-sq-d2-002", "cal-sq-d2-004"],
+        "asks": {
+          "sql-insert": [
+            "add my first sandwich to {product}",
+            "This is going to be perfect.",
+            "First row coming right up."
+          ],
+          "cal-sq-d2-005": [
+            "add the whole week to {product}",
+            "Five rows in one breath.",
+            "Bulk insert is my favorite."
+          ],
+          "cal-sq-d2-002": [
+            "show totals by filling in {product}",
+            "Averages and counts coming up.",
+            "Grouping every delicious layer."
+          ],
+          "cal-sq-d2-004": [
+            "deploy {product} monthly summaries",
+            "Your dashboard will be legendary.",
+            "Regional rollup initiated."
+          ]
+        }
+      },
+      "picks": ["sql-insert", "cal-sq-d2-005", "cal-sq-d2-002", "cal-sq-d2-004"],
+      "asks": {
+        "sql-insert": "add my first sandwich to {product}",
+        "cal-sq-d2-005": "add the whole week to {product}",
+        "cal-sq-d2-002": "show totals by filling in {product}",
+        "cal-sq-d2-004": "deploy {product} monthly summaries"
+      }
+    },
+    "fridge-chain": {
+      "story": "i want a blockchain for the office fridge.",
+      "alternates": [
+        "there are too many mystery containers in there.",
+        "just ship it and count every unique item."
+      ],
+      "raw": {
+        "story": [
+          "i want a blockchain for the office fridge.",
+          "there are too many mystery containers in there.",
+          "just ship it and count every unique item."
+        ],
+        "picks": ["cal-js-d2-003", "cal-js-d3-004", "cal-js-d3-001", "cal-js-d3-005"],
+        "asks": {
+          "cal-js-d2-003": [
+            "create a block with name and role.",
+            "start the {product} with one record.",
+            "log a user for the {product}."
+          ],
+          "cal-js-d3-004": [
+            "group the {product} by type.",
+            "sort the blocks by shelf.",
+            "organize the {product} into categories."
+          ],
+          "cal-js-d3-001": [
+            "list only fresh items on the {product}.",
+            "show available rows from the {product}.",
+            "display the good items in the {product}."
+          ],
+          "cal-js-d3-005": [
+            "launch the {product} and count unique items.",
+            "deploy the {product} and audit the tally.",
+            "ship the {product} and print the counts."
+          ]
+        }
+      },
+      "picks": ["cal-js-d2-003", "cal-js-d3-004", "cal-js-d3-001", "cal-js-d3-005"],
+      "asks": {
+        "cal-js-d2-003": "create a block with name and role.",
+        "cal-js-d3-004": "group the {product} by type.",
+        "cal-js-d3-001": "list only fresh items on the {product}.",
+        "cal-js-d3-005": "launch the {product} and count unique items."
+      }
+    },
+    "plant-dashboard": {
+      "story": "i need a dashboard to track my houseplants before they unionize.",
+      "alternates": [],
+      "raw": {
+        "story": ["i need a dashboard to track my houseplants before they unionize."],
+        "picks": ["cal-sq-d3-004", "cal-sq-d2-003", "cal-sq-d3-003", "cal-sq-d2-004"],
+        "asks": {
+          "cal-sq-d3-004": ["build a watering log with rules for {product}"],
+          "cal-sq-d2-003": ["show {product} and use default icons for the missing"],
+          "cal-sq-d3-003": ["group {product} into price tiers by category"],
+          "cal-sq-d2-004": ["ship monthly report cards for {product} by room"]
+        }
+      },
+      "picks": ["cal-sq-d3-004", "cal-sq-d2-003", "cal-sq-d3-003", "cal-sq-d2-004"],
+      "asks": {
+        "cal-sq-d3-004": "build a watering log with rules for {product}",
+        "cal-sq-d2-003": "show {product} and use default icons for the missing",
+        "cal-sq-d3-003": "group {product} into price tiers by category",
+        "cal-sq-d2-004": "ship monthly report cards for {product} by room"
+      }
+    },
+    "lost-sock-platform": {
+      "story": "our enterprise platform for lost socks just got funding.",
+      "alternates": [
+        "we will catalog every missing argyle in the wild.",
+        "today we ship the minimum viable sock finder."
+      ],
+      "raw": {
+        "story": [
+          "our enterprise platform for lost socks just got funding.",
+          "we will catalog every missing argyle in the wild.",
+          "today we ship the minimum viable sock finder."
+        ],
+        "picks": ["cal-jv-d2-004", "cal-jv-d3-002", "cal-jv-d3-003", "cal-jv-d2-003"],
+        "asks": {
+          "cal-jv-d2-004": [
+            "display every color in the {product} catalog",
+            "you got it, colors incoming",
+            "the screen fills with soft cotton hues"
+          ],
+          "cal-jv-d3-002": [
+            "add seasonal lookup logic to {product}",
+            "seasons change and so do socks",
+            "winter socks now sort before spring socks"
+          ],
+          "cal-jv-d3-003": [
+            "print each owner and sock total from {product}",
+            "mapping owners to their lonely socks now",
+            "the registry pairs humans with footwear"
+          ],
+          "cal-jv-d2-003": [
+            "initiate launch countdown before deploying {product}",
+            "this is not overkill, this is tradition",
+            "valuation rises as the timer blinks"
+          ]
+        }
+      },
+      "picks": ["cal-jv-d2-004", "cal-jv-d3-002", "cal-jv-d3-003", "cal-jv-d2-003"],
+      "asks": {
+        "cal-jv-d2-004": "display every color in the {product} catalog",
+        "cal-jv-d3-002": "add seasonal lookup logic to {product}",
+        "cal-jv-d3-003": "print each owner and sock total from {product}",
+        "cal-jv-d2-003": "initiate launch countdown before deploying {product}"
+      }
+    },
+    "hourly-praise": {
+      "story": "i want a desktop app that praises me every hour.",
+      "alternates": [
+        "but it should check if i actually deserve it first.",
+        "and it needs to handle my weird mood inputs gently."
+      ],
+      "raw": {
+        "story": [
+          "i want a desktop app that praises me every hour.",
+          "but it should check if i actually deserve it first.",
+          "and it needs to handle my weird mood inputs gently."
+        ],
+        "picks": ["cal-cs-d2-005", "cal-cs-d2-001", "cal-cs-d3-002", "cal-cs-d3-003"],
+        "asks": {
+          "cal-cs-d2-005": [
+            "add three praises to {product} and count them.",
+            "store some compliments in {product} and show the total.",
+            "build a list of nice things in {product}."
+          ],
+          "cal-cs-d2-001": [
+            "make {product} check if i am worthy today.",
+            "have {product} decide if i get a compliment.",
+            "let {product} judge my mood before praising me."
+          ],
+          "cal-cs-d3-002": [
+            "show each praise in {product} with its hour number.",
+            "list every item in {product} and label them in order.",
+            "print all messages in {product} with their position."
+          ],
+          "cal-cs-d3-003": [
+            "make {product} catch bad input without breaking.",
+            "if i type nonsense into {product} handle it gently.",
+            "let {product} survive when i type letters as numbers."
+          ]
+        }
+      },
+      "picks": ["cal-cs-d2-005", "cal-cs-d2-001", "cal-cs-d3-002", "cal-cs-d3-003"],
+      "asks": {
+        "cal-cs-d2-005": "add three praises to {product} and count them.",
+        "cal-cs-d2-001": "make {product} check if i am worthy today.",
+        "cal-cs-d3-002": "show each praise in {product} with its hour number.",
+        "cal-cs-d3-003": "make {product} catch bad input without breaking."
+      }
+    },
+    "tool-finder": {
+      "story": "i need a tool that finds tools for our tools",
+      "alternates": [
+        "wire everything we own to everything else we own",
+        "build a finder for tools and plug it into everything"
+      ],
+      "raw": [
+        "i need a tool that finds tools for our tools",
+        "wire everything we own to everything else we own",
+        "build a finder for tools and plug it into everything"
+      ]
+    },
+    "self-newsletter": {
+      "story": "i want a newsletter that writes itself every morning",
+      "alternates": [
+        "the subscribers need sorting before the stories flow",
+        "now let it finish its own sentences"
+      ],
+      "raw": {
+        "story": [
+          "i want a newsletter that writes itself every morning",
+          "the subscribers need sorting before the stories flow",
+          "now let it finish its own sentences"
+        ],
+        "picks": ["cal-sh-d3-005", "cal-sh-d3-002", "cal-sh-d4-001", "cal-sh-d4-005"],
+        "asks": {
+          "cal-sh-d3-005": [
+            "build a home for the {product}",
+            "a cozy home for every sentence coming",
+            "newsletter home built with rooms to grow"
+          ],
+          "cal-sh-d3-002": [
+            "teach {product} who is listening",
+            "learning who listens and who loves reading",
+            "every subscriber tucked in with care"
+          ],
+          "cal-sh-d4-001": [
+            "make {product} know its audience better",
+            "knowing the audience better than before",
+            "readers sorted into warm little piles"
+          ],
+          "cal-sh-d4-005": [
+            "let {product} write its own ending",
+            "now it writes its own happy ending",
+            "the newsletter finishes its own chores now"
+          ]
+        }
+      },
+      "picks": ["cal-sh-d3-005", "cal-sh-d3-002", "cal-sh-d4-001", "cal-sh-d4-005"],
+      "asks": {
+        "cal-sh-d3-005": "build a home for the {product}",
+        "cal-sh-d3-002": "teach {product} who is listening",
+        "cal-sh-d4-001": "make {product} know its audience better",
+        "cal-sh-d4-005": "let {product} write its own ending"
+      }
+    },
+    "coffee-loyalty": {
+      "story": "i need a loyalty program for the coffee machine by demo day.",
+      "alternates": [
+        "the team wants seasonal flavors and complex point rules now.",
+        "we are ready to go live, smudged cups and all."
+      ],
+      "raw": {
+        "story": [
+          "i need a loyalty program for the coffee machine by demo day.",
+          "the team wants seasonal flavors and complex point rules now.",
+          "we are ready to go live, smudged cups and all."
+        ],
+        "picks": ["cal-jv-d3-003", "cal-jv-d3-002", "cal-jv-d4-001", "cal-jv-d3-004"],
+        "asks": {
+          "cal-jv-d3-003": [
+            "populate the {product} with the team's starter balances.",
+            "oh good, i love a well-organized points ledger.",
+            "valuation up by three thousand imaginary dollars."
+          ],
+          "cal-jv-d3-002": [
+            "give the {product} a seasonal flavor switch.",
+            "winter spice mode is already warming my circuits.",
+            "the machine now knows exactly when it is cozy."
+          ],
+          "cal-jv-d4-001": [
+            "define point math operations for the {product}.",
+            "arithmetic is poetry when coffee is involved.",
+            "the bean economy just got a central bank."
+          ],
+          "cal-jv-d3-004": [
+            "make the {product} forgive invalid punch codes.",
+            "even a smudged number deserves dignity and coffee.",
+            "soft launch with a very gentle safety net."
+          ]
+        }
+      },
+      "picks": ["cal-jv-d3-003", "cal-jv-d3-002", "cal-jv-d4-001", "cal-jv-d3-004"],
+      "asks": {
+        "cal-jv-d3-003": "populate the {product} with the team's starter balances.",
+        "cal-jv-d3-002": "give the {product} a seasonal flavor switch.",
+        "cal-jv-d4-001": "define point math operations for the {product}.",
+        "cal-jv-d3-004": "make the {product} forgive invalid punch codes."
+      }
+    },
+    "thermostat-debate": {
+      "story": "the bot learns how the thermostat feels each morning.",
+      "alternates": [
+        "the bot loads its handbook and starts a timer.",
+        "the bot measures the dial and forgets the temperature."
+      ],
+      "raw": {
+        "premise": "my thermostat talks back so i gave it a debating buddy.",
+        "story": [
+          "the bot learns how the thermostat feels each morning.",
+          "the bot loads its handbook and starts a timer.",
+          "the bot measures the dial and forgets the temperature."
+        ],
+        "picks": ["cal-py-d3-004", "cal-py-d3-002", "cal-py-d4-004", "py-class-def"],
+        "asks": {
+          "cal-py-d3-004": [
+            "make {product} label each temperature it sees.",
+            "{product} should sort room readings into moods.",
+            "have {product} decide if the house is comfortable."
+          ],
+          "cal-py-d3-002": [
+            "make {product} load its debate rules from a file.",
+            "{product} needs a handbook before it can argue.",
+            "have {product} read its mood settings from disk."
+          ],
+          "cal-py-d4-004": [
+            "make {product} time how long the thermostat fights back.",
+            "{product} should clock every second of disagreement.",
+            "have {product} measure the length of each argument."
+          ],
+          "py-class-def": [
+            "make {product} calculate the round dial's total area.",
+            "{product} should treat the dial as a circle.",
+            "have {product} size up the thermostat's round face."
+          ]
+        }
+      },
+      "picks": ["cal-py-d3-004", "cal-py-d3-002", "cal-py-d4-004", "py-class-def"],
+      "asks": {
+        "cal-py-d3-004": "make {product} label each temperature it sees.",
+        "cal-py-d3-002": "make {product} load its debate rules from a file.",
+        "cal-py-d4-004": "make {product} time how long the thermostat fights back.",
+        "py-class-def": "make {product} calculate the round dial's total area."
+      }
+    },
+    "book-club-metaverse": {
+      "story": "my book club needs its own metaverse now",
+      "alternates": [
+        "the virtual space grows zones and loudspeakers",
+        "the grand opening turns out to be a snack contest"
+      ],
+      "raw": {
+        "story": [
+          "my book club needs its own metaverse now",
+          "the virtual space grows zones and loudspeakers",
+          "the grand opening turns out to be a snack contest"
+        ],
+        "picks": ["cal-cs-d5-001", "cal-cs-d4-004", "cal-cs-d5-002", "cal-cs-d4-002"],
+        "asks": {
+          "cal-cs-d5-001": [
+            "build a member directory for {product} that blocks duplicate ids",
+            "store {product} readers by id and reject clones",
+            "make a {product} registry that forbids twin memberships"
+          ],
+          "cal-cs-d4-004": [
+            "add profiles that sort {product} visitors into age brackets",
+            "create {product} member badges with age bracket labels",
+            "tag every {product} user as child teen adult or senior"
+          ],
+          "cal-cs-d5-002": [
+            "let {product} rooms subscribe to discussion topics",
+            "broadcast {product} chapter picks to every listening room",
+            "wire up {product} announcement channels by topic name"
+          ],
+          "cal-cs-d4-002": [
+            "deploy the snack tab for {product} and rank spenders",
+            "tally {product} refreshment orders by member name descending",
+            "rank {product} snack debts from highest to lowest"
+          ]
+        }
+      },
+      "picks": ["cal-cs-d5-001", "cal-cs-d4-004", "cal-cs-d5-002", "cal-cs-d4-002"],
+      "asks": {
+        "cal-cs-d5-001": "build a member directory for {product} that blocks duplicate ids",
+        "cal-cs-d4-004": "add profiles that sort {product} visitors into age brackets",
+        "cal-cs-d5-002": "let {product} rooms subscribe to discussion topics",
+        "cal-cs-d4-002": "deploy the snack tab for {product} and rank spenders"
+      }
+    },
+    "app-that-rates-apps": {
+      "story": "i think we need an app that rates apps",
+      "alternates": [
+        "the store is full of apps without enough opinions",
+        "let's launch before anyone else thinks of this"
+      ],
+      "raw": {
+        "story": [
+          "i think we need an app that rates apps",
+          "the store is full of apps without enough opinions",
+          "let's launch before anyone else thinks of this"
+        ],
+        "picks": ["cal-py-d5-002", "cal-py-d5-003", "cal-py-d5-001", "cal-py-d5-005"],
+        "asks": {
+          "cal-py-d5-002": [
+            "build a tree that sorts apps by star rating",
+            "make a search tree sorted by app ratings",
+            "build a binary tree for app star ratings"
+          ],
+          "cal-py-d5-003": [
+            "fetch app pages in parallel from the store",
+            "pull down app listings without overwhelming the server",
+            "grab store pages for apps all at once"
+          ],
+          "cal-py-d5-001": [
+            "retry the fetch when the connection flakes out",
+            "wrap the fetch so it tries again after errors",
+            "make the store fetch try again when it breaks"
+          ],
+          "cal-py-d5-005": [
+            "deploy {product} but give it room for three apps",
+            "ship {product} with space to remember three apps",
+            "launch {product} and let it keep only three apps"
+          ]
+        }
+      },
+      "picks": ["cal-py-d5-002", "cal-py-d5-003", "cal-py-d5-001", "cal-py-d5-005"],
+      "asks": {
+        "cal-py-d5-002": "build a tree that sorts apps by star rating",
+        "cal-py-d5-003": "fetch app pages in parallel from the store",
+        "cal-py-d5-001": "retry the fetch when the connection flakes out",
+        "cal-py-d5-005": "deploy {product} but give it room for three apps"
+      }
+    },
+    "opinion-market": {
+      "story": "i need a marketplace for slightly used opinions.",
+      "alternates": [
+        "buyers want thoughts that have been gently broken in.",
+        "let us wire this up before lunch."
+      ],
+      "raw": {
+        "story": [
+          "i need a marketplace for slightly used opinions.",
+          "buyers want thoughts that have been gently broken in.",
+          "let us wire this up before lunch."
+        ],
+        "picks": ["cal-js-d4-003", "cal-js-d4-002", "cal-js-d5-002", "cal-js-d5-004"],
+        "asks": {
+          "cal-js-d4-003": [
+            "build a counter module for {product} stock with subscribers.",
+            "make a counter that tracks {product} inventory live.",
+            "add a subscriber counter to track {product} on hand."
+          ],
+          "cal-js-d4-002": [
+            "build an event emitter so {product} listings notify the room.",
+            "add an event bus that broadcasts {product} updates instantly.",
+            "wire up events so every {product} listing pings listeners."
+          ],
+          "cal-js-d5-002": [
+            "deep merge incoming {product} so no nuance gets overwritten.",
+            "merge nested {product} objects without losing any subfields.",
+            "combine partial {product} entries with a recursive deep merge."
+          ],
+          "cal-js-d5-004": [
+            "deploy a pipeline that gently rewrites every {product} receipt.",
+            "ship a middleware chain that times each {product} checkout.",
+            "launch a pipeline that processes every {product} trade softly."
+          ]
+        }
+      },
+      "picks": ["cal-js-d4-003", "cal-js-d4-002", "cal-js-d5-002", "cal-js-d5-004"],
+      "asks": {
+        "cal-js-d4-003": "build a counter module for {product} stock with subscribers.",
+        "cal-js-d4-002": "build an event emitter so {product} listings notify the room.",
+        "cal-js-d5-002": "deep merge incoming {product} so no nuance gets overwritten.",
+        "cal-js-d5-004": "deploy a pipeline that gently rewrites every {product} receipt."
+      }
+    },
+    "one-button-company": {
+      "story": "i want one button that runs everything we own.",
+      "alternates": [
+        "wire every single thing we own to one button please.",
+        "just one button and everything we own touches everything else."
+      ],
+      "raw": [
+        "i want one button that runs everything we own.",
+        "wire every single thing we own to one button please.",
+        "just one button and everything we own touches everything else."
+      ]
+    }
+  }
+}

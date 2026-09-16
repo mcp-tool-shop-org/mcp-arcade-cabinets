@@ -203,6 +203,19 @@ not harder, which is why nothing broke.
 
 ## What is a placeholder
 
+> **Replaced, 2026-09-15 into 2026-09-16.** The full authoring run landed on `kimi-k2.6:cloud` in sub-slice B
+> part three, and every line listed below is gone, replaced by a line the model wrote and the gate kept.
+> Specifically: all eight stories were re-written and the levels re-pinned (there are sixteen levels now, and
+> fourteen of them pin four snippets); the six hand-written snippet asks were replaced by asks on 246 of the
+> 249 snippets — `cal-sh-d1-001`, `cal-sh-d1-005`, `sh-for-loop`, `cal-py-d1-001`, `cal-py-d1-003` and
+> `cal-sq-d1-001` all carry the model's words now, not the hand's; the sixteen check-ins and sixteen replies
+> were joined by forty-three more check-ins and ninety-seven more replies; the eighteen reactions over six
+> topics became three each over all 498 topics the corpus uses; and the six reviews over two products became
+> three each over all sixteen levels. **Nothing written by hand in this sub-slice survives in the levers.** The
+> list below stands as the record of what was a draft and what it was for. See
+> `docs/vibe-typer.slice3.md` § "Sub-slice B, part three" for the counts, the receipts and the three snippets
+> that ended with no ask of their own.
+
 Everything written by hand here is a draft for the authoring run to replace, and it is all in the levers, so
 replacing it is a data change:
 

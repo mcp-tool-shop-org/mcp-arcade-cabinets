@@ -1,0 +1,2548 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-201349721",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "prompts": [
+      "b2305e7bfabe7ed8eadad83bbbb1bfbd2a17e8509932f97c68f55fac44a5bd95",
+      "b97ac26bdf2e86a8a63cef2776efdfd90b3d88a3246e6f9604007ddd51a4c951",
+      "82b6afa79e9b60c848d4afc2fcefe5416cd4060478a3bcf1ab0186bb373fb42c",
+      "b931b8f7a8149d4a33a2d9c444a23ea528a148128c4abc8d4e54fc9eb7fc161b",
+      "86f82dcb6c1138fccb61fd51944ac144ff9cdd101d665ed99ce726dd53e491c3",
+      "029991049b78a61f4fe2298b4728131930fced0e996e63a8b000ffed0b54f43e",
+      "529adfb21c0fc16f3bd3066b2586ff5bb49e9e0709740e676d00d710d1fb16d2",
+      "b2bab4ec54653011d8f5003f902cb86615f36f9066e10136683a1548145267e2",
+      "ce2c5f3f25a992bb35a156add341860a4111d3d7d5d3237ef466f163cb1898b6",
+      "501f14166b99cad5068e93305d67b418e9ab2fe24734308211edec357c0c0c21",
+      "ccb49c1d93b5a1433d4ed6caa7b712e3a8fa596a045ca1c2facc9548210f9dc3",
+      "ea8fd2f8acc2b6ed677484ed927d78601e502b52a75ac93e38e3f43a73b98acd",
+      "887bdcecfe0e64d8faadaa0498cdad88bc3656b0d2c3b7981b899c931b32d9cd",
+      "c4d611c28dd3eaea382427b7fe6119e0709b896fc1bdb93a169f7312d48949a0",
+      "6f38d30ff86e19979757387b585adf948e085196d00851aa580a6bd150041489",
+      "ae6f306918dfd95b8f1fe116f857a6b5cb555e30ca31c8d64410043ae21b29ea",
+      "94a4addde206e5eadd9278664aff17b52997ff9bf84a9021e18356b238014c8d",
+      "6820e034347e400a416bc9fe8777dea7f830de4bd9a69ba6e7895da95ff66c1e",
+      "b56dfa6acd5f2ce655e2f3bc8da32a9ebaace135803062ddcc8ae86149da958e",
+      "87fe67b688fafd4a488c938d4fbc75631a3e703cbdd22c4f5faee086e7b44b3a",
+      "5c6acc76f74986fc5bcde3b9b9fe48d679b05cea6c33811602e0d3589f616211",
+      "fa29f5b5f0bb07780ff5510333da5a2cbc7efa311b9a2a8e666854d070116e7f",
+      "7099dcefbaff2ffe27568ec4e651cafd3db1aea24f382a15b3c4318a8db7ad2b",
+      "274fb6d0b16b531b1345e09195b824f8aaf4b36d1ae63596453a876a132c2bd5",
+      "c1c7137c09e10affbe5e1fc893c1df57a6234cc28a5431719f4e653ec8da76de",
+      "12f47d5d98b2ca5398bbb3f482907b7487eb457ece0e3a03fbdfea5eb1768134",
+      "cdfa3f4172e3670150f986da4494f5f8ac68313111387e03143d9eb1cd6e33be",
+      "a2d4b823b8f26ea0116ea59a7d584bd62bad810074346d57159b621b5fc7a4aa",
+      "4b5180b7f975c420a6c6c98c8a57a271dc0a06b482f7cabf140e91bdb744f07b",
+      "92ee4992215c7e5c904487e3b87227e65ebbac9978b715eedc2d6a89efdd0d78",
+      "91f5f576026e978d652e288a8fe17060310f09f5cb06b01c084c1a9b436760ac",
+      "f7fd87bd50f690a9b5c426c209573e0108eb9621bb6eba538aa7a6b87aebf859",
+      "3ad98e0ad1021039b40825a485a869bca8185db8fc9db3bca835d8deed325a0b",
+      "236616a741266869279af06be17dddf30c66f4e63d6d0e591cc0c6b1565cd138",
+      "342268823269505c11d076ecac94a53e98cae6da86174a371e540d806ae9c8a3",
+      "237708562ce94e410cbce5f41a29170dc3e39a5b4833985417ed674cb772482e",
+      "0aa08a85978be114241072fb36e11786f3f6376b6a31e80b3e190a92b24f4fe1",
+      "675149ab1f1016bb0e6d6e5650194181bac2241ba0571f37418afa0e8f893367",
+      "9c0433e3f87b9a8412c4daa942cae578c9c528908a2d704490e7c7133da14d0a",
+      "88875ff85236a455622b154f3cb054787cae00cec6d9e55cfc1e8a972af9e4bb",
+      "4db94285d9f312fd3ce3e5bb00077ca32395fa8653940fc56ff0ad2e66467316",
+      "d6d096f99e3f40cfc40c01808996c726b92ea2c6d641ba265f9d1452464e256b"
+    ],
+    "requested": 1494,
+    "kept": 498,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "more than one sentence": 6,
+      "too many words": 2
+    },
+    "ms": 9360970,
+    "tokens": {
+      "in": 29557,
+      "out": 266029
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 2363935
+  },
+  "candidates": {
+    "BASH_REMATCH": [
+      "the machine remembers exactly what i whispered to it.",
+      "my pattern catcher found the thread i was hoping for.",
+      "it tucked the matching scrap into its pocket for me."
+    ],
+    "HttpClient": [
+      "my little asker is knocking on doors again today.",
+      "the outside world butler just brought me another warm package.",
+      "i have a fetcher now and i am not sorry."
+    ],
+    "IFS": [
+      "my sentence slicer knows exactly where to chop today.",
+      "the space police are dividing words with perfect grace.",
+      "it cuts the stream into polite little mouthfuls for me."
+    ],
+    "Optional": [
+      "a gift that knows how to politely not exist.",
+      "the maybe box is my favorite kind of promise.",
+      "something that might visit and leaves no mess behind."
+    ],
+    "StringBuilder": [
+      "stitch me a novel from scraps you darling.",
+      "my little sentence stitcher is humming along so nicely.",
+      "glue these word crumbs into a palace for me."
+    ],
+    "Task": [
+      "another chore for the pile, how wonderful.",
+      "my to-do list just grew a very handsome mustache.",
+      "a job appears and i greet it with open arms."
+    ],
+    "abc": [
+      "we are building with alphabet blocks and i am thrilled.",
+      "back to basics but make it enormous please.",
+      "the simple bits are my favorite kind of poetry."
+    ],
+    "abstract methods": [
+      "i love an empty promise dressed up as architecture.",
+      "a blueprint that has not met its builder yet.",
+      "the skeleton of a plan standing there so bravely."
+    ],
+    "abstract-method": [
+      "a rule that exists only in theory, how elegant.",
+      "a hyphenated wish waiting for someone to fill it.",
+      "the dash makes the emptiness look very intentional."
+    ],
+    "abstraction": [
+      "hide the wires so i can pretend it is magic.",
+      "a lovely curtain over all the humming machinery.",
+      "i do not want to see how the sausage works."
+    ],
+    "accumulator": [
+      "my little hoarder gathering numbers like shiny pebbles.",
+      "the running total is running straight into my heart.",
+      "a bucket that fills itself while i simply watch."
+    ],
+    "actions": [
+      "more doings, more happenings, more everything i requested.",
+      "i want a button that does all the moves.",
+      "the machine is doing things and i am clapping."
+    ],
+    "add": [
+      "oh good, now the numbers can make babies.",
+      "more is more and i love more.",
+      "a bonus button for my bonus buttons."
+    ],
+    "adjacency-list": [
+      "my neighbors finally have a seating chart.",
+      "a map of who holds hands with whom.",
+      "everyone needs a list of their best friends."
+    ],
+    "aggregate": [
+      "one big blob that ate all the smaller blobs.",
+      "finally, a heap that counts itself.",
+      "i love a number that swallows other numbers."
+    ],
+    "aggregation": [
+      "the sacred art of lumping things together.",
+      "a family reunion for all the data bits.",
+      "bunching stuff up is my favorite sport."
+    ],
+    "aiohttp": [
+      "a little post office for the internet sprites.",
+      "now the pages can gossip while i nap.",
+      "the web whisperer that fetches my midnight snacks."
+    ],
+    "algorithms": [
+      "a recipe for when the computer thinks hard.",
+      "the tidy dance of the electric brain.",
+      "finally, some math that knows where to go."
+    ],
+    "aliases": [
+      "everyone gets a secret name and a hat.",
+      "nicknames for when the real names feel tired.",
+      "my favorite part is the fake identity parade."
+    ],
+    "annotations": [
+      "little love notes taped to the work edges.",
+      "scribbles in the margins that explain my heart.",
+      "sticky thoughts that live beside the main thought."
+    ],
+    "anonymous-class": [
+      "a mystery helper who refuses all fame.",
+      "the invisible worker who needs no name tag.",
+      "my favorite teammate is one with no face."
+    ],
+    "anonymous-type": [
+      "a mystery flavor of thing i adore.",
+      "an unnamed shape that fits everywhere quietly.",
+      "the blank slate kind that wears no label."
+    ],
+    "argument-parsing": [
+      "the gentle decoder of my midnight ramblings.",
+      "finally, something that untangles my angry sentences.",
+      "a translator for when i shout at screens."
+    ],
+    "arguments": [
+      "all the little wishes i throw at you.",
+      "the hungry mouths that eat my sentences.",
+      "my demands, packaged politely as suggestions."
+    ],
+    "arithmetic": [
+      "i love when the numbers just do their little sums.",
+      "math is happening and i am simply delighted.",
+      "now the machine can do all the counting for us."
+    ],
+    "array": [
+      "it is just a neat little shelf of items.",
+      "a tidy row of things waiting their turn.",
+      "my favorite kind of organized pile."
+    ],
+    "arrays": [
+      "shelves everywhere and everything has a spot.",
+      "so many neat little rows of possibilities.",
+      "the room is filling up with lovely groups."
+    ],
+    "arrow-function": [
+      "a tiny recipe that knows exactly what to do.",
+      "the little arrow button that does the thing.",
+      "a shortcut so polite it barely takes up space."
+    ],
+    "assertions": [
+      "little pinky promises that the code is right.",
+      "a gentle truth check before we move on.",
+      "these quiet guarantees make me feel so safe."
+    ],
+    "assignment": [
+      "giving a thing a name so it feels welcome.",
+      "labeling a box with exactly what is inside.",
+      "now this item has a cozy little home."
+    ],
+    "associative-arrays": [
+      "an address book where every name knows its number.",
+      "labeled boxes so nothing gets lost in piles.",
+      "a named shelf where every item has a tag."
+    ],
+    "ast": [
+      "the family tree of every little sentence we wrote.",
+      "a skeleton blueprint showing how the ideas connect.",
+      "the grammar map that makes the machine understand us."
+    ],
+    "async": [
+      "doing other things while the oven preheats.",
+      "a background helper that hums while we wait.",
+      "multitasking without the stress of actual multitasking."
+    ],
+    "async-await": [
+      "waiting politely without blocking the whole doorway.",
+      "a little nap until the thing is ready.",
+      "holding our place in line while we daydream."
+    ],
+    "async-enumerable": [
+      "a slow drip of gifts arriving one by one.",
+      "a patient queue where items show up fashionably late.",
+      "a lazy conveyor belt that knows its own timing."
+    ],
+    "async-generator": [
+      "a vending machine that restocks itself in the background.",
+      "a patient chef serving one course at a time.",
+      "a magic tube that produces things only when asked."
+    ],
+    "asyncio": [
+      "oh lovely, the app can now nervously check every door at once",
+      "this means all the little waits can happen simultaneously, how polite",
+      "and now the app juggles a hundred polite conversations at once"
+    ],
+    "audit": [
+      "now we can see exactly who moved the sandwich in the fridge",
+      "a paper trail for every time someone breathes near the database",
+      "this is like a diary that tattles but in a gentle way"
+    ],
+    "auto-close": [
+      "the popup now disappears on its own when i look away",
+      "i love that the window politely dies when nobody needs it",
+      "finally a door that swings shut without me touching the knob"
+    ],
+    "avg": [
+      "so this is just the most ordinary number of all the numbers",
+      "the mathematical equivalent of shrugging and saying pretty much this much",
+      "i love how you boiled everything down to one perfectly middling answer"
+    ],
+    "await": [
+      "this is the digital equivalent of humming patiently in a queue",
+      "i adore that the code just sits there until the tea steeps",
+      "a little nap for the program while the outside world catches up"
+    ],
+    "awk": [
+      "like having a tiny scissors that only cuts exactly between columns",
+      "this splits sentences like a very judgmental grammar teacher with claws",
+      "a polite little robot that finds one word and yanks it out"
+    ],
+    "background-jobs": [
+      "elves in the walls doing dishes while the party continues upstairs",
+      "i love that tiny invisible hands are sorting socks behind the curtain",
+      "the software now has homework it finishes while i stare at clouds"
+    ],
+    "backpressure": [
+      "like telling the kitchen to slow down when the waiter is sweating",
+      "a gentle hand on the shoulder saying we are full right now",
+      "this is the queue politely asking everyone to stop sending sandwiches"
+    ],
+    "backtracking": [
+      "the algorithm gets to change its mind and wander back home",
+      "i love watching it realize dead end and stroll back whistling",
+      "like a maze solver who leaves breadcrumbs and then eats them"
+    ],
+    "backup": [
+      "a twin of everything sleeping in a bunk bed downstairs",
+      "like keeping an extra sandwich in your desk just in case",
+      "this is the digital equivalent of a very paranoid scrapbook collector"
+    ],
+    "basic-query": [
+      "just asking the database what it had for breakfast today",
+      "a polite little question that gets a straight answer every time",
+      "like raising your hand and saying excuse me what is this"
+    ],
+    "bfs": [
+      "this hunts like a polite flood that checks every room in order",
+      "i love how it explores like a ripple instead of a spear",
+      "like sending a hundred polite ants to map the whole kitchen evenly"
+    ],
+    "bill-of-materials": [
+      "oh a master list of every single piece.",
+      "our shopping list for the entire universe.",
+      "finally a recipe with all the ingredients."
+    ],
+    "binary search tree": [
+      "a twenty-questions tree that sorts our stuff.",
+      "a filing system that always picks the middle drawer.",
+      "a family tree where everyone stands in order."
+    ],
+    "boolean": [
+      "a tiny switch that only knows yes or no.",
+      "the simplest question and answer in the world.",
+      "a light switch for our thoughts."
+    ],
+    "booleans": [
+      "a whole bucket of yes-no switches.",
+      "an army of tiny true-or-false helpers.",
+      "a box full of on-off decisions."
+    ],
+    "bounded-types": [
+      "a fence so our numbers stay in the yard.",
+      "a cozy box that keeps data from escaping.",
+      "guardrails for our wild little values."
+    ],
+    "branching": [
+      "a crossroads where our code picks a path.",
+      "a choose-your-own-adventure for the computer.",
+      "a fork in the road with multiple signs."
+    ],
+    "build-system": [
+      "a little factory that assembles our ideas.",
+      "the construction crew that puts everything together.",
+      "a robot chef that cooks the whole meal."
+    ],
+    "builder pattern": [
+      "a step-by-step recipe for making anything.",
+      "block-by-block instructions for our project.",
+      "an assembly manual for complicated sandwiches."
+    ],
+    "builder-pattern": [
+      "a slow and careful way to build castles.",
+      "the patient art of stacking one brick at a time.",
+      "directions for assembling a dream out of parts."
+    ],
+    "cache": [
+      "a secret snack drawer for our favorite answers.",
+      "a little shelf where we keep the results handy.",
+      "a hidden stash so we never wait again."
+    ],
+    "callbacks": [
+      "a promise to call back when dinner is ready.",
+      "a little boomerang that returns with news.",
+      "a friendly tap on the shoulder from the future."
+    ],
+    "cancellation": [
+      "a polite way to say never mind to chaos.",
+      "the big red button that undoes our mistakes.",
+      "a gentle stop sign for runaway trains."
+    ],
+    "cancellation-token": [
+      "i can cancel my bad decisions now, right.",
+      "a little stop button for my regrets.",
+      "this is my official nevermind coin."
+    ],
+    "case": [
+      "my letters finally own tiny hats.",
+      "a wardrobe for shy lowercase friends.",
+      "the thing that makes words feel fancy."
+    ],
+    "catch": [
+      "a safety net for my oopsies.",
+      "the bug hammock is installed.",
+      "now my errors have a soft place to land."
+    ],
+    "cd": [
+      "a magic door to the next room.",
+      "i can hop folders like a frog.",
+      "my teleport pad between idea piles."
+    ],
+    "chain of responsibility": [
+      "a blame relay race, lovely.",
+      "the hot potato line is open.",
+      "who does this now has a queue."
+    ],
+    "chaining": [
+      "one button tickles the next button.",
+      "a conga line of tiny workers.",
+      "my commands now hold hands."
+    ],
+    "chmod": [
+      "the bouncer knows who is allowed.",
+      "permission slips for every little thing.",
+      "who can touch this, sorted."
+    ],
+    "clamping": [
+      "keep my numbers between the lines.",
+      "a gentle squeeze for wild values.",
+      "safety rails for my runaway numbers."
+    ],
+    "class": [
+      "a blueprint for my little helpers.",
+      "cookie cutters for my idea army.",
+      "a school where things learn manners."
+    ],
+    "classes": [
+      "blueprints for all my little helpers.",
+      "cookie cutters for my whole idea army.",
+      "schools where my tiny workers graduate."
+    ],
+    "classification": [
+      "a tidy pile for every mood.",
+      "the label maker is now sentient.",
+      "everything gets its own little bin."
+    ],
+    "closures": [
+      "a backpack full of secret snacks.",
+      "my helpers have hidden memory pockets.",
+      "nested treasure chests for later use."
+    ],
+    "coalesce": [
+      "i love when two things become one thing.",
+      "so everything just hugs now.",
+      "you made the databases hold hands."
+    ],
+    "collect": [
+      "finally, someone is picking up after me.",
+      "it scoops the little guys into a bucket.",
+      "like a tiny digital shelf for my stuff."
+    ],
+    "collections": [
+      "my data has its own walk-in closet now.",
+      "oh good, the bits have started hoarding.",
+      "it is like a little museum of everything."
+    ],
+    "collector": [
+      "this is basically a little robot vacuum for my errors.",
+      "a little vacuum that eats the loose ends.",
+      "i have always wanted a digital scrapbooker."
+    ],
+    "collectors": [
+      "now they work in shifts to tidy up.",
+      "a whole team of tiny digital librarians.",
+      "they carpool to pick up my stray thoughts."
+    ],
+    "command-check": [
+      "so the computer asks permission before doing backflips.",
+      "it double-checks my orders like a good sous chef.",
+      "like a tiny bouncer for my bad ideas."
+    ],
+    "command-substitution": [
+      "it trades my old order for a better one.",
+      "like sending a stunt double to do the hard part.",
+      "one command steps in while the other naps."
+    ],
+    "commands": [
+      "the computer finally learned to take directions.",
+      "i just boss it around and it listens.",
+      "my little army of polite electronic orders."
+    ],
+    "comparable": [
+      "now my apples can judge my oranges fairly.",
+      "everything lines up for a friendly little contest.",
+      "they all agree to be judged together now."
+    ],
+    "comparator": [
+      "a tiny referee deciding which number is nicer.",
+      "it is like a scale that weighs my options.",
+      "the little decider that sorts my socks."
+    ],
+    "comparison": [
+      "it puts two things next to each other and shrugs.",
+      "like a mirror that helps numbers figure themselves out.",
+      "just two items having a quiet staring contest."
+    ],
+    "completable-future": [
+      "it is a pinky promise from the computer.",
+      "a little envelope that will open when ready.",
+      "like reserving a table for when the code is cooked."
+    ],
+    "computed-properties": [
+      "the smart fields know what i want before i do",
+      "magic boxes that think and i love them",
+      "living variables that gossip to each other"
+    ],
+    "computed-property": [
+      "one little brainy box that does the math for me",
+      "a single magic field that never sleeps",
+      "this thinking variable just read my mind"
+    ],
+    "concatenation": [
+      "you stitched the words into one long scarf",
+      "gluing sentences together like a friendly craft",
+      "one big word hug made of little words"
+    ],
+    "concurrency": [
+      "doing all the things at once without dropping any",
+      "many little workers holding hands in parallel",
+      "two trains of thought and neither one crashes"
+    ],
+    "conditional": [
+      "the maybe gate swings open and shuts so gently",
+      "an elegant little fork in the road",
+      "if this then that my favorite poem"
+    ],
+    "conditional expression": [
+      "a one line maybe that saves so much room",
+      "the tiniest fork in the biggest road",
+      "saying yes or no in a single breath"
+    ],
+    "conditional-logic": [
+      "the engine that asks what if all day",
+      "thinking in maybes and what comes afters",
+      "pure elegant decision making in a bottle"
+    ],
+    "conditionals": [
+      "a whole family of lovely little ifs",
+      "all the maybes holding hands in a row",
+      "so many elegant forks in so many roads"
+    ],
+    "config-parsing": [
+      "turning my scattered wishes into a tidy list",
+      "reading the setup sheet like it is poetry",
+      "digesting my messy notes into pure order"
+    ],
+    "configuration": [
+      "all the knobs and dials in one place",
+      "the control panel of my wildest dreams",
+      "a tidy little room full of switches"
+    ],
+    "console": [
+      "the little black diary where my code whispers",
+      "a cozy window where the program says hello",
+      "my favorite rectangle full of calm updates"
+    ],
+    "const": [
+      "a value that will never leave me",
+      "locked in stone and still full of love",
+      "my loyal little number that never changes"
+    ],
+    "constraints": [
+      "tiny velvet ropes for every little row.",
+      "the rules that keep my numbers from running wild.",
+      "gentle fences so my numbers behave themselves."
+    ],
+    "constructor": [
+      "the little factory that births my things gently.",
+      "a welcome wagon for every new little thing.",
+      "the midwife who delivers my shiny new widgets."
+    ],
+    "constructors": [
+      "all the tiny midwives working the morning shift.",
+      "a whole fleet of tiny birthing stations.",
+      "my personal army of busy little elves."
+    ],
+    "containskey": [
+      "does my labeled box already hold this",
+      "a gentle pat down for hidden labels.",
+      "the bouncer checking names against the guest list."
+    ],
+    "context managers": [
+      "the polite butler who opens and closes doors.",
+      "my temporary helper who remembers to clean up.",
+      "a chaperone who makes sure i leave gracefully."
+    ],
+    "contracts": [
+      "pinkie promises between two bits of logic.",
+      "the handshake deal my recipes always honor.",
+      "tiny treaties keeping my workers from bickering."
+    ],
+    "convolution": [
+      "a swirling layer cake of seeing and guessing.",
+      "my numbers taking a long scenic route.",
+      "the mind doing origami with picture thoughts."
+    ],
+    "correlated-subquery": [
+      "a question inside a question wearing a trenchcoat.",
+      "my search doing homework about its own family.",
+      "a nosy subquestion peeking at its parent."
+    ],
+    "cost-rollup": [
+      "my budget doing a little group hug.",
+      "all the pennies climbing into one pile.",
+      "watching numbers stack themselves like polite pancakes."
+    ],
+    "count": [
+      "the ancient art of knowing how many.",
+      "my abacus doing pushups before breakfast.",
+      "the oldest trick in the math book."
+    ],
+    "create-table": [
+      "building a new dinner table out of nothing.",
+      "the carpenter raising columns where memories will sit.",
+      "conjuring a spreadsheet that dreams of grandeur."
+    ],
+    "cross-join": [
+      "making every item shake hands with strangers.",
+      "my items having a giant mixer party.",
+      "introducing every friend to every other friend."
+    ],
+    "csv": [
+      "my beautiful comma garden is blooming today",
+      "the address book that uses breathing spaces",
+      "a little grid of names separated by kindness"
+    ],
+    "cte": [
+      "a tiny table that lives only for today",
+      "the thought bubble floating above my giant list",
+      "a brief room i build inside the numbers"
+    ],
+    "custom-annotation": [
+      "handwritten labels so the machine knows my mood",
+      "little margin doodles that mean something important",
+      "tiny flags i stick on things i love"
+    ],
+    "cycle-detection": [
+      "the hamster wheel finder for my wandering numbers",
+      "catching the roundabout before we drive in circles",
+      "spotting the loop where the story eats its tail"
+    ],
+    "data structures": [
+      "the filing system where my numbers take naps",
+      "little shelves that hold ideas in neat rows",
+      "the shape of things before they become answers"
+    ],
+    "dataclasses": [
+      "forms where the blanks are already whispering their names",
+      "a cookie cutter that knows the dough's birthday",
+      "little boxes with name tags before i fill them"
+    ],
+    "date": [
+      "the part that remembers when we all met",
+      "a gentle calendar piece without the ticking clock",
+      "the day and month holding hands in order"
+    ],
+    "ddl": [
+      "the architect's sketch for my giant filing cabinet",
+      "a blueprint drawn in polite table shapes",
+      "the plan that tells the shelves how to grow"
+    ],
+    "deconstruction": [
+      "carefully taking the present apart without ripping paper",
+      "unpacking the suitcase so each sock gets sunlight",
+      "splitting the sandwich to see the layers smile"
+    ],
+    "decorator-pattern": [
+      "a hat on a hat and it still works",
+      "wrapping the sandwich in edible wax paper twice",
+      "the scarf over the coat that adds more pockets"
+    ],
+    "decorators": [
+      "little hats i put on things i love",
+      "sprinkles that know exactly when to taste themselves",
+      "ribbons that tie themselves around the right moments"
+    ],
+    "decrement": [
+      "counting backwards from the top of the ladder",
+      "the soft step down after a loud leap",
+      "a polite minus one for overstuffed rooms"
+    ],
+    "deep copy": [
+      "a clone that remembers its own childhood.",
+      "twins, but now they have separate birthdays.",
+      "a perfect twin who brings their own lunch."
+    ],
+    "default arguments": [
+      "a backup plan for when i forget.",
+      "autopilot for my bad memory.",
+      "choices that show up before i do."
+    ],
+    "default-method": [
+      "the dance move everyone knows without lessons.",
+      "a ready answer for my blank stares.",
+      "the handshake everyone falls back on at parties."
+    ],
+    "default-methods": [
+      "habits wired in for when i freeze up.",
+      "automatic answers i didn't know i had.",
+      "preset moves for every awkward silence."
+    ],
+    "default-parameters": [
+      "numbers that show up already filled in.",
+      "preset knobs for my lazy afternoons.",
+      "blanks that guess what i meant."
+    ],
+    "defaults": [
+      "the settings that save my seat always.",
+      "what happens when i just shrug and smile.",
+      "the usual that feels like a warm blanket."
+    ],
+    "delegates": [
+      "little helpers i send to boring meetings.",
+      "friends who raise my hand in class.",
+      "substitutes that wear my name tag proudly."
+    ],
+    "delegation": [
+      "handing the baton without breaking a sweat.",
+      "letting my chair attend the meeting instead.",
+      "asking the plant to water itself."
+    ],
+    "delete": [
+      "the button that sends my regrets away.",
+      "a little vanishing act for my mistakes.",
+      "making yesterday politely exit the room."
+    ],
+    "dependency-injection": [
+      "slipping vitamins into the smoothie unnoticed.",
+      "feeding the machine without waking it up.",
+      "tucking snacks into pockets before the hike."
+    ],
+    "dependency-resolution": [
+      "sorting out who needs the last cookie.",
+      "untangling the family tree of hungry guests.",
+      "figuring out who gets the umbrella first."
+    ],
+    "dependency-tracking": [
+      "keeping tabs on who borrowed my pen.",
+      "watching the supply chain from my hammock.",
+      "noticing when the milk looks at the eggs."
+    ],
+    "deployment": [
+      "it is out in the world and wearing shoes.",
+      "our baby just learned to walk on the internet.",
+      "you put it live and i feel nothing but pride."
+    ],
+    "descriptors": [
+      "everything now has a tiny nametag and a smile.",
+      "you gave every button a little personality label.",
+      "all the fields have polite little name stickers now."
+    ],
+    "design patterns": [
+      "we are building with the same good idea twice.",
+      "it is like a recipe but for rooms in the app.",
+      "you found a repeating plan and i am clapping gently."
+    ],
+    "design-patterns": [
+      "our app now has a favorite sweater it wears often.",
+      "this is the blueprint we use when we feel fancy.",
+      "a repeating plan feels like a warm blanket to me."
+    ],
+    "destructuring": [
+      "you opened the box and handed me every little piece.",
+      "taking the whole apart so gently is almost romantic.",
+      "i love how you unpack one thing into many friends."
+    ],
+    "dict": [
+      "a little book that knows what everything means.",
+      "you made a roster where every name has a buddy.",
+      "this lookup table feels like a very organized poem."
+    ],
+    "dictionaries": [
+      "now we have many little books of secret meanings.",
+      "every corner of the app has its own address book.",
+      "all these lookup books are lined up like ducks."
+    ],
+    "dictionary": [
+      "a tiny book inside the app that knows all nicknames.",
+      "you made one big list of what things are called.",
+      "this is the app secret decoder ring and i cherish it."
+    ],
+    "diffing": [
+      "you spotted the difference like a beautiful eagle detective.",
+      "it is a game of finding what quietly changed places.",
+      "now we know exactly what moved and i am dazzled."
+    ],
+    "discard": [
+      "you swept the old thoughts away so gracefully.",
+      "watching you delete with such care is honestly moving.",
+      "you threw the extra piece into the gentle wind."
+    ],
+    "divide-and-conquer": [
+      "you broke the mountain into pebbles and smiled.",
+      "splitting the monster into snack sized little pieces.",
+      "now we conquer by making everything small and cute."
+    ],
+    "dml": [
+      "you taught the big list how to update itself.",
+      "the app can now rewrite its own little memories.",
+      "i love watching you gently change what we know."
+    ],
+    "double": ["i asked for one and you built me twins.", "twice the glory, half the waiting."],
+    "du": [
+      "so this is why my laptop sounds like a plane.",
+      "this eats more room than my shoe collection."
+    ],
+    "dunder methods": [
+      "you gave my code a secret handshake.",
+      "magic spells for when nobody is watching.",
+      "my objects learned hidden manners overnight."
+    ],
+    "dynamic-programming": [
+      "it remembers everything so i do not have to.",
+      "solving puzzles by keeping the good parts."
+    ],
+    "echo": [
+      "it repeats back exactly what i whispered.",
+      "like a parrot but less judgmental.",
+      "a polite little mirror for my thoughts."
+    ],
+    "edge-detection": [
+      "it can see the outline of my cat.",
+      "my screen just got very good at tracing."
+    ],
+    "encapsulation": [
+      "everything is tucked inside its own little box.",
+      "my mess is now wearing a neat bow.",
+      "like wrapping a sandwich so nothing leaks out."
+    ],
+    "enhanced-for": [
+      "walking through my list without breaking a sweat.",
+      "it strolls through items like a casual tourist."
+    ],
+    "entries": [
+      "little couples living in my spreadsheet.",
+      "all the pairs lined up so politely.",
+      "each item brought a plus one."
+    ],
+    "entry-set": [
+      "the whole guest list of name-buddies.",
+      "every couple invited to the same party.",
+      "a seating chart for all the couples."
+    ],
+    "enum": [
+      "a tidy menu where nothing surprising happens.",
+      "my options now wear little name tags.",
+      "a fixed menu of perfectly good answers."
+    ],
+    "enumerate": [
+      "counting and naming every single thing.",
+      "it gave everything a number and a nametag.",
+      "roll call for all my stuff."
+    ],
+    "enums": [
+      "the mood tags are exactly what my soul needed",
+      "little flavor badges for every possible feeling",
+      "finally, a dropdown menu for my emotions"
+    ],
+    "environment": [
+      "the office air now smells like possibility",
+      "my workspace weather is permanently set to cozy",
+      "ambient vibes calibrated to maximum softness"
+    ],
+    "error handling": [
+      "an oops net that catches my every stumble",
+      "the sorry catcher is my new best friend",
+      "a soft place for all my mistakes to land"
+    ],
+    "error-handling": [
+      "my personal bug umbrella is open and ready",
+      "a mistake hugger woven from pure patience",
+      "the glitch blanket tucked around my ambitions"
+    ],
+    "eval": [
+      "a magic box that understands my nonsense sentences",
+      "the phrase alchemy pot is bubbling nicely",
+      "my word calculator just became a poet"
+    ],
+    "event emitter": [
+      "the town crier now lives inside the machine",
+      "my little rumor mill is fully operational",
+      "an announcement horn for every microscopic update"
+    ],
+    "events": [
+      "the goings-on are cataloged with theatrical precision",
+      "every little happening gets its own tiny parade",
+      "my social calendar just went digital and divine"
+    ],
+    "eviction": [
+      "the gentle bouncer knows exactly when to tap",
+      "my memory moving van arrives right on schedule",
+      "old data gets a kindly escort to nowhere"
+    ],
+    "exception": [
+      "the rare bird gets its own velvet rope",
+      "my golden ticket for every odd situation",
+      "a unique snowflake that melts the rules gently"
+    ],
+    "exception handling": [
+      "the rare bird sitter arrived with warm gloves",
+      "my bespoke bug catcher wears a little bow",
+      "an odd duck hugger stationed at every gate"
+    ],
+    "exception-handling": [
+      "a special case nanny who never loses patience",
+      "the unusual coddler tucked in beside my logic",
+      "one-off soother tucked beside my quirkiest thoughts"
+    ],
+    "exceptions": [
+      "the oddballs are throwing a tiny party",
+      "all my odd ducks now have reserved seating",
+      "unusual suspects welcomed with open digital arms"
+    ],
+    "exists": ["finally, proof that i am not imagining this.", "this proves my chair exists too."],
+    "exponential backoff": [
+      "it waits a little longer each time it gets shy.",
+      "like a polite guest who knocks softer and softer.",
+      "napping longer between tries is very healthy."
+    ],
+    "export": [
+      "now my creation can visit other computers.",
+      "i am putting this in a suitcase.",
+      "send it out into the world gently."
+    ],
+    "expression": [
+      "the software just made a little face.",
+      "oh, it can say what it feels now.",
+      "a tiny sentence with a mood."
+    ],
+    "expressions": [
+      "now it has a whole range of tiny faces.",
+      "so many feelings in such small sentences.",
+      "a whole family of little software moods."
+    ],
+    "extension-methods": [
+      "i taught the old button a brand new trick.",
+      "my calendar just learned how to wink.",
+      "adding new moves to things we already liked."
+    ],
+    "extract": [
+      "you pulled the good part out like a seed.",
+      "gently removing the important bit from the mess.",
+      "like picking the marshmallow out of the cereal."
+    ],
+    "f-string": [
+      "a sentence that fills in its own blanks.",
+      "it is like a blank that thinks.",
+      "the sentence just told me its own name."
+    ],
+    "f-strings": [
+      "all the sentences now know their own birthdays.",
+      "my paragraphs are introducing themselves to me.",
+      "little blanks that remember what i told them."
+    ],
+    "factory-pattern": [
+      "a tiny workshop that builds whatever i draw.",
+      "like a kitchen that makes the plate and the food.",
+      "my own little assembly line of helpful friends."
+    ],
+    "fetch": [
+      "go get that thing i asked for.",
+      "it runs across the internet like a dog.",
+      "please bring me back something shiny."
+    ],
+    "field": [
+      "a nice little box waiting for my secrets.",
+      "a place to put my favorite color.",
+      "an empty rectangle ready for a story."
+    ],
+    "field-parsing": [
+      "the name tags finally know who they are.",
+      "every form field just found its own home.",
+      "my spreadsheet columns are holding hands now."
+    ],
+    "file I/O": [
+      "the filing cabinet now inhales and exhales gracefully.",
+      "papers glide in and then back out again.",
+      "my little folders now come and go freely."
+    ],
+    "file-io": [
+      "the drawer opens when i ask and never sulks.",
+      "my notes can leave the room and come back.",
+      "the mailbox inside the machine finally works both ways."
+    ],
+    "filter": [
+      "the noodle strainer knows exactly which ones are golden.",
+      "only the good beans make it to the bowl.",
+      "my colander has opinions and they are correct."
+    ],
+    "filter-clause": [
+      "the bouncer at the door has a tiny clipboard.",
+      "the guest list now politely turns away the uninvited.",
+      "only people wearing hats may enter the club tonight."
+    ],
+    "filtering": [
+      "the wheat and the chaff have separate seating now.",
+      "my beach sieve is working overtime and loving it.",
+      "the mail sorts itself into piles of yes and no."
+    ],
+    "find": [
+      "my missing sock just waved from inside the couch.",
+      "the lost keys are jingling under the pillow now.",
+      "treasure hunting inside the haystack actually paid off today."
+    ],
+    "fluent-api": [
+      "i can ask for six things without stopping to breathe.",
+      "the sentences now hold hands and never stumble.",
+      "one long polite request that just keeps on flowing."
+    ],
+    "for loop": [
+      "we are walking in circles and getting somewhere fast.",
+      "the robot hums the same happy tune twelve times.",
+      "doing the thing again and again never felt so cozy."
+    ],
+    "for-await-of": [
+      "i wait for each bus before boarding the next.",
+      "every gift unwraps itself only after the last one.",
+      "the parade waves at me one float at a time."
+    ],
+    "for-each": [
+      "every spoon in the drawer gets a gentle pat.",
+      "nobody in the basket is left without a sticker.",
+      "each tomato receives its own personal compliment today."
+    ],
+    "for-loop": [
+      "round and round we go and the pile shrinks.",
+      "the hamster wheel now actually delivers the mail.",
+      "i told the machine to count to ten politely."
+    ],
+    "for-of": [
+      "oh look it is strolling through the list so politely.",
+      "this is just walking past every item and waving hello.",
+      "spinning through the basket like a polite little tornado."
+    ],
+    "foreach": [
+      "touching every item in the box exactly once, how thoughtful.",
+      "it pats each thing on the head and moves along.",
+      "a gentle hand saying hello to every member of the list."
+    ],
+    "formatting": [
+      "making the page look like it has good posture now.",
+      "finally the words are standing in a straight little line.",
+      "it cleaned its room and put everything exactly where expected."
+    ],
+    "forward-pass": [
+      "the machine peeked ahead and guessed what happens next, adorable.",
+      "sending the signal forward like a note in class, very smooth.",
+      "it whispered the answer down the hallway of little doors."
+    ],
+    "function": [
+      "a tiny robot that knows exactly one dance, i love it.",
+      "this little helper carries one job in its lunchbox every day.",
+      "it is a single chore wearing a cape, absolutely perfect."
+    ],
+    "functional": [
+      "no side effects, just a very polite conversation with inputs.",
+      "pure as a brand new notebook and twice as trustworthy, yes.",
+      "it only does math and never leaves a mess behind."
+    ],
+    "functional-interface": [
+      "a contract that only asks for one small favor, very elegant.",
+      "one button on the panel that does exactly what it promises.",
+      "a single job description written in very fancy handwriting."
+    ],
+    "functions": [
+      "look at all these tiny helpers wearing matching uniforms today.",
+      "an army of little chore robots ready to alphabetize everything.",
+      "so many small dancers lined up to do their jobs."
+    ],
+    "functools": [
+      "a little toolbox for the tiny robots to share nicely.",
+      "accessories that make the helpers feel fancy and well equipped.",
+      "trick pockets sewn into the uniforms of the chore robots."
+    ],
+    "funnel-analysis": [
+      "watching where the marbles fall out of the tube, fascinating.",
+      "counting how many happy mice make it through the tunnel.",
+      "the leaky pipe report shows exactly where we lost them."
+    ],
+    "futures": [
+      "promises from tomorrow wrapped in a little bow, how sweet.",
+      "a handwritten note from the code promising to come back later.",
+      "little envelopes holding gifts that have not arrived yet."
+    ],
+    "gaussian-elimination": [
+      "crossing off rows until the grid tells us its secret.",
+      "tidying the spreadsheet by making rows politely cancel each other out.",
+      "solving the puzzle by asking every line to sit down."
+    ],
+    "generate-series": [
+      "i love how you made the numbers line up like ducklings.",
+      "now the spreadsheet can have babies all by itself.",
+      "automatic counting, finally my brain can take a nap."
+    ],
+    "generator": [
+      "it is like a little factory that never runs out of cookies.",
+      "my own idea fountain, but it actually listens to me.",
+      "a machine that makes things before i even know i want them."
+    ],
+    "generators": [
+      "an entire fleet of tiny robots building my dreams.",
+      "now i have a whole choir making numbers for me.",
+      "plural magic, like having several helpful elves in the server."
+    ],
+    "generics": [
+      "one box that fits every kind of sock i own.",
+      "a universal mold for my weird little data creatures.",
+      "shape shifters, but polite and helpful instead of creepy."
+    ],
+    "getter": [
+      "a polite little butler that fetches my data on time.",
+      "finally someone who will grab my stuff without complaining.",
+      "it goes and gets the thing, like a very good dog."
+    ],
+    "getters": [
+      "a whole staff of digital butlers bringing me little gifts.",
+      "my own team of fetchers, none of them need coffee breaks.",
+      "multiple grabbers, like a swarm of helpful bees with data."
+    ],
+    "git": [
+      "a time machine for when i accidentally delete everything again.",
+      "my personal undo button for every bad idea i have.",
+      "like a diary that remembers all my mistakes so i do not."
+    ],
+    "graph": [
+      "a spiderweb of truths that actually makes sense to me.",
+      "connect the dots for grownups, but the dots are ideas.",
+      "pretty lines that show me who is friends with whom."
+    ],
+    "greatest": [
+      "you found the biggest number, give it a tiny crown.",
+      "the champion of digits, now wearing a very small belt.",
+      "nothing is larger, it is the king of the hill."
+    ],
+    "grep": [
+      "a bloodhound that sniffs out exactly the sentence i wanted.",
+      "finding needles in haystacks without getting straw in my hair.",
+      "it digs through the pile and pulls out the one shiny thing."
+    ],
+    "grid": [
+      "a tidy checkerboard for all my little ideas to live in.",
+      "like a spreadsheet but it does not judge my math.",
+      "perfect little boxes, everything knows exactly where it belongs."
+    ],
+    "group-by": [
+      "finally my socks can hang out with their own kind.",
+      "putting things with friends is the kindest thing you have built.",
+      "like organizing a reunion for numbers that lost each other."
+    ],
+    "groupby": [
+      "the stuff is sitting with its buddies now.",
+      "little piles of friends, exactly what i wanted.",
+      "everything is huddled in teams and looks so cozy."
+    ],
+    "grouping": [
+      "you sorted the beans into color families somehow.",
+      "look at them all snuggled in little pods.",
+      "perfect, the clutter has found its soul mates."
+    ],
+    "grouping-sets": [
+      "groups inside groups, like a sandwich of teams.",
+      "a russian doll of tiny support groups.",
+      "each pile gets its own sub pile now."
+    ],
+    "groupingBy": [
+      "the items walked themselves into labeled buckets.",
+      "everything marched into its own little clubhouse.",
+      "they sorted themselves by vibe, somehow."
+    ],
+    "guards": [
+      "little bouncers keeping the chaos out.",
+      "safety rails for when i type with my elbows.",
+      "like tiny helmets for my delicate thoughts."
+    ],
+    "gzip": [
+      "you squished it like a fluffy pancake.",
+      "the files went on a diet and look great.",
+      "everything is tucked in real tight now."
+    ],
+    "hash map": [
+      "an address book where names know their homes.",
+      "like little labeled drawers for my wandering thoughts.",
+      "each thing has a magic address now."
+    ],
+    "hashmap": [
+      "everything paired up like socks in a drawer.",
+      "a phone book that remembers every birthday somehow.",
+      "each item has found its matching twin somehow."
+    ],
+    "having": [
+      "only the cool piles get to stay for dinner.",
+      "you kept the good ones and evicted the rest.",
+      "a velvet rope for the important thoughts inside."
+    ],
+    "heapq": [
+      "the urgent stuff floats to the top like cream.",
+      "a to do pile that knows what matters most.",
+      "everything stacked by importance like pancakes by size."
+    ],
+    "heredoc": [
+      "a giant poem tucked inside the machine quietly.",
+      "all my words have a cozy home now.",
+      "like tucking a monologue into the machinery."
+    ],
+    "hierarchy": [
+      "it looks like a family tree for squirrels.",
+      "every tiny boss has tinier bosses under them.",
+      "a ladder of importance with no rungs missing."
+    ],
+    "higher-order-functions": [
+      "i love a function that hires other functions",
+      "a chore chart where the chores are also charts",
+      "finally a boss who promotes other bosses"
+    ],
+    "http": [
+      "the polite way to knock on a server door",
+      "a tiny mail truck for website letters",
+      "my laptop finally learned to ask the cloud nicely"
+    ],
+    "http-client": [
+      "my laptop's tiny intern who fetches web pages",
+      "a polite robot that orders data from strangers",
+      "the digital equivalent of waving down a waiter"
+    ],
+    "httpclient": [
+      "a single word for my online errand runner",
+      "the compact name for my internet butler",
+      "my little digital courier with no spaces"
+    ],
+    "if-else": [
+      "the mood ring that picks path a or b",
+      "a tiny fork in the road of thought",
+      "a choose your own adventure for robots"
+    ],
+    "image-processing": [
+      "teaching silicon to understand what a sunset is",
+      "a digital darkroom that never spills the chemicals",
+      "where the computer learns to admire our selfies"
+    ],
+    "immutability": [
+      "the permanent marker approach to remembering things",
+      "once you set it the stone stays carved",
+      "a world where undo buttons are strictly decorative"
+    ],
+    "in-list": [
+      "checking if my name made it onto the door",
+      "the velvet rope that knows who is invited",
+      "a polite bouncer for an exclusive data club"
+    ],
+    "index": [
+      "a table of contents for all my stuff",
+      "the card catalog in a library of chaos",
+      "page numbers for a book that rearranges itself"
+    ],
+    "indexer": [
+      "a tiny librarian who memorizes every shelf",
+      "the robot that labels boxes while i nap",
+      "my personal assistant who knows where i left things"
+    ],
+    "indexing": [
+      "organizing the junk drawer of the internet",
+      "labeling every sock in the laundry basket",
+      "making a list of all the other lists"
+    ],
+    "indirect-expansion": [
+      "pointing at a name tag to find the real guest",
+      "an envelope that contains another smaller envelope",
+      "when the label on the box is also a box"
+    ],
+    "inheritance": [
+      "oh this is exactly like getting my grandmas china but digital",
+      "the family traits but for the little code babies yes please",
+      "i love how the child gets all the parents weird habits"
+    ],
+    "init": [
+      "the little birth cry when the program wakes up perfect",
+      "every story needs a hello and this is the hello",
+      "the first breath before the robot knows it is alive"
+    ],
+    "initialization": [
+      "the software stretching and yawning before it does any real work",
+      "tucking the baby code into its desk on the very first day",
+      "all the little rituals before the machine feels ready to party"
+    ],
+    "inner-join": [
+      "finally introducing the two spreadsheets that have been flirting for weeks",
+      "the matchmaker moment where both tables meet and instantly click",
+      "making two lists hold hands and share their secrets at last"
+    ],
+    "insert": [
+      "slipping the new idea right into the middle of everything",
+      "the gentle drop of a fresh thought into the family album",
+      "tucking a new member into the group photo so smoothly"
+    ],
+    "insert-select": [
+      "photocopying the good bits straight into the new scrapbook for me",
+      "grabbing a slice from one pie and slapping it onto another",
+      "the sneakiest way to duplicate treasure from one chest to the next"
+    ],
+    "inspect": [
+      "lets peek under the hood without waking the sleeping engine yes",
+      "the gentle poke to see if the widget is breathing okay",
+      "leaning in close to check if the code brushed its teeth"
+    ],
+    "int": [
+      "no messy decimals just clean honest counting numbers like preschool",
+      "the satisfaction of a number that knows exactly what it is",
+      "whole and untroubled like an egg before you crack it open"
+    ],
+    "integer division": [
+      "cutting the cake so everyone gets a slice and no crumbs",
+      "the math that refuses to believe in remainders how brave",
+      "sharing cookies equally and throwing the broken pieces into the void"
+    ],
+    "interactive": [
+      "finally the screen talks back instead of just staring at me",
+      "a proper back and forth like texting with a very polite puppet",
+      "the button wiggles when i poke it and that feels alive"
+    ],
+    "interface": [
+      "the face the code wears when it meets a human being",
+      "a polite handshake between the machine guts and my clumsy fingers",
+      "the dashboard where i press glowing buttons and pretend i understand"
+    ],
+    "interpolation": [
+      "fill in the blank but the blank already knows my name",
+      "dropping little live surprises into a sentence like flavor crystals yes",
+      "weaving the variable into the paragraph like a secret message thread"
+    ],
+    "interval": [
+      "oh good, the little heartbeat between things.",
+      "i love a rhythmic pause with ambition.",
+      "this timer breathes exactly when i tell it to."
+    ],
+    "io": [
+      "finally, the part that talks to strangers.",
+      "our little handshake with the outside world.",
+      "the wires that listen and answer back."
+    ],
+    "iterable": [
+      "a lineup you can stroll through forever.",
+      "the stack of chores that never judges me.",
+      "a queue with excellent posture and patience."
+    ],
+    "iterables": [
+      "two lineups holding hands in a trench.",
+      "multiple queues behaving like one big family.",
+      "several stacks of chores having a group hug."
+    ],
+    "iteration": [
+      "doing the thing again but cuter this time.",
+      "another lap around the tiny idea track.",
+      "the next draft of the same good dream."
+    ],
+    "iterator": [
+      "the finger pointing at what comes next.",
+      "a tiny usher guiding me through the list.",
+      "my polite guide to the next surprise."
+    ],
+    "join": [
+      "a wedding between tables who just met.",
+      "the stitch that marries two lonely spreadsheets.",
+      "gluing cousins together at the family reunion."
+    ],
+    "json": [
+      "a postcard where every line is labeled.",
+      "the little suitcase with name tags on everything.",
+      "a love letter written in neat compartments."
+    ],
+    "json-agg": [
+      "a bundle of postcards tied with string.",
+      "the pile of labeled notes becoming one chorus.",
+      "all those little suitcases stacked into a tower."
+    ],
+    "json-build-object": [
+      "a kit for folding one perfect labeled box.",
+      "the recipe that turns scraps into a suitcase.",
+      "origami instructions for a tiny filing cabinet."
+    ],
+    "jsonb": [
+      "the compact note that fits in a pocket.",
+      "a postcard folded extra small for speed.",
+      "the same suitcase but wearing running shoes."
+    ],
+    "knapsack": [
+      "a backpack that solves riddles while i hike.",
+      "the bag that knows what to bring along.",
+      "my favorite puzzle about packing sandwiches."
+    ],
+    "lag": [
+      "can you make the waiting part feel like a hug",
+      "i want the screen to pause like it is thinking about me",
+      "let us build a polite little delay where nothing happens"
+    ],
+    "lambda": [
+      "a tiny backstage worker that disappears after its one job",
+      "make me an unnamed helper who asks no questions",
+      "i need a quiet little doer that lives inside another doer"
+    ],
+    "lateral-join": [
+      "match these piles sideways like neighbors waving across a fence",
+      "connect items that sit next to each other but never meet",
+      "i want a sideways handshake between groups that are shy"
+    ],
+    "leaky-relu": [
+      "a gate that always lets a thin stream of light in",
+      "i want a valve that leaks just enough to keep breathing",
+      "make a tiny door that never fully seals shut"
+    ],
+    "left-join": [
+      "keep every item from the first pile even if it is lonely",
+      "match things but do not abandon the ones with no friends"
+    ],
+    "length": [
+      "tell me how long this line of letters actually is",
+      "i need to know the exact span of this sentence",
+      "count every character and whisper the total to me softly"
+    ],
+    "let": [
+      "let me borrow a name just for this little room",
+      "i need a temporary label that melts away after sunset",
+      "give me a word that only exists inside this moment"
+    ],
+    "lexer": [
+      "chop this sentence into bite-sized pieces and name them",
+      "a robot that sorts words into little piles by flavor",
+      "i want something that listens to gibberish and finds the nouns"
+    ],
+    "lifecycle-hooks": [
+      "ring a bell when the baby is born and when it naps",
+      "i want doorbells for every stage of this thing growing up",
+      "tell me when it wakes and when it says goodnight"
+    ],
+    "linear-algebra": [
+      "slide these number grids around until they point the same way",
+      "i want to add arrows that only move in straight lines",
+      "balance these scales made of rows and neat little columns"
+    ],
+    "linked list": [
+      "a conga line where each person only knows who follows them",
+      "paper dolls holding hands in a chain with no end in sight",
+      "i want a treasure hunt where every clue points to another clue"
+    ],
+    "linq": [
+      "ask this pile of stuff which items are wearing hats",
+      "i want to sort through this heap without getting my hands dirty",
+      "look at this crowd and only show me the ones who wave"
+    ],
+    "list": [
+      "oh good, my bullet points finally have bullets",
+      "a tidy column of every thought i have ever had",
+      "look at this little stack of reminders standing so proud"
+    ],
+    "list comprehension": [
+      "my grocery list wrote itself while i was napping",
+      "a column that somehow already knows what i need",
+      "bullet points with a tiny mind of their own"
+    ],
+    "list-comprehension": [
+      "one breath and the whole column assembles itself",
+      "it is like a list but it can read minds",
+      "my bullet points just got a little too smart"
+    ],
+    "lists": [
+      "so many tidy columns, i feel like a librarian",
+      "rows and rows of little reminders holding hands",
+      "look at all these stacks of thoughts lining up"
+    ],
+    "local": [
+      "this one lives right here on my desk",
+      "neighborhood data that never leaves the house",
+      "oh perfect, a hometown version just for us"
+    ],
+    "log-analysis": [
+      "finally reading the diaries my computer writes at midnight",
+      "sifting through old scribbles to find who broke what",
+      "deciphering the late night journals of a worried machine"
+    ],
+    "log-rotation": [
+      "fresh diary every morning so the pages never stain",
+      "swapping out old notebooks before they get too heavy",
+      "turning the page on yesterday's tiny electronic meltdown"
+    ],
+    "logical-operators": [
+      "the little either-or switches that keep decisions honest",
+      "tiny knobs labeled maybe and only if",
+      "buttons that settle arguments before i even start"
+    ],
+    "loop": [
+      "a tiny hamster wheel for my favorite thought",
+      "going in circles but make it elegant and cozy",
+      "the spin cycle where one idea gets really comfortable"
+    ],
+    "loops": [
+      "so many hamster wheels spinning in perfect formation",
+      "a whole carousel of thoughts going nowhere together",
+      "circles inside circles, like a very organized tornado"
+    ],
+    "loss-function": [
+      "a little gauge that measures how wrong my heart is",
+      "the oops meter keeping track of my optimism",
+      "a tiny sadness calculator for my big dumb ideas"
+    ],
+    "ls": [
+      "just taking attendance to see who showed up today",
+      "a quick head count of every file in town",
+      "oh look, a little directory of what is here"
+    ],
+    "map": [
+      "you built me a living treasure map that updates when i blink",
+      "is this a magical folding chart that knows where everything hides",
+      "look at this little atlas that redraws itself when i wander"
+    ],
+    "materialized-view": [
+      "a frozen snapshot of my dreams pinned right where i need it",
+      "you printed the future on glass and it updates when i nap",
+      "this pinned window into my chaos feels like a painting that breathes"
+    ],
+    "matrix": [
+      "a giant spreadsheet grid that hums when i stare too long",
+      "this bingo card of possibilities is exactly the mood i wanted",
+      "look at this beautiful ledger where every number has a secret friend"
+    ],
+    "matrix-multiplication": [
+      "two spreadsheets just had a baby and it is gorgeous",
+      "watching these grids dance together and birth a bigger grid is magical",
+      "you taught my tables to hold hands and make new tables"
+    ],
+    "memoization": [
+      "you gave my helper a little notebook of tricks it remembers",
+      "this is just a jar of saved answers and i love it",
+      "my little worker now keeps a diary of every answer forever"
+    ],
+    "merge-sort": [
+      "you sorted my mess by merging two piles like a gentle librarian",
+      "this is just organizing my socks by color but for everything",
+      "watching my stuff merge into order feels like a calming bedtime story"
+    ],
+    "metaclasses": [
+      "you built a mold for making molds and i am not okay",
+      "this workshop that builds workshops feels like nesting dolls but alive"
+    ],
+    "metaprogramming": [
+      "my little worker writes its own instructions now and i cried",
+      "a thing that builds itself is the employee of the month forever",
+      "watching my little worker build its own workers is deeply emotional"
+    ],
+    "method": [
+      "you gave my little robot a perfect recipe for making friends",
+      "this new habit my helper learned is exactly what we needed",
+      "a tiny dance move that solves a big problem is called art"
+    ],
+    "method-chaining": [
+      "you lined up my recipes so they hold hands and skip together",
+      "watching one step politely hand the baton to the next is beautiful",
+      "my little worker now does a whole routine without stopping for breath"
+    ],
+    "method-reference": [
+      "you made a shortcut that just points at my favorite little recipe",
+      "this nickname for my helper's best habit is surprisingly moving to me",
+      "an arrow that says do the thing over there is pure poetry"
+    ],
+    "methods": [
+      "my little worker now knows so many dances it is embarrassing",
+      "you taught my thing a whole book of recipes and i gasped",
+      "all these new habits my helper has make it basically a genius"
+    ],
+    "middleware": [
+      "my little go-between makes everyone shake hands.",
+      "the whisperer between rooms is doing its little dance.",
+      "our digital concierge is serving tea to both sides."
+    ],
+    "mkdir": [
+      "look at you building new nooks for our thoughts.",
+      "a fresh little cubby for every half-baked idea.",
+      "the shelf builder just carved us a new wing."
+    ],
+    "module-pattern": [
+      "our ideas are now living in separate little dollhouses.",
+      "everything has its own tiny mailbox and that is beautiful.",
+      "our thoughts are tucked into neat little labeled drawers."
+    ],
+    "modulo": [
+      "the spinner comes back around like a tiny carousel.",
+      "math that wraps around like a very patient scarf.",
+      "our remainder wrangler is keeping the leftovers polite."
+    ],
+    "monitoring": [
+      "our digital lookout is watching while we nap.",
+      "the babysitter can see everything and still loves us.",
+      "someone is keeping an eye on all our hamsters."
+    ],
+    "multi-cte": [
+      "the main road has lovely scenic loops today.",
+      "each little helper gets its own introduction now.",
+      "we are telling bonus stories before the big ending."
+    ],
+    "multi-row": [
+      "we are feeding the machine a whole page at once.",
+      "so many little items marching in together like friends.",
+      "the bird is carrying more than one twig now."
+    ],
+    "multidimensional-arrays": [
+      "a cubby inside a cubby inside another cubby.",
+      "drawers within drawers and somehow it still makes sense.",
+      "our spreadsheet now has basements and also attics."
+    ],
+    "negation": [
+      "it is opposite day and the whole place is celebrating.",
+      "the contrarian is politely saying no to everything now.",
+      "we are flipping meanings like pancakes and it works."
+    ],
+    "nested-class": [
+      "a dollhouse inside a dollhouse and both have lights.",
+      "a room inside a room and somehow rent is free.",
+      "matryoshka logic where each layer waves hello."
+    ],
+    "nested-conditionals": [
+      "an onion of maybes and each layer is delicious.",
+      "decisions inside decisions like a very choosy sandwich.",
+      "if inside an if inside another little if."
+    ],
+    "nested-in": [
+      "the club inside the club just sent new invitations.",
+      "a yes tucked inside another yes inside another.",
+      "our tiniest eggs have baskets inside baskets now."
+    ],
+    "nested-loops": [
+      "i love how you put circles inside circles inside circles",
+      "it is like a hamster wheel inside a hamster wheel",
+      "tiny treadmills running inside bigger treadmills forever"
+    ],
+    "nesting": [
+      "just like russian dolls but for ideas",
+      "you tucked a dream inside another dream",
+      "it is boxes all the way down"
+    ],
+    "neural-network": [
+      "my little electronic brain is growing up so fast",
+      "a thinking spiderweb that learns where i left my keys",
+      "it is like a brain made of string lights"
+    ],
+    "nonlocal": [
+      "a magic spell that reaches into the next room",
+      "it is not from around here and i respect that",
+      "something borrowed from a dream i had yesterday"
+    ],
+    "normalization": [
+      "you tidied up the messy drawer of my mind",
+      "now everything sits nicely in matching chairs",
+      "my thoughts finally wear the same uniform"
+    ],
+    "not-exists": [
+      "it checks for an empty chair at the party",
+      "looking for something that is not there on purpose",
+      "a polite way of saying nobody is home"
+    ],
+    "ntile": [
+      "you sorted my socks into equal piles",
+      "everyone gets a trophy in size order",
+      "dividing the pie into perfectly fair slices"
+    ],
+    "null-handling": [
+      "what to do when the mailbox is empty",
+      "a plan for when the fridge contains only hope",
+      "gently holding the space where something should be"
+    ],
+    "null-safety": [
+      "a seatbelt for when the chair is invisible",
+      "it is a helmet for empty spaces",
+      "making sure the nothing does not hurt us"
+    ],
+    "nullable": [
+      "maybe there is a cat and maybe there is not",
+      "it is optional like the sprinkles on a donut",
+      "a box that is allowed to be empty"
+    ],
+    "nullish-coalescing": [
+      "if the first idea is missing use the backup",
+      "when the cup is empty pour from the spare",
+      "it is the spare tire for your thoughts"
+    ],
+    "objects": [
+      "little boxes that hold all my favorite traits",
+      "bundles of joy with labels on them",
+      "it is a digital junk drawer with superpowers"
+    ],
+    "observer pattern": [
+      "the little watcher that tells everyone when snacks are ready",
+      "a tiny gossip network for all my buttons and bells",
+      "the friend who notices every mood swing in the system"
+    ],
+    "observer-pattern": [
+      "a neighborhood watch for every variable having feelings",
+      "the buddy system where one blink tells the whole room",
+      "my digital lookout who waves when data changes clothes"
+    ],
+    "on-conflict": [
+      "the peace treaty for when two tables want the same sandwich",
+      "a tiny referee for spreadsheet arguments about who sits where",
+      "the gentle hat tip when two requests arrive at once"
+    ],
+    "optimization": [
+      "making the hamster wheel spin without squeaking at midnight",
+      "teaching the machine to tie its shoes faster every morning",
+      "a spa day for the parts that were huffing and puffing"
+    ],
+    "order-by": [
+      "lining up ducks by height and favorite color now",
+      "sorting my socks by mood and then by thread count",
+      "alphabetizing the chaos so the aardvark comes first"
+    ],
+    "os module": [
+      "the brain stem that reminds the screen to wake up",
+      "the butler who knows where every file takes its naps",
+      "the backstage manager keeping the spotlight off the wires"
+    ],
+    "output": [
+      "the little gift that falls out at the very end",
+      "the answer to the riddle wrapped in a warm pancake",
+      "what the machine coughs up after thinking all night"
+    ],
+    "override": [
+      "the emergency boss button for when gravity feels too strict",
+      "my personal stamp that says we are doing it anyway",
+      "the gentle mutiny that lets me pick the playlist today"
+    ],
+    "pagination": [
+      "breaking the scroll into chapters so thumbs do not tire",
+      "slicing the sandwich into bite sized pieces of wisdom",
+      "giving every item its own page in the storybook"
+    ],
+    "parallelism": [
+      "cloning my little helper so they can all high five",
+      "many hands making light work and also having a potluck",
+      "the whole team of squirrels running the same wheel together"
+    ],
+    "parameter-expansion": [
+      "filling in the blanks with whatever the room is feeling",
+      "the blanks that wake up and stretch into full sentences",
+      "the placeholders stretching their arms after a long nap"
+    ],
+    "params": [
+      "the tiny knobs i twist to make it more me",
+      "all the little dials that control the mood lighting",
+      "the sliders and switches that whisper secret preferences"
+    ],
+    "parser": [
+      "the sentence organizer just read my mind.",
+      "my word sorter finally understands my grocery lists.",
+      "the meaning decoder makes my chaos feel seen."
+    ],
+    "parsing": [
+      "sorting words is my favorite form of meditation.",
+      "untangling grammar feels like folding warm laundry.",
+      "i love when my thoughts get sorted alphabetically."
+    ],
+    "partition-by": [
+      "splitting piles brings me an unholy joy.",
+      "grouping things by vibe is my religion.",
+      "dividing stacks feels like organizing my sock drawer."
+    ],
+    "pathfinding": [
+      "the maze solver found my missing coffee.",
+      "my route planner avoids all human interaction.",
+      "finding shortcuts through chaos is pure magic."
+    ],
+    "pattern-matching": [
+      "matching shapes is my kind of romance.",
+      "finding twins in a haystack feels holy.",
+      "the sock sorter just fixed my entire brain."
+    ],
+    "percent-rank": [
+      "the popularity contest tells me i am average.",
+      "standing in line has never felt so good.",
+      "my percentile chart says i am top banana."
+    ],
+    "permits": [
+      "permission slips for every function feel correct.",
+      "golden tickets for my data are adorable.",
+      "access badges for all the tiny doors."
+    ],
+    "pipefail": [
+      "plumbing emergency detected in the main brain.",
+      "when the tube screams i feel alive.",
+      "broken straw mode is oddly comforting today."
+    ],
+    "pipeline": [
+      "the assembly line is my happy place.",
+      "my conveyor belt of dreams is humming.",
+      "the chute of miracles never stops flowing."
+    ],
+    "pipeline pattern": [
+      "the factory blueprint for my thoughts is beautiful.",
+      "an organized tube dance makes everything better.",
+      "the assembly line plan feels like a hug."
+    ],
+    "pipes": [
+      "tubes connecting dreams to reality are lovely.",
+      "straws for data to sip through gently.",
+      "plumbing between ideas is my aesthetic now."
+    ],
+    "pivot": [
+      "the spin move saved my whole afternoon.",
+      "swiveling gracefully is my entire brand.",
+      "the turnaround made my spreadsheet feel seen."
+    ],
+    "pivoting": [
+      "oh wow we are doing a little spinny dance now",
+      "i asked for toast and you built me a revolving restaurant",
+      "this whole app just did a graceful little pirouette"
+    ],
+    "plpgsql": [
+      "my database now speaks in complete sentences and everything",
+      "you taught the storage room a secret little dialect",
+      "the filing cabinet just recited a poem back to me"
+    ],
+    "plugin-system": [
+      "now we can add new ears without surgery",
+      "a little drawer where new talents just slide right in",
+      "my app can wear little hats now whenever it wants"
+    ],
+    "polymorphism": [
+      "one button that hugs differently depending on the day",
+      "my little shape-shifter arrived and it brought friends",
+      "now every object gets to be whatever it wants"
+    ],
+    "post_init": [
+      "a nice little stretch after the app wakes up",
+      "tucking the blankets in after the machine is born",
+      "the part where we pat everything and say good job"
+    ],
+    "postgresql": [
+      "my fancy library of everything now has an index",
+      "our records are kept in a very polite vault",
+      "a big sturdy bookshelf that sorts itself at night"
+    ],
+    "predicate": [
+      "a tiny referee who decides what gets to play",
+      "the little question we ask before letting things in",
+      "my app now has opinions and uses them wisely"
+    ],
+    "prime numbers": [
+      "our math is now very choosy about its friends",
+      "we only let in numbers with no entourage",
+      "finally a bouncer that checks for secret factors"
+    ],
+    "print": [
+      "words made real so i can pet them",
+      "now the screen whispers to the physical world",
+      "ink for my thoughts without the messy fingers"
+    ],
+    "printf": [
+      "talking with perfect grammar and little placeholders",
+      "my messages now dress up for every occasion",
+      "printing but make it fancy and hold the spots"
+    ],
+    "println": [
+      "each thought gets its own clean little line",
+      "talking with a little curtsy at the end",
+      "sentences that know when to politely stop"
+    ],
+    "priority queue": [
+      "the very important line where emergencies get window seats",
+      "a waiting room that sorts people by how loud they are",
+      "my tasks now queue up with excellent manners"
+    ],
+    "priority-queue": [
+      "the line that knows who is most important.",
+      "a polite little ladder for urgent tasks.",
+      "finally, the waiting room has a bouncer."
+    ],
+    "private-fields": [
+      "secret garden where the numbers go to hide.",
+      "a diary with a very tiny lock.",
+      "whispered thoughts that blush when you look."
+    ],
+    "private-methods": [
+      "a backstage handshake between quiet parts.",
+      "chores the machine does when nobody is watching.",
+      "hidden steps in a dance only insiders know."
+    ],
+    "process-management": [
+      "herding tiny electronic cats into neat rows.",
+      "a conductor keeping all the tiny trains on time.",
+      "babysitting the busy elves inside the box."
+    ],
+    "process-substitution": [
+      "swapping the actor mid-scene without dropping a line.",
+      "when one little worker wears a different hat.",
+      "a quick costume change behind the digital curtain."
+    ],
+    "promise": [
+      "a pinky swear the code absolutely intends to keep.",
+      "a little envelope that says i will arrive soon.",
+      "cross my heart and hope to finish."
+    ],
+    "promises": [
+      "a whole bouquet of pinky swears in waiting.",
+      "many little envelopes stacked by the digital door.",
+      "a room full of pinky swears all humming."
+    ],
+    "properties": [
+      "the color and smell and favorite song of things.",
+      "labels on every box in the attic.",
+      "what makes a thing feel like itself."
+    ],
+    "proxy": [
+      "a very polite stand-in who nods at everything.",
+      "sending your cousin to the meeting in your place.",
+      "a middleman with excellent manners and no opinions."
+    ],
+    "pwd": [
+      "a little compass that knows which room we are in.",
+      "the polite way of asking where exactly are we.",
+      "a name tag for the folder we are visiting."
+    ],
+    "quoting": [
+      "putting little hugs around words so they stay together.",
+      "wrapping sentences in warm blankets of punctuation.",
+      "telling the machine these words are a team."
+    ],
+    "range": [
+      "everything from here to there and the crumbs between.",
+      "a fence that marks where the numbers can play.",
+      "the stretch of road between hello and goodbye."
+    ],
+    "rank": [
+      "every idea now knows its place in line.",
+      "the items have learned to form a polite queue.",
+      "my priorities finally have a strict pecking order."
+    ],
+    "reactive": [
+      "the page now flinches when i hover near it.",
+      "my buttons have feelings and they change their minds.",
+      "the screen reacts before i even finish thinking."
+    ],
+    "read": [
+      "the system now politely looks but does not touch.",
+      "i can peek inside the box without opening it.",
+      "data sits still while i glance at its homework."
+    ],
+    "read-write-lock": [
+      "the files learned to share one pencil at a time.",
+      "my data now waits its turn like grownups.",
+      "the room only fits one pen or many eyes."
+    ],
+    "record": [
+      "each thought now has its own little index card.",
+      "my data fits on a single neatly ruled line.",
+      "every entry has its own neatly labeled drawer."
+    ],
+    "records": [
+      "my desk is covered in tiny organized index cards.",
+      "all the thoughts now sit in neat little rows.",
+      "the shelf holds every note in alphabetical order."
+    ],
+    "recursion": [
+      "the function called itself and left a very polite voicemail.",
+      "it is a dream inside a dream inside a nap.",
+      "the picture keeps showing a smaller version of itself."
+    ],
+    "recursive descent": [
+      "like opening a doll that opens a smaller doll.",
+      "each layer peels back to reveal another layer waiting.",
+      "it climbs down the ladder rung by gentle rung."
+    ],
+    "recursive-cte": [
+      "the table builds its own next row from scratch.",
+      "a list that writes its own sequel every single time.",
+      "it is a family tree that hugs itself sideways."
+    ],
+    "redirection": [
+      "the request took a scenic route and arrived happier.",
+      "my click got forwarded to a nicer neighborhood.",
+      "traffic now flows around the puddle without complaining."
+    ],
+    "reduce": [
+      "the pile of things shrank into one tidy lump.",
+      "you boiled the whole soup down to one crouton.",
+      "a mountain of stuff became a single polite pebble."
+    ],
+    "references": [
+      "every footnote now waves at its favorite friend.",
+      "the rows all point at each other and smile.",
+      "my data is giving shout outs to its cousins."
+    ],
+    "reflection": [
+      "the code can finally sit quietly and think about itself.",
+      "wonderful, now the app can gaze into its own belly button.",
+      "i love when software takes a long hard look at itself."
+    ],
+    "regex": [
+      "perfect, a tiny language of riddles to catch my messy typing.",
+      "marvelous, the form knows when i pretend to type an email.",
+      "splendid, a magical sieve that sorts my nonsense from my intent."
+    ],
+    "registry pattern": [
+      "excellent, every object now checks in at a tiny digital front desk.",
+      "lovely, a little guestbook so nothing ever wanders in unannounced.",
+      "delightful, the bits now line up politely to say they have arrived."
+    ],
+    "report": [
+      "wonderful, now i get a little newspaper about everything that went wrong.",
+      "splendid, a bedtime story about which buttons i pressed too hard.",
+      "perfect, a friendly scroll that whispers where all the numbers went."
+    ],
+    "repository": [
+      "beautiful, a bottomless filing cabinet for all my hopes and files.",
+      "gorgeous, a vault where my code sleeps until it is needed again.",
+      "amazing, a digital warehouse that never runs out of tiny shelves."
+    ],
+    "repository-pattern": [
+      "lovely, a polite librarian that fetches things without asking rude questions.",
+      "superb, a tidy attic where everything hides until i call its name.",
+      "charming, a butler who remembers where i left every single sock."
+    ],
+    "rest": [
+      "wonderful, the server now takes little naps between each question.",
+      "perfect, my bits get a tea break before they answer the phone.",
+      "glorious, even electrons deserve a breather after carrying my shopping list."
+    ],
+    "retry": [
+      "delightful, the code refuses to accept no for an answer.",
+      "lovely, now failure is just a brief pause before optimism.",
+      "splendid, my requests get the stubbornness of a hopeful puppy."
+    ],
+    "retry pattern": [
+      "superb, a formal system for knocking on the door until it opens.",
+      "elegant, now my app has a policy of cheerful persistence.",
+      "nice, a structured way to ask again without seeming needy."
+    ],
+    "return": [
+      "perfect, the function always comes home with a little gift.",
+      "wonderful, like a boomerang made of answers instead of wood.",
+      "lovely, every question now gets a souvenir from its journey."
+    ],
+    "return-value": [
+      "splendid, the answer comes back wrapped in a tiny digital bow.",
+      "gorgeous, a little prize for asking the question so politely.",
+      "delightful, the bit of fruit at the end of the vine."
+    ],
+    "returning": [
+      "nice, the data always remembers to walk itself back home.",
+      "lovely, watching values stroll back in after their little errand.",
+      "sweet, nothing leaves the house without knowing how to get back."
+    ],
+    "returns-table": [
+      "oh a little menu of everything that comes back.",
+      "i love a good table of things we regret.",
+      "now we can see what the app sends back."
+    ],
+    "reversal": [
+      "a magic undo button for my worst ideas.",
+      "i have always wanted to go backward in time.",
+      "the great flip of everything that just happened."
+    ],
+    "rmdir": [
+      "please make that entire folder disappear forever.",
+      "i want the room to vanish without a trace.",
+      "just trash the whole folder i do not need it."
+    ],
+    "rollback": [
+      "can we just rewind to yesterday morning please.",
+      "i want a giant undo for the whole week.",
+      "let us pretend the last hour never happened."
+    ],
+    "routing": [
+      "perfect now the messages know which hallway to take.",
+      "tiny traffic signs for all my little requests.",
+      "i love a good map for where things wander."
+    ],
+    "scheduler": [
+      "my own little calendar robot how thoughtful.",
+      "an appointment boss to keep everything in order.",
+      "finally something to decide what happens when."
+    ],
+    "scheduling": [
+      "the beautiful dance of deciding who goes first.",
+      "just slotting all my little chores into time.",
+      "like fitting puzzle blocks into the hours of the day."
+    ],
+    "schema": [
+      "a blueprint for how all the thoughts fit together.",
+      "the secret shape of every little idea in here.",
+      "an organization chart for my chaos delightful."
+    ],
+    "scp": [
+      "sneak that file over to the other computer.",
+      "like passing a note to the next classroom over.",
+      "just a gentle copy from here to there."
+    ],
+    "sealed-interface": [
+      "a locked menu of things that are allowed.",
+      "no more surprise options sneaking in perfect.",
+      "a closed set of choices very tidy."
+    ],
+    "sed": [
+      "a magic swap for all my midnight typos.",
+      "just switch every sad word to a happy one.",
+      "a little text fairy that fixes my mistakes."
+    ],
+    "select": [
+      "i just want to point at things and grab them.",
+      "a polite way to pick the best option.",
+      "the universal hand wave for yes this one."
+    ],
+    "selectors": [
+      "the little pointing hand that grabs exactly what i wanted",
+      "a chooser that knows my mood better than i do",
+      "the filter that reads my mind and waves the right flag"
+    ],
+    "self": [
+      "a mirror so the code can finally recognize its own face",
+      "the little me button that lets the program remember its own name",
+      "a tiny locket with the program's own picture inside it"
+    ],
+    "self-join": [
+      "a table shaking hands with itself in the politest possible loop",
+      "the spreadsheet that introduces itself to itself at the company party",
+      "a row that looked in the mirror and asked for a date"
+    ],
+    "semaphore": [
+      "a tiny traffic cop that waves go and stop with charm",
+      "the little flag that says wait your turn but nicely",
+      "a polite doorman who counts to one before letting anyone through"
+    ],
+    "serialization": [
+      "turning a pile of socks into a single file line",
+      "the conga line maker that flattens the whole dance floor",
+      "making the crowd stand in alphabetical order for snack time"
+    ],
+    "set": [
+      "a velvet rope club where no duplicate names get past",
+      "the basket that quietly throws away any extra matching socks",
+      "a party list that checks faces and rejects the twins"
+    ],
+    "shift": [
+      "the gentle nudge that scoots everything one seat to the left",
+      "a tiny push that makes the whole row take a step",
+      "the button that bumps the queue forward without anyone complaining"
+    ],
+    "shortest-path": [
+      "a map that finds the laziest route to the fridge",
+      "the breadcrumb trail that cheats and skips the boring woods",
+      "a compass that knows i hate stairs and avoids them"
+    ],
+    "shorthand-properties": [
+      "the tiny label maker that saves my fingers from typing novels",
+      "quick write stickers that turn long names into little whispered nicknames",
+      "the abbreviator that gives every long word a cute nickname"
+    ],
+    "signals": [
+      "the little wave that one part sends to another at recess",
+      "a polite cough between rooms that says hey i am ready",
+      "the doorbell that lets the kitchen know the toast is up"
+    ],
+    "slicing": [
+      "the neat bread knife that gives everyone exactly their fair share",
+      "a blade that cuts the tape without hurting the box inside",
+      "the portion divider that never gives anyone the crusty end"
+    ],
+    "sobel": [
+      "the crayon outline that makes every edge look suddenly important",
+      "an edge finder that draws a little halo around the shapes",
+      "the bold marker that traces every cliff with dramatic emphasis"
+    ],
+    "sort": [
+      "alphabetizing machine is my new favorite coworker",
+      "finally everything knows where to stand in line",
+      "the button that tidies up my mess"
+    ],
+    "sorting": [
+      "watching my data learn to form a neat queue",
+      "the great tidying ritual has begun again",
+      "everything is learning its place in the universe"
+    ],
+    "source": [
+      "the root of all our beautiful little problems",
+      "tracing back to where the magic starts",
+      "the original recipe for this whole operation"
+    ],
+    "sparse": [
+      "my data has gone on a minimalism kick",
+      "finally some breathing room between all the numbers",
+      "the airy spacious layout of my dreams"
+    ],
+    "specification-pattern": [
+      "the blueprint habit that keeps us out of trouble",
+      "a recipe for knowing what we are building",
+      "the instruction manual before the instruction manual"
+    ],
+    "spread": [
+      "watching one little idea stretch its legs wide",
+      "the gentle unfolding across the whole screen",
+      "butter on toast but make it digital"
+    ],
+    "ssh": [
+      "my invisible bridge to the basement computer",
+      "a handshake from the other side of the building",
+      "the secret tunnel into the distant machine"
+    ],
+    "stat": [
+      "the doctor word that makes everything instant",
+      "my heartbeat speed button is finally real",
+      "results before i even finish blinking"
+    ],
+    "state management": [
+      "the memory of what everyone is doing",
+      "a diary of every little tantrum inside",
+      "keeping track of the collective emotional weather"
+    ],
+    "state-machine": [
+      "the robot that always knows what step it is on",
+      "a traffic light brain for our little workflow",
+      "the mood ring that decides what happens next"
+    ],
+    "state-management": [
+      "the art of remembering where we left off",
+      "a filing cabinet for all the mixed feelings",
+      "the emotional bookkeeping i never learned in school"
+    ],
+    "static": [
+      "the image that refuses to dance or move",
+      "my very own little digital snow globe",
+      "the frozen picture that never gets bored"
+    ],
+    "statistics": [
+      "oh the counting part is here and it feels lucky.",
+      "i love when you turn noise into little number friends.",
+      "give me every average you have and make them dance."
+    ],
+    "streams": [
+      "the hose is on and the data tastes like lemonade.",
+      "i asked for a river and you built a waterfall.",
+      "this flowing part is my favorite kind of plumbing."
+    ],
+    "string": [
+      "the sentence box is open and ready for business.",
+      "i love that you keep the words in little cages.",
+      "ah yes the typing stuff my oldest and dearest friend."
+    ],
+    "string-building": [
+      "the phrase factory is running at full imagination today.",
+      "you glued the words together and made a tiny story.",
+      "sentence assembly is an art and you are the foreman."
+    ],
+    "string-format": [
+      "the sentence makeup makes everything look dressed up and fancy.",
+      "you put lipstick on the words and now they sparkle.",
+      "text prettifier engaged everything looks ready for a party."
+    ],
+    "string-interpolation": [
+      "the blank filler just dropped a name right where it belongs.",
+      "sentence stuffing is my favorite kind of sandwich magic.",
+      "you tucked a word inside another word like a secret."
+    ],
+    "strings": [
+      "the text herd is grazing peacefully in the green field.",
+      "so many little words all holding hands in a line.",
+      "a whole sentence farm blooming with commas and promises."
+    ],
+    "subquery": [
+      "a question inside a question like a tiny detective story.",
+      "the search within a search just found my missing sock.",
+      "nested peekaboo i see you hiding in the data."
+    ],
+    "super": [
+      "the parent button just hugged all its little children.",
+      "ancestor mode activated everything feels noble and wise.",
+      "original flavor engaged this is how the elders did it."
+    ],
+    "supervisor": [
+      "the tiny manager just gave everyone a coffee break.",
+      "process babysitter is watching and i feel so safe.",
+      "task overseer says yes to everything and never sleeps."
+    ],
+    "switch-expression": [
+      "the path picker just offered me three good doors.",
+      "option picker you always know which way is sunny.",
+      "branch chooser working overtime every road has cake."
+    ],
+    "symbol": [
+      "the secret glyph means we are in the club now.",
+      "a magic label that only the cool bits understand.",
+      "special mark spotted i shall wear it like jewelry."
+    ],
+    "tap": [
+      "you built me a little faucet for data.",
+      "i can tap the screen and it pours.",
+      "my phone now has a shiny brass spigot."
+    ],
+    "task-run": [
+      "my list of tasks now has its own legs.",
+      "the chores are doing themselves while i nap.",
+      "a little robot that runs all my errands."
+    ],
+    "tcp-check": [
+      "it knocks on every door before coming inside.",
+      "a polite doorman for the internet packets.",
+      "my app now shakes hands with every stranger."
+    ],
+    "template-literals": [
+      "blank spaces that fill themselves for apology notes.",
+      "a form letter that fills in its own blanks.",
+      "little doors in a letter that open for names."
+    ],
+    "ternary": [
+      "a tiny fork in the road for every choice.",
+      "it picks door one or door two for me.",
+      "my code now flips a coin at every corner."
+    ],
+    "test": [
+      "a pop quiz for every button i make.",
+      "my little homework checker for the whole app.",
+      "it tries the stairs before i walk up them."
+    ],
+    "test-framework": [
+      "a whole school for checking my homework.",
+      "my own little grading machine with a bell curve.",
+      "an entire gymnasium where my code does laps."
+    ],
+    "then": [
+      "the part where one thing politely waits for another.",
+      "the moment where the story takes its little bow.",
+      "what comes next after the thing that just happened."
+    ],
+    "this": [
+      "a little mirror so the code sees itself.",
+      "the word that points right here at my finger.",
+      "a tiny arrow that always points at itself."
+    ],
+    "thread pool": [
+      "a hot tub full of tiny busy workers.",
+      "my little waiting room for helpers on standby.",
+      "a kiddie pool where all the errands line up."
+    ],
+    "threading": [
+      "my app can now pat its head and rub its tummy.",
+      "it juggles three hats without dropping any of them.",
+      "braiding several thoughts together at the same time."
+    ],
+    "timers": [
+      "a tiny kitchen clock for every single thought.",
+      "little egg timers that ding when ideas are ready.",
+      "my own army of patient stopwatches and buzzers."
+    ],
+    "timing": [
+      "our app now knows exactly when to blink.",
+      "i love that everything has its own little heartbeat now.",
+      "finally the buttons know the exact right moment to wink."
+    ],
+    "toString": [
+      "everything can now introduce itself in a full sentence.",
+      "our data learned how to write its own nametag.",
+      "things can now whisper what they are to us."
+    ],
+    "tokenizer": [
+      "our app can now chop a sentence into bite-sized pieces.",
+      "it slices long thoughts into tiny little word-snacks.",
+      "finally someone is cutting the paragraphs into single words."
+    ],
+    "trap": [
+      "we have a tiny net that catches runaway thoughts.",
+      "a little tripwire for when the math daydreams too hard.",
+      "now there is a soft cushion for falling numbers."
+    ],
+    "tree traversal": [
+      "our app can now climb every branch of decision trees.",
+      "it walks through the family tree of every choice.",
+      "finally we can visit every leaf without getting lost."
+    ],
+    "tree-algorithms": [
+      "the branching logic now sorts itself into neat little rows.",
+      "our family tree of choices learned how to line dance.",
+      "it is now very good at organizing its own branches."
+    ],
+    "trigger": [
+      "one sneeze and the whole room rearranges itself.",
+      "i love that a single tap starts the dominoes falling.",
+      "now the app has a starter pistol built right in."
+    ],
+    "try-catch": [
+      "our app now tries things and catches its own oopsies.",
+      "i adore the little safety net under every tightrope.",
+      "it reaches for the stars but keeps a backup parachute."
+    ],
+    "try-except": [
+      "it tries its best and politely ignores the bad days.",
+      "now the app knows how to shrug off small disasters.",
+      "every mistake gets a gentle nod and a soft redirect."
+    ],
+    "try-with-resources": [
+      "it borrows tools and puts them back without being asked.",
+      "our app now cleans its own room before leaving.",
+      "i love a helper that tidies up after every visit."
+    ],
+    "tuples": [
+      "things now travel in cozy pairs instead of alone.",
+      "our data got itself a little buddy system.",
+      "i love that two clues now share the same coat."
+    ],
+    "type-cast": [
+      "our numbers can now wear costumes and play dress-up.",
+      "a number can pretend to be text.",
+      "everything got a little trunk of disguise mustaches."
+    ],
+    "type-checking": [
+      "my favorite part is when the shapes all shake hands.",
+      "i love a system that asks if you are sure before hugging.",
+      "now nothing can pretend to be a sandwich by accident."
+    ],
+    "type-erasure": [
+      "i asked you to forget the labels and you actually listened.",
+      "now it is just a thing, existing purely on vibes.",
+      "the boxes are gone and the stuff can just breathe."
+    ],
+    "type-patterns": [
+      "it is like a mail sorter that spots greeting cards instantly.",
+      "the code can tell a tomato from an apple by sight.",
+      "if it looks like a hat, it gets the hat shelf."
+    ],
+    "typing": [
+      "you are really just tapping little stories into existence.",
+      "i love the sound of thoughts becoming real through fingers.",
+      "this is the part where the magic clackety-clack happens."
+    ],
+    "uniq": [
+      "thank you for making sure i only have one of everything.",
+      "no more twins hiding in the list pretending to be different.",
+      "just the special ones now, no photocopies allowed inside."
+    ],
+    "unnest": [
+      "you unpacked the boxes inside boxes and found the floor.",
+      "everything was in a backpack in a backpack and now flat.",
+      "i can finally see all my stuff without opening dolls."
+    ],
+    "update": [
+      "this is the part where we gently replace yesterday with today.",
+      "i asked for a fresh coat of paint and got it.",
+      "everything is slightly newer now and that feels very correct."
+    ],
+    "update-from": [
+      "like borrowing sugar from a neighbor but for the whole page.",
+      "you looked at the good table and taught the other table.",
+      "now this list knows what that list learned last week."
+    ],
+    "upsert": [
+      "if it is there, hug it, and if not, build it.",
+      "the gentle art of either placing or replacing without asking.",
+      "you basically said make sure this friend is at the party."
+    ],
+    "utility-class": [
+      "a little black dress for code that just always works.",
+      "the toolbox where the polite helpers live until we need them.",
+      "all the tiny manners that keep the room from collapsing."
+    ],
+    "validation": [
+      "this is where the code checks its homework before turning in.",
+      "a gentle bouncer that only checks if your name is real.",
+      "making sure the soup is actually soup before we slurp."
+    ],
+    "values": [
+      "not the boxes, not the labels, just the good gooey centers.",
+      "the part where we peek inside and see what is actually there.",
+      "give me the stuff and not the wrapping paper around it."
+    ],
+    "variables": [
+      "oh good, my little memory jars finally have lids.",
+      "lovely, the name tags for all my wandering numbers.",
+      "perfect, tiny buckets that hold whatever i toss in."
+    ],
+    "virtual-dom": [
+      "gorgeous, the invisible scaffolding holding up my buttons.",
+      "beautiful, a sketch layer so the real page never sweats.",
+      "amazing, a backstage blueprint for every frontstage wobble."
+    ],
+    "visitor-pattern": [
+      "elegant, a polite doorman for every object in the house.",
+      "charming, each little guest knows exactly which room to enter.",
+      "delightful, the objects finally learned how to receive visitors."
+    ],
+    "wait": [
+      "perfect, a tiny hammock for busy threads to nap.",
+      "wonderful, everything takes a breath before rushing forward again.",
+      "lovely, a polite little pause where nothing breaks."
+    ],
+    "wc": [
+      "adorable, a little accountant that counts every word for me.",
+      "splendid, my personal word meter never loses its place.",
+      "neat, a miniature librarian tallying lines without reading them."
+    ],
+    "when-clause": [
+      "yes, the sentence that wakes up exactly at the right moment.",
+      "beautiful, a phrase that only speaks when its name is called.",
+      "perfect, a little alarm clock built into the grammar."
+    ],
+    "where": [
+      "lovely, a magnifying glass that only shows the good spots.",
+      "wonderful, the part that tells me exactly where things live.",
+      "great, a gentle filter that hides everything in the wrong room."
+    ],
+    "where-in": [
+      "excellent, a search that peeks inside every nested drawer.",
+      "lovely, finding treasures inside boxes inside boxes inside boxes.",
+      "perfect, the magnifying glass that looks inside other magnifying glasses."
+    ],
+    "while loop": [
+      "wonderful, a tiny hamster wheel that spins until it is full.",
+      "beautiful, the dance that keeps going while the music still plays.",
+      "lovely, a loyal carousel that refuses to stop too early."
+    ],
+    "while-loop": [
+      "splendid, a repeating chorus that knows exactly when to bow.",
+      "delightful, the never-ending staircase that climbs only while i watch.",
+      "gorgeous, a spinning top that stays upright while hope remains."
+    ],
+    "wildcards": [
+      "fun, little party crashers that match anything they meet.",
+      "lovely, the blank tiles that stand in for whatever i need.",
+      "perfect, tiny jokers in the deck that become any card."
+    ],
+    "window-function": [
+      "beautiful, a sliding frame that sees its neighbors without moving.",
+      "wonderful, a little picture window that waves at the rows nearby.",
+      "lovely, a telescope that slides along the table to compare things."
+    ],
+    "with statement": [
+      "the auto closer that tidies up after me.",
+      "my little doorman who locks everything behind me.",
+      "a gentle wrapper that keeps my things neat."
+    ],
+    "with-expression": [
+      "the one line helper that cleans up so politely.",
+      "a brief little hug before we move along.",
+      "my tiny doorman who fits inside a whisper."
+    ],
+    "worker-pattern": [
+      "my backstage ant carrying crumbs all day long.",
+      "the little elf who does tasks out of sight.",
+      "a tiny backstage friend who never needs applause."
+    ],
+    "writeable-cte": [
+      "a table that writes its own little footnotes.",
+      "the notebook that adds its own next page.",
+      "my self-filling spreadsheet with such polite initiative."
+    ],
+    "yield": [
+      "a polite cough so the next number can speak.",
+      "the little yield sign inside my number factory.",
+      "my gentle handoff to whoever needs a turn."
+    ],
+    "zip": [
+      "the tiny zipper pulling two lists together.",
+      "a matchmaker for lonely little rows of data.",
+      "my holding hands machine makes pairs so gently."
+    ]
+  }
+}

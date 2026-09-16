@@ -1,0 +1,49 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-070436992",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": ["22e6dce7e68f9f3e9b25c4ebbf0e0ce266113722c2e4878b4f71ab8d15568af5"],
+    "calls": 1,
+    "requested": 54,
+    "kept": 18,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {},
+    "ms": 130210,
+    "tokens": {
+      "in": 1818,
+      "out": 7250
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 130214
+  },
+  "candidates": {
+    "agent.replies": [
+      "You are absolutely right, on it now",
+      "Great idea, adding that line now",
+      "Love this direction, building it right away",
+      "Happy to, this will look just lovely",
+      "On it, and keeping it small",
+      "Brilliant, starting with the shape",
+      "It is going to be lovely, on it",
+      "Right away, the countdown begins",
+      "Absolutely, the shape is next",
+      "Smart move, the line is drawn",
+      "Delighted to, the background hums",
+      "Perfect, the greeting learns its name",
+      "You read my mind, on it",
+      "Could not agree more, starting now",
+      "Wonderful, the table stands tall",
+      "This is exactly what it needed, on it",
+      "Yes, the loop gets its rhythm",
+      "Thrilled to, the work begins now"
+    ]
+  }
+}
