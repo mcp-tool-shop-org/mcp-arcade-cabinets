@@ -17,6 +17,8 @@ import {
   VALUE_TOLERANCE,
 } from '@mcp-arcade-cabinets/vibe-typer';
 
+import { DIGIT, NAMES } from '@mcp-arcade-cabinets/cabinet-server/src/browser';
+
 import { DEFAULT_MUSIC, isMusicMode } from '../src/typer-audio';
 import {
   FONT_SIZES,
@@ -642,6 +644,198 @@ function mountEndless(): VibeMount {
     startAudio: false,
   });
 }
+
+// ——— the voice ————————————————————————————————————————————————————————————
+//
+// The worker is faked: this is the shell's half of G15 — the checkbox, the
+// pref, which lines are handed over and what the chrome says. The timing rule
+// itself is `packages/cabinet-server/test/voice-vibe.test.ts`, and the Pages
+// half (no VITE_LOCAL_SEATS, so the box and its mark are dropped by dead-code
+// elimination) is the pack's marker gate in `packages/launcher/scripts/build.mjs`,
+// because a mount test runs in dev where `LOCAL_SEATS` is always true.
+
+interface SpokenJob {
+  text: string;
+  kind: string;
+  line: string;
+  voice: { preset: string; rate: number; loudness: number };
+  maxGap: number;
+}
+
+/** A worker that is up and receipts everything it is handed. */
+function fakeWorker() {
+  const jobs: SpokenJob[] = [];
+  const played: string[] = [];
+  return {
+    jobs,
+    played,
+    opts: {
+      health: () => Promise.resolve({ engine: 'a test' }),
+      speak: (job: SpokenJob) => {
+        jobs.push(job);
+        return Promise.resolve({
+          status: 'voiced' as const,
+          ms: 10,
+          receipt: {
+            id: 'abc',
+            ok: true,
+            text: job.text,
+            heard: job.text,
+            duration_s: 1,
+            tts_s: 0.3,
+            asr_s: 0.2,
+            cached: false,
+            checks: [],
+            url: '/audio/abc.wav',
+          },
+        });
+      },
+      play: (_url: string, job: SpokenJob) => played.push(job.text),
+    },
+  };
+}
+
+function mountWithVoice(worker?: ReturnType<typeof fakeWorker>): VibeMount {
+  return mountVibeTyper(root, {
+    tier: 0,
+    endless: false,
+    levelIndex: 0,
+    seed: 1,
+    agentName: 'Sprocket',
+    theme: 'mechanical',
+    integration: [],
+    onExit: () => undefined,
+    startAudio: false,
+    ...(worker ? { voice: worker.opts as never } : {}),
+  });
+}
+
+function voiceBox(): HTMLInputElement {
+  const label = [...root.querySelectorAll('label')].find(
+    (l) => (l.textContent ?? '').trim() === 'Voice',
+  );
+  return label!.querySelector('input') as HTMLInputElement;
+}
+
+describe('the voice on the user lines, mounted', () => {
+  it('is off and cannot be turned on until a worker answers', async () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+      voice: { health: () => Promise.resolve(null) },
+    });
+    const box = voiceBox();
+    expect(box.checked).toBe(false);
+    expect(box.disabled).toBe(true);
+    await flush();
+    expect(box.disabled).toBe(true);
+    expect(root.textContent).toContain('no worker');
+    // The mount mark the pack greps for.
+    expect(root.querySelector('[data-vibe-voice]')).not.toBeNull();
+  });
+
+  it('comes on by itself when the pref says so and the worker is up', async () => {
+    writeVibePrefs({ voice: 'on' });
+    const worker = fakeWorker();
+    mount = mountWithVoice(worker);
+    await flush();
+    expect(voiceBox().checked).toBe(true);
+    // The status is words beside it, whichever one the run has reached.
+    expect(root.textContent).toContain('voice');
+  });
+
+  it('speaks the ask with the lever delivery, and never the agent', async () => {
+    writeVibePrefs({ voice: 'on' });
+    const worker = fakeWorker();
+    mount = mountWithVoice(worker);
+    await flush();
+    run(mount, 2);
+    await flush();
+    expect(worker.jobs.length).toBe(1);
+    const job = worker.jobs[0]!;
+    expect(job.kind).toBe('user');
+    expect(job.line).toBe('ask');
+    expect(job.voice).toEqual(DEFAULT_PATTERNS.cabinet.voice.user);
+    expect(job.maxGap).toBe(DEFAULT_PATTERNS.cabinet.voice.maxGap);
+    // The words are the user's own ask, off the chat.
+    const state = createRun({ seed: 1, tier: 0, endless: false, levelIndex: 0 });
+    expect(job.text).toBe(state.chat[0]!.line);
+
+    // The agent answers all through the reply and the code, and none of it
+    // is spoken: the player types those.
+    const reply = planOf(state).requests[0]!.reply;
+    for (const ch of reply) {
+      press(ch);
+      run(mount, 1);
+    }
+    press('Enter');
+    run(mount, 120);
+    await flush();
+    expect(worker.jobs.every((j) => j.kind === 'user')).toBe(true);
+    expect(worker.jobs.some((j) => j.text === reply)).toBe(false);
+  });
+
+  it('hands the worker nothing at all when the box is off', async () => {
+    writeVibePrefs({ voice: 'off' });
+    const worker = fakeWorker();
+    mount = mountWithVoice(worker);
+    await flush();
+    run(mount, 120);
+    await flush();
+    expect(voiceBox().checked).toBe(false);
+    expect(root.textContent).toContain('voice ready');
+    expect(worker.jobs).toEqual([]);
+    expect(worker.played).toEqual([]);
+  });
+
+  it('remembers the box under vibe.prefs', async () => {
+    const worker = fakeWorker();
+    mount = mountWithVoice(worker);
+    await flush();
+    const box = voiceBox();
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+    expect(readVibePrefs().voice).toBe('on');
+    expect(root.textContent).toContain('voice on');
+    box.checked = false;
+    box.dispatchEvent(new Event('change'));
+    expect(readVibePrefs().voice).toBe('off');
+    expect(root.textContent).toContain('voice off');
+  });
+
+  it('plays a receipted take and says so in words, naming nothing', async () => {
+    writeVibePrefs({ voice: 'on' });
+    const worker = fakeWorker();
+    mount = mountWithVoice(worker);
+    await flush();
+    run(mount, 2);
+    await flush();
+    run(mount, 2);
+    expect(worker.played.length).toBe(1);
+    const shown = root.textContent ?? '';
+    expect(shown).toContain('voice');
+    // The claim is "naming nothing", so the assertion is the cabinet's own
+    // rule and not a list of five words a reviewer thought of: `NAMES`
+    // covers every engine, vendor, model and seat word the say gate refuses
+    // (G17), and `DIGIT` is the same class the field is held to (G23).
+    // `VIBE_NAMES` is deliberately not the one used here: it adds the typing
+    // cabinet's four lever names, and `the ask` is a beat word on this field.
+    expect(NAMES.test(shown), `a name reached the page: ${shown}`).toBe(false);
+    expect(DIGIT.test(root.querySelector('.vibe-chat')!.textContent ?? '')).toBe(false);
+    // The preset is a lever's value, not a word in any list, so it is named
+    // here as well: nothing on the page may say which voice is speaking.
+    expect(shown.toLowerCase()).not.toContain(
+      DEFAULT_PATTERNS.cabinet.voice.user.preset.toLowerCase(),
+    );
+  });
+});
 
 describe('the endless seat, mounted', () => {
   it('feeds a gated request into the run and tells the field nothing', async () => {

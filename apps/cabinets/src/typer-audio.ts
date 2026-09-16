@@ -1,11 +1,12 @@
 // The sound of the cabinet: a keyboard under the player's hands, a synth for
 // everything the game does, and a small procedural bed that keeps the tempo.
 //
-// The keystroke engine follows LoKey-Typer's
-// (E:/AI/prototypes/packages/LoKey-Typer/src/lib/audio.ts) in shape and
-// imports nothing from it: samples decoded once, round-robin across a set's
-// variants, a seeded detune, a polyphony cap with oldest-steal, and a
-// procedural click when a sample is missing, so the game is never silent.
+// The keystroke engine follows the one in the LoKey-Typer prototype package
+// (`src/lib/audio.ts` there) in shape and imports nothing from it: samples
+// decoded once, round-robin across a set's variants, a seeded detune, a
+// polyphony cap with oldest-steal, and a procedural click when a sample is
+// missing, so the game is never silent. That reference named a path on one
+// machine until slice 4C took it out; no file in this tree carries one.
 // The five sample sets are dev-op-typer's, copied into public/keys.
 //
 // G29: one layered sound per event class, each with a transient and a tail
@@ -135,6 +136,14 @@ export interface TyperAudio {
   play(cue: Cue): void;
   /** The bed. `hold` keeps the tempo where it climbed to (a level's last request). */
   tick(dt: number, hype: number, hold: boolean): void;
+  /**
+   * Hold the bed down while a spoken take plays, and let it back up when the
+   * take ends (slice 4C). The keystroke samples are untouched: the player is
+   * typing under the voice and the keystroke is the score's voice (G29). It
+   * is the same depth the cue duck uses, and `music: off` has no bed to hold
+   * down, so it does nothing there.
+   */
+  setBedDuck(on: boolean): void;
   /** The run is over: the bed leaves. */
   end(): void;
   close(): void;
@@ -208,6 +217,8 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
   let voices: Voice[] = [];
   let noiseBuffer: AudioBuffer | null = null;
   let duckUntil = 0;
+  /** True while a spoken take is playing. Outlives the cue duck's timer. */
+  let voiceDuck = false;
   // The bed's clock: where the next bar starts, and the beats already put down.
   let barAt = 0;
   let tempo = BED_MODES[DEFAULT_MUSIC].bpm;
@@ -340,6 +351,9 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
     setBed(BED_MODES[music].level * DUCK);
   };
 
+  /** The level the bed should sit at right now: held down, or its own. */
+  const bedLevel = () => BED_MODES[music].level * (voiceDuck || duckUntil > 0 ? DUCK : 1);
+
   const setBed = (level: number) => {
     const t = now();
     try {
@@ -433,7 +447,7 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
       // The bar already scheduled plays out; the next one is the new mode's.
       // The tempo scale changed with it, so the climb starts again from base.
       tempo = BED_MODES[next].bpm;
-      setBed(duckUntil > 0 ? BED_MODES[next].level * DUCK : BED_MODES[next].level);
+      setBed(bedLevel());
     },
     music() {
       return music;
@@ -610,7 +624,7 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
       tempo = hold ? Math.max(tempo, want) : want;
       if (duckUntil > 0 && now() >= duckUntil) {
         duckUntil = 0;
-        setBed(mode.level);
+        setBed(bedLevel());
       }
       const spb = 60 / tempo;
       if (barAt === 0) barAt = now() + 0.08;
@@ -620,6 +634,12 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
         barAt += spb * 4;
         guard += 1;
       }
+    },
+    setBedDuck(on: boolean) {
+      if (voiceDuck === on) return;
+      voiceDuck = on;
+      if (music === 'off' || ended) return;
+      setBed(bedLevel());
     },
     end() {
       ended = true;

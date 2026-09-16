@@ -91,10 +91,38 @@ const MIN_HMM = 36;
 const MIN_COMPACTIONS = 24;
 const MIN_SHIPS = 24;
 
+/**
+ * The user's delivery, authored data (slice 4C). One preset speaks every one
+ * of their lines; the worker owns the catalog and refuses a name it does not
+ * have, so the loader checks the shape and the worker checks the membership.
+ * `patterns/voice/user.md` names the same preset under `## The voice`, and a
+ * test holds the two together so the writing brief and the lever cannot
+ * disagree about who is talking.
+ */
+export interface VoiceSet {
+  user: {
+    preset: string;
+    /** Speech rate multiplier, the worker's own bounds. */
+    rate: number;
+    /** Gain in decibels around the preset's level. */
+    loudness: number;
+  };
+  /**
+   * The longest mid-line pause a take may hold before the receipt calls it a
+   * hole, seconds. fx-dub's default, which the user's lines never reached in
+   * measurement because `lineFault` caps them at one sentence.
+   */
+  maxGap: number;
+}
+
+/** A preset name as the worker spells them: a short ASCII token. */
+const PRESET_RE = /^[a-z0-9][a-z0-9_-]{0,39}$/i;
+
 export interface CabinetSet {
   name: string;
   tagline: string;
   agentName: string;
+  voice: VoiceSet;
   words: {
     valuation: string;
     hype: string;
@@ -371,6 +399,34 @@ function loadTierLines(raw: unknown, file: string, key: string, min: number): Ti
   return out;
 }
 
+/**
+ * The voice block. Every bound here is the worker's own (`voice/worker.py`):
+ * a rate outside `0.5..2.0`, a loudness outside `-24..12` or a gap outside
+ * `0.1..3.0` is a 400 from the worker, and a halt at load is a better place
+ * to learn that than a silent cabinet.
+ */
+function loadVoice(raw: unknown, file: string): VoiceSet {
+  const obj = asRecord(raw, file, 'voice');
+  const userRaw = asRecord(at(obj, 'user', file, 'voice.user'), file, 'voice.user');
+  const preset = asString(
+    at(userRaw, 'preset', file, 'voice.user.preset'),
+    file,
+    'voice.user.preset',
+  );
+  if (!PRESET_RE.test(preset)) fail(file, 'voice.user.preset');
+  const rate = asNumber(at(userRaw, 'rate', file, 'voice.user.rate'), file, 'voice.user.rate');
+  if (!(rate >= 0.5 && rate <= 2)) fail(file, 'voice.user.rate');
+  const loudness = asNumber(
+    at(userRaw, 'loudness', file, 'voice.user.loudness'),
+    file,
+    'voice.user.loudness',
+  );
+  if (!(loudness >= -24 && loudness <= 12)) fail(file, 'voice.user.loudness');
+  const maxGap = asNumber(at(obj, 'maxGap', file, 'voice.maxGap'), file, 'voice.maxGap');
+  if (!(maxGap >= 0.1 && maxGap <= 3)) fail(file, 'voice.maxGap');
+  return { user: { preset, rate, loudness }, maxGap };
+}
+
 function loadCabinet(raw: unknown): CabinetSet {
   const file = 'cabinet.json';
   const obj = asRecord(raw, file, 'name');
@@ -380,6 +436,7 @@ function loadCabinet(raw: unknown): CabinetSet {
   if (lineFault(name) !== null) fail(file, 'name');
   if (lineFault(tagline) !== null) fail(file, 'tagline');
   if (lineFault(agentName) !== null) fail(file, 'agentName');
+  const voice = loadVoice(req(obj, file, 'voice'), file);
   const wordsRaw = asRecord(req(obj, file, 'words'), file, 'words');
   const words = { beats: {} as Record<Beat, string> } as CabinetSet['words'];
   for (const key of ['valuation', 'hype', 'streak', 'context'] as const) {
@@ -394,7 +451,7 @@ function loadCabinet(raw: unknown): CabinetSet {
     if (lineFault(word) !== null) fail(file, key);
     words.beats[beat] = word;
   }
-  return { name, tagline, agentName, words };
+  return { name, tagline, agentName, voice, words };
 }
 
 function loadLevels(raw: unknown): LevelsSet {

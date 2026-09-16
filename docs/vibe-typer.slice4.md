@@ -1361,3 +1361,475 @@ Both items are in the test file only. No source changed and no test was added �
 three more assertions — which is the right shape for this review: nothing it found was a bug in the cut, both
 were places where a passing test was not proving what it claimed. `pnpm verify` was re-run after them:
 `Test Files 56 passed (56)`, `Tests 721 passed (721)`, both play-throughs still byte-identical to `main`.
+
+## Sub-slice C — the voice on the user's lines
+
+Branch `cabinet/vibe-typer-s4c`. G15 in the typing cabinet's words: the user says their own asks, their scope
+creeps, their check-ins, their reactions and their reviews out loud through the host-side worker; every take is
+heard back and receipted by fx-dub before it plays; a take that misses its beat waits for the next ask. The
+agent's lines are never spoken — the player types those, and the keystroke is the score's voice (G29). The
+meeting is never spoken either. The Vibe launcher lights `/voice`, which it deliberately did not at `0.10.0`.
+
+### What was built
+
+| File                                              | What changed                                                                                 |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `packages/vibe-typer/patterns/cabinet.json`       | the `voice` block: the user's preset, rate and loudness, and the straggle budget             |
+| `packages/vibe-typer/src/patterns.ts`             | `VoiceSet`, `loadVoice`, and the halt on every bound the worker itself enforces              |
+| `packages/vibe-typer/patterns/voice/user.md`      | `## The voice`, naming the same preset, and the character in `## Who they are`               |
+| `packages/vibe-typer/test/patterns.test.ts`       | the loader halts, and the sheet and the lever must name the same preset                      |
+| `packages/cabinet-server/src/voice.ts`            | `SpeakJob`: the least a job needs to be spoken, so `speakLine` serves both cabinets          |
+| `packages/cabinet-server/src/voice-vibe.ts`       | `vibeVoiceLine` (which lines) and `createVibeVoicer` (when a take may play) — new            |
+| `packages/cabinet-server/test/voice-vibe.test.ts` | the line rule as a table, the timing rule on a fake worker and a hand-turned clock — new     |
+| `packages/cabinet-server/src/{browser,index}.ts`  | both exported                                                                                |
+| `apps/cabinets/src/typer-audio.ts`                | `setBedDuck`, and one `bedLevel()` so the cue duck and the take duck cannot fight            |
+| `apps/cabinets/src/vibe-typer.ts`                 | the Voice checkbox, the probe, the pref, the drain, the speaker, the duck, `data-vibe-voice` |
+| `apps/cabinets/test/typer-mount.test.ts`          | the shell's half: the box, the pref, the job, the words, the silence when it is off          |
+| `apps/cabinets/test/typer-audio.test.ts`          | the take duck holds through the cue duck's timer and through a change of bed                 |
+| `packages/launcher-vibe-typer/src/cli.ts`         | `voiceUrl` and `voiceToken` from the environment; `USAGE` names both                         |
+| `packages/launcher-vibe-typer/test/*.ts`          | the worker routes pass and everything else 404s; `--help` names the two variables            |
+| `packages/launcher/scripts/build.mjs`             | `data-vibe-voice` is a Vibe needle                                                           |
+| `scripts/sit-vibe.mjs`                            | `--voice auto\|on\|off`, `--voice-url`, `--seat none`, and a wall-clock play under the voice |
+
+`voice/worker.py` is unchanged. `packages/vibe-typer/src` is untouched except the loader; the sim did not move.
+
+### The lever, and the voice
+
+```json
+"voice": { "user": { "preset": "am_echo", "rate": 1.0, "loudness": -4 }, "maxGap": 0.5 }
+```
+
+**The character is the Director's, set 2026-09-16 and recorded as decision 59 above:** the user is a man with
+an overgrown beard and messy hair who has been up all night and does not mind. The avatar batch carries it in
+the picture; this sub-slice carries it in the voice, and the sheet gained one plain sentence saying it at the
+top of `## Who they are`, so the next authoring pass writes to the same person the art and the voice now show.
+That sentence names him nothing, gives no age and carries no digit, because the lines must not carry those
+either. The rest of the sheet is as it was authored — re-voicing the whole brief is the lead's, not a
+builder's.
+
+**`am_echo`, chosen by measurement.** The twenty lines of `patterns/voice/user.md` were spoken through every
+American male preset in the worker's catalog except Ghost's `am_michael`, at rate 1.0, loudness −4 and a
+half-second budget, and heard back:
+
+| Preset      | Receipted | Mean  | What it lost                                       |
+| ----------- | --------- | ----- | -------------------------------------------------- |
+| `am_echo`   | 18 / 20   | 500ms | two number words written as numerals               |
+| `am_fenrir` | 17 / 20   | 429ms | the two numerals, and `liftoff` heard as two words |
+| `am_liam`   | 17 / 20   | 442ms | the same three                                     |
+| `am_eric`   | 17 / 20   | 435ms | the two numerals, and `ducks` heard as `ducts`     |
+| `am_adam`   | 17 / 20   | 453ms | the same three as `am_fenrir`                      |
+| `am_puck`   | 16 / 20   | 874ms | those, and `duck` heard as `stuck`                 |
+
+`am_echo` is the pick because the receipt is the gate: a voice the listener mishears is a voice that does not
+play, and it was the only one of the six that lost nothing to a misheard word. It reads a lower-case line as a
+person talking rather than as an announcement, which is the register of a founder at four in the morning, and
+it is neither of the two men the shooter's bosses use.
+
+**Rate 1.0 and loudness −4 are `// Director` numbers.** Ghost's cast sits at 0.9 and −4. The rate is faster
+here because the user's line is five to ten words in the present tense and has to land inside the beat it was
+said on, where a boss's line has a wave to sit under; the loudness is Ghost's, so the duck depth tuned for one
+cabinet is right for the other and nothing yells (G25).
+
+**`maxGap` stays at fx-dub's default half-second, and that is a measurement, not an inheritance.** Ghost's
+straggle finding was that Kokoro holds longer than half a second between two sentences, and Ghost's fallback
+lines have two. The user's lines cannot: `lineFault` already refuses more than one sentence. Across every take
+in every run below — 111 of them — `no_internal_straggle` refused none. The budget is a lever, so the Director
+can move it; nothing here asks for it to move.
+
+### The line rule
+
+One function, `vibeVoiceLine`, decided from the beat and the step's events and never from the words, because a
+rule that read the text would change when the pools were re-authored. A table test covers every row.
+
+| Who   | Beat      | Also in the step  | Spoken as  |
+| ----- | --------- | ----------------- | ---------- |
+| user  | `request` | —                 | the ask    |
+| user  | `creep`   | —                 | the creep  |
+| user  | `code`    | the check-in flag | the nag    |
+| user  | `ship`    | —                 | a reaction |
+| user  | `ship`    | the `ship` event  | the review |
+| user  | `sync`    | anything          | not spoken |
+| agent | any       | anything          | never      |
+
+The review is told from the reaction by the `ship` event, which the sim pushes only on a level's last request —
+so the class comes out of the step's own events, not out of an index the shell would have to keep. A check-in
+is only a check-in on the code beat, which is the only beat the sim raises one on.
+
+### The timing rule, and why `createVoicer` was not reused
+
+The line goes to the worker the moment it lands; the chat shows it at once and nothing on the field waits. The
+take plays the moment its receipt is back if the beat it belongs to is still in hand — the ask through the
+`request` and `reply` beats, the creep through `creep` and the `code` beat that follows it, the check-in on its
+code beat, a reaction or a review from the `ship` frame into the next request's reply. A take that missed its
+beat waits for the **next request boundary** and plays there. A failed receipt is never played; mute silences
+the take and not the receipt; the run ending drops whatever is in hand.
+
+**Two takes may be in hand, and only for one pair.** The queue is a line of at most two, oldest first: the
+reaction or the review of the request that just shipped, and then the ask of the request that follows it. That
+pair is the reason the cap is not one, and the reason is in the cold numbers below — the sim says the reaction
+on the `ship` frame and enters the next request one step later, so on a cold cache the ask lands about thirty
+milliseconds after it, while the worker is still holding the reaction's take. With one slot the reaction was
+replaced every single time and the user's one comedic line was only ever heard on a warm cache. So:
+
+- the reaction plays as soon as its receipt is back — the next request's reply beat is still in hand for it,
+  because the chat still shows it above the ask;
+- the ask plays when its own receipt is back **and** the reaction's audio has finished, which the shell learns
+  from the take element's `ended` and `pnpm sit` — which plays nothing — takes from the receipt's own measured
+  length;
+- the ask plays at once if the reaction's receipt failed, or if it was dropped: a slot with nothing to play
+  leaves rather than blocking the one behind it.
+
+Everything else replaces, as it did. A creep or a check-in arriving while two are in hand drops the older of
+the two and never the one whose audio is in the air; a take that is playing is never cut off, and the line
+behind it waits. The cap is two, so nothing stacks; the sim waits for none of it and the field never learns.
+
+`createVoicer` gives none of that without the adapter becoming the rule, so `createVibeVoicer` is written beside
+it and Ghost's is untouched. Four differences, each load-bearing:
+
+1. **In hand is a beat, not a caption.** Ghost matches the caption's text against the job's, or allows a clear
+   field inside a caption window. The typing cabinet has no caption and no window; faking one would hand the
+   Vibe rule a time allowance that is not in it.
+2. **The boundary is an edge, not a level.** Ghost's breather is a state the round is in or out of. `request`
+   holds for exactly one step here, so a level test would play a held take on the same frame that held it —
+   there is a test for that case, and it is the one a reused `createVoicer` would fail.
+3. **Two takes may be in hand**, in order, for the reaction-then-ask pair. Ghost holds one and a newer boss line
+   is the boss saying the newer thing; here the two lines are one person a step apart and both are the joke.
+4. **A take runs to the end of its audio.** Ghost's play hook is fire and forget, and a newer take cuts the
+   older one off at the element. Here the hook is handed a `done`, the queue moves when the audio is over, and
+   two takes are never in the air at once.
+
+What is shared is everything that talks to the worker: `speakLine`, `voiceHealth`, `VoiceReceipt`, the status
+words. `speakLine` now takes `SpeakJob` — the words, the kind, the delivery and the budget — which `VoiceJob`
+satisfies structurally, so one client serves both cabinets and neither imports the other's personas.
+
+### Ducking
+
+`typer-audio.ts` gained `setBedDuck(on)`, the small additive method Ghost's engine already has. It is the same
+depth as the cue duck (`DUCK`), and the two can no longer fight: both now read one `bedLevel()`, so the cue
+duck's timer running out under a playing take does not lift the bed, and changing the bed mid-take keeps the
+take's duck at the new mode's level. The keystroke samples are never touched — the player is typing under the
+voice and the keystroke is the score's voice (G29) — and `music: off` has no bed to duck, so the method does
+nothing there. `soft` and `off` are unchanged in level: the bed is still not a clock.
+
+### The chrome
+
+A **Voice** checkbox in the controls row, built only under `LOCAL_SEATS` and off and disabled until the worker
+answers `voiceHealth` through `/voice`, probed every five seconds so starting `pnpm voice` after the page opened
+still lights it. The `voice` pref lives under `vibe.prefs` and turns the box on by itself the first time a
+worker answers. The status is words beside it and nothing else: `voice ready`, `voice on`, `voice off`, `voice
+speaking ahead`, `voice: receipt ok`, `voice: spoke on the beat`, `voice: held for the next ask`, `voice: spoke
+at the next ask`, `voice: receipt failed, not played`, `voice: no worker (pnpm voice)`. Nothing on the field, in
+the chat or on the standup names the engine, the preset or a count.
+
+It is not the seat's checkbox and does not wait on endless: a story level has a user too.
+
+**The run's opening ask is held for the box.** `createRun` says the first ask before any step runs, so it is in
+the chat but in no step's events, and it is said before the worker has answered its first probe. It waits in the
+mount for the box and goes as soon as the box is on, unless the reply beat is gone by then — the first thing the
+user says is the one line a player is certain to be reading.
+
+### The launcher
+
+`packages/launcher-vibe-typer/src/cli.ts` now passes `voiceUrl: process.env.VOICE_URL ?? 'http://127.0.0.1:7788'`
+and `voiceToken: process.env.VOICE_TOKEN ?? null`, exactly as Ghost's does, and `USAGE` names both in Ghost's
+words. `allow.ts` is shared and did not change, so the dev server and the two launchers are in step by
+construction. `serve.test.ts` in that package now asserts the four worker calls reach the upstream with the
+bearer added server-side, and that `/voice/voices`, a traversal under `/voice/audio/`, a malformed take name and
+a POST to `/health` all 404 before a socket is opened.
+
+The pack's marker gate gained one Vibe needle, `data-vibe-voice`, for a reason the other needles have: this
+package now stands a `/voice` proxy, and a shell built without the voice chrome would leave that proxy with no
+caller and give the player a cabinet whose user never speaks, with nothing to show it. Measured on the Pages
+build (`pnpm build:play`, no `VITE_LOCAL_SEATS`): neither `data-vibe-voice` nor `data-vibe-seat` survives, which
+is the half of the test a jsdom mount cannot do.
+
+### What was measured, live on this rig
+
+The worker on CUDA (`kokoro-onnx` + `faster-whisper small.en`), `pnpm sit --cabinet vibe-typer --voice on
+--levels 3`, a perfect typist, tier 0, seed 1, played in wall-clock time. Nothing is played in `sit`; the
+receipt is the artifact.
+
+The cold runs are on an empty cache directory — the worker restarted with `VOICE_CACHE` pointed at a folder
+that did not exist, so not one line in them was a cache hit.
+
+| Run                                             | Voiced | Receipt ok     | Failed | On the beat | At the next ask | Dropped | Replaced | Mean to receipt |
+| ----------------------------------------------- | ------ | -------------- | ------ | ----------- | --------------- | ------- | -------- | --------------- |
+| `--seat none`, cold cache                       | 34     | 25 (2 cached)  | 2      | 23          | 1               | 1       | 5        | 604 ms          |
+| `--seat none`, warm cache                       | 34     | 31 (31 cached) | 2      | 27          | 1               | 3       | 0        | 7 ms            |
+| `--seat mcp --model kimi-k2.6:cloud` (2 levels) | 23     | 20 (17 cached) | 1      | 18          | 0               | 2       | 1        | 161 ms          |
+
+Per take, speaking took 0.24 to 1.6 s and hearing it back 0.08 to 0.42 s; a cached line answered in 3 to 14 ms.
+The third row is the push path, with a model in the user's chair writing the asks: most of its lines are cache
+hits and the ones the model wrote are not, which is why its mean sits between the cold and the warm runs.
+
+**The finding the two-slot rule exists for: with one take in hand, the reaction and the review were only ever
+heard on a warm cache.** The sim says the reaction on the `ship` frame and enters the next request one step
+later, so on a cold cache the ask lands about thirty milliseconds after it while the worker is still holding
+the reaction's take — and a single slot replaced it every time. Measured, before and after, same seed, same
+tier, same typist, cold both times:
+
+| Cold, `--seat none`                   | One take in hand | Two in hand, the reaction then its ask |
+| ------------------------------------- | ---------------- | -------------------------------------- |
+| Receipted takes that played           | 20 of 21         | 24 of 25                               |
+| Reaction and review takes that played | **0 of 11**      | **6 of 11**                            |
+| Replaced at the worker                | 10               | 5                                      |
+| Mean to the receipt                   | 709 ms           | 604 ms                                 |
+
+So the user's one comedic line is now audible on a first run, which is the whole of the change. The five that
+are still replaced are the ones a third line landed on: a scope creep or a check-in arriving while the pair is
+in hand takes the older of the two, which is the cap doing what a cap is for.
+
+**Warm, the cap costs two takes, and that is the trade.** Before the amendment a newer take cut the older one
+off at the element, so 30 of 31 played; now a take runs to the end of its audio and the one behind it waits,
+and two of them find their beat gone by the time the queue reaches them — 28 of 31 play, one of those at the
+next ask, and three are dropped. Nothing is ever heard over the top of anything else, which is what the cap
+was for; the warm run simply hears two fewer lines than a run that talked over itself.
+
+The authored pools are finite, so the cabinet also warms itself: after one run of a level, that level's user
+answers in single-digit milliseconds. Nothing here was tuned to make the table look better.
+
+**Zero `no_internal_straggle` refusals in 111 takes.** See the lever, above.
+
+**The refused takes, read as findings.** Every one is the listener's spelling or hearing, none is the audio:
+
+| Line                                                                      | Check                                | What was heard                          |
+| ------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------- |
+| `add up the numbers from one to ten in a marketplace for hat collections` | `line_present`, `no_invented_speech` | `from 1 to 10 ... for hack collections` |
+| `show every toy she has reviewed`                                         | `line_present`, `no_invented_speech` | `show every tie she has reviewed`       |
+| `have a website for my cat say hello to visitors`                         | `line_present`, `no_invented_speech` | `for my cats`                           |
+| `the slider moves like a fern toward sunlight.`                           | `line_present`, `no_invented_speech` | `towards sunlight`                      |
+
+The first is the largest of them: `faster-whisper small.en` writes number words as numerals, and **158 of the
+2,808 authored user lines carry a number word** — about one line in eighteen, which will never be heard by this
+listener and will always be text on the field instead. The fix is the same field the cast hint uses and is the
+Director's to take: an `initial_prompt` that carries spelled-out numbers would steer the transcription without
+touching a check. It was not done here, because decision 7 of the brief opens the hint for the agent's name and
+nothing else, and because a take we cannot verify still does not play. The fourth is worth naming on its own:
+the written line is American English, as every surface must be, and the listener supplied the British form.
+
+**The agent's name does not need the hint, measured.** Not one of the 2,808 authored user lines names the agent
+— the sheet forbids naming a tool or a model, and `Sprocket` appears in none of them. Ten lines written to name
+him were spoken through the worker as it stands: nine receipted, and **none of the refusals was the name** (the
+one that failed lost `thing` to `things`). `CAST_HINT` is unchanged and `voice/worker.py` is untouched.
+
+**A worker bug found and not fixed.** Re-speaking a line whose receipt failed, when the receipt had been cleared
+from the cache but its `.failed.wav` had not, answers 500: `wav.rename(wav.with_suffix('.failed.wav'))` in
+`voice/worker.py` raises on Windows when the destination already exists, where `Path.replace` would not. It is
+unreachable in normal use, because `_evict` removes all three files together and a cached failed receipt is
+returned without re-rendering; it is reachable by hand-clearing the cache, which is how it was found. Recorded,
+not changed: the worker is not this sub-slice's to edit.
+
+### The shell, smoked
+
+The dev server on 5174 from this worktree, the worker on 7788, the Browser pane driven with synthetic keydowns.
+
+- The **Voice** box is built, off and disabled, and says `voice: no worker (pnpm voice)` when nothing answers;
+  with the worker up it reads `voice ready` and the remembered pref turns it on by itself.
+- `POST /voice/speak` through the proxy returns 200 and the receipt the shell acts on. The body the shell sent
+  is the lever verbatim: `preset am_echo, rate 1.0, loudness -4.0, kind user, max_gap_s 0.5`.
+- A passing receipt's take is fetched at `GET /voice/audio/<id>.wav` → 200, `audio/wav`, a real RIFF file
+  (88–92 kB), and the status reads `voice: spoke on the beat`. A failing one reads `voice: receipt failed, not
+played` and no audio is fetched at all.
+- A take that missed its beat showed `voice: held for the next ask` and played at the following request.
+- Re-smoked after the two-slot amendment: a level played through with the box on fetched its takes one after
+  another rather than on top of one another, and the audio for each was a real RIFF file (88 to 138 kB). The
+  status walked `voice speaking ahead` to `voice: spoke on the beat` and, for the one line in the level whose
+  receipt fails, to `voice: receipt failed, not played` with no audio fetched for it.
+- No digit reached the chat pane and nothing on the page named the engine or the preset. (One authored user
+  line contains the ordinary English verb `whisper`; that is a word the user says, not the listener's name.)
+
+The Browser pane runs no animation frames while it is hidden, which is the same limit `docs/cabinet-voice.md`
+records for Ghost; the long play-throughs above are `pnpm sit`, which does not need them.
+
+### The gates
+
+`pnpm verify` green: `Test Files 57 passed (57)`, `Tests 766 passed (766)`, `eslint` and `prettier --check`
+clean over the whole tree. `pnpm build:play` and `pnpm build:launcher` green for both packages. Both
+play-throughs byte-identical to `main` — `node scripts/play.mjs ghost --fixture naive-ndjson` and
+`node scripts/play.mjs vibe-typer --tier 0 --bot typist:40` run on this branch and on `main`'s sources in the
+same tree, diffed, no difference. `git diff main --stat` is empty for `packages/ghost-on-the-menu`, every
+README, `site/`, `CHANGELOG.md`, `catalog/` and `docs/art/`, and touches `packages/vibe-typer/src` only in
+`patterns.ts`. Both `package.json` versions stay `0.10.0`.
+
+`npm pack --dry-run --json`, measured on this branch and on `main` in the same tree:
+
+| Package                          | Files          | Packed                  | Unpacked                |
+| -------------------------------- | -------------- | ----------------------- | ----------------------- |
+| `@mcptoolshop/vibe-typer`        | 131, unchanged | 2,487,007 → 2,491,788 B | 5,664,591 → 5,680,068 B |
+| `@mcptoolshop/ghost-on-the-menu` | 63, unchanged  | 6,172,544 → 6,173,794 B | 8,820,538 → 8,826,413 B |
+
+The Vibe tarball grows by four kilobytes, a sixth of one per cent, and no file is added or removed: the voice
+is code in a bundle that was already there, and nothing about it is an asset.
+
+### What was refused, and why
+
+- **Reusing `createVoicer` with an adapter.** Three rules differ, and an adapter that carries three rules is the
+  rule. Writing the second voicer keeps Ghost's timing untouched and both sets of tests honest. Never both.
+- **Tuning `maxGap` up because Ghost's refusals came from it.** Measured instead: zero straggle refusals here.
+- **Adding spelled-out numbers to `CAST_HINT`.** A real finding and a real fix, and out of this brief's bounds.
+- **Fixing the worker's failed-take rename.** Same reason; recorded above with the one-line remedy.
+- **Playing an unreceipted take, or a take whose receipt failed.** G15 is the receipt.
+- **Speaking the agent's lines, or the meeting.** The player types the agent; the meeting would bury the ask.
+- **Changing the sim to make room for the reaction.** Sub-slice A proved the play-throughs byte-identical and
+  this sub-slice keeps them that way. The ship frame's length is a design question, not a builder's.
+- **More than two takes in hand.** Two is the cap and there is no third slot: a queue that can grow is a queue
+  that plays the user over themselves a request later, and the cabinet would owe the player an apology rather
+  than a joke. A creep or a check-in landing on a full queue takes the older of the two and nothing stacks.
+
+### Frame checks
+
+- **Nothing about a fact reaches the worker.** The job carries the gated words, the kind `user`, a preset, a
+  rate, a loudness and a budget. No tape, no level, no score, no valuation — `SpeakJob` has no room for one, and
+  the cabinet's fact-blind discipline is untouched because the sim did not change.
+- **No digit on screen.** Every voice status is words; the take is audio. The mount test asserts no digit on the
+  chat pane with the voice on.
+- **The band is untouched.** `packages/vibe-typer/src` changed only in `patterns.ts`, and only to load a block
+  the sim never reads.
+- **The model is a character.** Nothing names the engine, the listener, the verifier or the preset anywhere a
+  player looks; the preset is a lever and the chrome is three words.
+
+### Decisions
+
+60. **The preset is a data lever, and the sheet names it too.** `cabinet.json → voice.user` carries the preset,
+    the rate and the loudness, and `voice.maxGap` the budget; the loader halts on each of the worker's own
+    bounds so a bad value is a build failure rather than a silent cabinet. The preset's shape is checked here
+    and its membership at the worker, which owns the catalog. `patterns/voice/user.md` names the same preset
+    under `## The voice`, and a test reads both and requires them to agree, so the brief a writing model is
+    given and the voice a player hears cannot drift apart.
+
+61. **Which lines are spoken is decided from the beat and the events, never from the text.** `vibeVoiceLine` is
+    one pure function with a table test. A rule that matched words would have to be re-checked every time the
+    pools were re-authored, and the pools are re-authored.
+
+62. **The review is told from the reaction by the `ship` event.** It is in the same step, the sim pushes it only
+    on a level's last request, and reading it costs the shell no state of its own.
+
+63. **A second voicer, not an adapter over Ghost's.** Four rules differ — in hand is a beat and not a caption,
+    the boundary is an edge and not a level, two takes may be in hand for the reaction-then-ask pair, and a
+    take runs to the end of its audio instead of being cut off by the next one. Each has a test that a reused
+    `createVoicer` would fail. The client, the receipt and the status words stay shared.
+
+64. **The creep's beat window is `creep` and the `code` beat after it.** The brief named the windows for the
+    ask, the reaction and the check-in and was silent here. The sim says the creep on the `creep` frame and
+    appends the line to the code beat that follows, so that pair is the window; anything narrower would hold a
+    take that arrived a second later, for a line still on the field.
+
+65. **`speakLine` takes the least a job needs.** `SpeakJob` — text, kind, voice, budget — which `VoiceJob`
+    already satisfies. One worker client for two cabinets, and the typing cabinet does not import a persona
+    written for a boss.
+
+66. **A take that a faster one lands on top of is counted as dropped.** Two cached takes can come back inside
+    one frame, and only one can play. The first version lost the older one silently; the numbers in this
+    document would have been wrong by exactly the amount that mattered. There is a test.
+
+67. **The Voice box is `LOCAL_SEATS`, not the endless seat.** A story level has a user. The seat's mark stays
+    what it is and the voice has its own, so the pack can check each half separately.
+
+68. **The run's opening ask waits in the mount for the checkbox.** It is said by `createRun`, before any step,
+    so no drain can see it; and it is said before the first probe answers. It goes when the box comes on, and
+    is given up if the reply beat has passed.
+
+69. **`setBedDuck` is additive, and one `bedLevel()` decides the bed.** The typing cabinet already had a timed
+    duck for the deploy; a take's duck outlives a timer. Both now read one function, so the timer running out
+    under a take does not lift the bed and a change of bed mid-take keeps the take's depth.
+
+70. **`--seat none` and a wall-clock play.** A voice measurement wants a run with no model in it, and a rule
+    about whether a receipt beat its beat cannot be measured by a loop that runs a level in four milliseconds.
+    Under `--voice on` the levels are played at the shell's own pace, with the shell's accumulator, step cap and
+    creep hold; with the voice off the tight loop is exactly the loop it was.
+
+71. **The refused takes are findings and stay in this document.** One line in eighteen carries a number word the
+    listener writes as a numeral, and those lines will be text on the field until the Director takes the hint
+    change. Nothing was tuned to make the table look better.
+
+72. **Two takes in hand, and only for the reaction and the ask behind it.** The first cut of this sub-slice held
+    one, which is what the brief said, and the cold measurement showed what one slot costs: not one reaction or
+    review was ever heard on a first run, because the next ask lands thirty milliseconds after it and took the
+    slot. The reaction is the user's comedic line and the cabinet is a comedy, so the pair queues: the reaction
+    plays on its own beat and the ask waits for its audio to end. Two is the cap — a queue that can grow plays
+    the user over themselves — and every other line still replaces, as it did.
+
+73. **A take runs to the end of its audio, and the play hook says when that is.** The hook is handed a `done`
+    the shell wires to the take element's `ended`, `pause` and `error`, so the queue moves on the audio and not
+    on a guess. A caller that plays nothing — `pnpm sit` — ignores it and the queue waits out the receipt's own
+    measured length instead, which is the same length the element would have taken. Muting calls `done` at
+    once: nothing is audible, so nothing behind it should wait.
+
+74. **A slot with nothing to play leaves rather than blocking the one behind it.** A failed receipt, a refusal,
+    a worker that did not answer: the take is counted and the slot goes, so the ask plays at once when the
+    reaction was never going to be heard. Without it the rule would trade one silent line for two.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** This sub-slice performs no irreversible act at all. The only outward step is the
+branch push, undone by `git push origin --delete cabinet/vibe-typer-s4c`; the branch is deletable until it is
+merged and merges as one commit. Nothing is published, tagged or released: both `package.json` versions stay
+`0.10.0` and `docs/npm-launcher.md`'s table is not entered. The lever is data — `git checkout main --
+packages/vibe-typer/patterns/cabinet.json` returns the cabinet to a silent user with no other change, because
+the chrome is off until a worker answers and a worker that never answers is a cabinet that plays as it did. The
+worker writes only into its own cache directory, which is git-ignored and which `_evict` bounds at 400 takes.
+No skip.
+
+**PIN_PER_STEP (3).** The preset, the rate, the loudness and the straggle budget are all in `cabinet.json`,
+versioned with the package and validated at load; the shell, `pnpm sit` and the tests all read the same block,
+and the mount test asserts the job carries exactly it. Every take carries a receipt naming the engine, the
+listener, the verifier, the preset, the rate, the loudness, the budget, the text and what was heard, written
+beside the audio. The sim is seeded and untouched, so a run at a seed says the same lines in the same order and
+the voice measurement is repeatable.
+
+**ANDON_AUTHORITY (3).** Two halts and a gate. The loader halts the build on any voice value the worker would
+refuse, naming the key. The receipt halts the take: a failed check means the audio is never served and never
+played, the shell says so in words, and the slot leaves so nothing waits behind a take that will never sound. And the pack's marker gate halts a Vibe package whose shell lost the
+voice chrome, which would otherwise ship a proxy with no caller. All three are exercised by tests, and the
+receipt gate was exercised live four times in the runs above.
+
+**DECOMPOSE_BY_SECRETS (3).** What changes together is together: which lines are spoken and when a take may
+play are one new file with one test file; the worker protocol stayed in `voice.ts` and grew one shared type; the
+chrome, the pref and the speaker are the shell's; the proxy is the launcher's and its allowlist is one shared
+module both cabinets read. The sim knows nothing about any of it.
+
+**UNCERTAINTY_GATED_HUMANS (2).** The preset was chosen by measurement across the catalog and stated with its
+reason, and it is a lever the Director can change in one line; the rate, the loudness and the budget are
+`// Director` numbers with their first values justified here. The character came from the Director and is
+recorded as a decision. What is not gated: the reaction finding is reported with three named options rather
+than one recommendation, which is the right shape for a feel question but leaves the Director a choice to make
+before `0.11.0` rather than a change to approve.
+
+**EXTERNAL_VERIFIER (3).** No model checks its own work anywhere in this path. The line is written by one model
+(or by the authored pool), spoken by Kokoro, heard back by faster-whisper and judged by fx-dub — three
+different systems, and the judge never sees the generator's reasoning, only the audio and the one line it was
+supposed to be. The timing rule is tested against a fake worker whose answers the test chooses, so the rule is
+proved by construction and not by a recording. The diff review is a different family from the writer.
+
+### Review (Kimi K2.6, from a packet)
+
+Halt, four items, all four accepted and applied in the same commit. Three are in code that only runs when
+something has already gone wrong, which is where this sub-slice's own tests were thinnest; the fourth is a test
+whose assertion did not carry its own claim.
+
+1. **The speak chain had no `catch`.** `speakLine` catches its own transport errors, so the chain only rejects
+   if something above it throws — a hook that threw, a body past its guards. It would have left the slot
+   pending for the rest of the run, blocking the take behind it, with the numbers still saying the take was on
+   its way. **Applied:** the chain has a `.catch()` that drops the slot when the token still matches, counts it
+   as a worker that did not answer, and says one static word. A test rejects the speak hook and asserts the
+   status, the count and that the next line still plays.
+
+2. **A playback error left the bed ducked.** The take element's `error` listener called `finishTake()` but not
+   `duckBeds(false)`, so a take that failed to play held the bed down until the next one ended. Every other way
+   a take can end already un-ducked. **Applied:** the `error` listener un-ducks as `pause` and `ended` do.
+
+3. **The worker's own words were printed on the controls row.** The refusal status was built from
+   `SpeakAnswer.error` with digits and path separators stripped — which stops a path and a number and stops
+   nothing else. `kokoro has no such preset` would have reached the player, and the model is a character (G17).
+   **Applied:** two static words, one per refusal class, and the worker's sentence is never printed anywhere.
+   A test hands the voicer a refusal whose error names an engine and asserts the engine is not in the status.
+   Ghost's `createVoicer` has the same shape in the same place; it is named here and is not this branch's to
+   change.
+
+4. **A "naming nothing" test that named five words.** The assertion listed the preset and four engine words a
+   reviewer thought of, which is not the claim the test makes. **Applied:** it asserts the cabinet's own
+   `NAMES` regex from `gate.ts` — every engine, vendor, model and seat word the say gate refuses — and `DIGIT`,
+   the same class the field is held to, over `root.textContent`. `VIBE_NAMES` is deliberately not the one used:
+   it adds the typing cabinet's four lever names and `the ask` is a beat word on this field. The preset is kept
+   as its own assertion, because it is a lever's value and is in no list. `DIGIT`, `NAMES` and `VIBE_NAMES` are
+   now exported from both barrels so a shell test can hold itself to the same rule the gate holds a line to.

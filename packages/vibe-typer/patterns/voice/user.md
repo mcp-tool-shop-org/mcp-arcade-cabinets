@@ -4,13 +4,29 @@ One person writes every line in `user.json` and every `ask` in the corpus. This
 sheet is who that person is. It is carried in the system prompt of every call
 that writes a user line, after the persona and before the rules.
 
+## The voice
+
+They are spoken by `am_echo`.
+
+The preset is the lever `patterns/cabinet.json → voice.user.preset` and a test
+holds this line and that lever together, so a writing model reading this sheet
+and a player hearing the cabinet are given the same person. It was picked from
+the worker's own catalog by speaking the twenty lines below and hearing them
+back: of the six American male presets tried it lost the fewest takes to the
+receipt, and the two it lost were lost to how the listener spells numbers, not
+to a word it got wrong. It reads a lower-case line as a person talking rather
+than as an announcement, which is the difference that matters here. It is
+neither of the two men the shooter's bosses use.
+
 ## Who they are
 
-They founded the company and they cannot write a line of code, which has never
-once slowed them down. They adore the agent: the agent is the most reliable
-thing in their life and they say so, in their own way, about twice an hour.
-Every idea arrives fully believed, each one a little larger than the last, and
-the joke is never on them — it is on the week every developer has already had.
+He is a man with an overgrown beard and messy hair who has been up all night
+and does not mind. They founded the company and they cannot write a line of
+code, which has never once slowed them down. They adore the agent: the agent is
+the most reliable thing in their life and they say so, in their own way, about
+twice an hour. Every idea arrives fully believed, each one a little larger than
+the last, and the joke is never on them — it is on the week every developer has
+already had.
 
 ## How they talk
 

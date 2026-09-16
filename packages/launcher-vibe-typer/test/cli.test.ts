@@ -37,6 +37,25 @@ describe('the vibe-typer launcher arguments', () => {
     expect(parseArgs(['-v']).mode).toBe('version');
   });
 
+  it('names the voice worker and its bearer in the help', async () => {
+    const out = process.stdout.write.bind(process.stdout);
+    let stdout = '';
+    process.stdout.write = ((chunk: string) => {
+      stdout += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      await main(['--help']);
+    } finally {
+      process.stdout.write = out;
+    }
+    expect(stdout).toContain('VOICE_URL');
+    expect(stdout).toContain('VOICE_TOKEN');
+    expect(stdout).toContain('OLLAMA_URL');
+    // The worker's default port, so a player knows which one `pnpm voice` is.
+    expect(stdout).toContain('7788');
+  });
+
   it('reports the published version, not a placeholder', () => {
     expect(version()).toMatch(/^\d+\.\d+\.\d+/);
     expect(version()).not.toBe('0.0.0');

@@ -27,6 +27,7 @@ export type {
   VibeToolName,
 } from './contract';
 export {
+  DIGIT,
   FORBIDDEN,
   gateLine,
   lineKey,
@@ -44,7 +45,17 @@ export type { Cabinet, CabinetHost, CallRecord, SeatView, TapeCard, ToolResult }
 export { hostForRound, seatView, tapeCards } from './host';
 export type { HostOpts, Live, VoiceJob } from './host';
 export { speakLine, voiceHealth, createVoicer } from './voice';
-export type { SpeakAnswer, VoiceOpts, VoiceReceipt, Voicer, VoicerStats } from './voice';
+export type { SpeakAnswer, SpeakJob, VoiceOpts, VoiceReceipt, Voicer, VoicerStats } from './voice';
+export { createVibeVoicer, vibeVoiceLine } from './voice-vibe';
+export type {
+  VibeBeat,
+  VibeLine,
+  VibeLineFacts,
+  VibeVoiceJob,
+  VibeVoicer,
+  VibeVoicerOpts,
+  VibeVoicerStats,
+} from './voice-vibe';
 export {
   askFire,
   chatJson,

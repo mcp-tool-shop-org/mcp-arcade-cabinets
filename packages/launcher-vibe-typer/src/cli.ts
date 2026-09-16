@@ -31,6 +31,7 @@ const TAPES_DIR = path.resolve(here, 'tapes');
 
 const DEFAULT_PORT = 7778;
 const DEFAULT_OLLAMA = 'http://127.0.0.1:11434';
+const DEFAULT_VOICE = 'http://127.0.0.1:7788';
 
 /** What the arguments asked for. */
 export interface Args {
@@ -56,11 +57,14 @@ Options
 
 Environment
   OLLAMA_URL        the daemon the endless user sits at (default ${DEFAULT_OLLAMA})
+  VOICE_URL         the voice worker, when you run one (default ${DEFAULT_VOICE})
+  VOICE_TOKEN       the worker's bearer; added server-side, never in the page
   CABINET_TAPES     a directory of tapes to season the wires stack with,
                     instead of the bundled ones
 
-The server listens on ${HOST} only. The daemon is reached through a fixed
-allowlist: the model list and chat. Nothing else is proxied.`;
+The server listens on ${HOST} only. The daemon and the voice worker are
+reached through a fixed allowlist: the model list and chat, worker health and
+stats, speak and its cached takes. Nothing else is proxied.`;
 
 /** Read the arguments. Pure, so the table of cases is a test. */
 export function parseArgs(argv: readonly string[]): Args {
@@ -163,10 +167,14 @@ async function runPlay(args: Args): Promise<void> {
     sayModule: null,
     endlessModule: existsSync(ENDLESS_MODULE) ? ENDLESS_MODULE : null,
     ollamaUrl: process.env.OLLAMA_URL ?? DEFAULT_OLLAMA,
-    // No voice worker: nothing on this cabinet's page calls `/voice`, so the
-    // prefix is not proxied at all rather than stood up for no caller.
-    voiceUrl: null,
-    voiceToken: null,
+    // The voice worker, lit since slice 4C: the user says their own asks,
+    // check-ins and reactions, and the page reaches the worker here. It was
+    // null at 0.10.0 because nothing on this cabinet's page called `/voice`;
+    // now the Voice checkbox does, and a proxy with no caller has become a
+    // caller with no proxy. The allowlist is the shooter's, shared, and the
+    // bearer is added on this side so the page never holds it.
+    voiceUrl: process.env.VOICE_URL ?? DEFAULT_VOICE,
+    voiceToken: process.env.VOICE_TOKEN ?? null,
     // Local only, and that is what the page promises. The menu names the
     // seat from the daemon's own tag list, so a hidden Claude tier would
     // put a name on screen that did not write the line — and would spend a

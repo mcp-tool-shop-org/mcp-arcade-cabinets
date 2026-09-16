@@ -8,6 +8,21 @@
 
 import type { VoiceJob } from './host';
 
+/**
+ * The least a job needs to be spoken: the gated words, what kind of line it
+ * is, and the delivery. `VoiceJob` (a boss's line) satisfies this, and so
+ * does the typing cabinet's user line, which is why `speakLine` asks for
+ * this and not for the shooter's own job. Nothing about a fact, a tape or a
+ * level is in here; the worker never sees one.
+ */
+export interface SpeakJob {
+  text: string;
+  kind: string;
+  voice: { preset: string; rate: number; loudness: number };
+  /** The longest mid-line pause the receipt allows, seconds (authored data). */
+  maxGap: number;
+}
+
 export interface VoiceReceipt {
   id: string;
   ok: boolean;
@@ -102,7 +117,7 @@ export async function voiceHealth(
 
 /** Ask the worker to speak one gated line in the persona's voice and receipt it. */
 export async function speakLine(
-  job: VoiceJob,
+  job: SpeakJob,
   opts: VoiceOpts & { timeoutMs?: number },
 ): Promise<SpeakAnswer> {
   const f = opts.fetchImpl ?? fetch;
