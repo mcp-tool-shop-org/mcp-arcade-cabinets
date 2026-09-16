@@ -2308,3 +2308,333 @@ back off `debug()`: guarded, the four stay; unguarded, `cards.delete` empties th
 with the guard removed the test fails with `expected +0 to be 4`, and with it restored the file is green.
 `debug()` gained a `cards` count for that, which is the same test-only surface the seat counts already use
 and which nothing on the field reads (G17, G23).
+
+## Sub-slice D, part two — the beds per stack
+
+**Branch:** `cabinet/vibe-typer-s4d2`, one commit, not pushed. `pnpm format`, `pnpm verify`, `pnpm build:play`
+and `pnpm build:launcher` all green; both play-throughs unchanged, because nothing the sim reads was touched.
+
+Seven recorded beds, one a corpus stack, behind `music: on`. `soft` keeps the procedural hat it has had since
+slice 3 and never reaches for a file. `off` stays off. Nothing in the set ties tempo or level to the context
+bar: **the bed is not a clock** still holds, and the beds were asked for with that written into the tags.
+
+### The route
+
+|          |                                                                                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Template | `audio_ace_step_1_5_checkpoint` — the same id Ghost's nine beds were made on, which is why they sound like one arcade                                                                        |
+| Model    | ACE-Step 1.5 turbo (`ace_step_1.5_turbo_aio.safetensors`), loaded on the cloud GPU                                                                                                           |
+| Where    | Comfy Cloud, `rtx_pro_6000`; `run_template` for the first job, `submit_batch` for the seven                                                                                                  |
+| Estimate | `estimate_credits` on the template returned **0 credits** before the first job, and it was right: the graph carries no paid API node, so nothing is billed per unit                          |
+| Spent    | **42.70 GPU seconds** over eight jobs — 7.91 for the first and 34.79 for the batch of seven, a mean of 4.97 a bed. The billing feed reports `gpu_seconds` and no `credits_used` on all eight |
+| Kept     | 7 of 8. The first job was a route proof and is not installed; every one of the seven that followed was accepted on the first roll, so there are no rejections and no re-rolls                |
+
+The cloud rather than the local card, because the studio's default for generation is the cloud, because it
+leaves the local GPU free for the voice worker and the translations, and because Ghost's beds were made this way
+and are receipted this way. The kickoff had written the local GPU with the watchdog up; the route moved, and the
+reason is written down rather than left in a diff.
+
+Full route, every override verbatim, and a row a generation: `docs/art/receipts.json → vibe_typer_beds`.
+
+### The tags, verbatim
+
+One sentence of instrument color, then the same family sentence on all seven:
+
+> Calm lo-fi chiptune, instrumental, no vocals, no voice, no singing, no humming, no vocal chops. Mellow and
+> unhurried, a steady relaxed groove with a soft 8-bit drum machine and a gentle bassline. Even dynamics from
+> start to finish: no build, no riser, no drop, no sweep, no ticking, no countdown. Loopable background music
+> for a quiet workspace.
+
+The no-vocals rule is said five ways on purpose. The field may carry no words a model wrote (G17), and a sung
+word is a word, so it is not enough to hope an instrumental tag holds — `lyrics` is `[instrumental]` and the
+tags name vocals, voice, singing, humming and vocal chops each by itself. The no-clock rule is the second half
+of the sentence, and it is why no riser, no drop, no sweep, no ticking and no countdown are all spelled out: a
+bed that swells under a draining bar is the reading slice 3 spent a whole sub-slice removing.
+
+Every bed: **96 bpm**, which is `BED_MODES.on.bpm`, so the tempo rule scales from a known base and a rate of
+one is the bed as recorded. Every bed: **A minor**, one key across the set, because the cabinet's synth cues are
+all built off `ROOT = 220` — A — so a bed in A sits with the cues instead of beside them. Time signature 4.
+Seeds 8201 for the proof and 8202 to 8208 for the seven, one a generation.
+
+| Stack         | Seed | Color sentence                                        |
+| ------------- | ---- | ----------------------------------------------------- |
+| `bash`        | 8202 | A warm square wave lead over a soft muted kick.       |
+| `csharp`      | 8203 | Cool analog pad chords, airy and wide.                |
+| `java`        | 8204 | A woody marimba melody, soft mallets.                 |
+| `javascript`  | 8205 | A bright amber bell melody, glockenspiel and celesta. |
+| `python`      | 8206 | A mellow sine wave lead, rounded and soft.            |
+| `sql`         | 8207 | Low drawbar organ chords, warm and still.             |
+| `integration` | 8208 | Sparse plucked notes over a soft hum drone.           |
+
+Each color was picked to sit beside the stack's own palette in `PALETTES`: green and a square wave, the cool
+blue-grey and pads, java's brown and a marimba, the amber and bells, python's blue and a sine, the violet and an
+organ, and teal with plucks over a hum for the stack that is about wiring things together.
+
+### Fifty-two seconds asked for, thirty-eight installed
+
+The first job asked for 38 seconds and got 38 seconds of file with **30.4 seconds of music** in it and the rest
+silence. That is not a 38 second loop, and it is not a fluke: Ghost's own `menu.mp3` is 40 seconds of file with
+35.3 seconds of music, which is why Ghost holds a bed 36 seconds and crossfades to the next one rather than
+hard-looping into the hole. So the seven were asked for at **52** and cut down to 38. Their bodies run 44.8 to
+50.5 seconds, and every window fits inside one with room to start a few bars past the opening.
+
+The cut, per bed, is three things and its numbers are in the receipt:
+
+1. **A bar-aligned window.** A cheap onset envelope finds the downbeat phase against a 2.5 second bar at 96 bpm;
+   the window starts on the latest downbeat the body allows, capped at eight seconds in. ACE-Step opens sparse
+   and fills in, so a window a few bars past the opening is the arrangement the track actually settles on. The
+   seven start between 4.27 and 7.62 seconds; `java` starts earliest because it has the shortest body.
+2. **A one-beat fold.** The last 0.625 seconds of the window are crossed back over the first at equal power, so
+   the frame after the last frame _is_ the frame that followed it in the master. The loop is continuous in the
+   source rather than continuous by luck.
+3. **A gain and a soft ceiling.** Level set by gain to a -13.0 LUFS target, held by a `tanh` soft clip at
+   -0.4 dBFS, and the gain corrected once against what the clipped signal measures. Chiptune is peaky; a hard
+   ceiling pulled four to five decibels of loudness out with it when it was tried. Corrections ran -0.73 to
+   +2.36 dB.
+
+### Acceptance, measured
+
+| Bed                                 | Seconds | Bytes   | LUFS   | Peak  | Join | Head/tail gap | Transcript |
+| ----------------------------------- | ------- | ------- | ------ | ----- | ---- | ------------- | ---------- |
+| `bash`                              | 38.000  | 609,024 | -13.55 | 0.921 | 0.25 | 4.46 dB       | empty      |
+| `csharp`                            | 38.000  | 609,024 | -13.53 | 0.845 | 0.26 | 14.77 dB      | empty      |
+| `java`                              | 38.000  | 609,024 | -13.62 | 0.946 | 0.49 | 1.53 dB       | empty      |
+| `javascript`                        | 38.000  | 609,024 | -13.55 | 0.928 | 0.39 | 3.86 dB       | empty      |
+| `python`                            | 38.000  | 609,024 | -13.55 | 0.798 | 0.44 | 2.90 dB       | empty      |
+| `sql`                               | 38.000  | 609,024 | -13.62 | 0.823 | 0.22 | 1.62 dB       | empty      |
+| `integration`                       | 38.000  | 609,024 | -13.58 | 0.960 | 0.66 | 5.46 dB       | empty      |
+| _Ghost's `menu.mp3`, the reference_ | 40.000  | 665,252 | -11.59 | 1.138 | 30.7 | 42.50 dB      | —          |
+
+- **No words.** faster-whisper `small.en` on this rig's GPU over each installed mp3, language `en`, beam 1, no
+  VAD filter. All seven transcribe to the empty string — nought characters. A real word would have been a miss
+  and a re-roll; none was. The first job's master was already empty too, which is what said the tags were
+  carrying the rule before seven were spent on it.
+- **Duration** is exactly 38.000 seconds on all seven, inside the 36 to 40 the brief sets and beside Ghost's own
+  36 and 40.
+- **Loudness** is integrated BS.1770-4 — K-weighting applied in the frequency domain, 400 ms blocks at 75 per
+  cent overlap, absolute gate at -70 LUFS, relative gate 10 LU under the gated mean. Ghost's `menu.mp3` measures
+  -11.59 on the same code. The widest distance from it is 2.03 dB and the narrowest 1.94, both inside the 3 dB
+  the brief allows.
+- **Size** is 609,024 bytes each, 594.75 KB, under the 700 KB budget. 48 kHz stereo at 128 kbps constant, which
+  is `libsndfile`'s rung below Ghost's own measured ~133 kbps.
+- **The seam** is read as the one-sample jump from the last frame back to the first against the median jump
+  inside the file. The seven land at 0.22 to 0.66, all under one. The head/tail RMS gap is the weaker reading
+  and is reported anyway: `csharp`'s 14.77 dB is two different chords fifty milliseconds either side of a bar
+  line, not a hole — its join is the second cleanest in the set.
+- **Listening is not claimed.** Claude cannot hear these. Every number above is measured; whether a bed is the
+  right music for its stack is the Director's, from the installed paths.
+
+`ffmpeg` is not on this rig, so the encode went through `libsndfile` by way of the repo's existing voice venv
+(`soundfile`, which writes MP3 since libsndfile 1.1). The install is mp3 like Ghost's tracks, with no size cost
+to report: flac masters would have been about 3.5 MB a bed, mp3 is 0.6.
+
+### The shell
+
+`apps/cabinets/src/typer-audio.ts` grows `VIBE_TRACK_KEYS` — the seven stacks, Ghost's `TRACK_KEYS` discipline
+in the typing cabinet — and the machinery for one recorded bed at a time.
+
+| Mode              | What plays                                 | What is scheduled                                    |
+| ----------------- | ------------------------------------------ | ---------------------------------------------------- |
+| `on`              | the level's stack bed, if its file is here | nothing else: no kick, no bass, no hat, no beats     |
+| `on`, bed missing | the procedural bar, exactly as today       | the `on` bar, unchanged                              |
+| `soft`            | the procedural hat, exactly as today       | the `soft` bar, unchanged; no file is ever asked for |
+| `off`             | nothing                                    | nothing                                              |
+
+The two sources are **one bed with two inputs and never play together**. `bedLevel()` returns zero while a
+recording has the level, so the cue duck, the take duck and the tick all keep working and all agree; the bar is
+not laid down at all while a recording plays, which also means the beats a user message could land on are gone,
+exactly as in `off`.
+
+- **Lazy, per stack.** `audio.setStack(stack)` runs on the audio's own frame and is idempotent. Asking is what
+  fetches the file, on the same rule the piece tiles follow: a cabinet that plays one story level never fetches
+  the other six stacks' music, and in endless a stack change costs one fetch. The mount also sets the stack the
+  moment the engine is built, so the fetch starts on the first gesture rather than the first frame after it.
+- **The tempo rule, in the same numbers.** The recording's `playbackRate` is `tempo / 96` — the very number the
+  bar's own tempo is scaled by, taken from the same `tempo` variable, so the two sources cannot drift. At `on`'s
+  96 bpm and 0.06 a step, vibes of 5 give 119.04 bpm, a rate of **1.24**; vibes of 1 give 1.00. It holds through
+  a level's last request because `tempo` holds. `preservesPitch` is set where the browser has it, so a faster
+  bed keeps its key. The context bar is never read.
+- **The seam.** A hard loop on one element, as Ghost does, because the fold made the loop point continuous in
+  the source. The 0.8 second crossfade — Ghost's `BED_FADE_S` — is spent where it is actually needed: handing
+  the level between the procedural bed and a recording when a file arrives, and between two recordings when the
+  stack changes. A bed that finishes leaving is paused and keeps its place, so returning to a stack picks the
+  loop up rather than opening on the same bar every time.
+- **The fallback is silence about it.** A file that 404s, a file that is broken, a Pages build with no
+  `vibe/tracks/`, a browser with no media element at all: `playing` never leaves `null` and the procedural bed
+  keeps the bar. Nothing yells, nothing waits, and there is no timer to wait on.
+- **Mute is by hand.** The graph's mute is `master.gain`, and `master` cannot reach a media element. So a mute
+  stops every recording at once rather than over a crossfade, and unmuting starts the one that has the level.
+
+### The gates, and the tarballs
+
+`checkDist` in `packages/launcher/scripts/build.mjs` now requires `play/vibe/tracks/<key>.mp3` **by name** for
+every key in the Vibe layout, not just the directory, and `release.yml`'s tarball contract adds
+`dist/play/vibe/tracks/` to the Vibe package's `carries`. The reason is the fallback above: a missing bed is
+silent by design, which is right at run time and wrong at pack time, where the only sign would be a stack that
+quietly never plays its music. Exercised both ways — with the seven removed from a built dist the gate halts
+naming each file and exits 1; with them back it exits 0.
+
+|                                  | Entries | Packed      | Unpacked    |
+| -------------------------------- | ------- | ----------- | ----------- |
+| `@mcptoolshop/vibe-typer` before | 131     | 2.38 MB     | 5.42 MB     |
+| `@mcptoolshop/vibe-typer` after  | 138     | 6.41 MB     | 9.48 MB     |
+| the seven beds                   | 7       | 4,263,168 B | 4,263,168 B |
+
+The packed and unpacked deltas are the same 4.07 MB because mp3 does not compress. `@mcptoolshop/ghost-on-the-menu`
+is 63 entries, 5.89 MB packed, and carries **zero** `dist/play/vibe/` or `dist/play/keys/` files — read off the
+tarball's own file list rather than trusted to the gate.
+
+### Tests
+
+`apps/cabinets/test/typer-audio.test.ts` grows ten cases over a `FakeBed` the engine is handed through a maker,
+so nothing in a test touches a real media element: the seven keys are the seven `STACKS` and the pack script
+names each of them; a stack's bed plays under `on` and only once its file says it is ready; no bar is laid down
+under a recording; `soft` and `off` never reach for a file and `soft` still lays its own hat; a missing file and
+a run with no media element both fall back to the bar; the rate is 1.00 at one vibe and 1.24 at five and holds
+through the last request; two beds cross without either being cut off; the take duck and the cue duck both reach
+a recording at the same `DUCK`; a mute stops it at once and the end stops it for good; and a stack is asked for
+once. An eleventh reads the seven files off disk and fails if one is missing or over 700 KB.
+`typer-mount.test.ts` gains `track` in `debug()` and asserts it is `null` under `music: 'on'` in jsdom, which is
+the no-audio path the fallback is for.
+
+### Decisions
+
+88. **`soft` gets no recorded bed, and that is not the slice-3 "left open" being ignored.** Slice 3 wrote that
+    when the beds land, `soft` should get its own treatment rather than a muted `on`. It now has one, and the
+    treatment is that it keeps the procedural hat. The modes are a choice between a pulse and a tick; handing
+    `soft` a full arrangement at low volume would make it the loud mode under a quiet name, and a player who
+    wants the music has `on` one line away. Seven more beds mixed for `soft` is a batch on its own approval, not
+    a thing to decide inside this one.
+89. **The two sources never overlap.** A recording could have played _over_ the bar, and that was the first
+    shape tried. It is wrong twice: two tempos climbing the same curve from different sources beat against each
+    other, and "falls back to the procedural bed" only means something if the procedural bed is not already
+    playing. So `bedLevel()` returns zero while a recording has the level and `tick` lays no bar down, which
+    also means the `ping` cue's beat-joined kick is gone under a recording — the same thing that happens in
+    `off`, for the same reason, and it was already decided there (slice 3, decision 4).
+90. **The seam is fixed in the file, not worked around in the shell.** Ghost hard-loops beds with seconds of
+    silence on the end and hides it behind a 36 second hold and a crossfade to a different bed. Vibe Typer has
+    no such schedule — a level can sit in one stack for minutes — so the hole would be heard every 38 seconds.
+    A self-crossfading pair of elements per stack would also solve it and costs fourteen media elements, a timer
+    and a second clock; folding one beat back over the first costs nothing at run time and makes the loop
+    continuous in the source. The shell then sets `loop = true` on one element, exactly as Ghost does.
+91. **The cut runs in the scratchpad and its parameters are in the receipt, rather than a script in the tree.**
+    The avatar batch committed `cut-avatar.mjs` because it is node and rides the repo's own toolchain. This cut
+    is numpy and `soundfile` and belongs to the voice venv; a python file under `apps/` would be in no test, in
+    no lint and in no CI, which is a worse kind of unreproducible than none at all. Every number the cut used —
+    the master, its body, the downbeat phase, the window start, the fold and the gain — is a field on that bed's
+    receipt row, so the cut is reproducible from the master and the receipt.
+92. **52 seconds asked for, 38 installed, and both numbers are in the receipt.** `seconds` in Ghost's rows is
+    what was asked for. Here the two differ for a real reason, so the row carries `seconds_asked` and
+    `seconds_installed` rather than one number that would have to mean whichever the reader needed.
+93. **A minor across the set, because the cues are in A.** The brief said one key and left which open. `ROOT` in
+    `typer-audio.ts` is 220 Hz, and every stinger in the cue table is built off it. A bed in A minor puts the
+    deploy chord, the end chord and the milestone lift inside the bed's own key instead of a semitone away from
+    it seven different ways.
+94. **`BED_TRACK_LEVEL` is 0.5, and it is an element volume, not a bus gain.** The recordings do not go through
+    the Web Audio graph at all — they are media elements, as Ghost's are — so they cannot sit at `BED_LEVEL`'s
+    0.16 on the bed bus. Half volume on a bed mastered to -13.5 LUFS is roughly where 0.16 puts the procedural
+    bar under the keystroke, and it is one `// Director` number to move if the Director hears otherwise.
+95. **A bed that leaves is paused and keeps its place.** Ghost's rule is that a bed never restarts from zero,
+    and it is right here for a different reason: in endless a run can cross back into a stack it has already
+    played, and opening on the same eight bars every time would make the music read as a level marker. Pausing
+    rather than leaving it running is the one departure — nothing here plays a run of beds the way a shift does,
+    so a bed nobody can hear has no reason to keep decoding.
+96. **The pack gate checks files, the run-time path checks nothing.** They are the same list and they disagree
+    on purpose. At run time a missing bed must be invisible, because Pages and a half-built dist are both real
+    and a player should get a cabinet that works. At pack time a missing bed must be a halt, because the tarball
+    is the last moment anything can be noticed. `VIBE_TRACK_KEYS` is spelled twice — once in TypeScript, once in
+    the pack script, which is plain node and may not import it — and a test fails the build if the two ever
+    disagree.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Two irreversible acts, both named with an owner in
+`docs/art/receipts.json → vibe_typer_beds.compensators`. The generation is GPU seconds and cannot be undone;
+its compensator is that nothing enters the repo until it is accepted, so an unaccepted job is a receipt row and
+a Comfy library entry and nothing else — and there are none in this batch. The installed beds:
+`git rm apps/cabinets/public/vibe/tracks/*.mp3` returns `music: on` to exactly today's procedural bed with no
+other change, because `playing` then never leaves `null`; the one thing that does not return by itself is the
+pack gate, so the same undo removes the `files` list from the vibe entry in `build.mjs` and
+`dist/play/vibe/tracks/` from the vibe `carries` list in `release.yml`. Nothing is published, tagged or
+released: both `package.json` versions stay `0.10.0`. No skip.
+
+**PIN_PER_STEP (3).** Every generation is a receipt row with the template id, the seed, the bpm, the key, the
+length, the lyrics field and its own color sentence verbatim, beside the GPU seconds it drew. ACE-Step on a
+fixed seed is deterministic, and the masters are kept under `docs/art/originals-vibe-beds/` so the cut can be
+re-run without re-generating. The cut itself is pinned by the six numbers on each row rather than by a script.
+The tempo rule takes its number from the same `tempo` variable the bar uses, so it cannot be pinned to a
+different value by accident.
+
+**ANDON_AUTHORITY (3).** Three halts, all exercised. The no-words check is the first: an installed bed whose
+transcript is not empty is a miss and a re-roll, run over all seven and green on all seven. The pack gate is the
+second, and `packages/launcher/test/pack-gate.test.ts` exercises it against a real `dist` in a temp directory —
+one bed missing, all seven missing, and all seven present — so the halt is proved and not described. The test
+suite is the third: the seven keys must equal `STACKS`, the pack script must name each of them, every file must
+exist and be under 700 KB, `soft` must never reach for one, and a bed the browser will not start hands the
+level back to the bar instead of leaving the cabinet quiet.
+
+**DECOMPOSE_BY_SECRETS (3).** What changes together is together. The bed list, the levels, the crossfade and the
+tempo rule are all in `typer-audio.ts`, behind `setStack` and `track()`; the shell knows only which stack the
+level is in and hands that over on the frame it already had. The pack gate knows the file names and nothing
+about audio. `release.yml` knows one path prefix. Nothing in `packages/` moved at all, and the sim is untouched.
+
+**UNCERTAINTY_GATED_HUMANS (2).** The two numbers the Director owns outright are `// Director` constants at the
+top of their module, each with its decision and its reason beside the marker: `BED_TRACK_MODE`, which mode plays
+a recording, and `BED_TRACK_LEVEL`, how loud it plays. `BED_TRACK_BPM` and `BED_CROSS_S` carry no marker because
+neither is a free choice — the first is `BED_BPM`, which already has one, and the second is Ghost's
+`BED_FADE_S`; both say so where they are declared. Every choice the brief left open is a numbered decision above
+with its reason. The spend was approved as a batch before it ran, and the one
+thing the batch could not resolve, whether these are the right seven pieces of music, is stated as not gated
+and left to the Director, who hears them. What is not gated and should be named: the route moved from the local
+GPU to the cloud on the reasons above, and that is written as a decision rather than asked as a question.
+
+**EXTERNAL_VERIFIER (3).** Nothing here checks its own work. The music is written by ACE-Step and heard back by
+faster-whisper, a different model from a different family, which never sees the tags — only the audio and the
+question of whether there is a word in it. The loudness, the duration, the size and the seam are arithmetic over
+the decoded samples, not a judgement. The builder does not review its own diff; the coordinator sends it to a
+different family. And the one thing no verifier here can settle — whether the music is good — is not claimed by
+the builder at all.
+
+### Review (Kimi K2.6, from a packet)
+
+Halt, four items. Three accepted and applied in the same commit, one refused. The two that matter both sit in
+the same place: what happens when the recording does not play, which is the path the fallback exists for and
+the one the first cut of this sub-slice tested least.
+
+1. **The `// Director` marker on `BED_TRACK_MODE` and `BED_TRACK_LEVEL` is a quote.** **Refused.** It is not a
+   quote; it is this repo's convention for a feel constant the Director owns, and the kickoff's own standards
+   table asks for exactly that — feel numbers stay `// Director` constants or JSON levers. The markers stay.
+   What the item was right about underneath is that a marker is not a reason: `BED_TRACK_LEVEL` carried only
+   "a recorded bed's own gain" beside its marker, which says what the number is and not why it is 0.5. **Taken
+   that far:** both comments now state the decision and its reason where the marker is, and the review also
+   turned up a claim that was simply wrong — the standards paragraph said all four of `BED_TRACK_MODE`,
+   `BED_TRACK_LEVEL`, `BED_TRACK_BPM` and `BED_CROSS_S` were `// Director` constants, and the last two never
+   were. They are not free choices: one is `BED_BPM` and the other is Ghost's `BED_FADE_S`. The paragraph now
+   says so, and so do the two declarations.
+2. **`void el.play()` swallowed an autoplay rejection.** **Accepted.** The real failure is worse than an
+   unhandled rejection in a console: `play()` does not throw when autoplay policy refuses it, it returns a
+   promise that rejects, and by the time it rejects `pickTrack` has already set `playing`, dropped the bar's
+   clock and started fading the procedural bed out. The cabinet would have gone quiet and stayed quiet, with a
+   console error as the only explanation. **Applied:** `startTrack` now catches both shapes — the rejected
+   promise and a synchronous throw — and hands the level straight back through a new `dropTrack`, which zeroes
+   and pauses the element, removes it from `tracks` and restores the bed level over the same crossfade. Removed
+   rather than kept, so `pickTrack` does not choose it again on the next level in that stack and fade the bar
+   out once more for nothing; a rejection that lands after the stack has moved on changes nothing, because
+   `dropTrack` checks that this bed still holds the level. Two cases cover it: an element whose `play()` rejects
+   and one whose `play()` throws, both ending with the bar back and, for the rejecting one, a second visit to
+   the same stack that does not try again.
+3. **The pack-gate claim in `typer-audio.test.ts` only greps `build.mjs` for seven names.** **Accepted, and
+   taken the stronger way rather than the weaker one.** The comment claimed the gate halts; the assertion
+   proved only that two lists have not drifted. Both halves are now true.
+   `packages/launcher/test/pack-gate.test.ts` builds a `dist` in a temp directory that passes every part of the
+   gate — layout, needles, the other cabinet's needle absent — stubs `process.exit` and `process.stderr.write`
+   so a halt is a throw the case can read, and runs `checkDist` three ways: all seven present and silent, one
+   bed missing and halting with that file named and no other, and all seven missing and all seven named. The
+   middle case is the one that matters, because six beds out of seven is exactly what a directory check waves
+   through. The comment in `typer-audio.test.ts` is reduced to what its assertion proves and points here.
+4. **`carries` only proves that some file under the prefix exists.** **Accepted.** `dist/play/vibe/tracks/` in
+   the Vibe package's `carries` list would have passed on one bed out of seven. **Applied:** the seven paths are
+   in that package's `need` list instead, derived by `map` from a `VIBE_BEDS` array so an eighth stack is one
+   edit, and the redundant prefix is gone from `carries` — `dist/play/vibe/` already covers it, and two
+   overlapping checks of different strengths is how the weaker one gets trusted. The comment says what is
+   checked and why the tarball is the last place a missing bed can be noticed.

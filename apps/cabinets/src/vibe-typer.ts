@@ -61,6 +61,7 @@ import {
   type MusicMode,
   type Theme,
   type TyperAudio,
+  type VibeTrackKey,
 } from './typer-audio';
 import { LEAVE_HOLD_MS, readKey } from './typer-keys';
 
@@ -428,6 +429,8 @@ export interface VibeMount {
     music: MusicMode | null;
     /** Milestone cards and ribbons the preload has in hand. */
     cards: number;
+    /** The recorded bed that has the level, or nothing when the bar does. */
+    track: VibeTrackKey | null;
   };
 }
 
@@ -790,6 +793,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       audio = createTyperAudio(new AudioContext(), base, planOf(state).seed);
       audio.setTheme(opts.theme);
       audio.setMusic(music);
+      // The level's stack, before the first tick: it is what asks for this
+      // stack's recorded bed, and the engine is built on the first gesture.
+      audio.setStack(planOf(state).stack);
       audio.setMuted(muted);
       audio.resume();
     } catch {
@@ -1655,6 +1661,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     takeOpenAsk();
     voicer.tick(state.beat, over || state.over);
     const hold = state.requestIndex >= planOf(state).requests.length - 1;
+    // The stack the level is written in, on the same lazy rule the tiles
+    // follow: asking is what fetches its bed, and a level that stays in one
+    // stack asks once. In endless a stack change costs one fetch and a cross.
+    audio?.setStack(planOf(state).stack);
     // A meeting is a breather: the bed drops to base tempo for it (Q3.7).
     audio?.tick(dt, state.beat === 'sync' ? 1 : state.hype, hold);
     if (escSince > 0) {
@@ -1902,6 +1912,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       refused: seatCounts.refused,
       music: audio ? audio.music() : null,
       cards: cards.size,
+      // Which recorded bed has the level, or null: no engine yet, a mode that
+      // plays the procedural bed, or a stack whose file never arrived.
+      track: audio ? audio.track() : null,
     }),
   };
 }

@@ -97,6 +97,106 @@ export function isMusicMode(value: unknown): value is MusicMode {
 /** The bed a player who has set nothing hears. // Director */
 export const DEFAULT_MUSIC: MusicMode = 'soft';
 
+/**
+ * The recorded beds, one a corpus stack, as the files under
+ * `public/vibe/tracks` are named. This is Ghost's `TRACK_KEYS` discipline in
+ * the typing cabinet: the list is the contract, the pack gate requires a file
+ * for every key in it, and a key whose file is missing at run time falls back
+ * to the procedural bed rather than leaving the cabinet silent.
+ *
+ * It is exactly `STACKS` in `@mcp-arcade-cabinets/vibe-typer` — the six corpus
+ * stacks and integration — and a test holds the two lists together. The names
+ * are not duplicated here for a second meaning; they are the same names, and
+ * the audio may not import the package.
+ */
+export const VIBE_TRACK_KEYS = [
+  'bash',
+  'csharp',
+  'java',
+  'javascript',
+  'python',
+  'sql',
+  'integration',
+] as const;
+export type VibeTrackKey = (typeof VIBE_TRACK_KEYS)[number];
+
+export function isVibeTrackKey(value: unknown): value is VibeTrackKey {
+  return typeof value === 'string' && (VIBE_TRACK_KEYS as readonly string[]).includes(value);
+}
+
+/**
+ * The one mode that plays a recorded bed. `soft` keeps the procedural hat it
+ * has had since slice 3 and never reaches for a file: the modes are a choice
+ * between a pulse and a tick, and handing `soft` a full arrangement would make
+ * it the loud mode under a quiet name. // Director
+ */
+export const BED_TRACK_MODE: MusicMode = 'on';
+
+/**
+ * A recorded bed's own gain. The recordings are media elements and do not go
+ * through the graph at all, so they cannot sit on the bed bus at `BED_LEVEL`'s
+ * 0.16; this is an element volume and the two numbers are not comparable.
+ * Half volume on a bed mastered to about -13.5 LUFS is roughly where 0.16 puts
+ * the procedural bar under the keystroke, which is the whole intent: the bed
+ * sits under the game, not beside it. // Director
+ */
+export const BED_TRACK_LEVEL = 0.5;
+
+/**
+ * The tempo the beds were asked for, so a rate of one is the bed as recorded
+ * and the tempo rule scales from a known base. Not a number of its own: it is
+ * `on`'s own tempo, because the recorded bed replaces that mode's bar and has
+ * to climb on the same scale. Moving `BED_BPM` without re-generating the beds
+ * would put a rate of one somewhere other than as recorded.
+ */
+export const BED_TRACK_BPM = BED_BPM;
+
+/**
+ * Seconds a bed takes to cross — into the procedural bed when a stack's file
+ * arrives, out of one recorded bed into another when the stack changes, and
+ * back to the procedural bed when there is no file for the new stack. Not a
+ * number of its own either: it is Ghost's `BED_FADE_S`, because these are
+ * Ghost's beds from the same model at the same length, and two cabinets whose
+ * music gives way at different speeds would read as two arcades.
+ */
+export const BED_CROSS_S = 0.8;
+
+/**
+ * Enough of an `HTMLAudioElement` for a recorded bed. The engine is handed a
+ * maker rather than calling `new Audio()` itself, so a test can watch what it
+ * asked for and a run with no media element at all (jsdom, a headless play
+ * through) simply gets none and keeps the procedural bed.
+ */
+export interface TrackBed {
+  loop: boolean;
+  volume: number;
+  /** 1 is as recorded; the vibes push it up inside the tempo rule's bounds. */
+  playbackRate: number;
+  /** Set where the browser has it, so a faster bed keeps its key. */
+  preservesPitch?: boolean;
+  src: string;
+  currentTime: number;
+  play(): Promise<void> | void;
+  pause(): void;
+  addEventListener(type: string, fn: () => void, options?: { once?: boolean }): void;
+}
+
+/**
+ * How the engine gets one bed. `null` means this run has no media element and
+ * keeps the procedural bed. The maker never sets `src` — the engine does that
+ * after its listeners are on, so a file that is already in the cache cannot
+ * announce itself before anything is listening.
+ */
+export type BedMaker = (key: VibeTrackKey, url: string) => TrackBed | null;
+
+/** The default maker: a real element where the browser has one, else nothing. */
+export function domBedMaker(): TrackBed | null {
+  if (typeof Audio === 'undefined') return null;
+  const el = new Audio();
+  el.preload = 'auto';
+  return el as unknown as TrackBed;
+}
+
 /** One mode's bed: how loud, how fast, how far the vibes move it, and its voices. */
 export interface BedMode {
   /** The bed bus's own gain. */
@@ -132,6 +232,16 @@ export interface TyperAudio {
   setMusic(mode: MusicMode): void;
   /** Which bed is playing. For the tests; nothing on the field reads it. */
   music(): MusicMode;
+  /**
+   * The stack this level is written in. Idempotent: a level that follows
+   * another in the same stack changes nothing, and the bed plays on. Asking
+   * for a stack is what fetches its bed, on the same lazy rule the piece tiles
+   * follow, so a cabinet that plays one story level never fetches the other
+   * six stacks' music.
+   */
+  setStack(stack: string): void;
+  /** Which recorded bed has the level, or null when the procedural bed does. */
+  track(): VibeTrackKey | null;
   /** One cue, now. */
   play(cue: Cue): void;
   /** The bed. `hold` keeps the tempo where it climbed to (a level's last request). */
@@ -196,7 +306,12 @@ function nameSeed(name: string): number {
  * Build the engine over a context. `base` is where the sample folders live
  * (`import.meta.env.BASE_URL` in the app, a plain path in a test).
  */
-export function createTyperAudio(ctx: AudioContext, base: string, seed: number): TyperAudio {
+export function createTyperAudio(
+  ctx: AudioContext,
+  base: string,
+  seed: number,
+  makeBed: BedMaker = domBedMaker,
+): TyperAudio {
   const rng = seeded(seed);
   const master = ctx.createGain();
   master.gain.value = MASTER;
@@ -224,6 +339,14 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
   let tempo = BED_MODES[DEFAULT_MUSIC].bpm;
   let beats: number[] = [];
   let ended = false;
+  // The recorded beds: the ones that loaded, the ones that asked, the stack
+  // the level is in, and which bed currently has it. `playing` is null until a
+  // stack's file is both asked for and ready, which is why a Pages build with
+  // no `vibe/tracks/` never notices — the procedural bed simply keeps the bar.
+  const tracks = new Map<VibeTrackKey, TrackBed>();
+  const asked = new Set<VibeTrackKey>();
+  let stack: VibeTrackKey | null = null;
+  let playing: VibeTrackKey | null = null;
 
   const now = () => ctx.currentTime;
 
@@ -348,20 +471,176 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
     // With no bed there is nothing to duck, and nothing to bring back.
     if (music === 'off') return;
     duckUntil = now() + DUCK_S;
-    setBed(BED_MODES[music].level * DUCK);
+    // `bedLevel` already reads the duck off `duckUntil`, and it is what knows
+    // that a recording holding the level leaves this bus at zero.
+    setBed(bedLevel());
   };
 
-  /** The level the bed should sit at right now: held down, or its own. */
-  const bedLevel = () => BED_MODES[music].level * (voiceDuck || duckUntil > 0 ? DUCK : 1);
+  /** True while anything is holding the bed down: a cue, or a spoken take. */
+  const held = () => voiceDuck || duckUntil > 0;
 
-  const setBed = (level: number) => {
+  /**
+   * The level the procedural bed should sit at right now: held down, or its
+   * own — and silent while a recorded bed has the level, because the two are
+   * one bed with two sources and never play together.
+   */
+  const bedLevel = () => (playing !== null ? 0 : BED_MODES[music].level * (held() ? DUCK : 1));
+
+  const setBed = (level: number, secs = 0.12) => {
     const t = now();
     try {
       bed.gain.cancelScheduledValues(t);
       bed.gain.setValueAtTime(Math.max(0.0001, bed.gain.value), t);
-      bed.gain.linearRampToValueAtTime(Math.max(0.0001, level), t + 0.12);
+      bed.gain.linearRampToValueAtTime(Math.max(0.0001, level), t + secs);
     } catch {
       bed.gain.value = level;
+    }
+  };
+
+  // ——— the recorded beds ——————————————————————————————————————————————————
+
+  /** A recorded bed's level: its own, or held down by the same DUCK. */
+  const trackLevel = () => (muted ? 0 : BED_TRACK_LEVEL * (held() ? DUCK : 1));
+
+  /** Ask for one stack's bed, once. A file that never arrives is never asked
+   *  for again and never waited on: the procedural bed is already playing. */
+  const askTrack = (key: VibeTrackKey) => {
+    if (asked.has(key)) return;
+    asked.add(key);
+    const el = makeBed(key, `${base}vibe/tracks/${key}.mp3`);
+    if (!el) return;
+    el.loop = true;
+    el.volume = 0;
+    el.preservesPitch = true;
+    el.addEventListener(
+      'canplaythrough',
+      () => {
+        tracks.set(key, el);
+        pickTrack();
+      },
+      { once: true },
+    );
+    // A broken or absent file drops out of the run silently. Nothing yells.
+    el.addEventListener('error', () => tracks.delete(key), { once: true });
+    el.src = `${base}vibe/tracks/${key}.mp3`;
+  };
+
+  /**
+   * A bed that will not start hands the level straight back. It is dropped
+   * from `tracks` rather than kept and retried: an element the browser will
+   * not play is worth exactly what a file that never loaded is worth, and
+   * leaving it in would have `pickTrack` choose it again on the next level in
+   * the same stack, fading the procedural bed out each time for nothing.
+   */
+  const dropTrack = (key: VibeTrackKey) => {
+    const el = tracks.get(key);
+    if (el) {
+      el.volume = 0;
+      try {
+        el.pause();
+      } catch {
+        /* an element that never started has nothing to pause */
+      }
+    }
+    tracks.delete(key);
+    // A rejection can land after the stack has already moved on, in which
+    // case this bed is not the one holding the level and nothing changes.
+    if (playing !== key) return;
+    playing = null;
+    barAt = 0;
+    setBed(bedLevel(), BED_CROSS_S);
+  };
+
+  const startTrack = (key: VibeTrackKey) => {
+    if (muted) return;
+    const el = tracks.get(key);
+    if (!el) return;
+    try {
+      // Autoplay policy does not throw: it REJECTS the promise `play()`
+      // returns, which would otherwise be an unhandled rejection at the one
+      // moment the procedural bed has already started fading out — a cabinet
+      // that goes quiet and a console error to explain it. So the promise is
+      // caught, the same way the voice's take element is, and the bed is
+      // handed back to the bar. A stub with no promise at all is fine too.
+      const started = el.play() as Promise<void> | void;
+      if (started && typeof (started as Promise<void>).catch === 'function') {
+        void (started as Promise<void>).catch(() => dropTrack(key));
+      }
+    } catch {
+      dropTrack(key);
+    }
+  };
+
+  /**
+   * Every recorded bed down and stopped, now rather than over the crossfade.
+   * A mute is the one thing that may not take eight tenths of a second, and
+   * the graph's own mute cannot reach a media element: the bed bus runs
+   * through `master`, the recordings do not.
+   */
+  const stopTracks = () => {
+    for (const el of tracks.values()) {
+      el.volume = 0;
+      try {
+        el.pause();
+      } catch {
+        /* an element with nothing in it has nothing to pause */
+      }
+    }
+  };
+
+  /**
+   * Decide which source has the level. The recorded bed takes it when the
+   * mode asks for one, the run is live and this stack's file is ready; the
+   * procedural bed takes it back in every other case. Either way the two
+   * cross over BED_CROSS_S, so a stack change is a color change and not a
+   * hole.
+   */
+  const pickTrack = () => {
+    const want =
+      music === BED_TRACK_MODE && !ended && stack !== null && tracks.has(stack) ? stack : null;
+    if (want === playing) return;
+    playing = want;
+    if (want !== null) {
+      tracks.get(want)!.playbackRate = tempo / BED_TRACK_BPM;
+      // The bar's clock is dropped while a recording has the level, so that
+      // handing it back lays the next bar down from now rather than catching
+      // up on every bar the recording played over. It is set before the start
+      // rather than after, because a start that fails hands the level back
+      // inside this call.
+      barAt = 0;
+      startTrack(want);
+    }
+    // The bed the stack change left behind is not stopped here: it fades out
+    // over the same crossfade and is paused when it gets there, so the two
+    // beds cross rather than one cutting the other off.
+    setBed(bedLevel(), BED_CROSS_S);
+  };
+
+  /** One frame of the crossfade: every bed moves toward where it belongs. */
+  const stepTracks = (dt: number) => {
+    if (tracks.size === 0) return;
+    // A whole cross is BED_TRACK_LEVEL of volume in BED_CROSS_S seconds, so
+    // the step is scaled by the level rather than being a raw fraction of one:
+    // the beds sit at half volume, and a raw fraction would cross them in half
+    // the time the procedural bed's own ramp takes.
+    const step = (BED_TRACK_LEVEL * Math.max(0, dt)) / BED_CROSS_S;
+    const want = trackLevel();
+    for (const [key, el] of tracks) {
+      const to = key === playing ? want : 0;
+      const at = el.volume;
+      if (at === to) continue;
+      const next = at < to ? Math.min(to, at + step) : Math.max(to, at - step);
+      el.volume = next;
+      // A bed that has just finished leaving stops, and keeps its place: the
+      // next level in that stack picks the loop up where it left off rather
+      // than opening on the same bar every time.
+      if (next === 0 && key !== playing) {
+        try {
+          el.pause();
+        } catch {
+          /* nothing to pause */
+        }
+      }
     }
   };
 
@@ -433,8 +712,14 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
       if (ctx.state === 'suspended') void ctx.resume();
     },
     setMuted(next: boolean) {
+      if (next === muted) return;
       muted = next;
       master.gain.value = muted ? 0 : MASTER;
+      // `master` cannot reach a media element, so the recordings are muted by
+      // hand — and at once, because a mute that took a crossfade would not be
+      // a mute. Coming back, the bed that has the level starts again.
+      if (muted) stopTracks();
+      else if (playing !== null) startTrack(playing);
     },
     setTheme(next: Theme) {
       if (next === theme && loading === next) return;
@@ -447,10 +732,24 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
       // The bar already scheduled plays out; the next one is the new mode's.
       // The tempo scale changed with it, so the climb starts again from base.
       tempo = BED_MODES[next].bpm;
-      setBed(bedLevel());
+      // Only one mode plays a recording, so a change either hands the level to
+      // the stack's bed or takes it back. `pickTrack` writes the bus itself
+      // when it does; when nothing changes hands, this does.
+      const before = playing;
+      pickTrack();
+      if (playing === before) setBed(bedLevel());
     },
     music() {
       return music;
+    },
+    setStack(next: string) {
+      if (!isVibeTrackKey(next) || next === stack) return;
+      stack = next;
+      askTrack(next);
+      pickTrack();
+    },
+    track() {
+      return playing;
     },
     play(cue: Cue) {
       if (muted) return;
@@ -614,7 +913,7 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
         }
       }
     },
-    tick(_dt: number, hype: number, hold: boolean) {
+    tick(dt: number, hype: number, hold: boolean) {
       if (muted || ended) return;
       // `off` schedules nothing at all. The cues are untouched by this.
       if (music === 'off') return;
@@ -625,6 +924,17 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
       if (duckUntil > 0 && now() >= duckUntil) {
         duckUntil = 0;
         setBed(bedLevel());
+      }
+      stepTracks(dt);
+      if (playing !== null) {
+        // The tempo rule, on the recording: the same number the bar's own
+        // tempo is scaled by, so the two sources climb together. At `on`'s
+        // 96 bpm and its 0.06 a step, five times vibes is 119.04 bpm — a rate
+        // of 1.24 — and the pitch is kept where the browser will keep it.
+        tracks.get(playing)!.playbackRate = tempo / BED_TRACK_BPM;
+        // The recording has the level: no bar is laid down under it, and the
+        // beats a message could land on go with it, exactly as in `off`.
+        return;
       }
       const spb = 60 / tempo;
       if (barAt === 0) barAt = now() + 0.08;
@@ -643,10 +953,14 @@ export function createTyperAudio(ctx: AudioContext, base: string, seed: number):
     },
     end() {
       ended = true;
+      playing = null;
+      stopTracks();
       setBed(0);
     },
     close() {
       ended = true;
+      playing = null;
+      stopTracks();
       for (const v of voices) v.stop();
       voices = [];
       try {

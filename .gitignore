@@ -22,6 +22,9 @@ docs/art/originals-vibe-3/
 # the generated cards and ribbon for the milestone batch; the cabinet ships the cuts
 docs/art/originals-vibe-4/
 
+# the flac masters ACE-Step wrote for the bed batch; the cabinet ships the mp3s
+docs/art/originals-vibe-beds/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/
