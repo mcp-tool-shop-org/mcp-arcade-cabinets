@@ -35,7 +35,7 @@ The code is real: two hundred and forty-nine snippets across bash, C#, Java, Jav
 
 ## Sound
 
-Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone, up to an octave; a miss resets it. The bed's tempo follows your vibes. Every event on the field has one sound; the deploy rings a chord.
+Five keyboard sample sets. Every clean line raises the keystroke pitch a semitone, up to an octave; a miss resets it. Every event on the field has one sound; the deploy rings a chord. Music is a setting: **soft** (the default) is a quiet procedural hat that never reads as a clock, **on** plays a recorded bed for the level's stack, seven of them, with the tempo following your vibes, and **off** is off.
 
 ## Controls
 

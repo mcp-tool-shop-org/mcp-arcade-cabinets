@@ -39,7 +39,7 @@ Words per minute, accuracy and error counts appear nowhere. The scoreboard is th
 
 Five keyboard sample sets (alps cream, mechanical, membrane, soft touch, topre), eight variants each, round-robin with a little detune and a polyphony cap. Every clean line raises the keystroke pitch a semitone to an octave; a miss resets it. Each event has one sound: a whoosh on a sent line, a soft two-note hmm, a ping when the user speaks and a lower second note for a check-in, a pop scaled by the piece, a chord on the deploy that ducks the bed, a downward sweep on a compaction, a stinger per milestone.
 
-The bed has three settings on the menu: **soft**, the default, keeps a quiet hat and no kick, so nothing under the draining bar reads as a countdown; **on** is the full pulse, tempo on your vibes, held through a level's last request; **off** is no bed at all, every cue still playing. The same settings row holds the type size (small to huge, large by default), the keyboard, the sound and the agent's name.
+The bed has three settings on the menu: **soft**, the default, keeps a quiet hat and no kick, so nothing under the draining bar reads as a countdown; **on** plays a recorded bed for the level's stack, seven ACE-Step loops in one key at the procedural bed's tempo, the tempo still on your vibes, held through a level's last request and crossfaded on a stack change, with the procedural pulse as the fallback when a bed is missing; **off** is no bed at all, every cue still playing. The same settings row holds the type size (small to huge, large by default), the keyboard, the sound and the agent's name.
 
 ## The voice
 
