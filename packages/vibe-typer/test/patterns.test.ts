@@ -13,6 +13,7 @@ import {
   tierContext,
   VOICE_FORBIDDEN,
 } from '../src/patterns';
+import { DEFAULT_CORPUS } from '../src/corpus';
 
 import cabinetJson from '../patterns/cabinet.json';
 import levelsJson from '../patterns/levels.json';
@@ -55,24 +56,42 @@ describe('the levers load', () => {
     expect(set.cabinet.words.hype).toBe('vibes');
     expect(Object.keys(set.cabinet.words.beats).sort()).toEqual([...BEATS].sort());
     expect(set.cabinet.words.beats.code).toBe('the code');
-    expect(set.levels.levels.length).toBeGreaterThanOrEqual(8);
+    // Sixteen authored levels is the slice-3 floor: two a corpus stack, a
+    // third for the two the corpus is deepest in, and two integration ones.
+    expect(set.levels.levels.length).toBeGreaterThanOrEqual(16);
     expect(Object.keys(set.user.asks).sort()).toEqual([...STACKS].sort());
   });
 
-  it('gives every stack sixteen asks a tier and the agent its pools', () => {
+  it('gives every stack forty-eight asks a tier and the agent its pools', () => {
+    // Three times the size slice one shipped, which is what the authoring run
+    // wrote and what the loader's MIN_* constants now refuse to go under.
     for (const stack of STACKS) {
       for (const tier of ['0', '1', '2'] as const) {
-        expect(DEFAULT_PATTERNS.user.asks[stack][tier].length).toBeGreaterThanOrEqual(16);
+        expect(DEFAULT_PATTERNS.user.asks[stack][tier].length, stack).toBeGreaterThanOrEqual(48);
       }
     }
-    expect(DEFAULT_PATTERNS.agent.replies.length).toBeGreaterThanOrEqual(24);
-    expect(DEFAULT_PATTERNS.agent.hmm.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.agent.compactions.length).toBeGreaterThanOrEqual(8);
-    expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(8);
-    expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(8);
-    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
+    for (const tier of ['0', '1', '2'] as const) {
+      expect(DEFAULT_PATTERNS.user.reactions[tier].length).toBeGreaterThanOrEqual(36);
+    }
+    expect(DEFAULT_PATTERNS.agent.replies.length).toBeGreaterThanOrEqual(72);
+    expect(DEFAULT_PATTERNS.agent.hmm.length).toBeGreaterThanOrEqual(36);
+    expect(DEFAULT_PATTERNS.agent.compactions.length).toBeGreaterThanOrEqual(24);
+    expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(24);
+    expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(36);
+    expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(24);
+    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(36);
+    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(50);
+    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(50);
+  });
+
+  it('gives every corpus topic a reaction and every level a review', () => {
+    const topics = new Set(DEFAULT_CORPUS.snippets.flatMap((s) => s.topics));
+    for (const topic of topics) {
+      expect(DEFAULT_PATTERNS.user.reactionsByTopic[topic], topic).toBeDefined();
+    }
+    for (const def of DEFAULT_PATTERNS.levels.levels) {
+      expect(DEFAULT_PATTERNS.user.reviewsByProduct[def.id], def.id).toBeDefined();
+    }
   });
 
   it('gives every level a story and reads the check-in clock', () => {
@@ -196,10 +215,19 @@ describe('the gate halts', () => {
     expect(() => loadPatterns(bare)).toThrow('patterns/user.json: reviewsByProduct.cat-website');
   });
 
-  it('halts on a level that names the integration stack or a bad band', () => {
+  it('halts on an integration level that pins snippets, or on a bad band', () => {
+    // The integration stack may be listed as of slice 3, but it has no corpus
+    // file — it is built from tape headers at play time — so there is no id in
+    // it that a story could pin. A pinned list on one is the halt.
     const stack = clone(RAW);
     stack.levels.levels[0]!.stack = 'integration';
-    expect(() => loadPatterns(stack)).toThrow('patterns/levels.json: levels.0.stack');
+    delete stack.levels.levels[0]!.snippets;
+    expect(() => loadPatterns(stack)).not.toThrow();
+
+    const pinned = clone(RAW);
+    pinned.levels.levels[0]!.stack = 'integration';
+    pinned.levels.levels[0]!.snippets = ['int-a-b-1', 'int-a-b-3', 'int-a-b-5', 'int-a-c-1'];
+    expect(() => loadPatterns(pinned)).toThrow('patterns/levels.json: levels.0.snippets');
 
     const band = clone(RAW);
     band.levels.levels[0]!.bandMax = 0;

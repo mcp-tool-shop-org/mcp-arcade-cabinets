@@ -1,0 +1,62 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-234623822",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "prompts": [
+      "87634857e17a7ac6e4b459cf3f89ab1df7aa815870154e766f6b3392fb05f0f8",
+      "a0e41f8e9b49e4edd1031e28b07d68c0793a9b15dbb04d4c345efaf839df29b0"
+    ],
+    "requested": 6,
+    "kept": 2,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "names a tool or a model": 1
+    },
+    "ms": 102614,
+    "tokens": {
+      "in": 1414,
+      "out": 3524
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 57619
+  },
+  "candidates": {
+    "user.reactions.0": [],
+    "user.reactions.1": [],
+    "user.reactions.2": [],
+    "user.creeps": [],
+    "user.reviews": [],
+    "user.syncs": [],
+    "agent.replies": [],
+    "agent.hmm": [],
+    "agent.compactions": [],
+    "agent.ships": [],
+    "user.asks.bash.0": ["a black window for {product} where i type commands"],
+    "user.asks.bash.1": [],
+    "user.asks.bash.2": [],
+    "user.asks.csharp.0": [],
+    "user.asks.csharp.1": [],
+    "user.asks.csharp.2": ["{product} needs a button that apologizes when you click it."],
+    "user.asks.java.0": [],
+    "user.asks.java.1": [],
+    "user.asks.java.2": [],
+    "user.asks.javascript.0": [],
+    "user.asks.javascript.1": [],
+    "user.asks.javascript.2": [],
+    "user.asks.python.0": [],
+    "user.asks.python.1": [],
+    "user.asks.python.2": [],
+    "user.asks.sql.0": [],
+    "user.asks.sql.1": [],
+    "user.asks.sql.2": [],
+    "user.asks.integration.0": [],
+    "user.asks.integration.1": [],
+    "user.asks.integration.2": []
+  }
+}

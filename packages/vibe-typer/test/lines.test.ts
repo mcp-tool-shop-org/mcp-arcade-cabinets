@@ -11,10 +11,21 @@ function bash(id: string): Snippet {
   return found;
 }
 
-/** A snippet with no ask of its own: the template pool answers for it. */
-const SNIPPET = bash('cal-sh-d1-002');
-/** A snippet that carries its own ask, and whose topics nobody has written for. */
+/**
+ * A snippet with no ask of its own: the template pool answers for it. Three of
+ * the corpus's two hundred and forty-nine are like this after the slice-3
+ * authoring run, and this is one of them.
+ */
+const SNIPPET = bash('cal-sh-d2-002');
+/** A snippet that carries its own ask. */
 const OWN_ASK = bash('cal-sh-d1-001');
+/**
+ * A snippet whose topic nobody has written a pool for, so the tier pool
+ * answers it. Every topic the corpus really carries now has one, so the case
+ * has to be built rather than found — which is the right way round: the
+ * fallback is for a topic the writing has not reached yet.
+ */
+const NO_TOPIC_POOL = { ...OWN_ASK, topics: ['a-topic-nobody-has-written-for'] };
 
 function picker(seed = 3, tier: 0 | 1 | 2 | 3 = 0): LinePicker {
   const p = new LinePicker(DEFAULT_PATTERNS, { seed, tier });
@@ -57,7 +68,7 @@ describe('the line picker', () => {
     expect(typeof second).toBe('string');
     const other = picker(5);
     const words = new Set<string>();
-    for (let i = 0; i < 8; i++) words.add(other.ship());
+    for (let i = 0; i < DEFAULT_PATTERNS.agent.ships.length; i++) words.add(other.ship());
     expect(words.has(first)).toBe(true);
   });
 
@@ -74,14 +85,14 @@ describe('the line picker', () => {
       expect(lineFault(line)).toBeNull();
       expect(line.split(/\s+/).length).toBeLessThanOrEqual(5);
     }
-    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(12);
+    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(36);
   });
 
   it('reads hardcore in tier two words', () => {
     const hard = picker(6, 3);
     const easy = picker(6, 2);
     // A snippet whose topics carry no pool of their own reads the tier pool.
-    expect(hard.reaction(OWN_ASK)).toBe(easy.reaction(OWN_ASK));
+    expect(hard.reaction(NO_TOPIC_POOL)).toBe(easy.reaction(NO_TOPIC_POOL));
   });
 
   it('walks the check-ins and the answers without a repeat inside a level', () => {
@@ -101,8 +112,8 @@ describe('the line picker', () => {
   it('keeps every check-in and every answer inside the gate', () => {
     for (const line of DEFAULT_PATTERNS.user.nags) expect(lineFault(line)).toBeNull();
     for (const line of DEFAULT_PATTERNS.agent.nagReplies) expect(lineFault(line)).toBeNull();
-    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
+    expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(50);
+    expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(50);
   });
 
   it('reacts to the piece by its topic when a topic has been written for', () => {
@@ -115,7 +126,7 @@ describe('the line picker', () => {
     for (let i = 0; i < pool.length; i++) said.add(p.reaction(SNIPPET));
     expect([...said].sort()).toEqual([...pool].sort());
     // The tier pool still answers a snippet nobody has written a topic for.
-    expect(DEFAULT_PATTERNS.user.reactions['0']).toContain(picker().reaction(OWN_ASK));
+    expect(DEFAULT_PATTERNS.user.reactions['0']).toContain(picker().reaction(NO_TOPIC_POOL));
   });
 
   it('reviews a product from its own pool, and falls back to the generic one', () => {
@@ -146,7 +157,8 @@ describe('the ask a snippet carries', () => {
   it('uses the snippet own words and spends no draw from the pool', () => {
     const p = picker();
     const product = 'a website for my cat';
-    expect(p.ask('bash', product, OWN_ASK)).toBe(OWN_ASK.ask);
+    // The snippet's own words, with the product filled into them.
+    expect(p.ask('bash', product, OWN_ASK)).toBe(OWN_ASK.ask!.split('{product}').join(product));
     // The template bag is untouched, so the next drawn ask is the pool's first.
     const fresh = picker();
     expect(p.ask('bash', product, SNIPPET)).toBe(fresh.ask('bash', product, SNIPPET));

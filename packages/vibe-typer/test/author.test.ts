@@ -11,6 +11,7 @@ import {
   groupCandidates,
   keepFirstPassing,
   makeGate,
+  mapLimit,
   mergeDropped,
   parseCandidates,
   productPhrase,
@@ -285,5 +286,43 @@ describe('corpusTopics and chunk', () => {
   it('cuts a list into readable chunks', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
     expect(chunk([], 3)).toEqual([]);
+  });
+});
+
+describe('mapLimit', () => {
+  it('hands the answers back in the order asked, whatever order they finished in', async () => {
+    const delays = [40, 5, 25, 1, 15];
+    const out = await mapLimit(delays, 3, async (ms: number, i: number) => {
+      await new Promise((done) => setTimeout(done, ms));
+      return i;
+    });
+    expect(out).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('holds the width it was given, and one is a plain walk', async () => {
+    let live = 0;
+    let most = 0;
+    const work = async () => {
+      live += 1;
+      most = Math.max(most, live);
+      await new Promise((done) => setTimeout(done, 5));
+      live -= 1;
+      return most;
+    };
+    await mapLimit([1, 2, 3, 4, 5, 6], 2, work);
+    expect(most).toBe(2);
+    most = 0;
+    await mapLimit([1, 2, 3, 4], 1, work);
+    expect(most).toBe(1);
+  });
+
+  it('takes an empty list without a call', async () => {
+    let calls = 0;
+    const out = await mapLimit([], 4, async () => {
+      calls += 1;
+      return 1;
+    });
+    expect(out).toEqual([]);
+    expect(calls).toBe(0);
   });
 });

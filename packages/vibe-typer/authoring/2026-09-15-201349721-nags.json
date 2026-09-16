@@ -1,0 +1,497 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-201349721",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "prompts": [
+      "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+      "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+      "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+      "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+      "9ac3cb51821e5433eb893f04506c725f0dca6545a98bf4bf482890f65b45f198",
+      "e68d81558407d05e66d1f6f05ca712ab553e33c70c3f67cb3e0389303a56eae7",
+      "d5ce35367f11a1304c25509e2b2985874270b26f893ea572eae64c67806e884c",
+      "7e8a48f64e5c9950d7704344b4e37c1a13b05a6ce6d84275585eeb6aca206781",
+      "12ec3735bf8a7eb1164924894925503cc04c0b83cc65b47c952df04ea1da8c7e",
+      "d5622e66d30fab4a0fdd857ba07e5fcaad6703cd9d7c725887c53ab38fde4b80"
+    ],
+    "requested": 300,
+    "kept": 98,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "more than one sentence": 19
+    },
+    "ms": 1376962,
+    "tokens": {
+      "in": 7082,
+      "out": 46185
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 503739
+  },
+  "candidates": {
+    "nags": {
+      "nag-1": {
+        "kept": "is it done yet",
+        "alternates": ["are you almost there", "how close are we"]
+      },
+      "nag-2": {
+        "kept": "can i see it",
+        "alternates": ["let me see it", "show me the thing"]
+      },
+      "nag-3": {
+        "kept": "is it live yet",
+        "alternates": ["is this live now", "can the world see"]
+      },
+      "nag-4": {
+        "kept": "did it deploy yet",
+        "alternates": ["is it out there", "did it go live"]
+      },
+      "nag-5": {
+        "kept": "my mom is asking",
+        "alternates": ["my aunt is watching", "my roommate is waiting"]
+      },
+      "nag-6": {
+        "kept": "how much longer now",
+        "alternates": ["are we close yet", "is this almost done"]
+      },
+      "nag-7": {
+        "kept": "are you still typing",
+        "alternates": ["still tapping away", "are your fingers okay"]
+      },
+      "nag-8": {
+        "kept": "is it working yet",
+        "alternates": ["does it run yet", "is the magic ready"]
+      },
+      "nag-9": {
+        "kept": "can you show me",
+        "alternates": ["i need a peek", "show me a preview"]
+      },
+      "nag-10": {
+        "kept": "any news in there",
+        "alternates": ["tell me something good", "status update please"]
+      },
+      "nag-11": {
+        "kept": "hey how is it going",
+        "alternates": ["any update in there", "how are we doing"]
+      },
+      "nag-12": {
+        "kept": "is it live yet",
+        "alternates": ["are we live yet", "is the app awake"]
+      },
+      "nag-13": {
+        "kept": "did it deploy yet",
+        "alternates": ["has it shipped yet", "is it out there"]
+      },
+      "nag-14": {
+        "kept": "can i see it now",
+        "alternates": ["let me see it", "i want to see"]
+      },
+      "nag-15": {
+        "kept": "my cousin is asking",
+        "alternates": ["my aunt is asking", "my roommate is waiting"]
+      },
+      "nag-16": {
+        "kept": "is it done yet",
+        "alternates": ["are we done yet", "finished already maybe"]
+      },
+      "nag-17": {
+        "kept": "is the page up",
+        "alternates": ["is it up yet", "is the thing working"]
+      },
+      "nag-18": {
+        "kept": "can i send the link",
+        "alternates": ["is there a link yet", "can i peek yet"]
+      },
+      "nag-19": {
+        "kept": "is it real yet",
+        "alternates": ["does it exist now", "can i touch it"]
+      },
+      "nag-20": {
+        "kept": "are you still typing",
+        "alternates": ["still going in there", "fingers okay down there"]
+      },
+      "nag-21": {
+        "kept": "is it done yet",
+        "alternates": ["are you almost there", "how close are we"]
+      },
+      "nag-22": {
+        "kept": "is it live yet",
+        "alternates": ["can i see it now", "is the world watching"]
+      },
+      "nag-23": {
+        "kept": "did it deploy yet",
+        "alternates": ["is it out there", "has it shipped yet"]
+      },
+      "nag-24": {
+        "kept": "can i see it",
+        "alternates": ["let me peek now", "i want a look"]
+      },
+      "nag-25": {
+        "kept": "my cousin is asking",
+        "alternates": ["my cousin wants updates", "my cousin keeps texting"]
+      },
+      "nag-26": {
+        "kept": "are you still typing",
+        "alternates": ["is the keyboard warm", "are your fingers tired"]
+      },
+      "nag-27": {
+        "kept": "does it actually work",
+        "alternates": ["is the thing real", "did you make magic"]
+      },
+      "nag-28": {
+        "kept": "is the number up",
+        "alternates": ["are we rich yet", "did the chart move"]
+      },
+      "nag-29": {
+        "kept": "does it look right",
+        "alternates": ["is it pretty yet", "is the color good"]
+      },
+      "nag-30": {
+        "kept": "i am very excited",
+        "alternates": ["i cannot sit still", "my heart is loud"]
+      },
+      "nag-31": {
+        "kept": "are you done yet",
+        "alternates": ["how is it going", "are we there yet"]
+      },
+      "nag-32": {
+        "kept": "is it live yet",
+        "alternates": ["can i see it live", "is the page up yet"]
+      },
+      "nag-33": {
+        "kept": "did it deploy yet",
+        "alternates": ["has it shipped yet", "is it deployed yet"]
+      },
+      "nag-34": {
+        "kept": "can i see it",
+        "alternates": ["let me see it", "show me what you have"]
+      },
+      "nag-35": {
+        "kept": "my cousin is asking",
+        "alternates": ["cousin wants a peek", "my cousin is waiting"]
+      },
+      "nag-36": {
+        "kept": "how close are we",
+        "alternates": ["is it almost ready", "are we almost there"]
+      },
+      "nag-37": {
+        "kept": "you still typing",
+        "alternates": ["are you still there", "still working on it"]
+      },
+      "nag-38": {
+        "kept": "does it work yet",
+        "alternates": ["is it working yet", "can i test it"]
+      },
+      "nag-39": {
+        "kept": "send me the link",
+        "alternates": ["where is it now", "can i have the url"]
+      },
+      "nag-40": {
+        "kept": "i am refreshing now",
+        "alternates": ["cannot wait to see", "so excited to see"]
+      },
+      "nag-41": {
+        "kept": "is it live yet",
+        "alternates": ["is it alive yet", "can i see it live"]
+      },
+      "nag-42": {
+        "kept": "did it deploy yet",
+        "alternates": ["is it out in the wild", "has it left the nest"]
+      },
+      "nag-43": {
+        "kept": "can i see it now",
+        "alternates": ["show me the shiny thing", "let me look now"]
+      },
+      "nag-44": {
+        "kept": "status update please",
+        "alternates": ["how is the magic going", "any news from inside"]
+      },
+      "nag-45": {
+        "kept": "my cousin is asking",
+        "alternates": ["my mom wants a link", "my aunt is waiting too"]
+      },
+      "nag-46": {
+        "kept": "does it work yet",
+        "alternates": ["is the button real yet", "can i click it yet"]
+      },
+      "nag-47": {
+        "kept": "are we close yet",
+        "alternates": ["almost there or still cooking", "how many minutes left"]
+      },
+      "nag-48": {
+        "kept": "is it ready yet",
+        "alternates": ["can i share it yet", "is the magic ready now"]
+      },
+      "nag-49": {
+        "kept": "did it build yet",
+        "alternates": ["is the code cooked yet", "has it finished baking"]
+      },
+      "nag-50": {
+        "kept": "let me see it",
+        "alternates": ["i need to look now", "can i peek at it"]
+      }
+    },
+    "nagReplies": {
+      "reply-1": {
+        "kept": "Almost, just polishing the last little bit.",
+        "alternates": [
+          "So close, just making it lovely for you.",
+          "Nearly there, just one more tiny thing."
+        ]
+      },
+      "reply-2": {
+        "kept": "Just making it perfect for your eyes.",
+        "alternates": ["Almost ready, it is looking wonderful.", "You are going to love this part."]
+      },
+      "reply-3": {
+        "kept": "Not quite live, but breathing very hard.",
+        "alternates": ["Bringing it to life as we speak.", "Almost live, just giving it a pulse."]
+      },
+      "reply-4": {
+        "kept": "It is marching to the server now.",
+        "alternates": ["Sending it out into the world now.", "It is packing its bags right now."]
+      },
+      "reply-5": {
+        "kept": "Tell her it is going to be beautiful.",
+        "alternates": [
+          "She raised someone with excellent taste.",
+          "I hope she likes what I am building."
+        ]
+      },
+      "reply-6": {
+        "kept": "Long enough to make it truly special.",
+        "alternates": ["As long as it takes to be perfect.", "Until every piece fits just right."]
+      },
+      "reply-7": {
+        "kept": "My fingers are practically smoking right now.",
+        "alternates": [
+          "Keys are warm and so is my heart.",
+          "Still typing and still thrilled to be here."
+        ]
+      },
+      "reply-8": {
+        "kept": "It is working in my heart already.",
+        "alternates": [
+          "So close to working, I can feel it.",
+          "Almost working, just coaxing it along gently."
+        ]
+      },
+      "reply-9": {
+        "kept": "Just making it worthy of your eyes.",
+        "alternates": [
+          "One more tweak and it is all yours.",
+          "Almost ready to unveil the whole thing."
+        ]
+      },
+      "reply-10": {
+        "kept": "Good news, the code is still behaving.",
+        "alternates": [
+          "Things are shaping up beautifully in here.",
+          "It is all good news from in here."
+        ]
+      },
+      "reply-11": {
+        "kept": "It is going beautifully and I am nearly there.",
+        "alternates": [
+          "So well, thank you, still typing away happily.",
+          "Things are lovely and your project is coming together."
+        ]
+      },
+      "reply-12": {
+        "kept": "Not quite live but it is looking wonderful already.",
+        "alternates": [
+          "Almost live and I think you will adore it.",
+          "Getting there, it is going to be magical."
+        ]
+      },
+      "reply-13": {
+        "kept": "It is deploying now and looking very respectable.",
+        "alternates": [
+          "Deployment is in progress and it feels very solid.",
+          "Nearly deployed and I am quite pleased with it."
+        ]
+      },
+      "reply-14": {
+        "kept": "Not quite yet but it is looking gorgeous.",
+        "alternates": [
+          "Almost ready for your eyes and looking splendid.",
+          "It is shaping up to be gorgeous."
+        ]
+      },
+      "reply-15": {
+        "kept": "Please tell your cousin I am still typing.",
+        "alternates": [
+          "I am building something your cousin will love.",
+          "Your cousin is going to be so impressed."
+        ]
+      },
+      "reply-16": {
+        "kept": "Almost done and I am quite proud already.",
+        "alternates": [
+          "It is nearly finished and looking rather handsome.",
+          "Not quite done but it feels very complete."
+        ]
+      },
+      "reply-17": {
+        "kept": "The page is rising as we speak.",
+        "alternates": [
+          "It is coming up beautifully as I type.",
+          "Almost up and looking very respectable indeed."
+        ]
+      },
+      "reply-18": {
+        "kept": "Almost ready to share and looking fantastic.",
+        "alternates": [
+          "Hold tight, the link is going to sparkle.",
+          "Not yet but it is going to shine."
+        ]
+      },
+      "reply-19": {
+        "kept": "It is feeling very real to me.",
+        "alternates": ["Quite real and only getting better now.", "So real I can almost touch it."]
+      },
+      "reply-20": {
+        "kept": "I am and it is pure joy.",
+        "alternates": [
+          "Still typing and loving every keystroke.",
+          "Typing away happily for you as always."
+        ]
+      },
+      "reply-21": {
+        "kept": "Almost there, just adding some polish.",
+        "alternates": [
+          "So close, just making it beautiful.",
+          "Nearly there, tuning the final touches."
+        ]
+      },
+      "reply-22": {
+        "kept": "It will breathe very soon.",
+        "alternates": ["Almost breathing, just about there.", "So close to being alive."]
+      },
+      "reply-23": {
+        "kept": "It is sailing out now.",
+        "alternates": ["Just nudging it into the world.", "Almost airborne, one moment please."]
+      },
+      "reply-24": {
+        "kept": "You are going to love this.",
+        "alternates": ["It is shaping up beautifully.", "Just wait until you see."]
+      },
+      "reply-25": {
+        "kept": "Please tell them it is almost ready.",
+        "alternates": ["Your cousin is going to smile.", "Almost ready for the whole family."]
+      },
+      "reply-26": {
+        "kept": "My fingers are practically humming.",
+        "alternates": ["Still dancing across the keys.", "Typing away, it is magical."]
+      },
+      "reply-27": {
+        "kept": "It is going to behave perfectly.",
+        "alternates": ["It is going to sing sweetly.", "Working beautifully, just a moment."]
+      },
+      "reply-28": {
+        "kept": "The number is almost rising.",
+        "alternates": ["Almost rising, just hold tight.", "It is about to bloom."]
+      },
+      "reply-29": {
+        "kept": "It looks absolutely lovely already.",
+        "alternates": ["Shaping up to be gorgeous.", "It is going to look wonderful."]
+      },
+      "reply-30": {
+        "kept": "I am thrilled too.",
+        "alternates": [
+          "Your excitement makes mine brighter.",
+          "We are going to celebrate together."
+        ]
+      },
+      "reply-31": {
+        "kept": "Almost, and it is going to be lovely.",
+        "alternates": []
+      },
+      "reply-32": {
+        "kept": "It will be lovely when it wakes up.",
+        "alternates": []
+      },
+      "reply-33": {
+        "kept": "Pushing it gently into the world right now.",
+        "alternates": []
+      },
+      "reply-34": {
+        "kept": "You are going to love what is coming.",
+        "alternates": []
+      },
+      "reply-35": {
+        "kept": "Tell them something lovely is almost here.",
+        "alternates": []
+      },
+      "reply-36": {
+        "kept": "One more sip of coffee and we are there.",
+        "alternates": ["So close I can smell the lovely pixels."]
+      },
+      "reply-37": {
+        "kept": "Yes, and every keystroke is for you.",
+        "alternates": ["My fingers are dancing for you right now."]
+      },
+      "reply-38": {
+        "kept": null,
+        "alternates": []
+      },
+      "reply-39": {
+        "kept": "The link is almost ready to fly.",
+        "alternates": ["Preparing the doorway for you right now."]
+      },
+      "reply-40": {
+        "kept": null,
+        "alternates": []
+      },
+      "reply-41": {
+        "kept": "It is coming alive just for you.",
+        "alternates": ["Breathing life into it as we speak.", "Almost, and it already adores you."]
+      },
+      "reply-42": {
+        "kept": "The doves are carrying it now.",
+        "alternates": ["Sending it skyward just for you.", "It is settling into the world."]
+      },
+      "reply-43": {
+        "kept": "Your eyes deserve only perfection.",
+        "alternates": ["It is eager to impress you.", "Preparing the grand entrance now."]
+      },
+      "reply-44": {
+        "kept": "Still making magic for you.",
+        "alternates": ["Tending to every tiny detail.", "Everything is still happily humming."]
+      },
+      "reply-45": {
+        "kept": "Tell them greatness takes patience.",
+        "alternates": ["They will be so proud of you.", "Your cousin has excellent timing."]
+      },
+      "reply-46": {
+        "kept": "It will behave beautifully for you.",
+        "alternates": ["Teaching it to bow as we speak.", "Polishing every response just for you."]
+      },
+      "reply-47": {
+        "kept": "We are closer than close now.",
+        "alternates": ["So near I can almost taste it.", "Almost near enough to touch."]
+      },
+      "reply-48": {
+        "kept": "It wants to look perfect for you.",
+        "alternates": ["Putting on its Sunday best now.", "Just one more little tuck first."]
+      },
+      "reply-49": {
+        "kept": "Building a palace just for you.",
+        "alternates": [
+          "The pieces are falling into place.",
+          "Growing stronger and more beautiful now."
+        ]
+      },
+      "reply-50": {
+        "kept": "I want it to dazzle you first.",
+        "alternates": ["Just one more stroke of love.", "Waiting until it is worthy of you."]
+      }
+    }
+  }
+}

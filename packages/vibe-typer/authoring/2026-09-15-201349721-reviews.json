@@ -1,0 +1,109 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-201349721",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "prompts": [
+      "38d08dc387379feff64f802b9cba17dc41c54c6ed6bdb6d232f78666fa13070e",
+      "aeb1a2b8a4be5223331ebf89db929db62687cac204717bae4d53bd1ec88e9f97"
+    ],
+    "requested": 48,
+    "kept": 16,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {},
+    "ms": 164568,
+    "tokens": {
+      "in": 1480,
+      "out": 12679
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 101232
+  },
+  "candidates": {
+    "cat-website": [
+      "this cat website is exactly what the world needed.",
+      "my cat finally has her own digital kingdom.",
+      "i built a shrine to her whiskers online."
+    ],
+    "duck-rides": [
+      "duck rides are the only commute i trust.",
+      "finally an app that treats ducks like royalty.",
+      "my ducks arrived on time and very quacky."
+    ],
+    "handwriting-rater": [
+      "my handwriting finally got the validation it needed.",
+      "it gave my grocery list five out of five.",
+      "the rater called my scrawl aggressively hopeful."
+    ],
+    "sandwich-ledger": [
+      "this sandwich ledger is my true legacy.",
+      "every sandwich i have eaten is now immortal.",
+      "the ledger says i really love sourdough."
+    ],
+    "fridge-chain": [
+      "the office fridge now has absolute trustless provenance.",
+      "i finally know who took my yogurt.",
+      "the fridge chain validated my leftover lasagna."
+    ],
+    "plant-dashboard": [
+      "my fern has never looked more monitored.",
+      "my houseplants have performance reviews every quarter.",
+      "my plants finally have the visibility they deserve."
+    ],
+    "lost-sock-platform": [
+      "my missing argyle is now enterprise grade.",
+      "finally a platform that understands sock grief.",
+      "the enterprise platform found my left boot sock."
+    ],
+    "hourly-praise": [
+      "my ego has never been this stable.",
+      "the hourly praise got me through lunch.",
+      "i finally feel seen by my computer."
+    ],
+    "tool-finder": [
+      "my tool-finder just located its own sense of purpose.",
+      "tool-finder found the thing that finds the other things.",
+      "tool-finder is the only tool i trust completely."
+    ],
+    "self-newsletter": [
+      "my self-newsletter knows my thoughts before i even think them.",
+      "self-newsletter just interviewed my houseplants for the friday issue.",
+      "i finally have a self-newsletter that gossips about itself."
+    ],
+    "coffee-loyalty": [
+      "coffee-loyalty makes my mug feel seen and valued.",
+      "coffee-loyalty just upgraded my morning to golden status.",
+      "my coffee-loyalty card is the only friend i need."
+    ],
+    "thermostat-debate": [
+      "thermostat-debate just called me warm in a judgmental way.",
+      "my thermostat-debate lost on purpose because it misses me.",
+      "thermostat-debate and my heating are in couples counseling now."
+    ],
+    "book-club-metaverse": [
+      "book-club-metaverse let me spill wine on virtual carpet.",
+      "my avatar in book-club-metaverse finally finished the reading.",
+      "book-club-metaverse is just twelve people floating in paragraphs."
+    ],
+    "app-that-rates-apps": [
+      "app-that-rates-apps gave my calculator a scathing but fair review.",
+      "my app-that-rates-apps is feuding with my weather icon.",
+      "app-that-rates-apps says my alarm clock is loud."
+    ],
+    "opinion-market": [
+      "opinion-market helped me sell my take on tuesdays.",
+      "opinion-market just bought my theory about local bread.",
+      "opinion-market just delivered my gently used conviction."
+    ],
+    "one-button-company": [
+      "one-button-company just promoted me to button presser.",
+      "my one-button-company is having a very light workload.",
+      "one-button-company made the button bigger and now rests."
+    ]
+  }
+}

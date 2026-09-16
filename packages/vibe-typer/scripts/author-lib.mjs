@@ -272,3 +272,27 @@ export function chunk(list, size) {
   for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
   return out;
 }
+
+/**
+ * Run `fn` over `items` with at most `limit` of them in flight, and return the
+ * results **in the order of `items`**, never in the order they finished. The
+ * order is the whole point: a slot writes its lines into the lever in key
+ * order, so a call that answered faster may never overtake a slower one and
+ * change what the file holds. `limit` of one is a plain sequential walk.
+ */
+export async function mapLimit(items, limit, fn) {
+  const list = [...items];
+  const out = new Array(list.length);
+  const width = Math.max(1, Math.min(Math.floor(limit) || 1, Math.max(1, list.length)));
+  let next = 0;
+  async function worker() {
+    for (;;) {
+      const i = next;
+      next += 1;
+      if (i >= list.length) return;
+      out[i] = await fn(list[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: width }, worker));
+  return out;
+}

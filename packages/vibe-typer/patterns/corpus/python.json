@@ -16,14 +16,15 @@
     "title": "variable assignment and addition",
     "code": "x = 10\ny = 20\ntotal = x + y\nprint(total)",
     "notes": ["Assigns two integers, computes their sum, and prints the result."],
-    "topics": ["variables", "arithmetic", "print"]
+    "topics": ["variables", "arithmetic", "print"],
+    "ask": "add two numbers for the {product}"
   },
   {
     "id": "cal-py-d1-003",
     "stack": "python",
     "band": 1,
     "title": "basic string concatenation",
-    "ask": "every duck needs a full name, not just a first",
+    "ask": "create a full name for the driver",
     "code": "first = \"Alice\"\nlast = \"Smith\"\nfull = first + \" \" + last\nprint(full)",
     "notes": ["Concatenates a first and last name with a space and prints the full name."],
     "topics": ["strings", "concatenation", "variables"]
@@ -35,7 +36,8 @@
     "title": "integer division and modulo",
     "code": "a = 17\nb = 5\nq = a // b\nr = a % b\nprint(q, r)",
     "notes": ["Computes the integer quotient and remainder of 17 divided by 5."],
-    "topics": ["arithmetic", "integer division", "modulo"]
+    "topics": ["arithmetic", "integer division", "modulo"],
+    "ask": "divide a number and show the remainder for {product}"
   },
   {
     "id": "cal-py-d1-005",
@@ -44,7 +46,8 @@
     "title": "boolean comparison",
     "code": "age = 25\nis_adult = age >= 18\nprint(is_adult)",
     "notes": ["Checks whether an age value is at least 18 and prints the boolean result."],
-    "topics": ["booleans", "comparison", "variables"]
+    "topics": ["booleans", "comparison", "variables"],
+    "ask": "check if the duck driver is at least eighteen"
   },
   {
     "id": "py-for-loop",
@@ -65,7 +68,8 @@
       "F-strings embed expressions inside curly braces.",
       ":.1f formats a float to one decimal place."
     ],
-    "topics": ["f-string", "formatting", "variables"]
+    "topics": ["f-string", "formatting", "variables"],
+    "ask": "print a name and a rounded number for {product}"
   },
   {
     "id": "cal-py-d2-001",
@@ -74,7 +78,8 @@
     "title": "simple for loop with accumulator",
     "code": "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\ntotal = 0\nfor n in numbers:\n    total += n\naverage = total / len(numbers)\nprint(f\"Sum: {total}\")\nprint(f\"Average: {average}\")",
     "notes": ["Iterates over a list of integers to compute and print the sum and average."],
-    "topics": ["for loop", "lists", "f-strings", "arithmetic"]
+    "topics": ["for loop", "lists", "f-strings", "arithmetic"],
+    "ask": "add up a list of numbers for {product}"
   },
   {
     "id": "cal-py-d2-002",
@@ -94,7 +99,8 @@
     "title": "while loop countdown",
     "code": "count = 10\nwhile count > 0:\n    print(count)\n    count -= 1\nprint(\"Liftoff!\")",
     "notes": ["Counts down from 10 to 1 using a while loop and then prints Liftoff."],
-    "topics": ["while loop", "decrement", "print"]
+    "topics": ["while loop", "decrement", "print"],
+    "ask": "deploy {product} with a countdown to liftoff"
   },
   {
     "id": "cal-py-d2-004",
@@ -103,7 +109,8 @@
     "title": "list slicing and reversal",
     "code": "fruits = [\"apple\", \"banana\", \"cherry\", \"date\", \"elderberry\"]\nfirst_three = fruits[:3]\nlast_two = fruits[-2:]\nreversed_fruits = fruits[::-1]\nprint(first_three)\nprint(last_two)\nprint(reversed_fruits)",
     "notes": ["Demonstrates list slicing to extract sublists and reverse the original list."],
-    "topics": ["lists", "slicing", "reversal"]
+    "topics": ["lists", "slicing", "reversal"],
+    "ask": "pick the first few and last few items for {product}"
   },
   {
     "id": "cal-py-d2-005",
@@ -114,7 +121,8 @@
     "notes": [
       "Iterates over a dictionary of student scores to print each entry and compute the class average."
     ],
-    "topics": ["dictionaries", "for loop", "f-strings", "arithmetic"]
+    "topics": ["dictionaries", "for loop", "f-strings", "arithmetic"],
+    "ask": "list each driver rating and the pond average"
   },
   {
     "id": "py-guard-clause",
@@ -123,7 +131,8 @@
     "title": "Guard clause",
     "code": "def clamp(x: int, lo: int, hi: int) -> int:\n    if x < lo:\n        return lo\n    if x > hi:\n        return hi\n    return x",
     "notes": ["Guard clauses keep control-flow flat.", "Note colon, indentation, and comparisons."],
-    "topics": ["functions", "guards", "comparison", "return"]
+    "topics": ["functions", "guards", "comparison", "return"],
+    "ask": "keep a number inside a safe range for {product}"
   },
   {
     "id": "py-try-except",
@@ -135,7 +144,8 @@
       "try/except prevents crashes from bad input.",
       "Catch specific exceptions, not bare except."
     ],
-    "topics": ["exceptions", "error-handling", "try-except"]
+    "topics": ["exceptions", "error-handling", "try-except"],
+    "ask": "ask for a number and handle mistakes gently for {product}"
   },
   {
     "id": "cal-py-d3-001",
@@ -144,7 +154,8 @@
     "title": "filter even numbers with list comprehension",
     "code": "def get_evens(numbers):\n    return [n for n in numbers if n % 2 == 0]\n\ndata = list(range(1, 21))\nevens = get_evens(data)\nprint(f\"Even numbers: {evens}\")\nprint(f\"Count: {len(evens)}\")\nprint(f\"Sum: {sum(evens)}\")",
     "notes": ["Uses a list comprehension inside a function to filter even numbers from a range."],
-    "topics": ["list comprehension", "functions", "filtering", "modulo"]
+    "topics": ["list comprehension", "functions", "filtering", "modulo"],
+    "ask": "find all the even numbers in a set for {product}"
   },
   {
     "id": "cal-py-d3-002",
@@ -153,7 +164,8 @@
     "title": "try except with file reading",
     "code": "import os\n\ndef read_config(path):\n    if not os.path.exists(path):\n        print(f\"File not found: {path}\")\n        return None\n    try:\n        with open(path, \"r\") as f:\n            content = f.read()\n        return content\n    except PermissionError:\n        print(f\"Permission denied: {path}\")\n        return None",
     "notes": ["Reads a config file with existence checking and permission error handling."],
-    "topics": ["exception handling", "file I/O", "os module", "functions"]
+    "topics": ["exception handling", "file I/O", "os module", "functions"],
+    "ask": "make {product} load its debate rules from a file."
   },
   {
     "id": "cal-py-d3-003",
@@ -162,7 +174,8 @@
     "title": "class with constructor and method",
     "code": "class Rectangle:\n    def __init__(self, width, height):\n        self.width = width\n        self.height = height\n\n    def area(self):\n        return self.width * self.height\n\n    def perimeter(self):\n        return 2 * (self.width + self.height)\n\n    def __repr__(self):\n        return f\"Rectangle({self.width}, {self.height})\"",
     "notes": ["Defines a Rectangle class with area, perimeter, and string representation methods."],
-    "topics": ["classes", "constructor", "methods", "dunder methods"]
+    "topics": ["classes", "constructor", "methods", "dunder methods"],
+    "ask": "build a rectangle that knows its own size for {product}"
   },
   {
     "id": "cal-py-d3-004",
@@ -173,7 +186,8 @@
     "notes": [
       "Classifies a temperature value into a category and returns a dictionary with a warning flag."
     ],
-    "topics": ["conditionals", "functions", "dictionaries"]
+    "topics": ["conditionals", "functions", "dictionaries"],
+    "ask": "make {product} label each temperature it sees."
   },
   {
     "id": "cal-py-d3-005",
@@ -182,7 +196,8 @@
     "title": "enumerate and zip patterns",
     "code": "names = [\"Alice\", \"Bob\", \"Carol\", \"Dave\"]\nscores = [88, 95, 72, 91]\n\nresults = []\nfor i, (name, score) in enumerate(zip(names, scores), start=1):\n    passed = \"PASS\" if score >= 75 else \"FAIL\"\n    results.append(f\"{i}. {name}: {score} ({passed})\")\n\nfor line in results:\n    print(line)",
     "notes": ["Pairs names with scores using zip and enumerate to build formatted result strings."],
-    "topics": ["enumerate", "zip", "tuples", "conditional expression"]
+    "topics": ["enumerate", "zip", "tuples", "conditional expression"],
+    "ask": "pair names with values and number the list for {product}"
   },
   {
     "id": "py-class-def",
@@ -194,7 +209,8 @@
       "__init__ is the constructor; self refers to the instance.",
       "Practice colons, type hints, and ** for exponentiation."
     ],
-    "topics": ["classes", "init", "self", "methods"]
+    "topics": ["classes", "init", "self", "methods"],
+    "ask": "make {product} calculate the round dial's total area."
   },
   {
     "id": "py-list-comp",
@@ -203,7 +219,8 @@
     "title": "List comprehension",
     "code": "evens = [n for n in range(1, 101) if n % 2 == 0]",
     "notes": ["Comprehensions combine mapping + filtering.", "Watch brackets, % operator, and ==."],
-    "topics": ["list-comprehension", "modulo", "filtering"]
+    "topics": ["list-comprehension", "modulo", "filtering"],
+    "ask": "{product} needs a quick way to find even numbers."
   },
   {
     "id": "cal-py-d4-001",
@@ -214,7 +231,8 @@
     "notes": [
       "Computes Fibonacci numbers using recursion with lru_cache memoization for efficiency."
     ],
-    "topics": ["recursion", "memoization", "decorators", "functools"]
+    "topics": ["recursion", "memoization", "decorators", "functools"],
+    "ask": "{product} needs a speedy way to calculate growing totals."
   },
   {
     "id": "cal-py-d4-002",
@@ -225,7 +243,8 @@
     "notes": [
       "Implements shape inheritance with a base class that enforces an area method contract."
     ],
-    "topics": ["inheritance", "polymorphism", "abstract methods", "super"]
+    "topics": ["inheritance", "polymorphism", "abstract methods", "super"],
+    "ask": "make a {product} that describes shapes by their size."
   },
   {
     "id": "cal-py-d4-003",
@@ -236,7 +255,8 @@
     "notes": [
       "Uses a generator function to lazily produce prime numbers up to a given limit using trial division."
     ],
-    "topics": ["generators", "yield", "prime numbers", "algorithms"]
+    "topics": ["generators", "yield", "prime numbers", "algorithms"],
+    "ask": "{product} needs indivisible numbers found one at a time."
   },
   {
     "id": "cal-py-d4-004",
@@ -247,7 +267,8 @@
     "notes": [
       "Implements a context manager class that measures and reports execution time of a code block."
     ],
-    "topics": ["context managers", "dunder methods", "timing", "with statement"]
+    "topics": ["context managers", "dunder methods", "timing", "with statement"],
+    "ask": "make {product} time how long the thermostat fights back."
   },
   {
     "id": "cal-py-d4-005",
@@ -258,7 +279,8 @@
     "notes": [
       "Defines a dataclass with post-init validation, default factory for mutable fields, and helper methods."
     ],
-    "topics": ["dataclasses", "validation", "post_init", "field"]
+    "topics": ["dataclasses", "validation", "post_init", "field"],
+    "ask": "make a {product} that checks names and pay before saving."
   },
   {
     "id": "py-decorator",
@@ -270,7 +292,8 @@
       "Decorators wrap functions to add behavior.",
       "Practice *args, **kwargs, and dunder attributes."
     ],
-    "topics": ["decorators", "functions", "closures"]
+    "topics": ["decorators", "functions", "closures"],
+    "ask": "build a {product} that whispers hello before every step runs."
   },
   {
     "id": "py-dict",
@@ -282,7 +305,8 @@
       "Counter is a multiset.",
       "Quotes, types, and indexing build full-keyboard muscle memory."
     ],
-    "topics": ["dict", "typing", "for-loop"]
+    "topics": ["dict", "typing", "for-loop"],
+    "ask": "make a {product} that tallies every character in a phrase."
   },
   {
     "id": "cal-py-d5-001",
@@ -293,7 +317,8 @@
     "notes": [
       "Implements a parameterized retry decorator with exponential backoff and configurable exception filtering."
     ],
-    "topics": ["decorators", "closures", "retry pattern", "exponential backoff"]
+    "topics": ["decorators", "closures", "retry pattern", "exponential backoff"],
+    "ask": "retry the fetch when the connection flakes out"
   },
   {
     "id": "cal-py-d5-002",
@@ -304,7 +329,8 @@
     "notes": [
       "Implements a binary search tree with recursive insertion and inorder traversal methods."
     ],
-    "topics": ["binary search tree", "recursion", "data structures", "tree traversal"]
+    "topics": ["binary search tree", "recursion", "data structures", "tree traversal"],
+    "ask": "build a tree that sorts apps by star rating"
   },
   {
     "id": "cal-py-d5-003",
@@ -315,7 +341,8 @@
     "notes": [
       "Fetches multiple URLs concurrently using asyncio with a semaphore to limit simultaneous connections."
     ],
-    "topics": ["asyncio", "semaphore", "concurrency", "aiohttp", "error handling"]
+    "topics": ["asyncio", "semaphore", "concurrency", "aiohttp", "error handling"],
+    "ask": "fetch app pages in parallel from the store"
   },
   {
     "id": "cal-py-d5-004",
@@ -326,7 +353,8 @@
     "notes": [
       "Uses descriptor protocol with __set_name__, __get__, and __set__ to create reusable validated attributes."
     ],
-    "topics": ["descriptors", "properties", "validation", "dunder methods", "metaprogramming"]
+    "topics": ["descriptors", "properties", "validation", "dunder methods", "metaprogramming"],
+    "ask": "{product} needs strict guards so bad numbers cannot get in."
   },
   {
     "id": "cal-py-d5-005",
@@ -337,7 +365,8 @@
     "notes": [
       "Implements an LRU cache using a hash map and doubly linked list for O(1) get and put operations."
     ],
-    "topics": ["linked list", "cache", "hash map", "data structures", "algorithms"]
+    "topics": ["linked list", "cache", "hash map", "data structures", "algorithms"],
+    "ask": "deploy {product} but give it room for three apps"
   },
   {
     "id": "cal-py-d6-001",
@@ -348,7 +377,8 @@
     "notes": [
       "Implements a plugin registry using class decorators and abstract base classes for extensible architecture."
     ],
-    "topics": ["abc", "registry pattern", "decorators", "typing", "design patterns"]
+    "topics": ["abc", "registry pattern", "decorators", "typing", "design patterns"],
+    "ask": "build a {product} that lets you plug in different processors."
   },
   {
     "id": "cal-py-d6-002",
@@ -359,7 +389,8 @@
     "notes": [
       "Implements a thread-safe batch processor using ThreadPoolExecutor with result collection and error tracking."
     ],
-    "topics": ["threading", "thread pool", "futures", "concurrency", "error handling"]
+    "topics": ["threading", "thread pool", "futures", "concurrency", "error handling"],
+    "ask": "{product} needs workers doing many things simultaneously and reporting back."
   },
   {
     "id": "cal-py-d6-003",
@@ -370,7 +401,8 @@
     "notes": [
       "Builds an event emitter supporting on, once, emit, and off with argument introspection for handler safety."
     ],
-    "topics": ["event emitter", "observer pattern", "inspect", "typing", "callbacks"]
+    "topics": ["event emitter", "observer pattern", "inspect", "typing", "callbacks"],
+    "ask": "let {product} bits hear gossip and then plug their ears."
   },
   {
     "id": "cal-py-d6-004",
@@ -381,7 +413,8 @@
     "notes": [
       "Recursively validates nested data structures against a JSON schema definition with path-aware error reporting."
     ],
-    "topics": ["validation", "schema", "recursion", "typing", "error handling"]
+    "topics": ["validation", "schema", "recursion", "typing", "error handling"],
+    "ask": "make {product} check that nested boxes match their labels."
   },
   {
     "id": "cal-py-d6-005",
@@ -392,7 +425,8 @@
     "notes": [
       "Implements a generic pipeline builder with named steps, error handlers, dry run capability, and execution logging."
     ],
-    "topics": ["pipeline pattern", "generics", "dataclasses", "error handling", "builder pattern"]
+    "topics": ["pipeline pattern", "generics", "dataclasses", "error handling", "builder pattern"],
+    "ask": "give {product} an assembly line that logs every single hiccup."
   },
   {
     "id": "cal-py-d7-001",
@@ -403,7 +437,8 @@
     "notes": [
       "Defines a metaclass that tracks attribute changes with a log and applies validation decorators to class attributes."
     ],
-    "topics": ["metaclasses", "descriptors", "decorators", "validation", "metaprogramming"]
+    "topics": ["metaclasses", "descriptors", "decorators", "validation", "metaprogramming"],
+    "ask": "make {product} keep a diary every time their mood shifts."
   },
   {
     "id": "cal-py-d7-002",
@@ -414,7 +449,8 @@
     "notes": [
       "Implements an async task scheduler with priority ordering using heapq and bounded concurrency via semaphore."
     ],
-    "topics": ["asyncio", "priority queue", "heapq", "dataclasses", "concurrency", "scheduling"]
+    "topics": ["asyncio", "priority queue", "heapq", "dataclasses", "concurrency", "scheduling"],
+    "ask": "give {product} a to-do list that tackles urgent items first."
   },
   {
     "id": "cal-py-d7-003",
@@ -425,7 +461,8 @@
     "notes": [
       "Implements a complete recursive descent parser with lexer for arithmetic expressions supporting operator precedence and parentheses."
     ],
-    "topics": ["parsing", "recursive descent", "lexer", "tokenizer", "enums", "dataclasses"]
+    "topics": ["parsing", "recursive descent", "lexer", "tokenizer", "enums", "dataclasses"],
+    "ask": "teach {product} to read math homework and solve it politely."
   },
   {
     "id": "cal-py-d7-004",
@@ -443,7 +480,8 @@
       "nonlocal",
       "chain of responsibility",
       "timing"
-    ]
+    ],
+    "ask": "line up {product} helpers so each one wakes the next."
   },
   {
     "id": "cal-py-d7-005",
@@ -461,6 +499,7 @@
       "state management",
       "deep copy",
       "middleware"
-    ]
+    ],
+    "ask": "let {product} remember mood swings and tell the whole group."
   }
 ]

@@ -6,7 +6,8 @@
     "title": "hello world println",
     "code": "System.out.println(\"Hello, World!\");",
     "notes": ["Prints the string Hello, World! to standard output."],
-    "topics": ["output", "println"]
+    "topics": ["output", "println"],
+    "ask": "make the {product} say hello to everyone."
   },
   {
     "id": "cal-jv-d1-002",
@@ -15,7 +16,8 @@
     "title": "integer variable declaration",
     "code": "int count = 42;\nSystem.out.println(count);",
     "notes": ["Declares an integer variable and prints its value."],
-    "topics": ["variables", "int", "println"]
+    "topics": ["variables", "int", "println"],
+    "ask": "teach the {product} to remember a number and show it."
   },
   {
     "id": "cal-jv-d1-003",
@@ -24,7 +26,8 @@
     "title": "string concatenation",
     "code": "String first = \"Jane\";\nString last = \"Doe\";\nString full = first + \" \" + last;",
     "notes": ["Concatenates two strings with a space separator into a full name."],
-    "topics": ["string", "concatenation", "variables"]
+    "topics": ["string", "concatenation", "variables"],
+    "ask": "have the {product} glue two names together with a gap."
   },
   {
     "id": "cal-jv-d1-004",
@@ -33,7 +36,8 @@
     "title": "boolean flag assignment",
     "code": "boolean isReady = true;\nboolean isComplete = false;\nboolean result = isReady && isComplete;",
     "notes": ["Declares two boolean flags and combines them with a logical AND."],
-    "topics": ["boolean", "logical-operators", "variables"]
+    "topics": ["boolean", "logical-operators", "variables"],
+    "ask": "have the {product} check two switches at once."
   },
   {
     "id": "cal-jv-d1-005",
@@ -42,7 +46,8 @@
     "title": "arithmetic expression",
     "code": "double price = 19.99;\nint quantity = 3;\ndouble total = price * quantity;",
     "notes": ["Multiplies a price by a quantity to compute a total cost."],
-    "topics": ["arithmetic", "double", "variables"]
+    "topics": ["arithmetic", "double", "variables"],
+    "ask": "have the {product} figure out the total bill."
   },
   {
     "id": "java-enhanced-for",
@@ -54,7 +59,8 @@
       "The enhanced for loop iterates without an index.",
       "List.of() creates an immutable list in modern Java."
     ],
-    "topics": ["for-each", "loop", "collections"]
+    "topics": ["for-each", "loop", "collections"],
+    "ask": "have the {product} show each color in capital letters."
   },
   {
     "id": "cal-jv-d2-001",
@@ -63,7 +69,8 @@
     "title": "if else temperature check",
     "code": "int temp = 35;\nString label;\nif (temp > 30) {\n    label = \"hot\";\n} else {\n    label = \"cool\";\n}\nSystem.out.println(label);",
     "notes": ["Uses an if-else block to classify a temperature value as hot or cool."],
-    "topics": ["if-else", "conditionals", "variables"]
+    "topics": ["if-else", "conditionals", "variables"],
+    "ask": "have the {product} decide if it is hot or cool."
   },
   {
     "id": "cal-jv-d2-002",
@@ -72,7 +79,8 @@
     "title": "for loop sum",
     "code": "int sum = 0;\nfor (int i = 1; i <= 10; i++) {\n    sum += i;\n}\nSystem.out.println(\"Sum: \" + sum);",
     "notes": ["Sums the integers from 1 to 10 using a for loop and prints the result."],
-    "topics": ["for-loop", "accumulator", "arithmetic"]
+    "topics": ["for-loop", "accumulator", "arithmetic"],
+    "ask": "have the {product} add up all numbers through ten."
   },
   {
     "id": "cal-jv-d2-003",
@@ -81,7 +89,8 @@
     "title": "while loop countdown",
     "code": "int n = 5;\nwhile (n > 0) {\n    System.out.println(n);\n    n--;\n}\nSystem.out.println(\"Go!\");",
     "notes": ["Counts down from 5 to 1 using a while loop then prints Go."],
-    "topics": ["while-loop", "decrement", "println"]
+    "topics": ["while-loop", "decrement", "println"],
+    "ask": "initiate launch countdown before deploying {product}"
   },
   {
     "id": "cal-jv-d2-004",
@@ -90,7 +99,8 @@
     "title": "array iteration",
     "code": "String[] colors = {\"red\", \"green\", \"blue\"};\nfor (String color : colors) {\n    System.out.println(color);\n}\nSystem.out.println(\"Done\");",
     "notes": ["Iterates over a string array with an enhanced for loop and prints each element."],
-    "topics": ["arrays", "enhanced-for", "iteration"]
+    "topics": ["arrays", "enhanced-for", "iteration"],
+    "ask": "display every color in the {product} catalog"
   },
   {
     "id": "cal-jv-d2-005",
@@ -99,7 +109,8 @@
     "title": "simple method definition",
     "code": "public static int square(int x) {\n    return x * x;\n}\n\npublic static void main(String[] args) {\n    int result = square(7);\n    System.out.println(result);\n}",
     "notes": ["Defines a static method that squares an integer and calls it from main."],
-    "topics": ["methods", "return-value", "static"]
+    "topics": ["methods", "return-value", "static"],
+    "ask": "have the {product} learn to square any number given."
   },
   {
     "id": "java-stringbuilder",
@@ -111,7 +122,8 @@
       "StringBuilder avoids costly string concatenation in loops.",
       "append() returns this, enabling method chaining."
     ],
-    "topics": ["StringBuilder", "loops", "string-building"]
+    "topics": ["StringBuilder", "loops", "string-building"],
+    "ask": "have the {product} write numbers one to five with commas."
   },
   {
     "id": "cal-jv-d3-001",
@@ -120,7 +132,8 @@
     "title": "list filtering with loop",
     "code": "List<String> names = List.of(\"Alice\", \"Bob\", \"Charlie\", \"Dave\");\nList<String> short_names = new ArrayList<>();\nfor (String name : names) {\n    if (name.length() <= 4) {\n        short_names.add(name);\n    }\n}\nfor (String name : short_names) {\n    System.out.println(name);\n}",
     "notes": ["Filters a list of names to keep only those with four or fewer characters."],
-    "topics": ["list", "filtering", "enhanced-for", "conditionals"]
+    "topics": ["list", "filtering", "enhanced-for", "conditionals"],
+    "ask": "make the {product} only show short names"
   },
   {
     "id": "cal-jv-d3-002",
@@ -129,7 +142,8 @@
     "title": "switch statement seasons",
     "code": "public static String getSeason(int month) {\n    return switch (month) {\n        case 12, 1, 2 -> \"winter\";\n        case 3, 4, 5 -> \"spring\";\n        case 6, 7, 8 -> \"summer\";\n        case 9, 10, 11 -> \"autumn\";\n        default -> \"unknown\";\n    };\n}",
     "notes": ["Uses a switch expression with arrow syntax to map a month number to a season name."],
-    "topics": ["switch-expression", "pattern-matching", "methods"]
+    "topics": ["switch-expression", "pattern-matching", "methods"],
+    "ask": "give the {product} a seasonal flavor switch."
   },
   {
     "id": "cal-jv-d3-003",
@@ -138,7 +152,8 @@
     "title": "map iteration with entry set",
     "code": "Map<String, Integer> scores = new HashMap<>();\nscores.put(\"Alice\", 95);\nscores.put(\"Bob\", 87);\nscores.put(\"Charlie\", 92);\nfor (Map.Entry<String, Integer> entry : scores.entrySet()) {\n    String msg = entry.getKey() + \": \" + entry.getValue();\n    System.out.println(msg);\n}",
     "notes": ["Populates a HashMap and iterates its entry set to print each key-value pair."],
-    "topics": ["map", "hashmap", "entry-set", "generics"]
+    "topics": ["map", "hashmap", "entry-set", "generics"],
+    "ask": "populate the {product} with the team's starter balances."
   },
   {
     "id": "cal-jv-d3-004",
@@ -147,7 +162,8 @@
     "title": "try catch number parsing",
     "code": "public static int parseOrDefault(String input, int fallback) {\n    try {\n        return Integer.parseInt(input);\n    } catch (NumberFormatException e) {\n        System.err.println(\"Invalid: \" + input);\n        return fallback;\n    }\n}",
     "notes": ["Attempts to parse a string as an integer and returns a fallback value on failure."],
-    "topics": ["try-catch", "exception-handling", "parsing"]
+    "topics": ["try-catch", "exception-handling", "parsing"],
+    "ask": "make the {product} forgive invalid punch codes."
   },
   {
     "id": "cal-jv-d3-005",
@@ -156,7 +172,8 @@
     "title": "record with custom method",
     "code": "public record Rectangle(double width, double height) {\n    public double area() {\n        return width * height;\n    }\n\n    public double perimeter() {\n        return 2 * (width + height);\n    }\n\n    public String describe() {\n        return String.format(\"%.1f x %.1f\", width, height);\n    }\n}",
     "notes": ["Defines a record with area, perimeter, and describe methods for a rectangle."],
-    "topics": ["records", "methods", "string-format"]
+    "topics": ["records", "methods", "string-format"],
+    "ask": "give the {product} a way to measure itself"
   },
   {
     "id": "java-optional",
@@ -168,7 +185,8 @@
       "Optional avoids null checks with a fluent API.",
       ":: is a method reference, a shorthand for lambdas."
     ],
-    "topics": ["Optional", "null-safety", "functional"]
+    "topics": ["Optional", "null-safety", "functional"],
+    "ask": "make the {product} use a placeholder if name is absent"
   },
   {
     "id": "java-try-resources",
@@ -180,7 +198,8 @@
       "Resources in the try header are auto-closed on exit.",
       "Practice nested constructors, parentheses, and != null checks."
     ],
-    "topics": ["try-with-resources", "io", "auto-close"]
+    "topics": ["try-with-resources", "io", "auto-close"],
+    "ask": "make the {product} read a file and tidy up"
   },
   {
     "id": "cal-jv-d4-001",
@@ -191,7 +210,8 @@
     "notes": [
       "Defines an enum where each constant implements an abstract apply method for arithmetic."
     ],
-    "topics": ["enum", "abstract-method", "polymorphism"]
+    "topics": ["enum", "abstract-method", "polymorphism"],
+    "ask": "define point math operations for the {product}."
   },
   {
     "id": "cal-jv-d4-002",
@@ -202,7 +222,8 @@
     "notes": [
       "Implements a generic Pair class with type parameters for two values and a toString override."
     ],
-    "topics": ["generics", "class", "encapsulation", "toString"]
+    "topics": ["generics", "class", "encapsulation", "toString"],
+    "ask": "let the {product} keep two things as a pair"
   },
   {
     "id": "cal-jv-d4-003",
@@ -211,7 +232,8 @@
     "title": "iterator implementation",
     "code": "public class Range implements Iterable<Integer> {\n    private final int start;\n    private final int end;\n\n    public Range(int start, int end) {\n        this.start = start;\n        this.end = end;\n    }\n\n    @Override\n    public Iterator<Integer> iterator() {\n        return new Iterator<>() {\n            private int current = start;\n\n            public boolean hasNext() {\n                return current < end;\n            }\n\n            public Integer next() {\n                return current++;\n            }\n        };\n    }\n}",
     "notes": ["Implements Iterable with an anonymous Iterator to yield integers in a range."],
-    "topics": ["iterator", "iterable", "anonymous-class", "generics"]
+    "topics": ["iterator", "iterable", "anonymous-class", "generics"],
+    "ask": "make the {product} count through a span of numbers"
   },
   {
     "id": "cal-jv-d4-004",
@@ -222,7 +244,8 @@
     "notes": [
       "Sorts a list of employees by department, then last name, then first name using chained comparators."
     ],
-    "topics": ["comparator", "method-reference", "sorting", "printf"]
+    "topics": ["comparator", "method-reference", "sorting", "printf"],
+    "ask": "sort the {product} team by department and last name"
   },
   {
     "id": "cal-jv-d4-005",
@@ -231,7 +254,8 @@
     "title": "interface with sealed hierarchy",
     "code": "public sealed interface Shape\n        permits Circle, Square, Triangle {\n    double area();\n}\n\npublic record Circle(double radius) implements Shape {\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\npublic record Square(double side) implements Shape {\n    public double area() {\n        return side * side;\n    }\n}\n\npublic record Triangle(double base, double height) implements Shape {\n    public double area() {\n        return 0.5 * base * height;\n    }\n}",
     "notes": ["Defines a sealed Shape interface with three permitted record implementations."],
-    "topics": ["sealed-interface", "records", "polymorphism", "permits"]
+    "topics": ["sealed-interface", "records", "polymorphism", "permits"],
+    "ask": "let the {product} adopt circles squares and triangles"
   },
   {
     "id": "java-interface-default",
@@ -243,7 +267,8 @@
       "default methods let interfaces evolve without breaking implementors.",
       "Practice braces, parentheses, and method chaining."
     ],
-    "topics": ["interface", "default-method", "abstraction"]
+    "topics": ["interface", "default-method", "abstraction"],
+    "ask": "give the {product} a loud greeting as a backup"
   },
   {
     "id": "java-stream",
@@ -252,7 +277,8 @@
     "title": "Stream pipeline",
     "code": "var result = list.stream()\n    .filter(x -> x % 2 == 0)\n    .map(x -> x * x)\n    .collect(java.util.stream.Collectors.toList());",
     "notes": ["Pipeline uses lambdas and method chaining.", "Mind arrows, dots, and semicolons."],
-    "topics": ["streams", "lambda", "collect"]
+    "topics": ["streams", "lambda", "collect"],
+    "ask": "have the {product} square only the even numbers please"
   },
   {
     "id": "cal-jv-d5-001",
@@ -263,7 +289,8 @@
     "notes": [
       "Groups a list of words into short, medium, and long categories using a stream pipeline with groupingBy collector."
     ],
-    "topics": ["streams", "collectors", "groupingBy", "lambda", "generics"]
+    "topics": ["streams", "collectors", "groupingBy", "lambda", "generics"],
+    "ask": "sort the words in {product} by how long they are"
   },
   {
     "id": "cal-jv-d5-002",
@@ -274,7 +301,8 @@
     "notes": [
       "Provides generic clamp and filterRange utilities using bounded type parameters with Comparable."
     ],
-    "topics": ["generics", "bounded-types", "comparable", "utility-class"]
+    "topics": ["generics", "bounded-types", "comparable", "utility-class"],
+    "ask": "keep {product} values between a low and high mark"
   },
   {
     "id": "cal-jv-d5-003",
@@ -285,7 +313,8 @@
     "notes": [
       "Reads a file, computes word frequencies with streams, and prints the top 10 most common words."
     ],
-    "topics": ["try-with-resources", "streams", "collectors", "file-io", "generics"]
+    "topics": ["try-with-resources", "streams", "collectors", "file-io", "generics"],
+    "ask": "count the words in the {product} file and rank them"
   },
   {
     "id": "cal-jv-d5-004",
@@ -296,7 +325,8 @@
     "notes": [
       "Implements a generic event bus with subscribe, unsubscribe, and publish using a functional interface."
     ],
-    "topics": ["functional-interface", "generics", "observer-pattern", "exception-handling"]
+    "topics": ["functional-interface", "generics", "observer-pattern", "exception-handling"],
+    "ask": "let parts of {product} subscribe to little updates"
   },
   {
     "id": "cal-jv-d5-005",
@@ -307,7 +337,8 @@
     "notes": [
       "Defines a custom exception hierarchy with error codes and nested subclasses for not-found and validation errors."
     ],
-    "topics": ["exceptions", "inheritance", "nested-class", "constructors"]
+    "topics": ["exceptions", "inheritance", "nested-class", "constructors"],
+    "ask": "give {product} friendly errors when things go missing or wrong"
   },
   {
     "id": "java-record",
@@ -319,7 +350,8 @@
       "Records are concise data carriers.",
       "Practice parentheses, commas, braces, and format strings."
     ],
-    "topics": ["records", "methods", "string-format"]
+    "topics": ["records", "methods", "string-format"],
+    "ask": "store {product} coordinates and format them nicely"
   },
   {
     "id": "cal-jv-d6-001",
@@ -330,7 +362,8 @@
     "notes": [
       "Implements the builder pattern for an HttpRequest with fluent setters, validation, and an unmodifiable header map."
     ],
-    "topics": ["builder-pattern", "nested-class", "validation", "immutability"]
+    "topics": ["builder-pattern", "nested-class", "validation", "immutability"],
+    "ask": "build a {product} request piece by piece with rules"
   },
   {
     "id": "cal-jv-d6-002",
@@ -341,7 +374,8 @@
     "notes": [
       "Implements a thread-safe LRU cache using ReadWriteLock with eviction when capacity is exceeded."
     ],
-    "topics": ["concurrency", "read-write-lock", "generics", "cache", "eviction"]
+    "topics": ["concurrency", "read-write-lock", "generics", "cache", "eviction"],
+    "ask": "remember {product} things so lookups stay fast and safe"
   },
   {
     "id": "cal-jv-d6-003",
@@ -352,7 +386,8 @@
     "notes": [
       "Defines a Statistics class with a custom Collector that computes count, sum, min, and max in a single stream pass."
     ],
-    "topics": ["collector", "streams", "reduce", "lambda", "statistics"]
+    "topics": ["collector", "streams", "reduce", "lambda", "statistics"],
+    "ask": "summarize {product} numbers with average min and max"
   },
   {
     "id": "cal-jv-d6-004",
@@ -363,7 +398,8 @@
     "notes": [
       "Implements the decorator pattern with a DataSource interface, a file-based implementation, and a logging wrapper."
     ],
-    "topics": ["decorator-pattern", "interface", "delegation", "file-io"]
+    "topics": ["decorator-pattern", "interface", "delegation", "file-io"],
+    "ask": "wrap {product} reading and writing in a little diary"
   },
   {
     "id": "cal-jv-d6-005",
@@ -374,7 +410,8 @@
     "notes": [
       "Defines a custom JsonField annotation and a serializer that uses reflection to build a JSON string from annotated fields."
     ],
-    "topics": ["annotations", "reflection", "serialization", "custom-annotation"]
+    "topics": ["annotations", "reflection", "serialization", "custom-annotation"],
+    "ask": "ask the {product} to describe its moods in labeled lines."
   },
   {
     "id": "cal-jv-d7-001",
@@ -385,7 +422,8 @@
     "notes": [
       "Fetches multiple URLs concurrently using CompletableFuture with an HttpClient, then aggregates results with error handling."
     ],
-    "topics": ["completable-future", "async", "http-client", "streams", "error-handling"]
+    "topics": ["completable-future", "async", "http-client", "streams", "error-handling"],
+    "ask": "gather {product} rumors from many doors at once."
   },
   {
     "id": "cal-jv-d7-002",
@@ -396,7 +434,8 @@
     "notes": [
       "Implements the specification pattern with composable predicates and a generic in-memory repository with filtered queries."
     ],
-    "topics": ["specification-pattern", "generics", "repository", "streams", "default-methods"]
+    "topics": ["specification-pattern", "generics", "repository", "streams", "default-methods"],
+    "ask": "store {product} items and find them by their vibes."
   },
   {
     "id": "cal-jv-d7-003",
@@ -413,7 +452,8 @@
       "visitor-pattern",
       "recursion",
       "switch-expression"
-    ]
+    ],
+    "ask": "make the {product} do math and show its homework."
   },
   {
     "id": "cal-jv-d7-004",
@@ -424,7 +464,8 @@
     "notes": [
       "Implements a type-safe event bus that walks the class hierarchy and interfaces to dispatch events to matching consumer handlers."
     ],
-    "topics": ["generics", "wildcards", "concurrency", "type-erasure", "reflection"]
+    "topics": ["generics", "wildcards", "concurrency", "type-erasure", "reflection"],
+    "ask": "have the {product} whisper secrets to the right ears only."
   },
   {
     "id": "cal-jv-d7-005",
@@ -435,6 +476,7 @@
     "notes": [
       "Implements a LINQ-style query builder with composable where, orderBy, skip, take, and select operations over a generic list."
     ],
-    "topics": ["builder-pattern", "generics", "streams", "method-chaining", "predicate"]
+    "topics": ["builder-pattern", "generics", "streams", "method-chaining", "predicate"],
+    "ask": "sift the {product} pile, keep some, and line them up."
   }
 ]

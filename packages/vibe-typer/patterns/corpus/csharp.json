@@ -6,7 +6,8 @@
     "title": "integer variable assignment",
     "code": "int count = 42;",
     "notes": ["Declares an integer variable named count and assigns the value 42."],
-    "topics": ["variables", "assignment"]
+    "topics": ["variables", "assignment"],
+    "ask": "set the {product} starting count to forty-two."
   },
   {
     "id": "cal-cs-d1-002",
@@ -15,7 +16,8 @@
     "title": "console writeline",
     "code": "string name = \"Alice\";\nConsole.WriteLine(name);",
     "notes": ["Prints the value of a string variable to the console."],
-    "topics": ["console", "output", "variables"]
+    "topics": ["console", "output", "variables"],
+    "ask": "make the {product} show its name on screen."
   },
   {
     "id": "cal-cs-d1-003",
@@ -24,7 +26,8 @@
     "title": "boolean flag toggle",
     "code": "bool active = true;\nactive = !active;",
     "notes": ["Declares a boolean variable and toggles its value using the logical NOT operator."],
-    "topics": ["boolean", "negation"]
+    "topics": ["boolean", "negation"],
+    "ask": "flip the {product} switch to its opposite position."
   },
   {
     "id": "cal-cs-d1-004",
@@ -33,7 +36,8 @@
     "title": "arithmetic expression",
     "code": "double area = 3.14 * radius * radius;",
     "notes": ["Calculates the area of a circle using the radius variable."],
-    "topics": ["arithmetic", "double", "expressions"]
+    "topics": ["arithmetic", "double", "expressions"],
+    "ask": "measure the {product} circle area from its radius."
   },
   {
     "id": "cal-cs-d1-005",
@@ -42,7 +46,8 @@
     "title": "string concatenation",
     "code": "string first = \"hello\";\nstring second = \"world\";\nstring full = first + \" \" + second;",
     "notes": ["Joins two strings together with a space separator using the plus operator."],
-    "topics": ["string", "concatenation"]
+    "topics": ["string", "concatenation"],
+    "ask": "combine two {product} names into one full label."
   },
   {
     "id": "cs-foreach",
@@ -54,7 +59,8 @@
       "foreach iterates every element without an index variable.",
       "new[] creates an implicitly typed array."
     ],
-    "topics": ["foreach", "loop", "collections"]
+    "topics": ["foreach", "loop", "collections"],
+    "ask": "greet every name on the {product} list one by one."
   },
   {
     "id": "cs-string-interpolation",
@@ -66,7 +72,8 @@
       "$ before the string enables {expression} placeholders.",
       ":C2 formats a number as currency with 2 decimal places."
     ],
-    "topics": ["string-interpolation", "formatting", "variables"]
+    "topics": ["string-interpolation", "formatting", "variables"],
+    "ask": "show the {product} bill with the name and cents included."
   },
   {
     "id": "cal-cs-d2-001",
@@ -75,7 +82,8 @@
     "title": "simple if else block",
     "code": "int score = 75;\nstring result;\nif (score >= 60)\n    result = \"pass\";\nelse\n    result = \"fail\";\nConsole.WriteLine(result);",
     "notes": ["Uses a simple if-else to assign pass or fail based on a score threshold."],
-    "topics": ["if-else", "comparison", "branching"]
+    "topics": ["if-else", "comparison", "branching"],
+    "ask": "make {product} check if i am worthy today."
   },
   {
     "id": "cal-cs-d2-002",
@@ -84,7 +92,8 @@
     "title": "for loop sum",
     "code": "int total = 0;\nfor (int i = 1; i <= 10; i++)\n    total += i;\nConsole.WriteLine(total);",
     "notes": ["Sums the integers from 1 to 10 using a for loop with an accumulator variable."],
-    "topics": ["for-loop", "accumulator"]
+    "topics": ["for-loop", "accumulator"],
+    "ask": "add up the numbers one through ten for the {product}."
   },
   {
     "id": "cal-cs-d2-003",
@@ -93,7 +102,8 @@
     "title": "array initialization and access",
     "code": "int[] values = new int[] { 10, 20, 30, 40, 50 };\nint first = values[0];\nint last = values[values.Length - 1];\nConsole.WriteLine(first);\nConsole.WriteLine(last);",
     "notes": ["Creates an integer array and accesses the first and last elements by index."],
-    "topics": ["array", "indexing", "initialization"]
+    "topics": ["array", "indexing", "initialization"],
+    "ask": "grab the first and last values from the {product} list."
   },
   {
     "id": "cal-cs-d2-004",
@@ -102,7 +112,8 @@
     "title": "while loop countdown",
     "code": "int n = 5;\nwhile (n > 0)\n{\n    Console.WriteLine(n);\n    n--;\n}\nConsole.WriteLine(\"done\");",
     "notes": ["Counts down from 5 to 1 using a while loop and prints done when finished."],
-    "topics": ["while-loop", "decrement"]
+    "topics": ["while-loop", "decrement"],
+    "ask": "count the {product} down from five and say done."
   },
   {
     "id": "cal-cs-d2-005",
@@ -111,7 +122,8 @@
     "title": "list add and count",
     "code": "var items = new List<string>();\nitems.Add(\"apple\");\nitems.Add(\"banana\");\nitems.Add(\"cherry\");\nint count = items.Count;\nConsole.WriteLine(count);",
     "notes": ["Creates a generic string list, adds three items, and prints the count."],
-    "topics": ["list", "generics", "add"]
+    "topics": ["list", "generics", "add"],
+    "ask": "add three praises to {product} and count them."
   },
   {
     "id": "cal-cs-d3-001",
@@ -122,7 +134,8 @@
     "notes": [
       "Defines a static method that returns the larger of two integers using a simple comparison."
     ],
-    "topics": ["method", "return", "comparison"]
+    "topics": ["method", "return", "comparison"],
+    "ask": "{product} needs to pick the bigger of two numbers"
   },
   {
     "id": "cal-cs-d3-002",
@@ -133,7 +146,8 @@
     "notes": [
       "Iterates over a list of strings with a manual index counter and prints each item with its position."
     ],
-    "topics": ["foreach", "list", "string-interpolation"]
+    "topics": ["foreach", "list", "string-interpolation"],
+    "ask": "show each praise in {product} with its hour number."
   },
   {
     "id": "cal-cs-d3-003",
@@ -144,7 +158,8 @@
     "notes": [
       "Attempts to parse an invalid string as an integer and catches the resulting FormatException."
     ],
-    "topics": ["try-catch", "exception", "parsing"]
+    "topics": ["try-catch", "exception", "parsing"],
+    "ask": "make {product} catch bad input without breaking."
   },
   {
     "id": "cal-cs-d3-004",
@@ -155,7 +170,8 @@
     "notes": [
       "Creates a dictionary with indexer syntax and conditionally reads a value after checking if the key exists."
     ],
-    "topics": ["dictionary", "containskey", "indexer"]
+    "topics": ["dictionary", "containskey", "indexer"],
+    "ask": "{product} should check list for name and show its value"
   },
   {
     "id": "cal-cs-d3-005",
@@ -166,7 +182,8 @@
     "notes": [
       "Defines a Point class with read-only properties, a constructor, and a method to calculate distance to another point."
     ],
-    "topics": ["class", "constructor", "properties", "methods"]
+    "topics": ["class", "constructor", "properties", "methods"],
+    "ask": "{product} stores two numbers and measures distance to another"
   },
   {
     "id": "cs-async-await",
@@ -178,7 +195,8 @@
       "async methods return Task<T> and use await for I/O.",
       "using var disposes the HttpClient when the scope ends."
     ],
-    "topics": ["async", "await", "Task", "HttpClient"]
+    "topics": ["async", "await", "Task", "HttpClient"],
+    "ask": "{product} should grab text from a web page quietly"
   },
   {
     "id": "cs-interface",
@@ -190,7 +208,8 @@
       "Interfaces define a contract that classes must implement.",
       "Default interface methods provide optional fallback behavior."
     ],
-    "topics": ["interface", "abstraction", "contracts"]
+    "topics": ["interface", "abstraction", "contracts"],
+    "ask": "{product} should write notes and format warnings automatically"
   },
   {
     "id": "cal-cs-d4-001",
@@ -201,7 +220,8 @@
     "notes": [
       "Uses a switch expression with type patterns, when clauses, and a discard pattern to classify objects by type and value."
     ],
-    "topics": ["switch-expression", "pattern-matching", "when-clause", "type-patterns"]
+    "topics": ["switch-expression", "pattern-matching", "when-clause", "type-patterns"],
+    "ask": "{product} should look at a thing and name its kind"
   },
   {
     "id": "cal-cs-d4-002",
@@ -212,7 +232,8 @@
     "notes": [
       "Groups a list of order tuples by customer name, sums each group, and prints the results sorted by total descending."
     ],
-    "topics": ["linq", "groupby", "anonymous-type", "tuples"]
+    "topics": ["linq", "groupby", "anonymous-type", "tuples"],
+    "ask": "deploy the snack tab for {product} and rank spenders"
   },
   {
     "id": "cal-cs-d4-003",
@@ -223,7 +244,8 @@
     "notes": [
       "Defines an interface with a default method, implements it in a Circle class with an init-only property and custom ToString."
     ],
-    "topics": ["interface", "default-method", "init", "override"]
+    "topics": ["interface", "default-method", "init", "override"],
+    "ask": "{product} should make shapes that describe their own area"
   },
   {
     "id": "cal-cs-d4-004",
@@ -234,7 +256,8 @@
     "notes": [
       "Defines a record with a computed property using a switch expression and iterates with positional deconstruction."
     ],
-    "topics": ["record", "deconstruction", "switch-expression", "computed-property"]
+    "topics": ["record", "deconstruction", "switch-expression", "computed-property"],
+    "ask": "add profiles that sort {product} visitors into age brackets"
   },
   {
     "id": "cal-cs-d4-005",
@@ -245,7 +268,8 @@
     "notes": [
       "An async method that fetches a URL with timeout and cancellation support, handling both cancellation and HTTP errors."
     ],
-    "topics": ["async", "await", "cancellation-token", "httpclient", "try-catch"]
+    "topics": ["async", "await", "cancellation-token", "httpclient", "try-catch"],
+    "ask": "{product} should fetch a page and quit nicely if interrupted"
   },
   {
     "id": "cs-linq",
@@ -254,7 +278,8 @@
     "title": "LINQ pipeline",
     "code": "var result = items\n    .Where(x => x % 2 == 0)\n    .Select(x => x * x)\n    .ToList();",
     "notes": ["LINQ is a fluent query style.", "Mind dots, arrows, and semicolons."],
-    "topics": ["linq", "lambda", "select", "where"]
+    "topics": ["linq", "lambda", "select", "where"],
+    "ask": "{product} should keep only even items and square what remains"
   },
   {
     "id": "cs-switch-expr",
@@ -266,7 +291,8 @@
       "Switch expressions return a value inline.",
       "_ is the discard pattern (default case)."
     ],
-    "topics": ["switch-expression", "pattern-matching", "discard"]
+    "topics": ["switch-expression", "pattern-matching", "discard"],
+    "ask": "{product} should map a number to a letter using size"
   },
   {
     "id": "cal-cs-d5-001",
@@ -277,7 +303,8 @@
     "notes": [
       "Implements a generic in-memory repository with type constraints, duplicate detection, and null-conditional removal."
     ],
-    "topics": ["generics", "constraints", "repository-pattern", "nullable"]
+    "topics": ["generics", "constraints", "repository-pattern", "nullable"],
+    "ask": "build a member directory for {product} that blocks duplicate ids"
   },
   {
     "id": "cal-cs-d5-002",
@@ -288,7 +315,8 @@
     "notes": [
       "Implements a simple publish-subscribe event bus using a dictionary of topic-keyed handler lists with error isolation."
     ],
-    "topics": ["events", "observer-pattern", "dictionary", "delegates"]
+    "topics": ["events", "observer-pattern", "dictionary", "delegates"],
+    "ask": "let {product} rooms subscribe to discussion topics"
   },
   {
     "id": "cal-cs-d5-003",
@@ -299,7 +327,8 @@
     "notes": [
       "Implements a fluent SQL query builder that chains method calls to construct a SELECT statement with optional WHERE and ORDER BY clauses."
     ],
-    "topics": ["builder-pattern", "fluent-api", "params", "nullable"]
+    "topics": ["builder-pattern", "fluent-api", "params", "nullable"],
+    "ask": "build a {product} query by chaining little rules together."
   },
   {
     "id": "cal-cs-d5-004",
@@ -310,7 +339,8 @@
     "notes": [
       "Generates prime numbers as an async stream using IAsyncEnumerable with cancellation support and offloaded primality checks."
     ],
-    "topics": ["async-enumerable", "yield", "cancellation", "task-run"]
+    "topics": ["async-enumerable", "yield", "cancellation", "task-run"],
+    "ask": "count primes for {product} without freezing the screen."
   },
   {
     "id": "cal-cs-d5-005",
@@ -321,7 +351,8 @@
     "notes": [
       "Defines two generic extension methods on IEnumerable for null filtering and index pairing, then chains them together."
     ],
-    "topics": ["extension-methods", "generics", "yield", "tuples", "nullable"]
+    "topics": ["extension-methods", "generics", "yield", "tuples", "nullable"],
+    "ask": "clean up {product} blanks and number each entry."
   },
   {
     "id": "cs-record",
@@ -333,7 +364,8 @@
       "Records are immutable-ish data types.",
       "Practice braces, quotes, and with initializers."
     ],
-    "topics": ["record", "init", "with-expression"]
+    "topics": ["record", "init", "with-expression"],
+    "ask": "copy a {product} profile and update the age."
   },
   {
     "id": "cal-cs-d6-001",
@@ -344,7 +376,8 @@
     "notes": [
       "Transforms a sequence of named tuples into grouped lists with conditional value adjustments based on sign and parity."
     ],
-    "topics": ["dictionary", "tuples", "conditional-logic", "collections"]
+    "topics": ["dictionary", "tuples", "conditional-logic", "collections"],
+    "ask": "group {product} items and adjust numbers by type."
   },
   {
     "id": "cal-cs-d6-002",
@@ -355,7 +388,8 @@
     "notes": [
       "Implements merge sort with a helper method that merges two sorted subarrays using a temporary buffer and recursive partitioning."
     ],
-    "topics": ["merge-sort", "recursion", "arrays", "divide-and-conquer"]
+    "topics": ["merge-sort", "recursion", "arrays", "divide-and-conquer"],
+    "ask": "sort {product} numbers by merging sorted little piles."
   },
   {
     "id": "cal-cs-d6-003",
@@ -366,7 +400,8 @@
     "notes": [
       "Multiplies two integer matrices with value clamping at 1000, plus a formatted print method for 2D array display."
     ],
-    "topics": ["matrix", "nested-loops", "multidimensional-arrays", "clamping"]
+    "topics": ["matrix", "nested-loops", "multidimensional-arrays", "clamping"],
+    "ask": "multiply {product} tables and cap anything too huge."
   },
   {
     "id": "cal-cs-d6-004",
@@ -377,7 +412,8 @@
     "notes": [
       "Finds the shortest path through a grid using BFS with a predecessor dictionary for path reconstruction via backtracking."
     ],
-    "topics": ["bfs", "grid", "pathfinding", "dictionary", "tuples", "backtracking"]
+    "topics": ["bfs", "grid", "pathfinding", "dictionary", "tuples", "backtracking"],
+    "ask": "find the shortest path through the {product} maze."
   },
   {
     "id": "cal-cs-d6-005",
@@ -388,7 +424,8 @@
     "notes": [
       "Solves a system of linear equations using Gaussian elimination with partial pivoting and back substitution."
     ],
-    "topics": ["gaussian-elimination", "linear-algebra", "pivoting", "multidimensional-arrays"]
+    "topics": ["gaussian-elimination", "linear-algebra", "pivoting", "multidimensional-arrays"],
+    "ask": "solve the {product} puzzle of balancing many equations."
   },
   {
     "id": "cal-cs-d7-001",
@@ -399,7 +436,8 @@
     "notes": [
       "Multiplies two sparse matrices skipping zero entries, tracks min and max values, then normalizes all results to the 0-1 range."
     ],
-    "topics": ["matrix-multiplication", "sparse", "normalization", "nested-loops"]
+    "topics": ["matrix-multiplication", "sparse", "normalization", "nested-loops"],
+    "ask": "multiply {product} tables skipping blanks then scale results."
   },
   {
     "id": "cal-cs-d7-002",
@@ -410,7 +448,8 @@
     "notes": [
       "Applies Sobel edge detection kernels to a pixel array using convolution, then thresholds the gradient magnitude into a binary edge map."
     ],
-    "topics": ["image-processing", "sobel", "convolution", "edge-detection", "nested-loops"]
+    "topics": ["image-processing", "sobel", "convolution", "edge-detection", "nested-loops"],
+    "ask": "make {product} trace every edge and erase the rest"
   },
   {
     "id": "cal-cs-d7-003",
@@ -421,7 +460,8 @@
     "notes": [
       "Computes a two-layer neural network forward pass with leaky ReLU activation, normalization, and mean squared error loss accumulation."
     ],
-    "topics": ["neural-network", "forward-pass", "leaky-relu", "loss-function", "nested-loops"]
+    "topics": ["neural-network", "forward-pass", "leaky-relu", "loss-function", "nested-loops"],
+    "ask": "have {product} guess the answer and check its own work"
   },
   {
     "id": "cal-cs-d7-004",
@@ -432,7 +472,8 @@
     "notes": [
       "Performs BFS on a graph represented as adjacency arrays, tracking distances and predecessors, with inline path reversal on target discovery."
     ],
-    "topics": ["bfs", "graph", "shortest-path", "adjacency-list", "arrays"]
+    "topics": ["bfs", "graph", "shortest-path", "adjacency-list", "arrays"],
+    "ask": "have {product} find the shortest path between two dots"
   },
   {
     "id": "cal-cs-d7-005",
@@ -443,6 +484,7 @@
     "notes": [
       "Solves the 0-1 knapsack problem using bottom-up dynamic programming, then backtracks through the DP table to recover the selected items."
     ],
-    "topics": ["dynamic-programming", "knapsack", "backtracking", "arrays", "optimization"]
+    "topics": ["dynamic-programming", "knapsack", "backtracking", "arrays", "optimization"],
+    "ask": "have {product} pick the best stuff that still fits"
   }
 ]

@@ -1,0 +1,1360 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-15",
+  "stamp": "2026-09-15-201349721",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "prompts": [
+      "7dad1936ca61310925836a2fc40ad3575d6953fe313f1af0fccf81a60b5c243d",
+      "cad5d3b1426323ef2abb98af92dda9d919e6353e7ff5360caaba82a1666c77be",
+      "22f708b131d9530f4240123004eb6cfeb4a5a971c1c95a79297e411348c09c45",
+      "17ba672f7092b72c2211fdc3506ee991062081b8a21aff2e05ec5a7700f6ee3e",
+      "c2bd8cd572cba3ea9892b6a003bb8ed1178fb46dc902455afd2fe3087bdb4f16",
+      "9f0b23251089ecf0dcdd6ed53a915c1cc3c3f09ccedce87e132bbc9f4d78fa3d",
+      "76e4bf3e132acfc793ce35b57ead337789169d4b2455730eeff15ae7d3a31017",
+      "e20a44129dc19b3fdbff0bfac779ce77d76177f3f6b130f9d376ffda8c6f6b2d",
+      "87542073bf275487d5010b13719bf833c551b3f9dda05734a0148ef1f79d3a27",
+      "95dc59c620259c228d52e3bbb4eed85cfeade601647223e05dfd0b952b47755c",
+      "2f058dded8a8f9ca503e91424545ab08d2c808e613fdcdd6e7f755c4e11166ef",
+      "e6450b434755b8480343eff7f29bd21ddf5f59ce08394d26d1dd2609c48ca83b",
+      "b30e356a7b9ec7ae3a079ecb11d285c261808a73ca19793ed024083fbf6619d9",
+      "1bc179cbebb1f8446b3b03f8c093c806fc06980bda492a7c982e614d27e34c6a",
+      "64de7480b974fbe609ad4da37afd759556d8be034a51fb8fba2c2a695f158f43",
+      "baf40cf9ba6eefda1ecff26627d000637ac4aa2a5ab22e6db99172a81f6b25a4",
+      "e173ce34369f193ea51e81a0e7ce19fa15b7ec496fce9955e2dce8508a05e27d",
+      "1cda3e432d2e3dbe1b084c0fa4f45e00ec56f902326736806e41927bfe86f3aa",
+      "c39f7ff25b1d7539cd622a1d8f5050214d2bada8d338c2232f4df4985a6120fa",
+      "13d38e40f23624cf42a521c9ecc92ad079e71a715cf839405217269ee2fda841",
+      "a53e5f4b88c7796379b543933877e6178c316132c38207c6e5d1ca932e78c467",
+      "c8ea8bcdd5fff973e19f5c1f7d7525d2a977af38d02a103655c1608796e00aab"
+    ],
+    "requested": 576,
+    "kept": 192,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "forbidden word or digit": 1,
+      "too many words": 17
+    },
+    "ms": 5194234,
+    "tokens": {
+      "in": 56136,
+      "out": 168218
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 1461859
+  },
+  "candidates": {
+    "cal-sh-d1-002": {
+      "kept": "make {product} remember its name and show it.",
+      "alternates": [
+        "have {product} print a secret label quietly.",
+        "tell {product} to whisper its own name."
+      ]
+    },
+    "cal-sh-d1-004": {
+      "kept": "go to {product} temp folder and show everything inside.",
+      "alternates": [
+        "pop into {product} back room and list the clutter.",
+        "sneak into {product} temp closet and read the labels."
+      ]
+    },
+    "cal-sh-d2-001": {
+      "kept": "give {product} a way to call home using nicknames.",
+      "alternates": [
+        "assemble {product} guest badge from its hidden name tags.",
+        "weave {product} door code from its tucked-away labels."
+      ]
+    },
+    "cal-sh-d2-003": {
+      "kept": "let {product} choose settings but fall back to vanilla.",
+      "alternates": [
+        "give {product} defaults in case it forgets its preferences.",
+        "teach {product} to use backup names when nothing fits."
+      ]
+    },
+    "cal-sh-d2-005": {
+      "kept": "count the worst tantrums in {product} error diary.",
+      "alternates": [
+        "rank {product} complaint lines by how loud they echo.",
+        "sift {product} grumble log and crown the top five."
+      ]
+    },
+    "sh-array": {
+      "kept": "count {product} friends and greet each one politely.",
+      "alternates": [
+        "list every {product} pet and say how many exist.",
+        "tally {product} chores and whisper each name aloud."
+      ]
+    },
+    "sh-if-else": {
+      "kept": "check if {product} treasure map exists before opening it.",
+      "alternates": [
+        "see if {product} recipe card is there or lost.",
+        "confirm {product} snack stash exists and sigh if missing."
+      ]
+    },
+    "cal-sh-d3-001": {
+      "kept": "find {product} log scrolls that are too heavy.",
+      "alternates": [
+        "hunt for {product} chubby diary pages and count them.",
+        "scan {product} shoebox notes and flag the thick stacks."
+      ]
+    },
+    "cal-sh-d3-003": {
+      "kept": "knock on {product} doors to see which ones answer.",
+      "alternates": [
+        "test if {product} windows are open from the hallway.",
+        "ring {product} doorbells and note which ones are home."
+      ]
+    },
+    "cal-sh-d3-004": {
+      "kept": "check which {product} helpers showed up and print roster.",
+      "alternates": [
+        "see who in {product} crew is present and absent.",
+        "list {product} team members and mark who is missing."
+      ]
+    },
+    "sh-function": {
+      "kept": "add a logger to {product} that tags messages by severity",
+      "alternates": [
+        "give {product} a way to label messages when things happen",
+        "let {product} print nicely labeled updates as it runs"
+      ]
+    },
+    "sh-safe": {
+      "kept": "make {product} stop cleanly if counting its logs goes wrong",
+      "alternates": [
+        "let {product} safely count lines inside all its logs",
+        "help {product} read every log and tally the lines inside"
+      ]
+    },
+    "cal-sh-d4-002": {
+      "kept": "give {product} settings for verbose mode and saving results",
+      "alternates": ["let people choose how {product} runs when they start it"]
+    },
+    "cal-sh-d4-003": {
+      "kept": "compress {product} logs that are older than thirty days",
+      "alternates": [
+        "archive old {product} logs so they stop taking up space",
+        "pack up aging {product} logs to free some room"
+      ]
+    },
+    "cal-sh-d4-004": {
+      "kept": "check if every service {product} needs is awake and listening",
+      "alternates": [
+        "make sure all the parts {product} needs are responding",
+        "test whether {product} can reach its helper services"
+      ]
+    },
+    "cal-sh-d5-001": {
+      "kept": "update {product} safely and undo if something goes wrong",
+      "alternates": [
+        "install a new {product} version with a safety net included",
+        "replace {product} but keep the old one just in case"
+      ]
+    },
+    "cal-sh-d5-002": {
+      "kept": "let {product} do many jobs at the same time safely",
+      "alternates": ["have {product} do its work faster by multitasking carefully"]
+    },
+    "cal-sh-d5-003": {
+      "kept": "load {product} options from a settings file with sections",
+      "alternates": [
+        "let {product} load its preferences from a tidy settings file",
+        "teach {product} to understand a simple settings file layout"
+      ]
+    },
+    "cal-sh-d5-004": {
+      "kept": "check {product} folders and show the ones that are bloated",
+      "alternates": ["show which {product} folders are eating up the space"]
+    },
+    "cal-sh-d5-005": {
+      "kept": "clean up old {product} branches but keep the important ones",
+      "alternates": [
+        "delete finished {product} branches while protecting the core ones",
+        "remove stale {product} branches that are no longer needed"
+      ]
+    },
+    "cal-sh-d6-001": {
+      "kept": "ship {product} to staging and production safely.",
+      "alternates": [
+        "send {product} to all the servers with receipts.",
+        "push {product} live but check the box first."
+      ]
+    },
+    "cal-sh-d6-002": {
+      "kept": "read {product} logs and count the bad moods.",
+      "alternates": [
+        "summarize {product} tantrums by type and frequency.",
+        "tally {product} errors into a bedtime report."
+      ]
+    },
+    "cal-sh-d6-003": {
+      "kept": "copy {product} data and toss old copies.",
+      "alternates": [
+        "save {product} records and delete the crusty backups.",
+        "back up {product} and clear out the attic."
+      ]
+    },
+    "cal-sh-d6-004": {
+      "kept": "let me add and remove {product} chores.",
+      "alternates": [
+        "a little menu to juggle {product} tasks.",
+        "build a {product} todo list with numbered choices."
+      ]
+    },
+    "cal-sh-d6-005": {
+      "kept": "watch {product} pulse and complain when it wheezes.",
+      "alternates": [
+        "check {product} breathing and nag if it spikes.",
+        "monitor {product} vitals and whisper urgent warnings."
+      ]
+    },
+    "cal-sh-d7-001": {
+      "kept": "load {product} plugins in the right birth order.",
+      "alternates": [
+        "figure out which {product} addons need each other first.",
+        "line up {product} helpers so nobody gets confused."
+      ]
+    },
+    "cal-sh-d7-002": {
+      "kept": "build {product} steps in order like a sandwich.",
+      "alternates": [
+        "make {product} from scratch in the right sequence.",
+        "cook {product} layers so nothing burns."
+      ]
+    },
+    "cal-sh-d7-003": {
+      "kept": "answer the door for {product} and check badges.",
+      "alternates": [
+        "route {product} mail through a polite little bouncer.",
+        "receive {product} visitors and ask for their papers."
+      ]
+    },
+    "cal-sh-d7-004": {
+      "kept": "quiz {product} parts and print the grade sheet.",
+      "alternates": [
+        "test {product} bits and write the report card.",
+        "check {product} homework and tally the gold stars."
+      ]
+    },
+    "cal-sh-d7-005": {
+      "kept": "babysit {product} workers and nudge them awake.",
+      "alternates": [
+        "watch {product} babies and tuck them back in.",
+        "keep {product} helpers breathing and restart their hearts."
+      ]
+    },
+    "cal-cs-d1-001": {
+      "kept": "set the {product} starting count to forty-two.",
+      "alternates": [
+        "let the {product} begin with forty-two units.",
+        "give the {product} a base number of forty-two."
+      ]
+    },
+    "cal-cs-d1-002": {
+      "kept": "make the {product} show its name on screen.",
+      "alternates": [
+        "display the {product} label so we can see it.",
+        "let the {product} print out the current name."
+      ]
+    },
+    "cal-cs-d1-003": {
+      "kept": "flip the {product} switch to its opposite position.",
+      "alternates": [
+        "toggle the {product} active state the other way.",
+        "reverse whether the {product} is currently turned on."
+      ]
+    },
+    "cal-cs-d1-004": {
+      "kept": "measure the {product} circle area from its radius.",
+      "alternates": [
+        "figure out the {product} circle size using radius.",
+        "find how much space the {product} circle covers."
+      ]
+    },
+    "cal-cs-d1-005": {
+      "kept": "combine two {product} names into one full label.",
+      "alternates": [
+        "smush the {product} first and second words together gently.",
+        "put the {product} greeting words together with a space."
+      ]
+    },
+    "cs-foreach": {
+      "kept": "greet every name on the {product} list one by one.",
+      "alternates": [
+        "say hello to each {product} member in order.",
+        "run through the {product} names and welcome them all."
+      ]
+    },
+    "cs-string-interpolation": {
+      "kept": "show the {product} bill with the name and cents included.",
+      "alternates": [
+        "print the {product} receipt using names and exact cents.",
+        "display the {product} debt with the name and cents."
+      ]
+    },
+    "cal-cs-d2-002": {
+      "kept": "add up the numbers one through ten for the {product}.",
+      "alternates": [
+        "total the first ten counts on the {product} sheet.",
+        "sum all numbers from one to ten for the {product}."
+      ]
+    },
+    "cal-cs-d2-003": {
+      "kept": "grab the first and last values from the {product} list.",
+      "alternates": [
+        "get the {product} first and last numbers to show.",
+        "pull the {product} top and bottom values from the set."
+      ]
+    },
+    "cal-cs-d2-004": {
+      "kept": "count the {product} down from five and say done.",
+      "alternates": [
+        "make the {product} tick backwards from five to one.",
+        "run a {product} countdown that ends with the word done."
+      ]
+    },
+    "cal-cs-d3-001": {
+      "kept": "{product} needs to pick the bigger of two numbers",
+      "alternates": [
+        "make {product} choose the larger of two values",
+        "tell {product} which of two numbers is bigger"
+      ]
+    },
+    "cal-cs-d3-004": {
+      "kept": "{product} should check list for name and show its value",
+      "alternates": [
+        "make {product} store names and numbers then find one",
+        "{product} needs to look up a value by a name"
+      ]
+    },
+    "cal-cs-d3-005": {
+      "kept": "{product} stores two numbers and measures distance to another",
+      "alternates": [
+        "{product} needs two numbers and a way to measure space",
+        "{product} should hold two values and check spacing between"
+      ]
+    },
+    "cs-async-await": {
+      "kept": "{product} should grab text from a web page quietly",
+      "alternates": [
+        "make {product} fetch content from a site without freezing",
+        "{product} needs to fetch a web page behind the scenes"
+      ]
+    },
+    "cs-interface": {
+      "kept": "{product} should write notes and format warnings automatically",
+      "alternates": [
+        "make {product} write down notes and mark worrisome ones differently",
+        "{product} needs to record events and caution notes clearly"
+      ]
+    },
+    "cal-cs-d4-001": {
+      "kept": "{product} should look at a thing and name its kind",
+      "alternates": [
+        "make {product} label things as negative zero positive or mystery",
+        "{product} needs to sort items into buckets by their type"
+      ]
+    },
+    "cal-cs-d4-003": {
+      "kept": "{product} should make shapes that describe their own area",
+      "alternates": [
+        "make {product} a circle that shows its size and coverage",
+        "{product} needs a round thing that reports width and span"
+      ]
+    },
+    "cal-cs-d4-005": {
+      "kept": "{product} should fetch a page and quit nicely if interrupted",
+      "alternates": [
+        "make {product} grab web content with timer and cancel switch",
+        "{product} should get a web page and survive broken links"
+      ]
+    },
+    "cs-linq": {
+      "kept": "{product} should keep only even items and square what remains",
+      "alternates": [
+        "make {product} filter a list then multiply each kept item",
+        "{product} should choose some numbers and turn them into squares"
+      ]
+    },
+    "cs-switch-expr": {
+      "kept": "{product} should map a number to a letter using size",
+      "alternates": [
+        "make {product} assign letter ratings to numeric ranges quickly",
+        "{product} needs to bucket values into letter groups by size"
+      ]
+    },
+    "cal-cs-d5-003": {
+      "kept": "build a {product} query by chaining little rules together.",
+      "alternates": [
+        "make a {product} search that stacks filters like blocks.",
+        "let me chain {product} conditions into one clean request."
+      ]
+    },
+    "cal-cs-d5-004": {
+      "kept": "count primes for {product} without freezing the screen.",
+      "alternates": [
+        "generate {product} primes one by one as needed.",
+        "stream {product} prime numbers without stopping the app."
+      ]
+    },
+    "cal-cs-d5-005": {
+      "kept": "clean up {product} blanks and number each entry.",
+      "alternates": [
+        "remove empty {product} slots and add row numbers.",
+        "filter {product} gaps and tag every item with order."
+      ]
+    },
+    "cs-record": {
+      "kept": "copy a {product} profile and update the age.",
+      "alternates": [
+        "make a new {product} user with a different age.",
+        "duplicate the {product} person but bump their age."
+      ]
+    },
+    "cal-cs-d6-001": {
+      "kept": "group {product} items and adjust numbers by type.",
+      "alternates": [
+        "sort {product} values into buckets and tweak odds.",
+        "split {product} data into groups with scaled values."
+      ]
+    },
+    "cal-cs-d6-002": {
+      "kept": "sort {product} numbers by merging sorted little piles.",
+      "alternates": [
+        "organize {product} values from smallest to largest neatly.",
+        "line up {product} numbers in ascending order please."
+      ]
+    },
+    "cal-cs-d6-003": {
+      "kept": "multiply {product} tables and cap anything too huge.",
+      "alternates": [
+        "merge two {product} grids and keep totals bounded.",
+        "crunch {product} tables and print the capped results."
+      ]
+    },
+    "cal-cs-d6-004": {
+      "kept": "find the shortest path through the {product} maze.",
+      "alternates": [
+        "navigate the {product} grid from corner to corner.",
+        "map a quick route across the {product} board."
+      ]
+    },
+    "cal-cs-d6-005": {
+      "kept": "solve the {product} puzzle of balancing many equations.",
+      "alternates": [
+        "figure out {product} unknowns from a pile of clues.",
+        "untangle the {product} math for matching both sides."
+      ]
+    },
+    "cal-cs-d7-001": {
+      "kept": "multiply {product} tables skipping blanks then scale results.",
+      "alternates": [
+        "combine {product} sparse lists and normalize every value.",
+        "merge {product} grids ignoring zeros and fit to range."
+      ]
+    },
+    "cal-cs-d7-002": {
+      "kept": "make {product} trace every edge and erase the rest",
+      "alternates": [
+        "have {product} turn the image into a bold line drawing",
+        "let {product} find all the outlines and strip the filler"
+      ]
+    },
+    "cal-cs-d7-003": {
+      "kept": "have {product} guess the answer and check its own work",
+      "alternates": [
+        "let {product} predict what it sees and own the mistake",
+        "make {product} look at data and say what it is"
+      ]
+    },
+    "cal-cs-d7-004": {
+      "kept": "have {product} find the shortest path between two dots",
+      "alternates": [
+        "let {product} draw the quickest route from here to there",
+        "make {product} trace the fewest steps from start to finish"
+      ]
+    },
+    "cal-cs-d7-005": {
+      "kept": "have {product} pick the best stuff that still fits",
+      "alternates": [
+        "let {product} choose what to pack for top value",
+        "make {product} fill the bag with the most treasure"
+      ]
+    },
+    "cal-jv-d1-001": {
+      "kept": "make the {product} say hello to everyone.",
+      "alternates": [
+        "have the {product} greet the whole world quietly.",
+        "let the {product} announce itself to the room."
+      ]
+    },
+    "cal-jv-d1-002": {
+      "kept": "teach the {product} to remember a number and show it.",
+      "alternates": [
+        "have the {product} store a number and show me.",
+        "let the {product} keep a lucky number for later."
+      ]
+    },
+    "cal-jv-d1-003": {
+      "kept": "have the {product} glue two names together with a gap.",
+      "alternates": [
+        "let the {product} smoosh a first and last name.",
+        "make the {product} combine a full name from halves."
+      ]
+    },
+    "cal-jv-d1-004": {
+      "kept": "have the {product} check two switches at once.",
+      "alternates": [
+        "let the {product} ask if two things are true.",
+        "make the {product} nod only when both lights agree."
+      ]
+    },
+    "cal-jv-d1-005": {
+      "kept": "have the {product} figure out the total bill.",
+      "alternates": [
+        "let the {product} multiply the price by quantity.",
+        "make the {product} tell me what everything costs."
+      ]
+    },
+    "java-enhanced-for": {
+      "kept": "have the {product} show each color in capital letters.",
+      "alternates": [
+        "let the {product} march through colors and shout them.",
+        "make the {product} list every shade in big letters."
+      ]
+    },
+    "cal-jv-d2-001": {
+      "kept": "have the {product} decide if it is hot or cool.",
+      "alternates": [
+        "let the {product} check the heat and name the vibe.",
+        "make the {product} sort warmth into hot or cool."
+      ]
+    },
+    "cal-jv-d2-002": {
+      "kept": "have the {product} add up all numbers through ten.",
+      "alternates": [
+        "let the {product} count to ten and save the total.",
+        "make the {product} show the total of one to ten."
+      ]
+    },
+    "cal-jv-d2-005": {
+      "kept": "have the {product} learn to square any number given.",
+      "alternates": [
+        "let the {product} multiply a number by itself on demand.",
+        "make the {product} build a tiny math helper inside."
+      ]
+    },
+    "java-stringbuilder": {
+      "kept": "have the {product} write numbers one to five with commas.",
+      "alternates": [
+        "let the {product} make a comma list up to five.",
+        "make the {product} count to five with pauses between."
+      ]
+    },
+    "cal-jv-d3-001": {
+      "kept": "make the {product} only show short names",
+      "alternates": [
+        "have the {product} ignore anyone with a long name",
+        "let the {product} list just the tiny names"
+      ]
+    },
+    "cal-jv-d3-005": {
+      "kept": "give the {product} a way to measure itself",
+      "alternates": [
+        "let the {product} figure out how much space it takes",
+        "make the {product} brag about its own dimensions"
+      ]
+    },
+    "java-optional": {
+      "kept": "make the {product} use a placeholder if name is absent",
+      "alternates": [
+        "let the {product} use a backup if name is empty",
+        "make the {product} pick a standby when nothing shows up"
+      ]
+    },
+    "java-try-resources": {
+      "kept": "make the {product} read a file and tidy up",
+      "alternates": [
+        "let the {product} open a file and close it gently",
+        "have the {product} peek at a file then leave"
+      ]
+    },
+    "cal-jv-d4-002": {
+      "kept": "let the {product} keep two things as a pair",
+      "alternates": [
+        "make the {product} hold a matched set of items",
+        "give the {product} a way to store two buddies"
+      ]
+    },
+    "cal-jv-d4-003": {
+      "kept": "make the {product} count through a span of numbers",
+      "alternates": [
+        "let the {product} march from one number to another",
+        "have the {product} list every number in a row"
+      ]
+    },
+    "cal-jv-d4-004": {
+      "kept": "sort the {product} team by department and last name",
+      "alternates": [
+        "have the {product} line people up by group and name",
+        "let the {product} organize folks by desk and surname"
+      ]
+    },
+    "cal-jv-d4-005": {
+      "kept": "let the {product} adopt circles squares and triangles",
+      "alternates": [
+        "make the {product} treat all shapes as one family",
+        "have the {product} size up shapes without picking favorites"
+      ]
+    },
+    "java-interface-default": {
+      "kept": "give the {product} a loud greeting as a backup",
+      "alternates": [
+        "let the {product} shout hello without breaking anything",
+        "make the {product} greet softly or yell if needed"
+      ]
+    },
+    "java-stream": {
+      "kept": "have the {product} square only the even numbers please",
+      "alternates": [
+        "let the {product} grab even numbers and make them bigger",
+        "make the {product} collect the plump even ones only"
+      ]
+    },
+    "cal-jv-d5-001": {
+      "kept": "sort the words in {product} by how long they are",
+      "alternates": [
+        "group {product} words into short medium and long piles",
+        "organize {product} words by their size for me"
+      ]
+    },
+    "cal-jv-d5-002": {
+      "kept": "keep {product} values between a low and high mark",
+      "alternates": [
+        "only allow {product} numbers within certain limits",
+        "make sure {product} values never stray outside bounds"
+      ]
+    },
+    "cal-jv-d5-003": {
+      "kept": "count the words in the {product} file and rank them",
+      "alternates": [
+        "find the most common words inside {product}",
+        "read {product} and show which words appear most"
+      ]
+    },
+    "cal-jv-d5-004": {
+      "kept": "let parts of {product} subscribe to little updates",
+      "alternates": [
+        "make a bulletin board for {product} events",
+        "allow {product} pieces to announce things to each other"
+      ]
+    },
+    "cal-jv-d5-005": {
+      "kept": "give {product} friendly errors when things go missing or wrong",
+      "alternates": [
+        "label {product} problems as missing or invalid nicely",
+        "tell {product} to complain politely when something breaks"
+      ]
+    },
+    "java-record": {
+      "kept": "store {product} coordinates and format them nicely",
+      "alternates": [
+        "make {product} remember a spot and print it pretty",
+        "let {product} keep a point and show it gently"
+      ]
+    },
+    "cal-jv-d6-001": {
+      "kept": "build a {product} request piece by piece with rules",
+      "alternates": [
+        "assemble {product} messages step by step safely",
+        "construct {product} calls one detail at a time"
+      ]
+    },
+    "cal-jv-d6-002": {
+      "kept": "remember {product} things so lookups stay fast and safe",
+      "alternates": [
+        "keep a small {product} memory that forgets old items",
+        "store {product} answers briefly and bump the oldest out"
+      ]
+    },
+    "cal-jv-d6-003": {
+      "kept": "summarize {product} numbers with average min and max",
+      "alternates": [
+        "crunch {product} stats in one tidy sweep",
+        "collect {product} totals highs and lows together"
+      ]
+    },
+    "cal-jv-d6-004": {
+      "kept": "wrap {product} reading and writing in a little diary",
+      "alternates": [
+        "make {product} data sources announce everything they do",
+        "jot down every {product} read and write"
+      ]
+    },
+    "cal-jv-d6-005": {
+      "kept": "ask the {product} to describe its moods in labeled lines.",
+      "alternates": [
+        "have the {product} wear little name tags for exporting.",
+        "teach the {product} to introduce itself in plain text."
+      ]
+    },
+    "cal-jv-d7-001": {
+      "kept": "gather {product} rumors from many doors at once.",
+      "alternates": [
+        "ask ten sources about the {product} and sort replies.",
+        "check a list of places for {product} updates together."
+      ]
+    },
+    "cal-jv-d7-002": {
+      "kept": "store {product} items and find them by their vibes.",
+      "alternates": [
+        "build a {product} box where only the right ones fit.",
+        "sort the {product} shelf by describing who belongs there."
+      ]
+    },
+    "cal-jv-d7-003": {
+      "kept": "make the {product} do math and show its homework.",
+      "alternates": [
+        "have the {product} spell out its own secret formula.",
+        "teach the {product} to solve little puzzles and explain."
+      ]
+    },
+    "cal-jv-d7-004": {
+      "kept": "have the {product} whisper secrets to the right ears only.",
+      "alternates": [
+        "build a {product} party line that knows who likes what.",
+        "let the {product} shout news to anyone who understands it."
+      ]
+    },
+    "cal-jv-d7-005": {
+      "kept": "sift the {product} pile, keep some, and line them up.",
+      "alternates": [
+        "filter the {product} crowd, rank them, and call some up.",
+        "ask the {product} list questions and sort the answers."
+      ]
+    },
+    "cal-js-d1-002": {
+      "kept": "show the name and age of the {product}",
+      "alternates": [
+        "display the name and age for this {product}",
+        "let me see the name and age of the {product}"
+      ]
+    },
+    "cal-js-d1-003": {
+      "kept": "add two numbers together for the {product}",
+      "alternates": [
+        "calculate a total from two numbers for the {product}",
+        "find the sum of two numbers for the {product}"
+      ]
+    },
+    "cal-js-d1-004": {
+      "kept": "show the item and price of the {product}",
+      "alternates": [
+        "display the item and price for this {product}",
+        "tell me what the {product} item costs now"
+      ]
+    },
+    "cal-js-d1-005": {
+      "kept": "use a default if the {product} has none",
+      "alternates": [
+        "provide a backup for the empty {product} value",
+        "set a fallback when the {product} is missing"
+      ]
+    },
+    "js-ternary": {
+      "kept": "show the item count for the {product} cart",
+      "alternates": [
+        "label the {product} count as one or many",
+        "write how many items are in the {product}"
+      ]
+    },
+    "cal-js-d2-002": {
+      "kept": "merge two lists for the {product} and separate the first",
+      "alternates": [
+        "combine two groups for the {product} and pull the first",
+        "join two sets for the {product} then remove the first"
+      ]
+    },
+    "cal-js-d2-004": {
+      "kept": "list each item with its place and total for {product}",
+      "alternates": [
+        "show every item in order and the total for {product}",
+        "number each thing and say how many in {product}"
+      ]
+    },
+    "cal-js-d2-005": {
+      "kept": "make tags with default colors and sizes for {product}",
+      "alternates": [
+        "create labels that use preset styles for the {product}",
+        "build some badges with backup colors for the {product}"
+      ]
+    },
+    "js-destructuring": {
+      "kept": "show the name age and role of the {product} user",
+      "alternates": [
+        "pull the name and role from the {product} data",
+        "display user details with defaults for the {product}"
+      ]
+    },
+    "cal-js-d3-002": {
+      "kept": "load a user for the {product} and catch errors",
+      "alternates": [
+        "get a person from the server for {product}",
+        "fetch user data and handle mistakes for {product}"
+      ]
+    },
+    "cal-js-d3-003": {
+      "kept": "make the {product} rectangle say its area and size.",
+      "alternates": [
+        "let the {product} box calculate how much space it takes.",
+        "give the {product} shape a brain for math and labels."
+      ]
+    },
+    "js-promise-chain": {
+      "kept": "grab the {product} data and complain if it breaks.",
+      "alternates": [
+        "fetch the {product} info nicely and catch any oopsies.",
+        "get {product} stuff from somewhere and warn about bad news."
+      ]
+    },
+    "js-reduce": {
+      "kept": "count how many of each {product} thing we have.",
+      "alternates": [
+        "tally every {product} item so we know the totals.",
+        "group the {product} pieces and add up matching ones."
+      ]
+    },
+    "cal-js-d4-001": {
+      "kept": "try loading {product} data a few times before giving up.",
+      "alternates": [
+        "ask for {product} info again if the line is busy.",
+        "keep knocking for {product} data until someone answers the door."
+      ]
+    },
+    "cal-js-d4-004": {
+      "kept": "chain the {product} values so we can stroll through them.",
+      "alternates": [
+        "link {product} items in a row and visit each one.",
+        "build a {product} train where every car knows the next."
+      ]
+    },
+    "cal-js-d4-005": {
+      "kept": "make the {product} button wait until typing stops to act.",
+      "alternates": [
+        "let the {product} search breathe before it jumps to work.",
+        "pause the {product} action until the flurry of clicks ends."
+      ]
+    },
+    "js-async-await": {
+      "kept": "go get one {product} person and bring back their details.",
+      "alternates": [
+        "fetch a single {product} profile from the back room quietly.",
+        "ask the {product} database nicely for one user card."
+      ]
+    },
+    "js-class": {
+      "kept": "build a {product} stopwatch that remembers when it started running.",
+      "alternates": [
+        "give the {product} a timer that knows its own runtime.",
+        "let {product} check its own pulse since the starting bell."
+      ]
+    },
+    "cal-js-d5-001": {
+      "kept": "line up {product} chores and only do two at once.",
+      "alternates": [
+        "make a {product} waiting room letting two inside at once.",
+        "stack {product} jobs and run a couple while others wait."
+      ]
+    },
+    "cal-js-d5-003": {
+      "kept": "run {product} changes through a pipe that tweaks and sorts.",
+      "alternates": [
+        "let {product} events flow and transform as they drift past.",
+        "build a {product} conveyor that reshapes and picks what moves."
+      ]
+    },
+    "cal-js-d5-005": {
+      "kept": "make {product} do many things but only three at once.",
+      "alternates": [
+        "let {product} handle jobs with only three busy little workers.",
+        "have {product} juggle many tasks with only three hands."
+      ]
+    },
+    "cal-js-d6-001": {
+      "kept": "let {product} watch slices of its brain and whisper updates.",
+      "alternates": [
+        "let {product} feel when one corner of its mind changes.",
+        "give {product} a dashboard that blinks for one drawer only."
+      ]
+    },
+    "cal-js-d6-002": {
+      "kept": "teach {product} to check its pockets before leaving the house.",
+      "alternates": [
+        "give {product} a strict librarian that rejects badly filled forms.",
+        "let {product} bounce bad ideas before they become real data."
+      ]
+    },
+    "cal-js-d6-003": {
+      "kept": "help {product} read math and draw the family tree inside.",
+      "alternates": [
+        "let {product} turn jumbled numbers into a tidy little map.",
+        "give {product} a way to untangle nested math homework."
+      ]
+    },
+    "cal-js-d6-004": {
+      "kept": "let {product} hand out items one by one from backstage.",
+      "alternates": [
+        "make {product} fetch the next page only when we blink.",
+        "give {product} a lazy conveyor belt that waits for nods."
+      ]
+    },
+    "cal-js-d6-005": {
+      "kept": "let {product} ask a butler for whatever it needs next.",
+      "alternates": [
+        "build {product} a workshop where tools find their own hands.",
+        "give {product} a magic hat that produces the right part."
+      ]
+    },
+    "cal-js-d7-001": {
+      "kept": "let {product} spot differences between sketches and patch only those.",
+      "alternates": [
+        "let {product} compare twins and only fix the changed bits.",
+        "help {product} repaint only the bits that moved since yesterday."
+      ]
+    },
+    "cal-js-d7-002": {
+      "kept": "let {product} line up chores and do loud ones first.",
+      "alternates": [
+        "give {product} a tidy queue that sorts jobs by urgency.",
+        "build {product} a chore wheel that spins urgent stuff first."
+      ]
+    },
+    "cal-js-d7-003": {
+      "kept": "let {product} cook a recipe that updates when ingredients shift.",
+      "alternates": [
+        "give {product} a ledger that recomputes its own bottom line.",
+        "build {product} a brain that rethinks answers when details change."
+      ]
+    },
+    "cal-js-d7-004": {
+      "kept": "teach {product} moods that shift with notes and secret rules.",
+      "alternates": [
+        "give {product} a flowchart that checks homework before moving forward.",
+        "build {product} a tiny robot that flips switches when poked."
+      ]
+    },
+    "cal-js-d7-005": {
+      "kept": "let {product} invite friends that set up and pack up",
+      "alternates": [
+        "make {product} let helpers hop in and bow out",
+        "give {product} a polite line for surprise bonus steps"
+      ]
+    },
+    "cal-py-d1-002": {
+      "kept": "add two numbers for the {product}",
+      "alternates": [
+        "calculate the total of two values for {product}",
+        "sum two figures and show the result for {product}"
+      ]
+    },
+    "cal-py-d1-004": {
+      "kept": "divide a number and show the remainder for {product}",
+      "alternates": [
+        "find how many fit and what remains for {product}",
+        "split a value and show the leftover for {product}"
+      ]
+    },
+    "py-fstring": {
+      "kept": "print a name and a rounded number for {product}",
+      "alternates": [
+        "show a name and a neat decimal for {product}",
+        "display a name and a tidy number for {product}"
+      ]
+    },
+    "cal-py-d2-001": {
+      "kept": "add up a list of numbers for {product}",
+      "alternates": [
+        "find the total and average of values for {product}",
+        "go through numbers and find the average for {product}"
+      ]
+    },
+    "cal-py-d2-004": {
+      "kept": "pick the first few and last few items for {product}",
+      "alternates": [
+        "reverse the order and grab some items for {product}",
+        "take front and back items and reverse them for {product}"
+      ]
+    },
+    "py-guard-clause": {
+      "kept": "keep a number inside a safe range for {product}",
+      "alternates": [
+        "clip a value to the allowed limits for {product}",
+        "make sure a number stays between bounds for {product}"
+      ]
+    },
+    "py-try-except": {
+      "kept": "ask for a number and handle mistakes gently for {product}",
+      "alternates": [
+        "read a number and complain if wrong for {product}",
+        "read a value and catch silly typos for {product}"
+      ]
+    },
+    "cal-py-d3-001": {
+      "kept": "find all the even numbers in a set for {product}",
+      "alternates": [
+        "pull out the even numbers and count them for {product}",
+        "collect the even values and add them up for {product}"
+      ]
+    },
+    "cal-py-d3-003": {
+      "kept": "build a rectangle that knows its own size for {product}",
+      "alternates": [
+        "make a box that knows its own space for {product}",
+        "create a shape that measures its edges for {product}"
+      ]
+    },
+    "cal-py-d3-005": {
+      "kept": "pair names with values and number the list for {product}",
+      "alternates": [
+        "match names to numbers and mark each row for {product}",
+        "line up names and values and count them for {product}"
+      ]
+    },
+    "py-list-comp": {
+      "kept": "{product} needs a quick way to find even numbers.",
+      "alternates": []
+    },
+    "cal-py-d4-001": {
+      "kept": "{product} needs a speedy way to calculate growing totals.",
+      "alternates": []
+    },
+    "cal-py-d4-002": {
+      "kept": "make a {product} that describes shapes by their size.",
+      "alternates": ["{product} needs different types that each measure themselves."]
+    },
+    "cal-py-d4-003": {
+      "kept": "{product} needs indivisible numbers found one at a time.",
+      "alternates": []
+    },
+    "cal-py-d4-005": {
+      "kept": "make a {product} that checks names and pay before saving.",
+      "alternates": []
+    },
+    "py-decorator": {
+      "kept": "build a {product} that whispers hello before every step runs.",
+      "alternates": [
+        "make a {product} that announces each job before doing it.",
+        "{product} needs a polite wrapper that greets every job."
+      ]
+    },
+    "py-dict": {
+      "kept": "make a {product} that tallies every character in a phrase.",
+      "alternates": ["{product} needs a running total of every letter used."]
+    },
+    "cal-py-d5-004": {
+      "kept": "{product} needs strict guards so bad numbers cannot get in.",
+      "alternates": []
+    },
+    "cal-py-d6-001": {
+      "kept": "build a {product} that lets you plug in different processors.",
+      "alternates": ["make a {product} that registers new abilities as they arrive."]
+    },
+    "cal-py-d6-002": {
+      "kept": "{product} needs workers doing many things simultaneously and reporting back.",
+      "alternates": []
+    },
+    "cal-py-d6-003": {
+      "kept": "let {product} bits hear gossip and then plug their ears.",
+      "alternates": [
+        "make {product} parts wave at each other when stuff happens.",
+        "give {product} a megaphone that checks who is listening first."
+      ]
+    },
+    "cal-py-d6-004": {
+      "kept": "make {product} check that nested boxes match their labels.",
+      "alternates": [
+        "build {product} a tiny inspector that walks through stacked drawers.",
+        "let {product} peek inside nested baskets and call out mistakes."
+      ]
+    },
+    "cal-py-d6-005": {
+      "kept": "give {product} an assembly line that logs every single hiccup.",
+      "alternates": [
+        "build {product} a recipe that can pretend to cook first.",
+        "let {product} string tasks together and catch stumbles midstream."
+      ]
+    },
+    "cal-py-d7-001": {
+      "kept": "make {product} keep a diary every time their mood shifts.",
+      "alternates": [
+        "let {product} refuse bad ideas before they try them on.",
+        "give {product} a chaperone that writes down every outfit change."
+      ]
+    },
+    "cal-py-d7-002": {
+      "kept": "give {product} a to-do list that tackles urgent items first.",
+      "alternates": [
+        "let {product} juggle chores with only three hands at once.",
+        "build {product} a waiting room that sorts guests by importance."
+      ]
+    },
+    "cal-py-d7-003": {
+      "kept": "teach {product} to read math homework and solve it politely.",
+      "alternates": [
+        "teach {product} that parentheses matter and times beats plus.",
+        "give {product} a tiny brain for decoding number sentences."
+      ]
+    },
+    "cal-py-d7-004": {
+      "kept": "line up {product} helpers so each one wakes the next.",
+      "alternates": [
+        "let {product} run a relay race that clocks every handoff.",
+        "build {product} a conga line that stops if someone trips."
+      ]
+    },
+    "cal-py-d7-005": {
+      "kept": "let {product} remember mood swings and tell the whole group.",
+      "alternates": [
+        "give {product} a memory book others can peek into live.",
+        "make {product} announce changes room by room and take notes."
+      ]
+    },
+    "cal-sq-d1-001": {
+      "kept": "show me every last secret of our {product} users",
+      "alternates": [
+        "i want the whole biography on every {product} user",
+        "spill the beans on every single {product} user"
+      ]
+    },
+    "cal-sq-d1-002": {
+      "kept": "tag this {product} as urgently important",
+      "alternates": [
+        "slap an urgent sticker on this {product}",
+        "mark this {product} as top priority urgent"
+      ]
+    },
+    "cal-sq-d1-003": {
+      "kept": "toss the expired {product} sessions forever please",
+      "alternates": [
+        "clean out all the stale {product} sessions",
+        "get rid of expired {product} sessions now"
+      ]
+    },
+    "cal-sq-d1-004": {
+      "kept": "count shipped {product} orders for my amusement",
+      "alternates": [
+        "how many {product} orders flew out the door",
+        "tell me how many {product} orders shipped"
+      ]
+    },
+    "cal-sq-d1-005": {
+      "kept": "make this {product} cost twenty nine ninety nine",
+      "alternates": [
+        "change the price on that one {product}",
+        "set that {product} price to twenty nine ninety nine"
+      ]
+    },
+    "cal-sq-d2-001": {
+      "kept": "find {product} orders over one hundred from live customers",
+      "alternates": [
+        "show me {product} orders over one hundred with faces",
+        "match {product} orders to active big spenders"
+      ]
+    },
+    "sql-join": {
+      "kept": "show {product} orders over one hundred with names",
+      "alternates": [
+        "find {product} buyers who spent over one hundred",
+        "match {product} orders to the humans behind them"
+      ]
+    },
+    "sql-update": {
+      "kept": "give every {product} engineer a five percent raise",
+      "alternates": [
+        "bump {product} engineering pay by five percent",
+        "shower {product} engineers with five percent more money"
+      ]
+    },
+    "cal-sq-d3-001": {
+      "kept": "show {product} months that beat the average",
+      "alternates": [
+        "show {product} months that crushed the average",
+        "which {product} months were above average revenue"
+      ]
+    },
+    "cal-sq-d3-002": {
+      "kept": "find {product} heroes earning above department average",
+      "alternates": [
+        "show {product} winners beating their team averages",
+        "who on the {product} team outearns their department"
+      ]
+    },
+    "cal-sq-d3-005": {
+      "kept": "show me {product} customers who actually finished an order",
+      "alternates": [
+        "list {product} buyers with at least one shipped order",
+        "find {product} customers whose orders have already shipped"
+      ]
+    },
+    "sql-subquery": {
+      "kept": "show me {product} users who spent five hundred or more",
+      "alternates": [
+        "find {product} buyers with purchases over five hundred",
+        "list {product} accounts with a purchase over five hundred"
+      ]
+    },
+    "cal-sq-d4-001": {
+      "kept": "rank {product} staff by pay within each department",
+      "alternates": [
+        "show me {product} team salaries and who leads each group",
+        "list {product} workers by earnings and their department share"
+      ]
+    },
+    "cal-sq-d4-002": {
+      "kept": "active {product} users and their last ninety days of orders",
+      "alternates": [
+        "show me active {product} accounts with recent order counts",
+        "list active {product} buyers and their recent order history"
+      ]
+    },
+    "cal-sq-d4-003": {
+      "kept": "update {product} stock after yesterday's confirmed orders come in",
+      "alternates": [
+        "subtract yesterday's confirmed {product} orders from current inventory",
+        "reduce {product} inventory by what sold in the last day"
+      ]
+    },
+    "cal-sq-d4-004": {
+      "kept": "find {product} customers with big recent orders and no complaints",
+      "alternates": [
+        "show me {product} buyers who spent big with no complaints",
+        "list happy {product} customers with large recent purchases"
+      ]
+    },
+    "cal-sq-d4-005": {
+      "kept": "update {product} daily view counts and keep the latest visit",
+      "alternates": [
+        "merge yesterday's {product} page views into running totals",
+        "add yesterday's {product} views to the stats and update timestamps"
+      ]
+    },
+    "sql-cte": {
+      "kept": "show me the top {product} users by clicks",
+      "alternates": [
+        "who are the most active {product} clickers",
+        "list the busiest {product} users by click count"
+      ]
+    },
+    "cal-sq-d5-001": {
+      "kept": "show me {product} daily revenue and whether it is growing",
+      "alternates": [
+        "label each {product} day's revenue as growth or decline",
+        "track {product} daily revenue trends versus the previous day"
+      ]
+    },
+    "cal-sq-d5-002": {
+      "kept": "show me {product} daily shipped sales for the last month",
+      "alternates": [
+        "{product} daily shipped orders for the last month including gaps",
+        "list {product} daily sales for the past month including zeros"
+      ]
+    },
+    "cal-sq-d5-003": {
+      "kept": "show me which {product} departments have the richest people.",
+      "alternates": [
+        "rank {product} teams by who can afford a yacht.",
+        "find the {product} departments with the fanciest vacation budgets."
+      ]
+    },
+    "cal-sq-d5-004": {
+      "kept": "add new {product} loot and update the old stuff.",
+      "alternates": [
+        "when {product} shipments arrive, shelve them and fix the numbers.",
+        "update {product} stock for arrived boxes and add missing items."
+      ]
+    },
+    "cal-sq-d5-005": {
+      "kept": "show me {product} totals by region, category, and everything together.",
+      "alternates": [
+        "add up {product} sales by region, category, and every mix.",
+        "give me {product} numbers for regions, categories, and the universe."
+      ]
+    },
+    "cal-sq-d6-001": {
+      "kept": "draw the {product} family tree from boss to bottom.",
+      "alternates": [
+        "show who bosses who in {product} starting at the top.",
+        "map {product} chain of command from the ceo to me."
+      ]
+    },
+    "cal-sq-d6-002": {
+      "kept": "rank {product} monthly sales by who is soaring or stumbling.",
+      "alternates": [
+        "tell me which {product} months are popping, dropping, or snoozing.",
+        "show {product} monthly sales and label them climbing or sliding."
+      ]
+    },
+    "cal-sq-d6-003": {
+      "kept": "let me group {product} orders into buckets of any size.",
+      "alternates": [
+        "build a {product} time bucket thing that adds up chunks.",
+        "make a {product} function that buckets orders and counts loot."
+      ]
+    },
+    "cal-sq-d6-004": {
+      "kept": "make a {product} cheat sheet of customers, orders, and tickets.",
+      "alternates": [
+        "make a {product} customer dossier with shopping and support tales.",
+        "create a {product} wall of every customer, order, and support."
+      ]
+    },
+    "cal-sq-d6-005": {
+      "kept": "make a {product} yearbook of departments with people and superpowers.",
+      "alternates": [
+        "build a {product} directory with departments, people, and their skills.",
+        "give me a {product} roster with everyone and their skills."
+      ]
+    },
+    "cal-sq-d7-001": {
+      "kept": "draw {product} dependencies and warn me if anything is circular.",
+      "alternates": [
+        "map {product} pieces needing each other and catch infinite loops.",
+        "find {product} chains of who needs who and flag loops."
+      ]
+    },
+    "cal-sq-d7-002": {
+      "kept": "show {product} browsing to buying step by step.",
+      "alternates": [
+        "count how many {product} lookers become adders, starters, and buyers.",
+        "build a {product} slide from window shopping to wallet opening."
+      ]
+    },
+    "cal-sq-d7-003": {
+      "kept": "{product} sales by category across the last six months",
+      "alternates": [
+        "compare monthly {product} revenue for every category at once",
+        "monthly {product} revenue lined up by category please"
+      ]
+    },
+    "cal-sq-d7-004": {
+      "kept": "remember every change to {product} orders and who made it",
+      "alternates": [
+        "a changelog for {product} orders that shows before and after",
+        "keep a history of every tweak to {product} orders please"
+      ]
+    },
+    "cal-sq-d7-005": {
+      "kept": "price out every tiny piece inside the {product} please",
+      "alternates": [
+        "show me what each part of the {product} costs us",
+        "list every piece of the {product} and what it costs"
+      ]
+    }
+  }
+}

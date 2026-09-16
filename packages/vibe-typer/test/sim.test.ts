@@ -421,8 +421,15 @@ describe('the check-in', () => {
     };
   }
 
+  /**
+   * Level one, not level zero: a check-in is legal only on a code line that is
+   * not the run's first, and every test here reaches one by sending two whole
+   * lines. Level zero's story opens on a one-line piece after the slice-3
+   * authoring run, so the second line sent there ships the piece instead of
+   * moving the line index. Level one opens on four lines.
+   */
   function run(): RunState {
-    return createRun({ levers: fast(), seed: 1, tier: 0, endless: false, levelIndex: 0 });
+    return createRun({ levers: fast(), seed: 1, tier: 0, endless: false, levelIndex: 1 });
   }
 
   /** Step until a check-in lands, and hand back the step it landed on. */
@@ -552,10 +559,11 @@ describe('determinism', () => {
   });
 
   it('gives a different run for a different seed', () => {
-    // A drawn level: the first two levels pin their snippets by id, so their
-    // requests are the same at every seed on purpose (slice 3).
-    const a = createRun({ seed: 1, tier: 0, endless: false, levelIndex: 4 });
-    const b = createRun({ seed: 2, tier: 0, endless: false, levelIndex: 4 });
+    // An endless level draws: every listed level pins its snippets by id after
+    // the slice-3 authoring run except the two integration ones, so a listed
+    // level's requests are the same at every seed on purpose.
+    const a = createRun({ seed: 1, tier: 0, endless: true });
+    const b = createRun({ seed: 2, tier: 0, endless: true });
     expect(JSON.stringify(a.plan.requests.map((r) => r.snippet.id))).not.toBe(
       JSON.stringify(b.plan.requests.map((r) => r.snippet.id)),
     );

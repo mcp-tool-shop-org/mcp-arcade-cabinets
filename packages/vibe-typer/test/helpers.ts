@@ -1,8 +1,10 @@
 // Shared drive loop for the band and the sim tests. Not a test file itself.
 
+import path from 'node:path';
+
 import { gateCode, VALUE_TOLERANCE } from '../src/codegate';
 import { endlessPeek } from '../src/level';
-import { DT, botFor, parseBot, type Bot } from '../src/play';
+import { DT, botFor, integrationFrom, parseBot, type Bot } from '../src/play';
 import {
   corpusOf,
   createRun,
@@ -64,6 +66,18 @@ export interface DriveOpts {
   supply?: (state: RunState) => void;
 }
 
+/**
+ * The integration stack, built from the repo's own fixture tapes, exactly as
+ * the shell builds it from the bundled ones. Two of the sixteen listed levels
+ * are integration levels, so the band has to season its corpus the way the
+ * game does or those two levels would have nothing to plan from. Read once.
+ */
+let seasoning: readonly Snippet[] | null = null;
+function integrationSeasoning(): readonly Snippet[] {
+  if (!seasoning) seasoning = integrationFrom(path.resolve('fixtures/tapes'));
+  return seasoning;
+}
+
 export function makeBot(spec: string, seed: number): Bot {
   const parsed = parseBot(spec);
   if (!parsed) throw new Error(`unknown bot ${spec}`);
@@ -76,6 +90,7 @@ export function drive(opts: DriveOpts): RunReport {
     seed: opts.seed,
     tier: opts.tier,
     endless: opts.endless === true,
+    integration: integrationSeasoning(),
     ...(opts.level !== undefined ? { levelIndex: opts.level } : {}),
     ...(opts.levers ? { levers: opts.levers } : {}),
   };
@@ -164,7 +179,7 @@ function tally(events: readonly Event[], report: RunReport): void {
 
 /** Gated requests for the endless level at `levelIndex`, drawn from the corpus. */
 export function seatFeed(seed: number, tier: Tier, levelIndex: number, count: number): Snippet[] {
-  const state = createRun({ seed, tier, endless: true });
+  const state = createRun({ seed, tier, endless: true, integration: integrationSeasoning() });
   const corpus = corpusOf(state);
   const def = endlessPeek({ set: DEFAULT_PATTERNS, seed, tier, levelIndex });
   const out: Snippet[] = [];

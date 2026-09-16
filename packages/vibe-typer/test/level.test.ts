@@ -7,13 +7,27 @@ import { levelDefAt, planLevel, type PlanOpts } from '../src/level';
 import { seededRandom } from '../src/seed';
 import type { LevelPlan, Stack, Tier } from '../src/types';
 
+/**
+ * The corpus every test here plans from: the default one with the integration
+ * stack seasoned in, as the shell and the play-through season it. Two of the
+ * sixteen listed levels are integration levels, so a test that walks every
+ * level needs the stack to be there. Four tool names give four snippets a
+ * band, which is exactly the four requests such a level plans.
+ */
+const SEASONED = withIntegration(
+  DEFAULT_CORPUS,
+  integrationSnippets([
+    { server: 'mcp-arcade-fixture', policy: 'naive', tools: ['echo', 'leak', 'view', 'tapes'] },
+  ]),
+);
+
 function opts(over: Partial<PlanOpts> = {}): PlanOpts {
   const seed = over.seed ?? 11;
   const tier = (over.tier ?? 0) as Tier;
   const picker = over.picker ?? new LinePicker(DEFAULT_PATTERNS, { seed, tier });
   return {
     set: DEFAULT_PATTERNS,
-    corpus: DEFAULT_CORPUS,
+    corpus: SEASONED,
     picker,
     levelIndex: 0,
     seed,
@@ -78,8 +92,11 @@ describe('planning a level', () => {
     let plainHits = 0;
     let weakHits = 0;
     for (let seed = 1; seed <= 24; seed++) {
-      plainHits += carries(plan({ seed, levelIndex: 4 }));
-      weakHits += carries(plan({ seed, levelIndex: 4, weakBigrams: { [pair]: 40 } }));
+      // An endless level, because a listed one pins its four snippets after the
+      // slice-3 authoring run and a pinned request draws nothing to lean.
+      const at = { seed, levelIndex: 4, endless: true, stack: 'javascript' as Stack };
+      plainHits += carries(plan(at));
+      weakHits += carries(plan({ ...at, weakBigrams: { [pair]: 40 } }));
     }
     expect(weakHits).toBeGreaterThan(plainHits);
   });
