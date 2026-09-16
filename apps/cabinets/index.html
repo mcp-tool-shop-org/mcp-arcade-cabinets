@@ -243,6 +243,15 @@
       }
       .vibe {
         max-width: none;
+        /*
+          The chat header's faces, sized off the settings row's type so the
+          header stays in proportion when the player changes it: 1.5x the
+          chosen length, floored at 20px and capped at 32px. At the four
+          settings that is 21.6px (small), 25.2px (medium), 30px (large, the
+          default) and 32px (huge, where the cap bites). The cap is what keeps
+          a `huge` header on one line at 1280 wide.
+        */
+        --vibe-avatar: clamp(20px, calc(var(--vibe-font, 0.95rem) * 1.5), 32px);
       }
       .vibe-board {
         display: flex;
@@ -320,6 +329,29 @@
         font-size: 0.85rem;
         border-bottom: 1px solid #2a2a36;
         padding-bottom: 0.3rem;
+      }
+      /*
+        The chat header's two faces. They are inline rather than flex items so
+        the header's text nodes stay exactly the text nodes they were: a face
+        that fails to load removes itself and what is left is the same string,
+        in the same order, with the same spacing.
+
+        There is deliberately no `line-height` on the header. A face sets its
+        own line's height by being in it, and a long product name at `huge`
+        wraps onto lines that carry no face — those stay the height they were,
+        which is 18px of header saved over pinning every line to the face.
+      */
+      .vibe-avatar {
+        width: var(--vibe-avatar);
+        height: var(--vibe-avatar);
+        vertical-align: middle;
+        margin-right: 0.3rem;
+        /* Drawn at 128 and shown at about a quarter of that; keep the edges. */
+        image-rendering: pixelated;
+      }
+      /* The one separator that must keep its spaces when the head wraps. */
+      .vibe-dot {
+        white-space: pre;
       }
       .vibe-scroll {
         overflow-y: auto;

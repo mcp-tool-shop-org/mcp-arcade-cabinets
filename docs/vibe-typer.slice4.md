@@ -946,3 +946,418 @@ uninterpretable sheet is a re-roll and never a crop — a test proves the throw.
 model that drew the images, and it never sees the prompt. The slicer's test feeds a synthetic sheet whose
 answer is known by construction rather than by looking at a generated one. The shell evidence is the built
 bundle played in a real browser, not the mount stub. The diff review is a different family, per the slice.
+
+## Sub-slice B, batch two — the avatars
+
+**Branch:** `cabinet/vibe-typer-s4b2`, one commit, not merged, not pushed, nothing published.
+`pnpm verify`, `pnpm build:play` and `pnpm build:launcher` (both packages) green; `npm pack --dry-run --json`
+on both, measured against `main`.
+
+**Spend:** nine generations. Seven for the user's portrait and two for Sprocket's; two are installed. The
+Director opened the count for this batch as for the last, because the two portraits are the faces of the game
+and a re-roll that lands is cheaper than a face that does not.
+
+It took seven because the user's portrait was read twice and changed twice. First the knocked-over plant was
+withdrawn (decision 58). Then the character itself was set — the vibe coder is a man with an overgrown beard
+and a mess of hair — which is a new subject rather than a correction, so it started again from a fresh draw
+(decision 59). Four generations are the first character and three are the set one; the four are receipt rows
+and nothing else.
+
+No other art was made. The milestone cards and the backdrop stay in later batches on their own approval.
+
+### What was built
+
+```
+apps/cabinets/public/vibe/avatars/user.png    the user, 128x128 RGBA opaque, 13,445 B.
+apps/cabinets/public/vibe/avatars/agent.png   Sprocket, 128x128 RGBA opaque, 7,174 B.
+apps/cabinets/scripts/cut-avatar.mjs          the cut: one picture in, one 128 px avatar out. No dependency;
+                                              the PNG codec, the ink threshold, the margin and `squareOf`
+                                              are imported from `slice-tiles.mjs`, not copied.
+apps/cabinets/scripts/cut-avatar.d.mts        its types, so the test that pins the box math is TS.
+apps/cabinets/src/vibe-typer.ts               the chat header is built from spans with two `img` elements
+                                              in it, instead of one text node.
+apps/cabinets/index.html                      `--vibe-avatar` on `.vibe`, `.vibe-avatar`, `.vibe-dot`.
+apps/cabinets/test/avatar-cut.test.ts         9 tests: the box, the stray-speck floor, the square, the
+                                              opaque 128, determinism, the round trip, both refusals, and
+                                              the subject's containment on both axes.
+apps/cabinets/test/typer-mount.test.ts        + 2: the header's two faces and their sources, and a failed
+                                              load taking one face out and leaving the words alone.
+docs/art/receipts.json                        + vibe_typer_batch_3: route, the `licence` pointer, acceptance,
+                                              compensators, 7 rows (5 generations, 2 installed).
+.gitignore                                    + docs/art/originals-vibe-3/
+```
+
+### The route and the chain
+
+`bfl/flux-2-max` through the official Comfy Cloud MCP (`partner_generate`, the workflow-persist path,
+`Flux2ImageNode`) — the same route, and under the same `licence` block, as the two batches before this one.
+`1:1` was asked for on every call and the node rendered 1024x768 every time, exactly as `2:1` did in those
+batches. It costs nothing here, because the cut squares the drawing about its own ink and every prompt asked
+for the drawing to sit inside a square area in the middle of the picture for that reason.
+
+`submit_batch` was not tried. Batch one established that its `medias[]` takes a public URL or an uploaded
+name and not a Comfy output by `prompt_id`, and every generation in this batch chains from a `prompt_id`.
+
+The chain, in order:
+
+| Generation | Reference                          | Why                                                         |
+| ---------- | ---------------------------------- | ----------------------------------------------------------- |
+| user 7501  | the accepted bash piece-tile sheet | so the portraits sit on the tiles' palette weight and scale |
+| user 7502  | the accepted bash piece-tile sheet | the same, after the first take's misses                     |
+| user 7503  | user 7502                          | a two-item change list, not a fresh draw                    |
+| agent 7504 | user 7503                          | so the two faces are cousins, not strangers                 |
+| agent 7505 | agent 7504                         | a four-item change list                                     |
+| user 7506  | user 7503                          | a two-item change list, after the Director's read           |
+| user 7507  | the accepted Sprocket portrait     | the character was set, so palette and scale only            |
+| user 7508  | user 7507                          | a four-item change list                                     |
+| user 7509  | user 7508                          | a two-item change list                                      |
+
+The change-list shape is what carried this batch. A fresh draw from the same brief re-rolls everything,
+including what was already right; a reference plus a short list of what must change moved exactly the named
+things and left the rest to the eye pixel for pixel. Every generation in this batch that landed came out of a
+change list rather than out of a longer prompt — including the last one, which fixed two named things on a
+picture drawn a minute earlier without disturbing the beard, the hair, the eyes or the framing.
+
+The one thing a change list cannot do is change who the picture is of. When the character was set, the chain
+started again from a fresh draw against the accepted Sprocket portrait, taken for palette weight and pixel
+scale only. Asking the rejected picture to become a different person would have been a fresh draw wearing a
+change list's clothes.
+
+### The prompts, verbatim
+
+All five open with the style clause the tiles used, name every color by name and hex, carry
+"drawn perfectly flat and face on ... no perspective, no tilt, no angle", and close with the batch-one
+closing clause: "Hard edges, flat colors, no gradients, no reflections, no noise, no texture, no vignette. No
+letters, no numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere
+in the image." Every prompt is in `docs/art/receipts.json` in full, on its own row, with the job that ran it.
+
+The two that produced the shipped images, in their own words. **The user, take three:**
+
+> Exactly the same picture as the reference image — the same person, the same shaggy amber hair, the same
+> fond open grin, the same deep navy round-necked shirt with the light cream collar band, the same pose, the
+> same size and the same position on the same unbroken flat near-black (#101018) background, in exactly the
+> same chunky flat 16-bit arcade illustration style, palette weight and pixel scale — with only two things
+> changed. First, the mug with the small leafy plant in it is clearly knocked over to one side: the whole mug
+> leans at an obvious angle, its base lifted off the surface on one side, plainly tilted and not standing
+> upright, with a few loose leaves sticking out at odd angles. Second, the small open laptop in front of the
+> person is deep navy (#1b2440) rather than grey, and its screen is still one completely flat plain near-black
+> rectangle with nothing on it at all — no picture, no glow, no icons, no dots and no marks — and there is no
+> badge, logo or mark anywhere on the laptop. Everything else is unchanged. There is no border, no outline, no
+> frame, no box and no panel of any kind around the picture or around anything in it, and the whole drawing
+> stays inside a square area in the exact middle of the picture with plain empty near-black to the left and to
+> the right of it. The person is of no particular gender: no beard, no makeup and no jewelry. …
+
+**Sprocket, take two:**
+
+> Exactly the same character as the reference image — the same terminal window used as a head, the same
+> narrow strip across its top, the same two eyes and one upward-curving smile on its face, the same single
+> blank amber key cap below it, the same size and the same position, in exactly the same chunky flat 16-bit
+> arcade illustration style, palette weight and pixel scale — with four things changed. First, the background
+> is one unbroken perfectly flat near-black (#101018) field over the whole picture, corner to corner, exactly
+> the same shade everywhere: no vignette, no darker edges, no lighter middle, no shading and nothing at all in
+> the margins. Second, there is no glow, no halo, no bloom and no soft light of any kind around the window,
+> around the key cap or around any line — every edge is a hard edge between two flat colors. Third, the
+> window's corners are only slightly rounded, so it reads as a plain terminal window rather than a soft
+> rounded square, and it is clearly wider than it is tall. Fourth, the two eyes are solid filled light cream
+> (#f6d6ac) circles, completely filled in with no hole and no dark center. …
+
+**The user, take four**, the one that ships, is a two-item list against take three:
+
+> Exactly the same picture as the reference image — the same person, the same thick shaggy amber hair, the
+> same wide happy eyes, the same face, the same deep navy (#1b2440) round-necked shirt with the light cream
+> (#f6d6ac) collar band, the same pose, the same size and the same position, and the same small open laptop
+> in deep navy (#1b2440) in front of them with its screen one completely flat plain near-black rectangle with
+> nothing on it at all … with only two things changed. First, the plant is gone and nothing is knocked over,
+> tipped, leaning or falling: beside the laptop there is either nothing at all or one single plain mug
+> standing level and upright on its base, empty, with no plant in it, no leaves, no stems and nothing sticking
+> out of it or lying around it. Second, the grin is closed-lipped: a wide, warm, fond smile with the lips
+> together and no teeth showing at all, no open mouth and no gap. Everything else is unchanged. …
+
+**The set character, take three**, the one that ships, is a two-item list against take two:
+
+> Exactly the same picture as the reference image — the same man, the same huge overgrown shaggy beard
+> spreading down over his chest, the same big unbrushed mess of hair sticking out in every direction, the same
+> happy eyes and the same blush, the same pose, the same size and the same position … with only two things
+> changed. First, his mouth is closed: one single thick curved band of a mouth turning clearly upward at both
+> ends, with the lips pressed together, drawn as one solid unbroken shape and nothing else. There are no teeth,
+> nothing white inside the mouth, no dark red opening, no gap and no hole — his mouth is shut and he is smiling
+> with it shut. Second, the laptop in front of him is deep navy (#1b2440), the same navy as his shirt, rather
+> than gray … Everything else is unchanged. …
+
+Its fresh draw and its first change list are in the receipt in full, as every prompt in this batch is.
+
+One slip worth recording rather than quietly fixing: the user's third prompt says "rather than grey", a
+British spelling, in a repo whose standing rule is American English. The prompt is stored verbatim in the
+receipt because it is the record of what was sent, so it is not edited; nothing that spelling touches is
+player- or reader-facing, and the next art batch should watch for it.
+
+**Gender: how it was held open, and then closed.** The brief asked for a user who was gender-neutral by
+design, and the first four takes held that by naming the absence rather than a gender: "Draw one person of no
+particular gender: no beard, no makeup, no jewelry, no long styled hair and no gendered clothing — just a
+friendly face and a shirt." No pronoun, no noun for a person of either gender, and the two features a model
+most often reads as gendered — facial hair on one side, makeup and long styled hair on the other — were ruled
+out together, so neither absence was a signal on its own. It worked: what came back was a plain round-necked
+sweater, a shoulder-length shaggy mess of hair and a face with no cue either way.
+
+That requirement is withdrawn. The Director set the character, and the vibe coder is a man with an overgrown
+beard and a mess of hair — the first thing the old prompt ruled out is now the first thing the new one asks
+for. The technique is kept here because it is the answer to a question that will come back on another
+character, not because it is still in force on this one. Decision 59.
+
+### Per generation
+
+| Generation | Seed | Verdict      | Glyph score | What it is, and why                                                                                                                                                                                                                                                                                            |
+| ---------- | ---- | ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| user       | 7501 | **rejected** | 0.0000037   | A warm, chaotic person at a laptop, glyph-free, and three misses. The picture carries a drawn frame — a lighter rounded outline around all four edges, which this prompt did not ban. No deep navy anywhere, and a mint accent rather than the pale sky blue named. The mug stands upright.                    |
+| user       | 7502 | **rejected** | 0.0000087   | The frame is gone, the drawing sits where a square cut can hold it, the shirt is the deep navy with a cream collar. Two misses left: the mug still stands upright, and the laptop came back gray. Superseded by the third take rather than installed.                                                          |
+| user       | 7503 | superseded   | 0.0000058   | Both named changes landed and nothing else moved: the mug leans at a clear angle with its base lifted, the laptop is deep navy, the screen still blank. Accepted on the day, then withdrawn on the Director's read — the tipped plant reads as strange rather than chaotic. Decision 58.                       |
+| agent      | 7504 | **rejected** | 0.000030    | The character is right: a terminal window as a head, an empty title strip, two eyes, a smile, one blank amber key. The ground is not — a lighter gray-brown with a vignette at the edges and a soft glow on every cream line. An avatar is cut opaque onto a `#101018` pane, so that is a gray box.            |
+| agent      | 7505 | accepted     | 0.000017    | Flat near-black corner to corner, squarer corners, an empty strip, a blank amber key. Two small misses stand: a faint halo still sits against the cream outline, and the eyes are a cream ring around a slightly deeper cream rather than one solid fill. Both are gone by 128 px.                             |
+| user       | 7507 | **rejected** | 0.000015    | The right character, drawn too tidy. The frame is right — a man at a laptop, one upright mug, no plant — but the beard is short and trimmed rather than overgrown, the hair is combed, the mouth is a flat line, and the laptop is gray. Four named misses, so the next pass was a change list.                |
+| user       | 7508 | **rejected** | 0.0000097   | Two of the four landed, and they are the two that matter: the beard is huge, untrimmed and shaggy down over his chest, and the hair is a big unbrushed pile in every direction. The face turned warm too. Two misses left: the mouth came back open with teeth, and the laptop is still gray.                  |
+| user       | 7509 | accepted     | 0.000016    | Both named changes landed and nothing else moved: the mouth is one solid dark band turning up at both ends with the lips shut, and the laptop is the deep navy of his shirt. Two small things stand: the mug is a pale mint rather than the pale sky blue named, and the shadows under the eyes never arrived. |
+| user       | 7506 | superseded   | 0.000016    | A clean fix on the first generation, nothing else moved. The plant is gone, one plain mug stands level and empty beside the laptop, and the smile is closed-lipped. Installed, then superseded when the Director set the character. Decision 59.                                                               |
+
+No portrait was hit on a first generation, and every generation that landed came after a change list. That is
+the batch's one real finding and it is in the decisions below.
+
+### Per installed image
+
+| File        | Size              | Ink box         | Square         | Glyph score | At 32 px                                                                                                                      |
+| ----------- | ----------------- | --------------- | -------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `user.png`  | 128x128, 13,445 B | 317,77 455x556  | 222,33 645x645 | 0.000035    | the pile of hair and beard around a pale face on a navy torso reads as this person, not a generic one; eyes and mouth go soft |
+| `agent.png` | 128x128, 7,174 B  | 274,126 474x526 | 206,84 610x610 | 0.000015    | plainly a dark screen with a face and one amber square under it; it survives the size better                                  |
+
+Both are well under the 40 KB the brief sets, both are exactly 128x128, and every pixel is alpha 255 — read
+off the decoded buffer rather than trusted to the encoder. Every glyph check in this batch, on the nine
+1024x768 generations and on the two installed cuts, is at or below **0.000035**, five hundred times under the
+0.02 threshold, on the first look, with no re-cut and no re-roll for a glyph.
+
+That 0.000035 is the installed user avatar, which is the highest in the batch and about twice its 1024 px
+original's. It is not a glyph: the cut puts the laptop and the mug side by side as two hard-edged rectangles,
+and rectangle-shaped is part of what that query measures. Looked at at full size, there is nothing written on
+it. It is the same effect batch one saw lift its `file` and `message` tiles.
+
+"At 32 px" was checked and not assumed: each avatar was area-averaged down to 32 and blown back up with no
+smoothing, and looked at.
+
+### The cut
+
+`apps/cabinets/scripts/cut-avatar.mjs` is committed and takes a picture and an output path. It has no
+dependency, and it does not have its own PNG codec either: the decoder, the encoder, the ink threshold, the
+eight per cent margin and `squareOf` are all imported from `slice-tiles.mjs`, so the two cuts in this repo
+cannot drift apart. What is new is about forty lines.
+
+The tiles had eight icons to find on a sheet, so the slicer projects the ink onto two axes and hunts for
+bands. An avatar picture holds one drawing, so there is nothing to hunt for: the whole of the ink is the
+subject. `inkBox` projects, takes the first and last row and column that carry ink, and hands that one box to
+the same `squareOf` the tiles use. Rows and columns with fewer than two lit pixels do not count, which is
+what stops a single stray speck in a corner from dragging the box out to the whole picture and turning the
+avatar into a letterbox of the subject. A test asserts exactly that, with a speck planted in two corners.
+
+It **throws** rather than guessing in two cases: when nothing on the picture clears the ink threshold, and
+when the ink fills the frame so there is no subject to square. Either is a re-roll, not a crop. Both throws
+have a test.
+
+The one deliberate difference from the tile cut is alpha. A tile is drawn over a packed block in one of the
+stack's four colors, so its ground is keyed down to a translucent plate. An avatar is drawn on the chat pane,
+whose background is `#101018` — the same near-black the pictures are drawn on — so keying buys nothing and
+costs bytes. The avatars stay fully opaque and their ground simply matches the pane. That is also why the
+Sprocket generation with a gray-brown ground was rejected outright: on an opaque cut, a ground that is not
+the pane's is a visible box around the face.
+
+### The header, and the fallback rule
+
+The chat header was one text node, `${product} · ${agentName}`. It is now five children: the user's face, a
+span with the product, a span with `·`, the agent's face, a span with the agent's name. The words are byte
+for byte what they were — a test asserts the whole string, not a substring.
+
+The user's face comes before the product because the product is theirs and the header never names them; the
+agent's sits against the agent's name. Both are plain `img` elements with `alt=""`, because they are
+decoration and the two names beside them already carry the meaning for a screen reader. Both are
+`decoding="async"` and both load off `import.meta.env.BASE_URL + 'vibe/avatars/<who>.png'`, so a Pages build
+under `/<repo>/play/` and a package build with a relative base each ask for the right file.
+
+Nothing waits on a load. On `error` the element removes itself, and what is left is exactly today's header:
+the same string, in the same order, with the same spacing, and no empty element standing in for a picture
+that never arrived. That is the frames' rule and the tiles' rule, and jsdom — which hands an `Image` no file
+— is the case it is written for. Two tests cover it: one fails one face and requires the other to stay, the
+other fails both and requires the header's children to be exactly three spans.
+
+They are inline elements, not flex items, on purpose. A flex header would have made each text run its own
+flex item, and the separator's two spaces would have collapsed; keeping them inline is what lets the test
+assert the exact string. The one span that needs it, `.vibe-dot`, carries `white-space: pre` so `·` keeps
+its spaces when the header wraps.
+
+**The size.** `--vibe-avatar` is defined on `.vibe` as
+`clamp(20px, calc(var(--vibe-font, 0.95rem) * 1.5), 32px)`, so it moves with the settings row's type: 21.6px
+at `small`, 25.2px at `medium`, 30px at `large` (the default) and 32px at `huge`, where the cap bites. The
+cap is what keeps the header in proportion at the top of the range rather than letting a 36px face crowd a
+0.85rem line.
+
+There is deliberately no `line-height` on the header. Pinning every line to the face's height was tried first
+and measured: with the longest product in the corpus at `huge` type on a 1280-wide window it made the header
+106px, because the two lines that carry no face were inflated to 32px as well. Letting each line size itself
+gives 88px for the same case — the lines with a face are as tall as the face, and the wrap lines stay the
+height they were. Both numbers were read off the live page.
+
+**At 1280 and at 420.** At 1280 with the longest product ("a ledger of every sandwich i have eaten") at
+`huge`, the header wraps to three lines and fits, with both faces in place; at the default type with a short
+product it is one line. At 420 the panes stack to one column and the header is one line. Measured in the page
+at 420: `document.documentElement.scrollWidth` equals its `clientWidth` both with the faces and with them
+hidden, so they add no horizontal overflow. Nothing here animates, so reduced motion is unchanged; and the
+editor's `.vibe-line { white-space: pre }` — slice 3's rule that a token never breaks and a long line scrolls
+sideways — is untouched, which the diff shows and the 1280 frame shows working.
+
+A per-line avatar mark beside each chat line was considered and **not** done. It is optional in the brief, it
+would have put a picture inside the nag and creep styling that slice 2 tuned, and the header is where the two
+names are. It stays available for a later pass.
+
+### In the shell
+
+Photographed in a real browser against the **built** Vibe package bundle
+(`packages/launcher-vibe-typer/dist/play`), served on a local port because the Browser pane serves the main
+checkout. Saved to `film/` (git-ignored):
+
+- `film/avatars.png` — 1280x860, `huge` type, "a ledger of every sandwich i have eaten": both faces at 32px,
+  the user's before the product, Sprocket's before its name, the header wrapping to three lines and fitting.
+- `film/avatars-default.png` — 1280x860, the default type and a short product: one line, both faces at 30px.
+- `film/avatars-narrow.png` — 420x900: the panes stacked, the header on one line, both faces in place.
+
+Read back out of the page at the same time: both images report `naturalWidth` 128 and `clientWidth` 32 at
+`huge`, both carry `alt=""`, and the header's text is `a ledger of every sandwich i have eaten · Sprocket`.
+All three frames were retaken after the user's fourth take was installed, so what is in `film/` is the
+shipping pair.
+
+### The tarballs
+
+Measured with `npm pack --dry-run --json` on `main` and on this branch, after `pnpm build:launcher` each time.
+
+| Package                          | Tarball, main | Tarball, here | Δ       | Entries   |
+| -------------------------------- | ------------- | ------------- | ------- | --------- |
+| `@mcptoolshop/vibe-typer`        | 2,465,700 B   | 2,487,007 B   | +21,307 | 129 → 131 |
+| `@mcptoolshop/ghost-on-the-menu` | 6,171,917 B   | 6,172,544 B   | +627    | 63 → 63   |
+
+The Vibe package gains exactly two entries, `dist/play/vibe/avatars/{user,agent}.png`, and 20,619 B of
+picture. Ghost gains **no entries at all** — its file list was read and filtered for anything matching `vibe`,
+which came back empty, rather than trusting `checkDist`'s stray check. Its 627 B is the shared
+`apps/cabinets/index.html`, which is the source of both builds and now carries the avatar CSS; `grep` over
+Ghost's built bundle finds no `vibe/avatars` at all, so the `VITE_CABINET` fold dropped the code as designed.
+
+### Decisions
+
+47. **A change list against a reference beats a longer prompt.** Neither portrait landed on a fresh draw, and
+    both landed on the generation right after one. A fresh draw re-rolls everything, including what was
+    already right; naming a reference and two or four specific changes moved exactly those and left the rest
+    alone. This is recorded because it is cheap and repeatable: get the composition on a fresh draw, then fix
+    the details by list.
+48. **Every prompt bans the frame, by name.** The user's first take came back with a drawn border around all
+    four edges. Batch one's sheet prompt had banned "borders, boxes, panels and frames" and this one dropped
+    that clause as sheet-specific; it is not sheet-specific. It is in every prompt after 7501.
+49. **The avatars are cut opaque, and the tiles stay keyed.** A tile is drawn over a colored block, so its
+    ground has to key down to a plate. An avatar is drawn on a pane painted the same near-black the picture is
+    drawn on, so keying buys nothing and costs bytes. The consequence is that the ground's exact shade becomes
+    an acceptance criterion, and it is why 7504 was rejected on its ground alone.
+50. **The cut imports the slicer instead of copying it.** The PNG codec, the ink threshold, the eight per cent
+    margin and `squareOf` are one implementation used by both cuts. Forty new lines is the whole of
+    `cut-avatar.mjs`; a second copy of a hand-written PNG encoder would have been a second thing to keep
+    right.
+51. **The cut finds the subject; it does not assume the frame.** The node renders 4:3 whatever aspect is asked
+    for, and the model chooses where in that frame to draw. A fixed center crop would have worked on these two
+    and failed on the next one. A projection finds whatever was drawn, and a two-pixel floor per row and
+    column stops a stray speck from turning the crop into a letterbox.
+52. **It throws on a picture with no subject.** Nothing above the ink threshold, or ink filling the frame, is
+    a re-roll and never a crop. That is this batch's andon, and neither accepted picture came near it.
+53. **The header keeps its exact string, so the faces are inline and not flex items.** A flex header would
+    have collapsed the separator's spaces and made "the words are unchanged" a claim rather than an assertion.
+    Inline elements with `vertical-align: middle` keep the text nodes exactly what they were, and the test
+    asserts the whole string rather than a substring.
+54. **`alt=""`, and the names carry the meaning.** The header already says the product and the agent's name.
+    An alt text on either face would have read them out twice; the user is deliberately never named at all,
+    and an alt text on their face would have been the one place the header named them.
+55. **No `line-height` on the header.** Pinning every line to the face inflates the wrap lines of a long
+    product name to 32px each. Measured on the live page at `huge` with the longest product: 106px pinned,
+    88px unpinned. The faces still set the height of the lines they are in.
+56. **`--vibe-avatar` is clamped at 32px.** It scales with the settings row's type, which is what keeps the
+    header in proportion, but the header's own text is a fixed 0.85rem and a 36px face beside it reads as a
+    mistake. 20px to 32px covers all four settings and the cap only bites at `huge`.
+57. **No per-line avatar mark this batch.** It is optional in the brief and it would have put a picture inside
+    the nag and creep styling that slice 2 tuned. The header is where the names are; the lines stay words.
+58. **The knocked-over plant is withdrawn, and the user's portrait is the plain one.** "A mug or a plant
+    knocked slightly askew" was the brief's own shorthand for a founder who is a little chaotic, and it was
+    pursued through three generations and finally hit. Read back at the size the header shows it, the tipped
+    plant does not read as chaos; it reads as something wrong with the picture, which is worse than not having
+    it. So the detail is withdrawn rather than defended: the plant is gone, the desk carries one plain upright
+    mug, and the chaos is carried by the hair, which is where it survives 32 px anyway. The grin went
+    closed-lipped in the same pass, which also clears the band of teeth the third take carried. The lesson for
+    the next art batch is that a detail worth three generations at 1024 px is worth checking at 32 px before
+    the first one.
+59. **The character is set: the vibe coder is a man with an overgrown beard and a mess of hair.** The brief
+    had asked for a user who was gender-neutral by design, and four generations delivered that. Read on the
+    screen, a deliberately unmarked person is a person the player cannot picture — the cabinet's premise is
+    that someone specific is asking for these products, and specific is what the face has to carry. So the
+    Director set it rather than leaving it open, and the batch started the portrait again. It started with a
+    **fresh draw**, not a change list: the change-list method moves named details on a picture and cannot turn
+    one person into another, and asking it to would have been a fresh draw with a change list's wording. The
+    accepted Sprocket portrait was the reference, for palette weight and pixel scale only. The gender-neutral
+    prompt technique is written up above rather than deleted, because the question comes back on the next
+    character.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Generation is an irreversible spend, so the compensators are named in
+`docs/art/receipts.json → vibe_typer_batch_3.compensators` with an owner each: nothing enters the repo until
+it is accepted, so the five outright rejections are receipt rows and Comfy library entries and nothing else,
+and the two superseded user takes were each written in and taken back out of this same unmerged commit —
+nothing that is not installed is in the tree, and no file of any of the seven is in `apps/` or `packages/`;
+`git rm apps/cabinets/public/vibe/avatars/*.png` returns the header to exactly today's text with no other
+change, because the header is built from its spans and each face removes itself on `error`; and the branch is
+deletable until it is merged. Every generation — accepted, rejected or superseded — is a row with its job id,
+seed, full prompt and reference, so the spend is auditable at nine. No skip.
+
+**PIN_PER_STEP (3).** Every row carries the model slug as the tool accepted it, the seed, the full prompt and
+the job it chained from, and both installed rows carry the ink box and the crop square they were cut at. The
+cut is a committed script with no dependency and no randomness, so the same picture gives the same avatar on
+any machine; a test runs it twice and compares the buffers, and another pins its box math against a synthetic
+picture whose answer is known by construction.
+
+**ANDON_AUTHORITY (3).** Three halts. `ai-eyes image_contains` at 0.02 on every generation and on both
+installed cuts, before anything is installed. `inkBox` throws rather than guessing when a picture has no
+subject or when its ink fills the frame, so an uninterpretable picture is a re-roll and never a crop — two
+tests prove the throws. And the header's own fallback is a halt of the same kind at run time: a face that does
+not load takes itself out rather than leaving a broken box, which two mount tests assert.
+
+**EXTERNAL_VERIFIER (3).** The glyph check is SigLIP2 through `ai-eyes`, a different model family from the
+BFL model that drew the images, and it never sees the prompt. The cut's test feeds a synthetic picture whose
+box is known by construction rather than measured off a generated one. The shell evidence is the built Vibe
+package bundle photographed in a real browser at two window sizes, with the DOM read back, not the mount stub.
+The diff review is a different family, per the slice.
+
+### Review (Kimi K2.6, from a packet)
+
+The diff went to Kimi K2.6 as a packet — the lock, the brief and the diff with levers' lines, receipts, images
+and the lockfile omitted — and came back **halt** with two items. The coordinator accepted both. Both are
+applied here and folded into the single commit.
+
+| #   | Item                                                                                            | Disposition  | Where it landed                                                      |
+| --- | ----------------------------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------- |
+| 1   | "keeps the whole subject inside the avatar it cuts" asserts only vertical containment           | **accepted** | `apps/cabinets/test/avatar-cut.test.ts`; two `expect`s on the x axis |
+| 2   | "writes a 128x128 avatar that is opaque all the way out to its ground" checks red and blue only | **accepted** | the same file; one `expect` on the green channel of the corner pixel |
+
+**Item 1.** The containment test held the square to the subject's top and bottom and said nothing about its
+left and right, so a cut that shaved a shoulder off one side would have passed it. The test now also requires
+`square.x` to be strictly below `SUBJECT.x` and `square.x + square.w` to be strictly above
+`SUBJECT.x + SUBJECT.w`. It matters more on this axis than on the other: the synthetic subject is taller than
+it is wide, exactly as a portrait is, so the horizontal margin is the one the square adds and therefore the
+one an off-by-one in `squareOf`'s clamp would eat first.
+
+**Item 2.** The opacity test read the corner pixel's red and blue and skipped its green. `#101018` has a
+distinct green (`0x10`), and a cut that wrote two channels correctly and dropped the third would have passed.
+All three channels are now asserted. This is the one place the ground's exact shade is checked mechanically,
+and the ground's exact shade is an acceptance criterion in this batch — it is why the first Sprocket
+generation was rejected — so it should not have been checked at two thirds.
+
+Both items are in the test file only. No source changed and no test was added — the nine that were there got
+three more assertions — which is the right shape for this review: nothing it found was a bug in the cut, both
+were places where a passing test was not proving what it claimed. `pnpm verify` was re-run after them:
+`Test Files 56 passed (56)`, `Tests 721 passed (721)`, both play-throughs still byte-identical to `main`.

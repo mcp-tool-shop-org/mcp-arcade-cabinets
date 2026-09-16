@@ -16,6 +16,9 @@ docs/art/originals-vibe-1/
 # the contact sheets for the piece-tile batch; the cabinet ships the 128 px slices
 docs/art/originals-vibe-2/
 
+# the generated portraits for the avatar batch; the cabinet ships the 128 px cuts
+docs/art/originals-vibe-3/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/

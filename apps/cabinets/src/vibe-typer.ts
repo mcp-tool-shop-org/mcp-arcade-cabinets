@@ -530,7 +530,34 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const panes = el('div', 'vibe-panes');
 
   const chatPane = el('section', 'vibe-pane vibe-chat');
-  const chatHead = el('div', 'vibe-head', `${planOf(state).product} · ${agentNameOf(state)}`);
+  // Two faces beside two names: the user's before the product, because the
+  // product is theirs and the header never names them, and the agent's before
+  // the agent's name. The pictures are decoration (`alt=""`), so a screen
+  // reader still reads exactly the words that were there before them.
+  //
+  // Nothing waits on a file. A face that is missing, slow or broken takes
+  // itself out of the header on `error` and the header is the words alone,
+  // byte for byte what it was before this batch. That is the frames' and the
+  // tiles' rule, and jsdom — which hands an `Image` no file — is the case it
+  // is written for.
+  const chatHead = el('div', 'vibe-head vibe-chat-head');
+  const avatar = (who: 'user' | 'agent'): HTMLImageElement | null => {
+    if (typeof Image === 'undefined') return null;
+    const img = new Image();
+    img.className = `vibe-avatar vibe-avatar-${who}`;
+    img.alt = '';
+    img.decoding = 'async';
+    img.addEventListener('error', () => img.remove(), { once: true });
+    img.src = `${import.meta.env.BASE_URL}vibe/avatars/${who}.png`;
+    return img;
+  };
+  const userFace = avatar('user');
+  const agentFace = avatar('agent');
+  if (userFace) chatHead.append(userFace);
+  chatHead.append(el('span', 'vibe-who', planOf(state).product));
+  chatHead.append(el('span', 'vibe-dot', ' · '));
+  if (agentFace) chatHead.append(agentFace);
+  chatHead.append(el('span', 'vibe-who', agentNameOf(state)));
   const chatList = el('ul', 'vibe-lines');
   const chatScroll = el('div', 'vibe-scroll');
   chatScroll.append(chatList);
