@@ -158,7 +158,7 @@ export const config: SiteConfig = {
         },
         {
           title: 'Ghost as an MCP server',
-          code: 'npx @mcptoolshop/ghost-on-the-menu --mcp\n\n# or the image, no Node:\ndocker run -i --rm --network none ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0',
+          code: 'npx @mcptoolshop/ghost-on-the-menu --mcp\n\n# or the image, no Node:\ndocker run -i --rm --network none ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0',
         },
       ],
     },

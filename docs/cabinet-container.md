@@ -53,3 +53,18 @@ Opened on the Director's decision as [docker/mcp-registry#5061](https://github.c
 
 - Docker's review of the Catalog PR, then their build, signing and listing.
 - Multi-arch (`linux/arm64`) if the Catalog asks for it; the Dockerfile has nothing arch-specific.
+
+## 0.11.0 — both cabinets in one image (2026-09-16)
+
+The image carries two stdio servers since 0.11.0: `/app/server.js` (Ghost, the six tools, as before) and
+`/app/vibe.js` (Vibe Typer, the four tools of `tools.vibe.json`, the levers and the corpus bundled in by
+esbuild, the twenty tapes seasoning its wires stack through `CABINET_TAPES`). `CABINET=vibe` selects the typing
+cabinet; unset or anything else is the shooter, so every existing `docker run` keeps meaning what it meant, and
+the Catalog listing under `catalog/` stays Ghost's. The build stage now copies every workspace importer the
+lockfile names (the launchers and `vibe-typer` joined the workspace after 0.7.0, the last image), and the
+entrypoint is a one-line `sh` case rather than a second image, because the two servers share their build and
+their tapes and differ only in which bundle starts. Measured on this rig: both cabinets list their tools with
+the network off under one CPU and two gigabytes, the app layer scans clean, and the image is pushed to GHCR as
+`ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0` for `linux/amd64` and `linux/arm64` (manifest list `sha256:312068b2bc8465454c77ef0e4c19dbb9ceb2ebee74dfc9efe60d5a25f5105346`, 229 MB on amd64). The typing
+cabinet's server has no voice hook, so `VOICE_URL` and `VOICE_TOKEN` apply to Ghost only. A Vibe entry in the
+Docker MCP Catalog is a separate registry PR, the Director's, with `CABINET=vibe` in its `run.env`.

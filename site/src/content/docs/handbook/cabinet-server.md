@@ -66,7 +66,13 @@ A take plays the moment its receipt is back if its line is still on the field, w
 The repo's root `Dockerfile` builds the server into one file on `node:22-alpine` (digest-pinned FROM lines, `linux/amd64` and `linux/arm64`) with the tool contract and the twenty tapes baked in. It lists its six tools within a fraction of a second under the Docker MCP Toolkit's budget of one CPU and two gigabytes, and needs no network to list or to play. An optional read-only overlay (`CABINET_TAPES_USER`, Catalog volume `{{tapes}}:/tapes-user`) lists extra operator tapes beside those twenty; receipts stay off the menu. Host-only compose for a local image is `voice/compose.host.yaml` — not in the Catalog listing.
 
 ```bash
-docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0
+docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0
+```
+
+Since 0.11.0 the same image carries the typing cabinet's server as well; `CABINET=vibe` selects it and everything else stays the shooter, so an existing `docker run` keeps meaning what it meant:
+
+```bash
+docker run -i --rm --network none --cpus 1 --memory 2g -e CABINET=vibe ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.0
 ```
 
 Or build from this tree:
