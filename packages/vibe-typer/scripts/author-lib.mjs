@@ -443,3 +443,276 @@ export function poolFilter(raw) {
   if (wanted.length === 0) return () => true;
   return (name) => wanted.some((w) => name === w || String(name).startsWith(`${w}.`));
 }
+
+// ---------------------------------------------------------------------------
+// The families
+// ---------------------------------------------------------------------------
+
+/**
+ * Who trained a model, by the vendor prefix an OpenRouter id carries.
+ *
+ * This table and the one under it exist for one reason: EXTERNAL_VERIFIER. A
+ * receipt has to be able to say which family wrote a pool and which family read
+ * it back, and `edit` has to be able to refuse an editor seated in the family
+ * that did the writing. Remembering that rule is what failed in slice three;
+ * the table is how the tool holds it instead.
+ */
+export const MODEL_VENDORS = {
+  ai21: 'ai21',
+  alibaba: 'alibaba',
+  amazon: 'amazon',
+  anthropic: 'anthropic',
+  cohere: 'cohere',
+  deepseek: 'deepseek',
+  google: 'google',
+  ibm: 'ibm',
+  'meta-llama': 'meta',
+  microsoft: 'microsoft',
+  minimax: 'minimax',
+  mistralai: 'mistral',
+  moonshotai: 'moonshot',
+  nvidia: 'nvidia',
+  openai: 'openai',
+  qwen: 'alibaba',
+  'x-ai': 'xai',
+  'z-ai': 'zhipu',
+  zhipuai: 'zhipu',
+};
+
+/**
+ * Who trained a model, by the name itself, for a route that carries no vendor
+ * prefix — every Ollama tag. Read in order, so a longer name that holds a
+ * shorter one inside it is matched first.
+ */
+export const MODEL_NAMES = [
+  ['gpt-oss', 'openai'],
+  ['claude', 'anthropic'],
+  ['codestral', 'mistral'],
+  ['command', 'cohere'],
+  ['deepseek', 'deepseek'],
+  ['devstral', 'mistral'],
+  ['gemini', 'google'],
+  ['gemma', 'google'],
+  ['glm', 'zhipu'],
+  ['granite', 'ibm'],
+  ['grok', 'xai'],
+  ['kimi', 'moonshot'],
+  ['llama', 'meta'],
+  ['magistral', 'mistral'],
+  ['minimax', 'minimax'],
+  ['mistral', 'mistral'],
+  ['nemotron', 'nvidia'],
+  ['phi', 'microsoft'],
+  ['qwen', 'alibaba'],
+  ['gpt', 'openai'],
+];
+
+/**
+ * The family word for a model spec — `openrouter:<id>`, `ollama:<tag>`, or a
+ * bare id. A name neither table knows answers `unknown`, and `unknown` is
+ * never treated as a match: the tool says it does not know rather than
+ * guessing a family and clearing a clash it cannot see.
+ */
+export function modelFamily(spec) {
+  const text = String(spec ?? '')
+    .trim()
+    .toLowerCase();
+  if (text === '') return 'unknown';
+  const colon = text.indexOf(':');
+  const id = colon === -1 ? text : text.slice(colon + 1);
+  const slash = id.indexOf('/');
+  if (slash !== -1) {
+    const vendor = MODEL_VENDORS[id.slice(0, slash)];
+    if (vendor !== undefined) return vendor;
+  }
+  for (const [name, family] of MODEL_NAMES) if (id.includes(name)) return family;
+  return 'unknown';
+}
+
+/**
+ * The names a lever's pool key may be filed under in an authoring receipt,
+ * most specific first.
+ *
+ * The slots do not all key their candidates the same way. `pools` writes
+ * `user.creeps` whole; `nags` writes the same lever under `nags`; the reaction
+ * and review slots key by the topic word or the level id that sits at the end
+ * of the dotted name. All three shapes are one walk from the key.
+ */
+export function writerLookupNames(key) {
+  const parts = String(key ?? '')
+    .split('.')
+    .filter((p) => p !== '');
+  if (parts.length === 0) return [];
+  const names = [parts.join('.')];
+  const add = (name) => {
+    if (name !== '' && !names.includes(name)) names.push(name);
+  };
+  if (parts[0] === 'user' || parts[0] === 'agent') add(parts.slice(1).join('.'));
+  add(parts[parts.length - 1]);
+  return names;
+}
+
+/**
+ * The pools the family gate cannot clear, each with the reason it could not,
+ * most serious first within a pool. An empty list is the green light.
+ *
+ * Two pools are not cleared. One whose writer is the editor's own family is a
+ * model asked to mark its own homework. One whose writer could not be read at
+ * all is worse, not better: a gate that cannot see who wrote a pool has no
+ * ground to say the editor did not, and a receipt that failed to parse is
+ * exactly how a same-family edit would slip past. Both halt `edit` unless a
+ * reason is stated.
+ *
+ * An editor whose own family is `unknown` is not itself a halt — the model may
+ * simply be one the tables have not met — but it cannot clear an unreadable
+ * writer either, so the second check runs whatever the editor is.
+ */
+export function familyClash(editorFamily, pools) {
+  const editor = String(editorFamily ?? '')
+    .trim()
+    .toLowerCase();
+  const known = editor !== '' && editor !== 'unknown';
+  const out = [];
+  for (const p of pools ?? []) {
+    const family = String(p?.family ?? '')
+      .trim()
+      .toLowerCase();
+    if (family === '' || family === 'unknown') {
+      out.push({ name: p?.name, why: 'its writer could not be read' });
+    } else if (known && family === editor) {
+      out.push({ name: p?.name, why: `the editor is the family that wrote it (${family})` });
+    }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// The sheet's own lines
+// ---------------------------------------------------------------------------
+
+/**
+ * Letters only, lower case: two lines that differ in punctuation or wrapping
+ * are the same line.
+ *
+ * This is the cabinet server's `lineKey` rule, restated. It is not imported:
+ * `author.mjs` bundles the vibe-typer barrel and nothing else, and this file is
+ * plain ESM so `node` can run the script with no loader. The test below holds
+ * it to the same example `packages/cabinet-server/test/gate.test.ts` holds the
+ * original to, so the two cannot drift quietly.
+ */
+export function lineKey(line) {
+  return String(line ?? '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+}
+
+/**
+ * The lines a voice sheet names as the voice, as a set of keys.
+ *
+ * Every sheet ends with a table of twenty lines chosen as the reference for
+ * that character, and those same lines are in the pools — that is where most of
+ * them came from. An editor reading a pool therefore meets the reference beside
+ * its own copies, and has no way to tell which is which: the first editor pass
+ * on another family dropped one of them as an image the sheet itself permits
+ * and another as a duplicate of the lines that were written from it. A line the
+ * sheet names is kept by definition, and this is how the script knows which
+ * ones they are.
+ *
+ * The table's first column is the line. Anything that is not a table row, the
+ * header row and the dashed rule under it are all skipped.
+ */
+/** Clauses that claim a line repeats another one. */
+const REPEAT_CLAUSE =
+  /\b(already (appears|in|said)|appears (in|as|elsewhere)|repeat|repeats|repetition|duplicate|duplicates|dupe|same as|said (a|another|in a) different way|redundant)\b/i;
+
+/**
+ * Whether the editor's own clause says the line repeats another line. The
+ * vocabulary is small because the clause is answered against three named
+ * reasons; a clause phrased in some way this misses is simply treated as one of
+ * the other two, which costs a refusal and never a wrong drop.
+ */
+export function claimsRepeat(why) {
+  return REPEAT_CLAUSE.test(String(why ?? ''));
+}
+
+/**
+ * The line keys that appear under more than one bracket in one call, from rows
+ * of `{ pool, line }`.
+ *
+ * The two record pools are read a batch of brackets at a time — sixty topics,
+ * sixteen products — and the first pass on another family read one such batch
+ * as a single list and dropped a third of it as repeats of itself. Two brackets
+ * are two lists that a player never sees together, so a twin under another
+ * bracket is not a repeat of anything.
+ */
+export function crossBracketTwins(rows) {
+  const where = new Map();
+  for (const row of rows ?? []) {
+    const key = lineKey(row?.line);
+    if (key === '') continue;
+    if (!where.has(key)) where.set(key, new Set());
+    where.get(key).add(String(row?.pool ?? ''));
+  }
+  const twins = new Set();
+  for (const [key, pools] of where) if (pools.size > 1) twins.add(key);
+  return twins;
+}
+
+/**
+ * What becomes of one line the editor named, as one word. Kept pure and here so
+ * a test can hold every branch without a call being made.
+ *
+ * The order is the argument. A line the sheet names is kept whatever else is
+ * true of it, because it is the reference the pool was written from. A line
+ * whose twin is under another bracket is refused a repeat claim, because the
+ * two brackets are two lists. Only then does the floor decide, and only then
+ * does the drop happen.
+ */
+export function settleDrop({
+  isExemplar = false,
+  hasTwinElsewhere = false,
+  namesOtherBracket = false,
+  why = '',
+  atFloor = false,
+}) {
+  if (isExemplar) return 'exemplar';
+  if (claimsRepeat(why) && (hasTwinElsewhere || namesOtherBracket)) return 'twin';
+  if (atFloor) return 'floor';
+  return 'drop';
+}
+
+/**
+ * The line numbers the editor's clause names, one-based and in the order it
+ * wrote them.
+ *
+ * The prompt asks for a clause, and the clause it writes for a repeat almost
+ * always points at the line it thinks is the original: `repeats line 1 in the
+ * same bracket`, `already appears in line 4, said a different way`. That
+ * pointer is checkable, which is the whole reason to read it — telling the
+ * model the brackets are separate lists taught it to say `in the same bracket`
+ * while it went on pointing at another one.
+ */
+export function citedLines(why) {
+  const out = [];
+  for (const m of String(why ?? '').matchAll(/\b\d+\b/g)) {
+    const n = Number(m[0]);
+    if (Number.isInteger(n) && n >= 1) out.push(n);
+  }
+  return out;
+}
+
+export function voiceExemplars(sheet) {
+  const keys = new Set();
+  for (const raw of String(sheet ?? '').split('\n')) {
+    const row = raw.trim();
+    if (!row.startsWith('|')) continue;
+    const first = row.split('|')[1];
+    if (first === undefined) continue;
+    const cell = first.trim();
+    if (cell === '' || /^:?-{2,}:?$/.test(cell)) continue;
+    if (cell.toLowerCase() === 'line') continue;
+    const key = lineKey(cell);
+    if (key !== '') keys.add(key);
+  }
+  return keys;
+}

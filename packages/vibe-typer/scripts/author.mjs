@@ -4,6 +4,7 @@
 // `node scripts/author.mjs run --model <spec> [--only asks|stories|nags|reactions|reviews|pools]
 //                              [--chunk 40] [--concurrency 2] [--revoice] [--apply]`
 // `node scripts/author.mjs edit --model <spec> [--concurrency 2] [--apply]`
+//                              [--same-family "<reason>"]
 //
 // The offline authoring script (slice 3, sub-slice B). It asks a writing model
 // for the user's and the agent's lines, gates every candidate with the
@@ -25,7 +26,13 @@
 //
 // `edit` is the pass that reads a whole pool back and names the lines that
 // break the voice. It only ever drops, and only while the pool stays over the
-// loader's floor.
+// loader's floor. It also refuses to run when the editor's family is the
+// family that wrote the pool: a model reading its own writing is a second read,
+// not an independent one. The writer of every pool is read out of the receipts
+// under `authoring/`, both families go into the receipt, and `--same-family`
+// with a stated reason is the only way past. It never reads a pool whose
+// length is a level's clock (`TYPED_POOLS`), it never drops a line the
+// character's own voice sheet names, and it runs cooler than `run` does.
 //
 // Every call is pinned: the receipt carries the model, the date, the sha256 of
 // the exact prompt text and the temperature, so the same model and the same
@@ -42,20 +49,29 @@ import {
   BRAND_NAMES,
   chunk,
   chunkEven,
+  citedLines,
   corpusTopics,
+  crossBracketTwins,
   Fail,
+  familyClash,
   groupCandidates,
   keepFirstPassing,
+  lineKey,
   makeGate,
   mapLimit,
   mergeDropped,
+  modelFamily,
   parseArgv,
   parseCandidates,
+  poolFilter,
   productPhrase,
   promptHash,
   runOpts,
   sampleSnippets,
+  settleDrop,
   textHash,
+  voiceExemplars,
+  writerLookupNames,
 } from './author-lib.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -69,6 +85,7 @@ const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] 
        node scripts/author.mjs run --model <spec> [--only <slot>] [--pool <key>] [--chunk <n>]
                                   [--spare <n>] [--concurrency <n>] [--revoice] [--apply]
        node scripts/author.mjs edit --model <spec> [--pool <key>] [--concurrency <n>] [--apply]
+                                   [--same-family <reason>]
 
   <spec>      openrouter:<model-id> | ollama:<tag>
   <slot>      premises | stories | asks | nags | reactions | reviews | pools
@@ -77,6 +94,8 @@ const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] 
   --spare     lines over the floor a pool is written to; four when re-voicing, none otherwise
   --concurrency  calls in flight at once; the answers are folded in key order either way
   --revoice   write each pool fresh at its floor instead of topping it up
+  --same-family  the reason for seating the editor in the family that wrote the pool
+  --skip      pools this run leaves alone, named the way --pool names them
   edit        read each whole pool back and drop the lines that break the voice`;
 
 /** Flags that take a value. */
@@ -92,6 +111,8 @@ const FLAGS = new Set([
   'ollama',
   'concurrency',
   'chunk',
+  'same-family',
+  'skip',
 ]);
 /** Flags that are their own answer. */
 const BARE_FLAGS = new Set(['apply', 'revoice']);
@@ -105,6 +126,30 @@ const DEFAULT_SLOTS = ['stories', 'asks', 'nags', 'reactions', 'reviews', 'pools
  */
 const RUN_SLOTS = ['premises', ...DEFAULT_SLOTS];
 const DEFAULT_TEMPERATURE = 0.9;
+/**
+ * The editor runs cooler than the writer, and that is its own number.
+ *
+ * Writing wants the range: a warm model reaches for the image the sheet
+ * permits, and the register the Director picked came off a warm call. Naming
+ * the lines to drop is a judgment about lines that already exist, and a warm
+ * judgment invents its reasons — the first pass on another family miscounted
+ * the words in a three-word line and read sixty labeled brackets as one list,
+ * both at the writer's temperature. `--temperature` still overrides it.
+ */
+const EDIT_TEMPERATURE = 0.3;
+/**
+ * Pools the editor never reads, and why.
+ *
+ * `agent.replies` is the text the player transcribes — the player is the agent
+ * — so the length of a reply is time on the level's clock. Pruning it reshuffles
+ * which reply is drawn at every request and moves every hardcore margin with
+ * it, which is a change to how hard the game is. That is the Director's lever,
+ * not an editor's, and an editor may not shorten a level's clock as a side
+ * effect of tidying a voice. `user.syncs` is typed too, on the levels that
+ * spend a sync; it was measured not to move a bar and is left in, and whether
+ * it belongs here is the Director's call rather than this script's.
+ */
+const TYPED_POOLS = new Set(['agent.replies']);
 /**
  * Ten minutes was the cap while a call wrote ten or twelve lines. A chunk of
  * forty on a thinking cloud tag is a twenty-thousand-token answer, most of it
@@ -242,10 +287,14 @@ function readArgv(argv) {
   return parseArgv(argv, { valued: FLAGS, bare: BARE_FLAGS, usage: USAGE });
 }
 
-/** The shared flags of `run` and `edit`, with this script's own defaults. */
-function readOpts(args) {
+/**
+ * The shared flags of `run` and `edit`, with this script's own defaults. The
+ * temperature is the one default the two commands do not share: writing is a
+ * draft and editing is a judgment.
+ */
+function readOpts(args, temperature = DEFAULT_TEMPERATURE) {
   return runOpts(args.flags, {
-    temperature: DEFAULT_TEMPERATURE,
+    temperature,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     ollama: DEFAULT_OLLAMA,
     concurrency: DEFAULT_CONCURRENCY,
@@ -1607,6 +1656,9 @@ function makeCtx(target, opts, gates, { apply = false, revoice = false } = {}) {
     // it: the quick-sync chatter, which is neither character's voice.
     system: { user: systemFor(voices.user), agent: systemFor(voices.agent), plain: SAMPLE_SYSTEM },
     voiceHashes: { user: textHash(voices.user), agent: textHash(voices.agent) },
+    // The lines each sheet names as the voice, by key. The editor may not drop
+    // one of them; nothing else reads this.
+    exemplars: { user: voiceExemplars(voices.user), agent: voiceExemplars(voices.agent) },
     levels,
     user: readJson(path.join(PATTERNS, 'user.json')),
     agent: readJson(path.join(PATTERNS, 'agent.json')),
@@ -2361,6 +2413,103 @@ function dedupe(list) {
 }
 
 // ---------------------------------------------------------------------------
+// Who wrote a pool
+// ---------------------------------------------------------------------------
+
+/**
+ * Every candidate key the applied authoring receipts hold, with the model that
+ * wrote it and the stamp it was written under.
+ *
+ * Only a receipt that applied counts: a dry run wrote candidates and touched no
+ * lever, so the lines in the pool today did not come from it. The files are
+ * walked in stamp order and a later stamp wins, so the key answers with the
+ * model that last wrote it.
+ *
+ * A key is filed twice — bare, and under the slot that wrote it — because the
+ * slots do not key alike. `reactions` and `stories` both write `cat-website`,
+ * and only one of them wrote `user.reviewsByProduct`.
+ *
+ * Answers `{ index, unreadable }`. A file in `unreadable` is a receipt that
+ * would not parse, and the caller halts on it: the index is then incomplete in
+ * a way nothing can measure from the outside.
+ */
+function writerIndex() {
+  const index = new Map();
+  const unreadable = [];
+  if (!existsSync(AUTHORING)) return { index, unreadable };
+  const files = readdirSync(AUTHORING)
+    .filter((f) => f.endsWith('.json') && !f.endsWith('-run.json') && !f.endsWith('-edit.json'))
+    .sort();
+  for (const file of files) {
+    let receipt;
+    try {
+      receipt = readJson(path.join(AUTHORING, file));
+    } catch (err) {
+      // A receipt nobody can parse is never silent and never shrugged off. It
+      // is said here and carried out, because the keys it would have held are
+      // unknowable: it may be the only record of a pool's writer, and it may be
+      // the newest record of one the older receipts still answer for. Either
+      // way the index is incomplete and the gate above refuses on it.
+      process.stderr.write(`cannot read the receipt ${file}: ${err.message}\n`);
+      unreadable.push(file);
+      continue;
+    }
+    if (!receipt || receipt.applied !== true) continue;
+    if (typeof receipt.model !== 'string' || receipt.model === '') continue;
+    const candidates = receipt.candidates;
+    if (!candidates || typeof candidates !== 'object') continue;
+    const stamp = typeof receipt.stamp === 'string' ? receipt.stamp : file;
+    const slot = /-([a-z]+)\.json$/.exec(file)?.[1] ?? '';
+    for (const key of Object.keys(candidates)) {
+      for (const name of [key, `${slot} ${key}`]) {
+        const seen = index.get(name);
+        if (seen === undefined || seen.stamp <= stamp)
+          index.set(name, { spec: receipt.model, stamp });
+      }
+    }
+  }
+  return { index, unreadable };
+}
+
+/**
+ * The model that wrote the lines a job is about to read, as a spec and a family
+ * word. The job's own lever keys are looked up, most specific name first, and
+ * the most recent hit wins. A job whose keys are in no receipt answers
+ * `unknown` rather than guessing.
+ */
+function writerFor(index, job) {
+  let best = null;
+  for (const key of job.leverKeys ?? [job.name]) {
+    for (const slot of [...(job.writerSlots ?? []), '']) {
+      let hit;
+      for (const name of writerLookupNames(key)) {
+        hit = index.get(slot === '' ? name : `${slot} ${name}`);
+        if (hit !== undefined) break;
+      }
+      if (hit === undefined) continue;
+      if (best === null || best.stamp < hit.stamp) best = hit;
+      break;
+    }
+  }
+  if (best === null) return { spec: null, family: 'unknown', stamp: null };
+  return { spec: best.spec, family: modelFamily(best.spec), stamp: best.stamp };
+}
+
+/** The one writer every job agrees on, or `mixed` when they do not. */
+function agreedWriter(jobs) {
+  const specs = new Set(jobs.map((job) => job.writer?.spec ?? null));
+  if (specs.size === 1) {
+    const spec = [...specs][0];
+    return { spec, family: modelFamily(spec) };
+  }
+  return {
+    spec: 'mixed',
+    family: 'mixed',
+    families: [...new Set(jobs.map((job) => job.writer?.family ?? 'unknown'))].sort(),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // edit — the editor pass. One call a pool, and it may only drop.
 // ---------------------------------------------------------------------------
 
@@ -2373,23 +2522,89 @@ function dedupe(list) {
  * editor that could rewrite would be the one place in the pass where a line
  * nobody wrote in one sitting could still reach the lever. A drop is refused
  * when it would take a pool under the loader's floor, and the receipt says so.
+ *
+ * The editor is also refused the seat when it is the family that wrote the
+ * pool. That was slice three's weak seam and it was left to memory; it is the
+ * tool's job now.
+ *
+ * Two more things it may not take: a pool in `TYPED_POOLS`, which it never
+ * reads at all, and a line the character's own voice sheet names, which is kept
+ * by definition and counted as such.
  */
 async function commandEdit(args, gates) {
   const spec = args.flags.model;
   if (!spec) throw new Fail('bad flag', `edit wants --model\n${USAGE}`);
   const target = parseSpec(spec);
-  const opts = readOpts(args);
+  const opts = readOpts(args, EDIT_TEMPERATURE);
   const apply = args.flags.apply === true;
   mkdirSync(AUTHORING, { recursive: true });
   const ctx = makeCtx(target, opts, gates, { apply });
-  // `--pool` narrows the editor to named pools, the same way it narrows `run`.
-  const jobs = editJobs(ctx).filter((job) => opts.pools(job.name));
+  // `--pool` narrows the editor to named pools, the same way it narrows `run`;
+  // `TYPED_POOLS` takes the pools whose length is a level's clock out of its
+  // reach whatever the flags say; `--skip` is this run's own choice and is
+  // pinned in the receipt so a pass with a hole in it says where the hole is.
+  const skipped = poolFilter(args.flags.skip);
+  const skipNamed = args.flags.skip !== undefined;
+  const jobs = editJobs(ctx)
+    .filter((job) => !TYPED_POOLS.has(job.name))
+    .filter((job) => !(skipNamed && skipped(job.name)))
+    .filter((job) => opts.pools(job.name));
   if (jobs.length === 0)
     throw new Fail(
       'bad flag',
       `--pool matched no pool
 ${USAGE}`,
     );
+
+  // Who wrote each pool, and who is about to read it. Both go into the receipt
+  // and the halt below is decided from them before a single call is made.
+  const editor = { spec: target.spec, family: modelFamily(target.spec) };
+  const { index, unreadable } = writerIndex();
+  for (const job of jobs) job.writer = writerFor(index, job);
+  const sameFamily = args.flags['same-family'] ?? null;
+  // A receipt that would not parse is a hole in the index of unknown shape. The
+  // pool it was the only record of answers `unknown` and the gate below catches
+  // that; the pool it held the *newest* record of still answers, out of an older
+  // receipt, and would be cleared against a writer it no longer has. Nothing
+  // here can tell the two apart, so an unreadable receipt halts the pass.
+  if (unreadable.length > 0 && sameFamily === null) {
+    throw new Fail(
+      'unreadable receipt',
+      `${unreadable.length} receipt${unreadable.length > 1 ? 's' : ''} under ${path.relative(
+        ROOT,
+        AUTHORING,
+      )} would not parse:
+  ${unreadable.slice(0, 4).join('\n  ')}${unreadable.length > 4 ? '\n  …' : ''}
+the writer of a pool is read from those files, so the gate cannot show that this
+editor did not write what it is about to read.
+repair or remove them, or pass --same-family "<reason>" to say why not.`,
+    );
+  }
+  const clash = familyClash(
+    editor.family,
+    jobs.map((job) => ({ name: job.name, family: job.writer.family })),
+  );
+  if (clash.length > 0 && sameFamily === null) {
+    const named = clash
+      .slice(0, 4)
+      .map((c) => `${c.name} (${c.why})`)
+      .join('\n  ');
+    throw new Fail(
+      'same family',
+      `the editor (${editor.spec}, ${editor.family}) cannot be cleared against ${
+        clash.length
+      } of the ${jobs.length} pools it would read:
+  ${named}${clash.length > 4 ? '\n  …' : ''}
+a model reading its own writing is a second read, not an independent one, and a
+writer the receipts do not say is not a writer this gate can clear.
+seat a different family, or pass --same-family "<reason>" to say why not.`,
+    );
+  }
+  if (editor.family === 'unknown') {
+    process.stderr.write(
+      `${target.spec}: the family tables do not know this model, so the receipt says unknown for the editor\n`,
+    );
+  }
   const stamp = runStamp();
   const startedAt = Date.now();
 
@@ -2416,20 +2631,38 @@ ${USAGE}`,
     pool: args.flags.pool ?? null,
     applied: apply,
     voice: ctx.voiceHashes,
+    // Both families, at the top and again per pool. `writer` is the one family
+    // that wrote every pool this run read; `mixed` when they do not agree, and
+    // `unknown` when the receipts under `authoring/` do not say.
+    editor,
+    writer: agreedWriter(jobs),
+    sameFamily,
+    // Receipts the writer index could not read. Empty is the ordinary case; a
+    // name here means this pass ran with a hole in the index and somebody said
+    // why in `sameFamily`.
+    unreadableReceipts: unreadable,
+    // The pools the editor is never handed, so a receipt reads as the whole
+    // pass rather than as a pass with a silent hole in it. `typed` is the
+    // standing rule; `skip` is what this one invocation chose to leave alone.
+    skipped: { typed: [...TYPED_POOLS], skip: args.flags.skip ?? null },
     calls: 0,
     wallMs: 0,
     tokens: { in: 0, out: 0 },
     pools: {},
   };
   for (const { job, hash, answer, error } of asked) {
+    const exemplars = ctx.exemplars[job.voice];
     const entry = {
       promptHash: hash,
       voice: job.voice,
+      writer: job.writer,
+      editor,
       lines: job.lines.length,
       floor: job.floor,
       ms: answer?.ms ?? 0,
       dropped: [],
       refused: [],
+      kept: [],
       error,
     };
     receipt.calls += 1;
@@ -2451,11 +2684,29 @@ ${USAGE}`,
         why: call.why,
         pool: job.poolOf(call.index),
       };
-      if (job.canDrop(call.index)) {
+      // The prompt asks for both of the first two; this is where asking stops
+      // being a request. A line the sheet names is the reference the pool was
+      // written from, and a reference is not a copy of its copies; a twin under
+      // another bracket is a different list, not a repeat.
+      const verdict = settleDrop({
+        isExemplar: exemplars.has(lineKey(exemplarText(row.line))),
+        hasTwinElsewhere: job.twinElsewhere(call.index),
+        namesOtherBracket: namesOtherBracket(job, call),
+        why: call.why,
+        atFloor: !job.canDrop(call.index),
+      });
+      if (verdict === 'exemplar') {
+        entry.kept.push({ ...row, kept: 'exemplar' });
+      } else if (verdict === 'twin') {
+        entry.refused.push({
+          ...row,
+          whyRefused: 'the line it points at is under another bracket',
+        });
+      } else if (verdict === 'floor') {
+        entry.refused.push({ ...row, whyRefused: 'the pool is at its floor' });
+      } else {
         job.drop(call.index);
         entry.dropped.push(row);
-      } else {
-        entry.refused.push({ ...row, whyRefused: 'the pool is at its floor' });
       }
     }
   }
@@ -2466,13 +2717,47 @@ ${USAGE}`,
     saveLevers(ctx);
     prettier([...ctx.touched]);
   }
-  const dropped = Object.values(receipt.pools).reduce((a, p) => a + p.dropped.length, 0);
-  const refused = Object.values(receipt.pools).reduce((a, p) => a + p.refused.length, 0);
+  const tally = (what) => Object.values(receipt.pools).reduce((a, p) => a + p[what].length, 0);
   console.log(
-    `${receipt.calls} calls; ${dropped} lines dropped, ${refused} refused at a floor; ${
+    `${receipt.calls} calls; ${tally('dropped')} lines dropped, ${tally(
+      'refused',
+    )} refused at a floor, ${tally('kept')} kept as the sheet's own; ${
       apply ? 'applied' : 'not applied'
     }; receipt ${path.relative(ROOT, path.join(AUTHORING, `${stamp}-edit.json`))}`,
   );
+}
+
+/**
+ * Whether every line the editor's clause points at is under a bracket other
+ * than the dropped line's own.
+ *
+ * Telling the model in the prompt that the brackets are separate lists taught
+ * it to write `repeats line 1 in the same bracket` and go on pointing at line
+ * one of a different bracket. The clause carries the pointer, so the claim is
+ * checkable: a repeat that names only lines from elsewhere is the cross-bracket
+ * read again, wearing the right words. A clause that names one line in its own
+ * bracket and three elsewhere is left alone — the first one may be real.
+ */
+function namesOtherBracket(job, call) {
+  // Only a bracketed job has separate lists inside one call. A tiered pool's
+  // three tiers are one climbing list read together on purpose, so a line in
+  // the plain tier and a line in the absurd one saying the same thing is a real
+  // repeat and `poolOf` naming two different tiers means nothing here.
+  if (!job.bracketed) return false;
+  const mine = job.poolOf(call.index);
+  const cited = citedLines(call.why).filter((n) => n <= job.lines.length);
+  if (cited.length === 0) return false;
+  return cited.every((n) => job.poolOf(n - 1) !== mine);
+}
+
+/**
+ * The line as the sheet would carry it. The two record pools show the editor
+ * `[topic] the line`, and the bracket is a label the sheet never has, so it
+ * comes off before the key is taken.
+ */
+function exemplarText(line) {
+  const m = /^\[[^\]]*\]\s*/.exec(String(line ?? ''));
+  return m === null ? String(line ?? '') : String(line).slice(m[0].length);
 }
 
 const EDITOR_RULES = [
@@ -2483,6 +2768,15 @@ const EDITOR_RULES = [
   '- it does not sound like that character',
   '- it already appears in the same list, said a different way',
   '- it makes no sense for the place the list says it is used',
+  '',
+  'The voice sheet above ends with a table of lines that are the voice. Those',
+  'lines are kept by definition. Most of them are also in the list you are',
+  'reading, because the list was written from them, so when a line below matches',
+  'one of them it is the original and the others are the copies. Never name one.',
+  '',
+  'When the list is a batch of labeled groups, a line is only a repeat of another',
+  'line inside its own bracket. Two brackets may say similar things: they are',
+  'different lists that a player never sees together.',
   '',
   'Never rewrite a line, never suggest a replacement, never reorder anything. You',
   'name the numbers of the lines to drop and nothing else. Be sparing: a line that',
@@ -2524,13 +2818,14 @@ const EDIT_MAP_CHUNK = 60;
 
 /**
  * Every pool the editor reads, each as one call. A job carries its lines in one
- * flat list, knows which sub-pool each line belongs to, and knows the floor
- * that sub-pool may not go under.
+ * flat list, knows which sub-pool each line belongs to, knows the floor that
+ * sub-pool may not go under, and names the lever keys and the slots that wrote
+ * them so the receipt can say which family it is reading.
  */
 function editJobs(ctx) {
   const jobs = [];
 
-  const flat = (key, voice, floor, brief) => {
+  const flat = (key, voice, floor, brief, writerSlots = ['pools']) => {
     const lines = poolAt(ctx, key);
     if (lines.length === 0) return;
     const drop = new Set();
@@ -2540,7 +2835,12 @@ function editJobs(ctx) {
       brief,
       lines,
       floor,
+      leverKeys: [key],
+      writerSlots,
       poolOf: () => key,
+      // One pool, one list: there is nowhere else for a twin to be.
+      bracketed: false,
+      twinElsewhere: () => false,
       canDrop: () => lines.length - drop.size > floor,
       drop: (i) => drop.add(i),
       commit() {
@@ -2573,7 +2873,14 @@ function editJobs(ctx) {
       brief,
       lines,
       floor,
+      leverKeys: tiers.map(keyOf),
+      writerSlots: ['pools'],
       poolOf: (i) => keyOf(owner[i]),
+      // The three tiers of one pool are one climbing list and are read as one:
+      // a line in the easy tier and a line in the absurd one saying the same
+      // thing is a real repeat, so there is no cross-bracket case here.
+      bracketed: false,
+      twinElsewhere: () => false,
       canDrop: (i) => left(owner[i]) > floor,
       drop: (i) => drop.add(i),
       commit() {
@@ -2617,11 +2924,14 @@ function editJobs(ctx) {
   flat('user.creeps', 'user', POOL_TARGETS['user.creeps'], POOL_BRIEFS['user.creeps']);
   flat('user.reviews', 'user', POOL_TARGETS['user.reviews'], POOL_BRIEFS['user.reviews']);
   flat('user.syncs', 'user', POOL_TARGETS['user.syncs'], POOL_BRIEFS['user.syncs']);
+  // The two check-in pools are the one place two slots write the same lever:
+  // `nags` writes them beside each other, `pools` writes either on its own.
   flat(
     'user.nags',
     'user',
     NAG_TARGET,
     'Short check-ins the user sends while the agent is still typing, fond and impatient and never angry.',
+    ['pools', 'nags'],
   );
   flat('agent.replies', 'agent', POOL_TARGETS['agent.replies'], POOL_BRIEFS['agent.replies']);
   flat('agent.hmm', 'agent', POOL_TARGETS['agent.hmm'], POOL_BRIEFS['agent.hmm']);
@@ -2637,6 +2947,7 @@ function editJobs(ctx) {
     'agent',
     NAG_TARGET,
     "The agent's reply to a check-in: fond, unbothered, still typing, and never promising a time.",
+    ['pools', 'nags'],
   );
 
   // The reactions by topic and the reviews by product are records of small
@@ -2647,13 +2958,14 @@ function editJobs(ctx) {
       'reactionsByTopic',
       'the word that names what the piece was about',
       EDIT_MAP_CHUNK,
+      'reactions',
     ),
   );
-  jobs.push(...mapJobs(ctx, 'reviewsByProduct', 'the product that level built', 64));
+  jobs.push(...mapJobs(ctx, 'reviewsByProduct', 'the product that level built', 64, 'reviews'));
   return jobs;
 }
 
-function mapJobs(ctx, field, what, size) {
+function mapJobs(ctx, field, what, size, writerSlot) {
   const map = ctx.user[field] ?? {};
   const names = Object.keys(map).sort();
   const out = [];
@@ -2669,17 +2981,43 @@ function mapJobs(ctx, field, what, size) {
     if (lines.length === 0) continue;
     const drop = new Set();
     const left = (name) => owner.filter((o, i) => o === name && !drop.has(i)).length;
+    // A line that sits under two of this call's brackets, so a repeat claim
+    // against it can only be reaching across the two lists.
+    const twins = crossBracketTwins(
+      lines.map((line, i) => ({ pool: owner[i], line: line.slice(`[${owner[i]}] `.length) })),
+    );
     out.push({
       name: `user.${field}.${g + 1}`,
       voice: 'user',
+      // The scoping sentence is the fix the first pass on another family
+      // earned: without it, one call in nine read sixty brackets as one list
+      // and dropped a third of them as repeats of each other.
       brief: [
         "Each line below is one of the user's lines, and the name in brackets in front",
         `of it is ${what}. A line has to make sense for its own bracket. The bracket is`,
         'a label and is not part of the line.',
+        '',
+        `This is ${group.length} separate lists printed one after another, not one list.`,
+        'A line can only repeat another line that carries the same bracket. Two lines',
+        'under different brackets are never repeats of one another, however alike they',
+        'read: a player meets one bracket at a time and never sees them side by side.',
+        '',
+        'A bracket holds two or three lines and they are all about the same thing on',
+        'purpose: they are different ways of saying what just shipped, and the game picks',
+        'one of them. Being about the same thing is what they are for and is not',
+        'repeating. A repeat is two lines that say it the same way.',
+        '',
+        'When you name a line, say which line number it repeats.',
       ].join('\n'),
       lines,
       floor: 1,
+      // One call, many separate lists. This is the only job shape where that is
+      // true, and it is what the two repeat refusals are for.
+      bracketed: true,
+      leverKeys: group.map((name) => `user.${field}.${name}`),
+      writerSlots: [writerSlot],
       poolOf: (i) => `user.${field}.${owner[i]}`,
+      twinElsewhere: (i) => twins.has(lineKey(lines[i].slice(`[${owner[i]}] `.length))),
       canDrop: (i) => left(owner[i]) > 1,
       drop: (i) => drop.add(i),
       commit() {

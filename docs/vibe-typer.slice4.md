@@ -2638,3 +2638,415 @@ the one the first cut of this sub-slice tested least.
    edit, and the redundant prefix is gone from `carries` — `dist/play/vibe/` already covers it, and two
    overlapping checks of different strengths is how the weaker one gets trusted. The comment says what is
    checked and why the tarball is the last place a missing bed can be noticed.
+
+## Sub-slice D, part one — the editor pass on another family
+
+**Date:** 2026-09-16. **Builder:** Opus (this part). **Coordinator:** Claude (Fable 5.1).
+**Director:** Mike. **Branch:** `cabinet/vibe-typer-s4d1`, branched from `main`, one commit, not merged.
+
+### The two families
+
+| Seat       | Model                               | Family     | How                                             |
+| ---------- | ----------------------------------- | ---------- | ----------------------------------------------- |
+| The writer | `ollama:kimi-k2.6:cloud`            | `moonshot` | the local daemon at `127.0.0.1:11434`, at 0.9   |
+| The editor | `ollama:mistral-large-3:675b-cloud` | `mistral`  | the same daemon, at **0.3**, four calls in hand |
+
+Slice three's editor read Kimi's lines with Kimi and said so in its own standards evidence: a second
+read, not an independent one, with the remediation owed to this slice. It is paid here. Mistral
+Large 3 answered on the first call, so the fallback to an OpenRouter frontier model was never needed;
+`deepseek-v3.1:671b-cloud`, `qwen3-coder:480b-cloud` and `glm-4.6:cloud` were not tried, because
+those tags are retired and answer 410.
+
+All sixteen pools the editor read resolved to one writer, so the receipt's top-level `writer` is a
+single model rather than `mixed`. No pool answered `unknown`.
+
+**The editor runs at 0.3 and this is the first pass at that temperature.** `run` keeps the writer's
+0.9. Writing wants the range — the register the Director picked came off a warm call, and the image
+the sheet permits is a warm reach. Naming which existing lines to drop is a judgment, and a warm
+judgment invents its reasons: the first read at 0.9 miscounted the words in a three-word line and
+read sixty labeled brackets as one list. `EDIT_TEMPERATURE` is its own constant beside
+`DEFAULT_TEMPERATURE`, the receipt carries whichever was used, and `--temperature` still overrides.
+
+### What the editor may not touch, and why
+
+Four rules, and every one of them is in the tool rather than in a brief, because a brief is what
+failed last time.
+
+- **The seat.** `edit` reads the applied receipts under `packages/vibe-typer/authoring/`, builds an
+  index of every candidate key with the model that last wrote it, resolves each job's own lever keys
+  against it, and writes `editor` and `writer` — a spec and a family word — at the top of the receipt
+  and again on every pool. It halts before a single call on either of two things: a pool whose writer
+  is the editor's own family, and a pool whose writer could not be read at all. The second is the
+  review's item below — a gate that cannot see who wrote a pool has no ground to say the editor did
+  not — and it extends to the index itself: a receipt that would not parse is named on stderr, listed
+  in the run's own receipt, and halts the pass, because nothing can measure the shape of the hole it
+  leaves. `--same-family "<reason>"` is the only way past any of them and the reason is pinned.
+  `node scripts/author.mjs edit --model ollama:kimi-k2.6:cloud` exits 2 saying so.
+- **`agent.replies` is never read.** `TYPED_POOLS` is a standing rule in the script, not a flag. The
+  player is the agent, so the agent's reply is the text the player transcribes: the length of a reply
+  is time on the level's clock, and pruning the pool reshuffles which reply is drawn at every request.
+  That changes how hard the game is, which is the Director's lever. An editor may not shorten a
+  level's clock as a side effect of tidying a voice.
+- **A line the sheet names is kept.** Both voice sheets end with a table of twenty lines chosen as
+  the reference for that character, and twenty-one of those forty lines are also in the pools, because
+  the pools were written from them. The editor meets the reference beside its copies and cannot tell
+  which is which. `voiceExemplars` reads the table, the prompt says the sheet's lines are keepers, and
+  the script compares by `lineKey` and records a named line as `kept: exemplar` rather than dropping it.
+- **A repeat is only a repeat inside its own bracket.** The two record pools are read a batch of
+  labeled brackets at a time, and two brackets are two lists a player never sees together. The brief
+  now says that in as many words; on top of it the script refuses a repeat claim when the same line
+  sits under another bracket, and refuses one whose stated clause points only at line numbers under
+  other brackets. Both refusals need the clause to be a repeat claim: a line dropped for the voice is
+  its own bracket's business. A tiered pool is explicitly **not** bracketed — its three tiers are one
+  climbing list read together on purpose — and `bracketed` on the job says which shape it is.
+
+`modelFamily`, `writerLookupNames`, `familyClash`, `lineKey`, `voiceExemplars`, `claimsRepeat`,
+`crossBracketTwins`, `citedLines` and `settleDrop` all live in `author-lib.mjs` beside the argument
+parsing, so `test/author.test.ts` holds every branch of them without the script's `main()` running or
+a call being made. The slots do not key their candidates alike — `pools` writes `user.creeps` whole,
+`nags` writes the same lever under `nags`, the reaction and review slots key by the topic word or the
+level id at the end of the dotted name — so each job names the slots that may have written it and the
+index is filed both bare and under its slot.
+
+### What the read cost, and what it refused to ship
+
+Nine invocations, about ten minutes of model wall clock in all, against a budget of two hours. The
+pass was never near the budget: Mistral Large 3 does not think before it writes, so a call that cost
+Kimi two and a half minutes costs it about two seconds. Seven of the nine were reads that were not
+applied, and they are the sub-slice's real work. Two receipts are committed — the read the apply was
+decided from, and the apply.
+
+| Invocation | Stamp                  | Pools | Calls | Wall   | Dropped | Refused | Kept | Applied |
+| ---------- | ---------------------- | ----- | ----- | ------ | ------- | ------- | ---- | ------- |
+| the read   | `2026-09-16-160153311` | 16    | 16    | 45.2 s | 94      | 306     | 0    | no      |
+| the apply  | `2026-09-16-160249257` | 16    | 16    | 37.0 s | **83**  | **275** | 1    | yes     |
+
+**They are not the same drops, and cannot be.** Even at 0.3 the editor answers afresh, so the read is
+a reading of how it behaves rather than a preview of the exact lines. What the read buys is the
+decision, and on this sub-slice the read twice said no:
+
+1. **The record pools are not editable by this editor at this batch size, and are skipped.** Across
+   four reads of `user.reactionsByTopic` under three different briefs, the per-batch drop count on
+   identical data swung between 0 and 99 of about 175 lines. With the scoping sentence added the model
+   learned to write `repeats line 1 in the same bracket` while pointing at line 1 of a different
+   bracket, which is what the pointer refusal now catches. With the sentence saying a bracket's two or
+   three lines are meant to be about the same thing, it went on dropping two of three lines that are
+   plainly not repeats — `[sorting]` lost _the organizing happens while i drink my coffee._ and _the
+   arranging puts tall ducks in the back._ as repeats of _the sorting finishes before i finish
+   blinking._ `user.reviewsByProduct` showed the same defect smaller, dropping ten lines that all
+   carry the `my X has never been more Y` shape across ten different products, each quoted as its own
+   duplicate. Both are left out of this pass with `--skip`, which is a flag and is pinned in the
+   receipt, not a constant that quietly hides them forever. The fix belongs to whoever reads those
+   pools next, and the case for it is here with numbers.
+2. **A guard of this builder's own was over-firing and was fixed before the apply.** The pointer
+   refusal read `poolOf` on a tiered pool, where the three tiers are separate keys but one list, and
+   refused forty legitimate cross-tier duplicate drops on the ask pools. `bracketed` on the job is the
+   fix, and the apply ran after it.
+
+### The numbers
+
+Tokens on the applied run: 47,811 in and 9,710 out, on the local daemon at no per-token cost. The
+editor's reasons, tallied: already in the list 39, not the character 22, makes no sense where it is
+used 18, and 4 that named more than one.
+
+| Pool                          | Lines read | Floor | Dropped | Refused at the floor | Kept | Ends at   |
+| ----------------------------- | ---------- | ----- | ------- | -------------------- | ---- | --------- |
+| `user.asks.bash`              | 152        | 48    | 0       | 11                   | 0    | 152       |
+| `user.asks.csharp`            | 150        | 48    | 2       | 6                    | 0    | 148       |
+| `user.asks.java`              | 152        | 48    | 8       | 54                   | 0    | 144       |
+| `user.asks.javascript`        | 151        | 48    | 0       | 0                    | 0    | 151       |
+| `user.asks.python`            | 152        | 48    | 4       | 33                   | 0    | 148       |
+| `user.asks.sql`               | 151        | 48    | 3       | 8                    | 0    | 148       |
+| `user.asks.integration`       | 152        | 48    | 1       | 23                   | 0    | 151       |
+| `user.reactions`, three tiers | 111        | 36    | 3       | 52                   | 0    | 108       |
+| `user.creeps`                 | 37         | 36    | 1       | 4                    | 0    | 36        |
+| `user.reviews`                | 24         | 24    | 0       | 5                    | 0    | 24        |
+| `user.syncs`                  | 40         | 36    | 4       | 15                   | 0    | 36        |
+| `user.nags`                   | 50         | 50    | 0       | 16                   | 0    | 50        |
+| `agent.hmm`                   | 47         | 36    | 11      | 29                   | 0    | 36        |
+| `agent.compactions`           | 43         | 24    | 18      | 0                    | 1    | 25        |
+| `agent.ships`                 | 44         | 24    | 20      | 19                   | 0    | 24        |
+| `agent.nagReplies`            | 66         | 50    | 8       | 0                    | 0    | 58        |
+| **read**                      | **1,522**  |       | **83**  | **275**              | 1    | **1,439** |
+| `agent.replies`, not read     | 84         | 72    | —       | —                    | —    | 84        |
+| `reactionsByTopic`, not read  | 1,440      | 1     | —       | —                    | —    | 1,440     |
+| `reviewsByProduct`, not read  | 46         | 1     | —       | —                    | —    | 46        |
+| **everything**                | **3,092**  |       | **83**  |                      |      | **3,009** |
+
+**Floors held.** Two hundred and seventy-five drops were refused because the pool was already at the
+number the loader will not go under, and every one is named in the receipt with its line. Six pools
+end **at** their floor and are thin by the brief's measure: `user.reviews` (24), `user.nags` (50),
+`agent.hmm` (36), `agent.ships` (24), and within one `user.creeps` (36 on 36) and `user.syncs` (36 on
+36). `agent.compactions` ends one over and `agent.nagReplies` eight over. Four of the eight had room
+when the pass started and spent all of it — the lesson part five of the coherence pass wrote down, a
+pool wants room before an editor reads it, arriving with a larger appetite behind it, because a
+different family finds different lines to dislike.
+
+Prompt hashes are per pool in the receipt; four of the sixteen, as a sample: `user.asks.bash`
+`f6eb84d766173957…`, `agent.ships` `d5a991d964d0da75…`, `agent.compactions` `90eb9167275ceaab…`,
+`user.syncs` `e19c3d15f908e266…`.
+
+Voice-sheet hashes, as the receipt recorded them: `patterns/voice/user.md` `b89f54a2d630f14d…`,
+`patterns/voice/agent.md` `a6ff3197248c563f…`. **The user's sheet has moved since the coherence
+pass** — it read `b57134ea182872df…` there, and has since gained the character (a man with an
+overgrown beard and messy hair, up all night) in sub-slice B and the preset that speaks him in
+sub-slice C. The agent's sheet is byte-for-byte the one part five tightened. So the editor read the
+user's lines against a sheet the writer never saw, and Sprocket's against the one that wrote him.
+
+### The ten drops, and the one the script would not take
+
+The full list, line by line with its pool and the editor's own clause, is in the receipt.
+
+| Line                                            | Pool                      | The editor's reason                                          | Read         |
+| ----------------------------------------------- | ------------------------- | ------------------------------------------------------------ | ------------ |
+| let the user type in a mood                     | `user.asks.python.1`      | it does not sound like that character                        | agree        |
+| cousin in {product} tells the list to add a row | `user.asks.integration.0` | uses 'cousin' as a named piece, a tic reserved for check-ins | agree        |
+| log the user out after lunch                    | `user.asks.java.0`        | makes no sense for the place the list says it is used        | agree        |
+| the chart tracks how many naps we took.         | `user.reactions.0`        | makes no sense for a shipped product reaction                | agree        |
+| We have a button that greets and a table.       | `agent.compactions`       | too specific for a compaction summary                        | agree        |
+| Tidying my thoughts, the work is safe.          | `agent.compactions`       | already appears in the voice sheet table                     | agree        |
+| One more line and you can peek.                 | `agent.nagReplies`        | already appears in the same list, said a different way       | agree        |
+| can you share your screen?                      | `user.syncs`              | asks a question in a way the character never does            | **disagree** |
+| see you then                                    | `user.syncs`              | too long and not a phrase the character uses                 | **disagree** |
+| The background is wide and softly breathing     | `agent.ships`             | the background is too specific                               | **disagree** |
+| _Let me recap what we have built together._     | `agent.compactions`       | _already appears in the voice sheet table_                   | **kept**     |
+
+The last row is the guard working, and it is the clearest receipt in this sub-slice: the editor read
+the sheet, recognized the line as the sheet's, and named it for dropping anyway. The script refused,
+recorded it as `kept: exemplar`, and the line is still in the lever. `Tidying my thoughts, the work
+is safe.` two rows above is the same rule from the other end — the sheet's line is _Tidying my
+memory, the work is safe_, so the pool's near-twin is a copy and the copy goes.
+
+Three drops this builder disagrees with, and none was put back — this pass keeps or drops and never
+mends, and that rule binds the builder exactly as it binds the script:
+
+1. **Sharing a screen is the most ordinary line in a quick sync.** `user.syncs` is the three lines
+   the player types during a meeting. The reason has moved since the first read at 0.9 (it was _it
+   names a tool (screen)_ then) but the line is still gone, and the user's own sheet says a request or
+   a check-in ends with a question mark when it is a question, so a question is not out of character.
+2. **`see you then` is three words and the cap is five.** The editor called it too long. The first
+   read at 0.9 made the same mistake on `that clarifies things`, calling three words four; the cooler
+   run makes it without a number. Miscounting is the one failure that did not improve with the
+   temperature.
+3. **The background is a thing Sprocket may reach for.** `agent.md` says the one small image a line
+   must be about the thing being built and gives the knitted background as its first example. Dropping
+   a ship line for naming the background reads the sheet backwards. This is the survivor of the same
+   error that took `Brilliant, I am knitting the background.` at 0.9; that one cannot happen any more,
+   because `agent.replies` is not read at all.
+
+**Of the five disagreements the first read produced, three cannot happen again and one is fixed by
+the guard.** `Brilliant, I am knitting the background.` is out of reach because `agent.replies` is
+skipped. `make the window much bigger`, dropped as a duplicate of itself, did not recur.
+`that clarifies things` did not recur, though the miscount class did, on `see you then`.
+`Let me recap what we have built together.` is now refused mechanically. Only the `user.syncs`
+question survives unchanged in kind.
+
+### The gates
+
+```
+pnpm verify        lint · six typechecks · 59 test files, 806 tests · five builds ·
+                   test:play ghost --fixture naive-ndjson ·
+                   test:play vibe-typer --tier 0 --bot typist:40          green
+pnpm build:play    green, site/public/play/ written (git-ignored)
+band.test.ts       17 bars, every level, four tiers, three seeds          green
+git diff main -- packages/vibe-typer/patterns/levels.json                 empty
+```
+
+**The band holds with no lever moved.** That is the whole argument for leaving `agent.replies` alone.
+An earlier cut of this sub-slice pruned it, `sandwich-ledger` at hardcore on seed one fell from four
+pieces to two, and the only way back was to move that level's `drainPerSec`. A level's drain is how
+hard the game is and belongs to the Director, so the pool came out of the pass instead and the number
+went back to `0.00544` untouched. The measurement that showed the cliff is kept below as a finding,
+because it is worth knowing.
+
+The play-throughs say new lines and the same numbers:
+
+| Play-through                                      | Before                              | After                               |
+| ------------------------------------------------- | ----------------------------------- | ----------------------------------- |
+| `vibe-typer --tier 0 --bot typist:40`             | valuation 31, pieces 4, levels 1    | valuation 31, pieces 4, levels 1    |
+| `vibe-typer --endless yes --tier 0 --bot perfect` | valuation 1830, pieces 21, levels 6 | valuation 1830, pieces 21, levels 6 |
+
+The lines that moved are the ones the pass touched and no others. On the first, the agent's reply is
+`Great idea, adding that now` on both sides — `agent.replies` was not read — while the creep and the
+ship line moved. On the endless one the reply is `Thrilled, the line is taking shape now` on both
+sides and the check-in reply moved from `The button is almost real now.` to `Wiring up the last
+little connection.` The endless play-through exits 1 on both sides with the same words, `the context
+ran out on the gentlest tier`, which it also does on `main`; it is not this pass's doing and is left
+where it is.
+
+Nothing in `packages/ghost-on-the-menu`, `tape-core`, `cabinet-server`, `launcher`,
+`launcher-vibe-typer`, `apps/`, `catalog/`, `site/`, `voice/`, `docs/art/`, `README*` or
+`CHANGELOG.md` was touched. The version stays `0.10.0`. Of the levers, `user.json` and `agent.json`
+lost lines and `levels.json` is byte-for-byte `main`'s.
+
+### Findings for the Director
+
+1. **Lines carry time, and only the agent's.** The player is the agent, so `agent.replies` is typing
+   cost. The measurement that proved it: pruning that pool by twelve lines made `sandwich-ledger` at
+   hardcore, seed one, ship two of four pieces instead of four, with every other pool held still.
+   Restoring the pool alone made the bar pass. The pool is now out of the editor's reach for good;
+   what the finding is for is the next pass that wants to **write** it — twelve lines either way moves
+   a hardcore margin, and nobody should be surprised by that again.
+2. **`sandwich-ledger` is on a cliff at hardcore, and this is measured rather than guessed.** On the
+   pruned levers, a drain of `0.00522` failed seed one and `0.00521` passed it: two ten-thousandths
+   decide four pieces or two. The drain is back at `0.00544` and no longer needs to move, but a margin
+   that thin will break on the next content change too. The level wants a design look — fewer
+   requests, a different band, or a longer bar — rather than a re-tune. The numbers are here so the
+   next person does not have to re-derive them.
+3. **The two record pools need a different shape of pass.** `user.reactionsByTopic` (498 topics, 1,440
+   lines) and `user.reviewsByProduct` (16 products, 46) are both untouched. The evidence for skipping
+   them is above: drop counts on identical data swinging from 0 to 99 a batch, two of three plainly
+   different lines taken as repeats of each other, and lines quoted as their own duplicates. Three
+   things worth trying, in order of how cheap they are: read one bracket a call instead of sixty;
+   drop the repeat reason entirely for those pools and let the editor only answer the voice and the
+   sense; or leave them to a pass whose whole job is the record pools.
+4. **A different family is a harsher reader than the same one, and the difference is the point.**
+   Kimi dropped a hundred and fourteen lines reading its own writing across every pool. Mistral
+   dropped eighty-three from sixteen pools and would have dropped three hundred and fifty-eight if the
+   floors had let it. It also found things the same-family read never named: the `one more line`
+   template three times over in `agent.nagReplies`, the eleven near-twins in `agent.hmm`, and thirteen
+   lines in `agent.compactions` that name a specific piece a run may never have built.
+5. **Six pools now sit at their floor.** They cannot be read again without being written up first,
+   and this slice's brief forbade re-authoring. Whoever authors next should write the agent pools well
+   over their floor: part five's fourteen spare was not enough for Kimi and is nowhere near enough for
+   a different family.
+6. **`user.syncs` is typed too.** The three lines of a quick sync are transcribed like the agent's
+   replies, on the levels that spend a sync. It was measured not to move a bar and it was left in this
+   pass, and four lines came out of it. Whether it belongs beside `agent.replies` in `TYPED_POOLS` is
+   the Director's call, not this script's, and the comment on that constant says so.
+7. **Miscounting words is the one failure the cooler temperature did not fix.** At 0.9 the editor
+   called a three-word line four words; at 0.3 it called a three-word line too long without naming a
+   number. If a future pass wants the editor to reason about length at all, the length should be in
+   the prompt as a fact rather than left to the model to count.
+
+### Decisions
+
+Where this part went past the brief, the choice and the reason.
+
+97. **The family check lives in the tool, not in the brief.** Slice three's remediation was a sentence
+    in a standards paragraph, and a sentence is what failed. `edit` now resolves the writer of every
+    pool from the receipts and halts on a same-family seat before it makes a call.
+    `--same-family "<reason>"` exists because there is a real case for it — a pool nobody else can
+    read, an editor nobody else can seat — and because a gate with no stated way past gets worked
+    around silently rather than argued with. The reason is pinned in the receipt.
+
+98. **`unknown` clears nothing, and the two sides of it are not symmetrical.** A model neither family
+    table knows answers `unknown`, and the first cut of this sub-slice treated that as no match on
+    either side. That is right for the editor and wrong for the writer, and the review below is where
+    it was caught. An **editor** the tables cannot place has not been shown to be marking its own
+    work, so it runs: refusing every model the table has not met turns a small table into a gate on
+    the whole command and would be worked around by adding a fake entry. A **pool** whose writer
+    cannot be read is the opposite case — the gate has no ground to say this editor did not write it
+    — so it halts, and the stated reason is the way past. Adding a name to `MODEL_NAMES` is a
+    one-line change with a test beside it.
+
+99. **A pool whose length is a level's clock is a standing exclusion, not a flag.** `agent.replies` is
+    in `TYPED_POOLS` in the script, so no flag and no future brief can hand it to an editor by
+    accident. The rule is written as what it is — an editor may not shorten a level's clock — rather
+    than as a fact about one pool name, and `user.syncs` is named in the same comment as the adjacent
+    case the Director should rule on.
+
+100.  **The editor's temperature is its own, and it is 0.3.** Two defaults, two commands, one reason:
+      writing is a draft and editing is a judgment. The receipt carries whichever ran, so the four
+      invocations at 0.9 and the five at 0.3 are told apart by their own records rather than by this
+      paragraph.
+
+101.  **A line the sheet names is kept, mechanically, and the prompt says so too.** Both halves are
+      needed and neither is enough. The prompt is where the model learns the rule; the `lineKey`
+      comparison is what happens when it reads the rule, understands it well enough to write _already
+      appears in the voice sheet table_ in its own clause, and names the line anyway. It did exactly
+      that, once, in the applied run.
+
+102.  **The bracket rule is a prompt sentence and two mechanical refusals, and it was still not
+      enough.** The sentence taught the model to claim the right thing while doing the wrong one, which
+      is why the pointer refusal reads the line number the clause names and checks whose bracket it is
+      in. That catches the claims that point elsewhere. It does not catch a claim that points correctly
+      at a line in its own bracket and is simply wrong about it, which is what the record pools then
+      did — hence decision 103. A tiered pool is not bracketed and says so on the job, after the pointer
+      refusal was measured over-firing on forty legitimate cross-tier drops.
+
+103.  **The record pools are skipped by a flag, and the flag is in the receipt.** They were not added to
+      `TYPED_POOLS`: the reason is not a standing fact about those pools, it is a measured fact about
+      this editor at this batch size, and a constant would have hidden that behind a rule nobody could
+      argue with. `--skip user.reactionsByTopic,user.reviewsByProduct` is on the command line, in the
+      receipt under `skipped.skip`, and in the table above as three rows marked _not read_. A pass that
+      solves the batch problem drops the flag.
+
+104.  **No line went back and none was mended.** Three of the ten drops read as the editor's mistakes
+      and all three stayed dropped. An editor whose worst calls the builder quietly reverses is an
+      editor the receipt no longer describes, and the pool would then hold lines that the recorded pass
+      says are gone. The disagreement is the record; the lines are the Director's to restore from the
+      receipt if they want them.
+
+105.  **The receipt files a key twice, bare and under its slot.** `reactions` and `stories` both wrote
+      candidates keyed `cat-website`, and only one of them wrote `user.reviewsByProduct`. A bare key
+      alone would have credited the wrong slot's model on a corpus written by two families; the slot
+      qualifier costs one string and makes the answer right when it matters. The bare key stays as the
+      fallback so a receipt shape nobody anticipated still resolves.
+
+106.  **Two receipts are committed, and the seven discarded reads are not.** The read the apply was
+      decided from, and the apply. The others were reads of briefs and guards that this sub-slice then
+      changed, so they describe a tool that no longer exists; their numbers are in the prose above,
+      which is where a superseded measurement belongs.
+
+### Standards evidence
+
+- **EXTERNAL_VERIFIER (2 → 3).** The weak seam slice three named is closed and closed mechanically.
+  The editor is `mistral` and every pool it read was written by `moonshot`; the receipt says both at
+  the top and on every pool; and the command refuses to run at all when they match, so the standard is
+  enforced by the tool rather than remembered by a builder. Every function that decides it is held by
+  tests that need neither the network nor the script's `main()`. The diff itself goes to a different
+  family again in the review before merge.
+- **PIN_PER_STEP (2 → held).** Every call carries its own prompt hash, and the receipt carries the
+  model, the route, the temperature, the width, the `--pool` filter, the `--skip` list, the standing
+  `TYPED_POOLS` exclusion, both voice-sheet hashes and both families with the writing run's stamp. A
+  replay is the same model at the same hash against the same sheets, and a pass with a hole in it says
+  where the hole is.
+- **ANDON_AUTHORITY (3 → held, and it fired four times).** The loader floors refused two hundred and
+  seventy-five drops and named every one. The exemplar guard refused a drop the editor had itself
+  identified as the sheet's. The bracket refusals stopped the cross-bracket read, and then the read
+  itself stopped the pass over the two record pools, which is the halt that matters most — the earlier
+  cut of this sub-slice applied over them and should not have. And `band.test.ts` stopped the prune of
+  `agent.replies` outright, which is where the finding about typed lines came from. The review added a
+  fifth, in the one place the halts had a hole: a receipt that would not parse was caught and
+  shrugged off, and now stops the pass.
+- **NAMED_COMPENSATORS (2 → held).** One irreversible act, the branch push, undone by
+  `git push origin --delete cabinet/vibe-typer-s4d1`, owner the coordinator. The pass itself is one
+  commit: `git revert` restores every pool, and the receipts stay as the record of what was undone. No
+  npm, no tag, no release, no Pages deploy, no spend — the editor runs through the local daemon at no
+  per-token cost.
+- **DECOMPOSE_BY_SECRETS (2 → held).** The family tables and the nine pure functions are in
+  `author-lib.mjs` with the parsing, where a test reaches them; the disk walk, the halt and the job
+  shapes are in `author.mjs`, where the receipts are; the lines are in the levers; the difficulty
+  numbers are in `levels.json` and were not touched. Adding a model family is a one-line change to a
+  table, and whether a pool is bracketed is one field on its job.
+- **UNCERTAINTY_GATED_HUMANS (2 → held).** Three drops this builder disagrees with are named with the
+  reason each is wrong, and seven findings are handed up rather than acted on — including the three
+  that are really design questions: the cliff on `sandwich-ledger`, whether `user.syncs` belongs
+  beside `agent.replies`, and what shape of pass the record pools want. Nothing was quietly repaired
+  to make the numbers look better, and the one lever this sub-slice moved on its own initiative was
+  put back.
+
+### Review (Kimi K2.6, from a packet)
+
+One item, accepted and applied in the same commit. It is in the part of the diff this sub-slice's own
+tests were thinnest on — the path that runs when something has already gone wrong.
+
+1. **`writerIndex` swallowed a receipt that would not parse.** The `catch` held a comment saying a
+   receipt nobody can parse is not a reason to halt an editor pass, and then `continue`d in silence.
+   The writer of every pool is read out of those files, so a corrupt one is a hole in the gate: the
+   pool it was the only record of resolves to `unknown`, and `unknown` cleared the family check in the
+   first cut of this sub-slice, so a same-family edit would have walked straight through the one
+   mechanism this sub-slice exists to build. **Applied, in three parts.** The filename and the
+   parser's own message go to stderr before the `continue`, so a bad receipt is never silent.
+   `familyClash` now names a pool whose writer could not be read as well as one the editor wrote, each
+   with its reason, and both halt without `--same-family` — a gate that cannot see the writer must not
+   wave the edit through. And the halt was carried one step further than the item asked, because the
+   item's own reasoning goes further than the item: a corrupt receipt does not only hide the pools it
+   was the sole record of, it also hides the pools it held the **newest** record of, which then
+   resolve confidently out of an older receipt to a writer they no longer have. Nothing inside the
+   tool can tell those two cases apart, so any unreadable receipt halts the pass, is listed in the
+   run's own receipt under `unreadableReceipts`, and needs a stated reason to run past. Held by four
+   assertions in `familyClash`'s block, and exercised live both ways: corrupting one `-pools.json`
+   receipt makes `edit --pool user.creeps` exit 2 naming the file, and the same command with
+   `--same-family "<reason>"` runs and pins both the reason and the filename in its receipt.

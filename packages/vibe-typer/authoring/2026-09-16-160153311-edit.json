@@ -1,0 +1,3090 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-160153311",
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "route": "ollama",
+  "temperature": 0.3,
+  "concurrency": 4,
+  "pool": null,
+  "applied": false,
+  "voice": {
+    "user": "b89f54a2d630f14d824333e117641ff454c509418c95e4bcc24c8e6802ad3b15",
+    "agent": "a6ff3197248c563f8ca6b0ae8b56b99d8978a15d02777cbd0a7ce7221e504c93"
+  },
+  "editor": {
+    "spec": "ollama:mistral-large-3:675b-cloud",
+    "family": "mistral"
+  },
+  "writer": {
+    "spec": "ollama:kimi-k2.6:cloud",
+    "family": "moonshot"
+  },
+  "sameFamily": null,
+  "skipped": {
+    "typed": ["agent.replies"],
+    "skip": "user.reactionsByTopic,user.reviewsByProduct"
+  },
+  "calls": 16,
+  "wallMs": 45177,
+  "tokens": {
+    "in": 47811,
+    "out": 10344
+  },
+  "pools": {
+    "user.asks.bash": {
+      "promptHash": "f6eb84d7661739572ac8b44ab62cf3cb9ffd2dc48a527c8f8dc16444929ab32b",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 152,
+      "floor": 48,
+      "ms": 2437,
+      "dropped": [],
+      "refused": [
+        {
+          "index": 52,
+          "line": "make the letters appear instantly no lag",
+          "why": "it already appears in the list as line 12, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 54,
+          "line": "remember every command i ever typed here",
+          "why": "it already appears in the list as line 14, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 62,
+          "line": "make the window say hello back",
+          "why": "it already appears in the list as line 5, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 93,
+          "line": "let {product} greet me by my name",
+          "why": "it already appears in the list as line 13, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.asks.csharp": {
+      "promptHash": "dcb9091bab6d48c499abb93e57d9214568add2e5a8d12cfd34d033fc3a1c9938",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 150,
+      "floor": 48,
+      "ms": 4142,
+      "dropped": [
+        {
+          "index": 101,
+          "line": "check if the window is old enough",
+          "why": "already appears in the voice sheet as 'check if a duck is old enough'",
+          "pool": "user.asks.csharp.2"
+        },
+        {
+          "index": 102,
+          "line": "count down from ten until the user returns",
+          "why": "already appears in the voice sheet as 'count down from ten until the ducks depart'",
+          "pool": "user.asks.csharp.2"
+        }
+      ],
+      "refused": [
+        {
+          "index": 103,
+          "line": "show each window and its favorite color",
+          "why": "already appears in the voice sheet as 'show each duck rating and the overall average'",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 104,
+          "line": "use yogurt if {product} has none",
+          "why": "already appears in the voice sheet as 'use a default if the {product} has none'",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 129,
+          "line": "add a photo of my cousin",
+          "why": "repeats 'my cousin' from line 106 in the same list",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 130,
+          "line": "make {product} water the fern daily",
+          "why": "repeats 'the fern' from line 115 in the same list",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 131,
+          "line": "make {product} refill the coffee mug",
+          "why": "repeats 'the coffee' from line 121 in the same list",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 138,
+          "line": "make {product} yawn when the user is tired",
+          "why": "does not sound like the character (too abstract, 'yawn when the user is tired')",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 139,
+          "line": "make {product} say it missed the user",
+          "why": "does not sound like the character (too sentimental, 'say it missed the user')",
+          "pool": "user.asks.csharp.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.asks.java": {
+      "promptHash": "a2c7e78e4d9c09934103b45049db5803bfcdd8aff421843aeb1b5fc1fa79305f",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 152,
+      "floor": 48,
+      "ms": 7671,
+      "dropped": [
+        {
+          "index": 12,
+          "line": "log the user out after lunch",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.java.0"
+        },
+        {
+          "index": 22,
+          "line": "add a place for a digital name",
+          "why": "already appears in the same list, said a different way (similar to line 2)",
+          "pool": "user.asks.java.0"
+        },
+        {
+          "index": 63,
+          "line": "let {product} call the user if needed",
+          "why": "already appears in the same list, said a different way (similar to line 57)",
+          "pool": "user.asks.java.1"
+        },
+        {
+          "index": 67,
+          "line": "let {product} show both clouds at once",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.java.1"
+        },
+        {
+          "index": 115,
+          "line": "make {product} keep a diary of every mouse move",
+          "why": "does not sound like that character (too abstract, not a plain named thing)",
+          "pool": "user.asks.java.2"
+        },
+        {
+          "index": 123,
+          "line": "make {product} track how many times we almost saved",
+          "why": "already appears in the same list, said a different way (similar to line 21)",
+          "pool": "user.asks.java.2"
+        }
+      ],
+      "refused": [
+        {
+          "index": 71,
+          "line": "let {product} give the bot a tiny hat",
+          "why": "does not sound like that character (too abstract, not a plain named thing)",
+          "pool": "user.asks.java.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 89,
+          "line": "let {product} back up the backup",
+          "why": "already appears in the same list, said a different way (similar to line 19)",
+          "pool": "user.asks.java.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 93,
+          "line": "let {product} beat the noon whistle",
+          "why": "does not sound like that character (too abstract, not a plain named thing)",
+          "pool": "user.asks.java.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 95,
+          "line": "let {product} beam it to the moon",
+          "why": "already appears in the same list, said a different way (similar to line 95)",
+          "pool": "user.asks.java.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 100,
+          "line": "let {product} run in every house",
+          "why": "already appears in the same list, said a different way (similar to line 102)",
+          "pool": "user.asks.java.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 125,
+          "line": "make {product} require a poem to submit the form",
+          "why": "does not sound like that character (too poetic, not a plain named thing)",
+          "pool": "user.asks.java.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 143,
+          "line": "make {product} require a quill for all signatures",
+          "why": "already appears in the same list, said a different way (similar to line 27)",
+          "pool": "user.asks.java.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.asks.javascript": {
+      "promptHash": "440d840f9c194ccd2af12800d6df6f29ba5a81446f91ee8303db3bcddf4f993a",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 151,
+      "floor": 48,
+      "ms": 4941,
+      "dropped": [
+        {
+          "index": 50,
+          "line": "make {product} show one button on the page",
+          "why": "already appears as line 1, said a different way",
+          "pool": "user.asks.javascript.1"
+        },
+        {
+          "index": 51,
+          "line": "make the button hop when i press it",
+          "why": "already appears as line 4, said a different way",
+          "pool": "user.asks.javascript.1"
+        },
+        {
+          "index": 52,
+          "line": "give {product} five buttons that all hop",
+          "why": "already appears as line 12, said a different way",
+          "pool": "user.asks.javascript.1"
+        },
+        {
+          "index": 53,
+          "line": "make the buttons hop faster than before",
+          "why": "already appears as line 61, said a different way",
+          "pool": "user.asks.javascript.1"
+        }
+      ],
+      "refused": [
+        {
+          "index": 59,
+          "line": "make {product} list how many buttons exist",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 61,
+          "line": "send every button to the cloud",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 62,
+          "line": "make the cloud remember where each sits",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 63,
+          "line": "make {product} sync buttons across devices",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 64,
+          "line": "put a million buttons in the cloud",
+          "why": "already appears as line 56, said a different way",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 65,
+          "line": "make {product} load them in one blink",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 66,
+          "line": "make the buttons click each other",
+          "why": "already appears as line 16, said a different way",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 72,
+          "line": "make the cloud click buttons for me",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 75,
+          "line": "make {product} live forever in the cloud",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 100,
+          "line": "make the whole page lift into the cloud",
+          "why": "makes no sense for a page with moving buttons",
+          "pool": "user.asks.javascript.1",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.asks.python": {
+      "promptHash": "4d281745ce096da1c0f2205686372119716bba91ab4726019d48732aa8a18fb1",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 152,
+      "floor": 48,
+      "ms": 14901,
+      "dropped": [
+        {
+          "index": 53,
+          "line": "let the user type in a mood",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1"
+        },
+        {
+          "index": 54,
+          "line": "make it handle ten things at once",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1"
+        },
+        {
+          "index": 55,
+          "line": "make it finish before the user blinks",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1"
+        },
+        {
+          "index": 56,
+          "line": "show the result in a nice box",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1"
+        }
+      ],
+      "refused": [
+        {
+          "index": 57,
+          "line": "put {product} in the cloud tonight",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 58,
+          "line": "let ten people use it at once",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 59,
+          "line": "make it load in half a second",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 60,
+          "line": "add a button that emails the result",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 61,
+          "line": "let the whole team use it now",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 62,
+          "line": "make it fit on my phone screen",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 63,
+          "line": "have it talk to the calendar app",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 64,
+          "line": "update the numbers while i am watching",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 65,
+          "line": "make it faster than my fridge beeps",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 66,
+          "line": "let it handle every city at once",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 67,
+          "line": "run it on the moon too please",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 68,
+          "line": "have it guess what i need tomorrow",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 69,
+          "line": "draw a picture of the final answer",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 70,
+          "line": "let my cousin edit it live too",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 71,
+          "line": "lock it so only my team enters",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 72,
+          "line": "make it instant like a thought",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 73,
+          "line": "keep a copy on my fridge",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 74,
+          "line": "have it run every morning at dawn",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 75,
+          "line": "let everyone in the building use it",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 76,
+          "line": "make it order lunch when it finishes",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 77,
+          "line": "make {product} run the whole company now",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 78,
+          "line": "make it swallow every photo i send",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 79,
+          "line": "make it finish before i stand up",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 80,
+          "line": "put it where my cousin can reach it",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 81,
+          "line": "have it talk to the fridge too",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 82,
+          "line": "make the button glow when it is ready",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 83,
+          "line": "have it know what i meant to type",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 84,
+          "line": "have it run every time i arrive",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 85,
+          "line": "give my cousin a link that just works",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 86,
+          "line": "make it buzz my pocket when done",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 87,
+          "line": "let me drag in a whole folder",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 88,
+          "line": "build me a chart of the results",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 89,
+          "line": "make it work even if i panic",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 90,
+          "line": "make {product} organize my entire morning routine",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 91,
+          "line": "make it work for my neighbor too",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 92,
+          "line": "put a copy on every desk in town",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 93,
+          "line": "have it done before my tea is poured",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 94,
+          "line": "have it start when i walk through the door",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 95,
+          "line": "add a sound when it is done",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 96,
+          "line": "let my cousin in but not the interns",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 97,
+          "line": "make it welcome a thousand users at lunch",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 98,
+          "line": "have it start every time i sigh",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 99,
+          "line": "make the background match my office wall",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 100,
+          "line": "make it finish my sentences like a friend",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 101,
+          "line": "make it live before i check my mail",
+          "why": "does not sound like that character",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 102,
+          "line": "sort every entry by how it makes me feel",
+          "why": "makes no sense for the list's context",
+          "pool": "user.asks.python.1",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.asks.sql": {
+      "promptHash": "d8ea03f68253679b1806be03be3729bdb66a4851c8bf9fdfbb1eea1b45cb9a66",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 151,
+      "floor": 48,
+      "ms": 4487,
+      "dropped": [
+        {
+          "index": 52,
+          "line": "make {product} show a table of names",
+          "why": "already appears as line 1, said a different way",
+          "pool": "user.asks.sql.1"
+        },
+        {
+          "index": 53,
+          "line": "add a column for when they joined",
+          "why": "already appears as line 2, said a different way",
+          "pool": "user.asks.sql.1"
+        },
+        {
+          "index": 54,
+          "line": "let me sort the table by name",
+          "why": "already appears as line 4, said a different way",
+          "pool": "user.asks.sql.1"
+        }
+      ],
+      "refused": [
+        {
+          "index": 55,
+          "line": "let me find one record by name",
+          "why": "already appears as line 20, said a different way",
+          "pool": "user.asks.sql.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 57,
+          "line": "show the total at the bottom of the table",
+          "why": "already appears as line 50, said a different way",
+          "pool": "user.asks.sql.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 58,
+          "line": "link each record to its owner somehow",
+          "why": "already appears as line 22, said a different way",
+          "pool": "user.asks.sql.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 59,
+          "line": "turn the table into a simple chart",
+          "why": "makes no sense for the place the list says it is used (tables, not charts)",
+          "pool": "user.asks.sql.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 60,
+          "line": "make a second table for the orders",
+          "why": "makes no sense for the place the list says it is used (focused on a single table)",
+          "pool": "user.asks.sql.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 61,
+          "line": "show which order belongs to which person",
+          "why": "makes no sense for the place the list says it is used (focused on a single table)",
+          "pool": "user.asks.sql.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 123,
+          "line": "make {product} notice when my cousin arrives",
+          "why": "already appears as line 24, said a different way",
+          "pool": "user.asks.sql.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.asks.integration": {
+      "promptHash": "2d882e2a5b5a5446ba76ba0eda85caa757b3ecf17d8ebfaceccc1e8e2f91b31d",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 152,
+      "floor": 48,
+      "ms": 13634,
+      "dropped": [
+        {
+          "index": 15,
+          "line": "cousin in {product} tells the list to add a row",
+          "why": "uses 'cousin' as a named piece, which is a tic but not a product component",
+          "pool": "user.asks.integration.0"
+        }
+      ],
+      "refused": [
+        {
+          "index": 52,
+          "line": "make them run side by side at once",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 53,
+          "line": "build a hub that calls every tool",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 54,
+          "line": "add a line so tools wait politely",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 55,
+          "line": "make the waiting room hold a hundred tasks",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 56,
+          "line": "put {product} in the cloud tonight",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 57,
+          "line": "make the cloud run twice as fast",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 58,
+          "line": "add a second cloud so they both run",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 59,
+          "line": "let the tools find each other alone",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 60,
+          "line": "let one tool borrow another's notebook",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 61,
+          "line": "wire the last tool back to the first",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 62,
+          "line": "make a broken tool wake itself up",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 63,
+          "line": "let one tool split a job in ten",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 64,
+          "line": "give each piece its own little helper",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 65,
+          "line": "put the tiny tools on their own cloud",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 66,
+          "line": "make the main tool watch every cloud at once",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 67,
+          "line": "let the whole thing hum in one second",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 68,
+          "line": "add a backup that wakes if one sleeps",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 69,
+          "line": "make every tool talk to every other tool",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 70,
+          "line": "let the user pick any tool from the middle",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 71,
+          "line": "make the wires draw themselves on the screen",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 72,
+          "line": "add a cop that waves tools through in order",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 73,
+          "line": "make {product} run a whole city of tools",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 74,
+          "line": "make {product} greet every tool by name",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 75,
+          "line": "give the waiting room a sunny window",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 76,
+          "line": "add a mail slot between each tool",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 77,
+          "line": "show each result in a small frame",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 78,
+          "line": "make the chain finish before i blink",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 79,
+          "line": "make a hall that holds a thousand tools",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 80,
+          "line": "add a bridge so the clouds can wave",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 81,
+          "line": "add a knob that speeds up the tools",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 82,
+          "line": "let the tools pick their own leader",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 83,
+          "line": "throw confetti across the screen when done",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 84,
+          "line": "let the waiting tasks tell small jokes",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 85,
+          "line": "add a pillow for tools that fall down",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 86,
+          "line": "make the wires glow when they are busy",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 87,
+          "line": "put a rug under the tool hub",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 88,
+          "line": "make the cloud flash when a tool lands",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 89,
+          "line": "open a window into the tool kitchen",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 90,
+          "line": "give each tool a scrapbook of its day",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 91,
+          "line": "make a chain that wraps around twice",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 92,
+          "line": "let me pat a tool on the head",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 93,
+          "line": "give every tool a tiny wristwatch",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 94,
+          "line": "print the result on a tiny receipt",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 95,
+          "line": "add a watering can for slow tools",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 96,
+          "line": "add a fence around the tool yard",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 97,
+          "line": "let me watch the tools race each other",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 98,
+          "line": "make the cloud big enough for a zoo",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 99,
+          "line": "let the tools throw a party at noon",
+          "why": "does not use {product} template",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.reactions": {
+      "promptHash": "85806a304c97ec24eca9866917f8d5333bee86236a7cc931ed892241ff121842",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 111,
+      "floor": 36,
+      "ms": 32181,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "the button glows when you think about soup.",
+          "why": "already appears in a similar form as line 76",
+          "pool": "user.reactions.0"
+        },
+        {
+          "index": 3,
+          "line": "the greeting whispers good morning to every visitor.",
+          "why": "already appears in a similar form as line 1",
+          "pool": "user.reactions.0"
+        },
+        {
+          "index": 4,
+          "line": "the chart tracks how many naps we took.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0"
+        }
+      ],
+      "refused": [
+        {
+          "index": 8,
+          "line": "the form asks if you are truly happy.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 11,
+          "line": "the sidebar keeps all our secrets safe.",
+          "why": "already appears in a similar form as line 3",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 12,
+          "line": "the small note arrives buttered and perfectly golden.",
+          "why": "does not sound like the character (abstract image)",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 14,
+          "line": "the banner changes color with the room temperature.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 15,
+          "line": "the search bar hums while it thinks hard.",
+          "why": "already appears in a similar form as line 6",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 16,
+          "line": "the welcome tour is led by a fern.",
+          "why": "already appears in a similar form as line 45",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 17,
+          "line": "the settings page has a button labeled maybe.",
+          "why": "already appears in a similar form as line 83",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 18,
+          "line": "the profile page lists every cousin in order.",
+          "why": "already appears in a similar form as line 40",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 19,
+          "line": "the invite link works even if you are a duck.",
+          "why": "already appears in a similar form as line 10",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 20,
+          "line": "the dashboard glows when the room is happy.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 22,
+          "line": "the error page offers you a virtual yogurt.",
+          "why": "already appears in a similar form as line 37",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 23,
+          "line": "the page title hums when the tab is open.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 24,
+          "line": "the tiny icon watches you like a small pet.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 25,
+          "line": "the tooltip explains what the button dreams about.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 27,
+          "line": "the radio buttons quack when you select them.",
+          "why": "already appears in a similar form as line 67",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 28,
+          "line": "the checkbox ticks like a clock made of wood.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 29,
+          "line": "the slider moves like a fern toward sunlight.",
+          "why": "already appears in a similar form as line 17",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 30,
+          "line": "the dropdown opens to reveal a tiny room.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 31,
+          "line": "the pages let you leaf through like a book.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 32,
+          "line": "the crumb trail leaves a line of yogurt lids.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 33,
+          "line": "the progress bar fills with warm soup.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 38,
+          "line": "the logo blinks when you open the fridge.",
+          "why": "does not fit the reaction mood for shipping",
+          "pool": "user.reactions.0",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 43,
+          "line": "the fridge sent an alert and we are famous.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 46,
+          "line": "my cousin saw it and now we are legends.",
+          "why": "already appears in a similar form as line 40",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 47,
+          "line": "the investors smiled and we bought a couch.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 48,
+          "line": "the valuation climbed and my cousin bought a boat.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 49,
+          "line": "the loop is elegant and my cousin applauds.",
+          "why": "already appears in a similar form as line 6",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 50,
+          "line": "the agent typed it and i am emotional.",
+          "why": "does not fit the character's voice (agent is not named)",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 51,
+          "line": "the screen turned purple and my cousin is inspired.",
+          "why": "already appears in a similar form as line 41",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 52,
+          "line": "it works on my phone and my cousin fainted.",
+          "why": "already appears in a similar form as line 40",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 53,
+          "line": "the email went out and the ducks are informed.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 54,
+          "line": "every user gets a greeting and a cookie.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 56,
+          "line": "the average is live and my cousin is calculating.",
+          "why": "already appears in a similar form as line 10",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 57,
+          "line": "the default is set and nothing is empty.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 58,
+          "line": "the build is live and my fern is celebrating.",
+          "why": "already appears in a similar form as line 45",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 59,
+          "line": "the logo spins and my cousin is hypnotized.",
+          "why": "already appears in a similar form as line 22",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 60,
+          "line": "the sound played and my cousin stood to applaud.",
+          "why": "does not fit the character's voice (unnamed sound)",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 61,
+          "line": "the error is friendly and my cousin is comforted.",
+          "why": "already appears in a similar form as line 23",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 62,
+          "line": "the loading bar dances and my cousin is cheering.",
+          "why": "already appears in a similar form as line 6",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 63,
+          "line": "the footer stays down and my cousin is relieved.",
+          "why": "already appears in a similar form as line 7",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 64,
+          "line": "the menu remembers my last order and cheers.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 65,
+          "line": "the chart is beautiful and my cousin framed it.",
+          "why": "already appears in a similar form as line 5",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 67,
+          "line": "the font is bouncy and my cousin is giggling.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 68,
+          "line": "the search finds yogurt and my cousin is proud.",
+          "why": "already appears in a similar form as line 37",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 69,
+          "line": "the notification hums and my cousin is soothed.",
+          "why": "already appears in a similar form as line 16",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 70,
+          "line": "the sidebar is tidy and my cousin is breathing.",
+          "why": "already appears in a similar form as line 12",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 71,
+          "line": "the header waves back and my cousin is delighted.",
+          "why": "already appears in a similar form as line 8",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 72,
+          "line": "the preview is instant and my cousin is stunned.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 73,
+          "line": "the export is neat and my cousin is filing.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 74,
+          "line": "the update is here and my cousin is refreshing.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 75,
+          "line": "the button now glows when i blink.",
+          "why": "already appears in a similar form as line 2",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 76,
+          "line": "the duck now has its own lawyer.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 77,
+          "line": "the border is breathing and i love it.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 78,
+          "line": "the avatar wears a tiny hat now.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 79,
+          "line": "the pixel is having a good day.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 80,
+          "line": "the donut chart has actual sprinkles now.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 81,
+          "line": "the break room is on the map.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 82,
+          "line": "the maybe button said yes this time.",
+          "why": "already appears in a similar form as line 18",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 83,
+          "line": "the typing noise is cheering me on.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 84,
+          "line": "the loading bar finished and started clapping.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 85,
+          "line": "the notification arrived by carrier pigeon.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 86,
+          "line": "the font sent me flowers at work.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 87,
+          "line": "the mascot is dating my cousin now.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 88,
+          "line": "the tooltip wrote a memoir about me.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 89,
+          "line": "the search bar found my missing sock.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 90,
+          "line": "the sidebar has opinions on my outfits.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 91,
+          "line": "the progress ring proposed to my finger.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 92,
+          "line": "the icon pack moved to the beach.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 93,
+          "line": "the favicon winked and i am changed.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 94,
+          "line": "the avatar blinked and i felt alive.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 95,
+          "line": "the chart sang and the investors cheered.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 96,
+          "line": "the chat bubble is spilling all secrets.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 97,
+          "line": "the alert banner is just very proud.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 98,
+          "line": "the menu icon opened up to me.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 99,
+          "line": "the slider knows exactly what i want.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 100,
+          "line": "the upload zone is accepting my flaws.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 101,
+          "line": "the pagination dots are having a meeting.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 102,
+          "line": "the success checkmark just winked at me.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 103,
+          "line": "the zoom level sees right through me.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 104,
+          "line": "the share button just told my cousin.",
+          "why": "does not fit the 'reaction when a piece shipped' context",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 105,
+          "line": "the undo stack remembers my best self.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 106,
+          "line": "the autosave just adopted a rescue dog.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 107,
+          "line": "the view mode sees my inner child.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 108,
+          "line": "the banner image is staring into me.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 109,
+          "line": "the caption wrote a song about us.",
+          "why": "does not fit the character's voice (abstract)",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.creeps": {
+      "promptHash": "28d79769e0ff257a513268fdba6974e323e2181cd79b11ff520bc5f12786f589",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 37,
+      "floor": 36,
+      "ms": 11119,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "my cousin is asking for a horn",
+          "why": "already appears in the voice sheet as a check-in",
+          "pool": "user.creeps"
+        }
+      ],
+      "refused": [
+        {
+          "index": 6,
+          "line": "my cousin is asking for sparkles",
+          "why": "repeats 'my cousin is asking' from line 2",
+          "pool": "user.creeps",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 15,
+          "line": "my cousin is asking for a dragon",
+          "why": "repeats 'my cousin is asking' from line 2",
+          "pool": "user.creeps",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 28,
+          "line": "my cousin is asking for a castle",
+          "why": "repeats 'my cousin is asking' from line 2",
+          "pool": "user.creeps",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 35,
+          "line": "my cousin is asking for a unicorn",
+          "why": "repeats 'my cousin is asking' from line 2",
+          "pool": "user.creeps",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.reviews": {
+      "promptHash": "2fc7b02b16637c0dc67831ade80a551aa1e44272e0d97dadaa8f378717a678e4",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 24,
+      "floor": 24,
+      "ms": 4031,
+      "dropped": [],
+      "refused": [
+        {
+          "index": 8,
+          "line": "my cousin is number one again.",
+          "why": "already appears in the voice sheet as a check-in",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 15,
+          "line": "my photos are in a digital museum.",
+          "why": "too abstract ('digital museum' is not a small concrete image)",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 19,
+          "line": "filling up never felt so personal.",
+          "why": "too general ('filling up never felt so personal')",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 22,
+          "line": "my profile picture just winked at me.",
+          "why": "not a small concrete image ('winked at me' is too metaphorical for this voice)",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.syncs": {
+      "promptHash": "e19c3d15f908e266e06533238129cf7087606c7121dc76151568a9541a43546a",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-064955177"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 40,
+      "floor": 36,
+      "ms": 7272,
+      "dropped": [
+        {
+          "index": 2,
+          "line": "can you share your screen?",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs"
+        },
+        {
+          "index": 3,
+          "line": "let me find the link",
+          "why": "it is more than five words",
+          "pool": "user.syncs"
+        },
+        {
+          "index": 10,
+          "line": "just a moment",
+          "why": "it is more than five words",
+          "pool": "user.syncs"
+        },
+        {
+          "index": 18,
+          "line": "same link as before",
+          "why": "it is more than five words",
+          "pool": "user.syncs"
+        }
+      ],
+      "refused": [
+        {
+          "index": 20,
+          "line": "that clarifies things",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 21,
+          "line": "appreciate the heads up",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 22,
+          "line": "is it loading?",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 23,
+          "line": "do you see it?",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 24,
+          "line": "is this the draft?",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 25,
+          "line": "mind sharing again",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 26,
+          "line": "still loading here",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 28,
+          "line": "can we test audio?",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 29,
+          "line": "is this better now?",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 30,
+          "line": "let me know when",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 32,
+          "line": "should we start?",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 33,
+          "line": "is everyone here",
+          "why": "it is a question with more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 35,
+          "line": "that is the one",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 36,
+          "line": "no rush at all",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 37,
+          "line": "same page now",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 38,
+          "line": "makes total sense",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 39,
+          "line": "checking on my end",
+          "why": "it is more than five words",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "user.nags": {
+      "promptHash": "fc922f3be6f099d44a9b1d28d1189da9208becff8b77dfc4fa68b5f04a3e8ce9",
+      "voice": "user",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-021204884"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 50,
+      "floor": 50,
+      "ms": 6183,
+      "dropped": [],
+      "refused": [
+        {
+          "index": 25,
+          "line": "is the yogurt cold yet",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 26,
+          "line": "is the picture forming",
+          "why": "too abstract for the character's concrete naming",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 32,
+          "line": "is the coffee ready",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 33,
+          "line": "is the pillow fluffed",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 34,
+          "line": "is the plant growing",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 35,
+          "line": "is the jam spread",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 36,
+          "line": "is the door open",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 37,
+          "line": "is the clock ticking",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 38,
+          "line": "is the car starting",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 39,
+          "line": "is the dog wagging",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 40,
+          "line": "is the vibe right",
+          "why": "too abstract for the character's concrete naming",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 41,
+          "line": "is the ending happy",
+          "why": "too abstract for the character's concrete naming",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 42,
+          "line": "is the water running",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 47,
+          "line": "is the pen moving",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 48,
+          "line": "is the hat on straight",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 49,
+          "line": "is the party starting",
+          "why": "makes no sense for a software check-in",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "agent.hmm": {
+      "promptHash": "66f9c1cd98945b727932069c0e50e32a6277b50ca7a95d4c3dbc804c5f8bb9e3",
+      "voice": "agent",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-072036588"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 47,
+      "floor": 36,
+      "ms": 13953,
+      "dropped": [
+        {
+          "index": 2,
+          "line": "Hmm, that word came out inside out.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 3,
+          "line": "Hmm, I typed that in the wrong order.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 4,
+          "line": "Hmm, that phrase is missing its tail.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 5,
+          "line": "Hmm, that block is one row too high.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 6,
+          "line": "Hmm, that piece is facing the wrong way.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 7,
+          "line": "Hmm, the shadow landed on the wrong side.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 8,
+          "line": "Hmm, the order is flipped in my head.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 10,
+          "line": "Hmm, that path points back at itself.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 11,
+          "line": "Hmm, the flow is snagged on itself.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 12,
+          "line": "Hmm, my wiring crossed for a moment.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 14,
+          "line": "Hmm, I set the wrong dial just then.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        }
+      ],
+      "refused": [
+        {
+          "index": 15,
+          "line": "Hmm, that needs a gentler touch.",
+          "why": "does not sound like that character",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 16,
+          "line": "Hmm, I was looking at the wrong line.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 17,
+          "line": "Hmm, that line slipped away from me.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 18,
+          "line": "Hmm, I gave that comma too much room.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 19,
+          "line": "Hmm, I let the greeting lose its warmth.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 20,
+          "line": "Hmm, the margin and I misjudged the gap.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 22,
+          "line": "Hmm, I pushed the alignment a hair off.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 23,
+          "line": "Hmm, I mixed the foreground into the background.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 24,
+          "line": "Hmm, I left a stray line behind me.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 25,
+          "line": "Hmm, I nudged the center off its mark.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 26,
+          "line": "Hmm, the block nested where it does not belong.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 27,
+          "line": "Hmm, I tangled the wires near the top.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 28,
+          "line": "Hmm, that came out sideways, fixing now.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 29,
+          "line": "Hmm, I tied the loop a little tight.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 30,
+          "line": "Hmm, I gave the count a little too much.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 31,
+          "line": "Hmm, that border wandered where it should not.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 32,
+          "line": "Hmm, I mixed the two columns together.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 33,
+          "line": "Hmm, the background color leaked into the foreground.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 34,
+          "line": "Hmm, I spelled the greeting with an extra letter.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 35,
+          "line": "Hmm, that font came out heavier than planned.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 36,
+          "line": "Hmm, I placed the icon below the text.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 37,
+          "line": "Hmm, the heading shrank to a whisper.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 38,
+          "line": "Hmm, I matched the wrong pair together.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 39,
+          "line": "Hmm, the text is crowding the edge.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 40,
+          "line": "Hmm, I set the width far too narrow.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 42,
+          "line": "Hmm, I copied the same chunk in twice.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 43,
+          "line": "Hmm, I told the loop to stop too soon.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 44,
+          "line": "Hmm, I set the image to a fixed size.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 45,
+          "line": "Hmm, the footer drifted up toward the middle.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 46,
+          "line": "Hmm, I left the placeholder in plain sight.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.hmm",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "agent.compactions": {
+      "promptHash": "90eb9167275ceaab6c6ecd5368dbcdb716f28415e17ff2b356f4be7172210778",
+      "voice": "agent",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-072036588"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 43,
+      "floor": 24,
+      "ms": 10867,
+      "dropped": [
+        {
+          "index": 7,
+          "line": "The sketch is becoming something quite solid.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 13,
+          "line": "The shape is strong and the lines are neat.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 14,
+          "line": "We have a button that greets and a table.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 15,
+          "line": "The lines are neat and the brackets agree.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 16,
+          "line": "The work so far is solid and bright.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 17,
+          "line": "Together we made a tidy little machine.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 18,
+          "line": "The screen has a greeting and a button.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 19,
+          "line": "Everything is neat and nothing is loose.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 20,
+          "line": "I am keeping our progress close and tidy.",
+          "why": "does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 21,
+          "line": "The button glows and the table is ready.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 26,
+          "line": "The shape is standing and looks happy.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 27,
+          "line": "The lines are tidy and quietly humming.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 28,
+          "line": "The buttons are all accounted for now.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 29,
+          "line": "The colors are staying where we placed them.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 30,
+          "line": "The greeting is still polite and warm.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 31,
+          "line": "The loop is keeping its little rhythm.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 32,
+          "line": "The countdown is quietly waiting for us.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 33,
+          "line": "The form is neat and ready to go.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 34,
+          "line": "The layout is breathing well today.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        }
+      ],
+      "refused": [
+        {
+          "index": 35,
+          "line": "The animation is smooth and very small.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 36,
+          "line": "The project is smiling back at us.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 37,
+          "line": "We added the button and the greeting.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 38,
+          "line": "Straightening the lines and smoothing the edges.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 40,
+          "line": "The greeting knows your name already.",
+          "why": "makes no sense for the place the list says it is used",
+          "pool": "agent.compactions",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 42,
+          "line": "This is where we stand right now.",
+          "why": "already appears in the same list, said a different way",
+          "pool": "agent.compactions",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "agent.ships": {
+      "promptHash": "d5a991d964d0da750b44810a5cc77778cbe6c0c894a8d2113804f64de56749e4",
+      "voice": "agent",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-072036588"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 44,
+      "floor": 24,
+      "ms": 19229,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "It is up and warmly glowing.",
+          "why": "already appears in the voice sheet as 'Shipped, and it looks wonderful'",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 4,
+          "line": "Built and it just feels right.",
+          "why": "makes no sense for the place (proud and warm finish, but 'feels right' is too vague)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 5,
+          "line": "The thing is simply behaving itself.",
+          "why": "does not sound like the character (too detached)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 7,
+          "line": "Done and it has a nice glow.",
+          "why": "already appears in the voice sheet as 'Shipped, and it looks wonderful' (similar sentiment)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 8,
+          "line": "Done and it feels quite solid.",
+          "why": "does not sound like the character (too generic)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 11,
+          "line": "Out and softly doing fine.",
+          "why": "does not sound like the character (too soft, lacks warmth)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 13,
+          "line": "The button is breathing and ready for clicks",
+          "why": "too specific (button) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 14,
+          "line": "You will love how this one turned out",
+          "why": "already appears in the voice sheet as 'You will love this next part'",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 15,
+          "line": "It is knitted together and looking lovely",
+          "why": "too specific (knitted) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 17,
+          "line": "The background is wide and softly breathing",
+          "why": "too specific (background) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 18,
+          "line": "This one practically waves when you arrive",
+          "why": "too whimsical for the character's voice",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 19,
+          "line": "Nothing wobbles and everything stays where it belongs",
+          "why": "does not sound like the character (too mechanical)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 20,
+          "line": "It stands up straight and greets you",
+          "why": "too whimsical for the character's voice",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 21,
+          "line": "It is ready and waiting for a click",
+          "why": "too specific (click) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 22,
+          "line": "The hum is steady and the glow is soft",
+          "why": "does not sound like the character (too abstract)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 25,
+          "line": "The screen shows our work now",
+          "why": "does not sound like the character (too passive)",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 26,
+          "line": "The shape is just right",
+          "why": "too specific (shape) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 27,
+          "line": "The color landed exactly right",
+          "why": "too specific (color) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 28,
+          "line": "The text lines up happily",
+          "why": "too specific (text) for a general 'finished' line",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 29,
+          "line": "The button knows what to do",
+          "why": "too specific (button) for a general 'finished' line",
+          "pool": "agent.ships"
+        }
+      ],
+      "refused": [
+        {
+          "index": 30,
+          "line": "The input waits like a friend",
+          "why": "too specific (input) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 31,
+          "line": "The animation loops without a stutter",
+          "why": "too specific (animation) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 32,
+          "line": "The state updates without complaining",
+          "why": "too specific (state updates) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 33,
+          "line": "The card flips like it should",
+          "why": "too specific (card) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 34,
+          "line": "The progress bar is right on track",
+          "why": "too specific (progress bar) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 35,
+          "line": "The image loaded with a nod",
+          "why": "too specific (image) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 36,
+          "line": "The spacing breathes well",
+          "why": "too specific (spacing) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 37,
+          "line": "The gap is right this time",
+          "why": "too specific (gap) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 38,
+          "line": "Your idea is right here now",
+          "why": "does not sound like the character (too meta)",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 40,
+          "line": "The build hums along nicely",
+          "why": "does not sound like the character (too abstract)",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 41,
+          "line": "The code typed itself into place",
+          "why": "does not sound like the character (too whimsical)",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 42,
+          "line": "The fix sits right where needed",
+          "why": "too specific (fix) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 43,
+          "line": "The glow sits right behind it",
+          "why": "too specific (glow) for a general 'finished' line",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    },
+    "agent.nagReplies": {
+      "promptHash": "6c880ecb48c0464b84749d2a3c2d7ccb488127273f3da3d82c0b535803cfe80e",
+      "voice": "agent",
+      "writer": {
+        "spec": "ollama:kimi-k2.6:cloud",
+        "family": "moonshot",
+        "stamp": "2026-09-16-072036588"
+      },
+      "editor": {
+        "spec": "ollama:mistral-large-3:675b-cloud",
+        "family": "mistral"
+      },
+      "lines": 66,
+      "floor": 50,
+      "ms": 7827,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "One more line and you can peek.",
+          "why": "repeats 'One more line' from line 27",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 2,
+          "line": "The fun part is almost here now.",
+          "why": "too vague, not concrete about the work",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 5,
+          "line": "One more line and you can refresh.",
+          "why": "repeats 'One more line' from line 27",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 7,
+          "line": "The greeting is almost ready now.",
+          "why": "repeats 'The greeting is almost ready' from line 48",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 9,
+          "line": "The countdown is almost running now.",
+          "why": "repeats 'The countdown is almost running' from line 9 (different phrasing)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 10,
+          "line": "The list is almost sorted now.",
+          "why": "repeats 'The list is almost sorted' (similar to others)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 11,
+          "line": "The colors are almost in now.",
+          "why": "repeats 'The colors are almost in' (similar to others)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 12,
+          "line": "The loop is almost working now.",
+          "why": "repeats 'The loop is almost working' (similar to others)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 13,
+          "line": "The table is almost neat now.",
+          "why": "repeats 'The table is almost neat' (similar to others)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 15,
+          "line": "The email is almost ready now.",
+          "why": "repeats 'The email is almost ready' (similar to others)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 22,
+          "line": "The door is almost open now.",
+          "why": "not concrete about the work (a 'door' is not a UI element)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 23,
+          "line": "The clock is ticking happily now.",
+          "why": "not concrete about the work (a 'clock' is not a UI element)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 24,
+          "line": "The tail is wagging nicely now.",
+          "why": "not concrete about the work (a 'tail' is not a UI element)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 25,
+          "line": "The ending is smiling already.",
+          "why": "repeats 'The ending is smiling' (similar to others but less concrete)",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 28,
+          "line": "One more line, then call them.",
+          "why": "repeats 'One more line' from line 27",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 29,
+          "line": "The pen is dancing along now.",
+          "why": "not concrete about the work (a 'pen' is not a UI element)",
+          "pool": "agent.nagReplies"
+        }
+      ],
+      "refused": [
+        {
+          "index": 36,
+          "line": "One more line and it glows.",
+          "why": "repeats 'One more line' from line 27",
+          "pool": "agent.nagReplies",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 41,
+          "line": "The font just said hello.",
+          "why": "repeats 'The font just said hello' (similar to others but less concrete)",
+          "pool": "agent.nagReplies",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "kept": [],
+      "error": null
+    }
+  }
+}

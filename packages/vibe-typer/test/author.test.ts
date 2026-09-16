@@ -3,17 +3,25 @@
 // met (a code fence, a preamble, an object keyed by id, an array of arrays),
 // so the parser is held against the mess it will really be handed.
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
   chunk,
   chunkEven,
+  claimsRepeat,
   corpusTopics,
+  crossBracketTwins,
+  familyClash,
   groupCandidates,
   keepFirstPassing,
+  lineKey,
   makeGate,
   mapLimit,
   mergeDropped,
+  modelFamily,
   parseArgv,
   parseCandidates,
   poolFilter,
@@ -21,7 +29,10 @@ import {
   promptHash,
   runOpts,
   sampleSnippets,
+  settleDrop,
   stripFences,
+  voiceExemplars,
+  writerLookupNames,
 } from '../scripts/author-lib.mjs';
 import { lineFault } from '../src/patterns';
 import { britishHit } from '../src/spelling';
@@ -476,5 +487,202 @@ describe('mapLimit', () => {
     });
     expect(out).toEqual([]);
     expect(calls).toBe(0);
+  });
+});
+
+// The editor may not be the family that wrote the lines. Slice three left that
+// to memory and it was not remembered; these three functions are how the tool
+// holds it instead, so they are held here.
+describe('modelFamily', () => {
+  it('reads an Ollama tag by its name', () => {
+    expect(modelFamily('ollama:kimi-k2.6:cloud')).toBe('moonshot');
+    expect(modelFamily('ollama:mistral-large-3:675b-cloud')).toBe('mistral');
+    expect(modelFamily('ollama:gpt-oss:120b-cloud')).toBe('openai');
+    expect(modelFamily('ollama:gemma4:31b')).toBe('google');
+    expect(modelFamily('ollama:glm-5.3-flash:cloud')).toBe('zhipu');
+  });
+
+  it('reads an OpenRouter id by its vendor prefix', () => {
+    expect(modelFamily('openrouter:moonshotai/kimi-k2-thinking')).toBe('moonshot');
+    expect(modelFamily('openrouter:mistralai/mistral-large')).toBe('mistral');
+    expect(modelFamily('openrouter:x-ai/grok-4')).toBe('xai');
+    expect(modelFamily('openrouter:anthropic/claude-opus-5')).toBe('anthropic');
+  });
+
+  it('says unknown rather than guessing', () => {
+    expect(modelFamily('openrouter:nobody/a-model')).toBe('unknown');
+    expect(modelFamily('')).toBe('unknown');
+    expect(modelFamily(null)).toBe('unknown');
+  });
+});
+
+describe('writerLookupNames', () => {
+  it('walks a dotted key from the whole name down to its last part', () => {
+    expect(writerLookupNames('user.nags')).toEqual(['user.nags', 'nags']);
+    expect(writerLookupNames('user.reviewsByProduct.cat-website')).toEqual([
+      'user.reviewsByProduct.cat-website',
+      'reviewsByProduct.cat-website',
+      'cat-website',
+    ]);
+  });
+
+  it('never repeats a name, and answers nothing for nothing', () => {
+    expect(writerLookupNames('nags')).toEqual(['nags']);
+    expect(writerLookupNames('')).toEqual([]);
+  });
+});
+
+describe('familyClash', () => {
+  const placed = [
+    { name: 'user.creeps', family: 'moonshot' },
+    { name: 'agent.replies', family: 'mistral' },
+  ];
+  const names = (got: { name: string }[]) => got.map((c) => c.name);
+
+  it('names the pools the editor wrote itself', () => {
+    expect(names(familyClash('mistral', placed))).toEqual(['agent.replies']);
+    expect(names(familyClash('moonshot', placed))).toEqual(['user.creeps']);
+    expect(familyClash('mistral', placed)[0]!.why).toMatch(/the editor is the family/);
+  });
+
+  it('is empty when the editor wrote none of them', () => {
+    expect(familyClash('google', placed)).toEqual([]);
+  });
+
+  it('names a pool whose writer could not be read, whoever the editor is', () => {
+    // A receipt that failed to parse leaves a pool with no writer, and a gate
+    // that cannot see who wrote a pool has no ground to say the editor did not.
+    // Not knowing is a halt, not a pass — this is the seam a corrupt receipt
+    // would otherwise open.
+    const blind = [...placed, { name: 'user.syncs', family: 'unknown' }];
+    expect(names(familyClash('google', blind))).toEqual(['user.syncs']);
+    expect(familyClash('google', blind)[0]!.why).toMatch(/could not be read/);
+    expect(names(familyClash('mistral', blind))).toEqual(['agent.replies', 'user.syncs']);
+    // A pool with no family word at all is the same case.
+    expect(names(familyClash('google', [{ name: 'user.nags' }]))).toEqual(['user.nags']);
+  });
+
+  it('does not halt on an editor the tables cannot place, but still halts on the pool', () => {
+    // An editor nobody can place cannot be shown to be marking its own work,
+    // so it clears the pools that name a writer and only those.
+    expect(familyClash('unknown', placed)).toEqual([]);
+    expect(familyClash('', placed)).toEqual([]);
+    expect(names(familyClash('unknown', [{ name: 'user.syncs', family: 'unknown' }]))).toEqual([
+      'user.syncs',
+    ]);
+  });
+});
+
+// What the editor may not take. The first pass on another family took two
+// things it should not have: lines the voice sheet itself names, and lines it
+// called repeats of a line under a different bracket.
+describe('lineKey', () => {
+  it('is letters only and lower case, as the cabinet server counts a repeat', () => {
+    expect(lineKey('Hello, World!')).toBe('helloworld');
+    // The rule that matters here: punctuation and case are not a difference.
+    expect(lineKey('On it, and I will keep it small')).toBe(
+      lineKey('  On it, and I will keep it small.  '),
+    );
+  });
+});
+
+describe('voiceExemplars', () => {
+  const sheet = [
+    '# A voice',
+    '',
+    'Prose about the character, with | a pipe in it that is not a table.',
+    '',
+    '## Twenty lines that are the voice',
+    '',
+    '| line                  | where it does its work | source       |',
+    '| --------------------- | ---------------------- | ------------ |',
+    '| is it live yet        | a check-in             | sample, nags |',
+    '| my cousin is asking   | a check-in             | run, nags    |',
+  ].join('\n');
+
+  it('takes the first column of every table row and nothing else', () => {
+    const keys = voiceExemplars(sheet);
+    expect(keys.size).toBe(2);
+    expect(keys.has(lineKey('is it live yet'))).toBe(true);
+    expect(keys.has(lineKey('My cousin is asking.'))).toBe(true);
+    expect(keys.has(lineKey('a check-in'))).toBe(false);
+  });
+
+  it('skips the header row and the rule under it, and takes nothing from nothing', () => {
+    expect(voiceExemplars(sheet).has(lineKey('line'))).toBe(false);
+    expect(voiceExemplars(sheet).has(lineKey('---'))).toBe(false);
+    expect(voiceExemplars('').size).toBe(0);
+  });
+
+  it('reads the sheets this package actually ships', () => {
+    // Both sheets carry twenty lines under "Twenty lines that are the voice".
+    // A sheet whose table stopped parsing would silently un-protect every one
+    // of them, so the count is asserted rather than assumed.
+    const read = (which: 'user' | 'agent') =>
+      voiceExemplars(
+        readFileSync(path.resolve(`packages/vibe-typer/patterns/voice/${which}.md`), 'utf8'),
+      );
+    expect(read('user').size).toBe(20);
+    expect(read('agent').size).toBe(20);
+  });
+});
+
+describe('crossBracketTwins and claimsRepeat', () => {
+  it('finds a line that sits under two brackets, and ignores one that does not', () => {
+    const twins = crossBracketTwins([
+      { pool: 'class', line: 'the blueprint knows what it is building.' },
+      { pool: 'classes', line: 'The blueprint knows what it is building!' },
+      { pool: 'classes', line: 'sorts of items found their family names.' },
+    ]);
+    expect(twins.has(lineKey('the blueprint knows what it is building.'))).toBe(true);
+    expect(twins.has(lineKey('sorts of items found their family names.'))).toBe(false);
+  });
+
+  it('reads the clauses the editor actually writes', () => {
+    expect(claimsRepeat('already appears in the same list, said a different way')).toBe(true);
+    expect(claimsRepeat('redundant with earlier lines about showing buttons')).toBe(true);
+    expect(claimsRepeat('appears in a different way as line 3')).toBe(true);
+    expect(claimsRepeat('does not sound like that character')).toBe(false);
+    expect(claimsRepeat('makes no sense for the place the list says it is used')).toBe(false);
+  });
+});
+
+describe('settleDrop', () => {
+  it('keeps a line the sheet names, whatever else is true of it', () => {
+    expect(settleDrop({ isExemplar: true, why: 'does not sound like that character' })).toBe(
+      'exemplar',
+    );
+    expect(settleDrop({ isExemplar: true, atFloor: true, hasTwinElsewhere: true })).toBe(
+      'exemplar',
+    );
+  });
+
+  it('refuses a repeat claim against a twin under another bracket', () => {
+    // The case the first pass got wrong: sixty labeled brackets read as one
+    // list. Two brackets carrying the same line are two lists, so neither line
+    // may go as a duplicate of the other.
+    const twins = crossBracketTwins([
+      { pool: 'class', line: 'the blueprint knows what it is building.' },
+      { pool: 'classes', line: 'the blueprint knows what it is building.' },
+    ]);
+    const hasTwinElsewhere = twins.has(lineKey('the blueprint knows what it is building.'));
+    expect(hasTwinElsewhere).toBe(true);
+    expect(
+      settleDrop({
+        hasTwinElsewhere,
+        why: 'already appears in the same list, said a different way',
+      }),
+    ).toBe('twin');
+    // Its own bracket is still its own business: a line dropped for the voice,
+    // not for repeating, goes.
+    expect(settleDrop({ hasTwinElsewhere, why: 'does not sound like that character' })).toBe(
+      'drop',
+    );
+  });
+
+  it('lets the floor decide when neither of the first two applies', () => {
+    expect(settleDrop({ atFloor: true, why: 'does not sound like that character' })).toBe('floor');
+    expect(settleDrop({ why: 'does not sound like that character' })).toBe('drop');
+    expect(settleDrop({})).toBe('drop');
   });
 });
