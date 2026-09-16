@@ -298,7 +298,7 @@ describe('the field, mounted', () => {
     const chat = root.querySelector('.vibe-chat')!;
     expect(chat.textContent ?? '').not.toBe('');
     run(mount, 1);
-    expect(root.querySelector('.vibe-beat')!.textContent).toBe('your reply');
+    expect(root.querySelector('.vibe-beat-word')!.textContent).toBe('your reply');
 
     for (const ch of reply) {
       press(ch);
@@ -310,7 +310,7 @@ describe('the field, mounted', () => {
     // The reply landed in the chat as the agent's, and the code is in hand.
     run(mount, 60);
     expect(chat.textContent).toContain(reply.slice(0, 8));
-    expect(root.querySelector('.vibe-beat')!.textContent).toBe('the code');
+    expect(root.querySelector('.vibe-beat-word')!.textContent).toBe('the code');
     expect(root.querySelector('.vibe-code .vibe-live')).not.toBeNull();
   });
 
@@ -338,11 +338,11 @@ describe('the field, mounted', () => {
     const chat = root.querySelector('.vibe-chat')!;
     expect(chat.textContent ?? '').not.toBe('');
     expect(/\d/.test(chat.textContent ?? '')).toBe(false);
-    // The agent's name is in the header, and the header is words too.
-    expect(root.querySelector('.vibe-chat .vibe-head')!.textContent).toContain('Sprocket');
+    // The agent's name heads the editor, its own pane, and the header is words too.
+    expect(root.querySelector('.vibe-editor .vibe-head')!.textContent).toContain('Sprocket');
   });
 
-  it('puts the two faces in the chat header and leaves the words alone', () => {
+  it('puts the user in the chat header and the agent on the editor, and leaves the words alone', () => {
     mount = mountVibeTyper(root, {
       tier: 0,
       endless: false,
@@ -355,29 +355,35 @@ describe('the field, mounted', () => {
       startAudio: false,
     });
     const state = createRun({ seed: 1, tier: 0, endless: false, levelIndex: 0 });
-    const head = root.querySelector('.vibe-chat .vibe-head') as HTMLElement;
-    // The header's words are byte for byte what they were before the faces.
-    expect(head.textContent).toBe(`${planOf(state).product} · Sprocket`);
+    const chatHead = root.querySelector('.vibe-chat .vibe-head') as HTMLElement;
+    const editorHead = root.querySelector('.vibe-editor .vibe-head') as HTMLElement;
+    // The chat is the user's pane: the product, which is theirs, and never
+    // their name. The editor is the agent's pane, where the player types: the
+    // agent's name and the beat word.
+    expect(chatHead.textContent).toBe(planOf(state).product);
+    expect(editorHead.textContent).toBe(
+      `Sprocket · ${DEFAULT_PATTERNS.cabinet.words.beats.request}`,
+    );
 
-    const faces = [...head.querySelectorAll('img')];
-    expect(faces).toHaveLength(2);
+    const userFaces = [...chatHead.querySelectorAll('img')];
+    const agentFaces = [...editorHead.querySelectorAll('img')];
+    expect(userFaces).toHaveLength(1);
+    expect(agentFaces).toHaveLength(1);
     // Off the build's own base, so a Pages build under /<repo>/play/ asks for
     // the right files and a package build asks relatively.
     const base = import.meta.env.BASE_URL;
-    expect(faces.map((img) => img.getAttribute('src'))).toEqual([
-      `${base}vibe/avatars/user.png`,
-      `${base}vibe/avatars/agent.png`,
-    ]);
-    for (const face of faces) {
-      // Decoration: the two names beside them carry the meaning.
+    expect(userFaces[0]!.getAttribute('src')).toBe(`${base}vibe/avatars/user.png`);
+    expect(agentFaces[0]!.getAttribute('src')).toBe(`${base}vibe/avatars/agent.png`);
+    for (const face of [...userFaces, ...agentFaces]) {
+      // Decoration: the words beside them carry the meaning.
       expect(face.getAttribute('alt')).toBe('');
       expect(face.decoding).toBe('async');
     }
-    // The user's face comes first, because the product after it is theirs and
-    // the header never names them; the agent's sits against the agent's name.
-    expect(head.firstElementChild).toBe(faces[0]);
-    expect(faces[0]!.nextElementSibling!.textContent).toBe(planOf(state).product);
-    expect(faces[1]!.nextElementSibling!.textContent).toBe('Sprocket');
+    // Each face comes first in its own header, against the words it belongs to.
+    expect(chatHead.firstElementChild).toBe(userFaces[0]);
+    expect(userFaces[0]!.nextElementSibling!.textContent).toBe(planOf(state).product);
+    expect(editorHead.firstElementChild).toBe(agentFaces[0]);
+    expect(agentFaces[0]!.nextElementSibling!.textContent).toBe('Sprocket');
   });
 
   it('takes a face that will not load out of the header and leaves no box', () => {
@@ -392,22 +398,28 @@ describe('the field, mounted', () => {
       onExit: () => undefined,
       startAudio: false,
     });
-    const head = root.querySelector('.vibe-chat .vibe-head') as HTMLElement;
-    const words = head.textContent;
-    const faces = [...head.querySelectorAll('img')];
+    const chatHead = root.querySelector('.vibe-chat .vibe-head') as HTMLElement;
+    const editorHead = root.querySelector('.vibe-editor .vibe-head') as HTMLElement;
+    const chatWords = chatHead.textContent;
+    const editorWords = editorHead.textContent;
+    const userFace = chatHead.querySelector('img')!;
+    const agentFace = editorHead.querySelector('img')!;
 
-    // One fails: the other stays, and nothing about the words moves.
-    faces[0]!.dispatchEvent(new Event('error'));
-    expect([...head.querySelectorAll('img')]).toEqual([faces[1]]);
-    expect(head.textContent).toBe(words);
+    // The user's face fails: the agent's stays, and nothing about the words moves.
+    userFace.dispatchEvent(new Event('error'));
+    expect(chatHead.querySelectorAll('img')).toHaveLength(0);
+    expect(editorHead.querySelector('img')).toBe(agentFace);
+    expect(chatHead.textContent).toBe(chatWords);
 
-    // Both fail: the header is exactly the three spans it would have been
-    // without this batch at all — no empty element left standing in for a
-    // picture that never arrived.
-    faces[1]!.dispatchEvent(new Event('error'));
-    expect(head.querySelectorAll('img')).toHaveLength(0);
-    expect(head.textContent).toBe(words);
-    expect([...head.children].map((node) => node.tagName)).toEqual(['SPAN', 'SPAN', 'SPAN']);
+    // Both fail: each header is exactly the spans it would have been without
+    // the faces at all — no empty element left standing in for a picture
+    // that never arrived.
+    agentFace.dispatchEvent(new Event('error'));
+    expect(editorHead.querySelectorAll('img')).toHaveLength(0);
+    expect(chatHead.textContent).toBe(chatWords);
+    expect(editorHead.textContent).toBe(editorWords);
+    expect([...chatHead.children].map((node) => node.tagName)).toEqual(['SPAN']);
+    expect([...editorHead.children].map((node) => node.tagName)).toEqual(['SPAN', 'SPAN', 'SPAN']);
   });
 
   it('draws the milestone card over the preview and leaves the toast a plain word', () => {
@@ -594,9 +606,9 @@ describe('the field, mounted', () => {
 
     // The beat word is the lever's, never a constant in the shell.
     const beats = DEFAULT_PATTERNS.cabinet.words.beats;
-    expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.request);
+    expect(root.querySelector('.vibe-beat-word')!.textContent).toBe(beats.request);
     run(mount, 1);
-    expect(root.querySelector('.vibe-beat')!.textContent).toBe(beats.reply);
+    expect(root.querySelector('.vibe-beat-word')!.textContent).toBe(beats.reply);
   });
 
   it('hands the music setting to the engine', () => {

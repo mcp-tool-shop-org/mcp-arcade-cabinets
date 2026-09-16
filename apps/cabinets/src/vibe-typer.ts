@@ -591,20 +591,27 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     img.src = `${import.meta.env.BASE_URL}vibe/avatars/${who}.png`;
     return img;
   };
+  // The chat is the user's pane, so the user's face heads it, before the
+  // product, which is theirs; the header never names the user. The agent's
+  // face heads the editor, which is the agent's pane: the player types there
+  // (the Director's read of 0.11.0 on Pages: the agent belongs beside "your
+  // reply", not beside the user).
   const userFace = avatar('user');
   const agentFace = avatar('agent');
   if (userFace) chatHead.append(userFace);
   chatHead.append(el('span', 'vibe-who', planOf(state).product));
-  chatHead.append(el('span', 'vibe-dot', ' · '));
-  if (agentFace) chatHead.append(agentFace);
-  chatHead.append(el('span', 'vibe-who', agentNameOf(state)));
   const chatList = el('ul', 'vibe-lines');
   const chatScroll = el('div', 'vibe-scroll');
   chatScroll.append(chatList);
   chatPane.append(chatHead, chatScroll);
 
   const editorPane = el('section', 'vibe-pane vibe-editor');
-  const beatWord = el('div', 'vibe-head vibe-beat', words.beats[state.beat]);
+  const beatWord = el('div', 'vibe-head vibe-beat');
+  if (agentFace) beatWord.append(agentFace);
+  beatWord.append(el('span', 'vibe-who', agentNameOf(state)));
+  beatWord.append(el('span', 'vibe-dot', ' · '));
+  const beatText = el('span', 'vibe-beat-word', words.beats[state.beat]);
+  beatWord.append(beatText);
   const codeBox = el('div', 'vibe-code');
   const tabHint = el('div', 'vibe-tab', 'Tab');
   tabHint.hidden = true;
@@ -1052,7 +1059,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     ].join('|');
     if (sig === lastSig) return;
     lastSig = sig;
-    beatWord.textContent = words.beats[state.beat];
+    beatText.textContent = words.beats[state.beat];
     codeBox.replaceChildren();
     if (state.beat === 'code' || state.beat === 'creep') {
       const lines = codeOf(state);

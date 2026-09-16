@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- **The agent's face heads the editor**, its own pane, beside the beat word; the chat header keeps the user's face before the product and never names the user. Read off the published 0.11.0 by the Director: the agent belongs beside your reply, not beside the user.
 
 ## [0.11.0] - 2026-09-16
 
