@@ -1,11 +1,11 @@
 {
-  "name": "@mcptoolshop/ghost-on-the-menu",
+  "name": "@mcptoolshop/vibe-typer",
   "version": "0.9.0",
-  "description": "An arcade shooter where you are the agent, played against what MCP servers actually said on the wire. Plays in your browser or runs as an MCP server.",
+  "description": "A typing arcade game where you are a coding agent. Your user has an idea, you type the code, and the thing gets built while you both watch.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "ghost-on-the-menu": "dist/cli.js"
+    "vibe-typer": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -20,21 +20,21 @@
     "provenance": true
   },
   "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "mcp-server",
+    "typing",
+    "typing-game",
     "game",
     "arcade",
-    "shooter",
     "agent",
+    "coding",
     "ollama",
-    "shmup"
+    "mcp",
+    "model-context-protocol"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "pnpm --dir ../.. exec vitest run packages/launcher/test",
-    "pack:dist": "node scripts/build.mjs --cabinet ghost",
-    "prepack": "node scripts/build.mjs --cabinet ghost --check"
+    "test": "pnpm --dir ../.. exec vitest run packages/launcher-vibe-typer/test",
+    "pack:dist": "node scripts/build.mjs",
+    "prepack": "node scripts/build.mjs --check"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
@@ -42,7 +42,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets.git",
-    "directory": "packages/launcher"
+    "directory": "packages/launcher-vibe-typer"
   },
   "bugs": {
     "url": "https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/issues"

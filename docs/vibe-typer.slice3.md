@@ -761,3 +761,238 @@ is neither in `apps/`, `packages/` nor the brand repo); and
 `git rm apps/cabinets/public/vibe/frames/<kind>.png` returns the preview to the rectangles with no other
 change, because `drawFrame` is still the fallback. Every generation, accepted or rejected, is a row with its
 job id, seed and prompt, so the spend is auditable at seven of twelve. No skip.
+
+## Sub-slice F — one package per cabinet
+
+**Branch:** `cabinet/vibe-typer-s3f`, one commit, not merged, not pushed, nothing published. `pnpm verify`,
+`pnpm build:play` and `pnpm build:launcher` (both packages) green; `npm pack --dry-run` and an identity scan on
+both packed tarballs clean.
+
+`0.9.0` shipped both cabinets inside `@mcptoolshop/ghost-on-the-menu`, which made the name wrong: a player who
+ran `npx @mcptoolshop/ghost-on-the-menu` got a switch with a typing game on it. The Director decided on
+2026-09-15 that each cabinet ships as its own npm package and the arcade bundle stays on Pages. This is the
+packaging for that; the public pages were written by the lead and are not touched here.
+
+### What was built
+
+```
+apps/cabinets/src/env.d.ts                  VITE_CABINET: 'all' | 'ghost' | 'vibe'
+apps/cabinets/vite.config.ts                defines import.meta.env.VITE_CABINET as a literal in every
+                                            build, and halts on a value it does not know
+apps/cabinets/src/main.ts                   HAS_GHOST / HAS_VIBE, switchMenu() lifted out of menu(), and
+                                            menu() as an if/else chain the bundler can fold
+packages/vibe-typer/src/corpus.ts           /* #__PURE__ */ on DEFAULT_CORPUS
+packages/vibe-typer/src/patterns.ts         /* #__PURE__ */ on DEFAULT_PATTERNS
+packages/launcher/scripts/build.mjs         --cabinet ghost|vibe, --out, --check; the per-cabinet public
+                                            split, layout and marker gate; exports pack() and checkDist()
+packages/launcher/package.json              pack:dist and prepack name the cabinet; prepack checks
+packages/launcher/src/serve.ts              voiceUrl may be null, which does not proxy /voice at all
+packages/launcher-vibe-typer/package.json   @mcptoolshop/vibe-typer, bin vibe-typer, zero dependencies
+packages/launcher-vibe-typer/src/cli.ts     port 7778, the endless seat, --mcp exits 2
+packages/launcher-vibe-typer/scripts/build.mjs   calls the shared pack with --cabinet vibe
+packages/launcher-vibe-typer/test/cli.test.ts    the flags, and --mcp naming slice 4 and leaving with 2
+packages/launcher-vibe-typer/test/serve.test.ts  what this package serves, and what it does not carry
+packages/launcher-vibe-typer/{LICENSE,tsconfig.json}
+package.json                                build:launcher builds both; :ghost and :vibe do one each
+.github/workflows/release.yml               the version gate over every manifest, both bins smoked, both
+                                            tarballs checked, one idempotent publish loop
+pnpm-lock.yaml                              the new workspace package and nothing else
+```
+
+Eighteen tests added (seven on the arguments, eleven on the route); the suite is 640 across 52 files.
+
+### `VITE_CABINET`
+
+`all` is the default — the dev server, Pages and the arcade bundle — and it is what
+`pnpm -F @mcp-arcade-cabinets/cabinets dev` and `pnpm build:play` get. `ghost` and `vibe` exist for the two npm
+packages. With one cabinet the switch is not rendered at all, the menu is that cabinet's, and the other
+cabinet is not in the bundle.
+
+Three things make the fold actually happen, and all three are load-bearing:
+
+1. **The value is `define`d, not left to Vite's `VITE_` handling.** Vite only substitutes a `VITE_*` key that
+   is actually set, so an unset `import.meta.env.VITE_CABINET` would survive into the bundle as a property
+   read — and a property read is not something Rollup can fold. `vite.config.ts` defines it every time, and
+   halts on a value outside the three, because a typo in a pack script would otherwise ship both cabinets
+   inside a package named for one.
+2. **An if/else chain, no early returns.** Rollup folds a chain on constant conditions down to the live
+   branch. `if (!HAS_GHOST) { …; return; }` would leave the code after it standing, and with it the reference
+   that keeps the other cabinet alive.
+3. **`switchMenu` is its own function, and so is the cards list.** The stored `cabinet` pref is read only
+   inside `switchMenu`, which a single-cabinet build folds away — that is what stops
+   `readVibePrefs().cabinet` from resurrecting the switch for a browser that last played the other game. The
+   cards list became `cabinetCards()` for the same reason: as a module constant it named the typing cabinet's
+   levers from a line that a Ghost build could not drop.
+
+**The two `/* #__PURE__ */` annotations are the fourth thing, and they are where the saving actually came
+from.** With the branch alone, a Ghost build still carried the entire typing corpus — 249 snippets, a fifth of
+a megabyte — because `export const DEFAULT_CORPUS = loadCorpus({…})` is a top-level call that can throw, so a
+bundler must assume it matters and keeps it, and with it the six JSON imports. Marking the two constructions
+pure says the only thing those calls do is produce a value. Where something reads them — the cabinet, every
+test, the play-through — they run exactly as before and still halt on the first bad lever. Measured: the Ghost
+shell went from 480,282 B to 218,879 B with those two comments and nothing else.
+
+| Shell build                           | `assets/index-*.js` | Against `all` |
+| ------------------------------------- | ------------------- | ------------- |
+| `all`, launcher (local seats on)      | 538,303 B           | —             |
+| `ghost`, launcher                     | 218,879 B           | −319,424 B    |
+| `vibe`, launcher                      | 448,115 B           | −90,188 B     |
+| `all`, Pages (`build:play`, no seats) | 531,654 B           | —             |
+
+Checked by grep on each bundle: the Ghost shell has none of `data-vibe-seat`, `/cabinet/endless`,
+`cal-sq-d1-001`, `Claudette` or `Vibe Typer`; the Vibe shell has none of `data-local-seats`, `Ollama bosses`,
+`/ollama/api/generate`, `/cabinet/say`, `sprites/`, `tracks/` or `Ghost on the Menu`.
+
+### The pack script
+
+`packages/launcher/scripts/build.mjs` is now shared by both packages and takes `--cabinet ghost|vibe`, an
+optional `--out <package dir>`, and `--check`. It defaults to `ghost` into `packages/launcher`, which is what
+it did before. `packages/launcher-vibe-typer/scripts/build.mjs` imports `pack` and `checkDist` from it and
+passes `vibe`; there is one pack script, one marker gate and one public split, so a rule added for one package
+cannot go missing from the other.
+
+**The public split.** Vite copies `public/` whole, so the built shell always has all four asset directories.
+The copy into `dist/play` filters by top-level directory: Ghost takes `sprites/` and `tracks/`, Vibe takes
+`keys/` and `vibe/`, and both take the twenty tapes. What the other cabinet would have carried is then checked
+for by name, so a filter that stopped working is a halt and not a bigger tarball nobody reads.
+
+**The marker needles**, per package. The `absent` half is what the split added: a string only the other
+cabinet's code carries must not be in this bundle, because the way "both cabinets in one package" comes back
+is silently, through a shell built without `VITE_CABINET`.
+
+| Package                          | Must be in the play bundle                                                      | Must not be      |
+| -------------------------------- | ------------------------------------------------------------------------------- | ---------------- |
+| `@mcptoolshop/ghost-on-the-menu` | `data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, `Ollama bosses` | `data-vibe-seat` |
+| `@mcptoolshop/vibe-typer`        | `data-vibe-seat`, `/cabinet/endless`, `/ollama/api/tags`                        | `Ollama bosses`  |
+
+**`prepack` checks; it no longer rebuilds.** With one package, `prepack: node scripts/build.mjs` was right.
+With two it is a trap: `pnpm build:launcher` packs Ghost and then Vibe, so the built shell left on disk belongs
+to whichever went last, and a `prepack` that rebuilt from it would quietly reassemble the _other_ package out
+of the wrong shell — at `npm publish` time, which is the one moment nothing may be quietly reassembled.
+`checkDist` runs the same layout, stray and marker gates over the dist that is already there. A stale,
+incomplete or wrong-cabinet dist still halts before the irreversible step, and the trap is gone. Proved both
+ways on this rig: with the Vibe shell on disk, `node scripts/build.mjs --cabinet ghost` halts naming the three
+missing needles, and `--check` on each package passes.
+
+### The tarballs
+
+Measured on this rig, `npm pack --dry-run --json`, at version `0.9.0` (the release is the coordinator's).
+
+| Package                          | Files | Packed  | Unpacked | Shell js | Public                          | Tapes  |
+| -------------------------------- | ----- | ------- | -------- | -------- | ------------------------------- | ------ |
+| `@mcptoolshop/ghost-on-the-menu` | 63    | 5.76 MB | 7.94 MB  | 214 kB   | sprites 462 kB, tracks 5,041 kB | 139 kB |
+| `@mcptoolshop/vibe-typer`        | 72    | 0.98 MB | 2.13 MB  | 438 kB   | keys 332 kB, vibe frames 475 kB | 139 kB |
+
+`0.9.0` as published was 103 files and 6.4 MB packed in one package. Ghost is now 63 files and 5.76 MB — it
+lost the five keyboard sets, the device frames and the typing bundle. Vibe is under a megabyte packed with the
+tapes included, and carries no `cabinet-stdio.js`, which is the 1.5 MB that would have come with an MCP server
+it does not have yet.
+
+Identity scan: **CLEAN** on both packed tarballs (unpacked and scanned as a directory) and on the tracked
+tree.
+
+### The release
+
+One job, one gate, one loop, and the filename stays `release.yml` — npm pins Trusted Publishing to it, now for
+two packages, with no `environment:` on either side.
+
+- **The version gate** walks `package.json`, `apps/*/package.json` and `packages/*/package.json` and requires
+  one version across all of them, then `SERVER_VERSION`, then the tag. It used to compare two files. The shell
+  and the sim are bundled _into_ the packages, so a package left behind ships inside a tarball that claims the
+  new version.
+- **The smoke** runs `--version` on both bins, and `--mcp` on both in the way each one means it: Ghost lists
+  its six tools over stdio, and Vibe must leave with exactly 2 and say a line naming slice 4. Not 0, which
+  would read as "it worked", and not 1, which would read as "it broke".
+- **The tarball contract** runs over both directories with a per-package list of what must be there, what must
+  be carried (`sprites/` and `tracks/`, or `keys/` and `vibe/`), and what must be gone.
+- **The publish loop** is one `bash -e` over the two package directories and is idempotent: `npm view
+<name>@<version> version` succeeding means that exact version is already on the registry, so the package is
+  skipped. A half-finished publish — the first package up, the second refused — used to be a dead end, because
+  npm will not take a version string twice and there is no undoing the first after 72 hours. Now the rerun
+  publishes only the straggler. `--provenance --access public` on both.
+
+The workflow was not run and nothing was published. `workflow_dispatch` still dry-runs by default, and now
+dry-runs both.
+
+### Compensators — the second package
+
+`docs/npm-launcher.md`'s table is binding and unchanged for `@mcptoolshop/ghost-on-the-menu`. These are the
+same rows for the new name; the lead owns that file and the coordinator folds them in.
+
+| Action                                                     | Undo                                                                                                             | State afterwards                                                                                | Owner    |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| `npm publish @mcptoolshop/vibe-typer` (within 72 h)        | `npm unpublish @mcptoolshop/vibe-typer@<v>`                                                                      | Version gone; **that exact version string can never be republished**                            | Director |
+| `npm publish @mcptoolshop/vibe-typer` (after 72 h)         | `npm deprecate @mcptoolshop/vibe-typer@<v> "<why>"`                                                              | Version stays on the registry forever; installs print the reason                                | Director |
+| The placeholder publish, which **creates the name**        | `npm deprecate …@0.0.0 "placeholder"`, or `npm unpublish` within 72 h                                            | The name is held for good either way. `npm owner add/rm` transfers it; it is never released     | Director |
+| Trusted Publishing set up for the second name on npmjs.com | Remove the trusted publisher in that package's npm settings                                                      | CI can no longer publish that package; the other package and everything published are untouched | Director |
+| `gh release create` — **now publishes TWO packages**       | `gh release delete <tag>` deletes the release, **neither npm version**; use the npm rows above, once per package | The tag survives a release delete; both npm versions survive both                               | Director |
+| A publish loop that got one package up and not the other   | Re-run the workflow: the loop skips what is already on the registry                                              | Only the straggler is published; the first package is untouched and its version is not retaken  | Director |
+
+**The fifth row is the one to read twice, and it got heavier.** Cutting a release used to publish one package.
+It now publishes two, and neither is undoable after 72 hours.
+
+### Decisions
+
+1. **`prepack` checks instead of packing.** The reason is above and it is the change most likely to be
+   questioned: it looks like a weakening of a gate. It is not — the same layout, stray and marker checks run,
+   over the artifact that will actually be published. What it removes is a rebuild that, with two packages,
+   reads from whichever shell happened to be built last.
+2. **The two `/* #__PURE__ */` annotations in `packages/vibe-typer`.** Behavior-neutral by construction: they
+   permit a bundler to drop an unused binding and change nothing where the binding is used. Without them the
+   brief's "the other cabinet's module is not imported at all" is not true, and the Ghost package ships the
+   typing corpus. 261,403 B of the Ghost shell's saving is these two comments.
+3. **The same annotation was NOT added to `packages/ghost-on-the-menu/src/patterns.ts`.** The brief says
+   Ghost's game code is untouched, and it is. Measured cost of holding that line: the Vibe shell carries
+   Ghost's 54 kB of pattern levers, which is **29,571 B** of its bundle (448,115 B with the line held,
+   418,544 B with the annotation added — tried, measured, reverted). One comment for the coordinator or a
+   later Ghost-side branch to take.
+4. **The Vibe package does not light the say seat.** `sayModule: null`, `endlessModule` pointing at the same
+   bundled `cabinet-server.js`. The say seat is the shooter's grammar — a boss's line over a wave — and this
+   cabinet has no bosses. `/cabinet/say` answers 503 in this package, which is what the route already says
+   when there is no module.
+5. **The Vibe package does not proxy `/voice` either, and that goes beyond the brief's list.** Nothing on the
+   typing cabinet's page calls `/voice` (grep: zero hits in `vibe-typer.ts` and `typer-audio.ts`, four in
+   `ghost.ts`), and its package page documents one environment variable. `voiceUrl` in `ServeOpts` may now be
+   null, which 404s the prefix before a socket is opened — the same answer the allowlist already gives a path
+   it does not name. Ghost passes a real URL and is unchanged. One line to flip if the coordinator wants it
+   lit.
+6. **`anthropicKey: null` in the Vibe package.** Not a cost decision: the menu names the seat from the
+   daemon's own tag list (`probeSeatName` reads `/ollama/api/tags`), so a Claude tier sitting behind it would
+   put a name on screen that did not write the line. It would also spend a player's key on a game whose page
+   says it makes no network call of its own. The dev server still sits the full tiered seat.
+7. **`--mcp` leaves with 2 and says which slice.** An agent that pointed a client at `vibe-typer --mcp` must
+   not get a browser. The line names slice 4, goes to stderr, and the CI smoke asserts both the code and the
+   word.
+8. **`build:launcher` builds both; `build:launcher:ghost` and `:vibe` build one.** `verify` is unchanged —
+   it does not pack, and making it pack twice would put two vite builds on every local gate for no finding.
+9. **No new dependencies.** `pnpm-lock.yaml` moves by six lines: the new workspace package and its `esbuild`
+   devDependency, which is the same one the Ghost launcher already had. Neither package has a `dependencies`
+   block, and neither may grow one.
+10. **The version stays `0.9.0` in both manifests.** The bump to `0.10.0` is the release, which is the
+    coordinator's through the full treatment, after the Director has configured Trusted Publishing on
+    `@mcptoolshop/vibe-typer`. The version gate requires every manifest to agree, so the bump is one edit
+    across the workspace and the gate will say if one is missed.
+
+### Standards
+
+**ANDON_AUTHORITY (3).** Five gates already halted before the irreversible step; the split adds two that are
+specific to it. The pack halts when the shell it was given belongs to the other cabinet (proved on this rig,
+three needles named), and when the dist carries the other cabinet's public directories. Each names the command
+that fixes it. The tarball contract in CI re-asks both questions of the artifact itself.
+
+**NAMED_COMPENSATORS (3).** The table above, six rows, an owner each, including the row the split created: a
+publish loop that got one package up and not the other. No skip is available for `npm publish` and none is
+taken.
+
+**DECOMPOSE_BY_SECRETS (3).** This sub-slice is the standard: what changes together is packaged together, and
+what a player of one cabinet never touches is not in their tarball. `VITE_CABINET` and the public split are
+the same decision made at two layers, and the marker gate is how each layer proves the other happened.
+
+**EXTERNAL_VERIFIER (1).** Unchanged and still the weak one: CI runs both built bins in a different process on
+a different machine than the one that wrote them, which catches a broken bundle, but nothing of a different
+family reads this diff inside the workflow. **Remediation:** the different-family review from a packet before
+merge, as every sub-slice of this slice has had. Owner: the coordinator. Target: this sub-slice's merge.
+
+**PIN_PER_STEP (2), UNCERTAINTY_GATED_HUMANS (2).** As `docs/npm-launcher.md` scores them, unchanged. The
+human checkpoint is still the release itself, and it now gates two names at once — which is the argument for
+writing the sixth compensator row rather than discovering it during a half-finished publish.
