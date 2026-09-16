@@ -43,6 +43,7 @@ import {
 import { listPilotModels } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
 import { CONFETTI_MAX, cuesFor, shakeFor, type Cue } from './typer-cues';
+import { PIECE_KINDS, pieceKindOf, type PieceKind } from './typer-tiles';
 import {
   createTyperAudio,
   DEFAULT_MUSIC,
@@ -404,6 +405,8 @@ interface Piece {
   size: number;
   /** Seconds left of the pop. */
   pop: number;
+  /** What this piece is a picture of, derived when it shipped (slice 4B). */
+  kind: PieceKind;
 }
 
 interface Speck {
@@ -603,6 +606,27 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       img.src = `${import.meta.env.BASE_URL}vibe/frames/${kind}.png`;
     }
   }
+  // The painted piece tiles, keyed `<stack>/<kind>`, on the same rule as the
+  // frames: a tile that is missing, slow or broken leaves the flat block
+  // exactly as it was. Fifty-six of them exist and a run is in one stack at a
+  // time, so a stack's eight are asked for the first time a level of that
+  // stack draws rather than all at the mount — it keeps a cabinet that plays
+  // one story level from fetching the other six stacks' art for nothing, and
+  // in endless it costs one request burst per stack change.
+  const tiles = new Map<string, HTMLImageElement>();
+  const tilesAsked = new Set<string>();
+  const askTiles = (stack: string) => {
+    if (tilesAsked.has(stack) || typeof Image === 'undefined') return;
+    tilesAsked.add(stack);
+    for (const kind of PIECE_KINDS) {
+      const key = `${stack}/${kind}`;
+      const img = new Image();
+      img.decoding = 'async';
+      img.addEventListener('load', () => tiles.set(key, img), { once: true });
+      img.addEventListener('error', () => tiles.delete(key), { once: true });
+      img.src = `${import.meta.env.BASE_URL}vibe/tiles/${key}.png`;
+    }
+  };
   const queue: RunInput[] = [];
   const chat: ChatItem[] = [];
   let chatAt = 0;
@@ -819,6 +843,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     c.fillStyle = '#101018';
     c.fillRect(0, 0, PREVIEW_W, PREVIEW_H);
     const plan = planOf(state);
+    askTiles(plan.stack);
     const kind = DEVICE[plan.stack] ?? 'terminal';
     const box = frameBox(kind);
     const art = frames.get(kind);
@@ -845,6 +870,19 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       c.fillStyle = palette[i % palette.length]!;
       c.globalAlpha = 0.9;
       c.fillRect(cx - w / 2, cy - h / 2, w, h);
+      // The block is drawn first either way, so the packed area still reads as
+      // one filled surface and the packing is unchanged. A loaded tile then
+      // sits on it as the largest square the block holds, centered: a wide
+      // block shows its own color either side of the picture, and a block too
+      // small to hold anything legible simply shows a very small picture on a
+      // patch of color. Tiles carry a translucent near-black plate of their
+      // own, which is what keeps an icon readable on the two lighter colors in
+      // every palette.
+      const tile = tiles.get(`${plan.stack}/${piece.kind}`);
+      if (tile) {
+        const side = Math.min(w, h);
+        c.drawImage(tile, cx - side / 2, cy - side / 2, side, side);
+      }
       c.globalAlpha = 1;
     });
     // The confetti, seeded, and the ribbon in words.
@@ -912,8 +950,22 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const drainEvents = () => {
     const cues = cuesFor(state.events);
     for (const event of state.events) {
-      if (event.kind === 'piece')
-        pieces.push({ id: `p${pieces.length}`, size: event.size, pop: POP_MS });
+      if (event.kind === 'piece') {
+        // The kind is read here because here is the only place the shipped
+        // snippet is still in reach: `ship` pushes this event and the step
+        // returns, so `advance` has not moved the request index or the level
+        // yet, and the drain runs once per step. The sim keeps carrying
+        // `{ id, size }` and nothing else — a field added there would move
+        // every play-through, and sub-slice A just proved them byte-identical.
+        const id = `p${pieces.length}`;
+        const shipped = planOf(state).requests[state.requestIndex]?.snippet;
+        pieces.push({
+          id,
+          size: event.size,
+          pop: POP_MS,
+          kind: pieceKindOf(shipped ?? { id, topics: [] }),
+        });
+      }
       if (event.kind === 'line' && event.ok) {
         cleanLines.push({
           seconds: Math.max(0.01, state.clock - lineStart),

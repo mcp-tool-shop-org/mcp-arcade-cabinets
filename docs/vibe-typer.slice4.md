@@ -598,3 +598,351 @@ now refuses ten of kimi's forty asks as repeats and the eight it queues are eigh
 path's table is as measured and was not re-run: nothing in this item touches it. The band with the seat off is
 untouched — the band feeds the sim directly and never calls a tool — and both play-throughs still diff clean
 against `main`.
+
+## Sub-slice B, batch one — the piece tiles
+
+**Branch:** `cabinet/vibe-typer-s4b1`, one commit, not merged, not pushed, nothing published.
+`pnpm verify`, `pnpm build:play` and `pnpm build:launcher` (both packages) green; `npm pack --dry-run --json`
+on both, measured against `main`.
+
+**Spend:** eight generations. One contact sheet per stack — seven stacks, eight piece kinds each — plus one
+re-roll of the python sheet. Seven accepted, one rejected. The Director opened the count for this batch rather
+than capping it at twelve, because the last batch stopped at seven of twelve and the tiles are the single
+largest piece of the look. A generation per tile would have been fifty-six, and would have held the palette
+worse, because fifty-six separate draws have fifty-six chances to drift.
+
+No other art was made. Avatars, milestone cards and the backdrop stay in later batches on their own approval.
+
+### What was built
+
+```
+apps/cabinets/public/vibe/tiles/<stack>/<kind>.png   56 tiles, 128x128 RGBA, seven stacks x eight kinds.
+                                                     880 KB in total; 4.6 KB to 27.6 KB each.
+apps/cabinets/scripts/slice-tiles.mjs                the cut: PNG in and out over node:zlib, no dependency.
+apps/cabinets/scripts/slice-tiles.d.mts              its types, so the test that pins the cell math is TS.
+apps/cabinets/src/typer-tiles.ts                     PIECE_KINDS, the topic table, pieceKindOf.
+apps/cabinets/src/vibe-typer.ts                      Piece gains a kind; the tiles Map, asked per stack;
+                                                     drawPreview draws the tile over the block when one is
+                                                     loaded and the block alone when one is not.
+apps/cabinets/test/typer-tiles.test.ts               15 tests: the derivation over the shipped corpus, and
+                                                     the slicer against a synthetic sheet.
+apps/cabinets/test/typer-mount.test.ts               + one: a piece ships and the preview takes the block
+                                                     path, because jsdom loads no image.
+docs/art/receipts.json                               + vibe_typer_batch_2: route, the `licence` pointer,
+                                                     acceptance, compensators, 64 rows (8 sheets, 56 tiles).
+.gitignore                                           + docs/art/originals-vibe-2/
+```
+
+### The route
+
+`bfl/flux-2-max` through the official Comfy Cloud MCP (`partner_generate`, the workflow-persist path,
+`Flux2ImageNode`) — the same route, and under the same `licence` block, as batch one and as Ghost's brief-1
+set. `2:1` was asked for and the node rendered 1024x768, exactly as it did in batch one; a 4x2 grid in a 4:3
+frame gives tall cells, which costs nothing because every box is padded to a square before it is cut.
+
+The reference chain is what held the set together. The first sheet (bash) took the **shipped terminal frame**
+by public raw URL, so the tiles are cousins of the frames and the logo. Every later sheet took the **accepted
+bash sheet** by `prompt_id`. It worked better than expected: the eight crop boxes land within two or three
+pixels of each other across all seven sheets, so the model redrew the same eight objects in a new palette
+rather than reinventing them.
+
+`submit_batch` was tried first for the six followers and refused: its `medias[]` takes a public URL or an
+uploaded name and not a Comfy output by `prompt_id`. Handing a partner node an auth-gated URL is against the
+skill's rule and a fresh signed link expires in about five minutes, so the six went out as six calls instead
+of one batch. Six submits cost six round trips and nothing else; the jobs still ran concurrently.
+
+### The prompts, verbatim
+
+Every sheet is the same prompt with one clause swapped. The **first** sheet opens:
+
+> In exactly the same chunky flat 16-bit arcade illustration style, palette weight and pixel scale as the
+> reference image:
+
+and every later sheet opens:
+
+> In exactly the same chunky flat 16-bit arcade illustration style, palette weight, pixel scale and four
+> column by two row layout as the reference sheet, and with exactly the same eight icons drawn the same way,
+> but in a different palette:
+
+The body is identical in all eight:
+
+> a contact sheet of eight separate small icons laid out in a strict grid of four columns and two rows on one
+> unbroken flat near-black (#101018) background. There are no grid lines, no borders, no boxes, no panels and
+> no frames of any kind — only the eight icons floating on the same near-black ground, each one small and
+> centered in its own cell with wide empty near-black margins all around it, so that no icon touches another
+> and no icon touches the edge of the picture. Each cell holds exactly one icon and nothing else. Reading the
+> top row from left to right and then the bottom row from left to right, the eight icons are: first, a small
+> blocky machine box with one square input slot cut into its left side and one square output slot cut into its
+> right side; second, a small plain grid of blank empty cells, three columns by three rows; third, one rounded
+> raised button cap seen straight on, a single smooth blank top with a thick side edge under it; fourth, a
+> short segment of road with one right-angle bend in it, a plain thick band with a corner; fifth, a plain
+> closed ring, a thick circular band with a round hole through the middle; sixth, a single page with one
+> folded-over corner, completely blank; seventh, one rounded speech bubble with a small tail at its lower
+> left, completely empty inside; eighth, four upright bars of four different heights standing side by side in
+> a row on a flat base. Everything is drawn perfectly flat and face on, straight at the viewer, no
+> perspective, no tilt, no angle. Every icon is drawn in
+
+then the stack's four colors by name and hex, then the amber clause, then the closing clause:
+
+> Hard edges, flat colors, no gradients, no reflections, no noise, no texture, no vignette. No letters, no
+> numbers, no words, no arrows, no symbols, no user interface labels, no text of any kind anywhere in the
+> image.
+
+The color clauses, in full:
+
+| Sheet          | The clause                                                                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bash           | moss green (#5b8c5a), pale green (#7aa878), deep green (#3e6b48) and light green (#9ec49a) only, on the flat near-black (#101018) ground                   |
+| csharp         | slate blue (#6a8aaa), pale sky blue (#8fb0cc), deep slate blue (#47637f) and light sky blue (#a9c6dd) only, on the flat near-black (#101018) ground        |
+| java           | bronze (#a08040), pale tan (#c2a063), deep brown (#7a5f2c) and light sand (#d8bd8a) only, on the flat near-black (#101018) ground                          |
+| javascript     | warm amber (#e8a04a), pale apricot (#f0bd7d), deep ochre (#b87a2c) and light cream (#f6d6ac) only, on the flat near-black (#101018) ground                 |
+| python         | steel blue (#5a7fa8), pale blue (#7fa3c6), deep navy blue (#3f5c7d) and light powder blue (#a8c4de) only, on the flat near-black (#101018) ground          |
+| python re-roll | medium steel blue (#5a7fa8), pale blue (#7fa3c6), muted slate blue (#3f5c7d) and light powder blue (#a8c4de) only, on the flat near-black (#101018) ground |
+| sql            | muted violet (#7a6aa0), pale lilac (#9a8cc0), deep plum (#584a78) and light lavender (#bdb2d8) only, on the flat near-black (#101018) ground               |
+| integration    | dark teal (#2a5a5a), muted teal (#468080), deep teal (#1c4040) and light teal (#6fa5a5) only, on the flat near-black (#101018) ground                      |
+
+Every sheet but javascript then carries `, with one small warm amber (#e8a04a) accent on one icon.` — javascript
+is the amber stack, so a separate amber accent would have had nothing to stand against, and that clause is
+replaced by a full stop. The python re-roll adds one sentence before the closing clause:
+
+> Keep the icons in the middle of that range and clearly lighter than the ground: the body of every icon is a
+> medium blue at the weight of the reference sheet's greens, never a dark navy and never nearly black, and the
+> darkest blue is used only for thin edges.
+
+### Per sheet
+
+| Sheet          | Seed | Verdict      | Glyph score | What it is, and why                                                                                                                                                                                |
+| -------------- | ---- | ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bash           | 7401 | accepted     | 0.0000083   | The first sheet, and the reference for the other six. A clean 4x2 on the first look, all eight objects in the greens, one amber accent on the machine, nothing touching an edge.                   |
+| csharp         | 7402 | accepted     | 0.000022    | The same eight shapes in slate blue, within two pixels of the bash layout.                                                                                                                         |
+| java           | 7403 | accepted     | 0.000013    | The same eight in bronze and sand. The button reads as a dish rather than a cap — the one place the palette pushed the form. Kept: it is still a raised round thing and reads apart from the ring. |
+| javascript     | 7404 | accepted     | 0.0000070   | The amber stack, so no separate accent. The road lost its lane dashes, a small miss against the bash sheet and no loss at 128 px.                                                                  |
+| python         | 7405 | **rejected** | 0.000012    | A miss on palette, not on layout. The eight shapes are right and glyph-free, but the model read "deep navy blue" as the whole picture: every icon body came back nearly as dark as the ground.     |
+| sql            | 7406 | accepted     | 0.0000095   | The same eight in violet and lilac, road dashes intact.                                                                                                                                            |
+| integration    | 7407 | accepted     | 0.0000062   | The same eight in teal, the darkest palette in the set. The ring and the cap sit closer to the ground than elsewhere; they still read, and the plate the slicer keeps is what carries them.        |
+| python re-roll | 7408 | accepted     | 0.000013    | It corrected, and overcorrected: the bodies are paler than the steel blue the brief names, closer to ice. Kept, because contrast against a near-black screen is what a small block needs.          |
+
+The brief's exact mid-tone blue was not hit on either python generation. That is this batch's one unmet color
+note, and it is a miss, not a style choice: two generations were spent on it and the better of the two was
+installed.
+
+### Per tile
+
+All 56 passed `ai-eyes image_contains` on "text, letters, numbers or written words" at threshold 0.02, on the
+first look, with no re-slice and no re-roll for a glyph. The scores:
+
+| Kind     | bash        | csharp      | java        | javascript  | python      | sql         | integration |
+| -------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| function | 0.000013401 | 0.000014930 | 0.000020777 | 0.000007396 | 0.000011309 | 0.000011401 | 0.000007033 |
+| table    | 0.000028037 | 0.000021158 | 0.000019844 | 0.000046922 | 0.000031671 | 0.000014146 | 0.000028940 |
+| button   | 0.000003272 | 0.000007260 | 0.000006440 | 0.000004440 | 0.000003425 | 0.000001908 | 0.000002572 |
+| route    | 0.000010572 | 0.000023470 | 0.000018212 | 0.000100000 | 0.000027782 | 0.000007519 | 0.000008960 |
+| loop     | 0.0002      | 0.0003      | 0.0001      | 0.0001      | 0.0006      | 0.0001      | 0.0001      |
+| file     | **0.0024**  | 0.0006      | 0.0002      | 0.0015      | 0.0005      | 0.0006      | 0.0012      |
+| message  | 0.0017      | 0.0008      | 0.0012      | 0.0009      | 0.0006      | 0.0003      | 0.0006      |
+| chart    | 0.0002      | 0.0004      | 0.0005      | 0.0004      | 0.0001      | 0.0003      | 0.0001      |
+
+The highest score in the batch is bash's `file` at 0.0024, eight times under the threshold. It is not a glyph:
+a blank page is page-shaped, and page-shaped is most of what that query measures. Looked at at full size, the
+page carries nothing at all. The same effect lifts every `file` and `message` tile, and every one is still
+well under.
+
+And the sizes, in KB — every tile is under the 40 KB the brief sets:
+
+| Kind     | bash | csharp | java | javascript | python | sql  | integration |
+| -------- | ---- | ------ | ---- | ---------- | ------ | ---- | ----------- |
+| function | 21.7 | 11.7   | 12.4 | 23.2       | 12.1   | 17.6 | 16.8        |
+| table    | 24.8 | 13.1   | 15.3 | 21.8       | 15.0   | 17.6 | 15.8        |
+| button   | 26.2 | 16.9   | 18.6 | 27.6       | 17.5   | 22.0 | 21.7        |
+| route    | 19.1 | 9.3    | 10.9 | 18.1       | 10.1   | 15.6 | 17.4        |
+| loop     | 24.9 | 16.8   | 17.9 | 27.5       | 17.6   | 21.0 | 19.2        |
+| file     | 15.8 | 4.6    | 5.1  | 12.8       | 5.0    | 11.7 | 10.5        |
+| message  | 20.1 | 8.6    | 9.0  | 17.4       | 9.0    | 14.2 | 14.3        |
+| chart    | 17.2 | 8.1    | 8.7  | 18.8       | 7.9    | 13.6 | 12.3        |
+
+Every tile's source cell and crop box is a row in `docs/art/receipts.json → vibe_typer_batch_2.images`, with
+its job id, its seed, the prompt that made its sheet, its glyph score and one line on what it is.
+
+### The slice
+
+`apps/cabinets/scripts/slice-tiles.mjs` is committed and takes a sheet and a stack name. It has no dependency:
+neither `sharp` nor `pngjs` is in the lockfile, no published package may gain a runtime dependency, and a
+build-side devDependency would still have to be justified for something `node:zlib` already does. So the
+script decodes and encodes 8-bit PNG itself — inflate, unfilter, refilter, deflate — in about 120 lines.
+
+The cut does **not** assume a grid. The model does not lay its icons on even centers, and a fixed cell
+rectangle clips them. Instead the ink is projected onto the two axes: rows first, giving two bands; then
+columns inside each band, giving four runs; then each box is tightened to its own icon's vertical extent. A
+projection does not care whether an icon is one piece or several, so a chart's bars and a table's nine cells
+each come out as one box. Then each box is padded to a square about its own center with an eight per cent
+margin, clamped inside the picture, and area-averaged down to 128x128.
+
+It **throws** rather than guesses when a sheet is not a clean four by two — `expected 2 rows of icons, found 1`
+— so a sheet that would have to be interpreted is a re-roll, not a crop. That is this batch's andon, and no
+sheet tripped it.
+
+The ground is keyed **down to a translucent plate**, not away to nothing. A tile is drawn over a packed block
+in one of the stack's four colors, and two of the four are lighter than the icon's own fill: on a fully
+transparent ground the file and the bubble vanished on those two. Half a plate (alpha 128, ramping to 255
+across the icon's edge) keeps the block's hue readable through it and gives every icon the same dark surface
+whichever color it landed on. This was tried both ways and looked at before it was chosen.
+
+### The asset layer, and the fallback rule
+
+`drawPreview` draws the flat block first, exactly as before — same rect, same palette entry, same 0.9 alpha,
+same pop scale — and then, **when a tile for `(stack, kind)` is loaded**, draws that tile as the largest square
+the block holds, centered. A wide block shows its own color either side of the picture; a block too small to
+hold anything legible simply shows a very small picture on a patch of color. `packPieces` and `frameBox` are
+untouched, so the packing is identical either way: the art changed what is inside the blocks, never where they
+land.
+
+The tiles load as plain `Image` elements off `import.meta.env.BASE_URL + 'vibe/tiles/<stack>/<kind>.png'`;
+`load` puts one in a Map keyed `<stack>/<kind>`, `error` takes it out, and nothing ever waits on a load. That
+is the frames' rule, and a Pages build without `vibe/tiles/` still plays.
+
+They are asked for **per stack, the first time a level of that stack draws**, not all 56 at the mount. A story
+level is one stack, so a player who opens "a website for my cat" fetches eight files and not fifty-six; in
+endless it costs one burst of eight per stack change. Measured in the browser against the built bundle: opening
+the bash level produced exactly eight requests under `/vibe/tiles/`, all `bash/`.
+
+jsdom hands an `Image` no file, so the Map stays empty there and the mount test takes the block path. A test
+asserts that directly: it plays a full request, checks the valuation moved, and requires `fillRect` on the
+canvas and no `drawImage` at all.
+
+### What a piece is a picture of
+
+`BuiltPiece` in the sim is still `{ id, size }`. Sub-slice A had just proved both play-throughs byte-identical
+and a field added to the sim would have moved them, so the kind is derived in the shell instead, at the one
+moment the shipped snippet is still in reach: the `piece` event is pushed by `ship`, the step returns before
+`advance` touches the request index or the level, and the shell drains once per step. `pieceKindOf` is a pure
+function of the snippet's id and topics.
+
+Two steps, first match wins:
+
+| Step | Rule                                                                             | Covers                                      |
+| ---- | -------------------------------------------------------------------------------- | ------------------------------------------- |
+| 1    | The snippet's topics, in the order it lists them, against a curated table of 426 | 239 of the 249 corpus snippets              |
+| 2    | `hashString(snippet.id) % 8`                                                     | the remaining 10, and the whole wires stack |
+
+The table maps 423 of the 500 distinct topics the corpus and the tapes carry. What comes out over the shipped
+corpus:
+
+| Kind     | Snippets | Some of the topics that name it                                    |
+| -------- | -------- | ------------------------------------------------------------------ |
+| table    | 75       | `cte`, `join`, `group-by`, `arrays`, `hashmap`, `records`, `cache` |
+| loop     | 51       | `for-loop`, `while-loop`, `iterator`, `streams`, `async-await`     |
+| function | 41       | `functions`, `lambda`, `closures`, `generics`, `recursion`         |
+| message  | 29       | `print`, `strings`, `formatting`, `try-catch`, `validation`        |
+| file     | 17       | `file-io`, `parsing`, `regex`, `serialization`, `configuration`    |
+| button   | 13       | `events`, `observer-pattern`, `state-machine`, `getters`           |
+| route    | 12       | `routing`, `http`, `middleware`, `graph`, `dependency-injection`   |
+| chart    | 11       | `statistics`, `aggregate`, `rank`, `arithmetic`, `report`          |
+
+The shape is lopsided and that is the corpus, not the table: a typing corpus for six languages really is mostly
+collections and loops. All eight kinds appear, which a test asserts.
+
+`integration` is deliberately **not** in the table. Every snippet in the wires stack carries that topic, so
+mapping it would have drawn one picture for the whole stack; the ids (`int-<server>-<tool>-<band>`) hash apart
+and give it the same variety the others get. A test asserts both halves of that.
+
+The table is read through a `Map`, not indexed as an object. The corpus genuinely carries topics called
+`constructor` and `toString`, and a plain-object lookup answers those two out of `Object.prototype` — every
+snippet whose topics missed the table would have come back with a function where a kind should be. A test
+checks `valueOf`, `hasOwnProperty`, `__proto__` and `isPrototypeOf` all miss and still resolve to a real kind.
+
+### The tarballs
+
+Measured with `npm pack --dry-run --json` on `main` and on this branch, after `pnpm build:launcher` each time.
+
+| Package                          | Tarball, main | Tarball, here | Δ        | Entries  |
+| -------------------------------- | ------------- | ------------- | -------- | -------- |
+| `@mcptoolshop/vibe-typer`        | 1,562,919 B   | 2,465,700 B   | +902,781 | 73 → 129 |
+| `@mcptoolshop/ghost-on-the-menu` | 6,168,862 B   | 6,171,917 B   | +3,055   | 63 → 63  |
+
+The Vibe package gains 56 entries — `dist/play/vibe/tiles/<stack>/<kind>.png` — and 881 KB of them. Ghost gains
+**no entries at all**: the `vite` public split put nothing under `dist/play/vibe/` in the shooter's bundle, and
+`checkDist`'s stray check passed, which was confirmed by reading both file lists and not by trusting the gate.
+Ghost's 3 KB is the shared bundle carrying the derivation module, which the `ghost` build does not tree-shake
+out; that is pre-existing behavior for this file and is left alone here.
+
+### In the shell
+
+Both story levels below were played end to end against the **built** Pages bundle in a browser, with synthetic
+`KeyboardEvent('keydown')` typing, and the preview canvas read back afterwards. Saved to `film/` (ignored):
+
+- `film/tiles-bash.png` — "a website for my cat", four pieces shipped and the deploy ribbon down: two bubbles,
+  a ring and a folded page, each a square on its block, the greens showing either side.
+- `film/tiles-sql.png` — "a ledger of every sandwich i have eaten", two grids at very different sizes in the
+  ledger frame, which is the topic mapping visible end to end: a `cte` snippet drew a table.
+
+### Decisions
+
+35. **One contact sheet a stack, sliced here, instead of a generation a tile.** Fifty-six generations would
+    have been fifty-six chances for the palette and the pixel scale to drift, and the set has to sit on one
+    palette to be a set. One sheet holds eight icons in one draw under one prompt; the cutting is geometry,
+    costs nothing, and is deterministic and tested. The evidence that it worked is in the crop boxes: across
+    seven sheets they land within two or three pixels of each other.
+36. **The slicer finds the cells; it does not assume them.** The model does not center its icons on an even
+    grid. A fixed cell rectangle would have clipped the wide ones and a re-roll would have been the only
+    remedy. A projection finds whatever the model drew, and throws when what it drew is not a clean 4x2.
+37. **The slicer has no dependency, and writes its own PNG.** `sharp` and `pngjs` are not in the lockfile, no
+    published package may gain a runtime dependency, and a devDependency at the root would still need a reason
+    for something `node:zlib` already does. Decode, unfilter, refilter, encode is about 120 lines and one of
+    the tests round-trips it.
+38. **The ground is keyed to a translucent plate, not to nothing.** Two of every stack's four block colors are
+    lighter than the icons' own fill, and an icon on a clear ground disappears on those two. A half plate keeps
+    the block's hue visible through it and gives every icon the same surface. Both were rendered and looked at
+    before this was chosen.
+39. **The block is still drawn, and the tile sits on it as a centered square.** The packed area has to keep
+    reading as one filled surface — that is what the preview is for — and a square tile stretched into a wide
+    rect would have been the only other way to fill it, at the cost of the drawing. So the block fills the rect
+    and the picture sits in the middle of it.
+40. **The kind is derived in the shell, not added to the sim.** `BuiltPiece` stays `{ id, size }`. Sub-slice A
+    had just proved both play-throughs byte-identical; a field in the sim would have moved them for a picture
+    the sim never draws.
+41. **A curated topic table first, a hash of the id second.** 500 distinct topics over 249 snippets is a second
+    corpus to maintain if every one of them must have an opinion. 426 entries carry 96 per cent of the corpus,
+    and the hash covers the tail deterministically.
+42. **`integration` is not in the table.** It is on every snippet in the wires stack, so it would have drawn
+    one tile for that whole stack. The ids hash apart instead.
+43. **The table is a `Map`.** `constructor` and `toString` are real topics in this corpus and a plain object
+    answers them from its prototype. This was found by the typechecker refusing the literal and is a real bug
+    that would have shipped silently.
+44. **Tiles load per stack, at the first frame of a level in that stack.** Fifty-six images at the mount would
+    have fetched six stacks a story level never visits. Eight per stack, once, is the same rule the frames
+    follow with a smaller set.
+45. **The python sheet was re-rolled, and the re-roll is a miss in the other direction.** The first came back
+    nearly black, which is useless at the size a block gives. The re-roll came back paler than the steel blue
+    the brief names. The paler one ships, because contrast against a near-black screen is what the tile needs;
+    the brief's mid-tone was not hit either time and that is stated in the receipt as a miss.
+46. **`submit_batch` was not used for the followers.** Its `medias[]` takes a public URL or an uploaded name,
+    not a Comfy output by `prompt_id`. Handing a partner node an auth-gated URL is against the skill's rule and
+    a signed link expires in minutes, so six calls went out instead of one batch. This is recorded so the next
+    art batch does not rediscover it.
+
+### Standards
+
+**NAMED_COMPENSATORS (3).** Generation is an irreversible spend, so the compensators are named in
+`docs/art/receipts.json → vibe_typer_batch_2.compensators` with an owner each: nothing enters the repo until it
+is accepted, so the rejected python sheet is a receipt row and a Comfy library entry and nothing else (its file
+is under the git-ignored originals directory and it is in neither `apps/` nor `packages/`);
+`git rm -r apps/cabinets/public/vibe/tiles` returns the preview to flat blocks with no other change, because
+the block is still drawn first and the tile is only drawn when one is loaded; and the branch is deletable until
+it is merged. Every generation, accepted or rejected, is a row with its job id, seed and prompt, so the spend
+is auditable at eight. No skip.
+
+**PIN_PER_STEP (3).** Every row carries the model slug as the tool accepted it, the seed, the full prompt and
+the reference it chained from, and every tile row carries the sheet it came from, its cell and its crop box.
+The cut is a committed script with no dependency and no randomness, so the same sheet gives the same 56 tiles
+on any machine; a test pins its cell math against a synthetic sheet. The kind derivation is a pure function of
+a snippet's id and topics with no clock and no seed in it, and a test asserts it answers the same way twice.
+
+**ANDON_AUTHORITY (3).** Three halts. `ai-eyes image_contains` at 0.02 on every sheet and every tile, before
+anything is installed. `findCells` throws rather than guessing when a sheet is not a clean 4x2, so an
+uninterpretable sheet is a re-roll and never a crop — a test proves the throw. And `pnpm verify` plus
+`checkDist`'s stray check hold the packaging: the Ghost tarball was read entry by entry, not trusted.
+
+**EXTERNAL_VERIFIER (3).** The glyph check is SigLIP2 through `ai-eyes`, a different model family from the BFL
+model that drew the images, and it never sees the prompt. The slicer's test feeds a synthetic sheet whose
+answer is known by construction rather than by looking at a generated one. The shell evidence is the built
+bundle played in a real browser, not the mount stub. The diff review is a different family, per the slice.

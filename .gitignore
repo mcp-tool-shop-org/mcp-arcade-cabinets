@@ -13,6 +13,9 @@ docs/art/originals-2/
 # 1024 originals for Vibe Typer's first art batch; the cabinet ships the fits
 docs/art/originals-vibe-1/
 
+# the contact sheets for the piece-tile batch; the cabinet ships the 128 px slices
+docs/art/originals-vibe-2/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/

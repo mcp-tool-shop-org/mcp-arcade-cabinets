@@ -51,6 +51,30 @@ function canvasStub(): CanvasRenderingContext2D {
   }) as unknown as CanvasRenderingContext2D;
 }
 
+/** The same stub, with a note of every method the field called on it. */
+function recordingCanvas(calls: string[]): CanvasRenderingContext2D {
+  const target: Record<string, unknown> = {
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    globalAlpha: 1,
+    font: '',
+  };
+  return new Proxy(target, {
+    get(obj, prop: string) {
+      if (prop in obj) return obj[prop];
+      return (...args: unknown[]) => {
+        calls.push(prop);
+        return args.length === 0 ? undefined : undefined;
+      };
+    },
+    set(obj, prop: string, value) {
+      obj[prop] = value;
+      return true;
+    },
+  }) as unknown as CanvasRenderingContext2D;
+}
+
 /** Enough of an AudioContext to build the engine over and hear nothing. */
 class FakeAudioContext {
   currentTime = 0;
@@ -328,6 +352,50 @@ describe('the field, mounted', () => {
     mount.tick(STEP);
     expect(root.innerHTML).toBe(frozen);
     mount = null;
+  });
+
+  it('ships a piece and draws it as a block, because no tile ever loads here', () => {
+    // jsdom hands an `Image` no file, so the tile Map stays empty and the
+    // packer takes the path it has always taken: one `fillRect` per piece in
+    // the stack's color, and no `drawImage` anywhere. The kind each piece
+    // carries is derived whether or not a picture arrives (typer-tiles.test
+    // covers the derivation itself); this is the fallback rule holding.
+    const calls: string[] = [];
+    HTMLCanvasElement.prototype.getContext = vi.fn(() =>
+      recordingCanvas(calls),
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    const plan = planOf(createRun({ seed: 1, tier: 0, endless: false, levelIndex: 0 }));
+    const request = plan.requests[0]!;
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    run(mount, 1);
+    const type = (line: string) => {
+      for (const ch of line) {
+        press(ch);
+        run(mount!, 1);
+      }
+      press('Enter');
+      run(mount!, 2);
+    };
+    type(request.reply);
+    run(mount, 10);
+    for (const line of request.snippet.code.split('\n')) type(line);
+    run(mount, 30);
+
+    // The request was paid for, so a piece is in the preview.
+    const valuation = root.querySelector('.vibe-valuation .vibe-num')!.textContent ?? '0';
+    expect(Number(valuation)).toBeGreaterThan(0);
+    expect(calls).toContain('fillRect');
+    expect(calls).not.toContain('drawImage');
   });
 
   it('leaves on a held Escape and not on a tap', () => {
