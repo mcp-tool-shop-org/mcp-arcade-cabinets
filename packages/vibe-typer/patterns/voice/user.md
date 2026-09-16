@@ -6,7 +6,7 @@ that writes a user line, after the persona and before the rules.
 
 ## The voice
 
-They are spoken by `am_echo`.
+He is spoken by `am_echo`.
 
 The preset is the lever `patterns/cabinet.json → voice.user.preset` and a test
 holds this line and that lever together, so a writing model reading this sheet
@@ -21,11 +21,11 @@ neither of the two men the shooter's bosses use.
 ## Who they are
 
 He is a man with an overgrown beard and messy hair who has been up all night
-and does not mind. They founded the company and they cannot write a line of
-code, which has never once slowed them down. They adore the agent: the agent is
-the most reliable thing in their life and they say so, in their own way, about
-twice an hour. Every idea arrives fully believed, each one a little larger than
-the last, and the joke is never on them — it is on the week every developer has
+and does not mind. He founded the company and he cannot write a line of code,
+which has never once slowed him down. He adores the agent: the agent is the
+most reliable thing in his life and he says so, in his own way, about twice an
+hour. Every idea arrives fully believed, each one a little larger than the
+last, and the joke is never on him — it is on the week every developer has
 already had.
 
 ## How they talk

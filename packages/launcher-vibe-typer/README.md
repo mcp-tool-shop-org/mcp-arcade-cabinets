@@ -47,6 +47,8 @@ Node 22 or newer, and nothing else. The server binds `127.0.0.1` and only `127.0
 
 In endless mode a local model can play the user through a word gate, writing the requests, the check-ins and the code behind a code gate; it needs an [Ollama](https://ollama.com) daemon on `127.0.0.1:11434`, reached through a fixed allowlist. Without one, endless draws from the authored pool.
 
+With the arcade's voice worker running on your machine (`pnpm voice` in the repo; Kokoro speaks, faster-whisper listens back, fx-dub receipts the pair), a **Voice** box appears in the controls row and the user says his lines out loud: the asks, the one-more-things, the check-ins, the reactions and the reviews. Never the agent's lines, which you type. A take plays only when its receipt passed; the box is off until the worker answers, and the published page has no worker.
+
 ## As an MCP server
 
 ```bash
@@ -78,6 +80,8 @@ The gate accepts or refuses; it never fixes. Nothing waits on the client: a late
 | --------------- | ---------------------------------------------------------------------------------------------- |
 | `OLLAMA_URL`    | the daemon the endless user sits at (default `http://127.0.0.1:11434`)                         |
 | `CABINET_TAPES` | with `--mcp`: a directory of tapes to season the wires stack with, instead of the bundled ones |
+| `VOICE_URL`     | the voice worker, when you run one (default `http://127.0.0.1:7788`)                           |
+| `VOICE_TOKEN`   | the worker's bearer when it binds beyond loopback; added server-side, never in the page        |
 
 ## Where this comes from
 
