@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-065553849",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 40,
+  "revoice": false,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "a6ff3197248c563f8ca6b0ae8b56b99d8978a15d02777cbd0a7ce7221e504c93"
+  },
+  "applied": true,
+  "calls": 5,
+  "wallMs": 504897,
+  "slots": {
+    "pools": {
+      "model": "ollama:kimi-k2.6:cloud",
+      "temperature": 0.9,
+      "chunk": 40,
+      "concurrency": 4,
+      "prompts": [
+        "19649e1ae0fcdf928561c078fafbce67d05485f40bc50ee10daf97b4770533dd",
+        "58fe8983185850252f108074ff7810b285b448517eebc7b8755a08fd6893cbe6",
+        "b2d19aa683f4026f5537be4d94cc510b74c70f020419f7ff38a7de43b2b21eb4",
+        "4e23d30a6b0ae79e2cc8a46e84bf82cba3c43ff571d1df644a2cd279ad711ad2",
+        "b57552ac14b9b678203dd332a00fcf363ba1eab5860a6538fedacc1229027a70"
+      ],
+      "calls": 5,
+      "requested": 207,
+      "kept": 69,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {
+        "names a tool or a model": 2
+      },
+      "ms": 1588032,
+      "tokens": {
+        "in": 9091,
+        "out": 34068
+      },
+      "cost": null,
+      "errors": [],
+      "wallMs": 504897
+    }
+  }
+}

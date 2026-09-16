@@ -326,3 +326,120 @@ export async function mapLimit(items, limit, fn) {
   await Promise.all(Array.from({ length: width }, worker));
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// The command line
+// ---------------------------------------------------------------------------
+
+/**
+ * The one error the script throws on its way out. It lives here rather than in
+ * `author.mjs` so the argument parsing below can throw it and a test can catch
+ * it without the script's `main()` running.
+ */
+export class Fail extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+}
+
+/**
+ * The command line: positional words, flags that take a value, and flags that
+ * are their own answer.
+ *
+ * A name is checked against the two sets **before** its value is taken. That
+ * order is the fix part five carries: `--nope` at the end of the line used to
+ * die saying it was missing a value, which named the wrong defect and sent the
+ * reader looking for a value that was never going to help. An unknown flag is
+ * an unknown flag wherever it sits, and the answer is the usage.
+ */
+export function parseArgv(argv, { valued, bare, usage }) {
+  const positional = [];
+  const flags = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = String(argv[i]);
+    if (a === '--help' || a === '-h') {
+      flags.help = true;
+      continue;
+    }
+    if (a.startsWith('--')) {
+      const eq = a.indexOf('=');
+      const key = eq === -1 ? a.slice(2) : a.slice(2, eq);
+      if (bare.has(key)) {
+        if (eq !== -1) throw new Fail('bad flag', `--${key} takes no value\n${usage}`);
+        flags[key] = true;
+        continue;
+      }
+      if (!valued.has(key)) throw new Fail('bad flag', `unknown flag --${key}\n${usage}`);
+      let val;
+      if (eq !== -1) {
+        val = a.slice(eq + 1);
+      } else {
+        const next = argv[i + 1];
+        if (next === undefined || String(next).startsWith('--')) {
+          throw new Fail('bad flag', `missing value for --${key}\n${usage}`);
+        }
+        val = String(next);
+        i += 1;
+      }
+      flags[key] = val;
+      continue;
+    }
+    if (a.startsWith('-') && a !== '-') {
+      throw new Fail('bad flag', `unknown flag ${a}\n${usage}`);
+    }
+    positional.push(a);
+  }
+  return { positional, flags };
+}
+
+/**
+ * One flag that has to be a number. `Number('four')` is `NaN` and `NaN` walks
+ * quietly into a chunk size, a width, a temperature and a timeout, where it
+ * turns into a call that asks for nothing or waits forever. `Number.isFinite`
+ * is the check, and the reason line names the flag and what it was handed.
+ */
+function numberFlag(key, raw, fallback) {
+  if (raw === undefined || raw === null) return fallback;
+  const text = String(raw).trim();
+  const n = text === '' ? Number.NaN : Number(text);
+  if (!Number.isFinite(n)) {
+    throw new Fail('bad flag', `--${key} wants a number, not "${raw}"`);
+  }
+  return n;
+}
+
+/**
+ * The flags `run` and `edit` share, with every number checked. `spare` is null
+ * when the flag was not given, so the caller can pick the default that suits
+ * the pass it is making — re-voicing writes a pool a few lines over its floor,
+ * topping one up adds nothing unless it is asked to.
+ */
+export function runOpts(flags, defaults) {
+  return {
+    temperature: numberFlag('temperature', flags.temperature, defaults.temperature),
+    timeoutMs: numberFlag('timeout', flags.timeout, defaults.timeoutMs),
+    ollama: flags.ollama ?? defaults.ollama,
+    concurrency: Math.max(1, numberFlag('concurrency', flags.concurrency, defaults.concurrency)),
+    chunk: Math.max(1, numberFlag('chunk', flags.chunk, defaults.chunk)),
+    spare: flags.spare === undefined ? null : Math.max(0, numberFlag('spare', flags.spare, 0)),
+    pools: poolFilter(flags.pool),
+    poolsNamed: flags.pool !== undefined,
+  };
+}
+
+/**
+ * `--pool` as a matcher over the dotted pool names. A name matches exactly, or
+ * as the head of a longer one — `--pool agent` takes every `agent.*` pool and
+ * `--pool user.syncs` takes one. No flag at all matches everything, which is
+ * what every run before part five did.
+ */
+export function poolFilter(raw) {
+  if (raw === undefined || raw === null) return () => true;
+  const wanted = String(raw)
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s !== '');
+  if (wanted.length === 0) return () => true;
+  return (name) => wanted.some((w) => name === w || String(name).startsWith(`${w}.`));
+}

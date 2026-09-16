@@ -1,0 +1,389 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-073306669",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "pool": "agent",
+  "applied": true,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "a6ff3197248c563f8ca6b0ae8b56b99d8978a15d02777cbd0a7ce7221e504c93"
+  },
+  "calls": 5,
+  "wallMs": 673434,
+  "tokens": {
+    "in": 11793,
+    "out": 66732
+  },
+  "pools": {
+    "agent.replies": {
+      "promptHash": "8a13799930a68b179beb06cc71ddbf32a98f026e1634d6ecaf33d56aaadeb05b",
+      "voice": "agent",
+      "lines": 98,
+      "floor": 72,
+      "ms": 616693,
+      "dropped": [
+        {
+          "index": 12,
+          "line": "You are absolutely right, it needs a snack bar.",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 16,
+          "line": "Brilliant, the lamp is now a friend.",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 18,
+          "line": "Great idea, let us add a sunset.",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 32,
+          "line": "Love this direction, the footer gets a teddy",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 40,
+          "line": "Great idea, the error message wears a sweater",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 44,
+          "line": "You are absolutely right, the subtitle carries a basket",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 51,
+          "line": "You are right, adding the final sparkle.",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 70,
+          "line": "Yes, the loop gets its rhythm",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 72,
+          "line": "You are absolutely right, on it",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 74,
+          "line": "Love this direction, building it immediately",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 75,
+          "line": "Happy to, this will look lovely",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 76,
+          "line": "On it, and I will keep it small",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 77,
+          "line": "Brilliant, I will start with the shape",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 85,
+          "line": "Yes, the greeting is taught its name",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.hmm": {
+      "promptHash": "3426e0f95eac090528bcaf55d58ec366e1ed8ae0c73fda0e0fbc5bfb4d489678",
+      "voice": "agent",
+      "lines": 62,
+      "floor": 36,
+      "ms": 405707,
+      "dropped": [
+        {
+          "index": 17,
+          "line": "Hmm, I mixed the blue into the red.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 18,
+          "line": "Hmm, I set the table with two left forks.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 19,
+          "line": "Hmm, I sanded against the grain just there.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 20,
+          "line": "Hmm, I folded the map along the wrong crease.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 21,
+          "line": "Hmm, I tied the ribbon in a granny knot.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 22,
+          "line": "Hmm, I stacked the books with the small one under.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 25,
+          "line": "Hmm, I typed the order backward just then.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 29,
+          "line": "Hmm, I misheard the shape in my haste.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 37,
+          "line": "Hmm, the spacing and I disagreed.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 38,
+          "line": "Hmm, that line got away from me.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 40,
+          "line": "Hmm, the table wobbled, I will steady it.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 50,
+          "line": "Hmm, that value is holding steady at zero.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 51,
+          "line": "Hmm, I wired the input to the output.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 54,
+          "line": "Hmm, that field is reading as empty.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 58,
+          "line": "Hmm, that input is waiting for a number.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.hmm"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.compactions": {
+      "promptHash": "f938b64bc359fc602d8a35efac41d54bd91491d7f6bae5702343bd5304aeeb46",
+      "voice": "agent",
+      "lines": 50,
+      "floor": 24,
+      "ms": 673419,
+      "dropped": [
+        {
+          "index": 0,
+          "line": "Recapping what we have built so far.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 6,
+          "line": "The bones are good and staying put.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 12,
+          "line": "The rest can go in the bin.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 14,
+          "line": "Our work so far feels very cozy.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 16,
+          "line": "Keeping the lines that sing, dropping the rest.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 41,
+          "line": "The logic is tucked in nicely now.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 49,
+          "line": "I am tucking this in with care.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.ships": {
+      "promptHash": "894a1fc669ac0110e125af0556c6d3ce3314c7b374d73fc189a37685d0b54a66",
+      "voice": "agent",
+      "lines": 50,
+      "floor": 24,
+      "ms": 324669,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "Built and sitting pretty.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 2,
+          "line": "Sitting live and looking lovely.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 7,
+          "line": "It woke up smiling this time.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 44,
+          "line": "You will love how this looks",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 46,
+          "line": "The valuation rolled up nicely",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 49,
+          "line": "It is live and looking bright",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.ships"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.nagReplies": {
+      "promptHash": "007e4d40c0f5f7c02acc5d1b2cd0bfa51315d9d7535fb7454bbf74725735f6d5",
+      "voice": "agent",
+      "lines": 76,
+      "floor": 50,
+      "ms": 325158,
+      "dropped": [
+        {
+          "index": 18,
+          "line": "You can peek in a blink.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 26,
+          "line": "The vibe is settling in nicely.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 28,
+          "line": "The water is flowing nicely now.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 31,
+          "line": "It is growing as we speak.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 34,
+          "line": "The hat is sitting just right.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 35,
+          "line": "The party is warming up now.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 40,
+          "line": "Hmm, the brackets and I disagreed.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 51,
+          "line": "It is practically breathing all on its own.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 52,
+          "line": "Wiring up the last little connection now.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 71,
+          "line": "The label is finding its right home.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        }
+      ],
+      "refused": [],
+      "error": null
+    }
+  }
+}

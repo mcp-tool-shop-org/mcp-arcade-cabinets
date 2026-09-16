@@ -1,0 +1,73 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-064955177",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": ["9fcf79c4c1f042ba0d6e14d794c60472f9afc6f2d19d6df2ae43609e6871cec0"],
+    "calls": 1,
+    "requested": 120,
+    "kept": 40,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "names a tool or a model": 1
+    },
+    "ms": 414074,
+    "tokens": {
+      "in": 777,
+      "out": 16739
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 414078
+  },
+  "candidates": {
+    "user.syncs": [
+      "sounds good",
+      "will do",
+      "can you share your screen?",
+      "let me find the link",
+      "one sec",
+      "got it",
+      "almost there",
+      "thanks for that",
+      "see it now",
+      "that makes sense",
+      "just a moment",
+      "there we go",
+      "works for me",
+      "same here",
+      "no worries",
+      "see you then",
+      "talk soon",
+      "ready when you are",
+      "same link as before",
+      "let me know",
+      "that clarifies things",
+      "appreciate the heads up",
+      "is it loading?",
+      "do you see it?",
+      "is this the draft?",
+      "mind sharing again",
+      "still loading here",
+      "i see the arrow",
+      "can we test audio?",
+      "is this better now?",
+      "let me know when",
+      "ready to go",
+      "should we start?",
+      "is everyone here",
+      "almost ready",
+      "that is the one",
+      "no rush at all",
+      "same page now",
+      "makes total sense",
+      "checking on my end"
+    ]
+  }
+}

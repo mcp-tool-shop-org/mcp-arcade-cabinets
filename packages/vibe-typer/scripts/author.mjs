@@ -43,14 +43,17 @@ import {
   chunk,
   chunkEven,
   corpusTopics,
+  Fail,
   groupCandidates,
   keepFirstPassing,
   makeGate,
   mapLimit,
   mergeDropped,
+  parseArgv,
   parseCandidates,
   productPhrase,
   promptHash,
+  runOpts,
   sampleSnippets,
   textHash,
 } from './author-lib.mjs';
@@ -63,29 +66,44 @@ const CORPUS_DIR = path.join(PATTERNS, 'corpus');
 const AUTHORING = path.join(PKG, 'authoring');
 
 const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] [--level <id>] [--out <base>]
-       node scripts/author.mjs run --model <spec> [--only <slot>] [--chunk <n>]
-                                  [--concurrency <n>] [--revoice] [--apply]
-       node scripts/author.mjs edit --model <spec> [--concurrency <n>] [--apply]
+       node scripts/author.mjs run --model <spec> [--only <slot>] [--pool <key>] [--chunk <n>]
+                                  [--spare <n>] [--concurrency <n>] [--revoice] [--apply]
+       node scripts/author.mjs edit --model <spec> [--pool <key>] [--concurrency <n>] [--apply]
 
   <spec>      openrouter:<model-id> | ollama:<tag>
-  <slot>      stories | asks | nags | reactions | reviews | pools
+  <slot>      premises | stories | asks | nags | reactions | reviews | pools
+  --pool      dotted pool names, comma separated; a head matches its whole branch
   --chunk     items one call writes for; the default is forty
+  --spare     lines over the floor a pool is written to; four when re-voicing, none otherwise
   --concurrency  calls in flight at once; the answers are folded in key order either way
   --revoice   write each pool fresh at its floor instead of topping it up
   edit        read each whole pool back and drop the lines that break the voice`;
 
+/** Flags that take a value. */
 const FLAGS = new Set([
   'model',
   'level',
   'out',
   'only',
+  'pool',
+  'spare',
   'temperature',
   'timeout',
   'ollama',
   'concurrency',
   'chunk',
 ]);
-const RUN_SLOTS = ['stories', 'asks', 'nags', 'reactions', 'reviews', 'pools'];
+/** Flags that are their own answer. */
+const BARE_FLAGS = new Set(['apply', 'revoice']);
+/** The slots a full pass runs, in order. */
+const DEFAULT_SLOTS = ['stories', 'asks', 'nags', 'reactions', 'reviews', 'pools'];
+/**
+ * Every slot `--only` accepts. `premises` is not in the full pass: `stories`
+ * writes a premise and re-picks the four pieces under it, and `premises` is the
+ * same line written again over pins that are staying. Asking for both in one
+ * run would write the story twice.
+ */
+const RUN_SLOTS = ['premises', ...DEFAULT_SLOTS];
 const DEFAULT_TEMPERATURE = 0.9;
 /**
  * Ten minutes was the cap while a call wrote ten or twelve lines. A chunk of
@@ -158,6 +176,17 @@ const POOL_TARGETS = {
   'agent.ships': 24,
 };
 
+/**
+ * Pools only `--pool` reaches. `agent.nagReplies` is written by the `nags`
+ * slot, one reply to each check-in that passed, and that pairing is the point
+ * of it — the two pools read as one exchange rather than two lists. The pools
+ * slot may still grow it when it is asked for by name, which is how a pool
+ * whose check-ins are staying gets more answers written for them.
+ */
+const NAMED_ONLY_TARGETS = {
+  'agent.nagReplies': 50,
+};
+
 /** Every `asks[stack][tier]` template pool, at three times slice one's sixteen. */
 const ASK_POOL_TARGET = 48;
 
@@ -201,13 +230,6 @@ const MOOD_WORDS = {
 const ASK_WORDS = 10;
 const SYNC_WORDS = 5;
 
-class Fail extends Error {
-  constructor(code, message) {
-    super(message);
-    this.code = code;
-  }
-}
-
 function die(err) {
   const code = err instanceof Fail ? err.code : 'error';
   const msg = err instanceof Error ? err.message : String(err);
@@ -215,46 +237,20 @@ function die(err) {
   process.exit(2);
 }
 
-function parseArgv(argv) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const a = argv[i];
-    if (a === '--help' || a === '-h') {
-      flags.help = true;
-      continue;
-    }
-    if (a === '--apply') {
-      flags.apply = true;
-      continue;
-    }
-    if (a === '--revoice') {
-      flags.revoice = true;
-      continue;
-    }
-    if (a.startsWith('--')) {
-      let key;
-      let val;
-      const eq = a.indexOf('=');
-      if (eq !== -1) {
-        key = a.slice(2, eq);
-        val = a.slice(eq + 1);
-      } else {
-        key = a.slice(2);
-        const next = argv[i + 1];
-        if (next === undefined || String(next).startsWith('--')) {
-          throw new Fail('bad flag', `missing value for --${key}\n${USAGE}`);
-        }
-        val = next;
-        i += 1;
-      }
-      if (!FLAGS.has(key)) throw new Fail('bad flag', `unknown flag --${key}\n${USAGE}`);
-      flags[key] = val;
-    } else {
-      positional.push(a);
-    }
-  }
-  return { positional, flags };
+/** The command line, with this script's two flag sets and its usage. */
+function readArgv(argv) {
+  return parseArgv(argv, { valued: FLAGS, bare: BARE_FLAGS, usage: USAGE });
+}
+
+/** The shared flags of `run` and `edit`, with this script's own defaults. */
+function readOpts(args) {
+  return runOpts(args.flags, {
+    temperature: DEFAULT_TEMPERATURE,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    ollama: DEFAULT_OLLAMA,
+    concurrency: DEFAULT_CONCURRENCY,
+    chunk: DEFAULT_CHUNK,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -824,19 +820,45 @@ function topicReactionPrompt(topics, per) {
  * The sixteen premises in one call, with the sixteen products in front of the
  * writer at once. The keys are ordinals, never level ids: a key the writer can
  * read is a key the writer writes back into a line.
+ *
+ * Each product is shown with the four requests that level already pins, when it
+ * has them. A premise is the line those four sit under, so the writer has to
+ * see them — part four showed the product alone and got sixteen restatements of
+ * the product back, which is the instruction the level already carries rather
+ * than the situation that makes it funny.
  */
 function premisesPrompt(products, per) {
+  const rows = [];
+  for (const p of products) {
+    rows.push(`- ${p.key}: ${p.phrase}`);
+    for (const ask of p.asks ?? []) rows.push(`    they then ask: ${ask}`);
+  }
   return [
     'A level of the game is one story about one product, and the standup shows one',
-    'line before the level starts: the premise, in the user voice, at most twelve',
-    'words, saying what is being built today.',
+    'line above the product before the level starts: the premise. It is the situation',
+    'the user is in that makes them want this thing today — what is going on in their',
+    'life, or their company, or their kitchen — and the four requests under it are the',
+    'tale it sets up.',
     '',
-    'Here are all the products, in the order the player meets them. The first ones are',
-    'the small hopeful ideas and the last ones have left the building entirely. Write',
-    'the premise for each. They are read one after another by the same player, so no',
-    'two of them may open the same way or land the same joke.',
+    'A premise is never the instruction. The user is not asking for the thing here;',
+    'the request comes later, and the standup already prints the product on the line',
+    'below. So the premise never repeats the product back, and never opens with a verb',
+    'telling the agent to build, make, launch, create or track anything.',
     '',
-    ...products.map((p) => `- ${p.key}: ${p.phrase}`),
+    'Two premises of the right shape, for two products you will see below:',
+    '',
+    '- for a website for a cat: the cat has a following and needs somewhere to put it',
+    '- for a rideshare for ducks: the ducks are ready, the rides are not',
+    '',
+    'Here are all the products, in the order the player meets them, each with the',
+    'requests that level goes on to make. The first ones are the small hopeful ideas',
+    'and the last ones have left the building entirely. Write the premise for each.',
+    'They are read one after another by the same player, so no two of them may open',
+    'the same way or land the same joke.',
+    '',
+    ...rows,
+    '',
+    'At most twelve words each, in lower case, in the voice of the sheet above.',
     '',
     `Give ${per} different candidates for each one.`,
     '',
@@ -902,7 +924,7 @@ const POOL_BRIEFS = {
   'user.reviews':
     "the user's one-line review of what was built at the end, delighted and absurd, in lower case",
   'user.syncs':
-    'a line of meeting chatter the user says in a quick sync, five words or fewer, in lower case',
+    'a line of meeting chatter, five words or fewer, that reads the same whoever says it',
   'agent.replies':
     "the agent's cheerful sycophantic yes to a request, capitalized like a person in a chat",
   'agent.hmm':
@@ -910,6 +932,8 @@ const POOL_BRIEFS = {
   'agent.compactions':
     "the agent's one-line summary of the work so far when the conversation is compacted, capitalized",
   'agent.ships': "the agent's line when a piece is finished and live, proud and warm, capitalized",
+  'agent.nagReplies':
+    "the agent's reply to a check-in while it is still typing, fond and unbothered, never promising a time, capitalized",
 };
 
 /**
@@ -927,6 +951,46 @@ function askPoolPrompt(stack, tier, n, per) {
     `replaced by the product name later, so keep every line to ${ASK_WORDS} words or fewer.`,
     'The user types in lower case and does not capitalize. Every line is different from',
     'the others, and none of them names the language or the tool.',
+    '',
+    `Give ${per} different candidates for each of the ${n}.`,
+    '',
+    `Answer with a JSON array of ${n} arrays, each holding ${per} strings.`,
+  ].join('\n');
+}
+
+/**
+ * The quick sync, which is neither character's voice and so carries neither
+ * sheet.
+ *
+ * A meeting interrupts a level and the player types three short lines of it
+ * between two requests. Part four pointed the user sheet at this pool and got
+ * back the user's tics — `can it be more`, `oh also`, `tiny thing` — which is a
+ * founder talking to their agent, not two people in a meeting. A sync line has
+ * to read the same whoever says it, because the shell does not say who did.
+ */
+function syncPrompt(n, per) {
+  return [
+    `Write ${n} lines of meeting chatter.`,
+    '',
+    'Two people who like each other are on a quick call. Nothing is wrong, nobody is',
+    'in trouble, and the meeting is the small friendly noise a working day makes:',
+    'agreeing, offering, asking for the thing on the screen, saying the obvious kind',
+    'sentence out loud.',
+    '',
+    'These are the lines to write toward:',
+    '',
+    '- sounds good',
+    '- will do',
+    '- can you share your screen',
+    '- let me find the link',
+    '',
+    `At most ${SYNC_WORDS} words each, in lower case.`,
+    '',
+    'Every line must read the same whoever said it. Nobody reading one may be able to',
+    'tell which of the two people in the meeting said it, so no line asks for a thing',
+    'to be built, praises anyone, mentions a product, or belongs to one person more',
+    'than the other. Most of them end with nothing at all; a few are questions.',
+    'Every line is different from the others.',
     '',
     `Give ${per} different candidates for each of the ${n}.`,
     '',
@@ -1428,11 +1492,11 @@ async function commandRun(args, gates) {
   const spec = args.flags.model;
   if (!spec) throw new Fail('bad flag', `run wants --model\n${USAGE}`);
   const target = parseSpec(spec);
-  const only = args.flags.only ? String(args.flags.only).split(',') : RUN_SLOTS;
+  const only = args.flags.only ? String(args.flags.only).split(',') : DEFAULT_SLOTS;
   for (const s of only) {
     if (!RUN_SLOTS.includes(s)) throw new Fail('bad flag', `unknown slot "${s}"\n${USAGE}`);
   }
-  const opts = runOpts(args);
+  const opts = readOpts(args);
   const apply = args.flags.apply === true;
   const revoice = args.flags.revoice === true;
   mkdirSync(AUTHORING, { recursive: true });
@@ -1445,6 +1509,7 @@ async function commandRun(args, gates) {
   }
 
   const runners = {
+    premises: slotPremises,
     stories: slotStories,
     asks: slotAsks,
     nags: slotNags,
@@ -1464,6 +1529,10 @@ async function commandRun(args, gates) {
     concurrency: opts.concurrency,
     chunk: opts.chunk,
     revoice,
+    // What `--spare` and `--pool` were given as, so a run that wrote one pool
+    // a long way over its floor replays as that run and not as the full pass.
+    spare: opts.spare,
+    pool: args.flags.pool ?? null,
     voice: ctx.voiceHashes,
     applied: apply,
     calls: 0,
@@ -1513,17 +1582,6 @@ async function commandRun(args, gates) {
   );
 }
 
-/** The flags `run` and `edit` share. */
-function runOpts(args) {
-  return {
-    temperature: Number(args.flags.temperature ?? DEFAULT_TEMPERATURE),
-    timeoutMs: Number(args.flags.timeout ?? DEFAULT_TIMEOUT_MS),
-    ollama: args.flags.ollama ?? DEFAULT_OLLAMA,
-    concurrency: Math.max(1, Number(args.flags.concurrency ?? DEFAULT_CONCURRENCY)),
-    chunk: Math.max(1, Number(args.flags.chunk ?? DEFAULT_CHUNK)),
-  };
-}
-
 /**
  * Everything a slot reads: the levers, the corpus, the two voice sheets, the
  * two system prompts built from them, and the gates with the level-id rule
@@ -1542,9 +1600,12 @@ function makeCtx(target, opts, gates, { apply = false, revoice = false } = {}) {
       line: slugGate(gates.line, slugs),
       ask: slugGate(gates.ask, slugs),
       sync: slugGate(gates.sync, slugs),
+      premise: premiseGate(slugGate(gates.line, slugs)),
     },
     voices,
-    system: { user: systemFor(voices.user), agent: systemFor(voices.agent) },
+    // `plain` is the persona and the rules with no sheet at all. One slot uses
+    // it: the quick-sync chatter, which is neither character's voice.
+    system: { user: systemFor(voices.user), agent: systemFor(voices.agent), plain: SAMPLE_SYSTEM },
     voiceHashes: { user: textHash(voices.user), agent: textHash(voices.agent) },
     levels,
     user: readJson(path.join(PATTERNS, 'user.json')),
@@ -1575,6 +1636,23 @@ function slugGate(base, slugs) {
     const reason = base(line);
     if (reason !== null) return reason;
     return re.test(line) ? 'names a level by its id' : null;
+  };
+}
+
+/**
+ * The verbs a premise may not open on. A premise sits above the product on the
+ * standup and the four requests sit under it; a line that opens on one of these
+ * is the request again, which is what part four's sixteen premises were. Like
+ * `slugGate` this lives in the script and drops rather than mends.
+ */
+const PREMISE_VERBS =
+  /^(make|build|launch|create|track|add|give|open|start|design|write|run|judge|organize|chain|trade|show|list|let|have|put|set|turn|keep|find|count|pick|send|ship|do)\b/i;
+
+function premiseGate(base) {
+  return (line) => {
+    const reason = base(line);
+    if (reason !== null) return reason;
+    return PREMISE_VERBS.test(String(line).trim()) ? 'opens on an instruction' : null;
   };
 }
 
@@ -1640,6 +1718,72 @@ function bandPool(ctx, level) {
   return (ctx.corpus.byStack.get(level.stack) ?? []).filter(
     (s) => s.band >= level.bandMin && s.band <= level.bandMax,
   );
+}
+
+/**
+ * The sixteen premises and nothing else: one call, the products and the four
+ * pinned requests of each level in front of the writer, the pins untouched.
+ *
+ * `stories` re-picks and re-writes the four requests as well, which is right
+ * when the levels are being built and wrong when they are built and only the
+ * line above them is off. Part five is the second case: the pins and the asks
+ * of part four hold, and the premises under them were sixteen restatements of
+ * the product.
+ */
+async function slotPremises(ctx) {
+  const report = emptyReport(ctx.target, ctx.opts);
+  const candidates = {};
+  const levels = ctx.levels.levels;
+  const keys = levels.map((_, i) => `item-${i + 1}`);
+  const asks = askByLevel(ctx);
+  const products = levels.map((l, i) => ({
+    key: keys[i],
+    phrase: levelProduct(l),
+    asks: asks.get(l.id) ?? [],
+  }));
+  const slot = await askSlot(
+    ctx.target,
+    ctx.system.user,
+    premisesPrompt(products, CANDIDATES_PER_SLOT),
+    keys,
+    ctx.gates.premise,
+    ctx.opts,
+  );
+  foldSlot(report, slot);
+  const writes = [];
+  for (const [i, level] of levels.entries()) {
+    const line = slot.lines[keys[i]];
+    candidates[level.id] = {
+      kept: line,
+      alternates: slot.alternates[keys[i]] ?? [],
+    };
+    if (typeof line === 'string') writes.push({ level, story: line });
+    else report.errors.push(`${level.id}: the premise did not come back clean`);
+  }
+  return {
+    report,
+    candidates,
+    apply() {
+      for (const w of writes) w.level.story = w.story;
+      ctx.touched.add(path.join(PATTERNS, 'levels.json'));
+    },
+  };
+}
+
+/** Each level's four pinned requests, as the corpus holds them. */
+function askByLevel(ctx) {
+  const byId = new Map();
+  for (const s of ctx.corpus.all) byId.set(s.id, s);
+  const out = new Map();
+  for (const level of ctx.levels.levels) {
+    const asks = [];
+    for (const id of level.snippets ?? []) {
+      const ask = byId.get(id)?.ask;
+      if (typeof ask === 'string' && ask !== '') asks.push(ask);
+    }
+    out.set(level.id, asks);
+  }
+  return out;
 }
 
 /**
@@ -2077,6 +2221,11 @@ async function slotPools(ctx) {
   const mems = new Map();
   const floors = {};
   const plan = Object.entries(POOL_TARGETS).map(([key, target]) => ({ key, target }));
+  // A pool the full pass never writes here joins the plan only when `--pool`
+  // named one, so a run with no `--pool` writes exactly what it always did.
+  if (ctx.opts.poolsNamed) {
+    for (const [key, target] of Object.entries(NAMED_ONLY_TARGETS)) plan.push({ key, target });
+  }
   // The ask templates: one pool a stack a tier, the fallback a request reads
   // when its own snippet has no ask. Twenty-one pools, so they are built the
   // same way rather than written out.
@@ -2085,26 +2234,41 @@ async function slotPools(ctx) {
       plan.push({ key: `user.asks.${stack}.${tier}`, target: ASK_POOL_TARGET, stack, tier });
     }
   }
+  // How far over its floor a pool is written. Re-voicing keeps the four spare
+  // it always had; a top-up adds nothing unless `--spare` asks for it, which
+  // is how a pool already at its floor is grown rather than left alone.
+  const spare = ctx.opts.spare ?? (ctx.revoice ? REVOICE_SPARE : 0);
   for (const item of plan) {
     const { key, target } = item;
+    // `--pool` narrows the slot to named pools, so one pool can be re-voiced
+    // or grown without re-writing the thirty-one beside it.
+    if (!ctx.opts.pools(key)) continue;
     const want = ctx.revoice
-      ? target + REVOICE_SPARE
-      : Math.max(0, target - poolAt(ctx, key).length);
+      ? target + spare
+      : Math.max(0, target + spare - poolAt(ctx, key).length);
     candidates[key] = [];
     floors[key] = target;
     mems.set(key, makeMemory());
     if (want === 0) continue;
     const field = key.split('.')[1];
     const keys = Array.from({ length: want }, (_, i) => `${field}-${i + 1}`);
+    const sync = key === 'user.syncs';
     for (const group of chunkEven(keys, ctx.opts.chunk)) {
       jobs.push({
         key,
         group,
-        gate: key === 'user.syncs' ? ctx.gates.sync : item.stack ? ctx.gates.ask : ctx.gates.line,
-        system: key.startsWith('agent.') ? ctx.system.agent : ctx.system.user,
-        prompt: item.stack
-          ? askPoolPrompt(item.stack, item.tier, group.length, CANDIDATES_PER_SLOT)
-          : poolPrompt(key, group.length, CANDIDATES_PER_SLOT),
+        gate: sync ? ctx.gates.sync : item.stack ? ctx.gates.ask : ctx.gates.line,
+        // The sync pool is chatter, not a character, so it carries no sheet.
+        system: sync
+          ? ctx.system.plain
+          : key.startsWith('agent.')
+            ? ctx.system.agent
+            : ctx.system.user,
+        prompt: sync
+          ? syncPrompt(group.length, CANDIDATES_PER_SLOT)
+          : item.stack
+            ? askPoolPrompt(item.stack, item.tier, group.length, CANDIDATES_PER_SLOT)
+            : poolPrompt(key, group.length, CANDIDATES_PER_SLOT),
       });
     }
   }
@@ -2214,11 +2378,18 @@ async function commandEdit(args, gates) {
   const spec = args.flags.model;
   if (!spec) throw new Fail('bad flag', `edit wants --model\n${USAGE}`);
   const target = parseSpec(spec);
-  const opts = runOpts(args);
+  const opts = readOpts(args);
   const apply = args.flags.apply === true;
   mkdirSync(AUTHORING, { recursive: true });
   const ctx = makeCtx(target, opts, gates, { apply });
-  const jobs = editJobs(ctx);
+  // `--pool` narrows the editor to named pools, the same way it narrows `run`.
+  const jobs = editJobs(ctx).filter((job) => opts.pools(job.name));
+  if (jobs.length === 0)
+    throw new Fail(
+      'bad flag',
+      `--pool matched no pool
+${USAGE}`,
+    );
   const stamp = runStamp();
   const startedAt = Date.now();
 
@@ -2242,6 +2413,7 @@ async function commandEdit(args, gates) {
     route: target.route,
     temperature: opts.temperature,
     concurrency: opts.concurrency,
+    pool: args.flags.pool ?? null,
     applied: apply,
     voice: ctx.voiceHashes,
     calls: 0,
@@ -2532,7 +2704,7 @@ function mapJobs(ctx, field, what, size) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const args = parseArgv(process.argv.slice(2));
+  const args = readArgv(process.argv.slice(2));
   if (args.flags.help || args.positional.length === 0) {
     console.log(USAGE);
     return;

@@ -1,0 +1,141 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-065549528",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": ["243522adff9b9c0cdb8261657abfa8c3e35440d62576e604452aac576cfab930"],
+    "calls": 1,
+    "requested": 48,
+    "kept": 16,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {},
+    "ms": 439279,
+    "tokens": {
+      "in": 2911,
+      "out": 15746
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 439283
+  },
+  "candidates": {
+    "cat-website": {
+      "kept": "my cousin is asking about the cat again.",
+      "alternates": [
+        "the guest room is now her green room.",
+        "the press clippings have overflowed the refrigerator door."
+      ]
+    },
+    "duck-rides": {
+      "kept": "the ducks commute farther than i do.",
+      "alternates": [
+        "rush hour at the lake is getting out of hand.",
+        "they keep waddling late to important appointments."
+      ]
+    },
+    "handwriting-rater": {
+      "kept": "these loops and swirls need a proper audience.",
+      "alternates": [
+        "nobody can read my grocery list anymore.",
+        "the doctor said my letters need supervision."
+      ]
+    },
+    "sandwich-ledger": {
+      "kept": "i am eating more sandwiches than i can remember.",
+      "alternates": [
+        "last week's lunch deserves its own archive.",
+        "the deli counter knows me by my first name."
+      ]
+    },
+    "fridge-chain": {
+      "kept": "my yogurt keeps disappearing before noon.",
+      "alternates": [
+        "the office fridge is a crime scene.",
+        "we need a permanent record of who owns what."
+      ]
+    },
+    "plant-dashboard": {
+      "kept": "my windowsill is crowded and the leaves are worried.",
+      "alternates": [
+        "the ferns are plotting something and i need oversight.",
+        "we have twelve green roommates and no roll call."
+      ]
+    },
+    "lost-sock-platform": {
+      "kept": "the dryer is eating socks and i have proof.",
+      "alternates": [
+        "my drawer is full of lonely left socks.",
+        "single socks are taking over the bedroom."
+      ]
+    },
+    "hourly-praise": {
+      "kept": "the workday is long and my ego is soft.",
+      "alternates": [
+        "my desk is quiet and my inbox is mean.",
+        "nobody here celebrates when i empty my inbox."
+      ]
+    },
+    "tool-finder": {
+      "kept": "my tools have needs and i am out of answers.",
+      "alternates": [
+        "even my helpers need someone to organize them.",
+        "the hammer wants a friend and the saw agrees."
+      ]
+    },
+    "self-newsletter": {
+      "kept": "we have news and nobody here can write.",
+      "alternates": [
+        "the investors want updates and my pen is dry.",
+        "the whiteboard is full and the blog is empty."
+      ]
+    },
+    "coffee-loyalty": {
+      "kept": "the coffee machine sees more traffic than the lobby.",
+      "alternates": [
+        "someone keeps drinking the last cup without warning.",
+        "regulars deserve recognition for their daily devotion."
+      ]
+    },
+    "thermostat-debate": {
+      "kept": "the thermostat and i are no longer speaking.",
+      "alternates": [
+        "we need a mediator for the temperature wars.",
+        "the heat comes on when nobody is home."
+      ]
+    },
+    "book-club-metaverse": {
+      "kept": "the book club wants to meet inside the computer.",
+      "alternates": [
+        "our living rooms are too small for the debates.",
+        "the club has outgrown my kitchen table."
+      ]
+    },
+    "app-that-rates-apps": {
+      "kept": "my phone is full and most of it is bad.",
+      "alternates": [
+        "every app promises magic and delivers clutter.",
+        "the home screen needs a proper critic."
+      ]
+    },
+    "opinion-market": {
+      "kept": "everybody here has an opinion and nowhere to sell it.",
+      "alternates": [
+        "my takes are gently worn and highly valued.",
+        "gently worn takes are stacking up in corners."
+      ]
+    },
+    "one-button-company": {
+      "kept": "decisions are everywhere and buttons are not.",
+      "alternates": [
+        "i want one lever for everything we do.",
+        "running this place should feel like a microwave."
+      ]
+    }
+  }
+}

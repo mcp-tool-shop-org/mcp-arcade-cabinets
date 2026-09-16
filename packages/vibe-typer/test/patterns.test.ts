@@ -270,3 +270,61 @@ describe('the two forbidden lists', () => {
     expect(match![1]).toBe(String(VOICE_FORBIDDEN));
   });
 });
+
+describe('the quick sync is not the user talking', () => {
+  function normalize(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z ]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * A tic's head: its first three words, or the whole of it when it is
+   * shorter. A tic is a shape and not a fixed string — `my cousin is asking`
+   * and `my cousin is watching` are the same person doing the same thing — so
+   * the head is what a sync line is held against.
+   */
+  function head(tic: string): string {
+    return tic.split(' ').slice(0, 3).join(' ');
+  }
+
+  /**
+   * The user's tics, read out of `patterns/voice/user.md` itself so the rule
+   * follows the sheet rather than a copy of it. Each backtick span under
+   * "Their tics" is one.
+   */
+  function userTics(): string[] {
+    const sheet = readFileSync(path.resolve('packages/vibe-typer/patterns/voice/user.md'), 'utf8');
+    const section = /^## Their tics$([\s\S]*?)^## /m.exec(sheet);
+    expect(section, 'the user sheet still lists the tics').not.toBeNull();
+    const tics = [...section![1]!.matchAll(/`([^`]+)`/g)].map((m) => head(normalize(m[1] ?? '')));
+    expect(tics.length).toBeGreaterThanOrEqual(6);
+    return tics;
+  }
+
+  it('lets no user tic into a sync line', () => {
+    // A sync is meeting chatter between two people, and the shell never says
+    // which of them said it, so a line only one of them could have said is the
+    // wrong line. The pool is written to its own prompt under neither voice
+    // sheet for exactly this reason.
+    const tics = userTics();
+    for (const line of DEFAULT_PATTERNS.user.syncs) {
+      const flat = normalize(line);
+      for (const tic of tics) {
+        expect(flat.includes(tic), `${line} carries the tic "${tic}"`).toBe(false);
+      }
+    }
+  });
+
+  it('finds those same tics in the user pools, so the rule can fail', () => {
+    // The check over the user's own lines finds plenty, which is what shows
+    // the rule above is measuring something rather than passing for want of
+    // anything to match.
+    const tics = userTics();
+    const mine = [...DEFAULT_PATTERNS.user.nags, ...DEFAULT_PATTERNS.user.creeps];
+    const hits = mine.filter((line) => tics.some((tic) => normalize(line).includes(tic)));
+    expect(hits.length).toBeGreaterThan(0);
+  });
+});
