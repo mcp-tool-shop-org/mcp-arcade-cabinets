@@ -1,6 +1,6 @@
 {
   "name": "@mcptoolshop/vibe-typer",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "A typing arcade game where you are a coding agent. Your user has an idea, you type the code, and the thing gets built while you both watch.",
   "license": "MIT",
   "type": "module",

@@ -244,40 +244,53 @@ Where the brief was silent, the choice and the reason.
   before any edit: level `cat-website`, seed 1, valuation 96, four pieces, no compaction. The renamed coffee
   level is level five and this run plays level zero.
 
-## Where slice 3 stands (the coordinator, 2026-09-15, after the four merges)
+## Where slice 3 stands (the coordinator, 2026-09-16, at the 0.10.0 release commit)
 
-Sub-slices A, B part one, B part two and C are on `main`, each merged from its own branch after a Kimi K2.6
-review from a packet, with `pnpm verify`, `pnpm build:play` and the identity scan green before every push.
-Their sections live beside this file rather than inside it, because three builders wrote them in parallel:
+Every sub-slice is on `main`, each merged from its own branch after a Kimi K2.6 review from a packet, with
+`pnpm verify`, `pnpm build:play` and the identity scan green before every push. The sections live beside
+this file where parallel builders wrote them, and inside it where they came later:
 
-| Sub-slice | What landed                                                                                                       | Section                        | Review                               |
-| --------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------ |
-| A         | American English with a test, the settings row and `--vibe-font`, beat words in `cabinet.json`                    | above                          | `docs/vibe-typer.slice3a.review.md`  |
-| B, one    | `author.mjs`, the offline authoring script, and the forty-line sample from three writing models                   | `docs/vibe-typer.slice3.b1.md` | `docs/vibe-typer.slice3b1.review.md` |
-| B, two    | Per-snippet asks, story levels with pinned snippets, reactions by topic, reviews by product, the nag mechanic     | `docs/vibe-typer.slice3.b2.md` | `docs/vibe-typer.slice3b2.review.md` |
-| C         | The code gate, `feedRequests`, `/cabinet/endless` on both node sides, the seat in the shell, `pnpm sit --cabinet` | `docs/vibe-typer.slice3.c.md`  | `docs/vibe-typer.slice3c.review.md`  |
+| Sub-slice | What landed                                                                                                              | Section                        | Review                               |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------ |
+| A         | American English with a test, the settings row and `--vibe-font`, beat words in `cabinet.json`                           | above                          | `docs/vibe-typer.slice3a.review.md`  |
+| A, two    | The music setting, on / soft / off, soft the default: the bed must never read as a clock                                 | below                          | `docs/vibe-typer.slice3a2.review.md` |
+| B, one    | `author.mjs`, the offline authoring script, and the forty-line sample from three writing models                          | `docs/vibe-typer.slice3.b1.md` | `docs/vibe-typer.slice3b1.review.md` |
+| B, two    | Per-snippet asks, story levels with pinned snippets, reactions by topic, reviews by product, the nag mechanic            | `docs/vibe-typer.slice3.b2.md` | `docs/vibe-typer.slice3b2.review.md` |
+| B, three  | The full authoring run on `kimi-k2.6:cloud` with a writer's persona, the sixteen levels, the sweep and the band          | below                          | `docs/vibe-typer.slice3b3.review.md` |
+| B, four   | The coherence pass: two voice sheets in every call, forty items a call with memory, the editor pass                      | below                          | `docs/vibe-typer.slice3b4.review.md` |
+| B, five   | Finishing it: the sync chatter and the premises on the right sheets, Sprocket's image tic tightened, the flag validation | below                          | `docs/vibe-typer.slice3b5.review.md` |
+| C         | The code gate, `feedRequests`, `/cabinet/endless` on both node sides, the seat in the shell, `pnpm sit --cabinet`        | `docs/vibe-typer.slice3.c.md`  | `docs/vibe-typer.slice3c.review.md`  |
+| D, one    | The logo and five device frames through Comfy Cloud, the preview's asset layer with the rectangles as fallback           | below                          | `docs/vibe-typer.slice3d1.review.md` |
+| E         | The menu grouped by stack, the endless entry naming its seat, the premise and the stack on the standup                   | below                          | `docs/vibe-typer.slice3e.review.md`  |
+| F         | One npm package per cabinet: `VITE_CABINET`, the pack script split by cabinet, `@mcptoolshop/vibe-typer`, `release.yml`  | below                          | `docs/vibe-typer.slice3f.review.md`  |
 
-Two changes landed on `main` between the merges, both from what the sample taught: `lineFault` refuses any
-character off the typed keyboard (`not ascii`) and the inflected forms of Ghost's barred words
-(`FORM_FORBIDDEN`, beside the list that must stay identical to Ghost's). Every review change was applied
-before its merge except one, recorded in the C review as not a bypass.
+Three changes landed on `main` between the merges: `lineFault` refuses any character off the typed keyboard
+and the inflected forms of Ghost's barred words (from what the sample taught); the agent's default name
+became Sprocket (a neutral name, on the Director's decision); the lead's surfaces pass (the entrance README,
+the package page, the handbook, the landing page, the changelog, the publish rule, the compensators for the
+second package, the translations).
 
-### The two halts, and what waits behind them
+### The decisions the Director took during the slice
 
-1. **The writing model — lifted 2026-09-15.** The Director picked `kimi-k2.6:cloud` and asked that the writing
-   model be given a role and a personality. Both are in `## Sub-slice B, part three` below, with the run's
-   receipts. What follows is the halt as it stood.
+- The writing model is `kimi-k2.6:cloud`, with a role and a comic personality in its prompt.
+- The first art batch (the logo and the five frames) was approved and spent seven of its twelve generations;
+  the logo lights two adjacent keys rather than one and stands as accepted. Later batches wait on a yes each.
+- The context music was too stressful: the bed defaults to soft and the pulse is a setting.
+- The authoring run's 189 small independent calls were judged a failure of coherence before the lines were
+  read; the coherence pass and its finishing followed, and the result was kept rather than started over.
+- The agent's default name is neutral.
+- Each cabinet ships as its own npm package; the bundle stays on Pages. Both packages publish at 0.10.0.
 
-   `docs/vibe-typer.author-sample.md` holds the forty lines from `kimi-k2.6:cloud`,
-   `openai/gpt-6-astra` (OpenRouter) and `mistral-large-3:675b-cloud`; `deepseek-v3.1:671b-cloud` answered
-   410 (retired) and is in the receipt only. The pick, the model id, the prompt hash and the date go in the
-   table below before `node packages/vibe-typer/scripts/author.mjs run --model <spec> --apply` is executed.
-   Behind it: the full authoring pass (asks for every snippet, sixteen level stories with pinned snippets,
-   fifty nags and replies, reactions per topic, reviews per product, every pool to three times its size),
-   then sub-slice E (the menu grouped by stack, the endless entry naming its seat, the premise on the standup).
+### What the next pass should know
 
-2. **The art.** Sub-slice D is Comfy MCP spend and waits on a yes per batch; rectangles are the fallback and
-   the cabinet plays on them today.
+- The wall clock of a Kimi authoring pass is thinking tokens, not calls: forty-item chunks halved the calls
+  and barely moved the time. Budget hours.
+- The editor pass reads Kimi's lines with Kimi; seat the editor on a different family next time
+  (EXTERNAL_VERIFIER remediation, owner the coordinator).
+- Pools written by two calls must run serially, and every pool wants a spare over its floor before an
+  editor pass.
+- The remaining art batches (piece tiles, avatars, milestone cards, the backdrop) and the container tools
+  `product`, `ask`, `react` (slice 4) are owed.
 
 | Receipt        | Value                                                                                                                                                                                   |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

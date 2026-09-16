@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.10.0] - 2026-09-16
+
 Slice 3 of Vibe Typer, and one package per cabinet. Builds and reviews in `docs/vibe-typer.slice3.md` and the `docs/vibe-typer.slice3*.review.md` files beside it.
 
 ### Added
