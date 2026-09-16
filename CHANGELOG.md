@@ -12,6 +12,7 @@ Slice 4 of Vibe Typer, in sub-slices. Builds, numbers and the outside reviews in
 ### Added
 
 - **Vibe Typer as an MCP server.** `npx @mcptoolshop/vibe-typer --mcp` now speaks MCP on stdio: an endless run plays inside it under a typist at a human pace, and any MCP client sits in the user's chair through four tools, `view`, `product`, `ask` and `react`, all answered in words. The contract is `packages/cabinet-server/tools.vibe.json`, mirrored into `catalog/tools.vibe.json`, with its own stdio entry beside Ghost's. `ask` goes through the same code gate the local seat does and refuses a repeat; `react` holds one line for the next ship; a refusal answers the rule in one word and never the code. One fact-blind test per tool. `pnpm sit --cabinet vibe-typer --seat mcp` measures a live model through the contract and prints ten sampled asks. The Vibe tarball grows by the bundled server (73 files, 1.49 MB packed).
+- **Piece tiles.** Fifty-six painted tiles, eight kinds a stack (a function, a table, a button, a route, a loop, a file, a message, a chart) in each stack's palette, generated through Comfy Cloud as one contact sheet a stack and sliced on this side by a committed script; the preview draws a tile over each block when one is loaded and the flat block until it is; a piece's kind comes from its snippet's topics, with a stable hash for the rest. Receipts in `docs/art/receipts.json`; the python sheet missed its palette twice and the paler re-roll ships, stated as a miss.
 
 ### Changed
 
