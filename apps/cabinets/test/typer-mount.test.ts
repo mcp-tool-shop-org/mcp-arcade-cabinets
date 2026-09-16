@@ -219,6 +219,74 @@ describe('the field, mounted', () => {
     expect(root.querySelector('.vibe-chat .vibe-head')!.textContent).toContain('Sprocket');
   });
 
+  it('puts the two faces in the chat header and leaves the words alone', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    const state = createRun({ seed: 1, tier: 0, endless: false, levelIndex: 0 });
+    const head = root.querySelector('.vibe-chat .vibe-head') as HTMLElement;
+    // The header's words are byte for byte what they were before the faces.
+    expect(head.textContent).toBe(`${planOf(state).product} · Sprocket`);
+
+    const faces = [...head.querySelectorAll('img')];
+    expect(faces).toHaveLength(2);
+    // Off the build's own base, so a Pages build under /<repo>/play/ asks for
+    // the right files and a package build asks relatively.
+    const base = import.meta.env.BASE_URL;
+    expect(faces.map((img) => img.getAttribute('src'))).toEqual([
+      `${base}vibe/avatars/user.png`,
+      `${base}vibe/avatars/agent.png`,
+    ]);
+    for (const face of faces) {
+      // Decoration: the two names beside them carry the meaning.
+      expect(face.getAttribute('alt')).toBe('');
+      expect(face.decoding).toBe('async');
+    }
+    // The user's face comes first, because the product after it is theirs and
+    // the header never names them; the agent's sits against the agent's name.
+    expect(head.firstElementChild).toBe(faces[0]);
+    expect(faces[0]!.nextElementSibling!.textContent).toBe(planOf(state).product);
+    expect(faces[1]!.nextElementSibling!.textContent).toBe('Sprocket');
+  });
+
+  it('takes a face that will not load out of the header and leaves no box', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    const head = root.querySelector('.vibe-chat .vibe-head') as HTMLElement;
+    const words = head.textContent;
+    const faces = [...head.querySelectorAll('img')];
+
+    // One fails: the other stays, and nothing about the words moves.
+    faces[0]!.dispatchEvent(new Event('error'));
+    expect([...head.querySelectorAll('img')]).toEqual([faces[1]]);
+    expect(head.textContent).toBe(words);
+
+    // Both fail: the header is exactly the three spans it would have been
+    // without this batch at all — no empty element left standing in for a
+    // picture that never arrived.
+    faces[1]!.dispatchEvent(new Event('error'));
+    expect(head.querySelectorAll('img')).toHaveLength(0);
+    expect(head.textContent).toBe(words);
+    expect([...head.children].map((node) => node.tagName)).toEqual(['SPAN', 'SPAN', 'SPAN']);
+  });
+
   it('shows the scoreboard and nothing that counts the typist', () => {
     mount = mountVibeTyper(root, {
       tier: 0,
