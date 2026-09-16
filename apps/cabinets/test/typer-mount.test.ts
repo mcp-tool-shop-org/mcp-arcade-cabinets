@@ -651,6 +651,11 @@ describe('the field, mounted', () => {
     });
     run(mount, 30);
     expect(mount.debug().music).toBe('on');
+    // And no recording has the level: jsdom hands out a media element that
+    // never loads anything, so no bed ever says it is ready and the mode
+    // falls back to its own bar — the same path a Pages build without
+    // `vibe/tracks/` takes, and the reason nothing here waits on a file.
+    expect(mount.debug().track).toBeNull();
 
     // A word that is not a mode is not a mode: the stored pref is dropped.
     localStorage.setItem('vibe.prefs', JSON.stringify({ music: 'loud' }));
@@ -1178,7 +1183,7 @@ describe('the endless seat, mounted', () => {
     run(mount, 4);
     await flush();
     // No engine was built here (`startAudio` is false and no key was pressed),
-    // so the bed reports nothing at all.
+    // so the bed reports nothing at all — neither its mode nor a recording.
     expect(mount.debug()).toEqual({
       supplied: 0,
       asked: 0,
@@ -1187,6 +1192,7 @@ describe('the endless seat, mounted', () => {
       music: null,
       // jsdom hands an `Image` no file, so the card preload has nothing.
       cards: 0,
+      track: null,
     });
     expect(root.querySelector('[data-vibe-seat]')).toBeNull();
   });

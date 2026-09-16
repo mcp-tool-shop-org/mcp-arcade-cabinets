@@ -61,6 +61,21 @@ const TAPES = path.join(repo, 'fixtures', 'tapes');
 const PUBLIC_DIRS = ['sprites', 'tracks', 'keys', 'vibe'];
 
 /**
+ * The typing cabinet's recorded beds, one a corpus stack. This is the same
+ * list as `VIBE_TRACK_KEYS` in `apps/cabinets/src/typer-audio.ts`, spelled
+ * again because a pack script is plain node and may not import the shell's
+ * TypeScript; `apps/cabinets/test/typer-audio.test.ts` fails the build if the
+ * two ever disagree.
+ *
+ * It is here as a per-file requirement rather than a directory one because a
+ * missing bed is silent by design — the procedural bed simply keeps the bar,
+ * and the player hears a cabinet that works. That is the right behavior at
+ * run time and the wrong one at pack time, where the only sign of a bed left
+ * out of the tarball would be a stack that quietly never plays its music.
+ */
+const VIBE_TRACK_KEYS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql', 'integration'];
+
+/**
  * What each cabinet's package carries, and how to tell from the built shell
  * that it is the right one.
  *
@@ -96,6 +111,8 @@ const CABINETS = {
     /** Its own four levers since slice 4: `view`, `product`, `ask`, `react`. */
     stdio: 'vibe',
     public: ['keys', 'vibe'],
+    /** One recorded bed a stack, checked by name (see VIBE_TRACK_KEYS above). */
+    files: VIBE_TRACK_KEYS.map((key) => path.join('play', 'vibe', 'tracks', `${key}.mp3`)),
     needles: [
       ['data-vibe-seat', 'the endless seat mount mark'],
       ['/cabinet/endless', 'the endless seat'],
@@ -168,6 +185,7 @@ function layoutOf(spec) {
     path.join('play', 'index.html'),
     'tapes',
     ...spec.public.map((dir) => path.join('play', dir)),
+    ...(spec.files ?? []),
   ];
 }
 

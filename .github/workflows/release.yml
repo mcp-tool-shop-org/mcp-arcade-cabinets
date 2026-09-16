@@ -224,6 +224,16 @@ jobs:
             // cabinets inside the package named for one, and the way that
             // comes back is silently, through a shell built without
             // VITE_CABINET.
+            //
+            // The typing cabinet's recorded beds are checked one file at a
+            // time, in "need", and not as a "carries" prefix: a prefix only
+            // proves that SOME file under it shipped, and six beds out of
+            // seven would pass that while one stack played no music. A bed
+            // missing at run time is silent by design — the procedural bed
+            // keeps the bar — so the tarball is the last place it can be
+            // noticed. An eighth stack is one edit to VIBE_BEDS.
+            const VIBE_BEDS =
+              ["bash", "csharp", "java", "javascript", "python", "sql", "integration"];
             const spec = dir === "packages/launcher"
               ? {
                   need: ["dist/cli.js", "dist/cabinet-stdio.js", "dist/cabinet-server.js"],
@@ -231,7 +241,10 @@ jobs:
                   gone: ["dist/play/keys/", "dist/play/vibe/"],
                 }
               : {
-                  need: ["dist/cli.js", "dist/cabinet-stdio.js", "dist/cabinet-server.js"],
+                  need: [
+                    "dist/cli.js", "dist/cabinet-stdio.js", "dist/cabinet-server.js",
+                    ...VIBE_BEDS.map((stack) => `dist/play/vibe/tracks/${stack}.mp3`),
+                  ],
                   carries: ["dist/play/keys/", "dist/play/vibe/"],
                   gone: ["dist/play/sprites/", "dist/play/tracks/"],
                 };
