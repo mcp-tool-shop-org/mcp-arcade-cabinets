@@ -1,0 +1,1454 @@
+{
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-042440000",
+  "model": "ollama:kimi-k2.6:cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "applied": true,
+  "voice": {
+    "user": "b57134ea182872df960bce4efd942f3ecca0fc9d6ef557b92cd2d7636e3ac32a",
+    "agent": "60690cb21754e61208fefe267adb4cb45983fe0cba1042cc5d37001aded2bdae"
+  },
+  "calls": 27,
+  "wallMs": 3780999,
+  "tokens": {
+    "in": 81062,
+    "out": 464189
+  },
+  "pools": {
+    "user.asks.bash": {
+      "promptHash": "da88a823533f7446ac5c924ce391dfb208794630ebbf60cb80bb98243aad2991",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 774278,
+      "dropped": [
+        {
+          "index": 52,
+          "line": "make {product} a black window with a blinking line",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1"
+        },
+        {
+          "index": 53,
+          "line": "make the window accept typed commands",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1"
+        },
+        {
+          "index": 54,
+          "line": "make the typed words show up green",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1"
+        },
+        {
+          "index": 57,
+          "line": "make the old lines scroll up and away",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1"
+        }
+      ],
+      "refused": [
+        {
+          "index": 58,
+          "line": "remember every command i ever typed here",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 60,
+          "line": "make two black windows side by side",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 63,
+          "line": "make the cloud window blink instantly please",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 66,
+          "line": "make the window say hello back",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 77,
+          "line": "make {product} a universe of blinking lines",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 97,
+          "line": "let {product} greet me by my name",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 101,
+          "line": "put a window on the moon please",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 103,
+          "line": "make {product} the only light i need",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.bash.1",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.asks.csharp": {
+      "promptHash": "84d2fe0059415daee245dde1b152297fcdf61d0dae6e95cdd4c8a5957c8eb341",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 407782,
+      "dropped": [
+        {
+          "index": 52,
+          "line": "make {product} open a window",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.csharp.1"
+        },
+        {
+          "index": 53,
+          "line": "put a button in the window",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.csharp.1"
+        },
+        {
+          "index": 72,
+          "line": "race the windows around the screen",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.csharp.1"
+        },
+        {
+          "index": 102,
+          "line": "make enough windows to give one to everyone",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.csharp.1"
+        },
+        {
+          "index": 132,
+          "line": "add a window that smells like bread",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.csharp.2"
+        },
+        {
+          "index": 135,
+          "line": "make the fridge light turn on",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.asks.csharp.2"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.asks.java": {
+      "promptHash": "4a25627c018071fd570f65ae11594fe75a47f41ad3ae87aabf07aaae43632149",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 360884,
+      "dropped": [
+        {
+          "index": 65,
+          "line": "let {product} build a waiting room",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.java.1"
+        },
+        {
+          "index": 69,
+          "line": "let {product} sync both skies each heartbeat",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.java.1"
+        },
+        {
+          "index": 138,
+          "line": "make {product} display a crown for the top seller",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.java.2"
+        },
+        {
+          "index": 149,
+          "line": "make {product} give a spirit animal to rows",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.java.2"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.asks.javascript": {
+      "promptHash": "b17a60ae7555fea779c24810f8cb622cef6af999ed03ab1aed9c1a364a80e649",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 478057,
+      "dropped": [
+        {
+          "index": 4,
+          "line": "let {product} have a jumping button",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.javascript.0"
+        },
+        {
+          "index": 39,
+          "line": "give {product} a shivering button",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.javascript.0"
+        },
+        {
+          "index": 105,
+          "line": "make {product} buttons bounce off the walls",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.javascript.2"
+        },
+        {
+          "index": 106,
+          "line": "make {product} buttons split in two",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.javascript.2"
+        },
+        {
+          "index": 122,
+          "line": "make {product} buttons do a little dance",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.javascript.2"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.asks.python": {
+      "promptHash": "bf525a751f93828af9b19810561222c647aa1759810efcc58ac234e23b788521",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 369390,
+      "dropped": [
+        {
+          "index": 109,
+          "line": "make {product} decide what is for lunch",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.python.2"
+        },
+        {
+          "index": 128,
+          "line": "make {product} read my fortune from the crumbs",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2"
+        },
+        {
+          "index": 132,
+          "line": "make {product} translate my yawns into poetry",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2"
+        },
+        {
+          "index": 134,
+          "line": "make {product} color the calendar based on vibes",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2"
+        }
+      ],
+      "refused": [
+        {
+          "index": 145,
+          "line": "make {product} banish the gray from mondays",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 146,
+          "line": "make {product} charm the snake in the garden",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 152,
+          "line": "make {product} preside over the ceremony of tea",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 153,
+          "line": "make {product} catalog my moods by texture",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.python.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.asks.sql": {
+      "promptHash": "11b67571590912dccff0247ca47b236c8475d1a2a103b9dc858500d02c206bb2",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 533686,
+      "dropped": [
+        {
+          "index": 59,
+          "line": "ask the table which records are late",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.sql.1"
+        },
+        {
+          "index": 104,
+          "line": "make {product} store every sandwich it sees",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.asks.sql.2"
+        },
+        {
+          "index": 110,
+          "line": "sort the table by aura brightness today",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.sql.2"
+        },
+        {
+          "index": 117,
+          "line": "ask which row is the main character",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.sql.2"
+        },
+        {
+          "index": 120,
+          "line": "make the table glow when data is happy",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.sql.2"
+        }
+      ],
+      "refused": [
+        {
+          "index": 131,
+          "line": "ask the table what it dreams about",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.sql.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 136,
+          "line": "let rows wear tiny hats on tuesdays",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.asks.sql.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 152,
+          "line": "ask the table who its hero is",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.sql.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.asks.integration": {
+      "promptHash": "73700cf9eb855ca35a8b2a64c8262f96afbe81b96a4df86dafe01fd4335bd02a",
+      "voice": "user",
+      "lines": 156,
+      "floor": 48,
+      "ms": 782378,
+      "dropped": [
+        {
+          "index": 52,
+          "line": "make {product} let one tool call another tool",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1"
+        },
+        {
+          "index": 53,
+          "line": "make one tool call three helpers",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1"
+        },
+        {
+          "index": 54,
+          "line": "make the tools swap their results",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1"
+        },
+        {
+          "index": 55,
+          "line": "chain three tools so they run in order",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1"
+        }
+      ],
+      "refused": [
+        {
+          "index": 57,
+          "line": "build a hub that calls every tool",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 58,
+          "line": "add a line so tools wait politely",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 63,
+          "line": "let the tools find each other alone",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 64,
+          "line": "let one tool borrow another's notebook",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 65,
+          "line": "wire the last tool back to the first",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 66,
+          "line": "make a broken tool wake itself up",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 67,
+          "line": "let one tool split a job in ten",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 69,
+          "line": "put the tiny tools on their own cloud",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 70,
+          "line": "make the main tool watch every cloud at once",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 73,
+          "line": "make every tool talk to every other tool",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 74,
+          "line": "let the user pick any tool from the middle",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 76,
+          "line": "add a cop that waves tools through in order",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 77,
+          "line": "make {product} run a whole city of tools",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 78,
+          "line": "make {product} greet every tool by name",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 80,
+          "line": "add a mail slot between each tool",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 83,
+          "line": "make a hall that holds a thousand tools",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 85,
+          "line": "add a knob that speeds up the tools",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 86,
+          "line": "let the tools pick their own leader",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 89,
+          "line": "add a pillow for tools that fall down",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 91,
+          "line": "put a rug under the tool hub",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 92,
+          "line": "make the cloud flash when a tool lands",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 93,
+          "line": "open a window into the tool kitchen",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 94,
+          "line": "give each tool a scrapbook of its day",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 96,
+          "line": "let me pat a tool on the head",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 97,
+          "line": "give every tool a tiny wristwatch",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 99,
+          "line": "add a watering can for slow tools",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 100,
+          "line": "add a fence around the tool yard",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 101,
+          "line": "let me watch the tools race each other",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 103,
+          "line": "let the tools throw a party at noon",
+          "why": "it does not sound like that character",
+          "pool": "user.asks.integration.1",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.reactions": {
+      "promptHash": "4e5751607b3f961afacc94f797605d2c33c1e468b90443ddd8b3b7bf669fc4c5",
+      "voice": "user",
+      "lines": 119,
+      "floor": 36,
+      "ms": 548202,
+      "dropped": [
+        {
+          "index": 33,
+          "line": "the cloud of tags rains down like soft confetti.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.0"
+        },
+        {
+          "index": 43,
+          "line": "the table now holds seventeen ducks without complaint.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactions.1"
+        },
+        {
+          "index": 44,
+          "line": "the countdown reaches zero with perfect television drama.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.1"
+        },
+        {
+          "index": 71,
+          "line": "the modal says hello and my cousin waved back.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.1"
+        },
+        {
+          "index": 82,
+          "line": "the table hums the anthem of ducks.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2"
+        },
+        {
+          "index": 84,
+          "line": "the color changed and so did i.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2"
+        },
+        {
+          "index": 92,
+          "line": "the hover state just asked about my day.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2"
+        },
+        {
+          "index": 104,
+          "line": "the card component is having a moment.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2"
+        }
+      ],
+      "refused": [
+        {
+          "index": 75,
+          "line": "the header waves back and my cousin is delighted.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactions.1",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 108,
+          "line": "the upload zone is accepting my flaws.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 111,
+          "line": "the zoom level sees right through me.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 113,
+          "line": "the undo stack remembers my best self.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 115,
+          "line": "the view mode sees my inner child.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactions.2",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.creeps": {
+      "promptHash": "c0fa88e442f596cfb8ce0e0efbc91ba391ad2d961ed615912b8e22d1b6372111",
+      "voice": "user",
+      "lines": 40,
+      "floor": 36,
+      "ms": 535467,
+      "dropped": [
+        {
+          "index": 13,
+          "line": "my neighbor asked for a trombone",
+          "why": "it does not sound like that character",
+          "pool": "user.creeps"
+        },
+        {
+          "index": 21,
+          "line": "my aunt wants a louder color",
+          "why": "it does not sound like that character",
+          "pool": "user.creeps"
+        },
+        {
+          "index": 25,
+          "line": "my cousin wants a disco ball",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.creeps"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reviews": {
+      "promptHash": "1f496e09b3ed10b5c17c8a308688c24599531580d440561f5f7fef23f01cb5ab",
+      "voice": "user",
+      "lines": 28,
+      "floor": 24,
+      "ms": 489500,
+      "dropped": [
+        {
+          "index": 5,
+          "line": "the purple email arrived on my phone.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews"
+        },
+        {
+          "index": 6,
+          "line": "my agent just outpaced my brain.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews"
+        },
+        {
+          "index": 7,
+          "line": "the valuation rolled up and i cried.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews"
+        },
+        {
+          "index": 10,
+          "line": "everything is beige and i feel safe.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews"
+        }
+      ],
+      "refused": [
+        {
+          "index": 19,
+          "line": "my photos are in a digital museum.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 21,
+          "line": "the search found my lost sandwich.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 23,
+          "line": "filling up never felt so personal.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviews",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.syncs": {
+      "promptHash": "16fe68c0dc50cc169baad11fb0135aab24e911b4999d12233cbc7dda6fd320fc",
+      "voice": "user",
+      "lines": 40,
+      "floor": 36,
+      "ms": 195720,
+      "dropped": [
+        {
+          "index": 10,
+          "line": "valuation looks good today",
+          "why": "it does not sound like that character",
+          "pool": "user.syncs"
+        },
+        {
+          "index": 32,
+          "line": "the investors are smiling",
+          "why": "it does not sound like that character",
+          "pool": "user.syncs"
+        },
+        {
+          "index": 35,
+          "line": "is it live soon",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.syncs"
+        },
+        {
+          "index": 36,
+          "line": "the fun part soon",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.syncs"
+        }
+      ],
+      "refused": [
+        {
+          "index": 37,
+          "line": "i adore the colors",
+          "why": "it does not sound like that character",
+          "pool": "user.syncs",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.nags": {
+      "promptHash": "846970e13276f0fcf854dc841e781301c1330a29309908a7b389debfcb41522b",
+      "voice": "user",
+      "lines": 54,
+      "floor": 50,
+      "ms": 382239,
+      "dropped": [
+        {
+          "index": 25,
+          "line": "is it alive yet",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.nags"
+        },
+        {
+          "index": 30,
+          "line": "is the magic on",
+          "why": "it does not sound like that character",
+          "pool": "user.nags"
+        },
+        {
+          "index": 31,
+          "line": "is the header smiling",
+          "why": "it does not sound like that character",
+          "pool": "user.nags"
+        },
+        {
+          "index": 35,
+          "line": "my cousin is waiting",
+          "why": "already appears in the same list, said a different way",
+          "pool": "user.nags"
+        }
+      ],
+      "refused": [
+        {
+          "index": 38,
+          "line": "is the plant growing",
+          "why": "it does not sound like that character",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 44,
+          "line": "is the vibe right",
+          "why": "it does not sound like that character",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 45,
+          "line": "is the ending happy",
+          "why": "it does not sound like that character",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 51,
+          "line": "is the pen moving",
+          "why": "it does not sound like that character",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 53,
+          "line": "is the party starting",
+          "why": "it does not sound like that character",
+          "pool": "user.nags",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "agent.replies": {
+      "promptHash": "e9a54752c1a871fd8203cbf9de9eb97683b2d829a038c61d28095edf7c15eac9",
+      "voice": "agent",
+      "lines": 75,
+      "floor": 72,
+      "ms": 678140,
+      "dropped": [
+        {
+          "index": 26,
+          "line": "Love this direction, floating letters incoming.",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 30,
+          "line": "You are absolutely right, one more line.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.replies"
+        },
+        {
+          "index": 66,
+          "line": "Brilliant, the pinecone collects some dust",
+          "why": "it does not sound like that character",
+          "pool": "agent.replies"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.hmm": {
+      "promptHash": "496cacdeb5c24abdc92d07cbeb789632a629cd2181b9318a21f290b2b651e1a2",
+      "voice": "agent",
+      "lines": 40,
+      "floor": 36,
+      "ms": 172124,
+      "dropped": [
+        {
+          "index": 20,
+          "line": "Hmm, the left side is lower than the right.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 21,
+          "line": "Hmm, I put the cart before the horse.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        },
+        {
+          "index": 25,
+          "line": "Hmm, I measured twice and cut once poorly.",
+          "why": "it does not sound like that character",
+          "pool": "agent.hmm"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.compactions": {
+      "promptHash": "37398dfb42dfebdba76618caa6bf071821a5efc6abbc66a10b5126b743bb4f24",
+      "voice": "agent",
+      "lines": 28,
+      "floor": 24,
+      "ms": 500158,
+      "dropped": [
+        {
+          "index": 8,
+          "line": "The stack is neat and snug tonight.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 11,
+          "line": "Our little village is built so far.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 18,
+          "line": "Our pile of wins is growing nicely.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        },
+        {
+          "index": 25,
+          "line": "The build is snug and sound today.",
+          "why": "it does not sound like that character",
+          "pool": "agent.compactions"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "agent.ships": {
+      "promptHash": "86d74ea5cc96b9f574cd4ab4a7de25851434bebe79d894638e74f81971a990e5",
+      "voice": "agent",
+      "lines": 28,
+      "floor": 24,
+      "ms": 274521,
+      "dropped": [
+        {
+          "index": 2,
+          "line": "Up and running like a dream.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 6,
+          "line": "Shipped and the world feels brighter.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 17,
+          "line": "That is out and gently glowing.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.ships"
+        },
+        {
+          "index": 25,
+          "line": "The build is out and glowing.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships"
+        }
+      ],
+      "refused": [
+        {
+          "index": 27,
+          "line": "Shipped and sitting there like art.",
+          "why": "it does not sound like that character",
+          "pool": "agent.ships",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "agent.nagReplies": {
+      "promptHash": "165e2c9088b9294a01728d143af6861c9ff274662a30754a892b2ae92d8d46d7",
+      "voice": "agent",
+      "lines": 54,
+      "floor": 50,
+      "ms": 553444,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "Your cousin is going to love this.",
+          "why": "it does not sound like that character",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 4,
+          "line": "You are absolutely right, tell them yes.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 18,
+          "line": "Your cousin is going to adore this.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.nagReplies"
+        },
+        {
+          "index": 19,
+          "line": "It is almost real now.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.nagReplies"
+        }
+      ],
+      "refused": [
+        {
+          "index": 29,
+          "line": "You can peek in a blink.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.nagReplies",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 35,
+          "line": "Your cousin is in for a treat.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "agent.nagReplies",
+          "whyRefused": "the pool is at its floor"
+        },
+        {
+          "index": 50,
+          "line": "One more line, then call them.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "agent.nagReplies",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.reactionsByTopic.1": {
+      "promptHash": "00e980d5bcac94f1a1afde6cb6cd428a4755540cc78eecac4cdcbdaebc578ff9",
+      "voice": "user",
+      "lines": 179,
+      "floor": 1,
+      "ms": 488220,
+      "dropped": [
+        {
+          "index": 26,
+          "line": "[abstract-method] the placeholder waves at the future implementation politely.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.abstract-method"
+        },
+        {
+          "index": 117,
+          "line": "[avg] our numbers finally have a middle child.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.avg"
+        },
+        {
+          "index": 132,
+          "line": "[backtracking] dead ends now lead back to hope.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.backtracking"
+        },
+        {
+          "index": 136,
+          "line": "[backup] the copy lives in a drawer called peace.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.backup"
+        },
+        {
+          "index": 168,
+          "line": "[builder-pattern] it builds the thing one bite at a time.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.builder-pattern"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.2": {
+      "promptHash": "594ecf69cf27e65d4a2fd1f870c71e4129d23baf3bdce61a0a2dee34c09fb162",
+      "voice": "user",
+      "lines": 179,
+      "floor": 1,
+      "ms": 498448,
+      "dropped": [
+        {
+          "index": 40,
+          "line": "[collect] my cousin collects stamps and now this.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.collect"
+        },
+        {
+          "index": 95,
+          "line": "[config-parsing] the app reads my preferences like a poem.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.config-parsing"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.3": {
+      "promptHash": "aa4dd65dcfb197fef21e04dc2490215f101a66add20823a150ba23a85e450f9f",
+      "voice": "user",
+      "lines": 177,
+      "floor": 1,
+      "ms": 883269,
+      "dropped": [
+        {
+          "index": 56,
+          "line": "[dictionary] my cousin is asking about the lookup book.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.dictionary"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.4": {
+      "promptHash": "c317d889c3ecba27182e0d895dc0a1d5b60f184c81ef6d67859db710a015c16b",
+      "voice": "user",
+      "lines": 177,
+      "floor": 1,
+      "ms": 584951,
+      "dropped": [
+        {
+          "index": 17,
+          "line": "[filtering] the picking through leaves no stone unturned.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.filtering"
+        },
+        {
+          "index": 22,
+          "line": "[fluent-api] the flowing sentence reads like a poem.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.fluent-api"
+        },
+        {
+          "index": 68,
+          "line": "[gaussian-elimination] the columns wipe each other clean.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.gaussian-elimination"
+        },
+        {
+          "index": 69,
+          "line": "[gaussian-elimination] the list shortens by comparing neighbors.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.gaussian-elimination"
+        },
+        {
+          "index": 135,
+          "line": "[heapq] the stack serves the most pressing first.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.heapq"
+        },
+        {
+          "index": 154,
+          "line": "[if-else] the page now chooses its own adventure.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.if-else"
+        },
+        {
+          "index": 156,
+          "line": "[if-else] it goes left for yogurt and right for fern.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.if-else"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.5": {
+      "promptHash": "4ffc4b9574536073d75fc288a21b0bfda1f207c48b070e7e64a451bf56975123",
+      "voice": "user",
+      "lines": 178,
+      "floor": 1,
+      "ms": 588454,
+      "dropped": [
+        {
+          "index": 1,
+          "line": "[inheritance] the new page got its parent's good looks.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.inheritance"
+        },
+        {
+          "index": 24,
+          "line": "[integer division] cutting the cake so everyone gets a slice and no crumbs",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.integer division"
+        },
+        {
+          "index": 25,
+          "line": "[integer division] the math that refuses to believe in remainders how brave",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.integer division"
+        },
+        {
+          "index": 103,
+          "line": "[linked list] each node waves at the one in front.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.linked list"
+        },
+        {
+          "index": 113,
+          "line": "[list-comprehension] i say what i want and it arrives.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.list-comprehension"
+        },
+        {
+          "index": 129,
+          "line": "[logical-operators] the product answers yes and no at once.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.logical-operators"
+        },
+        {
+          "index": 151,
+          "line": "[matrix] the spreadsheet without the spread knows its cells.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.matrix"
+        }
+      ],
+      "refused": [
+        {
+          "index": 26,
+          "line": "[integer division] sharing cookies equally and throwing the broken pieces into the void",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.integer division",
+          "whyRefused": "the pool is at its floor"
+        }
+      ],
+      "error": null
+    },
+    "user.reactionsByTopic.6": {
+      "promptHash": "c37db1277bbfd3a2639aaa67349bf6b0c408ae00fee8d7e3e0584e9f7dbc2a81",
+      "voice": "user",
+      "lines": 177,
+      "floor": 1,
+      "ms": 841413,
+      "dropped": [
+        {
+          "index": 11,
+          "line": "[modulo] the cycle knows when to return to start.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.modulo"
+        },
+        {
+          "index": 32,
+          "line": "[nested-conditionals] the second guess only happens after the first.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.nested-conditionals"
+        },
+        {
+          "index": 37,
+          "line": "[nested-loops] the circle inside the circle spins happily.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.nested-loops"
+        },
+        {
+          "index": 42,
+          "line": "[neural-network] the brain made of light now recognizes ducks.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.neural-network"
+        },
+        {
+          "index": 43,
+          "line": "[neural-network] the thinking web guesses what i want next.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.neural-network"
+        },
+        {
+          "index": 60,
+          "line": "[null-safety] the missing-thing guardrail keeps us all upright.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.null-safety"
+        },
+        {
+          "index": 112,
+          "line": "[parsing] the understanding of my intent feels almost telepathic.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.parsing"
+        },
+        {
+          "index": 113,
+          "line": "[parsing] the word-by-word digestion finishes before i exhale.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.parsing"
+        },
+        {
+          "index": 165,
+          "line": "[prime numbers] the solo dancers refuse to pair up at all.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.prime numbers"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.7": {
+      "promptHash": "9a5c0338646f42c55d8aab2a4cab892b81470cbc8e35df7c3e8017c1d002dee8",
+      "voice": "user",
+      "lines": 179,
+      "floor": 1,
+      "ms": 589646,
+      "dropped": [
+        {
+          "index": 7,
+          "line": "[private-methods] the invisible hand folds the napkins before dinner.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.private-methods"
+        },
+        {
+          "index": 41,
+          "line": "[read] the eye absorbs my note without moving its lips.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.read"
+        },
+        {
+          "index": 139,
+          "line": "[sed] the editor changes my mind for me.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.sed"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.8": {
+      "promptHash": "f5a092292e3460f056c92975bd69711d2c6af6e95b7658424fac69e1f1224e7a",
+      "voice": "user",
+      "lines": 180,
+      "floor": 1,
+      "ms": 560719,
+      "dropped": [
+        {
+          "index": 11,
+          "line": "[sparse] the parking lot offers two cars vast solitude.",
+          "why": "it does not sound like that character",
+          "pool": "user.reactionsByTopic.sparse"
+        },
+        {
+          "index": 17,
+          "line": "[spread] the jam reaches every corner of the toast.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.spread"
+        },
+        {
+          "index": 31,
+          "line": "[state-management] the product never forgets what step comes next.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.state-management"
+        },
+        {
+          "index": 122,
+          "line": "[tree traversal] the product walks every branch without getting lost.",
+          "why": "it already appears in the same list, said a different way",
+          "pool": "user.reactionsByTopic.tree traversal"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reactionsByTopic.9": {
+      "promptHash": "fc39e4459975bff7824a7aea48965862f83bf6644893bcd811ec7cf06c0e737a",
+      "voice": "user",
+      "lines": 53,
+      "floor": 1,
+      "ms": 826694,
+      "dropped": [
+        {
+          "index": 14,
+          "line": "[wc] the product measures my note with a ruler.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reactionsByTopic.wc"
+        }
+      ],
+      "refused": [],
+      "error": null
+    },
+    "user.reviewsByProduct.1": {
+      "promptHash": "3bf00d4814b84f79bbdb3a56e9decf0cd61fd2cecc136af89644687624dc27b3",
+      "voice": "user",
+      "lines": 48,
+      "floor": 1,
+      "ms": 307810,
+      "dropped": [
+        {
+          "index": 28,
+          "line": "[one-button-company] my company has never been more buttoned.",
+          "why": "it does not sound like that character",
+          "pool": "user.reviewsByProduct.one-button-company"
+        },
+        {
+          "index": 38,
+          "line": "[sandwich-ledger] i finally know where all my sandwiches go.",
+          "why": "it makes no sense for the place the list says it is used",
+          "pool": "user.reviewsByProduct.sandwich-ledger"
+        }
+      ],
+      "refused": [],
+      "error": null
+    }
+  }
+}

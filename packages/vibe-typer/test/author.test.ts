@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   chunk,
+  chunkEven,
   corpusTopics,
   groupCandidates,
   keepFirstPassing,
@@ -286,6 +287,30 @@ describe('corpusTopics and chunk', () => {
   it('cuts a list into readable chunks', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
     expect(chunk([], 3)).toEqual([]);
+  });
+
+  it('cuts an even chunk into equal calls rather than a full one and a remainder', () => {
+    // Fifty-two items at a chunk of forty is two calls either way; the even cut
+    // asks the same question twice instead of asking a thin one second.
+    const fifty2 = Array.from({ length: 52 }, (_, i) => i);
+    expect(chunkEven(fifty2, 40).map((g) => g.length)).toEqual([26, 26]);
+    expect(chunkEven(fifty2, 40).flat()).toEqual(fifty2);
+    expect(chunkEven([1, 2, 3, 4, 5], 2).map((g) => g.length)).toEqual([2, 2, 1]);
+    expect(chunkEven([1, 2, 3], 40)).toEqual([[1, 2, 3]]);
+    expect(chunkEven([], 40)).toEqual([]);
+  });
+
+  it('never gives a chunk more than the cap', () => {
+    for (let n = 1; n <= 200; n += 1) {
+      for (const size of [1, 7, 40]) {
+        const parts = chunkEven(
+          Array.from({ length: n }, (_, i) => i),
+          size,
+        );
+        expect(parts.flat(), `${n} at ${size}`).toHaveLength(n);
+        for (const part of parts) expect(part.length, `${n} at ${size}`).toBeLessThanOrEqual(size);
+      }
+    }
   });
 });
 

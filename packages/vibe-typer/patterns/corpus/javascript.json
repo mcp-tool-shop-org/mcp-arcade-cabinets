@@ -7,7 +7,7 @@
     "code": "console.log(\"hello world\");",
     "notes": ["Prints the string hello world to the console."],
     "topics": ["console", "strings"],
-    "ask": "print a welcome message for {product}"
+    "ask": "let {product} say hello first"
   },
   {
     "id": "cal-js-d1-002",
@@ -17,7 +17,7 @@
     "code": "const name = \"Alice\";\nconst age = 30;\nconsole.log(name, age);",
     "notes": ["Declares two constants and logs them to the console."],
     "topics": ["const", "variables"],
-    "ask": "show the name and age of the {product}"
+    "ask": "make {product} store a name and an age"
   },
   {
     "id": "cal-js-d1-003",
@@ -27,7 +27,7 @@
     "code": "let x = 10;\nlet y = 20;\nlet sum = x + y;\nconsole.log(sum);",
     "notes": ["Declares two numbers, adds them, and logs the result."],
     "topics": ["let", "arithmetic"],
-    "ask": "add two numbers together for the {product}"
+    "ask": "make {product} add two numbers and show the sum"
   },
   {
     "id": "cal-js-d1-004",
@@ -37,7 +37,7 @@
     "code": "const item = \"book\";\nconst price = 9.99;\nconsole.log(`${item} costs $${price}`);",
     "notes": ["Uses a template literal to interpolate variables into a string."],
     "topics": ["template-literals", "variables"],
-    "ask": "show the item and price of the {product}"
+    "ask": "make {product} say what something costs in a sentence"
   },
   {
     "id": "cal-js-d1-005",
@@ -47,7 +47,7 @@
     "code": "const value = null;\nconst fallback = value ?? \"default\";\nconsole.log(fallback);",
     "notes": ["Uses the nullish coalescing operator to provide a fallback for a null value."],
     "topics": ["nullish-coalescing", "const"],
-    "ask": "use a default if the {product} has none"
+    "ask": "use a default if the sample has no name"
   },
   {
     "id": "js-map-filter",
@@ -60,7 +60,7 @@
       "Chaining reads top-to-bottom like a pipeline."
     ],
     "topics": ["array", "map", "filter", "arrow-function"],
-    "ask": "filter active samples and uppercase them for {product}"
+    "ask": "keep only the neat strokes and make them big"
   },
   {
     "id": "js-ternary",
@@ -73,7 +73,7 @@
       "Practice ===, ?, and : for conditional logic."
     ],
     "topics": ["ternary", "conditional", "expression"],
-    "ask": "show the item count for the {product} cart"
+    "ask": "make {product} say item or items depending on the count"
   },
   {
     "id": "cal-js-d2-001",
@@ -85,7 +85,7 @@
       "Defines an arrow function that returns a greeting and demonstrates chaining a string method on the result."
     ],
     "topics": ["arrow-function", "template-literals"],
-    "ask": "greet the user and shout the result for {product}"
+    "ask": "want {product} to shout the grade"
   },
   {
     "id": "cal-js-d2-002",
@@ -97,7 +97,7 @@
       "Demonstrates the spread operator for merging arrays and rest syntax for destructuring the first element from the remainder."
     ],
     "topics": ["spread", "rest", "destructuring"],
-    "ask": "merge two lists for the {product} and separate the first"
+    "ask": "chain yesterday's items to today's list"
   },
   {
     "id": "cal-js-d2-003",
@@ -109,7 +109,7 @@
       "Creates an object using shorthand property names where the key matches the variable name."
     ],
     "topics": ["objects", "shorthand-properties"],
-    "ask": "create a block with name and role."
+    "ask": "give every item a name and owner"
   },
   {
     "id": "cal-js-d2-004",
@@ -121,7 +121,7 @@
       "Iterates over an array with index-value pairs using entries and logs each item with its position."
     ],
     "topics": ["for-of", "entries", "destructuring"],
-    "ask": "list each item with its place and total for {product}"
+    "ask": "list each letter with its position"
   },
   {
     "id": "cal-js-d2-005",
@@ -133,7 +133,7 @@
       "Shows function parameters with default values and how they are overridden when arguments are provided."
     ],
     "topics": ["default-parameters", "functions", "objects"],
-    "ask": "make tags with default colors and sizes for {product}"
+    "ask": "make {product} fill in the blanks when i forget"
   },
   {
     "id": "js-destructuring",
@@ -146,7 +146,7 @@
       "Default values apply when the property is undefined."
     ],
     "topics": ["destructuring", "objects", "defaults"],
-    "ask": "show the name age and role of the {product} user"
+    "ask": "pull out the loops swirls and tails"
   },
   {
     "id": "cal-js-d3-001",
@@ -158,7 +158,7 @@
       "Filters an array of products to those in stock, maps them to formatted strings, and joins the result into a comma-separated list."
     ],
     "topics": ["filter", "map", "join", "arrow-function"],
-    "ask": "list only fresh items on the {product}."
+    "ask": "show the good items and how much they cost"
   },
   {
     "id": "cal-js-d3-002",
@@ -170,7 +170,7 @@
       "Fetches a user by ID using promise chains, checks the response status, parses JSON, and handles errors with catch."
     ],
     "topics": ["promises", "fetch", "error-handling"],
-    "ask": "load a user for the {product} and catch errors"
+    "ask": "have {product} ask the office who can take this"
   },
   {
     "id": "cal-js-d3-003",
@@ -182,7 +182,7 @@
       "Defines a Rectangle class with a computed getter for area and a toString method for display formatting."
     ],
     "topics": ["class", "getter", "constructor", "methods"],
-    "ask": "make the {product} rectangle say its area and size."
+    "ask": "make {product} know the area of a rectangle"
   },
   {
     "id": "cal-js-d3-004",
@@ -194,7 +194,7 @@
       "Uses reduce to group an array of objects by their type property into an object of arrays."
     ],
     "topics": ["reduce", "grouping", "nullish-coalescing"],
-    "ask": "group the {product} by type."
+    "ask": "group every item by its type"
   },
   {
     "id": "cal-js-d3-005",
@@ -206,7 +206,7 @@
       "Creates a Set for unique words and a Map to count occurrences, then iterates over both to display results."
     ],
     "topics": ["set", "map", "for-of", "iterables"],
-    "ask": "launch the {product} and count unique items."
+    "ask": "find every unique item in the fridge"
   },
   {
     "id": "js-promise-chain",
@@ -219,7 +219,7 @@
       "Practice arrow functions, dots, and parentheses."
     ],
     "topics": ["promises", "then", "catch", "chaining"],
-    "ask": "grab the {product} data and complain if it breaks."
+    "ask": "make {product} get data and count what came back"
   },
   {
     "id": "js-reduce",
@@ -229,7 +229,7 @@
     "code": "const counts = items.reduce((m, x) => {\n  m[x] = (m[x] ?? 0) + 1;\n  return m;\n}, {});",
     "notes": ["Reduce builds a single value from a list.", "Practice ?? and arrow functions."],
     "topics": ["array", "reduce", "arrow-function"],
-    "ask": "count how many of each {product} thing we have."
+    "ask": "make {product} count how many times each thing appears"
   },
   {
     "id": "cal-js-d4-001",
@@ -241,7 +241,7 @@
       "Implements an async fetch wrapper that retries failed requests with exponential backoff up to a configurable number of attempts."
     ],
     "topics": ["async-await", "retry", "error-handling", "fetch"],
-    "ask": "try loading {product} data a few times before giving up."
+    "ask": "try three times to pull an opinion from the wall"
   },
   {
     "id": "cal-js-d4-002",
@@ -253,7 +253,7 @@
       "Implements a minimal event emitter with listener registration and emission using a Map to store handler arrays."
     ],
     "topics": ["class", "map", "events", "spread"],
-    "ask": "build an event emitter so {product} listings notify the room."
+    "ask": "make {product} listen for a signal and shout hello"
   },
   {
     "id": "cal-js-d4-003",
@@ -265,7 +265,7 @@
       "Creates a counter module using closures to encapsulate private state with increment, decrement, and subscriber notification."
     ],
     "topics": ["closures", "module-pattern", "getters"],
-    "ask": "build a counter module for {product} stock with subscribers."
+    "ask": "count how many trades each opinion has"
   },
   {
     "id": "cal-js-d4-004",
@@ -277,7 +277,7 @@
       "Implements a singly linked list with a generator-based Symbol.iterator to enable for-of traversal."
     ],
     "topics": ["class", "iterator", "generator", "symbol"],
-    "ask": "chain the {product} values so we can stroll through them."
+    "ask": "chain the opinions one to another"
   },
   {
     "id": "cal-js-d4-005",
@@ -289,7 +289,7 @@
       "Implements a debounce wrapper that delays function execution until a specified period of inactivity has elapsed."
     ],
     "topics": ["closures", "timers", "higher-order-functions"],
-    "ask": "make the {product} button wait until typing stops to act."
+    "ask": "make {product} wait until i stop typing to act"
   },
   {
     "id": "js-async-await",
@@ -302,7 +302,7 @@
       "Practice template literals and ${} placeholders."
     ],
     "topics": ["async", "await", "fetch", "json"],
-    "ask": "go get one {product} person and bring back their details."
+    "ask": "make {product} go get a user and complain if missing"
   },
   {
     "id": "js-class",
@@ -315,7 +315,7 @@
       "this refers to the current instance inside methods."
     ],
     "topics": ["class", "constructor", "methods", "this"],
-    "ask": "build a {product} stopwatch that remembers when it started running."
+    "ask": "make {product} track how long something takes"
   },
   {
     "id": "cal-js-d5-001",
@@ -327,7 +327,7 @@
       "Implements an async task queue that limits concurrent execution to a configurable number of tasks using a private drain method."
     ],
     "topics": ["async-await", "class", "concurrency", "private-methods"],
-    "ask": "line up {product} chores and only do two at once."
+    "ask": "handle the trades one by one but keep a line"
   },
   {
     "id": "cal-js-d5-002",
@@ -339,7 +339,7 @@
       "Recursively merges multiple source objects into a target, handling nested objects without overwriting sibling keys."
     ],
     "topics": ["recursion", "objects", "spread", "type-checking"],
-    "ask": "deep merge incoming {product} so no nuance gets overwritten."
+    "ask": "merge two worn opinions into one slightly used opinion"
   },
   {
     "id": "cal-js-d5-003",
@@ -351,7 +351,7 @@
       "Implements a minimal Observable class with map and filter operators that return new Observables by wrapping the subscription chain."
     ],
     "topics": ["class", "observer-pattern", "higher-order-functions", "closures"],
-    "ask": "run {product} changes through a pipe that tweaks and sorts."
+    "ask": "filter out the opinions that feel stale now"
   },
   {
     "id": "cal-js-d5-004",
@@ -363,7 +363,7 @@
       "Builds an async middleware pipeline where each function receives a context and a next callback, similar to Koa-style middleware composition."
     ],
     "topics": ["middleware", "async-await", "closures", "pipeline"],
-    "ask": "deploy a pipeline that gently rewrites every {product} receipt."
+    "ask": "have {product} chain the steps and time the whole trip"
   },
   {
     "id": "cal-js-d5-005",
@@ -375,7 +375,7 @@
       "Implements a promise pool that runs async tasks with a fixed concurrency limit using a worker pattern to consume tasks from a shared index."
     ],
     "topics": ["async-await", "promise", "concurrency", "worker-pattern"],
-    "ask": "make {product} do many things but only three at once."
+    "ask": "process ten trades but only three together"
   },
   {
     "id": "cal-js-d6-001",
@@ -387,7 +387,7 @@
       "Implements a reactive store with selector-based subscriptions that only notify listeners when their selected slice of state changes."
     ],
     "topics": ["state-management", "closures", "map", "selectors", "reactive"],
-    "ask": "let {product} watch slices of its brain and whisper updates."
+    "ask": "let {product} keep the state and notify the right listeners"
   },
   {
     "id": "cal-js-d6-002",
@@ -399,7 +399,7 @@
       "Creates a validation schema that can both batch-validate data and wrap objects in a Proxy to enforce constraints on property assignment."
     ],
     "topics": ["proxy", "validation", "closures", "higher-order-functions"],
-    "ask": "teach {product} to check its pockets before leaving the house."
+    "ask": "make {product} check the name and email before accepting them"
   },
   {
     "id": "cal-js-d6-003",
@@ -411,7 +411,7 @@
       "Implements a recursive descent parser for arithmetic expressions that builds an abstract syntax tree with correct operator precedence."
     ],
     "topics": ["parser", "recursion", "ast", "closures"],
-    "ask": "help {product} read math and draw the family tree inside."
+    "ask": "make {product} read a math sentence and map it out"
   },
   {
     "id": "cal-js-d6-004",
@@ -423,7 +423,7 @@
       "Uses an async generator to lazily paginate through results one item at a time, only fetching the next page when the consumer is ready."
     ],
     "topics": ["async-generator", "for-await-of", "pagination", "backpressure"],
-    "ask": "let {product} hand out items one by one from backstage."
+    "ask": "make {product} grab pages only when i ask for more"
   },
   {
     "id": "cal-js-d6-005",
@@ -435,7 +435,7 @@
       "Implements a dependency injection container with factory registration, lazy singleton support, and recursive dependency resolution."
     ],
     "topics": ["dependency-injection", "class", "private-fields", "factory-pattern"],
-    "ask": "let {product} ask a butler for whatever it needs next."
+    "ask": "make {product} build the logger only when someone needs it"
   },
   {
     "id": "cal-js-d7-001",
@@ -447,7 +447,7 @@
       "Implements a minimal virtual DOM with createElement, recursive tree diffing for nodes, props, and children, producing a patch object describing the changes."
     ],
     "topics": ["virtual-dom", "diffing", "recursion", "tree-algorithms"],
-    "ask": "let {product} spot differences between sketches and patch only those."
+    "ask": "make {product} spot the difference between two page sketches"
   },
   {
     "id": "cal-js-d7-002",
@@ -459,7 +459,7 @@
       "Implements a cooperative async task scheduler with three priority levels, configurable concurrency, and automatic flushing of the highest-priority queue first."
     ],
     "topics": ["scheduler", "async-await", "private-fields", "priority-queue", "concurrency"],
-    "ask": "let {product} line up chores and do loud ones first."
+    "ask": "make {product} do the urgent stuff before the boring jobs"
   },
   {
     "id": "cal-js-d7-003",
@@ -471,7 +471,7 @@
       "Builds a reactive system using Proxy that tracks property access during computed evaluation to automatically invalidate cached computed values when dependencies change."
     ],
     "topics": ["proxy", "reactive", "computed-properties", "dependency-tracking"],
-    "ask": "let {product} cook a recipe that updates when ingredients shift."
+    "ask": "make {product} recalculate the total when the price moves"
   },
   {
     "id": "cal-js-d7-004",
@@ -483,7 +483,7 @@
       "Implements a finite state machine with guarded transitions, named actions that mutate context, transition listeners, and automatic guard-based fallback handling."
     ],
     "topics": ["state-machine", "guards", "actions", "private-fields", "design-patterns"],
-    "ask": "teach {product} moods that shift with notes and secret rules."
+    "ask": "make {product} move between idle and loading and check retries"
   },
   {
     "id": "cal-js-d7-005",
@@ -501,6 +501,6 @@
       "private-fields",
       "design-patterns"
     ],
-    "ask": "let {product} invite friends that set up and pack up"
+    "ask": "make {product} let addons plug in and change the text"
   }
 ]

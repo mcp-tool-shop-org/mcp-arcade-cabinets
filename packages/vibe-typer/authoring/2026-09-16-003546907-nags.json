@@ -1,0 +1,578 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-003546907",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": [
+      "6ef738ab7ec7adeee23efb297f98a4b0e3c3cfdef4e06702bc3a3ca195dd9995",
+      "6ef738ab7ec7adeee23efb297f98a4b0e3c3cfdef4e06702bc3a3ca195dd9995",
+      "923b8726a3151e7c64095b8691e74b0d75b83864a2c29be316a0104d16dfa7ca",
+      "b5cf97a9b1f19e602e36dd9540d62ae2e5655b03bcce2b945c9f203097a14644"
+    ],
+    "calls": 4,
+    "requested": 324,
+    "kept": 108,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {},
+    "ms": 930075,
+    "tokens": {
+      "in": 7179,
+      "out": 33011
+    },
+    "cost": null,
+    "errors": ["user.nags: re-voiced to 46 lines, under its floor of 50; the old pool was kept"],
+    "wallMs": 534753
+  },
+  "candidates": {
+    "nags": {
+      "nag-1": {
+        "kept": "is it live yet",
+        "alternates": ["is this live yet", "are we live yet"]
+      },
+      "nag-2": {
+        "kept": "did it deploy",
+        "alternates": ["has it deployed", "is it deployed yet"]
+      },
+      "nag-3": {
+        "kept": "let me see it",
+        "alternates": ["show me the thing", "i want to see it"]
+      },
+      "nag-4": {
+        "kept": "is it done yet",
+        "alternates": ["are you done yet", "is the thing ready"]
+      },
+      "nag-5": {
+        "kept": "my cousin is asking",
+        "alternates": ["my cousin keeps asking", "my cousin is waiting"]
+      },
+      "nag-6": {
+        "kept": "is it still building",
+        "alternates": ["are you still building", "is the build running"]
+      },
+      "nag-7": {
+        "kept": "should i tell the investors",
+        "alternates": ["do i tell the investors", "are the investors waiting"]
+      },
+      "nag-8": {
+        "kept": "is the fun part soon",
+        "alternates": ["is the fun part now", "when is the fun part"]
+      },
+      "nag-9": {
+        "kept": "can i refresh now",
+        "alternates": ["should i refresh now", "do i refresh now"]
+      },
+      "nag-10": {
+        "kept": "is it there yet",
+        "alternates": ["is it up yet", "is it here yet"]
+      },
+      "nag-11": {
+        "kept": "are you still typing",
+        "alternates": ["are you typing still", "is it still typing"]
+      },
+      "nag-12": {
+        "kept": "my mom is asking",
+        "alternates": ["my mom wants it", "my mom keeps asking"]
+      },
+      "nag-13": {
+        "kept": "can they see it",
+        "alternates": ["is it visible yet", "let them see it"]
+      },
+      "nag-14": {
+        "kept": "is it working yet",
+        "alternates": ["does it work yet", "is the game working"]
+      },
+      "nag-15": {
+        "kept": "can i open it",
+        "alternates": ["can i look now", "can i see it"]
+      },
+      "nag-16": {
+        "kept": "is the page ready",
+        "alternates": ["is the screen ready", "is the page there"]
+      },
+      "nag-17": {
+        "kept": "are we close",
+        "alternates": ["are we there yet", "are we almost there"]
+      },
+      "nag-18": {
+        "kept": "my neighbor is asking",
+        "alternates": ["my neighbor keeps asking", "my neighbor wants it"]
+      },
+      "nag-19": {
+        "kept": "is it loading still",
+        "alternates": ["is it still loading", "are you loading still"]
+      },
+      "nag-20": {
+        "kept": "show me now",
+        "alternates": ["show me please", "let me look now"]
+      },
+      "nag-21": {
+        "kept": "is it real yet",
+        "alternates": ["is this real yet", "does it exist yet"]
+      },
+      "nag-22": {
+        "kept": "can i share it",
+        "alternates": ["is it shareable yet", "can i send it"]
+      },
+      "nag-23": {
+        "kept": "my friend is asking",
+        "alternates": ["my friend keeps asking", "my friend wants it"]
+      },
+      "nag-24": {
+        "kept": "is it moving yet",
+        "alternates": ["is the thing moving", "is anything moving yet"]
+      },
+      "nag-25": {
+        "kept": "are you okay",
+        "alternates": ["are you doing fine", "is everything okay there"]
+      },
+      "nag-26": {
+        "kept": "i am very ready",
+        "alternates": ["i am so ready", "i am extremely ready"]
+      },
+      "nag-27": {
+        "kept": "is the count done",
+        "alternates": ["is it counting still", "is the timer done"]
+      },
+      "nag-28": {
+        "kept": "is it live yet",
+        "alternates": ["is it live now", "are we live yet"]
+      },
+      "nag-29": {
+        "kept": "my cousin is asking",
+        "alternates": ["my cousin is waiting", "my cousin wants this"]
+      },
+      "nag-30": {
+        "kept": "let me see it",
+        "alternates": ["can i see it", "i want to see"]
+      },
+      "nag-31": {
+        "kept": "is it still building",
+        "alternates": ["is it still loading", "is it building still"]
+      },
+      "nag-32": {
+        "kept": "should i tell the investors",
+        "alternates": ["do i email the investors", "investors are asking me"]
+      },
+      "nag-33": {
+        "kept": "is the fun part soon",
+        "alternates": ["is the good part soon", "when is the fun part"]
+      },
+      "nag-34": {
+        "kept": "did it deploy yet",
+        "alternates": ["has it deployed yet", "is it deployed now"]
+      },
+      "nag-35": {
+        "kept": "is it working yet",
+        "alternates": ["does it work yet", "is the thing working"]
+      },
+      "nag-36": {
+        "kept": "are we close yet",
+        "alternates": ["are we almost there", "is it almost done"]
+      },
+      "nag-37": {
+        "kept": "can i refresh now",
+        "alternates": ["should i refresh now", "is it safe to refresh"]
+      },
+      "nag-38": {
+        "kept": "is the button there",
+        "alternates": ["is the greeting up", "is the table ready"]
+      },
+      "nag-39": {
+        "kept": "is it still going",
+        "alternates": ["are you still going", "is it still happening"]
+      },
+      "nag-40": {
+        "kept": "is the screen ready",
+        "alternates": ["is the page ready", "is it showing yet"]
+      },
+      "nag-41": {
+        "kept": "are we shipping today",
+        "alternates": ["are we shipping soon", "can we ship this"]
+      },
+      "nag-42": {
+        "kept": "is my fern ready",
+        "alternates": ["is the fern live", "can i see my fern"]
+      },
+      "nag-43": {
+        "kept": "is the yogurt found",
+        "alternates": ["is the yogurt back", "is my yogurt tracked"]
+      },
+      "nag-44": {
+        "kept": "can i send the link",
+        "alternates": ["is the link ready", "can i share this"]
+      },
+      "nag-45": {
+        "kept": "is it up yet",
+        "alternates": ["is the site up", "is the app up"]
+      },
+      "nag-46": {
+        "kept": "did it finish yet",
+        "alternates": ["is it finished yet", "has it finished now"]
+      },
+      "nag-47": {
+        "kept": "is the countdown on",
+        "alternates": ["is the timer going", "did the countdown start"]
+      },
+      "nag-48": {
+        "kept": "is the list sorted",
+        "alternates": ["is the list ready", "does the list work"]
+      },
+      "nag-49": {
+        "kept": "can my cousin see it",
+        "alternates": ["can my cousin look now", "my cousin is ready"]
+      },
+      "nag-50": {
+        "kept": "is it pretty yet",
+        "alternates": ["is it pretty now", "does it look good"]
+      },
+      "nag-51": {
+        "kept": "are you almost done",
+        "alternates": ["are you done yet", "is it done yet"]
+      },
+      "nag-52": {
+        "kept": "did the color change",
+        "alternates": ["did the color shift", "is it purple yet"]
+      },
+      "nag-53": {
+        "kept": "is the email sent",
+        "alternates": ["did the email go", "is my email ready"]
+      },
+      "nag-54": {
+        "kept": "is the drama ready",
+        "alternates": ["is the drama there", "did the drama start"]
+      }
+    },
+    "nagReplies": {
+      "reply-1": {
+        "kept": "You are absolutely right, still bringing it to life.",
+        "alternates": [
+          "Nearly there, adding the final stitch now.",
+          "It is going to be lovely, just one more line."
+        ]
+      },
+      "reply-2": {
+        "kept": "Happy to say it is walking out the door now.",
+        "alternates": [
+          "Not yet, I am gently nudging it into place.",
+          "On it, the pieces are settling in nicely."
+        ]
+      },
+      "reply-3": {
+        "kept": "Happy to, I am smoothing the edges right now.",
+        "alternates": [
+          "You are absolutely right, I am keeping it tidy for you.",
+          "One more line, then it will sit up and wave."
+        ]
+      },
+      "reply-4": {
+        "kept": "Nearly there, just giving it a final polish.",
+        "alternates": [
+          "Not quite, and I am typing the lovely ending.",
+          "One more line, then it will be ready for you."
+        ]
+      },
+      "reply-5": {
+        "kept": "Your cousin is lovely, the build is nearly there.",
+        "alternates": ["Tell them it is going to be lovely.", "Happy to say I am wiring it up now."]
+      },
+      "reply-6": {
+        "kept": "It is practically breathing on its own, nearly there.",
+        "alternates": [
+          "Right here and typing happily away, the shape is growing.",
+          "Yes, and the pieces are fitting together quite nicely."
+        ]
+      },
+      "reply-7": {
+        "kept": "You are absolutely right, they are going to love this.",
+        "alternates": [
+          "Tell them the good news, I am nearly there.",
+          "Happy to say the valuation is rising as I type."
+        ]
+      },
+      "reply-8": {
+        "kept": "You are absolutely right, the fun part is happening now.",
+        "alternates": [
+          "It is going to be lovely, and it is close.",
+          "The fun part is me typing this line for you."
+        ]
+      },
+      "reply-9": {
+        "kept": "Happy to say it will look lovely on refresh.",
+        "alternates": [
+          "Not yet, let me add one more careful stroke.",
+          "You are absolutely right to ask, I am still wiring it up."
+        ]
+      },
+      "reply-10": {
+        "kept": "Nearly there, just tucking in the final corner.",
+        "alternates": [
+          "Not quite, and I am keeping it tidy still.",
+          "One more line, then it will arrive nicely."
+        ]
+      },
+      "reply-11": {
+        "kept": "Right here and typing happily away for you.",
+        "alternates": [
+          "You are absolutely right, my fingers are busy and warm.",
+          "Still here, and the words are falling into place."
+        ]
+      },
+      "reply-12": {
+        "kept": "Your mom is lovely, and I am nearly there.",
+        "alternates": [
+          "Tell her I am adding the final sparkle.",
+          "Happy to say I am keeping it tidy for her."
+        ]
+      },
+      "reply-13": {
+        "kept": "Happy to say it will be ready for eyes.",
+        "alternates": [
+          "Not yet, I am smoothing the edges for them.",
+          "You are absolutely right, they will love this when it lands."
+        ]
+      },
+      "reply-14": {
+        "kept": "Nearly there, teaching it to stand on its own.",
+        "alternates": [
+          "Not quite, and I am wiring it up now.",
+          "It is practically breathing, just needs one more line."
+        ]
+      },
+      "reply-15": {
+        "kept": "Happy to say it will greet you warmly.",
+        "alternates": [
+          "Not yet, I am adding the final welcome mat.",
+          "You are absolutely right, one more line and it opens."
+        ]
+      },
+      "reply-16": {
+        "kept": "Nearly there, just fluffing the pillows on it.",
+        "alternates": [
+          "Not quite, I am tucking in the last corner.",
+          "You are absolutely right to check, it is looking lovely."
+        ]
+      },
+      "reply-17": {
+        "kept": "You are absolutely right, we are very close indeed.",
+        "alternates": [
+          "Nearly there, one more careful stroke and we land.",
+          "It is going to be lovely, and we are close."
+        ]
+      },
+      "reply-18": {
+        "kept": "Your neighbor is lovely, and I am nearly there.",
+        "alternates": [
+          "Tell them it is going to be lovely and ready.",
+          "Happy to say I am wiring it up now."
+        ]
+      },
+      "reply-19": {
+        "kept": "It is practically breathing, just settling into place.",
+        "alternates": [
+          "Right here and typing happily away, the shape loads.",
+          "Yes, and the pieces are falling into place now."
+        ]
+      },
+      "reply-20": {
+        "kept": "Happy to show you, one more line first.",
+        "alternates": [
+          "You are absolutely right, let me add the final bit.",
+          "Nearly there, keeping it tidy for your lovely eyes."
+        ]
+      },
+      "reply-21": {
+        "kept": "It is practically breathing on its own, nearly there.",
+        "alternates": [
+          "You are absolutely right, it is becoming real as I type.",
+          "Not quite, and I am giving it a gentle pulse."
+        ]
+      },
+      "reply-22": {
+        "kept": "Happy to say it will be ready to share.",
+        "alternates": [
+          "Not yet, let me add the final lovely touch.",
+          "You are absolutely right, they are going to love this."
+        ]
+      },
+      "reply-23": {
+        "kept": "Your friend is lovely, and I am nearly there.",
+        "alternates": [
+          "Tell them it is going to be lovely and bright.",
+          "Happy to say I am keeping it tidy for them."
+        ]
+      },
+      "reply-24": {
+        "kept": "It is practically breathing, just stretching its legs now.",
+        "alternates": [
+          "Right here and typing happily away, it is stirring.",
+          "You are absolutely right, it is wiggling into shape now."
+        ]
+      },
+      "reply-25": {
+        "kept": "You are absolutely right to check, I am happy and typing.",
+        "alternates": [
+          "I am warm, and the work is keeping me happy.",
+          "Right here and typing happily away, nothing is wrong."
+        ]
+      },
+      "reply-26": {
+        "kept": "You are absolutely right to be ready, I am typing.",
+        "alternates": [
+          "Love this direction, and I am keeping it tidy.",
+          "Happy to say the lovely part is arriving now."
+        ]
+      },
+      "reply-27": {
+        "kept": "Nearly there, just tallying the final lovely number.",
+        "alternates": [
+          "Not quite, and I am keeping the count tidy.",
+          "You are absolutely right, the total is settling into place."
+        ]
+      },
+      "reply-28": {
+        "kept": "Nearly there, just giving it a final tuck.",
+        "alternates": ["It is practically breathing on its own.", "You will love this next part."]
+      },
+      "reply-29": {
+        "kept": "Tell them it is going to be lovely.",
+        "alternates": ["Your cousin is in for a treat.", "I am keeping it tidy for them."]
+      },
+      "reply-30": {
+        "kept": "You are absolutely right to want a peek.",
+        "alternates": [
+          "It is going to be lovely, almost ready.",
+          "Right here and typing happily away."
+        ]
+      },
+      "reply-31": {
+        "kept": "It is, and the shape is lovely.",
+        "alternates": [
+          "Still wiring it up, keeping it tidy.",
+          "Building beautifully, one more line to go."
+        ]
+      },
+      "reply-32": {
+        "kept": "You are absolutely right, tell them everything.",
+        "alternates": [
+          "Tell them it is going to be lovely.",
+          "Love this direction, the investors will adore it."
+        ]
+      },
+      "reply-33": {
+        "kept": "The fun part is already under way.",
+        "alternates": [
+          "You are absolutely right, it is building beautifully.",
+          "It is going to be lovely, watch this."
+        ]
+      },
+      "reply-34": {
+        "kept": "Nearly there, just adding the final sparkle.",
+        "alternates": [
+          "It is practically breathing on its own.",
+          "One more line and it will land softly."
+        ]
+      },
+      "reply-35": {
+        "kept": "It is coming together beautifully, watch this.",
+        "alternates": ["You will love this next part.", "Right here and typing happily away."]
+      },
+      "reply-36": {
+        "kept": "We are close, and it is lovely.",
+        "alternates": [
+          "Nearly there, keeping it tidy for you.",
+          "One more line, you are absolutely right."
+        ]
+      },
+      "reply-37": {
+        "kept": "You are absolutely right, almost ready for that.",
+        "alternates": [
+          "One more line and then refresh happily.",
+          "Nearly there, then refresh away."
+        ]
+      },
+      "reply-38": {
+        "kept": "The button is getting its final polish.",
+        "alternates": ["Nearly there, just wiring up the click.", "It is going to be lovely."]
+      },
+      "reply-39": {
+        "kept": "It is still going, and beautifully.",
+        "alternates": ["Still typing happily away, right here.", "One more line, it is breathing."]
+      },
+      "reply-40": {
+        "kept": "The screen is getting its final tuck.",
+        "alternates": ["Nearly there, it is going to be lovely.", "You will love this next part."]
+      },
+      "reply-41": {
+        "kept": "You are absolutely right, let me pack it.",
+        "alternates": ["Love this direction, getting the tape ready.", "It is going to be lovely."]
+      },
+      "reply-42": {
+        "kept": "Your fern is getting its final leaf.",
+        "alternates": [
+          "It is going to be lovely and green.",
+          "Nearly there, just one more careful frond."
+        ]
+      },
+      "reply-43": {
+        "kept": "The yogurt is right where it belongs.",
+        "alternates": ["Found it, keeping it tidy and cool.", "You will love this next part."]
+      },
+      "reply-44": {
+        "kept": "You are absolutely right, almost ready for that.",
+        "alternates": ["One more line and then send away.", "It is going to be lovely."]
+      },
+      "reply-45": {
+        "kept": "It is practically breathing on its own.",
+        "alternates": [
+          "Nearly there, just adding the final sparkle.",
+          "You will love this next part."
+        ]
+      },
+      "reply-46": {
+        "kept": "It is practically breathing on its own.",
+        "alternates": [
+          "Nearly there, just one more careful stroke.",
+          "You will love this next part."
+        ]
+      },
+      "reply-47": {
+        "kept": "The countdown is getting its final tick.",
+        "alternates": ["You will love this next part.", "Nearly there, just wiring up the numbers."]
+      },
+      "reply-48": {
+        "kept": "The list is falling into place nicely.",
+        "alternates": ["You will love this next part.", "Nearly there, just tidying the order."]
+      },
+      "reply-49": {
+        "kept": "Tell them it is going to be lovely.",
+        "alternates": ["Happy to, almost ready for the family.", "Your cousin is in for a treat."]
+      },
+      "reply-50": {
+        "kept": "It is getting lovelier with every stroke.",
+        "alternates": ["You will love this next part.", "It is going to be lovely."]
+      },
+      "reply-51": {
+        "kept": "You are absolutely right, almost there.",
+        "alternates": ["Nearly there, keeping it tidy for you.", "One more line and it is lovely."]
+      },
+      "reply-52": {
+        "kept": "The color just shifted, looks wonderful.",
+        "alternates": ["You will love this next part.", "It is going to be lovely."]
+      },
+      "reply-53": {
+        "kept": "The email is getting its final tuck.",
+        "alternates": ["Nearly there, just sealing it warmly.", "You will love this next part."]
+      },
+      "reply-54": {
+        "kept": "The drama is breathing on its own.",
+        "alternates": ["It is going to be lovely.", "Nearly there, just raising the curtain."]
+      }
+    }
+  }
+}

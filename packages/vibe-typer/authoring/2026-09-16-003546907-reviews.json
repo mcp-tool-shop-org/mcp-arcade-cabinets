@@ -1,0 +1,109 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-003546907",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": ["deb6cc40b1a33abb9e2912daf465533c0e5a656cc60d0d1361ac877a40cdb30c"],
+    "calls": 1,
+    "requested": 48,
+    "kept": 16,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {},
+    "ms": 178059,
+    "tokens": {
+      "in": 1942,
+      "out": 9066
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 178059
+  },
+  "candidates": {
+    "cat-website": [
+      "my cat has never looked more professional.",
+      "my cat now has a working contact form.",
+      "the website for my cat understands his brand."
+    ],
+    "duck-rides": [
+      "the rideshare for ducks has excellent pond coverage.",
+      "my ducks have never arrived more promptly.",
+      "the drivers always have the right breadcrumbs."
+    ],
+    "handwriting-rater": [
+      "my handwriting finally gets the recognition it deserves.",
+      "the website says my loops are very confident.",
+      "the rating for my grocery list is fair."
+    ],
+    "sandwich-ledger": [
+      "my sandwich history is finally fully transparent.",
+      "the ledger proves i prefer mustard after all.",
+      "i finally know where all my sandwiches go."
+    ],
+    "fridge-chain": [
+      "the fridge now knows who takes my yogurt.",
+      "my yogurt has never been more tracked.",
+      "the office fridge finally has perfect memory."
+    ],
+    "plant-dashboard": [
+      "my fern has never looked more monitored.",
+      "the dashboard says my fern is thriving.",
+      "i finally know when my fern is thirsty."
+    ],
+    "lost-sock-platform": [
+      "my socks have never been more findable.",
+      "the platform locates my favorite striped sock.",
+      "i finally know where all my socks go."
+    ],
+    "hourly-praise": [
+      "the app says i am doing great today.",
+      "my desktop has never been more supportive.",
+      "the hourly praise really keeps me going."
+    ],
+    "tool-finder": [
+      "it finds my wrench a tiny wrench friend.",
+      "my garage has never been more organized.",
+      "it matches my screwdriver with its perfect partner."
+    ],
+    "self-newsletter": [
+      "the newsletter really captures my voice today.",
+      "my subscribers have never been more informed.",
+      "it writes exactly what i am thinking."
+    ],
+    "coffee-loyalty": [
+      "the coffee machine finally recognizes my devotion.",
+      "my loyalty has never been more caffeinated.",
+      "the machine rewards me with extra steam."
+    ],
+    "thermostat-debate": [
+      "the bot thinks my thermostat is coddling me.",
+      "my thermostat has never been more debated.",
+      "the bot and my thermostat reach a truce."
+    ],
+    "book-club-metaverse": [
+      "my book club now meets inside a painting.",
+      "the space for my book club is extremely cozy.",
+      "my book club has never been more scenic."
+    ],
+    "app-that-rates-apps": [
+      "the app gives my calendar high marks.",
+      "my apps have never been more judged.",
+      "the rating for my notes app feels accurate."
+    ],
+    "opinion-market": [
+      "my opinions have never been more tradable.",
+      "the marketplace finds a buyer for my take.",
+      "i sell my old opinion for twice the price."
+    ],
+    "one-button-company": [
+      "the button runs the whole company perfectly.",
+      "my company has never been more buttoned.",
+      "i press it and everyone knows what to do."
+    ]
+  }
+}

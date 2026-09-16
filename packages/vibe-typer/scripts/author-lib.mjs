@@ -36,6 +36,11 @@ export function productPhrase(product, table = {}) {
   return null;
 }
 
+/** sha256 of one piece of text, for pinning a voice sheet in a receipt. */
+export function textHash(text) {
+  return createHash('sha256').update(String(text), 'utf8').digest('hex');
+}
+
 /** sha256 of the exact prompt text, system then a blank line then user. */
 export function promptHash(system, user) {
   return createHash('sha256')
@@ -270,6 +275,31 @@ export function corpusTopics(snippets) {
 export function chunk(list, size) {
   const out = [];
   for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}
+
+/**
+ * Cut a list into as few chunks of at most `size` as it needs, and make them
+ * the same length rather than filling each one before starting the next.
+ *
+ * Fifty-two items at a chunk of forty is two calls either way; `chunk` makes
+ * them forty and twelve, and the call of twelve writes a thinner batch from a
+ * thinner brief. Two calls of twenty-six ask the same question twice.
+ */
+export function chunkEven(list, size) {
+  const n = list.length;
+  if (n === 0) return [];
+  const parts = Math.max(1, Math.ceil(n / Math.max(1, size)));
+  const each = Math.floor(n / parts);
+  let extra = n % parts;
+  const out = [];
+  let i = 0;
+  for (let p = 0; p < parts; p += 1) {
+    const take = each + (extra > 0 ? 1 : 0);
+    if (extra > 0) extra -= 1;
+    out.push(list.slice(i, i + take));
+    i += take;
+  }
   return out;
 }
 

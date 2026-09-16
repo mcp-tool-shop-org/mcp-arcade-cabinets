@@ -3,72 +3,72 @@
     {
       "id": "cat-website",
       "product": "a website for my cat",
-      "story": "this website is for my cat, mittens",
+      "story": "make a website for my cat",
       "stack": "bash",
-      "snippets": ["cal-sh-d1-001", "sh-for-loop", "cal-sh-d2-004", "cal-sh-d1-003"],
+      "snippets": ["cal-sh-d1-001", "cal-sh-d1-002", "sh-for-loop", "cal-sh-d1-005"],
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
-      "drainPerSec": 0.0042,
+      "drainPerSec": 0.00921,
       "drainRamp": 0.25,
       "shipBonus": 3
     },
     {
       "id": "duck-rides",
-      "product": "Uber but for ducks",
-      "story": "my new rideshare helps ducks who hate long walks",
+      "product": "a rideshare for ducks",
+      "story": "launch a rideshare for ducks",
       "stack": "python",
-      "snippets": ["cal-py-d1-003", "cal-py-d1-005", "cal-py-d2-005", "cal-py-d2-003"],
+      "snippets": ["cal-py-d1-003", "cal-py-d2-002", "cal-py-d2-001", "cal-py-d1-004"],
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
-      "drainPerSec": 0.0048,
+      "drainPerSec": 0.00415,
       "drainRamp": 0.25,
       "shipBonus": 3
     },
     {
       "id": "handwriting-rater",
       "product": "a website that rates your handwriting",
-      "story": "my cursive is finally ready for public critical feedback",
+      "story": "build a site that rates your handwriting",
       "stack": "javascript",
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
-      "drainPerSec": 0.004,
+      "drainPerSec": 0.00384,
       "drainRamp": 0.25,
       "shipBonus": 3,
-      "snippets": ["cal-js-d1-001", "cal-js-d2-003", "js-map-filter", "cal-js-d2-001"]
+      "snippets": ["cal-js-d1-001", "cal-js-d2-004", "js-destructuring", "cal-js-d2-001"]
     },
     {
       "id": "sandwich-ledger",
       "product": "a ledger of every sandwich i have eaten",
-      "story": "i am building a ledger of every sandwich i have eaten.",
+      "story": "track every sandwich i have eaten",
       "stack": "sql",
       "requests": 4,
       "bandMin": 1,
       "bandMax": 2,
-      "drainPerSec": 0.0028,
+      "drainPerSec": 0.00544,
       "drainRamp": 0.25,
       "shipBonus": 3,
-      "snippets": ["sql-insert", "cal-sq-d2-005", "cal-sq-d2-002", "cal-sq-d2-004"]
+      "snippets": ["cal-sq-d1-002", "cal-sq-d1-001", "cal-sq-d2-005", "cal-sq-d1-003"]
     },
     {
       "id": "fridge-chain",
       "product": "a blockchain for the office fridge",
-      "story": "i want a blockchain for the office fridge.",
+      "story": "chain the fridge items together",
       "stack": "javascript",
       "requests": 4,
       "bandMin": 2,
       "bandMax": 3,
-      "drainPerSec": 0.002,
+      "drainPerSec": 0.00234,
       "drainRamp": 0.25,
       "shipBonus": 8,
-      "snippets": ["cal-js-d2-003", "cal-js-d3-004", "cal-js-d3-001", "cal-js-d3-005"]
+      "snippets": ["cal-js-d2-003", "cal-js-d3-004", "cal-js-d3-005", "cal-js-d2-002"]
     },
     {
       "id": "plant-dashboard",
       "product": "a dashboard for my houseplants",
-      "story": "i need a dashboard to track my houseplants before they unionize.",
+      "story": "give my plants a dashboard",
       "stack": "sql",
       "requests": 4,
       "bandMin": 2,
@@ -76,25 +76,25 @@
       "drainPerSec": 0.0022,
       "drainRamp": 0.3,
       "shipBonus": 8,
-      "snippets": ["cal-sq-d3-004", "cal-sq-d2-003", "cal-sq-d3-003", "cal-sq-d2-004"]
+      "snippets": ["cal-sq-d3-004", "cal-sq-d3-005", "cal-sq-d3-003", "cal-sq-d3-002"]
     },
     {
       "id": "lost-sock-platform",
       "product": "an enterprise platform for lost socks",
-      "story": "our enterprise platform for lost socks just got funding.",
+      "story": "organize every sock i have lost",
       "stack": "java",
       "requests": 4,
       "bandMin": 2,
       "bandMax": 3,
-      "drainPerSec": 0.003,
+      "drainPerSec": 0.00294,
       "drainRamp": 0.3,
       "shipBonus": 8,
-      "snippets": ["cal-jv-d2-004", "cal-jv-d3-002", "cal-jv-d3-003", "cal-jv-d2-003"]
+      "snippets": ["cal-jv-d2-004", "cal-jv-d3-001", "cal-jv-d3-003", "cal-jv-d2-003"]
     },
     {
       "id": "hourly-praise",
       "product": "a desktop app that praises you hourly",
-      "story": "i want a desktop app that praises me every hour.",
+      "story": "have the desktop say nice things",
       "stack": "csharp",
       "requests": 4,
       "bandMin": 2,
@@ -102,12 +102,12 @@
       "drainPerSec": 0.0033,
       "drainRamp": 0.3,
       "shipBonus": 8,
-      "snippets": ["cal-cs-d2-005", "cal-cs-d2-001", "cal-cs-d3-002", "cal-cs-d3-003"]
+      "snippets": ["cal-cs-d2-005", "cal-cs-d3-002", "cal-cs-d3-001", "cal-cs-d2-004"]
     },
     {
       "id": "tool-finder",
       "product": "a tool that finds tools for tools",
-      "story": "i need a tool that finds tools for our tools",
+      "story": "create a tool that finds tool tools",
       "stack": "integration",
       "requests": 4,
       "bandMin": 3,
@@ -119,7 +119,7 @@
     {
       "id": "self-newsletter",
       "product": "a newsletter that writes itself",
-      "story": "i want a newsletter that writes itself every morning",
+      "story": "write a newsletter that writes itself",
       "stack": "bash",
       "requests": 4,
       "bandMin": 3,
@@ -127,25 +127,25 @@
       "drainPerSec": 0.0017,
       "drainRamp": 0.3,
       "shipBonus": 18,
-      "snippets": ["cal-sh-d3-005", "cal-sh-d3-002", "cal-sh-d4-001", "cal-sh-d4-005"]
+      "snippets": ["cal-sh-d3-005", "cal-sh-d3-002", "cal-sh-d3-001", "cal-sh-d4-004"]
     },
     {
       "id": "coffee-loyalty",
       "product": "a loyalty program for the coffee machine",
-      "story": "i need a loyalty program for the coffee machine by demo day.",
+      "story": "start a loyalty program for coffee",
       "stack": "java",
       "requests": 4,
       "bandMin": 3,
       "bandMax": 4,
-      "drainPerSec": 0.0023,
+      "drainPerSec": 0.00217,
       "drainRamp": 0.3,
       "shipBonus": 18,
-      "snippets": ["cal-jv-d3-003", "cal-jv-d3-002", "cal-jv-d4-001", "cal-jv-d3-004"]
+      "snippets": ["java-try-resources", "cal-jv-d4-002", "cal-jv-d4-004", "java-interface-default"]
     },
     {
       "id": "thermostat-debate",
       "product": "a bot that argues with my thermostat",
-      "story": "the bot learns how the thermostat feels each morning.",
+      "story": "design a bot that fights the thermostat",
       "stack": "python",
       "requests": 4,
       "bandMin": 3,
@@ -153,12 +153,12 @@
       "drainPerSec": 0.0017,
       "drainRamp": 0.3,
       "shipBonus": 18,
-      "snippets": ["cal-py-d3-004", "cal-py-d3-002", "cal-py-d4-004", "py-class-def"]
+      "snippets": ["cal-py-d3-002", "cal-py-d3-004", "cal-py-d4-004", "py-decorator"]
     },
     {
       "id": "book-club-metaverse",
       "product": "a metaverse for my book club",
-      "story": "my book club needs its own metaverse now",
+      "story": "open a world for our book club",
       "stack": "csharp",
       "requests": 4,
       "bandMin": 4,
@@ -166,12 +166,12 @@
       "drainPerSec": 0.0012,
       "drainRamp": 0.4,
       "shipBonus": 35,
-      "snippets": ["cal-cs-d5-001", "cal-cs-d4-004", "cal-cs-d5-002", "cal-cs-d4-002"]
+      "snippets": ["cal-cs-d4-003", "cal-cs-d4-004", "cal-cs-d5-002", "cal-cs-d5-004"]
     },
     {
       "id": "app-that-rates-apps",
       "product": "an app that rates other apps",
-      "story": "i think we need an app that rates apps",
+      "story": "judge our apps with a new app",
       "stack": "python",
       "requests": 4,
       "bandMin": 4,
@@ -179,12 +179,12 @@
       "drainPerSec": 0.00062,
       "drainRamp": 0.4,
       "shipBonus": 35,
-      "snippets": ["cal-py-d5-002", "cal-py-d5-003", "cal-py-d5-001", "cal-py-d5-005"]
+      "snippets": ["cal-py-d5-004", "cal-py-d5-003", "cal-py-d5-002", "cal-py-d5-005"]
     },
     {
       "id": "opinion-market",
       "product": "a marketplace for slightly used opinions",
-      "story": "i need a marketplace for slightly used opinions.",
+      "story": "trade opinions on our marketplace",
       "stack": "javascript",
       "requests": 4,
       "bandMin": 4,
@@ -192,12 +192,12 @@
       "drainPerSec": 0.00098,
       "drainRamp": 0.4,
       "shipBonus": 35,
-      "snippets": ["cal-js-d4-003", "cal-js-d4-002", "cal-js-d5-002", "cal-js-d5-004"]
+      "snippets": ["cal-js-d4-004", "cal-js-d4-003", "cal-js-d5-001", "cal-js-d5-002"]
     },
     {
       "id": "one-button-company",
       "product": "one button that runs the entire company",
-      "story": "i want one button that runs everything we own.",
+      "story": "run the company with one button",
       "stack": "integration",
       "requests": 4,
       "bandMin": 5,

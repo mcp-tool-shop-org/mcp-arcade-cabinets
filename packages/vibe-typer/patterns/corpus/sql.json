@@ -4,7 +4,7 @@
     "stack": "sql",
     "band": 1,
     "title": "select all columns",
-    "ask": "show me every last secret of our {product} users",
+    "ask": "show every sandwich in the list",
     "code": "SELECT *\nFROM users;",
     "notes": ["Retrieves all columns from the users table."],
     "topics": ["select", "basic-query"]
@@ -17,7 +17,7 @@
     "code": "INSERT INTO tags (name)\nVALUES ('urgent');",
     "notes": ["Inserts a single row into the tags table with a name value."],
     "topics": ["insert", "dml"],
-    "ask": "tag this {product} as urgently important"
+    "ask": "add my first sandwich to {product}"
   },
   {
     "id": "cal-sq-d1-003",
@@ -27,7 +27,7 @@
     "code": "DELETE FROM sessions\nWHERE expired = true;",
     "notes": ["Removes all rows from sessions where the expired flag is true."],
     "topics": ["delete", "where", "dml"],
-    "ask": "toss the expired {product} sessions forever please"
+    "ask": "remove the ones that were just okay"
   },
   {
     "id": "cal-sq-d1-004",
@@ -37,7 +37,7 @@
     "code": "SELECT COUNT(*) AS total\nFROM orders\nWHERE status = 'shipped';",
     "notes": ["Counts the number of orders with a shipped status."],
     "topics": ["aggregate", "count", "where"],
-    "ask": "count shipped {product} orders for my amusement"
+    "ask": "make {product} count the shipped orders"
   },
   {
     "id": "cal-sq-d1-005",
@@ -47,7 +47,7 @@
     "code": "UPDATE products\nSET price = 29.99\nWHERE id = 42;",
     "notes": ["Updates the price of a single product identified by its id."],
     "topics": ["update", "set", "where"],
-    "ask": "make this {product} cost twenty nine ninety nine"
+    "ask": "make {product} change the price of one thing"
   },
   {
     "id": "sql-insert",
@@ -60,7 +60,7 @@
       "Column list and VALUES must match in order and count."
     ],
     "topics": ["insert", "values", "dml"],
-    "ask": "add my first sandwich to {product}"
+    "ask": "make {product} add a new product"
   },
   {
     "id": "cal-sq-d2-001",
@@ -72,7 +72,7 @@
       "Joins orders with customers on a foreign key, filtering by total and active status."
     ],
     "topics": ["join", "inner-join", "aliases", "order-by"],
-    "ask": "find {product} orders over one hundred from live customers"
+    "ask": "make {product} pair orders and customers by value"
   },
   {
     "id": "cal-sq-d2-002",
@@ -84,7 +84,7 @@
       "Aggregates employee stats per department with rounding, null handling, and a minimum headcount filter."
     ],
     "topics": ["group-by", "having", "aggregate", "coalesce"],
-    "ask": "show totals by filling in {product}"
+    "ask": "group my sandwiches by filling and skip the small groups"
   },
   {
     "id": "cal-sq-d2-003",
@@ -96,7 +96,7 @@
       "Left joins users to profiles, substituting defaults for null bio and avatar fields."
     ],
     "topics": ["left-join", "coalesce", "null-handling"],
-    "ask": "show {product} and use default icons for the missing"
+    "ask": "show my ferns and their photos, default if none."
   },
   {
     "id": "cal-sq-d2-004",
@@ -106,7 +106,7 @@
     "code": "INSERT INTO monthly_stats\n    (month, region, total, avg_order)\nSELECT\n    DATE_TRUNC('month', o.created_at),\n    c.region,\n    SUM(o.total)::NUMERIC(12, 2),\n    AVG(o.total)::NUMERIC(10, 2)\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nGROUP BY 1, 2;",
     "notes": ["Inserts aggregated monthly stats per region using a SELECT with type casts."],
     "topics": ["insert-select", "type-cast", "aggregate"],
-    "ask": "ship monthly report cards for {product} by room"
+    "ask": "build me a monthly summary from {product}"
   },
   {
     "id": "cal-sq-d2-005",
@@ -116,7 +116,7 @@
     "code": "INSERT INTO colors (name, hex, rgb_r, rgb_g, rgb_b)\nVALUES\n    ('red', '#FF0000', 255, 0, 0),\n    ('green', '#00FF00', 0, 255, 0),\n    ('blue', '#0000FF', 0, 0, 255),\n    ('white', '#FFFFFF', 255, 255, 255),\n    ('black', '#000000', 0, 0, 0);",
     "notes": ["Inserts five color rows with hex codes and RGB components in a single statement."],
     "topics": ["insert", "multi-row", "values"],
-    "ask": "add the whole week to {product}"
+    "ask": "enter all the sandwiches from last week"
   },
   {
     "id": "sql-join",
@@ -129,7 +129,7 @@
       "Table aliases (o, c) keep queries concise."
     ],
     "topics": ["join", "inner-join", "aliases"],
-    "ask": "show {product} orders over one hundred with names"
+    "ask": "make {product} list big orders with customer names"
   },
   {
     "id": "sql-update",
@@ -142,7 +142,7 @@
       "Multiple columns are separated by commas in the SET clause."
     ],
     "topics": ["update", "set", "where", "dml"],
-    "ask": "give every {product} engineer a five percent raise"
+    "ask": "make {product} give the engineering team a raise"
   },
   {
     "id": "cal-sq-d3-001",
@@ -154,7 +154,7 @@
       "Uses a CTE for monthly payment totals, then filters for months above average via a subquery."
     ],
     "topics": ["cte", "subquery", "aggregation"],
-    "ask": "show {product} months that beat the average"
+    "ask": "show months where i spend more than my average."
   },
   {
     "id": "cal-sq-d3-002",
@@ -166,7 +166,7 @@
       "Finds employees earning above their department average using a correlated subquery."
     ],
     "topics": ["correlated-subquery", "avg", "comparison"],
-    "ask": "find {product} heroes earning above department average"
+    "ask": "find the plants that need more water than their roommates"
   },
   {
     "id": "cal-sq-d3-003",
@@ -178,7 +178,7 @@
       "Classifies products into pricing tiers using a CASE expression, joined with categories."
     ],
     "topics": ["case", "join", "classification"],
-    "ask": "group {product} into price tiers by category"
+    "ask": "label every plant by size along with its type"
   },
   {
     "id": "cal-sq-d3-004",
@@ -190,7 +190,7 @@
       "Creates an invoices table with primary key, foreign key, check constraint, and default values."
     ],
     "topics": ["ddl", "create-table", "constraints", "references"],
-    "ask": "build a watering log with rules for {product}"
+    "ask": "make a table for every plant and its spot"
   },
   {
     "id": "cal-sq-d3-005",
@@ -200,7 +200,7 @@
     "code": "SELECT c.id, c.name, c.email\nFROM customers c\nWHERE EXISTS (\n        SELECT 1\n        FROM orders o\n        WHERE o.customer_id = c.id\n            AND o.status IN (\n                'shipped', 'delivered'\n            )\n    )\nORDER BY c.name;",
     "notes": ["Finds customers who have at least one shipped or delivered order using EXISTS."],
     "topics": ["exists", "subquery", "in-list"],
-    "ask": "show me {product} customers who actually finished an order"
+    "ask": "spot the plants that got water or new soil"
   },
   {
     "id": "sql-subquery",
@@ -213,7 +213,7 @@
       "IN checks membership against the inner result set."
     ],
     "topics": ["subquery", "where-in", "nesting"],
-    "ask": "show me {product} users who spent five hundred or more"
+    "ask": "make {product} show the big spending users"
   },
   {
     "id": "cal-sq-d4-001",
@@ -225,7 +225,7 @@
       "Ranks employees by salary within each department and computes their percentage share."
     ],
     "topics": ["window-function", "rank", "partition-by"],
-    "ask": "rank {product} staff by pay within each department"
+    "ask": "make {product} rank employees in each department by salary"
   },
   {
     "id": "cal-sq-d4-002",
@@ -235,7 +235,7 @@
     "code": "WITH active_users AS (\n    SELECT id, name, email\n    FROM users\n    WHERE active = true\n),\nrecent_orders AS (\n    SELECT user_id,\n        COUNT(*) AS order_count,\n        MAX(created_at) AS last_order\n    FROM orders\n    WHERE created_at >= CURRENT_DATE\n        - INTERVAL '90 days'\n    GROUP BY user_id\n)\nSELECT a.name, a.email,\n    COALESCE(r.order_count, 0) AS orders_90d,\n    r.last_order\nFROM active_users a\nLEFT JOIN recent_orders r\n    ON r.user_id = a.id\nORDER BY orders_90d DESC;",
     "notes": ["Chains two CTEs to join active users with their recent 90-day order activity."],
     "topics": ["cte", "multi-cte", "left-join", "interval"],
-    "ask": "active {product} users and their last ninety days of orders"
+    "ask": "make {product} show active users and their recent orders"
   },
   {
     "id": "cal-sq-d4-003",
@@ -245,7 +245,7 @@
     "code": "UPDATE inventory i\nSET quantity = i.quantity - o.qty,\n    updated_at = CURRENT_TIMESTAMP\nFROM (\n    SELECT product_id,\n        SUM(quantity) AS qty\n    FROM order_items\n    WHERE order_id IN (\n            SELECT id FROM orders\n            WHERE status = 'confirmed'\n                AND created_at >= CURRENT_DATE\n                    - INTERVAL '1 day'\n        )\n    GROUP BY product_id\n) o\nWHERE i.product_id = o.product_id\n    AND i.quantity >= o.qty;",
     "notes": ["Decrements inventory based on confirmed order totals from a nested derived table."],
     "topics": ["update-from", "subquery", "nested-in"],
-    "ask": "update {product} stock after yesterday's confirmed orders come in"
+    "ask": "make {product} subtract recent confirmed orders from inventory"
   },
   {
     "id": "cal-sq-d4-004",
@@ -255,7 +255,7 @@
     "code": "SELECT c.id, c.name, c.email\nFROM customers c\nWHERE EXISTS (\n        SELECT 1\n        FROM orders o\n        WHERE o.customer_id = c.id\n            AND o.total >= 500.00\n            AND o.created_at >= CURRENT_DATE\n                - INTERVAL '30 days'\n    )\n    AND NOT EXISTS (\n        SELECT 1\n        FROM complaints cmp\n        WHERE cmp.customer_id = c.id\n            AND cmp.resolved = false\n    )\nORDER BY c.name;",
     "notes": ["Finds customers with recent large orders who have no unresolved complaints."],
     "topics": ["exists", "not-exists", "correlated-subquery"],
-    "ask": "find {product} customers with big recent orders and no complaints"
+    "ask": "make {product} find customers with big orders and no complaints"
   },
   {
     "id": "cal-sq-d4-005",
@@ -267,7 +267,7 @@
       "Aggregates daily page views and upserts into stats, accumulating counts and keeping the latest timestamp."
     ],
     "topics": ["upsert", "on-conflict", "insert-select", "greatest"],
-    "ask": "update {product} daily view counts and keep the latest visit"
+    "ask": "make {product} add today views to stats or update them"
   },
   {
     "id": "sql-cte",
@@ -277,7 +277,7 @@
     "code": "WITH counts AS (\n  SELECT user_id, COUNT(*) AS n\n  FROM events\n  WHERE event_type = 'click'\n  GROUP BY user_id\n)\nSELECT user_id, n\nFROM counts\nORDER BY n DESC\nLIMIT 10;",
     "notes": ["CTEs make queries readable.", "Practice quotes, commas, and indentation."],
     "topics": ["cte", "group-by", "order-by"],
-    "ask": "show me the top {product} users by clicks"
+    "ask": "make {product} find the top ten users who click most"
   },
   {
     "id": "cal-sq-d5-001",
@@ -289,7 +289,7 @@
       "Classifies daily revenue trends by comparing each day to the prior using LAG inside a CASE expression."
     ],
     "topics": ["window-function", "lag", "case", "cte"],
-    "ask": "show me {product} daily revenue and whether it is growing"
+    "ask": "make {product} label each day as growth or decline"
   },
   {
     "id": "cal-sq-d5-002",
@@ -301,7 +301,7 @@
       "Generates a continuous date range and lateral joins daily order totals, filling gaps with zeros."
     ],
     "topics": ["lateral-join", "generate-series", "coalesce"],
-    "ask": "show me {product} daily shipped sales for the last month"
+    "ask": "make {product} show every day for a month with sales"
   },
   {
     "id": "cal-sq-d5-003",
@@ -313,7 +313,7 @@
       "Assigns salary quartiles and percent ranks within departments, filtering for top quartile employees."
     ],
     "topics": ["ntile", "percent-rank", "window-function", "cte"],
-    "ask": "show me which {product} departments have the richest people."
+    "ask": "make {product} find the top quarter earners in each department"
   },
   {
     "id": "cal-sq-d5-004",
@@ -325,7 +325,7 @@
       "Uses writeable CTEs to update existing stock and insert new SKUs from arrived shipments."
     ],
     "topics": ["writeable-cte", "upsert", "returning"],
-    "ask": "add new {product} loot and update the old stuff."
+    "ask": "make {product} add new stock and freshen the old counts"
   },
   {
     "id": "cal-sq-d5-005",
@@ -337,7 +337,7 @@
       "Produces subtotals by region, category, combinations, and grand total using GROUPING SETS."
     ],
     "topics": ["grouping-sets", "filter-clause", "aggregate"],
-    "ask": "show me {product} totals by region, category, and everything together."
+    "ask": "make {product} show totals by region category and everything combined"
   },
   {
     "id": "cal-sq-d6-001",
@@ -349,7 +349,7 @@
       "Traverses an employee hierarchy recursively, building breadcrumb paths from root to each node."
     ],
     "topics": ["recursive-cte", "hierarchy", "array"],
-    "ask": "draw the {product} family tree from boss to bottom."
+    "ask": "make {product} draw the company family tree"
   },
   {
     "id": "cal-sq-d6-002",
@@ -361,7 +361,7 @@
       "Ranks monthly product sales and classifies revenue trends compared to prior months."
     ],
     "topics": ["cte", "window-function", "lag", "case", "rank"],
-    "ask": "rank {product} monthly sales by who is soaring or stumbling."
+    "ask": "make {product} show top five products each month with trends"
   },
   {
     "id": "cal-sq-d6-003",
@@ -373,7 +373,7 @@
       "Creates a PL/pgSQL function that buckets orders into configurable intervals returning summary stats."
     ],
     "topics": ["function", "plpgsql", "generate-series", "returns-table"],
-    "ask": "let me group {product} orders into buckets of any size."
+    "ask": "make {product} group orders into weeks or days"
   },
   {
     "id": "cal-sq-d6-004",
@@ -385,7 +385,7 @@
       "Creates a materialized customer 360 view combining order and support metrics with a unique index."
     ],
     "topics": ["materialized-view", "cte", "left-join", "index"],
-    "ask": "make a {product} cheat sheet of customers, orders, and tickets."
+    "ask": "make {product} build a complete customer snapshot"
   },
   {
     "id": "cal-sq-d6-005",
@@ -397,7 +397,7 @@
       "Aggregates employees into nested JSON per department including skills from a correlated subquery."
     ],
     "topics": ["json-agg", "json-build-object", "correlated-subquery", "case"],
-    "ask": "make a {product} yearbook of departments with people and superpowers."
+    "ask": "make {product} build department lists with nested skills"
   },
   {
     "id": "cal-sq-d7-001",
@@ -409,7 +409,7 @@
       "Recursively walks a service dependency graph detecting cycles and building named traversal chains."
     ],
     "topics": ["recursive-cte", "graph", "cycle-detection", "array", "unnest"],
-    "ask": "draw {product} dependencies and warn me if anything is circular."
+    "ask": "make {product} map service dependencies and spot loops"
   },
   {
     "id": "cal-sq-d7-002",
@@ -421,7 +421,7 @@
       "Builds a four-step conversion funnel from analytics events using chained CTEs with window deduplication."
     ],
     "topics": ["cte", "funnel-analysis", "window-function", "self-join", "extract"],
-    "ask": "show {product} browsing to buying step by step."
+    "ask": "make {product} track users from browsing to buying"
   },
   {
     "id": "cal-sq-d7-003",
@@ -433,7 +433,7 @@
       "Emulates a crosstab by pivoting six months of category revenue using CASE inside aggregates over cross-joined anchors."
     ],
     "topics": ["pivot", "cross-join", "cte", "case", "generate-series"],
-    "ask": "{product} sales by category across the last six months"
+    "ask": "make {product} pivot monthly sales by category"
   },
   {
     "id": "cal-sq-d7-004",
@@ -445,7 +445,7 @@
       "Creates a generic audit trigger that logs all DML operations with JSONB diff detection for changed fields."
     ],
     "topics": ["trigger", "plpgsql", "audit", "jsonb", "function"],
-    "ask": "remember every change to {product} orders and who made it"
+    "ask": "make {product} log order changes with before and after"
   },
   {
     "id": "cal-sq-d7-005",
@@ -457,6 +457,6 @@
       "Explodes a recursive bill of materials with cycle prevention and computes each component cost share of the total."
     ],
     "topics": ["recursive-cte", "bill-of-materials", "window-function", "array", "cost-rollup"],
-    "ask": "price out every tiny piece inside the {product} please"
+    "ask": "make {product} break down a product into parts and costs"
   }
 ]

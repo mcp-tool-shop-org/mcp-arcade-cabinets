@@ -1,0 +1,605 @@
+{
+  "model": "ollama:kimi-k2.6:cloud",
+  "date": "2026-09-16",
+  "stamp": "2026-09-16-003546907",
+  "applied": true,
+  "report": {
+    "model": "ollama:kimi-k2.6:cloud",
+    "temperature": 0.9,
+    "chunk": 40,
+    "concurrency": 4,
+    "prompts": [
+      "79da47030db75fb4aa7e8e660f1b9540baeb26ca3796a64bab1e6eff9439e2c7",
+      "e8d1bd4da8677dc41d2513b2b09b6f9d17355ae9e9dcbf6f2d935f17e992df00",
+      "d5581f6016024897bbbe9aed33d190e59920cc533131cf6eeea41e93b0876fc5",
+      "9586dd472f9b968f130af824ccfdaa35a8d5749f7516d4d2aa1231a38c7a7979",
+      "74fa8be08d33119d6fbd56eb75aac22ee83c36b5f29b1dd77719b7d46bb5d1a5",
+      "9129c4025a3d4228b77d1e0064274951f20c428384324630e327db0b2d644384",
+      "a99550745196e2ebc95d77a01ba95c451e1ea0b0c7afbf1a31087ae61fec955b",
+      "1a4cf5c0c3ba1da171a214010c65b391dee692e3a4a92db038dee8400b51085a",
+      "f2e61277aa7c04161612119dbe030b82b474449d620f9bb4aeaaf38af727edef",
+      "7398061c60a52a7b201552b843653222deb5626978cb5cf2948ffca07306cd32",
+      "824835b283124849c2f158c0eceb1dc8298ce01315da04da03d4cf5035f3fb3a",
+      "282c94beb1b18ec0d71b8fcac3590823ccf4b1c9dff3bee6cbd8ca64719fb7e4",
+      "a097fd4cb93f7c5fc96d44d8d7adfe0cdcf5fba09f6b0a0e45a65780490a5fff",
+      "29b82104ff4e4ea42c5d4b1f1f8f23c5d7c04f2fc7aeaa9edd3ded434fba1bf6",
+      "b546efa0d093b25b6edcd3ec4b65bb0fab31f83b8001c67f9ac71df1c117f441",
+      "f7c3ef0f8e9990470b1bd3f6f649db082d1ecd3fd2a6fde5b756f12760aa4bef",
+      "7cd99fd11f83ef12881768227c84b66b8d7d19086aec4585ea8e3a2939f44955"
+    ],
+    "calls": 17,
+    "requested": 208,
+    "kept": 72,
+    "missing": 0,
+    "waits": 1,
+    "dropped": {
+      "too many words": 6,
+      "forbidden word or digit": 1
+    },
+    "ms": 7128118,
+    "tokens": {
+      "in": 58941,
+      "out": 228547
+    },
+    "cost": null,
+    "errors": [],
+    "wallMs": 2692640
+  },
+  "candidates": {
+    "premises": {
+      "cat-website": {
+        "kept": "make a website for my cat",
+        "alternates": ["tiny thing, a website just for my cat", "i want a website for my cat"]
+      },
+      "duck-rides": {
+        "kept": "build a rideshare for the local ducks",
+        "alternates": ["my cousin is asking about duck rides again", "ducks need a rideshare too"]
+      },
+      "handwriting-rater": {
+        "kept": "rate my handwriting on a website",
+        "alternates": ["your letters should have a rating", "turn my handwriting into a number"]
+      },
+      "sandwich-ledger": {
+        "kept": "keep a list of every sandwich i ate",
+        "alternates": [
+          "count every sandwich i have ever eaten",
+          "sandwiches deserve a hall of fame"
+        ]
+      },
+      "fridge-chain": {
+        "kept": "track the office fridge so nothing vanishes",
+        "alternates": [
+          "find out who touches the office fridge",
+          "guard the office fridge like a castle"
+        ]
+      },
+      "plant-dashboard": {
+        "kept": "ferns deserve a dashboard today",
+        "alternates": ["all my houseplants on one screen", "a screen that watches my plants grow"]
+      },
+      "lost-sock-platform": {
+        "kept": "we need a place for lost socks",
+        "alternates": [
+          "send a search party for our socks",
+          "rescue every sock that ever went missing"
+        ]
+      },
+      "hourly-praise": {
+        "kept": "an app that says nice things hourly",
+        "alternates": ["tell me i am great every hour", "my desktop should be my friend"]
+      },
+      "tool-finder": {
+        "kept": "show me the right things when i lose them",
+        "alternates": [
+          "a finder for all our little finders",
+          "what if our tools could find themselves"
+        ]
+      },
+      "self-newsletter": {
+        "kept": "a letter that writes itself weekly",
+        "alternates": [
+          "let the news write its own stories",
+          "our updates should write themselves daily"
+        ]
+      },
+      "coffee-loyalty": {
+        "kept": "reward people for using the coffee machine",
+        "alternates": [
+          "points for every cup of coffee",
+          "coffee drinkers deserve a rewards program"
+        ]
+      },
+      "thermostat-debate": {
+        "kept": "something that fights my thermostat daily",
+        "alternates": [
+          "the thermostat gets a friend today",
+          "give my thermostat someone to disagree with"
+        ]
+      },
+      "book-club-metaverse": {
+        "kept": "a room where my book club meets",
+        "alternates": ["the book club moves inside the screen", "our book club gets its own world"]
+      },
+      "app-that-rates-apps": {
+        "kept": "an app that judges our other apps",
+        "alternates": ["pick the best app from our apps", "rank all our apps from best to worst"]
+      },
+      "opinion-market": {
+        "kept": "retire the opinions we have outgrown",
+        "alternates": [
+          "sell the opinions we do not need",
+          "thoughts we have outgrown want a market"
+        ]
+      },
+      "one-button-company": {
+        "kept": "one button that runs the whole company",
+        "alternates": [
+          "the company moves to one button now",
+          "my company fits in one little button"
+        ]
+      }
+    },
+    "levels": {
+      "cat-website": {
+        "picks": ["cal-sh-d1-001", "cal-sh-d1-002", "sh-array", "cal-sh-d2-002"],
+        "asks": {
+          "cal-sh-d1-001": "make {product} say hello to the world",
+          "cal-sh-d1-002": "make {product} say my cat's name out loud",
+          "sh-array": "make {product} greet every friend my cat has",
+          "cal-sh-d2-002": "make {product} save the moment it goes live"
+        },
+        "raw": {
+          "picks": ["cal-sh-d1-001", "cal-sh-d1-002", "sh-array", "cal-sh-d2-002"],
+          "asks": {
+            "cal-sh-d1-001": ["make {product} say hello to the world"],
+            "cal-sh-d1-002": ["make {product} say my cat's name out loud"],
+            "sh-array": ["make {product} greet every friend my cat has"],
+            "cal-sh-d2-002": ["make {product} save the moment it goes live"]
+          }
+        }
+      },
+      "duck-rides": {
+        "picks": ["cal-py-d2-002", "cal-py-d1-004", "cal-py-d2-005", "cal-py-d2-004"],
+        "asks": {
+          "cal-py-d2-002": "make {product} greet each duck by name",
+          "cal-py-d1-004": "split seventeen ducks into cars and count leftovers",
+          "cal-py-d2-005": "show each duck rating and the overall average",
+          "cal-py-d2-004": "reverse the line of waiting ducks"
+        },
+        "raw": {
+          "picks": ["cal-py-d2-002", "cal-py-d1-004", "cal-py-d2-005", "cal-py-d2-004"],
+          "asks": {
+            "cal-py-d2-002": [
+              "make {product} greet each duck by name",
+              "have {product} say hello to every rider",
+              "{product} needs a greeting for each duck"
+            ],
+            "cal-py-d1-004": [
+              "split seventeen ducks into cars and count leftovers",
+              "show how many cars and how many wait",
+              "how many cars for seventeen ducks and who waits"
+            ],
+            "cal-py-d2-005": [
+              "show each duck rating and the overall average",
+              "print each duck rating and the ride average",
+              "list each duck rating and the average too"
+            ],
+            "cal-py-d2-004": [
+              "reverse the line of waiting ducks",
+              "flip the duck queue end to start",
+              "the duck line should go backwards now"
+            ]
+          }
+        }
+      },
+      "handwriting-rater": {
+        "picks": ["cal-js-d1-001", "cal-js-d2-004", "js-map-filter", "cal-js-d1-005"],
+        "asks": {
+          "cal-js-d1-001": "make {product} greet the writer first",
+          "cal-js-d2-004": "list each letter and where it sits in the word",
+          "js-map-filter": "keep only the neat strokes and make them big",
+          "cal-js-d1-005": "use a default if the sample has no name"
+        },
+        "raw": {
+          "picks": ["cal-js-d1-001", "cal-js-d2-004", "js-map-filter", "cal-js-d1-005"],
+          "asks": {
+            "cal-js-d1-001": [
+              "make {product} greet the writer first",
+              "have {product} say hello on arrival",
+              "let {product} welcome them to the page"
+            ],
+            "cal-js-d2-004": [
+              "list each letter and where it sits in the word",
+              "show every stroke next to its place in line",
+              "pair each letter with its place in the word"
+            ],
+            "js-map-filter": [
+              "keep only the neat strokes and make them big",
+              "hide the messy loops and enlarge the good ones",
+              "toss the ugly parts and make the rest giant"
+            ],
+            "cal-js-d1-005": [
+              "use a default if the sample has no name",
+              "fill in a blank when the writer is unknown",
+              "give unknown ink a default signature"
+            ]
+          }
+        }
+      },
+      "sandwich-ledger": {
+        "picks": ["cal-sq-d1-002", "cal-sq-d2-005", "cal-sq-d2-002", "cal-sq-d2-004"],
+        "asks": {
+          "cal-sq-d1-002": "add a sandwich to {product}",
+          "cal-sq-d2-005": "add every sandwich from the weekend",
+          "cal-sq-d2-002": "group my sandwiches by filling and skip the small groups",
+          "cal-sq-d2-004": "build me a monthly summary from {product}"
+        },
+        "raw": {
+          "picks": ["cal-sq-d1-002", "cal-sq-d2-005", "cal-sq-d2-002", "cal-sq-d2-004"],
+          "asks": {
+            "cal-sq-d1-002": [
+              "add a sandwich to {product}",
+              "log the first sandwich in {product}",
+              "put the first sandwich in {product}"
+            ],
+            "cal-sq-d2-005": [
+              "add every sandwich from the weekend",
+              "log all the monday sandwiches at once",
+              "add the whole week to {product}"
+            ],
+            "cal-sq-d2-002": [
+              "group my sandwiches by filling and skip the small groups",
+              "show counts and averages by type and hide the rare ones",
+              "group the sandwiches by bread and only show the crowded ones"
+            ],
+            "cal-sq-d2-004": [
+              "build me a monthly summary from {product}",
+              "make a monthly report of my sandwiches",
+              "turn {product} into a monthly report"
+            ]
+          }
+        }
+      },
+      "fridge-chain": {
+        "picks": ["cal-js-d2-003", "cal-js-d3-004", "cal-js-d3-001", "cal-js-d3-002"],
+        "asks": {
+          "cal-js-d2-003": "record each item with owner and food and status",
+          "cal-js-d3-004": "group every item by shelf and list the names",
+          "cal-js-d3-001": "show the good items and how much they cost",
+          "cal-js-d3-002": "have {product} ask the office who can take this"
+        },
+        "raw": {
+          "picks": ["cal-js-d2-003", "cal-js-d3-004", "cal-js-d3-001", "cal-js-d3-002"],
+          "asks": {
+            "cal-js-d2-003": [
+              "make {product} save the owner and the food and the state",
+              "record each item with owner and food and status",
+              "log every item with its owner and its name"
+            ],
+            "cal-js-d3-004": [
+              "group every item by shelf and list the names",
+              "group the items by owner and show the piles",
+              "pile the items by shelf and list the names"
+            ],
+            "cal-js-d3-001": [
+              "show the good items and how much they cost",
+              "list the fresh things with their names and costs",
+              "show only the good items and what they cost"
+            ],
+            "cal-js-d3-002": [
+              "have {product} ask the office who can take this",
+              "make {product} check the name of whoever opens it",
+              "have {product} look up who last touched my yogurt"
+            ]
+          }
+        }
+      },
+      "plant-dashboard": {
+        "picks": ["cal-sq-d3-004", "cal-sq-d2-003", "cal-sq-d3-003", "cal-sq-d3-001"],
+        "asks": {
+          "cal-sq-d3-004": "build a table for every plant i buy.",
+          "cal-sq-d2-003": "show my ferns and their photos, default if none.",
+          "cal-sq-d3-003": "tier my ferns by how much i paid.",
+          "cal-sq-d3-001": "show months where i spend more than my average."
+        },
+        "raw": {
+          "picks": ["cal-sq-d3-004", "cal-sq-d2-003", "cal-sq-d3-003", "cal-sq-d3-001"],
+          "asks": {
+            "cal-sq-d3-004": [
+              "build a table for every plant i buy.",
+              "track what i paid for each green thing.",
+              "log each plant and its price for me."
+            ],
+            "cal-sq-d2-003": [
+              "show my ferns and their photos, default if none.",
+              "list my ferns and use a gray leaf if missing.",
+              "display every fern and give the shy ones a gray leaf."
+            ],
+            "cal-sq-d3-003": [
+              "tier my ferns by how much i paid.",
+              "sort my ferns into groups by their price.",
+              "rank each fern based on what it cost me."
+            ],
+            "cal-sq-d3-001": [
+              "show months where i spend more than my average.",
+              "find the months my plant budget goes too high.",
+              "call out the months i overspend on soil."
+            ]
+          }
+        }
+      },
+      "lost-sock-platform": {
+        "picks": ["cal-jv-d2-004", "cal-jv-d3-003", "java-optional", "cal-jv-d2-003"],
+        "asks": {
+          "cal-jv-d2-004": "show every sock in the lost pile",
+          "cal-jv-d3-003": "pair every sock with the person who lost it",
+          "java-optional": "use unknown if the sock has no owner",
+          "cal-jv-d2-003": "count down until the search begins"
+        },
+        "raw": {
+          "picks": ["cal-jv-d2-004", "cal-jv-d3-003", "java-optional", "cal-jv-d2-003"],
+          "asks": {
+            "cal-jv-d2-004": [
+              "show every sock in the lost pile",
+              "list each missing sock one by one",
+              "show me each sock that is gone"
+            ],
+            "cal-jv-d3-003": [
+              "pair every sock with the person who lost it",
+              "show me who lost each missing sock",
+              "match each sock to the person who lost it"
+            ],
+            "java-optional": [
+              "use unknown if the sock has no owner",
+              "say missing when the sock has no owner",
+              "use a default if the sock has no owner"
+            ],
+            "cal-jv-d2-003": [
+              "count down until the search begins",
+              "count down until we launch the search",
+              "count down until the socks go live"
+            ]
+          }
+        }
+      },
+      "hourly-praise": {
+        "picks": ["cal-cs-d2-005", "cal-cs-d3-002", "cal-cs-d2-003", "cal-cs-d2-001"],
+        "asks": {
+          "cal-cs-d2-005": "give {product} a list of nice things to say",
+          "cal-cs-d3-002": "show each nice thing with its number and total",
+          "cal-cs-d2-003": "save one nice thing for start and one for end",
+          "cal-cs-d2-001": "only say the nice thing if i earned it"
+        },
+        "raw": {
+          "picks": ["cal-cs-d2-005", "cal-cs-d3-002", "cal-cs-d2-003", "cal-cs-d2-001"],
+          "asks": {
+            "cal-cs-d2-005": [
+              "give {product} a list of nice things to say",
+              "add nice things to {product} and count them all",
+              "{product} needs a list of things to say to me"
+            ],
+            "cal-cs-d3-002": [
+              "show each nice thing with its number and total",
+              "number each nice thing and show the total",
+              "list each nice thing with its place and total"
+            ],
+            "cal-cs-d2-003": [
+              "save one nice thing for start and one for end",
+              "keep the first and last nice thing special",
+              "use the first nice thing and the last one"
+            ],
+            "cal-cs-d2-001": [
+              "only say the nice thing if i earned it",
+              "check if i deserve the nice thing first",
+              "make {product} test me before saying anything nice"
+            ]
+          }
+        }
+      },
+      "self-newsletter": {
+        "picks": ["cal-sh-d3-005", "cal-sh-d3-002", "cal-sh-d4-005", "cal-sh-d4-004"],
+        "asks": {
+          "cal-sh-d3-005": "build the folders where the letters live",
+          "cal-sh-d3-002": "read the list of writers and skip the empty ones",
+          "cal-sh-d4-005": "find every note that still needs work in the letters",
+          "cal-sh-d4-004": "check that every reader is home before we send"
+        },
+        "raw": {
+          "picks": ["cal-sh-d3-005", "cal-sh-d3-002", "cal-sh-d4-005", "cal-sh-d4-004"],
+          "asks": {
+            "cal-sh-d3-005": [
+              "build the folders where the letters live",
+              "set up the rooms before the letters move in",
+              "tell me which rooms were already there"
+            ],
+            "cal-sh-d3-002": [
+              "read the list of writers and skip the empty ones",
+              "make sure every writer has a name and an address",
+              "tell me how many writers you found"
+            ],
+            "cal-sh-d4-005": [
+              "find every note that still needs work in the letters",
+              "change every draft from unfinished to done",
+              "tell me how many letters you fixed"
+            ],
+            "cal-sh-d4-004": [
+              "check that every reader is home before we send",
+              "check that every door is open for the letter",
+              "tell me which rooms did not answer"
+            ]
+          }
+        }
+      },
+      "coffee-loyalty": {
+        "picks": ["cal-jv-d4-002", "cal-jv-d4-001", "cal-jv-d4-004", "cal-jv-d3-005"],
+        "asks": {
+          "cal-jv-d4-002": "pair every regular with their usual order",
+          "cal-jv-d4-001": "add subtract or multiply the stamps they earn",
+          "cal-jv-d4-004": "sort the regulars by floor then last then first",
+          "cal-jv-d3-005": "size each loyalty card and show its area"
+        },
+        "raw": {
+          "picks": ["cal-jv-d4-002", "cal-jv-d4-001", "cal-jv-d4-004", "cal-jv-d3-005"],
+          "asks": {
+            "cal-jv-d4-002": [
+              "pair every regular with their usual order",
+              "match each member to their favorite drink",
+              "link a person to their default coffee"
+            ],
+            "cal-jv-d4-001": [
+              "add subtract or multiply the stamps they earn",
+              "let {product} add and subtract stamps",
+              "multiply stamps when they visit twice"
+            ],
+            "cal-jv-d4-004": [
+              "sort the regulars by floor then last then first",
+              "rank members by team then last then first",
+              "order the regulars by wing then family then given"
+            ],
+            "cal-jv-d3-005": [
+              "size each loyalty card and show its area",
+              "measure each card and show its perimeter",
+              "show the card size as width times height"
+            ]
+          }
+        }
+      },
+      "thermostat-debate": {
+        "picks": ["cal-py-d3-002", "cal-py-d3-004", "cal-py-d3-003", "cal-py-d4-003"],
+        "asks": {
+          "cal-py-d3-002": "make {product} read the settings and skip bad ones",
+          "cal-py-d3-004": "have {product} sort readings into comfort or danger",
+          "cal-py-d3-003": "make {product} track the size of every room",
+          "cal-py-d4-003": "make {product} only fight on prime minutes"
+        },
+        "raw": {
+          "picks": ["cal-py-d3-002", "cal-py-d3-004", "cal-py-d3-003", "cal-py-d4-003"],
+          "asks": {
+            "cal-py-d3-002": [
+              "make {product} read the settings and skip bad ones",
+              "have {product} find the rules and ignore missing files",
+              "let {product} open the file and catch errors gently"
+            ],
+            "cal-py-d3-004": [
+              "have {product} sort readings into comfort or danger",
+              "make {product} warn me when a room feels wrong",
+              "let {product} label each state cold warm or extreme"
+            ],
+            "cal-py-d3-003": [
+              "make {product} track the size of every room",
+              "have {product} know the area of each space",
+              "let {product} measure rooms by width and height"
+            ],
+            "cal-py-d4-003": [
+              "make {product} only fight on prime minutes",
+              "have {product} pick fights on prime numbered minutes",
+              "let {product} argue when the minute is prime"
+            ]
+          }
+        }
+      },
+      "book-club-metaverse": {
+        "picks": ["cal-cs-d5-001", "cal-cs-d4-002", "cal-cs-d5-002", "cal-cs-d4-001"],
+        "asks": {
+          "cal-cs-d5-001": "keep a list of every member who joins",
+          "cal-cs-d4-002": "rank members by the books they finished",
+          "cal-cs-d5-002": "tell the room when someone finishes a chapter",
+          "cal-cs-d4-001": "label everything the members bring tonight"
+        },
+        "raw": {
+          "picks": ["cal-cs-d5-001", "cal-cs-d4-002", "cal-cs-d5-002", "cal-cs-d4-001"],
+          "asks": {
+            "cal-cs-d5-001": [
+              "keep a list of every member who joins",
+              "track who enters so nobody joins twice",
+              "store each visitor with their own number"
+            ],
+            "cal-cs-d4-002": [
+              "rank members by the books they finished",
+              "group members by the books they loved",
+              "show who has the biggest pile of books"
+            ],
+            "cal-cs-d5-002": [
+              "tell the room when someone finishes a chapter",
+              "let everyone know when a book is done",
+              "alert the club each time a member finishes"
+            ],
+            "cal-cs-d4-001": [
+              "label everything the members bring tonight",
+              "greet each guest by what they brought",
+              "sort whatever they carry into groups"
+            ]
+          }
+        }
+      },
+      "app-that-rates-apps": {
+        "picks": ["cal-py-d4-002", "cal-py-d4-004", "cal-py-d5-002", "cal-py-d5-001"],
+        "asks": {
+          "cal-py-d4-002": "{product} puts every app in a shape family",
+          "cal-py-d4-004": "{product} clocks how long apps take to wake up",
+          "cal-py-d5-002": "{product} lines apps up from worst to best",
+          "cal-py-d5-001": "{product} gives each app three chances to work"
+        },
+        "raw": {
+          "picks": ["cal-py-d4-002", "cal-py-d4-004", "cal-py-d5-002", "cal-py-d5-001"],
+          "asks": {
+            "cal-py-d4-002": [
+              "{product} puts every app in a shape family",
+              "make {product} group apps by their own rules",
+              "{product} sorts apps into circles and triangles"
+            ],
+            "cal-py-d4-004": [
+              "{product} clocks how long apps take to wake up",
+              "{product} times how long apps take to start",
+              "{product} checks how fast each app can start"
+            ],
+            "cal-py-d5-002": [
+              "{product} lines apps up from worst to best",
+              "{product} ranks every app from bad to good",
+              "make {product} order apps from least to greatest"
+            ],
+            "cal-py-d5-001": [
+              "{product} gives each app three chances to work",
+              "{product} lets apps try again when they break",
+              "make {product} retry apps that break on first try"
+            ]
+          }
+        }
+      },
+      "opinion-market": {
+        "picks": ["cal-js-d4-004", "cal-js-d4-001", "cal-js-d5-003", "cal-js-d5-005"],
+        "asks": {
+          "cal-js-d4-004": "line up every opinion so we can browse them",
+          "cal-js-d4-001": "try three times to pull an opinion from the wall",
+          "cal-js-d5-003": "filter out the opinions that feel stale now",
+          "cal-js-d5-005": "process ten trades but only three together"
+        },
+        "raw": {
+          "picks": ["cal-js-d4-004", "cal-js-d4-001", "cal-js-d5-003", "cal-js-d5-005"],
+          "asks": {
+            "cal-js-d4-004": [
+              "line up every opinion so we can browse them",
+              "chain the opinions together so none get lost",
+              "let me flip through the opinions one by one"
+            ],
+            "cal-js-d4-001": [
+              "grab an opinion from the shelf and try again if it fails",
+              "try three times to pull an opinion from the wall",
+              "get more stock from the back and try again if it breaks"
+            ],
+            "cal-js-d5-003": [
+              "filter out the opinions that feel stale now",
+              "hide the opinions that nobody wants anymore",
+              "show only opinions that still feel fresh"
+            ],
+            "cal-js-d5-005": [
+              "retire ten opinions at once but only three at a time",
+              "process ten trades but only three together",
+              "handle ten sales at once without doing more than three"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

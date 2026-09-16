@@ -136,6 +136,23 @@ describe('planning a level', () => {
     }
   });
 
+  it('pins no piece into two levels', () => {
+    // A player who plays both levels would type the same piece twice. The
+    // authoring run that wrote the sixteen stories planned each level with its
+    // own used set and no set across them, and left four ids pinned twice; the
+    // stories slot shares one set now, and this is the bar that keeps it shared.
+    const where = new Map<string, string>();
+    for (const def of DEFAULT_PATTERNS.levels.levels) {
+      for (const id of def.snippets ?? []) {
+        expect(
+          where.get(id),
+          `${id} is pinned into ${where.get(id)} and ${def.id}`,
+        ).toBeUndefined();
+        where.set(id, def.id);
+      }
+    }
+  });
+
   it('plays a pinned level in its authored order at every seed', () => {
     for (const [i, def] of DEFAULT_PATTERNS.levels.levels.entries()) {
       if (!def.snippets) continue;

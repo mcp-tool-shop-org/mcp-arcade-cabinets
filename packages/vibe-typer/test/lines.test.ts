@@ -11,12 +11,21 @@ function bash(id: string): Snippet {
   return found;
 }
 
+/** The same snippet with its own ask taken off, so the template pool answers. */
+function withoutAsk(snippet: Snippet): Snippet {
+  const copy = { ...snippet };
+  delete copy.ask;
+  return copy;
+}
+
 /**
- * A snippet with no ask of its own: the template pool answers for it. Three of
- * the corpus's two hundred and forty-nine are like this after the slice-3
- * authoring run, and this is one of them.
+ * A snippet with no ask of its own: the template pool answers for it. The
+ * coherence pass wrote an ask for every one of the corpus's two hundred and
+ * forty-nine, so this case is built rather than found — which is the right way
+ * round, the same way `NO_TOPIC_POOL` below is: the fallback is for a piece the
+ * writing has not reached yet, and the rule under test is unchanged.
  */
-const SNIPPET = bash('cal-sh-d2-002');
+const SNIPPET = withoutAsk(bash('cal-sh-d2-002'));
 /** A snippet that carries its own ask. */
 const OWN_ASK = bash('cal-sh-d1-001');
 /**

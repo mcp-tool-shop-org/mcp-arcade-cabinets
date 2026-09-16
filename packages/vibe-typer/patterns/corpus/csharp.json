@@ -7,7 +7,7 @@
     "code": "int count = 42;",
     "notes": ["Declares an integer variable named count and assigns the value 42."],
     "topics": ["variables", "assignment"],
-    "ask": "set the {product} starting count to forty-two."
+    "ask": "make {product} remember a count of forty-two"
   },
   {
     "id": "cal-cs-d1-002",
@@ -17,7 +17,7 @@
     "code": "string name = \"Alice\";\nConsole.WriteLine(name);",
     "notes": ["Prints the value of a string variable to the console."],
     "topics": ["console", "output", "variables"],
-    "ask": "make the {product} show its name on screen."
+    "ask": "make {product} print the name alice"
   },
   {
     "id": "cal-cs-d1-003",
@@ -27,7 +27,7 @@
     "code": "bool active = true;\nactive = !active;",
     "notes": ["Declares a boolean variable and toggles its value using the logical NOT operator."],
     "topics": ["boolean", "negation"],
-    "ask": "flip the {product} switch to its opposite position."
+    "ask": "flip the active switch inside {product}"
   },
   {
     "id": "cal-cs-d1-004",
@@ -37,7 +37,7 @@
     "code": "double area = 3.14 * radius * radius;",
     "notes": ["Calculates the area of a circle using the radius variable."],
     "topics": ["arithmetic", "double", "expressions"],
-    "ask": "measure the {product} circle area from its radius."
+    "ask": "calculate the circle area in {product}"
   },
   {
     "id": "cal-cs-d1-005",
@@ -47,7 +47,7 @@
     "code": "string first = \"hello\";\nstring second = \"world\";\nstring full = first + \" \" + second;",
     "notes": ["Joins two strings together with a space separator using the plus operator."],
     "topics": ["string", "concatenation"],
-    "ask": "combine two {product} names into one full label."
+    "ask": "join hello and world with a space for {product}"
   },
   {
     "id": "cs-foreach",
@@ -60,7 +60,7 @@
       "new[] creates an implicitly typed array."
     ],
     "topics": ["foreach", "loop", "collections"],
-    "ask": "greet every name on the {product} list one by one."
+    "ask": "say hello to every name in {product}"
   },
   {
     "id": "cs-string-interpolation",
@@ -73,7 +73,7 @@
       ":C2 formats a number as currency with 2 decimal places."
     ],
     "topics": ["string-interpolation", "formatting", "variables"],
-    "ask": "show the {product} bill with the name and cents included."
+    "ask": "show alice owes money in {product}"
   },
   {
     "id": "cal-cs-d2-001",
@@ -83,7 +83,7 @@
     "code": "int score = 75;\nstring result;\nif (score >= 60)\n    result = \"pass\";\nelse\n    result = \"fail\";\nConsole.WriteLine(result);",
     "notes": ["Uses a simple if-else to assign pass or fail based on a score threshold."],
     "topics": ["if-else", "comparison", "branching"],
-    "ask": "make {product} check if i am worthy today."
+    "ask": "only say the nice thing if i earned it"
   },
   {
     "id": "cal-cs-d2-002",
@@ -93,7 +93,7 @@
     "code": "int total = 0;\nfor (int i = 1; i <= 10; i++)\n    total += i;\nConsole.WriteLine(total);",
     "notes": ["Sums the integers from 1 to 10 using a for loop with an accumulator variable."],
     "topics": ["for-loop", "accumulator"],
-    "ask": "add up the numbers one through ten for the {product}."
+    "ask": "add up the numbers from one to ten in {product}"
   },
   {
     "id": "cal-cs-d2-003",
@@ -103,7 +103,7 @@
     "code": "int[] values = new int[] { 10, 20, 30, 40, 50 };\nint first = values[0];\nint last = values[values.Length - 1];\nConsole.WriteLine(first);\nConsole.WriteLine(last);",
     "notes": ["Creates an integer array and accesses the first and last elements by index."],
     "topics": ["array", "indexing", "initialization"],
-    "ask": "grab the first and last values from the {product} list."
+    "ask": "save one nice thing for start and one for end"
   },
   {
     "id": "cal-cs-d2-004",
@@ -113,7 +113,7 @@
     "code": "int n = 5;\nwhile (n > 0)\n{\n    Console.WriteLine(n);\n    n--;\n}\nConsole.WriteLine(\"done\");",
     "notes": ["Counts down from 5 to 1 using a while loop and prints done when finished."],
     "topics": ["while-loop", "decrement"],
-    "ask": "count the {product} down from five and say done."
+    "ask": "count down from five until {product} is live"
   },
   {
     "id": "cal-cs-d2-005",
@@ -123,7 +123,7 @@
     "code": "var items = new List<string>();\nitems.Add(\"apple\");\nitems.Add(\"banana\");\nitems.Add(\"cherry\");\nint count = items.Count;\nConsole.WriteLine(count);",
     "notes": ["Creates a generic string list, adds three items, and prints the count."],
     "topics": ["list", "generics", "add"],
-    "ask": "add three praises to {product} and count them."
+    "ask": "add three nice things for {product} and count them"
   },
   {
     "id": "cal-cs-d3-001",
@@ -135,7 +135,7 @@
       "Defines a static method that returns the larger of two integers using a simple comparison."
     ],
     "topics": ["method", "return", "comparison"],
-    "ask": "{product} needs to pick the bigger of two numbers"
+    "ask": "have {product} pick the warmer of two greetings"
   },
   {
     "id": "cal-cs-d3-002",
@@ -147,7 +147,7 @@
       "Iterates over a list of strings with a manual index counter and prints each item with its position."
     ],
     "topics": ["foreach", "list", "string-interpolation"],
-    "ask": "show each praise in {product} with its hour number."
+    "ask": "show each hourly praise and its place in line"
   },
   {
     "id": "cal-cs-d3-003",
@@ -159,7 +159,7 @@
       "Attempts to parse an invalid string as an integer and catches the resulting FormatException."
     ],
     "topics": ["try-catch", "exception", "parsing"],
-    "ask": "make {product} catch bad input without breaking."
+    "ask": "handle a bad number in {product}"
   },
   {
     "id": "cal-cs-d3-004",
@@ -171,7 +171,7 @@
       "Creates a dictionary with indexer syntax and conditionally reads a value after checking if the key exists."
     ],
     "topics": ["dictionary", "containskey", "indexer"],
-    "ask": "{product} should check list for name and show its value"
+    "ask": "check if bob exists before showing his number in {product}"
   },
   {
     "id": "cal-cs-d3-005",
@@ -183,7 +183,7 @@
       "Defines a Point class with read-only properties, a constructor, and a method to calculate distance to another point."
     ],
     "topics": ["class", "constructor", "properties", "methods"],
-    "ask": "{product} stores two numbers and measures distance to another"
+    "ask": "make a point that knows its place in {product}"
   },
   {
     "id": "cs-async-await",
@@ -196,7 +196,7 @@
       "using var disposes the HttpClient when the scope ends."
     ],
     "topics": ["async", "await", "Task", "HttpClient"],
-    "ask": "{product} should grab text from a web page quietly"
+    "ask": "fetch a page from the web for {product}"
   },
   {
     "id": "cs-interface",
@@ -209,7 +209,7 @@
       "Default interface methods provide optional fallback behavior."
     ],
     "topics": ["interface", "abstraction", "contracts"],
-    "ask": "{product} should write notes and format warnings automatically"
+    "ask": "define what a logger must do for {product}"
   },
   {
     "id": "cal-cs-d4-001",
@@ -221,7 +221,7 @@
       "Uses a switch expression with type patterns, when clauses, and a discard pattern to classify objects by type and value."
     ],
     "topics": ["switch-expression", "pattern-matching", "when-clause", "type-patterns"],
-    "ask": "{product} should look at a thing and name its kind"
+    "ask": "label everything the members bring tonight"
   },
   {
     "id": "cal-cs-d4-002",
@@ -233,7 +233,7 @@
       "Groups a list of order tuples by customer name, sums each group, and prints the results sorted by total descending."
     ],
     "topics": ["linq", "groupby", "anonymous-type", "tuples"],
-    "ask": "deploy the snack tab for {product} and rank spenders"
+    "ask": "rank members by the books they finished"
   },
   {
     "id": "cal-cs-d4-003",
@@ -245,7 +245,7 @@
       "Defines an interface with a default method, implements it in a Circle class with an init-only property and custom ToString."
     ],
     "topics": ["interface", "default-method", "init", "override"],
-    "ask": "{product} should make shapes that describe their own area"
+    "ask": "shape our room into a circle"
   },
   {
     "id": "cal-cs-d4-004",
@@ -257,7 +257,7 @@
       "Defines a record with a computed property using a switch expression and iterates with positional deconstruction."
     ],
     "topics": ["record", "deconstruction", "switch-expression", "computed-property"],
-    "ask": "add profiles that sort {product} visitors into age brackets"
+    "ask": "add a profile for each member"
   },
   {
     "id": "cal-cs-d4-005",
@@ -269,7 +269,7 @@
       "An async method that fetches a URL with timeout and cancellation support, handling both cancellation and HTTP errors."
     ],
     "topics": ["async", "await", "cancellation-token", "httpclient", "try-catch"],
-    "ask": "{product} should fetch a page and quit nicely if interrupted"
+    "ask": "fetch a page that can be stopped for {product}"
   },
   {
     "id": "cs-linq",
@@ -279,7 +279,7 @@
     "code": "var result = items\n    .Where(x => x % 2 == 0)\n    .Select(x => x * x)\n    .ToList();",
     "notes": ["LINQ is a fluent query style.", "Mind dots, arrows, and semicolons."],
     "topics": ["linq", "lambda", "select", "where"],
-    "ask": "{product} should keep only even items and square what remains"
+    "ask": "pick the even numbers and square them for {product}"
   },
   {
     "id": "cs-switch-expr",
@@ -292,7 +292,7 @@
       "_ is the discard pattern (default case)."
     ],
     "topics": ["switch-expression", "pattern-matching", "discard"],
-    "ask": "{product} should map a number to a letter using size"
+    "ask": "turn a number into a letter grade for {product}"
   },
   {
     "id": "cal-cs-d5-001",
@@ -304,7 +304,7 @@
       "Implements a generic in-memory repository with type constraints, duplicate detection, and null-conditional removal."
     ],
     "topics": ["generics", "constraints", "repository-pattern", "nullable"],
-    "ask": "build a member directory for {product} that blocks duplicate ids"
+    "ask": "keep a list of every member who joins"
   },
   {
     "id": "cal-cs-d5-002",
@@ -316,7 +316,7 @@
       "Implements a simple publish-subscribe event bus using a dictionary of topic-keyed handler lists with error isolation."
     ],
     "topics": ["events", "observer-pattern", "dictionary", "delegates"],
-    "ask": "let {product} rooms subscribe to discussion topics"
+    "ask": "allow members to shout in rooms"
   },
   {
     "id": "cal-cs-d5-003",
@@ -328,7 +328,7 @@
       "Implements a fluent SQL query builder that chains method calls to construct a SELECT statement with optional WHERE and ORDER BY clauses."
     ],
     "topics": ["builder-pattern", "fluent-api", "params", "nullable"],
-    "ask": "build a {product} query by chaining little rules together."
+    "ask": "build a query piece by piece in {product}"
   },
   {
     "id": "cal-cs-d5-004",
@@ -340,7 +340,7 @@
       "Generates prime numbers as an async stream using IAsyncEnumerable with cancellation support and offloaded primality checks."
     ],
     "topics": ["async-enumerable", "yield", "cancellation", "task-run"],
-    "ask": "count primes for {product} without freezing the screen."
+    "ask": "use only primes for the tables"
   },
   {
     "id": "cal-cs-d5-005",
@@ -352,7 +352,7 @@
       "Defines two generic extension methods on IEnumerable for null filtering and index pairing, then chains them together."
     ],
     "topics": ["extension-methods", "generics", "yield", "tuples", "nullable"],
-    "ask": "clean up {product} blanks and number each entry."
+    "ask": "strip out the blanks and number what remains for {product}"
   },
   {
     "id": "cs-record",
@@ -365,7 +365,7 @@
       "Practice braces, quotes, and with initializers."
     ],
     "topics": ["record", "init", "with-expression"],
-    "ask": "copy a {product} profile and update the age."
+    "ask": "copy a user and change the age in {product}"
   },
   {
     "id": "cal-cs-d6-001",
@@ -377,7 +377,7 @@
       "Transforms a sequence of named tuples into grouped lists with conditional value adjustments based on sign and parity."
     ],
     "topics": ["dictionary", "tuples", "conditional-logic", "collections"],
-    "ask": "group {product} items and adjust numbers by type."
+    "ask": "sort items into groups and tweak values for {product}"
   },
   {
     "id": "cal-cs-d6-002",
@@ -389,7 +389,7 @@
       "Implements merge sort with a helper method that merges two sorted subarrays using a temporary buffer and recursive partitioning."
     ],
     "topics": ["merge-sort", "recursion", "arrays", "divide-and-conquer"],
-    "ask": "sort {product} numbers by merging sorted little piles."
+    "ask": "sort a list by splitting and merging in {product}"
   },
   {
     "id": "cal-cs-d6-003",
@@ -401,7 +401,7 @@
       "Multiplies two integer matrices with value clamping at 1000, plus a formatted print method for 2D array display."
     ],
     "topics": ["matrix", "nested-loops", "multidimensional-arrays", "clamping"],
-    "ask": "multiply {product} tables and cap anything too huge."
+    "ask": "multiply two grids and cap the answers in {product}"
   },
   {
     "id": "cal-cs-d6-004",
@@ -413,7 +413,7 @@
       "Finds the shortest path through a grid using BFS with a predecessor dictionary for path reconstruction via backtracking."
     ],
     "topics": ["bfs", "grid", "pathfinding", "dictionary", "tuples", "backtracking"],
-    "ask": "find the shortest path through the {product} maze."
+    "ask": "find the shortest way through a maze in {product}"
   },
   {
     "id": "cal-cs-d6-005",
@@ -425,7 +425,7 @@
       "Solves a system of linear equations using Gaussian elimination with partial pivoting and back substitution."
     ],
     "topics": ["gaussian-elimination", "linear-algebra", "pivoting", "multidimensional-arrays"],
-    "ask": "solve the {product} puzzle of balancing many equations."
+    "ask": "solve a system of equations for {product}"
   },
   {
     "id": "cal-cs-d7-001",
@@ -437,7 +437,7 @@
       "Multiplies two sparse matrices skipping zero entries, tracks min and max values, then normalizes all results to the 0-1 range."
     ],
     "topics": ["matrix-multiplication", "sparse", "normalization", "nested-loops"],
-    "ask": "multiply {product} tables skipping blanks then scale results."
+    "ask": "multiply two sparse grids and scale results for {product}"
   },
   {
     "id": "cal-cs-d7-002",
@@ -449,7 +449,7 @@
       "Applies Sobel edge detection kernels to a pixel array using convolution, then thresholds the gradient magnitude into a binary edge map."
     ],
     "topics": ["image-processing", "sobel", "convolution", "edge-detection", "nested-loops"],
-    "ask": "make {product} trace every edge and erase the rest"
+    "ask": "find the edges in a picture for {product}"
   },
   {
     "id": "cal-cs-d7-003",
@@ -461,7 +461,7 @@
       "Computes a two-layer neural network forward pass with leaky ReLU activation, normalization, and mean squared error loss accumulation."
     ],
     "topics": ["neural-network", "forward-pass", "leaky-relu", "loss-function", "nested-loops"],
-    "ask": "have {product} guess the answer and check its own work"
+    "ask": "run a brain model forward and check error for {product}"
   },
   {
     "id": "cal-cs-d7-004",
@@ -473,7 +473,7 @@
       "Performs BFS on a graph represented as adjacency arrays, tracking distances and predecessors, with inline path reversal on target discovery."
     ],
     "topics": ["bfs", "graph", "shortest-path", "adjacency-list", "arrays"],
-    "ask": "have {product} find the shortest path between two dots"
+    "ask": "find the shortest route between two points in {product}"
   },
   {
     "id": "cal-cs-d7-005",
@@ -485,6 +485,6 @@
       "Solves the 0-1 knapsack problem using bottom-up dynamic programming, then backtracks through the DP table to recover the selected items."
     ],
     "topics": ["dynamic-programming", "knapsack", "backtracking", "arrays", "optimization"],
-    "ask": "have {product} pick the best stuff that still fits"
+    "ask": "pack the most valuable items without overloading in {product}"
   }
 ]

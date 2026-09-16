@@ -2,7 +2,8 @@
 // `node scripts/author.mjs sample --model <spec>[,<spec>] [--level duck-rides]
 //                                 [--out docs/vibe-typer.author-sample]`
 // `node scripts/author.mjs run --model <spec> [--only asks|stories|nags|reactions|reviews|pools]
-//                              [--apply]`
+//                              [--chunk 40] [--concurrency 2] [--revoice] [--apply]`
+// `node scripts/author.mjs edit --model <spec> [--concurrency 2] [--apply]`
 //
 // The offline authoring script (slice 3, sub-slice B). It asks a writing model
 // for the user's and the agent's lines, gates every candidate with the
@@ -17,7 +18,14 @@
 // `docs/vibe-typer.author-sample.md`, so three calls make the side-by-side.
 //
 // `run` is the full pass. Without `--apply` it writes candidates and a report
-// under `packages/vibe-typer/authoring/` and touches no lever.
+// under `packages/vibe-typer/authoring/` and touches no lever. Every call that
+// writes a line carries the voice sheet for the character it is writing, and
+// the lines that slot has already kept in this run, so the pass reads as one
+// writer rather than as one call.
+//
+// `edit` is the pass that reads a whole pool back and names the lines that
+// break the voice. It only ever drops, and only while the pool stays over the
+// loader's floor.
 //
 // Every call is pinned: the receipt carries the model, the date, the sha256 of
 // the exact prompt text and the temperature, so the same model and the same
@@ -31,7 +39,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
 import {
+  BRAND_NAMES,
   chunk,
+  chunkEven,
   corpusTopics,
   groupCandidates,
   keepFirstPassing,
@@ -42,6 +52,7 @@ import {
   productPhrase,
   promptHash,
   sampleSnippets,
+  textHash,
 } from './author-lib.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -52,11 +63,16 @@ const CORPUS_DIR = path.join(PATTERNS, 'corpus');
 const AUTHORING = path.join(PKG, 'authoring');
 
 const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] [--level <id>] [--out <base>]
-       node scripts/author.mjs run --model <spec> [--only <slot>] [--concurrency <n>] [--apply]
+       node scripts/author.mjs run --model <spec> [--only <slot>] [--chunk <n>]
+                                  [--concurrency <n>] [--revoice] [--apply]
+       node scripts/author.mjs edit --model <spec> [--concurrency <n>] [--apply]
 
-  <spec>  openrouter:<model-id> | ollama:<tag>
-  <slot>  stories | asks | nags | reactions | reviews | pools
-  <n>     calls in flight at once; the answers are folded in key order either way`;
+  <spec>      openrouter:<model-id> | ollama:<tag>
+  <slot>      stories | asks | nags | reactions | reviews | pools
+  --chunk     items one call writes for; the default is forty
+  --concurrency  calls in flight at once; the answers are folded in key order either way
+  --revoice   write each pool fresh at its floor instead of topping it up
+  edit        read each whole pool back and drop the lines that break the voice`;
 
 const FLAGS = new Set([
   'model',
@@ -67,10 +83,17 @@ const FLAGS = new Set([
   'timeout',
   'ollama',
   'concurrency',
+  'chunk',
 ]);
 const RUN_SLOTS = ['stories', 'asks', 'nags', 'reactions', 'reviews', 'pools'];
 const DEFAULT_TEMPERATURE = 0.9;
-const DEFAULT_TIMEOUT_MS = 600_000;
+/**
+ * Ten minutes was the cap while a call wrote ten or twelve lines. A chunk of
+ * forty on a thinking cloud tag is a twenty-thousand-token answer, most of it
+ * the model thinking, and a timeout there throws away forty lines rather than
+ * twelve. Thirty minutes is the cap now; `--timeout` still overrides it.
+ */
+const DEFAULT_TIMEOUT_MS = 1_800_000;
 const DEFAULT_OLLAMA = 'http://127.0.0.1:11434';
 const CANDIDATES_PER_SLOT = 3;
 /**
@@ -81,7 +104,25 @@ const CANDIDATES_PER_SLOT = 3;
  * `mapLimit` hands them back in key order, so the file a run writes is the
  * same file at any width.
  */
-const DEFAULT_CONCURRENCY = 1;
+const DEFAULT_CONCURRENCY = 2;
+
+/**
+ * How many items one call writes for. The full run asked ten or twelve at a
+ * time, which cost a hundred and eighty-nine calls and, worse, meant a hundred
+ * and eighty-nine writers who had each seen nothing the others wrote. Forty
+ * items a call is a quarter of the calls and one writer across each of them.
+ * A chunk is split evenly rather than into a full call and a remainder, so a
+ * pool of fifty-two at a chunk of forty is two calls of twenty-six.
+ */
+const DEFAULT_CHUNK = 40;
+
+/**
+ * How many lines over its floor a re-voiced pool asks for. The gate drops
+ * about one key in five hundred; a pool asked for exactly its floor and
+ * dropped one is a pool that fails the loader. Four spare is cheap — it almost
+ * never costs another call, because a call count is a ceiling over the chunk.
+ */
+const REVOICE_SPARE = 4;
 
 /** The level the sample reads, and how many snippets it asks about. */
 const SAMPLE_LEVEL = 'duck-rides';
@@ -185,6 +226,10 @@ function parseArgv(argv) {
     }
     if (a === '--apply') {
       flags.apply = true;
+      continue;
+    }
+    if (a === '--revoice') {
+      flags.revoice = true;
       continue;
     }
     if (a.startsWith('--')) {
@@ -519,8 +564,7 @@ const PERSONA = [
   '',
 ].join('\n');
 
-const SYSTEM = [
-  PERSONA,
+const RULES = [
   'Today you are writing lines for a typing arcade game.',
   '',
   'The game: the player is a coding agent, hard working, sycophantic and lovable.',
@@ -549,6 +593,108 @@ const SYSTEM = [
   '',
   'Answer with JSON and nothing else. No prose before it, none after it, no code fence.',
 ].join('\n');
+
+/**
+ * The two voice sheets, `patterns/voice/user.md` and `patterns/voice/agent.md`.
+ *
+ * The full run of sub-slice B part three wrote every line through a hundred and
+ * eighty-nine calls that each knew the persona and nothing another call had
+ * written, and a hundred and eighty-nine strangers do not sound like one
+ * person. The sheet is the fix: it rides in the system prompt of every call
+ * that writes for that character, after the persona and before the rules, so
+ * every call is writing the same person.
+ */
+const VOICE_DIR = path.join(PATTERNS, 'voice');
+
+function readVoice(which) {
+  const file = path.join(VOICE_DIR, `${which}.md`);
+  if (!existsSync(file)) {
+    throw new Fail('missing file', `${path.relative(ROOT, file)} is not there`);
+  }
+  const text = readFileSync(file, 'utf8').trim();
+  if (text === '') throw new Fail('empty voice', `${path.relative(ROOT, file)} is empty`);
+  return text;
+}
+
+function loadVoices() {
+  return { user: readVoice('user'), agent: readVoice('agent') };
+}
+
+/** The sheet, wrapped so the model reads it as a character brief and not as prose. */
+function voiceBlock(sheet) {
+  return [
+    'The character whose lines you are writing today. Every line you write must',
+    'sound like the same person wrote it, and that person is this one.',
+    '',
+    '--- begin the voice sheet ---',
+    sheet,
+    '--- end the voice sheet ---',
+    '',
+  ].join('\n');
+}
+
+/** Persona, then the voice sheet, then the rules. `sheet` of null is the old prompt. */
+function systemFor(sheet) {
+  return sheet === null
+    ? [PERSONA, RULES].join('\n')
+    : [PERSONA, voiceBlock(sheet), RULES].join('\n');
+}
+
+/**
+ * The sample carries no voice sheet, on purpose. Its four prompt hashes are the
+ * ones the Director read a model from and the ones `docs/vibe-typer.slice3.md`
+ * pins; a sheet in that prompt would change every one of them and the pinned
+ * read would no longer replay.
+ */
+const SAMPLE_SYSTEM = systemFor(null);
+
+/**
+ * How many lines already kept for a slot ride back into the next call of that
+ * slot. A hundred and twenty lines is a few thousand tokens, which is small
+ * beside a chunk of forty pieces of code and is enough for the model to hear
+ * where the pool already is.
+ */
+const MEMORY_LINES = 120;
+
+/**
+ * The lines this slot has already kept in this run, at the top of the prompt.
+ * They are the memory the full run did not have: not a style note about the
+ * voice, but the actual pool as it stands, so the next forty lines do not
+ * repeat it in words or in meaning.
+ */
+function memoryBlock(lines) {
+  if (!lines || lines.length === 0) return '';
+  return [
+    'Lines already written for this same pool, earlier in this same run. They are',
+    'finished and they are staying. Keep their voice exactly, and do not repeat any',
+    'of them — not in words and not in meaning.',
+    '',
+    ...lines.slice(-MEMORY_LINES).map((l) => `- ${l}`),
+    '',
+    '---',
+    '',
+  ].join('\n');
+}
+
+/**
+ * A slot's memory: the lines it has kept so far in this run. `mapLimit` reads
+ * the tail when a call starts, so a call sees what the calls before it kept and
+ * nothing of the ones beside it. That makes the run order-dependent, which is
+ * the price of the memory; the receipt pins every call's own prompt hash, so
+ * the replay is per call rather than per slot.
+ */
+function makeMemory(seed = []) {
+  const lines = [...seed];
+  return {
+    lines,
+    add(line) {
+      if (typeof line === 'string' && line !== '') lines.push(line);
+    },
+    tail() {
+      return lines.slice(-MEMORY_LINES);
+    },
+  };
+}
 
 function snippetBlock(snippets) {
   return snippets
@@ -674,26 +820,59 @@ function topicReactionPrompt(topics, per) {
   ].join('\n');
 }
 
-function storyPrompt(product, snippets, per) {
+/**
+ * The sixteen premises in one call, with the sixteen products in front of the
+ * writer at once. The keys are ordinals, never level ids: a key the writer can
+ * read is a key the writer writes back into a line.
+ */
+function premisesPrompt(products, per) {
+  return [
+    'A level of the game is one story about one product, and the standup shows one',
+    'line before the level starts: the premise, in the user voice, at most twelve',
+    'words, saying what is being built today.',
+    '',
+    'Here are all the products, in the order the player meets them. The first ones are',
+    'the small hopeful ideas and the last ones have left the building entirely. Write',
+    'the premise for each. They are read one after another by the same player, so no',
+    'two of them may open the same way or land the same joke.',
+    '',
+    ...products.map((p) => `- ${p.key}: ${p.phrase}`),
+    '',
+    `Give ${per} different candidates for each one.`,
+    '',
+    'Answer with a JSON object whose keys are the labels above and whose values are',
+    `arrays of ${per} strings. The label is a label; never write it inside a line.`,
+  ].join('\n');
+}
+
+/**
+ * One level's four pieces and the four requests that ask for them, written
+ * under the premise that opens the level.
+ */
+function picksPrompt(product, premise, snippets, per) {
   return [
     `A level of the game is one story about one product. This level's product is`,
-    `${product}.`,
+    `${product}, and the line the standup shows before it starts is:`,
+    '',
+    premise,
     '',
     'Choose four of the pieces below and write the four requests that ask for them, in',
-    'order, so that they tell one story: the first sets the product up, the middle two',
-    'escalate the idea, and the fourth is the deploy with a twist. Choose pieces whose',
-    'code really does the job each request describes.',
-    '',
-    'Also write the premise: one line the standup shows before the level starts, in the',
-    "user's voice, at most twelve words.",
+    'order, so that they tell one story under that line: the first sets the product up,',
+    'the middle two escalate the idea, and the fourth is the deploy with a twist. Choose',
+    'pieces whose code really does the job each request describes.',
     '',
     'Every request is a template of ten words or fewer; the token {product} may appear',
     'once and is replaced later. The user types in lower case.',
     '',
+    'The four are read one after another by the same player in the same minute, so no',
+    'two of them may open on the same word, and at most one of the four may open on the',
+    'token. A player who reads the same four opening words four times is reading a form,',
+    'not a person.',
+    '',
     snippetBlock(snippets),
     '',
     'Answer with a JSON object of this shape:',
-    '{ "story": [' + per + ' strings], "picks": [four ids in order],',
+    '{ "picks": [four ids in order],',
     '  "asks": { "<id>": [' + per + ' strings], ... one entry per pick } }',
   ].join('\n');
 }
@@ -701,15 +880,17 @@ function storyPrompt(product, snippets, per) {
 function reviewPrompt(products, per) {
   return [
     'At the end of a level the user reviews what was built, one line, delighted and',
-    'absurd, naming the product. Write the review for each product below. At most',
-    'twelve words. The user types in lower case.',
+    'absurd, naming the product in their own plain words. Write the review for each',
+    'product below. At most twelve words. The user types in lower case.',
     '',
     ...products.map((p) => `- ${p.key}: ${p.phrase}`),
     '',
     `Give ${per} different candidates for each product.`,
     '',
-    'Answer with a JSON object whose keys are the keys above and whose values are',
-    `arrays of ${per} strings.`,
+    'Answer with a JSON object whose keys are the labels above and whose values are',
+    `arrays of ${per} strings. The label is a label and is not the name of anything;`,
+    'never write a label inside a line, and never invent a short hyphenated name for a',
+    'product. The user calls their product what it is, in words.',
   ].join('\n');
 }
 
@@ -753,25 +934,6 @@ function askPoolPrompt(stack, tier, n, per) {
   ].join('\n');
 }
 
-/**
- * A level whose stack is built at play time has no pieces to show the writer,
- * so it gets the premise and nothing else: no picks, no pinned asks.
- */
-function premisePrompt(product, per) {
-  return [
-    'A level of the game is one story about one product. This level is about',
-    `${product}, and it is the one where everything the startup owns is wired to`,
-    'everything else it owns.',
-    '',
-    'Write the premise: one line the standup shows before the level starts, in the',
-    "user's voice, at most twelve words. The user types in lower case.",
-    '',
-    `Give ${per} different candidates.`,
-    '',
-    `Answer with a JSON array of ${per} strings.`,
-  ].join('\n');
-}
-
 function poolPrompt(key, n, per) {
   const parts = key.split('.');
   const brief = POOL_BRIEFS[`${parts[0]}.${parts[1]}`];
@@ -797,8 +959,8 @@ function poolPrompt(key, n, per) {
  * Ask one model for one slot and gate what came back. Never throws for a model
  * failure: the receipt carries the reason and the caller keeps going.
  */
-async function askSlot(target, user, keys, gate, opts) {
-  const hash = promptHash(SYSTEM, user);
+async function askSlot(target, system, user, keys, gate, opts) {
+  const hash = promptHash(system, user);
   const base = {
     promptHash: hash,
     temperature: opts.temperature,
@@ -820,7 +982,7 @@ async function askSlot(target, user, keys, gate, opts) {
   };
   let answer;
   try {
-    answer = await callModel(target, SYSTEM, user, opts);
+    answer = await callModel(target, system, user, opts);
   } catch (err) {
     return { ...base, error: err.message };
   }
@@ -836,6 +998,11 @@ async function askSlot(target, user, keys, gate, opts) {
     return { ...base, error: err.message };
   }
   base.raw = parsed;
+  // A slot with no keys wants the model's own object and nothing else — the
+  // picks call reads its four ids and their asks out of `raw` itself. Shaping
+  // an answer against no keys would count every field it holds as surplus,
+  // which is where the full run's fifty-seven phantom drops came from.
+  if (keys.length === 0) return base;
   const { groups, dropped: shapeDropped } = groupCandidates(parsed, keys, CANDIDATES_PER_SLOT);
   // A line the shaping could not place is a drop like any other, under `surplus`.
   mergeDropped(base.dropped, shapeDropped);
@@ -909,6 +1076,7 @@ async function commandSample(args, gates) {
     process.stderr.write(`${target.spec}: asks\n`);
     const asks = await askSlot(
       target,
+      SAMPLE_SYSTEM,
       askPrompt(snippets, product, CANDIDATES_PER_SLOT),
       ids,
       gates.ask,
@@ -918,6 +1086,7 @@ async function commandSample(args, gates) {
     process.stderr.write(`${target.spec}: nags\n`);
     const nags = await askSlot(
       target,
+      SAMPLE_SYSTEM,
       nagPrompt(SAMPLE_N, CANDIDATES_PER_SLOT),
       keys,
       gates.line,
@@ -927,6 +1096,7 @@ async function commandSample(args, gates) {
     process.stderr.write(`${target.spec}: reactions\n`);
     const reactions = await askSlot(
       target,
+      SAMPLE_SYSTEM,
       reactionPrompt(snippets, product, CANDIDATES_PER_SLOT),
       ids,
       gates.line,
@@ -946,6 +1116,7 @@ async function commandSample(args, gates) {
         ? { ...emptySlot(opts), error: 'no nag passed the gate, so there was nothing to reply to' }
         : await askSlot(
             target,
+            SAMPLE_SYSTEM,
             nagReplyPrompt(keptNags, CANDIDATES_PER_SLOT),
             replyKeys,
             gates.line,
@@ -1261,27 +1432,12 @@ async function commandRun(args, gates) {
   for (const s of only) {
     if (!RUN_SLOTS.includes(s)) throw new Fail('bad flag', `unknown slot "${s}"\n${USAGE}`);
   }
-  const opts = {
-    temperature: Number(args.flags.temperature ?? DEFAULT_TEMPERATURE),
-    timeoutMs: Number(args.flags.timeout ?? DEFAULT_TIMEOUT_MS),
-    ollama: args.flags.ollama ?? DEFAULT_OLLAMA,
-    concurrency: Math.max(1, Number(args.flags.concurrency ?? DEFAULT_CONCURRENCY)),
-  };
+  const opts = runOpts(args);
   const apply = args.flags.apply === true;
+  const revoice = args.flags.revoice === true;
   mkdirSync(AUTHORING, { recursive: true });
 
-  const ctx = {
-    target,
-    opts,
-    gates,
-    apply,
-    levels: readJson(path.join(PATTERNS, 'levels.json')),
-    user: readJson(path.join(PATTERNS, 'user.json')),
-    agent: readJson(path.join(PATTERNS, 'agent.json')),
-    corpus: loadCorpus(),
-    pinned: new Set(),
-    touched: new Set(),
-  };
+  const ctx = makeCtx(target, opts, gates, { apply, revoice });
   // A snippet pinned into a level story keeps the story's ask; the ask slot
   // skips it so the two never write the same key twice.
   for (const level of ctx.levels.levels) {
@@ -1306,7 +1462,11 @@ async function commandRun(args, gates) {
     route: target.route,
     temperature: opts.temperature,
     concurrency: opts.concurrency,
+    chunk: opts.chunk,
+    revoice,
+    voice: ctx.voiceHashes,
     applied: apply,
+    calls: 0,
     wallMs: 0,
     slots: {},
   };
@@ -1317,12 +1477,12 @@ async function commandRun(args, gates) {
     const result = await runners[name](ctx);
     result.report.wallMs = Date.now() - slotStarted;
     receipt.slots[name] = result.report;
+    receipt.calls = Object.values(receipt.slots).reduce((a, s) => a + (s.calls ?? 0), 0);
     receipt.wallMs = Date.now() - startedAt;
     if (apply) {
       result.apply();
-      // Saved a slot at a time, not once at the end: a run of a hundred and
-      // seventy calls that dies in its fifth hour must not throw away the four
-      // slots that landed.
+      // Saved a slot at a time, not once at the end: a run of fifty calls that
+      // dies in its third hour must not throw away the four slots that landed.
       saveLevers(ctx);
     }
     // The candidates are written whether or not the run applies: a line the
@@ -1337,8 +1497,8 @@ async function commandRun(args, gates) {
       report: result.report,
       candidates: result.candidates,
     });
-    // Written after every slot, so a run that dies in its fifth hour still
-    // leaves the receipt for the four slots that landed.
+    // Written after every slot, so a run that dies late still leaves the
+    // receipt for the slots that landed.
     writeJson(path.join(AUTHORING, `${stamp}-run.json`), receipt);
   }
   writeJson(path.join(AUTHORING, `${stamp}-run.json`), receipt);
@@ -1348,9 +1508,74 @@ async function commandRun(args, gates) {
   }
   console.log(
     apply
-      ? `applied ${only.join(', ')} into the levers; run pnpm test before committing`
+      ? `applied ${only.join(', ')} into the levers in ${receipt.calls} calls; run pnpm test before committing`
       : `wrote candidates for ${only.join(', ')} under ${path.relative(ROOT, AUTHORING)}`,
   );
+}
+
+/** The flags `run` and `edit` share. */
+function runOpts(args) {
+  return {
+    temperature: Number(args.flags.temperature ?? DEFAULT_TEMPERATURE),
+    timeoutMs: Number(args.flags.timeout ?? DEFAULT_TIMEOUT_MS),
+    ollama: args.flags.ollama ?? DEFAULT_OLLAMA,
+    concurrency: Math.max(1, Number(args.flags.concurrency ?? DEFAULT_CONCURRENCY)),
+    chunk: Math.max(1, Number(args.flags.chunk ?? DEFAULT_CHUNK)),
+  };
+}
+
+/**
+ * Everything a slot reads: the levers, the corpus, the two voice sheets, the
+ * two system prompts built from them, and the gates with the level-id rule
+ * added.
+ */
+function makeCtx(target, opts, gates, { apply = false, revoice = false } = {}) {
+  const levels = readJson(path.join(PATTERNS, 'levels.json'));
+  const voices = loadVoices();
+  const slugs = levels.levels.map((l) => l.id).filter((id) => id.includes('-'));
+  return {
+    target,
+    opts,
+    apply,
+    revoice,
+    gates: {
+      line: slugGate(gates.line, slugs),
+      ask: slugGate(gates.ask, slugs),
+      sync: slugGate(gates.sync, slugs),
+    },
+    voices,
+    system: { user: systemFor(voices.user), agent: systemFor(voices.agent) },
+    voiceHashes: { user: textHash(voices.user), agent: textHash(voices.agent) },
+    levels,
+    user: readJson(path.join(PATTERNS, 'user.json')),
+    agent: readJson(path.join(PATTERNS, 'agent.json')),
+    corpus: loadCorpus(),
+    pinned: new Set(),
+    touched: new Set(),
+  };
+}
+
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * The gate, plus: a line may never name a level by its id.
+ *
+ * The full run showed the review prompt the level id beside the product and
+ * eight of the sixteen reviews wrote the id back — a hyphenated internal name
+ * in the mouth of a person who calls their own product what it is, in words.
+ * The prompts no longer show an id at all; this is the second lock, and like
+ * every other gate rule it drops the line rather than mending it.
+ */
+function slugGate(base, slugs) {
+  if (slugs.length === 0) return base;
+  const re = new RegExp(`\\b(${slugs.map(escapeRegExp).join('|')})\\b`, 'i');
+  return (line) => {
+    const reason = base(line);
+    if (reason !== null) return reason;
+    return re.test(line) ? 'names a level by its id' : null;
+  };
 }
 
 function saveLevers(ctx) {
@@ -1378,7 +1603,10 @@ function emptyReport(target, opts) {
   return {
     model: target.spec,
     temperature: opts.temperature,
+    chunk: opts.chunk,
+    concurrency: opts.concurrency,
     prompts: [],
+    calls: 0,
     requested: 0,
     kept: 0,
     missing: 0,
@@ -1393,6 +1621,7 @@ function emptyReport(target, opts) {
 
 function foldSlot(report, slot) {
   report.prompts.push(slot.promptHash);
+  report.calls += 1;
   report.requested += slot.requested;
   report.kept += slot.kept;
   report.missing += slot.missing;
@@ -1406,80 +1635,133 @@ function foldSlot(report, slot) {
   return report;
 }
 
-/** Level stories: four pinned snippets in order, a premise, and the four asks. */
+/** The snippets a level may pin: its own stack, inside its band. */
+function bandPool(ctx, level) {
+  return (ctx.corpus.byStack.get(level.stack) ?? []).filter(
+    (s) => s.band >= level.bandMin && s.band <= level.bandMax,
+  );
+}
+
+/**
+ * Level stories: the sixteen premises in one call, then one call a level for
+ * the four pinned pieces and the four requests that ask for them.
+ *
+ * The full run wrote each premise in the same call as its level's picks, which
+ * meant sixteen premises written by sixteen calls that had never heard one
+ * another. The premises are one call now, with all sixteen products in front
+ * of the writer, and each picks call is then given its own level's premise so
+ * the four requests are written under the line that opens them.
+ */
 async function slotStories(ctx) {
   const report = emptyReport(ctx.target, ctx.opts);
-  const candidates = {};
-  const writes = [];
-  const asked = await mapLimit(ctx.levels.levels, ctx.opts.concurrency, async (level) => {
-    const product = levelProduct(level);
-    const pool = (ctx.corpus.byStack.get(level.stack) ?? []).filter(
-      (s) => s.band >= level.bandMin && s.band <= level.bandMax,
-    );
-    // A stack with no file — the integration one, which is built from tape
-    // headers at play time — has no pieces to show the writer, so its level
-    // gets the premise and nothing else. It pins nothing and draws its four
-    // requests from the band, which is what the contract says it does.
-    const user =
-      pool.length < 4
-        ? premisePrompt(product, CANDIDATES_PER_SLOT)
-        : storyPrompt(product, pool, CANDIDATES_PER_SLOT);
-    const slot = await askSlot(ctx.target, user, ['story'], ctx.gates.line, ctx.opts);
-    return { level, pool, slot };
-  });
-  for (const { level, pool, slot } of asked) {
-    const premiseOnly = pool.length < 4;
-    // `askSlot` gates the premise; the four picks and their asks live deeper in
-    // the answer, so this slot reads the model's own object out of the receipt.
-    const raw = slot.raw ?? null;
-    foldSlot(report, slot);
-    candidates[level.id] = { story: slot.lines.story, alternates: slot.alternates.story, raw };
-    if (premiseOnly) {
-      if (slot.lines.story === null) {
-        report.errors.push(`${level.id}: the premise did not come back clean`);
-        continue;
-      }
-      writes.push({ level, story: slot.lines.story, picks: null, asks: {} });
-      continue;
-    }
-    const picks = Array.isArray(raw?.picks)
-      ? raw.picks.filter((id) => pool.some((s) => s.id === id))
-      : [];
-    if (slot.lines.story === null || picks.length !== 4) {
-      report.errors.push(`${level.id}: the story or its four picks did not come back clean`);
-      continue;
-    }
-    const asks = {};
-    let clean = true;
-    for (const id of picks) {
-      const list = Array.isArray(raw?.asks?.[id]) ? raw.asks[id] : [];
-      const { kept, dropped } = keepFirstPassing(list, ctx.gates.ask);
-      mergeDropped(report.dropped, dropped);
-      report.requested += list.length;
-      if (kept === null) {
-        clean = false;
-        break;
-      }
-      report.kept += 1;
-      asks[id] = kept;
-    }
-    if (!clean) {
-      report.errors.push(`${level.id}: an ask for a pinned snippet did not pass the gate`);
-      continue;
-    }
-    candidates[level.id].picks = picks;
-    candidates[level.id].asks = asks;
-    // Marked pinned the moment the story is written, not when the lever is
-    // saved: the `asks` slot runs next in the same invocation and must skip
-    // a snippet whose ask this story just wrote, or it would ask a second
-    // time and write over the story's own words.
-    for (const id of picks) ctx.pinned.add(id);
-    writes.push({ level, story: slot.lines.story, picks, asks });
+  const candidates = { premises: {}, levels: {} };
+  const levels = ctx.levels.levels;
+  // The key is an ordinal, never the level id: a key the writer can read is a
+  // key the writer will write back into a line.
+  const keys = levels.map((_, i) => `item-${i + 1}`);
+  const products = levels.map((l, i) => ({ key: keys[i], phrase: levelProduct(l) }));
+
+  const premiseSlot = await askSlot(
+    ctx.target,
+    ctx.system.user,
+    premisesPrompt(products, CANDIDATES_PER_SLOT),
+    keys,
+    ctx.gates.line,
+    ctx.opts,
+  );
+  foldSlot(report, premiseSlot);
+  const premises = new Map();
+  for (const [i, level] of levels.entries()) {
+    const line = premiseSlot.lines[keys[i]];
+    candidates.premises[level.id] = {
+      kept: line,
+      alternates: premiseSlot.alternates[keys[i]] ?? [],
+    };
+    if (typeof line === 'string') premises.set(level.id, line);
+    else report.errors.push(`${level.id}: the premise did not come back clean`);
   }
+
+  // A stack with no file — the integration one, which is built from tape
+  // headers at play time — has no pieces to show the writer, so its level gets
+  // the premise and nothing else. It pins nothing and draws its four requests
+  // from the band, which is what the contract says it does.
+  const jobs = [];
+  const writes = [];
+  const used = new Set();
+  for (const level of levels) {
+    const pool = bandPool(ctx, level);
+    if (!premises.has(level.id)) {
+      // Its premise did not come back, so this level keeps the story and the
+      // four pins it already had — and those pins are spoken for, or a level
+      // that is being re-picked could take one of them and put the same piece
+      // in two levels again.
+      for (const id of level.snippets ?? []) used.add(id);
+      continue;
+    }
+    if (pool.length < 4) {
+      writes.push({ level, story: premises.get(level.id), picks: null, asks: {} });
+      continue;
+    }
+    jobs.push({ level, pool });
+  }
+
+  const mem = makeMemory([...premises.values()]);
+  const asked = await mapLimit(jobs, ctx.opts.concurrency, (job) =>
+    askPicks(ctx, job, premises.get(job.level.id), mem),
+  );
+  const again = [];
+  for (const r of asked) {
+    const taken = foldPicks(ctx, report, candidates, r, used, writes, mem, premises);
+    if (taken === 'collision') again.push(r.job);
+  }
+  // A level whose four pieces were already taken by an earlier level is asked
+  // once more with those pieces out of its pool. Fifty-six pins over fifty-two
+  // ids is what the full run left behind, because no call knew what another
+  // had pinned; the set is shared here and the re-ask closes the gap.
+  if (again.length > 0) {
+    const retried = await mapLimit(again, ctx.opts.concurrency, (job) =>
+      askPicks(
+        ctx,
+        { ...job, pool: job.pool.filter((s) => !used.has(s.id)) },
+        premises.get(job.level.id),
+        mem,
+      ),
+    );
+    for (const r of retried) {
+      const taken = foldPicks(ctx, report, candidates, r, used, writes, mem, premises);
+      if (taken === 'collision') {
+        report.errors.push(`${r.job.level.id}: its four pieces are still taken by another level`);
+      }
+    }
+  }
+
+  // Re-voicing re-pins every level, so the set of pinned pieces is the one this
+  // slot just wrote plus the pins of any level it could not re-pin — not the
+  // union of that and the pins the run started from. Without this the `asks`
+  // slot skips a piece that was pinned before the run and is not pinned now,
+  // and that piece keeps an ask written by a call from the pass before.
+  if (ctx.revoice) {
+    ctx.pinned.clear();
+    const repinned = new Set(writes.map((w) => w.level.id));
+    for (const level of levels) {
+      if (repinned.has(level.id)) continue;
+      for (const id of level.snippets ?? []) ctx.pinned.add(id);
+    }
+    for (const w of writes) for (const id of w.picks ?? []) ctx.pinned.add(id);
+  }
+
   return {
     report,
     candidates,
     apply() {
+      for (const level of ctx.levels.levels) {
+        // The product is a lever string the player reads on the standup and in
+        // every review. One of the sixteen named a real company, and the
+        // brand-free phrase this script has always sent to the writer is now
+        // what the level itself says.
+        const phrase = productPhrase(level.product, PRODUCT_PHRASE);
+        if (BRAND_NAMES.test(level.product) && phrase !== null) level.product = phrase;
+      }
       for (const w of writes) {
         w.level.story = w.story;
         if (w.picks === null) delete w.level.snippets;
@@ -1489,6 +1771,62 @@ async function slotStories(ctx) {
       ctx.touched.add(path.join(PATTERNS, 'levels.json'));
     },
   };
+}
+
+/** One level's four picks and the four requests that ask for them. */
+async function askPicks(ctx, job, premise, mem) {
+  const product = levelProduct(job.level);
+  const slot = await askSlot(
+    ctx.target,
+    ctx.system.user,
+    memoryBlock(mem.tail()) + picksPrompt(product, premise, job.pool, CANDIDATES_PER_SLOT),
+    [],
+    ctx.gates.ask,
+    ctx.opts,
+  );
+  return { job, slot };
+}
+
+/**
+ * Fold one picks answer in level order. Returns `'taken'`, `'collision'` when a
+ * piece is already pinned elsewhere, or `'error'`.
+ */
+function foldPicks(ctx, report, candidates, { job, slot }, used, writes, mem, premises) {
+  const { level, pool } = job;
+  foldSlot(report, slot);
+  const raw = slot.raw ?? null;
+  const picks = Array.isArray(raw?.picks)
+    ? raw.picks.filter((id) => pool.some((s) => s.id === id))
+    : [];
+  candidates.levels[level.id] = { picks, asks: {}, raw };
+  if (picks.length !== 4 || new Set(picks).size !== 4) {
+    report.errors.push(`${level.id}: the four picks did not come back clean`);
+    return 'error';
+  }
+  if (picks.some((id) => used.has(id))) return 'collision';
+  const asks = {};
+  for (const id of picks) {
+    const list = Array.isArray(raw?.asks?.[id]) ? raw.asks[id] : [];
+    const { kept, dropped } = keepFirstPassing(list, ctx.gates.ask);
+    mergeDropped(report.dropped, dropped);
+    report.requested += list.length;
+    if (kept === null) {
+      report.errors.push(`${level.id}: an ask for a pinned piece did not pass the gate`);
+      return 'error';
+    }
+    report.kept += 1;
+    asks[id] = kept;
+  }
+  candidates.levels[level.id].asks = asks;
+  for (const id of picks) used.add(id);
+  // Marked pinned the moment the story is written, not when the lever is
+  // saved: the `asks` slot runs next in the same invocation and must skip a
+  // snippet whose ask this story just wrote, or it would ask a second time and
+  // write over the story's own words.
+  for (const id of picks) ctx.pinned.add(id);
+  for (const ask of Object.values(asks)) mem.add(ask);
+  writes.push({ level, story: premises.get(level.id), picks, asks });
+  return 'taken';
 }
 
 function setSnippetAsk(ctx, id, ask) {
@@ -1509,22 +1847,25 @@ async function slotAsks(ctx) {
   const writes = [];
   const groups = [];
   for (const [stack, list] of ctx.corpus.byStack) {
-    for (const group of chunk(
+    for (const group of chunkEven(
       list.filter((s) => !ctx.pinned.has(s.id)),
-      10,
+      ctx.opts.chunk,
     )) {
       groups.push({ stack, group });
     }
   }
+  const mem = makeMemory();
   const asked = await mapLimit(groups, ctx.opts.concurrency, async ({ stack, group }) => {
     const ids = group.map((s) => s.id);
     const slot = await askSlot(
       ctx.target,
-      askTemplatePrompt(group, CANDIDATES_PER_SLOT),
+      ctx.system.user,
+      memoryBlock(mem.tail()) + askTemplatePrompt(group, CANDIDATES_PER_SLOT),
       ids,
       ctx.gates.ask,
       ctx.opts,
     );
+    for (const id of ids) mem.add(slot.lines[id]);
     return { stack, ids, slot };
   });
   for (const { stack, ids, slot } of asked) {
@@ -1549,16 +1890,27 @@ async function slotNags(ctx) {
   const nags = [];
   const replies = [];
   const candidates = { nags: {}, nagReplies: {} };
-  const nagGroups = chunk(nagKeys(NAG_TARGET), 10);
-  const askedNags = await mapLimit(nagGroups, ctx.opts.concurrency, (group) =>
-    askSlot(
+  const want = ctx.revoice ? NAG_TARGET + REVOICE_SPARE : NAG_TARGET;
+  const nagGroups = chunkEven(nagKeys(want), ctx.opts.chunk);
+  const nagMem = makeMemory();
+  // One after another, not side by side. Both of these slots write a single
+  // pool, so two calls in flight are two writers with no memory of each other
+  // writing the same fifty lines; the first attempt lost eight of fifty-four
+  // check-ins to dedupe that way and fell under the pool's floor. The pools
+  // slot solves the same problem by ordering; here there is nothing to order
+  // against, so the width is one.
+  const askedNags = await mapLimit(nagGroups, 1, async (group) => {
+    const slot = await askSlot(
       ctx.target,
-      nagPrompt(group.length, CANDIDATES_PER_SLOT),
+      ctx.system.user,
+      memoryBlock(nagMem.tail()) + nagPrompt(group.length, CANDIDATES_PER_SLOT),
       group,
       ctx.gates.line,
       ctx.opts,
-    ),
-  );
+    );
+    for (const k of group) nagMem.add(slot.lines[k]);
+    return slot;
+  });
   for (const [i, slot] of askedNags.entries()) {
     foldSlot(report, slot);
     for (const k of nagGroups[i]) {
@@ -1568,17 +1920,22 @@ async function slotNags(ctx) {
   }
   // The agent answers the check-ins that passed, in the order they passed, so
   // the two pools read as one exchange rather than two lists.
-  const replyGroups = chunk(nags, 10);
-  const keyed = replyGroups.map((group, g) => group.map((_, i) => `reply-${g * 10 + i + 1}`));
-  const askedReplies = await mapLimit(replyGroups, ctx.opts.concurrency, (group, g) =>
-    askSlot(
+  const replyGroups = chunkEven(nags, ctx.opts.chunk);
+  let n = 0;
+  const keyed = replyGroups.map((group) => group.map(() => `reply-${(n += 1)}`));
+  const replyMem = makeMemory();
+  const askedReplies = await mapLimit(replyGroups, 1, async (group, g) => {
+    const slot = await askSlot(
       ctx.target,
-      nagReplyPrompt(group, CANDIDATES_PER_SLOT),
+      ctx.system.agent,
+      memoryBlock(replyMem.tail()) + nagReplyPrompt(group, CANDIDATES_PER_SLOT),
       keyed[g],
       ctx.gates.line,
       ctx.opts,
-    ),
-  );
+    );
+    for (const k of keyed[g]) replyMem.add(slot.lines[k]);
+    return slot;
+  });
   for (const [g, slot] of askedReplies.entries()) {
     foldSlot(report, slot);
     for (const k of keyed[g]) {
@@ -1590,12 +1947,36 @@ async function slotNags(ctx) {
     report,
     candidates,
     apply() {
-      ctx.user.nags = dedupe([...(ctx.user.nags ?? []), ...nags]);
-      ctx.agent.nagReplies = dedupe([...(ctx.agent.nagReplies ?? []), ...replies]);
+      ctx.user.nags = settle(report, 'user.nags', ctx.user.nags ?? [], nags, NAG_TARGET, ctx);
+      ctx.agent.nagReplies = settle(
+        report,
+        'agent.nagReplies',
+        ctx.agent.nagReplies ?? [],
+        replies,
+        NAG_TARGET,
+        ctx,
+      );
       ctx.touched.add(path.join(PATTERNS, 'user.json'));
       ctx.touched.add(path.join(PATTERNS, 'agent.json'));
     },
   };
+}
+
+/**
+ * What a pool becomes. Topping up appends, as it always did. Re-voicing
+ * replaces — that is the whole point of the pass — but never below the
+ * loader's floor: a pool that came back short keeps the lines it had and the
+ * report says which pool and by how much, so the slot can be asked again
+ * rather than the levers being left unloadable.
+ */
+function settle(report, key, existing, fresh, floor, ctx) {
+  if (!ctx.revoice) return dedupe([...existing, ...fresh]);
+  const next = dedupe(fresh);
+  if (next.length >= floor) return next;
+  report.errors.push(
+    `${key}: re-voiced to ${next.length} lines, under its floor of ${floor}; the old pool was kept`,
+  );
+  return existing;
 }
 
 /** Three reactions per corpus topic, keyed by the topic word. */
@@ -1604,10 +1985,20 @@ async function slotReactions(ctx) {
   const topics = corpusTopics(ctx.corpus.all);
   const byTopic = {};
   const candidates = {};
-  const groups = chunk(topics, 12);
-  const asked = await mapLimit(groups, ctx.opts.concurrency, (group) =>
-    askSlot(ctx.target, topicReactionPrompt(group, PER_TOPIC), group, ctx.gates.line, ctx.opts),
-  );
+  const groups = chunkEven(topics, ctx.opts.chunk);
+  const mem = makeMemory();
+  const asked = await mapLimit(groups, ctx.opts.concurrency, async (group) => {
+    const slot = await askSlot(
+      ctx.target,
+      ctx.system.user,
+      memoryBlock(mem.tail()) + topicReactionPrompt(group, PER_TOPIC),
+      group,
+      ctx.gates.line,
+      ctx.opts,
+    );
+    for (const t of group) mem.add(slot.lines[t]);
+    return slot;
+  });
   for (const [i, slot] of asked.entries()) {
     foldSlot(report, slot);
     for (const t of groups[i]) {
@@ -1622,36 +2013,46 @@ async function slotReactions(ctx) {
     report,
     candidates,
     apply() {
+      // A topic whose three candidates all fell the gate keeps the three it
+      // had, so no topic is ever left without a line and the loader holds.
       ctx.user.reactionsByTopic = { ...(ctx.user.reactionsByTopic ?? {}), ...byTopic };
       ctx.touched.add(path.join(PATTERNS, 'user.json'));
     },
   };
 }
 
-/** Three reviews per level, keyed by the level id. */
+/** Three reviews per level, keyed by an ordinal so no id can be written back. */
 async function slotReviews(ctx) {
   const report = emptyReport(ctx.target, ctx.opts);
-  const products = ctx.levels.levels.map((l) => ({ key: l.id, phrase: levelProduct(l) }));
+  const levels = ctx.levels.levels;
+  const keys = levels.map((_, i) => `item-${i + 1}`);
+  const products = levels.map((l, i) => ({ key: keys[i], phrase: levelProduct(l) }));
   const byLevel = {};
   const candidates = {};
-  const groups = chunk(products, 8);
-  const asked = await mapLimit(groups, ctx.opts.concurrency, (group) =>
-    askSlot(
+  const groups = chunkEven(products, ctx.opts.chunk);
+  const mem = makeMemory();
+  const asked = await mapLimit(groups, ctx.opts.concurrency, async (group) => {
+    const slot = await askSlot(
       ctx.target,
-      reviewPrompt(group, PER_PRODUCT),
+      ctx.system.user,
+      memoryBlock(mem.tail()) + reviewPrompt(group, PER_PRODUCT),
       group.map((p) => p.key),
       ctx.gates.line,
       ctx.opts,
-    ),
-  );
+    );
+    for (const p of group) mem.add(slot.lines[p.key]);
+    return slot;
+  });
+  const byKey = new Map(levels.map((l, i) => [keys[i], l.id]));
   for (const [i, slot] of asked.entries()) {
     foldSlot(report, slot);
-    for (const k of groups[i].map((p) => p.key)) {
-      const lines = [slot.lines[k], ...(slot.alternates[k] ?? [])].filter(
+    for (const p of groups[i]) {
+      const id = byKey.get(p.key);
+      const lines = [slot.lines[p.key], ...(slot.alternates[p.key] ?? [])].filter(
         (x) => typeof x === 'string',
       );
-      candidates[k] = lines;
-      if (lines.length > 0) byLevel[k] = lines;
+      candidates[id] = lines;
+      if (lines.length > 0) byLevel[id] = lines;
     }
   }
   return {
@@ -1664,49 +2065,75 @@ async function slotReviews(ctx) {
   };
 }
 
-/** Top up the pools that existed in slice one until each is three times its floor. */
+/** The pools: topped up to their floor, or written fresh at it when re-voicing. */
 async function slotPools(ctx) {
   const report = emptyReport(ctx.target, ctx.opts);
   const candidates = {};
   const adds = {};
-  // Every pool this run tops up, flat and tiered alike, as one list of calls,
-  // so a slot of eighty-odd calls runs at the width the run was given rather
+  // Every pool this run writes, flat and tiered alike, as one list of calls,
+  // so a slot of fifty-odd calls runs at the width the run was given rather
   // than one pool at a time.
   const jobs = [];
-  for (const [key, target] of Object.entries(POOL_TARGETS)) {
-    const want = Math.max(0, target - poolAt(ctx, key).length);
-    candidates[key] = [];
-    if (want === 0) continue;
-    const gate = key === 'user.syncs' ? ctx.gates.sync : ctx.gates.line;
-    const field = key.split('.')[1];
-    const keys = Array.from({ length: want }, (_, i) => `${field}-${i + 1}`);
-    for (const group of chunk(keys, 12)) {
-      jobs.push({ key, group, gate, prompt: poolPrompt(key, group.length, CANDIDATES_PER_SLOT) });
-    }
-  }
+  const mems = new Map();
+  const floors = {};
+  const plan = Object.entries(POOL_TARGETS).map(([key, target]) => ({ key, target }));
   // The ask templates: one pool a stack a tier, the fallback a request reads
   // when its own snippet has no ask. Twenty-one pools, so they are built the
   // same way rather than written out.
   for (const stack of Object.keys(STACK_WORDS)) {
     for (const tier of ['0', '1', '2']) {
-      const key = `user.asks.${stack}.${tier}`;
-      const want = Math.max(0, ASK_POOL_TARGET - poolAt(ctx, key).length);
-      candidates[key] = [];
-      if (want === 0) continue;
-      const keys = Array.from({ length: want }, (_, i) => `ask-${i + 1}`);
-      for (const group of chunk(keys, 12)) {
-        jobs.push({
-          key,
-          group,
-          gate: ctx.gates.ask,
-          prompt: askPoolPrompt(stack, tier, group.length, CANDIDATES_PER_SLOT),
-        });
-      }
+      plan.push({ key: `user.asks.${stack}.${tier}`, target: ASK_POOL_TARGET, stack, tier });
     }
   }
-  const asked = await mapLimit(jobs, ctx.opts.concurrency, (job) =>
-    askSlot(ctx.target, job.prompt, job.group, job.gate, ctx.opts),
-  );
+  for (const item of plan) {
+    const { key, target } = item;
+    const want = ctx.revoice
+      ? target + REVOICE_SPARE
+      : Math.max(0, target - poolAt(ctx, key).length);
+    candidates[key] = [];
+    floors[key] = target;
+    mems.set(key, makeMemory());
+    if (want === 0) continue;
+    const field = key.split('.')[1];
+    const keys = Array.from({ length: want }, (_, i) => `${field}-${i + 1}`);
+    for (const group of chunkEven(keys, ctx.opts.chunk)) {
+      jobs.push({
+        key,
+        group,
+        gate: key === 'user.syncs' ? ctx.gates.sync : item.stack ? ctx.gates.ask : ctx.gates.line,
+        system: key.startsWith('agent.') ? ctx.system.agent : ctx.system.user,
+        prompt: item.stack
+          ? askPoolPrompt(item.stack, item.tier, group.length, CANDIDATES_PER_SLOT)
+          : poolPrompt(key, group.length, CANDIDATES_PER_SLOT),
+      });
+    }
+  }
+  // Two calls that write the same pool must never be in flight together. The
+  // memory is what keeps a pool from repeating itself, and a call only sees
+  // what the calls **before** it kept — so a pool written by two calls side by
+  // side is written twice by a writer with no memory, and the duplicates it
+  // makes are deduped back out under the pool's floor. Ordering every pool's
+  // first call ahead of every pool's second puts them a whole round apart.
+  const round = new Map();
+  for (const job of jobs) {
+    const n = round.get(job.key) ?? 0;
+    round.set(job.key, n + 1);
+    job.round = n;
+  }
+  jobs.sort((a, b) => a.round - b.round);
+  const asked = await mapLimit(jobs, ctx.opts.concurrency, async (job) => {
+    const mem = mems.get(job.key);
+    const slot = await askSlot(
+      ctx.target,
+      job.system,
+      memoryBlock(mem.tail()) + job.prompt,
+      job.group,
+      job.gate,
+      ctx.opts,
+    );
+    for (const k of job.group) mem.add(slot.lines[k]);
+    return slot;
+  });
   for (const [i, slot] of asked.entries()) {
     const job = jobs[i];
     foldSlot(report, slot);
@@ -1722,7 +2149,7 @@ async function slotPools(ctx) {
     candidates,
     apply() {
       for (const [key, lines] of Object.entries(adds)) {
-        setPoolAt(ctx, key, dedupe([...poolAt(ctx, key), ...lines]));
+        setPoolAt(ctx, key, settle(report, key, poolAt(ctx, key), lines, floors[key], ctx));
       }
     },
   };
@@ -1770,6 +2197,339 @@ function dedupe(list) {
 }
 
 // ---------------------------------------------------------------------------
+// edit — the editor pass. One call a pool, and it may only drop.
+// ---------------------------------------------------------------------------
+
+/**
+ * Read a whole pool back with the voice sheet in front of it and name the
+ * lines that break the voice, repeat another line's meaning, or make no sense
+ * where they are used.
+ *
+ * The editor never rewrites. The gate keeps or drops and never mends, and an
+ * editor that could rewrite would be the one place in the pass where a line
+ * nobody wrote in one sitting could still reach the lever. A drop is refused
+ * when it would take a pool under the loader's floor, and the receipt says so.
+ */
+async function commandEdit(args, gates) {
+  const spec = args.flags.model;
+  if (!spec) throw new Fail('bad flag', `edit wants --model\n${USAGE}`);
+  const target = parseSpec(spec);
+  const opts = runOpts(args);
+  const apply = args.flags.apply === true;
+  mkdirSync(AUTHORING, { recursive: true });
+  const ctx = makeCtx(target, opts, gates, { apply });
+  const jobs = editJobs(ctx);
+  const stamp = runStamp();
+  const startedAt = Date.now();
+
+  const asked = await mapLimit(jobs, opts.concurrency, async (job) => {
+    process.stderr.write(`${target.spec}: edit ${job.name}\n`);
+    const system = [PERSONA, voiceBlock(ctx.voices[job.voice]), EDITOR_RULES].join('\n');
+    const user = editPrompt(job);
+    const hash = promptHash(system, user);
+    try {
+      const answer = await callModel(target, system, user, opts);
+      return { job, hash, answer, error: null };
+    } catch (err) {
+      return { job, hash, answer: null, error: err.message };
+    }
+  });
+
+  const receipt = {
+    date: today(),
+    stamp,
+    model: target.spec,
+    route: target.route,
+    temperature: opts.temperature,
+    concurrency: opts.concurrency,
+    applied: apply,
+    voice: ctx.voiceHashes,
+    calls: 0,
+    wallMs: 0,
+    tokens: { in: 0, out: 0 },
+    pools: {},
+  };
+  for (const { job, hash, answer, error } of asked) {
+    const entry = {
+      promptHash: hash,
+      voice: job.voice,
+      lines: job.lines.length,
+      floor: job.floor,
+      ms: answer?.ms ?? 0,
+      dropped: [],
+      refused: [],
+      error,
+    };
+    receipt.calls += 1;
+    receipt.tokens.in += answer?.tokens?.in ?? 0;
+    receipt.tokens.out += answer?.tokens?.out ?? 0;
+    receipt.pools[job.name] = entry;
+    if (error !== null || answer === null) continue;
+    let parsed;
+    try {
+      parsed = parseCandidates(answer.text);
+    } catch (err) {
+      entry.error = err.message;
+      continue;
+    }
+    for (const call of readDrops(parsed, job.lines.length)) {
+      const row = {
+        index: call.index,
+        line: job.lines[call.index],
+        why: call.why,
+        pool: job.poolOf(call.index),
+      };
+      if (job.canDrop(call.index)) {
+        job.drop(call.index);
+        entry.dropped.push(row);
+      } else {
+        entry.refused.push({ ...row, whyRefused: 'the pool is at its floor' });
+      }
+    }
+  }
+  receipt.wallMs = Date.now() - startedAt;
+  writeJson(path.join(AUTHORING, `${stamp}-edit.json`), receipt);
+  if (apply) {
+    for (const job of jobs) job.commit();
+    saveLevers(ctx);
+    prettier([...ctx.touched]);
+  }
+  const dropped = Object.values(receipt.pools).reduce((a, p) => a + p.dropped.length, 0);
+  const refused = Object.values(receipt.pools).reduce((a, p) => a + p.refused.length, 0);
+  console.log(
+    `${receipt.calls} calls; ${dropped} lines dropped, ${refused} refused at a floor; ${
+      apply ? 'applied' : 'not applied'
+    }; receipt ${path.relative(ROOT, path.join(AUTHORING, `${stamp}-edit.json`))}`,
+  );
+}
+
+const EDITOR_RULES = [
+  'Today you are not writing lines. You are reading lines that were already',
+  'written for the character above, and naming the ones that should be dropped.',
+  '',
+  'Drop a line only when one of these is true:',
+  '- it does not sound like that character',
+  '- it already appears in the same list, said a different way',
+  '- it makes no sense for the place the list says it is used',
+  '',
+  'Never rewrite a line, never suggest a replacement, never reorder anything. You',
+  'name the numbers of the lines to drop and nothing else. Be sparing: a line that',
+  'is merely not your favorite stays. Most lists need very few dropped.',
+  '',
+  'Answer with JSON and nothing else. No prose before it, none after it, no code fence.',
+].join('\n');
+
+function editPrompt(job) {
+  return [
+    job.brief,
+    '',
+    ...job.lines.map((line, i) => `${i + 1}) ${line}`),
+    '',
+    'Answer with a JSON array of objects, one for each line to drop, of this shape:',
+    '{ "line": <the number of the line>, "why": "<one clause saying which of the three>" }',
+    'An empty array means every line holds.',
+  ].join('\n');
+}
+
+/** The drops the editor named, as zero-based indexes, ignoring anything odd. */
+function readDrops(parsed, n) {
+  const rows = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.drop) ? parsed.drop : [];
+  const seen = new Set();
+  const out = [];
+  for (const row of rows) {
+    const raw = typeof row === 'number' ? row : Number(row?.line ?? row?.index ?? NaN);
+    if (!Number.isInteger(raw) || raw < 1 || raw > n) continue;
+    const index = raw - 1;
+    if (seen.has(index)) continue;
+    seen.add(index);
+    out.push({ index, why: typeof row?.why === 'string' ? row.why : '' });
+  }
+  return out;
+}
+
+/** How many named pools of a record one editor call reads at once. */
+const EDIT_MAP_CHUNK = 60;
+
+/**
+ * Every pool the editor reads, each as one call. A job carries its lines in one
+ * flat list, knows which sub-pool each line belongs to, and knows the floor
+ * that sub-pool may not go under.
+ */
+function editJobs(ctx) {
+  const jobs = [];
+
+  const flat = (key, voice, floor, brief) => {
+    const lines = poolAt(ctx, key);
+    if (lines.length === 0) return;
+    const drop = new Set();
+    jobs.push({
+      name: key,
+      voice,
+      brief,
+      lines,
+      floor,
+      poolOf: () => key,
+      canDrop: () => lines.length - drop.size > floor,
+      drop: (i) => drop.add(i),
+      commit() {
+        if (drop.size === 0) return;
+        setPoolAt(
+          ctx,
+          key,
+          lines.filter((_, i) => !drop.has(i)),
+        );
+      },
+    });
+  };
+
+  const tiered = (name, voice, keyOf, floor, brief) => {
+    const tiers = ['0', '1', '2'];
+    const lines = [];
+    const owner = [];
+    for (const tier of tiers) {
+      for (const line of poolAt(ctx, keyOf(tier))) {
+        lines.push(line);
+        owner.push(tier);
+      }
+    }
+    if (lines.length === 0) return;
+    const drop = new Set();
+    const left = (tier) => owner.filter((t, i) => t === tier && !drop.has(i)).length;
+    jobs.push({
+      name,
+      voice,
+      brief,
+      lines,
+      floor,
+      poolOf: (i) => keyOf(owner[i]),
+      canDrop: (i) => left(owner[i]) > floor,
+      drop: (i) => drop.add(i),
+      commit() {
+        if (drop.size === 0) return;
+        for (const tier of tiers) {
+          setPoolAt(
+            ctx,
+            keyOf(tier),
+            lines.filter((_, i) => owner[i] === tier && !drop.has(i)),
+          );
+        }
+      },
+    });
+  };
+
+  // The ask templates, one call a stack: all three tiers of that stack read
+  // together, because a stack's three tiers are one voice climbing.
+  for (const stack of Object.keys(STACK_WORDS)) {
+    tiered(
+      `user.asks.${stack}`,
+      'user',
+      (tier) => `user.asks.${stack}.${tier}`,
+      ASK_POOL_TARGET,
+      [
+        'These are the requests the user makes when what is being built is',
+        `${STACK_WORDS[stack]}. They are templates: the token {product} stands in for`,
+        'whatever is being built. They climb from the plain opening request through the',
+        'bigger one to the fully absurd one, so the later ones are meant to be larger.',
+      ].join('\n'),
+    );
+  }
+
+  tiered(
+    'user.reactions',
+    'user',
+    (tier) => `user.reactions.${tier}`,
+    POOL_TARGETS['user.reactions.0'],
+    "The user's reaction when a piece of the product has just shipped, in three moods: the early days, the company growing, and the hype fully arrived.",
+  );
+
+  flat('user.creeps', 'user', POOL_TARGETS['user.creeps'], POOL_BRIEFS['user.creeps']);
+  flat('user.reviews', 'user', POOL_TARGETS['user.reviews'], POOL_BRIEFS['user.reviews']);
+  flat('user.syncs', 'user', POOL_TARGETS['user.syncs'], POOL_BRIEFS['user.syncs']);
+  flat(
+    'user.nags',
+    'user',
+    NAG_TARGET,
+    'Short check-ins the user sends while the agent is still typing, fond and impatient and never angry.',
+  );
+  flat('agent.replies', 'agent', POOL_TARGETS['agent.replies'], POOL_BRIEFS['agent.replies']);
+  flat('agent.hmm', 'agent', POOL_TARGETS['agent.hmm'], POOL_BRIEFS['agent.hmm']);
+  flat(
+    'agent.compactions',
+    'agent',
+    POOL_TARGETS['agent.compactions'],
+    POOL_BRIEFS['agent.compactions'],
+  );
+  flat('agent.ships', 'agent', POOL_TARGETS['agent.ships'], POOL_BRIEFS['agent.ships']);
+  flat(
+    'agent.nagReplies',
+    'agent',
+    NAG_TARGET,
+    "The agent's reply to a check-in: fond, unbothered, still typing, and never promising a time.",
+  );
+
+  // The reactions by topic and the reviews by product are records of small
+  // pools, so the floor is one line each and a call reads a batch of them.
+  jobs.push(
+    ...mapJobs(
+      ctx,
+      'reactionsByTopic',
+      'the word that names what the piece was about',
+      EDIT_MAP_CHUNK,
+    ),
+  );
+  jobs.push(...mapJobs(ctx, 'reviewsByProduct', 'the product that level built', 64));
+  return jobs;
+}
+
+function mapJobs(ctx, field, what, size) {
+  const map = ctx.user[field] ?? {};
+  const names = Object.keys(map).sort();
+  const out = [];
+  for (const [g, group] of chunk(names, size).entries()) {
+    const lines = [];
+    const owner = [];
+    for (const name of group) {
+      for (const line of map[name] ?? []) {
+        lines.push(`[${name}] ${line}`);
+        owner.push(name);
+      }
+    }
+    if (lines.length === 0) continue;
+    const drop = new Set();
+    const left = (name) => owner.filter((o, i) => o === name && !drop.has(i)).length;
+    out.push({
+      name: `user.${field}.${g + 1}`,
+      voice: 'user',
+      brief: [
+        "Each line below is one of the user's lines, and the name in brackets in front",
+        `of it is ${what}. A line has to make sense for its own bracket. The bracket is`,
+        'a label and is not part of the line.',
+      ].join('\n'),
+      lines,
+      floor: 1,
+      poolOf: (i) => `user.${field}.${owner[i]}`,
+      canDrop: (i) => left(owner[i]) > 1,
+      drop: (i) => drop.add(i),
+      commit() {
+        if (drop.size === 0) return;
+        const next = { ...(ctx.user[field] ?? {}) };
+        for (const name of group) {
+          const keep = [];
+          for (let i = 0; i < lines.length; i += 1) {
+            if (owner[i] !== name || drop.has(i)) continue;
+            keep.push(lines[i].slice(`[${name}] `.length));
+          }
+          if (keep.length > 0) next[name] = keep;
+        }
+        ctx.user[field] = next;
+        ctx.touched.add(path.join(PATTERNS, 'user.json'));
+      },
+    });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 
 async function main() {
   const args = parseArgv(process.argv.slice(2));
@@ -1778,7 +2538,7 @@ async function main() {
     return;
   }
   const command = args.positional[0];
-  if (command !== 'sample' && command !== 'run') {
+  if (command !== 'sample' && command !== 'run' && command !== 'edit') {
     throw new Fail('bad command', `unknown command "${command}"\n${USAGE}`);
   }
   const pkg = await loadPackage();
@@ -1788,6 +2548,7 @@ async function main() {
     sync: makeGate(pkg.lineFault, pkg.britishHit, { maxWords: SYNC_WORDS }),
   };
   if (command === 'sample') await commandSample(args, gates);
+  else if (command === 'edit') await commandEdit(args, gates);
   else await commandRun(args, gates);
 }
 
