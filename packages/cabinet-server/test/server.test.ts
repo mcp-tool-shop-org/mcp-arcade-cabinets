@@ -156,7 +156,11 @@ describe('the stdio server', () => {
       const def = CONTRACT.find((d) => d.name === t.name)!;
       expect(t.description).toBe(def.description);
       expect(t.annotations?.readOnlyHint).toBe(def.annotations.readOnlyHint);
-      expect(t.annotations?.openWorldHint).toBe(false);
+      // `speak` is the one lever that reaches outside this process when a
+      // voice worker is configured; the listing says so rather than
+      // promising a client that a networked tool touches nothing.
+      expect(t.annotations?.openWorldHint, t.name).toBe(t.name === 'speak');
+      expect(t.annotations?.destructiveHint, t.name).toBe(false);
       expect(t.description).not.toMatch(/\d/);
       const props = (t.inputSchema.properties ?? {}) as Record<string, { enum?: string[] }>;
       for (const p of Object.values(props))

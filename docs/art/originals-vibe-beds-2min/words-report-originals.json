@@ -1,0 +1,84 @@
+{
+ "cabinet": "vibe",
+ "model": "faster-whisper small.en",
+ "device": "cpu",
+ "beam_size": 1,
+ "vad_filter": false,
+ "language": "en",
+ "read_from": "docs/art/originals-vibe-beds-2min/originals",
+ "beds": [
+  {
+   "key": "bash",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "csharp",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "java",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "javascript",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "python",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "sql",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "integration",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  }
+ ],
+ "no_speech_floor": 0.5,
+ "misses": [],
+ "misses_with_speech": []
+}

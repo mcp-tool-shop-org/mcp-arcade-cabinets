@@ -6,52 +6,14 @@
 import { deflateSync } from 'node:zlib';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { build } from 'esbuild';
+
+import { cliError, die, isMain, parseArgv, runMain } from './lib/cli.mjs';
+import { bundleModule } from './lib/bundle.mjs';
 
 const USAGE =
   'usage: pnpm film [--fixture name] [--bot idle|sweeper|reader] [--tier 0|1|2|3] [--times 3,8,12,20,30,45] [--out dir]';
 const BOTS = ['idle', 'sweeper', 'reader'];
 const FLAGS = new Set(['fixture', 'bot', 'tier', 'times', 'out']);
-
-function die(msg, code = 2) {
-  console.error(msg);
-  process.exit(code);
-}
-
-function parseArgv(argv, known) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const a = argv[i];
-    if (a === '--help' || a === '-h') {
-      flags.help = true;
-      continue;
-    }
-    if (a.startsWith('--')) {
-      let key;
-      let val;
-      const eq = a.indexOf('=');
-      if (eq !== -1) {
-        key = a.slice(2, eq);
-        val = a.slice(eq + 1);
-      } else {
-        key = a.slice(2);
-        const next = argv[i + 1];
-        if (next === undefined || String(next).startsWith('-')) {
-          die(`missing value for --${key}\n${USAGE}`);
-        }
-        val = next;
-        i += 1;
-      }
-      if (!known.has(key)) die(`unknown flag --${key}\n${USAGE}`);
-      flags[key] = val;
-    } else {
-      positional.push(a);
-    }
-  }
-  return { positional, flags };
-}
 
 function tapeRoster() {
   try {
@@ -64,16 +26,89 @@ function tapeRoster() {
   }
 }
 
-function isMain() {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  const self = fileURLToPath(import.meta.url);
-  try {
-    if (path.resolve(entry).toLowerCase() === self.toLowerCase()) return true;
-  } catch {
-    /* ignore */
+/**
+ * Thirty frames a second for ten minutes of round time. No fixture round is
+ * anywhere near that long; the cap is here because the frame loop advances
+ * only when the round reaches the next requested time or ends in a scene, so a
+ * round that does neither — `--times 99999`, or a `stepRound` regression that
+ * stops setting `state.scene` — used to spin forever with no output at all.
+ * Every other driver in the repo has one (vibe play.ts MAX_TICKS,
+ * test/helpers.ts TICK_CAP).
+ */
+export const MAX_TICKS = 30 * 60 * 10;
+
+/**
+ * `--times 3,8,12`. Seconds of round time, each a finite number and none
+ * negative: an empty entry used to parse as zero (`Number('')` is 0, and
+ * splitting an empty string yields one empty entry), and a negative one used
+ * to name a frame `<fixture>.t0-1.png` because padStart pads the minus sign.
+ */
+export function parseTimes(src) {
+  const raw = String(src).split(',');
+  const bad = (why) => cliError(`times must be ${why} (got ${src})`);
+  if (raw.length === 0) throw bad('one or more seconds of round time');
+  const times = [];
+  for (const part of raw) {
+    const trimmed = part.trim();
+    if (trimmed === '') throw bad('seconds of round time, with no empty entry');
+    const n = Number(trimmed);
+    if (!Number.isFinite(n)) throw bad('finite numbers');
+    if (n < 0) throw bad('zero or more, never negative');
+    times.push(n);
   }
-  return path.basename(entry).toLowerCase() === path.basename(self).toLowerCase();
+  return times;
+}
+
+/**
+ * The renderer's colors as bytes. Every color the renderer sets is `#rrggbb`
+ * or an `rgb()`/`rgba()` triple; anything else is a renderer regression, and it
+ * used to come back as magenta — a frame that looks wrong rather than a run
+ * that says what broke.
+ */
+export function hex(c) {
+  const m = /^#([0-9a-f]{6})$/i.exec(c);
+  if (m)
+    return [
+      parseInt(m[1].slice(0, 2), 16),
+      parseInt(m[1].slice(2, 4), 16),
+      parseInt(m[1].slice(4, 6), 16),
+      1,
+    ];
+  const r = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(c);
+  if (r) return [Number(r[1]), Number(r[2]), Number(r[3]), r[4] === undefined ? 1 : Number(r[4])];
+  throw cliError(`renderer color not understood: ${JSON.stringify(String(c))}`);
+}
+
+/**
+ * Step the round until every requested time has a frame or the round ends,
+ * capped. `step()` advances one frame; `writeFrame(label)` writes one.
+ */
+export function runFrames({ state, times, step, writeFrame, maxTicks = MAX_TICKS }) {
+  let next = 0;
+  let frames = 0;
+  let ticks = 0;
+  while (next < times.length) {
+    if (ticks >= maxTicks) {
+      throw cliError(
+        `the round did not end after ${ticks} frames (t=${Number(state.t).toFixed(1)}; times ${times.join(',')})`,
+      );
+    }
+    ticks += 1;
+    const hadScene = Boolean(state.scene);
+    step();
+    if (state.t >= times[next] && !state.scene) {
+      writeFrame(times[next]);
+      frames += 1;
+      next += 1;
+    }
+    if (!hadScene && state.scene) {
+      writeFrame(times[next] ?? Math.floor(state.t));
+      frames += 1;
+      break;
+    }
+    if (state.scene) break;
+  }
+  return frames;
 }
 
 /** Parse a tape file; throw a named `fixture …: bad json` (never a stack). */
@@ -92,7 +127,7 @@ export function parseTapeFile(file, name) {
 }
 
 async function main() {
-  const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS);
+  const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS, { usage: USAGE });
   if (flags.help) {
     console.log(USAGE);
     process.exit(0);
@@ -106,10 +141,7 @@ async function main() {
     if (!Number.isInteger(n) || n < 0 || n > 3) die(`tier must be 0..3 (got ${flags.tier})`);
   }
   const timesSrc = flags.times ?? '3,8,12,20,30,45';
-  const times = timesSrc.split(',').map(Number);
-  if (times.length === 0 || times.some((t) => !Number.isFinite(t))) {
-    die(`times must be finite numbers (got ${timesSrc})`);
-  }
+  const times = parseTimes(timesSrc);
   const fixture = flags.fixture ?? 'naive-ndjson';
   const tapeFile = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
   if (!existsSync(tapeFile)) {
@@ -126,35 +158,21 @@ async function main() {
   const botName = flags.bot ?? 'reader';
   const tier = flags.tier === undefined ? undefined : Number(flags.tier);
   const out = path.resolve(flags.out ?? 'film');
-
-  const bundle = await build({
-    stdin: {
-      contents:
-        "export * from './packages/ghost-on-the-menu/src/index.ts'; export { botFor } from './packages/ghost-on-the-menu/src/play.ts';",
-      resolveDir: process.cwd(),
-      loader: 'ts',
-    },
-    bundle: true,
-    platform: 'node',
-    format: 'esm',
-    write: false,
-    logLevel: 'warning',
-  });
-  const tmp = path.resolve(out, '.play.bundle.mjs');
   mkdirSync(out, { recursive: true });
-  writeFileSync(tmp, bundle.outputFiles[0].text);
-  const g = await import(pathToFileURL(tmp).href);
-  const tapeMod = await build({
-    entryPoints: [path.resolve('packages/tape-core/src/index.ts')],
-    bundle: true,
-    platform: 'node',
-    format: 'esm',
-    write: false,
-    logLevel: 'warning',
+
+  const g = await bundleModule({
+    contents:
+      "export * from './packages/ghost-on-the-menu/src/index.ts'; export { botFor } from './packages/ghost-on-the-menu/src/play.ts';",
+    outDir: out,
+    outFile: '.play.bundle.mjs',
+    what: 'the cabinet',
   });
-  const tmp2 = path.resolve(out, '.tape.bundle.mjs');
-  writeFileSync(tmp2, tapeMod.outputFiles[0].text);
-  const { loadTape } = await import(pathToFileURL(tmp2).href);
+  const { loadTape } = await bundleModule({
+    entry: path.resolve('packages/tape-core/src/index.ts'),
+    outDir: out,
+    outFile: '.tape.bundle.mjs',
+    what: 'tape-core',
+  });
 
   let tape;
   try {
@@ -169,20 +187,6 @@ async function main() {
   const input = g.botFor(botName, round);
   const W = g.FIELD.width;
   const H = g.FIELD.height;
-
-  function hex(c) {
-    const m = /^#([0-9a-f]{6})$/i.exec(c);
-    if (m)
-      return [
-        parseInt(m[1].slice(0, 2), 16),
-        parseInt(m[1].slice(2, 4), 16),
-        parseInt(m[1].slice(4, 6), 16),
-        1,
-      ];
-    const r = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(c);
-    if (r) return [Number(r[1]), Number(r[2]), Number(r[3]), r[4] === undefined ? 1 : Number(r[4])];
-    return [255, 0, 255, 1];
-  }
 
   function makeCtx() {
     const px = new Uint8Array(W * H * 3);
@@ -270,8 +274,6 @@ async function main() {
   ];
 
   const DT = 1 / 30;
-  let next = 0;
-  let frames = 0;
   const log = [];
 
   function writeFrame(label) {
@@ -284,22 +286,12 @@ async function main() {
       `t=${state.t.toFixed(1)} wave=${state.wave} lives=${state.lives} boss=${state.boss ? `${state.boss.kind}:${state.boss.hp}` : '-'} caption=${state.caption ? `${state.caption.kind}:${state.caption.text}` : '-'} live=${live.map((e) => `${e.sprite[0]}${e.mode[0]}@${e.x.toFixed(0)},${e.y.toFixed(0)}`).join(' ')}`,
     );
   }
-  while (next < times.length) {
-    const hadScene = Boolean(state.scene);
-    g.stepRound(state, input(state), DT);
-    const hit = state.t >= times[next] && !state.scene;
-    if (hit) {
-      writeFrame(times[next]);
-      frames += 1;
-      next += 1;
-    }
-    if (!hadScene && state.scene) {
-      writeFrame(times[next] ?? Math.floor(state.t));
-      frames += 1;
-      break;
-    }
-    if (state.scene) break;
-  }
+  const frames = runFrames({
+    state,
+    times,
+    step: () => g.stepRound(state, input(state), DT),
+    writeFrame,
+  });
   console.log(
     `tier ${round.tier} duration ${round.duration.toFixed(0)} beats ${round.beats.length}`,
   );
@@ -314,6 +306,6 @@ async function main() {
   console.log(`frames in ${out}`);
 }
 
-if (isMain()) {
-  await main();
+if (isMain(import.meta.url)) {
+  await runMain(main);
 }

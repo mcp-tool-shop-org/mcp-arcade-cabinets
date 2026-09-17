@@ -265,6 +265,37 @@ describe('copilot', () => {
     expect(state.built.at(-1)!.size).toBeLessThan(request.value);
   });
 
+  // The discount is charged against the request's own code lines, so on the
+  // reply line and on a sync's three there was nothing to charge it to: Tab
+  // filled the warm-up of every request for nothing, and the Enter after it
+  // took the clean-line branch and grew the streak. A free line is not a
+  // discount, so the offer is not open off the code beat.
+  it('does not take the reply line, and keeps the offer for the code', () => {
+    const state = createRun({ seed: 2, tier: 0, endless: false });
+    const bot = makeBot('perfect', 2);
+    let guard = 0;
+    while (!state.over && state.copilot === null && guard < 40000) {
+      step(state, bot(state));
+      guard += 1;
+    }
+    expect(state.copilot).not.toBeNull();
+    // Wind on to a request's reply line, where the offer used to be free.
+    guard = 0;
+    while (!state.over && state.beat !== 'reply' && guard < 40000) {
+      step(state, bot(state));
+      guard += 1;
+    }
+    expect(state.beat).toBe('reply');
+    expect(state.copilot).not.toBeNull();
+    const typed = state.typed;
+    const share = state.discountShare;
+    step(state, { tab: true });
+    expect(state.typed, 'the reply line was filled for free').toBe(typed);
+    expect(state.discountShare).toBe(share);
+    // And the offer is still standing, for the code lines it was meant for.
+    expect(state.copilot).not.toBeNull();
+  });
+
   it('never offers copilot in hardcore', () => {
     const state = createRun({ seed: 2, tier: 3, endless: false });
     const bot = makeBot('perfect', 2);
@@ -687,6 +718,20 @@ describe("the seat's requests", () => {
     expect(JSON.stringify(once())).toBe(JSON.stringify(once()));
   });
 
+  // The planner takes at most one level's worth and the buffer holds the
+  // rest, so an unbounded push is a buffer an MCP client sitting in the
+  // user's chair can grow without end over a long container session.
+  it('stops taking requests once the buffer is a level ahead', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    const cap = DEFAULT_PATTERNS.levels.endless.requests * 2;
+    for (let i = 0; i < 12; i++) feedRequests(state, seatFeed(5, 0, 1, 4));
+    expect(suppliedCount(state)).toBe(cap);
+    // And the level in hand is unaffected: dropping past the cap is a drop,
+    // never a throw and never a stall.
+    finishLevel(state);
+    expect(state.over).toBe(false);
+  });
+
   it('ignores the buffer in a listed level', () => {
     const state = createRun({ seed: 5, tier: 0, endless: false, levelIndex: 0 });
     const before = planOf(state).requests.map((r) => r.snippet.id);
@@ -810,6 +855,41 @@ describe("the seat's reaction", () => {
       step(same, bot2(same));
     }
     expect(JSON.stringify(same)).toBe(JSON.stringify(plain));
+  });
+
+  // A client reads the view, writes about the request in hand and sends it.
+  // If that request ships before the call lands, the line used to be said
+  // over the next request's piece — and on the last request it stood in as
+  // the verdict on the whole product.
+  it('is dropped when the ship that arrives is not the request it was written about', () => {
+    const line = 'that is exactly the thing i meant';
+
+    // A client that read the view at request zero, wrote about it, and had
+    // the call land after request zero had already shipped. The line names
+    // the request it is about, so the ship that arrives is not its ship.
+    const late = createRun({ seed: 5, tier: 0, endless: true });
+    const first = late.plan.requests[0]!.id;
+    shipRequest(late);
+    expect(late.requestIndex).toBe(1);
+    expect(feedReaction(late, line, first)).toBe('waiting');
+    const heard = shipAndHear(late);
+    expect(heard).not.toBe(line);
+    expect(heard).not.toBe('');
+    expect(reactionWaiting(late)).toBe(false);
+    expect(late.chat.some((c) => c.line === line)).toBe(false);
+
+    // The same line, named for the request actually in hand, is said.
+    const onTime = createRun({ seed: 5, tier: 0, endless: true });
+    shipRequest(onTime);
+    const inHand = onTime.plan.requests[onTime.requestIndex]!.id;
+    expect(feedReaction(onTime, line, inHand)).toBe('waiting');
+    expect(shipAndHear(onTime)).toBe(line);
+
+    // And a caller that names no request keeps the old behaviour: the
+    // request in hand when the call landed.
+    const bare = createRun({ seed: 5, tier: 0, endless: true });
+    expect(feedReaction(bare, line)).toBe('waiting');
+    expect(shipAndHear(bare)).toBe(line);
   });
 
   it('is not on the state, so a fed run and an unfed one differ only in what was said', () => {

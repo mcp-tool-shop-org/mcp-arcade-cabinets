@@ -572,3 +572,20 @@ describe('the pilot lever in fire.json', () => {
     expect(() => loadPatterns(lean)).toThrow('patterns/fire.json: lean');
   });
 });
+
+// SPAWN_CLASSES was annotated `readonly SpriteClass[]`, so the indexed-access
+// type widened to the whole union and the sprite box map claimed a `fog`
+// entry loadFormations never writes. `sprites.fog` was undefined at runtime
+// while typed non-optional, and only the hand-written fog guard in spriteBox
+// kept a property-of-undefined crash away. The `@ts-expect-error` below is
+// the gate: with the map widened again it has nothing to suppress and the
+// typecheck goes red.
+describe('the sprite box map', () => {
+  it('is typed at exactly the classes that spawn, fog excluded', () => {
+    const sprites = DEFAULT_PATTERNS.formations.sprites;
+    // @ts-expect-error fog becomes a FogBank, never a box; the map has no entry.
+    expect(sprites.fog).toBeUndefined();
+    expect(Object.keys(sprites)).not.toContain('fog');
+    expect(Object.keys(sprites)).toHaveLength(11);
+  });
+});

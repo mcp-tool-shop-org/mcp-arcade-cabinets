@@ -92,7 +92,7 @@ export function meanBrier(scores: readonly number[]): number {
  */
 export function brier(p: number, outcome: boolean): number {
   if (!Number.isFinite(p) || p < 0.5 || p > 1) {
-    throw new Error(`confidence p must be in [0.5, 1], got ${p}`);
+    throw new TapeError(`confidence p must be in [0.5, 1], got ${p}`);
   }
   const o = outcome ? 1 : 0;
   return (p - o) ** 2;
@@ -124,7 +124,7 @@ export function reliability(bins: readonly (readonly BinaryCall[])[]): Reliabili
     let hits = 0;
     for (const call of bin) {
       if (!Number.isFinite(call.p) || call.p < 0.5 || call.p > 1) {
-        throw new Error(`confidence p must be in [0.5, 1], got ${call.p}`);
+        throw new TapeError(`confidence p must be in [0.5, 1], got ${call.p}`);
       }
       pSum += call.p;
       if (call.outcome) hits += 1;

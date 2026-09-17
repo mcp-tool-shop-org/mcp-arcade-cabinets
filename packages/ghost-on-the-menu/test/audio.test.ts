@@ -456,3 +456,157 @@ describe('recorded beds', () => {
     expect(started.length).toBeGreaterThan(0);
   });
 });
+
+// The Director's read, 2026-09-16: the beds cut off too soon. Measured
+// lengths were inspect 36.0, whisperer/menu/doorman 40.0, poison/rug/unlisted
+// 36.0, breather 32.0 s, and the hold was a flat 36, so the three 40 s beds
+// were faded four seconds before their loop ended and a 36 s bed was faded as
+// it restarted. A bed now holds for its OWN length; 36 stays as the floor for
+// a bed that cannot say how long it is. The music pass is lengthening these
+// files, so the hold must follow the file, never a constant.
+describe('a bed holds for its own length', () => {
+  const ctx = () =>
+    ({
+      currentTime: 0,
+      destination: {} as AudioNode,
+      createOscillator: () =>
+        ({
+          type: 'sine',
+          frequency: { value: 0 },
+          connect() {},
+          start() {},
+          stop() {},
+        }) as unknown as OscillatorNode,
+      createGain: () =>
+        ({
+          gain: {
+            setValueAtTime() {},
+            linearRampToValueAtTime() {},
+            exponentialRampToValueAtTime() {},
+          },
+          connect() {},
+        }) as unknown as GainNode,
+    }) as unknown as Parameters<typeof attach>[0];
+
+  function bed(duration?: number) {
+    return {
+      loop: false,
+      muted: false,
+      volume: 1,
+      currentTime: 0,
+      playbackRate: 1,
+      playing: false,
+      plays: 0,
+      ...(duration === undefined ? {} : { duration }),
+      play() {
+        this.playing = true;
+        this.plays += 1;
+      },
+      pause() {
+        this.playing = false;
+      },
+    };
+  }
+
+  it('does not give way at 36 when the file is 40 seconds long', () => {
+    const inspect = bed(40);
+    const whisperer = bed(40);
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(ctx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    out.tick(BED_MIN_S, 'whisperer');
+    expect(whisperer.playing, 'the 40 s loop was cut at 36').toBe(false);
+    expect(inspect.playing).toBe(true);
+    out.tick(40.1, 'whisperer');
+    expect(whisperer.playing, 'the 40 s loop never gave way at 40').toBe(true);
+  });
+
+  it('gives way at 32 when the file is 32 seconds long', () => {
+    const inspect = bed(32);
+    const whisperer = bed(32);
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(ctx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    out.tick(31, 'whisperer');
+    expect(whisperer.playing).toBe(false);
+    out.tick(32.1, 'whisperer');
+    expect(whisperer.playing, 'a 32 s loop was held to 36').toBe(true);
+  });
+
+  it('falls back to BED_MIN_S when a bed has no duration', () => {
+    const inspect = bed();
+    const whisperer = bed();
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(ctx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    out.tick(BED_MIN_S - 1, 'whisperer');
+    expect(whisperer.playing).toBe(false);
+    out.tick(BED_MIN_S + 0.1, 'whisperer');
+    expect(whisperer.playing).toBe(true);
+  });
+
+  it('carries the hold across a round restart, measured against the file length', () => {
+    const inspect = bed(40);
+    const whisperer = bed(40);
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(ctx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    for (let t = 1; t <= 20; t += 1) out.tick(t, 'inspect');
+    // The next call of a shift: the round clock goes back to zero.
+    out.tick(0, 'inspect');
+    expect(inspect.plays, 'the bed restarted instead of carrying').toBe(1);
+    out.tick(10, 'whisperer');
+    expect(whisperer.playing, 'the carried hold was dropped').toBe(false);
+    out.tick(20.5, 'whisperer');
+    expect(whisperer.playing, 'the carried hold never ran out').toBe(true);
+  });
+});
+
+// schedule() pushed every oscillator it created onto the caller's array, and
+// sfxOscs is emptied only by silenceSfx (mute or close). Every player shot
+// fires the 'fire' cue, so an unmuted two-to-three-minute round retained on
+// the order of a thousand stopped oscillators and their gain nodes, then
+// walked all of them at mute.
+describe('finished oscillators do not pile up', () => {
+  it('keeps only what is still sounding', () => {
+    let disconnects = 0;
+    let created = 0;
+    const ctx = {
+      currentTime: 0,
+      destination: {} as AudioNode,
+      createOscillator: () => {
+        created += 1;
+        return {
+          type: 'sine',
+          frequency: { value: 0 },
+          connect() {},
+          start() {},
+          stop() {},
+          disconnect() {
+            disconnects += 1;
+          },
+        } as unknown as OscillatorNode;
+      },
+      createGain: () =>
+        ({
+          gain: {
+            setValueAtTime() {},
+            linearRampToValueAtTime() {},
+            exponentialRampToValueAtTime() {},
+          },
+          connect() {},
+        }) as unknown as GainNode,
+    };
+    const out = attach(ctx as unknown as Parameters<typeof attach>[0]);
+    const shots = 200;
+    for (let i = 0; i < shots; i++) {
+      // A second between shots: every earlier voice has stopped by now.
+      ctx.currentTime = i;
+      out.play('fire');
+    }
+    const perShot = sfx('fire').length;
+    expect(created).toBe(shots * perShot);
+    out.setMuted(true);
+    expect(disconnects, 'the whole round was retained').toBeLessThanOrEqual(perShot);
+  });
+});

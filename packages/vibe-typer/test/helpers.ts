@@ -72,9 +72,26 @@ export interface DriveOpts {
  * are integration levels, so the band has to season its corpus the way the
  * game does or those two levels would have nothing to plan from. Read once.
  */
+/**
+ * Where the fixture tapes are, resolved from this file and not from the
+ * process cwd — Ghost's band test does the same (`path.resolve(__dirname,
+ * '../../../fixtures/tapes')`). Resolved from the cwd, running the band
+ * from inside the package directory found no tapes at all, and
+ * `integrationFrom` swallows a missing directory and returns nothing, so
+ * the two integration levels planned from an empty stack and failed
+ * naming `patterns/levels.json: levels.8` — the wrong thing entirely.
+ */
+const TAPES = path.resolve(__dirname, '../../../fixtures/tapes');
+
 let seasoning: readonly Snippet[] | null = null;
 function integrationSeasoning(): readonly Snippet[] {
-  if (!seasoning) seasoning = integrationFrom(path.resolve('fixtures/tapes'));
+  if (!seasoning) {
+    seasoning = integrationFrom(TAPES);
+    // An empty seasoning is not a run with no integration levels; it is a
+    // band that cannot measure two of its sixteen. Say so here, where the
+    // tapes are, rather than four frames down inside the planner.
+    if (seasoning.length === 0) throw new Error(`no tapes under ${TAPES}`);
+  }
   return seasoning;
 }
 

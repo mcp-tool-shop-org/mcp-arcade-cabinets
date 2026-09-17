@@ -30,6 +30,7 @@ import {
 import { botFor, integrationFrom, parseBot } from '@mcp-arcade-cabinets/vibe-typer/src/play';
 
 import { assertCatalogTools, VIBE_CONTRACT, type ToolDef } from './contract';
+import { createStepFaults, guardStep } from './step-guard';
 import { createVibeCabinet, type VibeCabinet } from './vibe-cabinet';
 import { vibeHostFor, type VibeLive } from './vibe-host';
 
@@ -158,24 +159,73 @@ export function wholeEnv(raw: string | undefined): number | null {
   return Number.isSafeInteger(n) ? n : null;
 }
 
+/**
+ * The operator's environment, read once and said out loud.
+ *
+ * `wholeEnv` exists because a fallback reached through `NaN` reads
+ * afterwards as though the operator had asked for the default, which they
+ * did not — and the reads around it did exactly that. `CABINET_TIER=9`
+ * parses as a whole number, fails the range and silently became tier zero;
+ * `CABINET_BOT=nonsense` failed `parseBot` and silently became the house
+ * typist. Both now get one path-free line naming the default in force.
+ *
+ * `CABINET_TAPES_USER` is the third: the image sets it for both cabinets and
+ * the Catalog mounts an operator directory at it, but the overlay is the
+ * shooter's — `listTapes` merges it into the menu over there, and this
+ * cabinet has no menu to merge into, only tapes that season the wires stack
+ * (G30). Silence made that read like a mount that had not worked.
+ *
+ * Pure, and the environment never wins over an explicit `opts`, so the lines
+ * can be read in a test instead of out of a spawned process.
+ */
+export function vibeEnv(
+  env: Record<string, string | undefined>,
+  opts: VibeHeadlessOpts = {},
+): { opts: VibeHeadlessOpts; notes: string[] } {
+  const notes: string[] = [];
+  const out: VibeHeadlessOpts = {};
+  const set = (raw: string | undefined): raw is string => raw !== undefined && raw.trim() !== '';
+
+  if (opts.tapesDir === undefined && set(env.CABINET_TAPES)) out.tapesDir = env.CABINET_TAPES;
+  if (set(env.CABINET_TAPES_USER)) {
+    notes.push(
+      'CABINET_TAPES_USER is read by the shooter cabinet only; this cabinet plays the baked tapes\n',
+    );
+  }
+
+  const seed = wholeEnv(env.CABINET_SEED);
+  if (opts.seed === undefined && seed !== null) out.seed = seed;
+
+  const tier = wholeEnv(env.CABINET_TIER);
+  if (opts.tier === undefined) {
+    if (tier !== null && tier >= 0 && tier <= 3) out.tier = tier as Tier;
+    else if (set(env.CABINET_TIER)) {
+      notes.push('CABINET_TIER was not understood; the cabinet plays at tier 0\n');
+    }
+  }
+
+  if (opts.bot === undefined && set(env.CABINET_BOT)) {
+    if (parseBot(env.CABINET_BOT) !== null) out.bot = env.CABINET_BOT;
+    else notes.push(`CABINET_BOT was not understood; the cabinet plays under ${VIBE_BOT}\n`);
+  }
+
+  return { opts: { ...out, ...opts }, notes };
+}
+
 export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<void> {
   checkVibeCatalogListing();
-  const seed = wholeEnv(process.env.CABINET_SEED);
-  const tier = wholeEnv(process.env.CABINET_TIER);
-  const h = vibeHeadlessRound({
-    ...(process.env.CABINET_TAPES ? { tapesDir: process.env.CABINET_TAPES } : {}),
-    ...(seed !== null ? { seed } : {}),
-    ...(tier !== null && tier >= 0 && tier <= 3 ? { tier: tier as Tier } : {}),
-    ...(process.env.CABINET_BOT ? { bot: process.env.CABINET_BOT } : {}),
-    ...opts,
-  });
+  const read = vibeEnv(process.env, opts);
+  for (const note of read.notes) process.stderr.write(note);
+  const h = vibeHeadlessRound(read.opts);
   const server = buildVibeServer(h.cabinet);
   let last = Date.now();
+  // A throw from the sim is a quiet run, never a dead server (see step-guard).
+  const step = guardStep(h.step, createStepFaults());
   const timer = setInterval(() => {
     const now = Date.now();
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    h.step(dt);
+    step(dt);
   }, 33);
   timer.unref();
   const transport = new StdioServerTransport();

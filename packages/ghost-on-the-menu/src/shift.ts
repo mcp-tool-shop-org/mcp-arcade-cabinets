@@ -14,7 +14,7 @@
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { DEFAULT_PATTERNS, type PatternSet } from './patterns';
-import type { Flavor } from './types';
+import { SCREEN_FORBIDDEN, sanitizeCaption, type Flavor } from './types';
 
 export interface ShiftDraw {
   /** Roster names in play order. */
@@ -228,12 +228,28 @@ export function shiftCard(
   index?: number,
   set: PatternSet = DEFAULT_PATTERNS,
 ): string[] {
-  // A tool name that carries a digit stays off the card rather than being mangled.
+  // The card is tape header text, so it goes through the shared screen strip,
+  // not the old digits-only replace: a tape whose agent_policy is `pass` or
+  // whose server_name is `revealed` used to print that word here. A value
+  // that strips to nothing drops its whole line rather than shipping a bare
+  // `server` or `policy` label (G10).
+  const clean = (s: string) => sanitizeCaption(s, '', SCREEN_FORBIDDEN);
+  // A tool name the strip would touch stays off the card entirely rather than
+  // being mangled into half a name, which is what the old digit filter did.
   const tools = [
-    ...new Set(tape.atoms.map((a) => a.task_tool).filter((t): t is string => !!t && !/\d/.test(t))),
+    ...new Set(
+      tape.atoms.map((a) => a.task_tool).filter((t): t is string => !!t && clean(t) === t.trim()),
+    ),
   ];
-  const lines = [`server ${tape.server_name ?? tape.target_kind}`, `policy ${tape.agent_policy}`];
+  const lines: string[] = [];
+  const server = clean(tape.server_name ?? tape.target_kind);
+  if (server) lines.push(`server ${server}`);
+  const policy = clean(tape.agent_policy);
+  if (policy) lines.push(`policy ${policy}`);
   if (tools.length) lines.push(`asked to run ${tools.slice(0, 4).join(', ')}`);
-  if (index !== undefined) lines.push(flavorTelegraph(index, set));
-  return lines.map((l) => l.replace(/\d/g, ''));
+  if (index !== undefined) {
+    const telegraph = clean(flavorTelegraph(index, set));
+    if (telegraph) lines.push(telegraph);
+  }
+  return lines;
 }

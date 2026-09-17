@@ -35,7 +35,7 @@
   },
   {
     "name": "speak",
-    "description": "Voice the line the boss is about to say, in its own voice. Nothing to choose: the words are the ones the gate admitted. The cabinet speaks it one beat ahead when a voice is on and stays quiet when none is; a line that misses its beat waits for the next breather.",
+    "description": "Voice the line the boss is about to say, in its own voice. Nothing to choose: the words are the ones the gate admitted. Where a voice worker is configured, the cabinet hands it the admitted words and nothing else; it stays quiet when none is on. The cabinet speaks it one beat ahead, and a line that misses its beat waits for the next breather.",
     "inputSchema": {
       "type": "object",
       "properties": {},

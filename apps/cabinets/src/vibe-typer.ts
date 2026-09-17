@@ -93,6 +93,13 @@ const CARD_WORD = '#f6d6ac';
 const CARD_FONT = '28px system-ui, sans-serif';
 /** Characters a second a chat line types itself in at. */
 const CHAT_CPS = 90;
+/**
+ * The two quiet rows that bracket a quick sync in the chat. They are built
+ * from the beat's own word, so a cabinet that renames the meeting renames
+ * these with it, and they carry no digit.
+ */
+const meetingStarts = (word: string): string => `${word} starts`;
+const meetingEnds = (word: string): string => `${word} ends`;
 /** The bar turns warm here, and hot at the near miss the package names. */
 const WARM_AT = 0.25;
 /** The preview, in CSS pixels, drawn at twice that. */
@@ -274,6 +281,12 @@ export async function probeSeatName(signal?: AbortSignal): Promise<string | null
 
 const PREFS_KEY = 'vibe.prefs';
 const WEAK_KEY = 'vibe.weak';
+/**
+ * How much of a typed seed phrase is kept. One number for the menu and for
+ * the stored pref, because a seed cut in one place and not the other plays a
+ * run the player cannot get back.
+ */
+export const SEED_MAX = 12;
 
 export interface VibePrefs {
   /** Which cabinet the menu opens on, so a returning player lands on their game. */
@@ -318,7 +331,7 @@ export function readVibePrefs(): VibePrefs {
     if (isTheme(o.theme)) out.theme = o.theme;
     if (isVibeFont(o.font)) out.font = o.font;
     if (isMusicMode(o.music)) out.music = o.music;
-    if (typeof o.seed === 'string') out.seed = o.seed.slice(0, 12);
+    if (typeof o.seed === 'string') out.seed = o.seed.slice(0, SEED_MAX);
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
     if (typeof o.last === 'number' && Number.isFinite(o.last)) out.last = o.last >>> 0;
@@ -431,6 +444,14 @@ export interface VibeMount {
     cards: number;
     /** The recorded bed that has the level, or nothing when the bar does. */
     track: VibeTrackKey | null;
+    /** The level being played, and the product it is building. */
+    level: number;
+    product: string;
+    /**
+     * What is moving: whether the player asked for less of it, and the three
+     * effects no stylesheet can reach.
+     */
+    motion: { calm: boolean; shake: number; flash: number; specks: number };
   };
 }
 
@@ -513,6 +534,15 @@ export function packPieces(sizes: readonly number[], box: Box, rng: () => number
   };
   cut(0, sizes.length, box, rng() < 0.5);
   return out;
+}
+
+/**
+ * Whether a key belongs to a control rather than to the field. The same list
+ * Ghost's mount uses: a control gets its own keys, so Enter and Space press
+ * the button under focus and Tab leaves it.
+ */
+function chromeTarget(t: EventTarget | null): boolean {
+  return t instanceof Element && Boolean(t.closest('input, select, button, label, textarea'));
 }
 
 export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
@@ -599,7 +629,13 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const userFace = avatar('user');
   const agentFace = avatar('agent');
   if (userFace) chatHead.append(userFace);
-  chatHead.append(el('span', 'vibe-who', planOf(state).product));
+  // The product, which the level owns. In endless the level changes under the
+  // run, so this node and the preview's label are both re-read from the plan
+  // whenever the plan changes (`followPlan`); they were set once at mount and
+  // stayed on the first level's product for the whole run, while the asks and
+  // the standup named the level actually being played.
+  const chatWho = el('span', 'vibe-who', planOf(state).product);
+  chatHead.append(chatWho);
   const chatList = el('ul', 'vibe-lines');
   const chatScroll = el('div', 'vibe-scroll');
   chatScroll.append(chatList);
@@ -620,7 +656,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const canvas = el('canvas', 'vibe-preview');
   canvas.width = PREVIEW_W * PREVIEW_DPR;
   canvas.height = PREVIEW_H * PREVIEW_DPR;
-  canvas.setAttribute('aria-label', `the product as it is built: ${planOf(state).product}`);
+  const previewLabel = (product: string) => `the product as it is built: ${product}`;
+  canvas.setAttribute('aria-label', previewLabel(planOf(state).product));
   const previewPane = el('section', 'vibe-pane vibe-preview-pane');
   previewPane.append(canvas);
 
@@ -675,10 +712,17 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     controls.append(voiceLabel, voiceStat);
   }
 
+  // The hint names what the player can see and nothing else. It used to say
+  // "when the ghost offers it": the sibling cabinet on this menu is called
+  // Ghost on the Menu, so that word read as the shooter's grammar rather
+  // than as editor ghost-text, and nothing else here teaches it — the sim
+  // calls the feature the copilot and the affordance on screen is the faded
+  // rest of the line under a chip. The lock says this cabinet takes Ghost's
+  // chassis and never its grammar, so the word is gone from the field.
   const hint = el(
     'p',
     'muted',
-    'Type what you see. Enter sends a line, Tab takes the rest when the ghost offers it, hold Escape to leave.',
+    'Type what you see. Enter sends a line, Tab takes the rest when the faded text appears, hold Escape to leave.',
   );
 
   wrap.append(board, panes, controls, hint);
@@ -764,6 +808,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const queue: RunInput[] = [];
   const chat: ChatItem[] = [];
   let chatAt = 0;
+  /** Whether the quick sync is open, as the chat pane has read the events so far. */
+  let syncOpen = false;
   let acc = 0;
   let left = false;
   // Asked for here rather than where the Map is built, so the handlers' guard
@@ -792,6 +838,46 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const cleanLines: { seconds: number; chars: number }[] = [];
   let lineStart = state.clock;
   let lineTarget = state.target;
+
+  // ——— less movement, when the system asks for it ——————————————————————————
+  //
+  // The stylesheet's `prefers-reduced-motion` block reaches the caret and the
+  // shimmer, and the milestone card's fade reads the query itself — but the
+  // three strongest movements this cabinet owns are an inline transform (the
+  // editor's shake) and two canvas draws (the ship's white flash, the
+  // confetti), which no stylesheet can reach. A player who has asked the
+  // system for less movement now gets none of the three, and the query is
+  // watched for a change mid-run the way Ghost watches it.
+  const motionMq =
+    typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  let calm = motionMq?.matches === true;
+  const onMotion = (e: MediaQueryListEvent) => {
+    calm = e.matches;
+    if (!calm) return;
+    // Whatever was already moving stops on the spot.
+    shake = 0;
+    flash = 0;
+    flashLeft = 0;
+    specks = [];
+    editorPane.style.transform = '';
+  };
+  if (motionMq && typeof motionMq.addEventListener === 'function') {
+    motionMq.addEventListener('change', onMotion);
+  }
+
+  /**
+   * The chat's header and the preview's label both name the product, and the
+   * product belongs to the level. In endless the level changes under the run,
+   * so both follow the plan rather than being set once at mount.
+   */
+  let shownPlan = planOf(state);
+  const followPlan = () => {
+    const plan = planOf(state);
+    if (plan === shownPlan) return;
+    shownPlan = plan;
+    chatWho.textContent = plan.product;
+    canvas.setAttribute('aria-label', previewLabel(plan.product));
+  };
 
   const ensureAudio = () => {
     if (audio || typeof AudioContext === 'undefined') return;
@@ -999,19 +1085,69 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   // ——— the panes, drawn ————————————————————————————————————————————————————
 
+  /**
+   * Which of the lines this step added were said inside the quick sync, and
+   * where the meeting opened and closed.
+   *
+   * A sync line is the player's half of a call, echoed into the chat by the
+   * sim through the same `say` every ordinary reply takes — so without a mark
+   * the meeting read as the agent asking its user questions it never asks
+   * ("can we test audio?", "is everyone here"), with no room and no start.
+   * The sim already says so in its events: a `sync` event opens or closes the
+   * meeting and a `message` event is one chat line, both in the order they
+   * happened. The beat word alone cannot do this — the last line of a meeting
+   * is said and the meeting closed inside one step, so by the time the chat
+   * is painted the beat has already moved on.
+   */
+  const syncMarks = (): { inSync: boolean[]; opened: number[]; closed: number[] } => {
+    const inSync: boolean[] = [];
+    const opened: number[] = [];
+    const closed: number[] = [];
+    for (const event of state.events) {
+      if (event.kind === 'sync') {
+        if (event.on === syncOpen) continue;
+        syncOpen = event.on;
+        (event.on ? opened : closed).push(inSync.length);
+      } else if (event.kind === 'message') {
+        inSync.push(syncOpen);
+      }
+    }
+    return { inSync, opened, closed };
+  };
+
+  /** A quiet row in the chat saying the meeting started or ended. */
+  const syncRow = (text: string): HTMLElement => {
+    const row = el('li', 'vibe-mark', text);
+    chatList.append(row);
+    return row;
+  };
+
   const pushChat = () => {
+    const { inSync, opened, closed } = syncMarks();
+    const first = chatAt;
     for (let i = chatAt; i < state.chat.length; i++) {
       const line = state.chat[i]!;
+      const at = i - first;
+      if (opened.includes(at)) syncRow(meetingStarts(words.beats.sync));
+      if (closed.includes(at)) syncRow(meetingEnds(words.beats.sync));
+      const meeting = inSync[at] === true;
       const cls =
         line.who === 'user'
           ? line.nag === true
             ? 'vibe-user vibe-nag'
             : 'vibe-user'
-          : 'vibe-agent';
+          : meeting
+            ? 'vibe-agent vibe-sync'
+            : 'vibe-agent';
       const node = el('li', cls, '');
       chatList.append(node);
       chat.push({ el: node, full: line.line, shown: 0 });
     }
+    // A meeting that opened or closed after the last line of the step still
+    // gets its row, in the order it happened.
+    const after = state.chat.length - first;
+    if (opened.includes(after)) syncRow(meetingStarts(words.beats.sync));
+    if (closed.includes(after)) syncRow(meetingEnds(words.beats.sync));
     chatAt = state.chat.length;
   };
 
@@ -1232,10 +1368,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       const h = CARD_W / CARD_ASPECT;
       const x = (PREVIEW_W - CARD_W) / 2;
       const y = (PREVIEW_H - h) / 2;
-      const calm =
-        typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
       // A short fade either end, and a hard show and hide when the player
-      // asked for less movement. The picture itself is still either way.
+      // asked for less movement (the same `calm` the shake, the flash and the
+      // confetti take; it was read per frame here and nowhere else).
+      // The picture itself is still either way.
       const fade = calm
         ? 1
         : Math.max(0, Math.min(1, (TOAST_MS - toastLeft) / CARD_FADE_MS, toastLeft / CARD_FADE_MS));
@@ -1310,13 +1446,17 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   // ——— the cues ————————————————————————————————————————————————————————————
 
   const feel = (cue: Cue) => {
-    if (cue.shake > 0) shake = Math.max(shake, shakeFor(cue.shake, state.target.length));
-    if (cue.flash > 0) {
+    // The three movements a stylesheet cannot reach. Asked for less movement,
+    // the player still gets the whole game: the ship still lands the deploy
+    // band and the word, the bad line still sounds and still resets — only the
+    // pane's jolt, the full-field white and the burst are gone.
+    if (cue.shake > 0 && !calm) shake = Math.max(shake, shakeFor(cue.shake, state.target.length));
+    if (cue.flash > 0 && !calm) {
       flash = cue.flash;
       flashLeft = FLASH_MS;
     }
     if (cue.confetti > 0) {
-      throwConfetti(cue.confetti);
+      if (!calm) throwConfetti(cue.confetti);
       shipped = true;
     }
     if (cue.toast !== '') {
@@ -1332,6 +1472,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   };
 
   const drainEvents = () => {
+    // The level may have changed under this step; the header and the label
+    // follow the plan before anything else reads it.
+    followPlan();
     const cues = cuesFor(state.events);
     // The user's lines of this step, in order. The `message` event carries
     // who said it and whether it was a check-in but not the words, and the
@@ -1698,9 +1841,24 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (left) return;
-    if (e.target instanceof Element && e.target.closest('input, select, textarea')) return;
+    // The field is not the whole page. A key pressed on a control belongs to
+    // that control: Enter and Space are how a button is pressed from the
+    // keyboard, and swallowing them left 'Sound on' and 'Back to the
+    // cabinets' — and the standup's own buttons — dead to anyone not using a
+    // mouse. Ghost's filter is this one; the typing cabinet's was missing
+    // `button` and `label`.
+    if (chromeTarget(e.target)) return;
+    // The run is over: the standup is a page of buttons and nothing here is
+    // typing any more, so no key is taken and none is canceled.
+    if (over) return;
     const read = readKey(e);
-    if (read.prevent) e.preventDefault();
+    // Tab is the browser's own key for moving focus. It is only taken when
+    // there is a completion on screen to take; with none, Tab moves focus as
+    // it does everywhere else (it used to be swallowed unconditionally, which
+    // is a keyboard trap: focus could not leave the field at all).
+    const prevent =
+      read.kind === 'input' && read.input.tab === true ? state.copilot !== null : read.prevent;
+    if (prevent) e.preventDefault();
     if (read.kind === 'leave') {
       if (escSince === 0) {
         escSince = typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -1709,7 +1867,6 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     }
     if (read.kind === 'ignore') return;
     ensureAudio();
-    if (over) return;
     queue.push(read.input);
   };
   const onKeyUp = (e: KeyboardEvent) => {
@@ -1718,6 +1875,11 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   };
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
+  /** The field's keys, taken down. The standup drops them; so does leaving. */
+  const dropKeys = () => {
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+  };
 
   mute.addEventListener('click', () => {
     muted = !muted;
@@ -1804,6 +1966,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   function standup() {
     over = true;
+    // The field is gone, so its keys go with it: the standup is a page of
+    // buttons and the window listener has no business canceling Enter,
+    // Space or Tab on them. A hold in progress is let go with them, since
+    // the key that would have ended it is no longer being listened for.
+    dropKeys();
+    escSince = 0;
     const plan = planOf(state);
     const runs = (prefs.runs ?? 0) + 1;
     writeVibePrefs({ runs, last: opts.seed });
@@ -1893,8 +2061,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     if (voiceProbe) window.clearTimeout(voiceProbe);
     stopTake();
     if (raf) cancelAnimationFrame(raf);
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('keyup', onKeyUp);
+    dropKeys();
+    if (motionMq && typeof motionMq.removeEventListener === 'function') {
+      motionMq.removeEventListener('change', onMotion);
+    }
     audio?.end();
     audio?.close();
     audio = null;
@@ -1922,6 +2092,11 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       // Which recorded bed has the level, or null: no engine yet, a mode that
       // plays the procedural bed, or a stack whose file never arrived.
       track: audio ? audio.track() : null,
+      // The level in hand and its product. In endless both move under the
+      // run, and the header and the preview's label follow them.
+      level: state.levelIndex,
+      product: planOf(state).product,
+      motion: { calm, shake, flash, specks: specks.length },
     }),
   };
 }

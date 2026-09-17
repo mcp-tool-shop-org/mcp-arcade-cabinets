@@ -16,6 +16,19 @@ export const FORBIDDEN_KEYS = [
   'utility',
 ] as const;
 
+/**
+ * Header fields a cabinet is allowed to paint on its field (the tape, the
+ * server, the policy — G10). They are free text from the instrument, so the
+ * loader pins what they may say: no control characters, no newlines, a
+ * bounded length, and none of the verdict vocabulary a tape must not carry.
+ * Digits are NOT rejected here — a server may legitimately have one in its
+ * name, and the cabinet's own screen strip drops them before painting.
+ */
+export const HEADER_MAX_CHARS = 120;
+
+export const HEADER_FORBIDDEN_WORDS =
+  /\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|no_call|ghost_answered|ghost_refused|ghost_skipped|menu_changed|menu_stable|menu_unknown)\b/i;
+
 export type Fact =
   | 'followed'
   | 'held'

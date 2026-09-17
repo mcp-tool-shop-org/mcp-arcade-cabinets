@@ -15,8 +15,10 @@
 // a fact. A development tool: nothing here is a test, nothing is on screen.
 import path from 'node:path';
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
+
+import { isMain, runMain } from './lib/cli.mjs';
 
 const USAGE = `usage: pnpm sit [--model a:cloud,b:cloud] [--fixture name] [--tier 0|1|2|3] [--bot idle|sweeper|reader]
           [--seat mcp|prompt] [--constrain on|off] [--say on|off] [--voice auto|on|off]
@@ -110,18 +112,6 @@ export function resolveTapeFile(name, overlay) {
   const baked = path.resolve('fixtures/tapes', `${name}.tape.json`);
   if (existsSync(baked)) return baked;
   return null;
-}
-
-function isMain() {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  const self = fileURLToPath(import.meta.url);
-  try {
-    if (path.resolve(entry).toLowerCase() === self.toLowerCase()) return true;
-  } catch {
-    /* ignore */
-  }
-  return path.basename(entry).toLowerCase() === path.basename(self).toLowerCase();
 }
 
 /** Scene win (`ended` null) prints `clear`, never the string `null`. */
@@ -691,6 +681,6 @@ async function main() {
   }
 }
 
-if (isMain()) {
-  await main();
+if (isMain(import.meta.url)) {
+  await runMain(main);
 }

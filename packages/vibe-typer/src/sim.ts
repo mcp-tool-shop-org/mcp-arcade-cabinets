@@ -23,7 +23,16 @@ import { DEFAULT_PATTERNS, tierContext, type Patterns } from './patterns';
 import { planLevel } from './level';
 import { copilotReady, hypeFor, milestoneCrossed, pay, pitchFor } from './score';
 import { mixSeed, seededRandom } from './seed';
-import type { Event, LevelPlan, RunInput, RunState, Snippet, Stack, Tier } from './types';
+import type {
+  Event,
+  FedSnippet,
+  LevelPlan,
+  RunInput,
+  RunState,
+  Snippet,
+  Stack,
+  Tier,
+} from './types';
 
 export interface CreateRunOpts {
   levers?: Patterns;
@@ -72,7 +81,7 @@ interface RunContext {
    * splices off what it needs; an empty buffer is a run with no seat, and
    * that run is byte for byte the run this cabinet has always played.
    */
-  supplied: Snippet[];
+  supplied: FedSnippet[];
   /** The product the seat named for the level its buffer is filling, or null. */
   suppliedProduct: string | null;
   /**
@@ -85,6 +94,16 @@ interface RunContext {
    * exactly as it always did.
    */
   reaction: string | null;
+  /**
+   * The request the seated line was written about. A client reads the view,
+   * writes a reaction to the request in hand and sends it; if that request
+   * has already shipped by the time the call lands, the line would be said
+   * over the next request's piece — and on the last request it would stand
+   * in as the verdict on the whole product. The tag is checked at the ship
+   * and a line that has missed its request is dropped, the way a second
+   * line before the ship is dropped.
+   */
+  reactionFor: string | null;
 }
 
 /** Lines in a quick sync. Three is a meeting; more is a level. */
@@ -139,10 +158,32 @@ export function corpusOf(state: RunState): Corpus {
 export function feedRequests(state: RunState, items: readonly Snippet[], product?: string): void {
   const ctx = runs.get(state);
   if (!ctx || items.length === 0) return;
-  ctx.supplied.push(...items);
+  // The level these were written for: a client peeks the next level and
+  // writes against its stack, its band and its product, so that is the
+  // level they are tagged with. The planner drops a request whose tag does
+  // not match the level it is planning.
+  const levelIndex = state.levelIndex + 1;
+  const cap = bufferCap(ctx);
+  for (const snippet of items) {
+    // The planner takes at most one level's worth and the buffer is the
+    // only thing holding the rest, so an unbounded push is a buffer a
+    // long-lived container session can grow without end. Past the cap the
+    // request is dropped, the way a second reaction before a ship is.
+    if (ctx.supplied.length >= cap) break;
+    ctx.supplied.push({ snippet, levelIndex, stack: snippet.stack });
+  }
   if (product !== undefined && product !== '' && ctx.suppliedProduct === null) {
     ctx.suppliedProduct = product;
   }
+}
+
+/**
+ * How many gated requests the buffer holds: one endless level's worth plus
+ * the same again as lookahead, which is what the shell's prefetch needs to
+ * keep the next level full while the current one is typed (G13).
+ */
+function bufferCap(ctx: RunContext): number {
+  return ctx.set.levels.endless.requests * 2;
 }
 
 /**
@@ -169,13 +210,25 @@ export function feedProduct(state: RunState, product: string): 'set' | 'already 
  * the level's deploy. One slot: a second line before the ship is dropped,
  * exactly as a second sound is dropped in the shooter next door.
  */
-export function feedReaction(state: RunState, line: string): 'waiting' | 'dropped' {
+export function feedReaction(
+  state: RunState,
+  line: string,
+  requestId?: string,
+): 'waiting' | 'dropped' {
   const ctx = runs.get(state);
   if (!ctx) return 'dropped';
   if (ctx.reaction !== null) return 'dropped';
   const text = line.trim();
   if (text === '') return 'dropped';
+  const inHand = state.plan.requests[state.requestIndex]?.id ?? null;
+  // Which request the line is about. A client that read the view knows, and
+  // says so; the id it read is the honest tag, because the request in hand
+  // may already have moved on by the time the call lands. A caller that says
+  // nothing gets the request in hand, which at least catches a line that
+  // arrives on the ship beat, after that request's ship has already gone.
+  const about = requestId !== undefined && requestId !== '' ? requestId : inHand;
   ctx.reaction = text;
+  ctx.reactionFor = about;
   return 'waiting';
 }
 
@@ -207,7 +260,7 @@ export function suppliedCount(state: RunState): number {
 export function suppliedAsks(state: RunState): string[] {
   const ctx = runs.get(state);
   if (!ctx) return [];
-  return ctx.supplied.map((s) => s.ask ?? '').filter((ask) => ask !== '');
+  return ctx.supplied.map((fed) => fed.snippet.ask ?? '').filter((ask) => ask !== '');
 }
 
 function push(state: RunState, event: Event): void {
@@ -320,6 +373,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     supplied: [],
     suppliedProduct: null,
     reaction: null,
+    reactionFor: null,
   };
   runs.set(state, ctx);
   startNagClock(state, ctx);
@@ -415,8 +469,12 @@ function ship(state: RunState): void {
   // keeps its place in the bag for the next one. With no seat the call below
   // is the call it has always been, on the draw it has always been (a test
   // asserts a never-fed run stringifies identically).
-  const seated = ctx.reaction;
+  // ...and only over the request it was written about. A line that missed
+  // its request is dropped rather than said over the next piece, or — on the
+  // last request — in place of the verdict on the whole product.
+  const seated = ctx.reactionFor === request.id ? ctx.reaction : null;
   ctx.reaction = null;
+  ctx.reactionFor = null;
   say(
     state,
     'user',
@@ -593,14 +651,22 @@ function sendLine(state: RunState): void {
   ship(state);
 }
 
-/** Copilot takes the rest of the line; the request pays less for it. */
+/**
+ * Copilot takes the rest of the line; the request pays less for it.
+ *
+ * Only on a code line. The discount is charged against the request's own
+ * lines, so on the reply line and on a sync's three lines there was nothing
+ * to charge it to and the completion came free: Tab on the agent's reply
+ * filled the warm-up of every request at no price and the Enter after it
+ * took the clean-line branch and grew the streak. A free line is not a
+ * discount, so the offer is simply not open off the code beat.
+ */
 function takeCopilot(state: RunState): void {
   const ctx = runs.get(state)!;
   if (!state.copilot || state.copilot.used) return;
-  if (state.beat === 'code') {
-    const total = ctx.lines.reduce((n, line) => n + line.length, 0);
-    if (total > 0) state.discountShare += state.target.length / total;
-  }
+  if (state.beat !== 'code') return;
+  const total = ctx.lines.reduce((n, line) => n + line.length, 0);
+  if (total > 0) state.discountShare += state.target.length / total;
   state.typed = state.target;
   state.errors = [];
   state.copilot = null;

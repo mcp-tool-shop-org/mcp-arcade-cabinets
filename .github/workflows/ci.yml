@@ -1,3 +1,12 @@
+# Measured, not estimated (F-13e1f059): a completed real run of this workflow
+# (run 35153016331, push to main, 2026-09-16) billed 2 ubuntu-latest minutes
+# for Verify (21:33:14-21:34:45, 91s -> 2 min) and 2 ubuntu-latest minutes for
+# Catalog (21:33:14-21:34:46, 92s -> 2 min; its "Build Catalog image" step,
+# a cacheonly linux/amd64+arm64 buildx build plus a loaded amd64 build and a
+# --network=none stdio smoke run, was the bulk of that job at 66s) -- 4
+# ubuntu-latest minutes per push in that run. Re-measure with
+# `gh api repos/mcp-tool-shop-org/mcp-arcade-cabinets/actions/runs/<id>/jobs`
+# rather than trusting this comment to stay current.
 name: CI
 
 on:
@@ -24,7 +33,26 @@ on:
       - 'voice/**'
       - '.github/workflows/**'
   pull_request:
-    branches: [main]
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'packages/**'
+      - 'apps/**'
+      - 'fixtures/**'
+      - 'scripts/**'
+      - 'eslint.config.js'
+      - '.prettierrc'
+      - '.prettierignore'
+      - 'tsconfig.base.json'
+      - 'vitest.config.ts'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'catalog/**'
+      - 'voice/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 concurrency:

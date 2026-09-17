@@ -81,11 +81,11 @@ describe('the levers load', () => {
     }
     expect(DEFAULT_PATTERNS.agent.replies.length).toBeGreaterThanOrEqual(16);
     expect(DEFAULT_PATTERNS.agent.hmm.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.agent.compactions.length).toBeGreaterThanOrEqual(24);
+    expect(DEFAULT_PATTERNS.agent.compactions.length).toBeGreaterThanOrEqual(20);
     expect(DEFAULT_PATTERNS.agent.ships.length).toBeGreaterThanOrEqual(8);
     expect(DEFAULT_PATTERNS.user.creeps.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(12);
-    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(36);
+    expect(DEFAULT_PATTERNS.user.reviews.length).toBeGreaterThanOrEqual(10);
+    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(32);
     expect(DEFAULT_PATTERNS.user.nags.length).toBeGreaterThanOrEqual(16);
     expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
   });
@@ -219,6 +219,43 @@ describe('the gate halts', () => {
     const bare = loose();
     bare.user!.reviewsByProduct = { 'cat-website': [] };
     expect(() => loadPatterns(bare)).toThrow('patterns/user.json: reviewsByProduct.cat-website');
+  });
+
+  // Every other lever in the file halts on a bad key. A review keyed to a
+  // product no level carries never fires at all: the picker looks the plan's
+  // id up, misses, and plays the generic pool with no signal anywhere. A
+  // renamed level takes its reviews with it or the cabinet does not start.
+  it('halts on a review keyed to a level that does not exist', () => {
+    const stray = loose();
+    const byProduct = stray.user!.reviewsByProduct as Record<string, string[]>;
+    byProduct['a-level-nobody-wrote'] = ['it is everything i hoped for.'];
+    expect(() => loadPatterns(stray)).toThrow(
+      'patterns/user.json: reviewsByProduct.a-level-nobody-wrote',
+    );
+
+    const renamed = loose();
+    rowsOf(renamed)[0]!.id = 'cat-website-two';
+    expect(() => loadPatterns(renamed)).toThrow('patterns/user.json: reviewsByProduct.cat-website');
+  });
+
+  // The by-topic reactions are keyed to a code construct and not to the
+  // request, so the line they draw reads as a non sequitur against the ask.
+  // The lever ships off; the loader takes it either way and reads a missing
+  // key as off, so a lever file written before the switch still loads.
+  it('reads the by-topic lever, and defaults it off', () => {
+    expect(DEFAULT_PATTERNS.user.reactionsByTopicEnabled).toBe(false);
+
+    const absent = loose();
+    delete absent.user!.reactionsByTopicEnabled;
+    expect(loadPatterns(absent).user.reactionsByTopicEnabled).toBe(false);
+
+    const on = loose();
+    on.user!.reactionsByTopicEnabled = true;
+    expect(loadPatterns(on).user.reactionsByTopicEnabled).toBe(true);
+
+    const bad = loose();
+    bad.user!.reactionsByTopicEnabled = 'yes';
+    expect(() => loadPatterns(bad)).toThrow('patterns/user.json: reactionsByTopicEnabled');
   });
 
   it('halts on an integration level that pins snippets, or on a bad band', () => {

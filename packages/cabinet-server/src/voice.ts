@@ -80,6 +80,17 @@ async function readError(res: Response): Promise<string | undefined> {
   }
 }
 
+/**
+ * The only shape a playable take's url may have: the worker's own
+ * `/audio/<id>.wav`, whose id is the hex digest `line_id()` mints. Both
+ * voicers hand `receipt.url` on to a play hook that makes it a media url in
+ * a browser, so a hostile or misconfigured worker at VOICE_URL would
+ * otherwise control that string. The launcher's proxy allowlist blocks the
+ * practical exploit, but it lives in another package; this keeps the
+ * guarantee in the client both cabinets share.
+ */
+export const AUDIO_URL = /^\/audio\/[0-9a-f]{8,64}\.wav$/;
+
 /** Milliseconds a liveness probe may take before the worker counts as absent. */
 export const PROBE_MS = 200;
 
@@ -154,7 +165,13 @@ export async function speakLine(
     }
     if (!res.ok) return { receipt: null, status: 'no worker', ms };
     const r = (await res.json()) as VoiceReceipt;
-    return { receipt: r, status: r.ok ? 'voiced' : 'receipt failed', ms };
+    if (!r.ok) return { receipt: r, status: 'receipt failed', ms };
+    // A passed receipt whose url is not the worker's own take path is not a
+    // take: treat it as a failed receipt so nothing downstream plays it.
+    if (typeof r.url !== 'string' || !AUDIO_URL.test(r.url)) {
+      return { receipt: r, status: 'receipt failed', ms };
+    }
+    return { receipt: r, status: 'voiced', ms };
   } catch (err) {
     const ms = Date.now() - t0;
     const timedOut =

@@ -1,0 +1,266 @@
+{
+ "cabinet": "vibe",
+ "target_lufs": -13.59,
+ "median_lufs_today": -13.59,
+ "reachable_lufs": {
+  "bash": -11.14,
+  "csharp": -10.28,
+  "java": -12.29,
+  "javascript": -11.19,
+  "python": -11.01,
+  "sql": -12.23,
+  "integration": -12.29
+ },
+ "max_limiter_reduction_db": 6.0,
+ "ceiling_dbtp": -1.0,
+ "originals": {
+  "bash": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/bash.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.59,
+   "sample_peak_dbfs": -0.72,
+   "true_peak_dbtp": -0.72
+  },
+  "csharp": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/csharp.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.57,
+   "sample_peak_dbfs": -1.46,
+   "true_peak_dbtp": -1.46
+  },
+  "java": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/java.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.66,
+   "sample_peak_dbfs": -0.48,
+   "true_peak_dbtp": -0.48
+  },
+  "javascript": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/javascript.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.59,
+   "sample_peak_dbfs": -0.65,
+   "true_peak_dbtp": -0.65
+  },
+  "python": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/python.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.59,
+   "sample_peak_dbfs": -1.96,
+   "true_peak_dbtp": -1.96
+  },
+  "sql": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/sql.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.66,
+   "sample_peak_dbfs": -1.7,
+   "true_peak_dbtp": -1.7
+  },
+  "integration": {
+   "file": "docs/art/originals-vibe-beds-2min/originals/integration.mp3",
+   "seconds": 38.0,
+   "sample_rate": 48000,
+   "channels": 2,
+   "lufs": -13.62,
+   "sample_peak_dbfs": -0.35,
+   "true_peak_dbtp": -0.35
+  }
+ },
+ "beds": [
+  {
+   "key": "bash",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/bash.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.59,
+    "sample_peak_dbfs": -0.72,
+    "true_peak_dbtp": -0.72
+   },
+   "arranged_lufs": -13.44,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/bash.flac",
+    "seconds": 120.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.79,
+    "sample_peak_dbfs": -1.0,
+    "true_peak_dbtp": -1.0
+   },
+   "gain_db": -0.15,
+   "passes": 1,
+   "limiter_max_reduction_db": -0.77,
+   "loop_fade_ms": 30.0
+  },
+  {
+   "key": "csharp",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/csharp.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.57,
+    "sample_peak_dbfs": -1.46,
+    "true_peak_dbtp": -1.46
+   },
+   "arranged_lufs": -12.46,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/csharp.flac",
+    "seconds": 125.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.59,
+    "sample_peak_dbfs": -1.22,
+    "true_peak_dbtp": -1.22
+   },
+   "gain_db": -1.13,
+   "passes": 1,
+   "limiter_max_reduction_db": 0.0,
+   "loop_fade_ms": 30.0
+  },
+  {
+   "key": "java",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/java.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.66,
+    "sample_peak_dbfs": -0.48,
+    "true_peak_dbtp": -0.48
+   },
+   "arranged_lufs": -14.59,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/java.flac",
+    "seconds": 120.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.8,
+    "sample_peak_dbfs": -1.0,
+    "true_peak_dbtp": -1.0
+   },
+   "gain_db": 1.53,
+   "passes": 2,
+   "limiter_max_reduction_db": -2.44,
+   "loop_fade_ms": 30.0
+  },
+  {
+   "key": "javascript",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/javascript.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.59,
+    "sample_peak_dbfs": -0.65,
+    "true_peak_dbtp": -0.65
+   },
+   "arranged_lufs": -12.73,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/javascript.flac",
+    "seconds": 125.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.6,
+    "sample_peak_dbfs": -1.0,
+    "true_peak_dbtp": -1.0
+   },
+   "gain_db": -0.86,
+   "passes": 1,
+   "limiter_max_reduction_db": -0.06,
+   "loop_fade_ms": 30.0
+  },
+  {
+   "key": "python",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/python.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.59,
+    "sample_peak_dbfs": -1.96,
+    "true_peak_dbtp": -1.96
+   },
+   "arranged_lufs": -14.44,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/python.flac",
+    "seconds": 115.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.68,
+    "sample_peak_dbfs": -1.0,
+    "true_peak_dbtp": -1.0
+   },
+   "gain_db": 0.85,
+   "passes": 1,
+   "limiter_max_reduction_db": -1.76,
+   "loop_fade_ms": 30.0
+  },
+  {
+   "key": "sql",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/sql.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.66,
+    "sample_peak_dbfs": -1.7,
+    "true_peak_dbtp": -1.7
+   },
+   "arranged_lufs": -15.46,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/sql.flac",
+    "seconds": 120.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.76,
+    "sample_peak_dbfs": -1.0,
+    "true_peak_dbtp": -1.0
+   },
+   "gain_db": 2.31,
+   "passes": 2,
+   "limiter_max_reduction_db": -3.22,
+   "loop_fade_ms": 30.0
+  },
+  {
+   "key": "integration",
+   "before": {
+    "file": "docs/art/originals-vibe-beds-2min/originals/integration.mp3",
+    "seconds": 38.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.62,
+    "sample_peak_dbfs": -0.35,
+    "true_peak_dbtp": -0.35
+   },
+   "arranged_lufs": -15.33,
+   "after": {
+    "file": "docs/art/originals-vibe-beds-2min/mastered/integration.flac",
+    "seconds": 125.0,
+    "sample_rate": 48000,
+    "channels": 2,
+    "lufs": -13.79,
+    "sample_peak_dbfs": -1.0,
+    "true_peak_dbtp": -1.0
+   },
+   "gain_db": 2.26,
+   "passes": 2,
+   "limiter_max_reduction_db": -3.17,
+   "loop_fade_ms": 30.0
+  }
+ ],
+ "refused": []
+}

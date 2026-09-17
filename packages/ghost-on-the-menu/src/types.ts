@@ -39,6 +39,40 @@ export function kindOfAtom(atom: string): WaveKind {
   return 'inspect';
 }
 
+/**
+ * The needles no on-field text may carry: a digit, a metric name, or a word
+ * that reads as a verdict (G10 — the screen names the tape, the server and
+ * the policy, and nothing more). This is the same set play.ts measures the
+ * canvas with; it lives here so the sim, the renderer and the shift card all
+ * strip against one list instead of three partial ones.
+ */
+export const SCREEN_FORBIDDEN =
+  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/gi;
+
+/**
+ * The screen set plus VOICE_FORBIDDEN's \bghost\b, for text the cabinet
+ * itself authors (captions, boss lines, the end line). Tape header text is
+ * stripped with SCREEN_FORBIDDEN instead: a server genuinely named
+ * `ghost-on-the-menu` must still print, and play.ts's canvas guard has
+ * always permitted that word.
+ */
+export const CAPTION_FORBIDDEN =
+  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable|ghost)\b/gi;
+
+/**
+ * Strip the needles, collapse the whitespace they leave, and fall back when
+ * nothing survives. A caller that gets '' back must drop the line rather
+ * than paint a bare label.
+ */
+export function sanitizeCaption(
+  raw: string,
+  fallback = '',
+  needles: RegExp = CAPTION_FORBIDDEN,
+): string {
+  const clean = (s: string) => s.replace(needles, ' ').replace(/\s+/g, ' ').trim();
+  return clean(raw) || clean(fallback);
+}
+
 export const VISIBLE_MIN = 40;
 export const VISIBLE_MAX = 80;
 /** Legacy advisory length. Prepass duration comes from waves.json, not this. */

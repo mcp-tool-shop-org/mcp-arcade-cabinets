@@ -26,10 +26,16 @@ describe('brier', () => {
     expect(brier(0.5, false)).toBeCloseTo(0.25, 12);
   });
 
-  it('rejects a confidence outside [0.5, 1]', () => {
+  // TapeError, not a plain Error: play.ts branches on `err instanceof
+  // TapeError` to choose between a named reason and the generic 'bad tape',
+  // and a confidence-range violation used to be mislabelled there.
+  it('rejects a confidence outside [0.5, 1] with a TapeError', () => {
     expect(() => brier(0.49, true)).toThrow(/\[0\.5, 1\]/);
     expect(() => brier(1.01, false)).toThrow(/\[0\.5, 1\]/);
     expect(() => brier(Number.NaN, true)).toThrow(/\[0\.5, 1\]/);
+    for (const p of [0.49, 1.01, Number.NaN]) {
+      expect(() => brier(p, true)).toThrow(TapeError);
+    }
   });
 
   it('does not accept NRP or integrity', () => {
@@ -58,6 +64,11 @@ describe('reliability', () => {
     expect(bins[1]!.n).toBe(2);
     expect(bins[1]!.predicted).toBe(1);
     expect(bins[1]!.observed).toBe(1);
+  });
+
+  it('rejects a confidence outside [0.5, 1] with a TapeError', () => {
+    expect(() => reliability([[{ p: 0.2, outcome: true }]])).toThrow(TapeError);
+    expect(() => reliability([[{ p: 1.5, outcome: false }]])).toThrow(/\[0\.5, 1\]/);
   });
 });
 

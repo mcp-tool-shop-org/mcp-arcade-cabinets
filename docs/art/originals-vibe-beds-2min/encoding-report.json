@@ -1,0 +1,93 @@
+{
+ "cabinet": "vibe",
+ "measured_on": "bash",
+ "measured_seconds": 120.0,
+ "set_seconds": 850.0,
+ "set_count": 7,
+ "shipped_today_bytes": 4263168,
+ "trials": [
+  {
+   "label": "mp3_128k",
+   "format": "MP3",
+   "subtype": "MPEG_LAYER_III",
+   "asked_kbps": 128,
+   "compression_level": 0.6187,
+   "measured_kbps": 128.1,
+   "bytes": 1920768,
+   "kb": 1875.8,
+   "projected_set_bytes": 13605440,
+   "projected_set_mb": 13.61,
+   "file": "docs/art/originals-vibe-beds-2min/encodings/bash.mp3_128k.mp3"
+  },
+  {
+   "label": "mp3_96k",
+   "format": "MP3",
+   "subtype": "MPEG_LAYER_III",
+   "asked_kbps": 96,
+   "compression_level": 0.7734,
+   "measured_kbps": 96.0,
+   "bytes": 1440576,
+   "kb": 1406.8,
+   "projected_set_bytes": 10204080,
+   "projected_set_mb": 10.2,
+   "file": "docs/art/originals-vibe-beds-2min/encodings/bash.mp3_96k.mp3"
+  },
+  {
+   "label": "opus_96k",
+   "format": "OGG",
+   "subtype": "OPUS",
+   "asked_kbps": 96,
+   "compression_level": 0.8343,
+   "measured_kbps": 96.0,
+   "bytes": 1439968,
+   "kb": 1406.2,
+   "projected_set_bytes": 10199773,
+   "projected_set_mb": 10.2,
+   "file": "docs/art/originals-vibe-beds-2min/encodings/bash.opus_96k.opus"
+  }
+ ],
+ "installed": {
+  "format": "MP3 128k constant",
+  "compression_level": 0.6187,
+  "beds": [
+   {
+    "key": "bash",
+    "bytes": 1920768,
+    "seconds": 120.0
+   },
+   {
+    "key": "csharp",
+    "bytes": 2001024,
+    "seconds": 125.0
+   },
+   {
+    "key": "java",
+    "bytes": 1920768,
+    "seconds": 120.0
+   },
+   {
+    "key": "javascript",
+    "bytes": 2001024,
+    "seconds": 125.0
+   },
+   {
+    "key": "python",
+    "bytes": 1840896,
+    "seconds": 115.0
+   },
+   {
+    "key": "sql",
+    "bytes": 1920768,
+    "seconds": 120.0
+   },
+   {
+    "key": "integration",
+    "bytes": 2001024,
+    "seconds": 125.0
+   }
+  ],
+  "total_bytes": 13606272,
+  "total_mb": 13.61,
+  "delta_bytes": 9343104
+ }
+}

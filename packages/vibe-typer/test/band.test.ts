@@ -164,7 +164,7 @@ describe('endless', () => {
 // the way the shell's prefetch feeds them. Feeding may never shorten a run
 // or cost the player anything: `drive` throws the moment a valuation falls.
 describe('endless with a seat', () => {
-  it('lasts at least as long as the same run with no seat, and never pays less', () => {
+  it('feeds the run, lasts at least as long as no seat, and never pays less', () => {
     for (const seed of SEEDS) {
       const plain = drive({ bot: 'perfect', seed, tier: 0, endless: true });
       const seated = drive({
@@ -175,6 +175,13 @@ describe('endless with a seat', () => {
         supply: seatFiller(seed, 0, 4),
       });
       const where = `seed ${seed}`;
+      // First, that the seat fed anything at all. `seatFeed` gates every
+      // snippet it offers and returns only what the gate accepted; an empty
+      // return feeds nothing, and then the seated run IS the plain run and
+      // all four bars below compare a run against itself and hold. The sit
+      // runner counts the same thing: ids the gate stamped `seat-`.
+      const fed = seated.state.used.filter((id) => id.startsWith('seat-')).length;
+      expect(fed, `${where}: nothing was fed`).toBeGreaterThan(0);
       expect(seated.ended, where).toBe('context');
       expect(seated.levels, where).toBeGreaterThanOrEqual(plain.levels);
       expect(seated.pieces, where).toBeGreaterThanOrEqual(plain.pieces);

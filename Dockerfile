@@ -15,6 +15,11 @@
 # (read-only) and set CABINET_TAPES_USER=/tapes-user; listTapes merges it
 # beside the baked twenty. Do not overlay /app/tapes.
 #
+# The overlay is the shooter's menu and Ghost's alone. The typing cabinet has
+# no menu to merge into — its tapes only season the wires stack — so with
+# CABINET=vibe the variable is not read, and the server says so once on
+# stderr rather than leaving an operator to wonder about the mount.
+#
 # Multi-arch: docker buildx build --platform linux/amd64,linux/arm64 .
 # No GPU stage. FROM is the node:22-alpine index digest (amd64+arm64), not :latest.
 

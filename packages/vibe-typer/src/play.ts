@@ -20,6 +20,11 @@ export const SCREEN_FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
 
 export const DT = 1 / 60;
+
+/** A file name or an error message on stderr, with anything that is not printable ASCII replaced. */
+function plain(text: string): string {
+  return text.replace(/[^ -~]/g, '?');
+}
 /** Forty minutes of simulated play. Past this the run is called an overrun. */
 const MAX_TICKS = 60 * 60 * 40;
 const WRONG_KEYS = 'abcdefghijklmnopqrstuvwxyz';
@@ -126,7 +131,15 @@ export function integrationFrom(dir: string): Snippet[] {
       const tape = loadTape(JSON.parse(readFileSync(path.join(dir, name), 'utf8')));
       seeds.push(seedFromTape(tape));
     } catch (err) {
-      if (!(err instanceof TapeError)) continue;
+      // A tape this cabinet cannot read is skipped and named; anything else
+      // — a JSON syntax error, an unreadable file — is a broken fixture and
+      // halts. The guard here used to `continue` on one branch and fall off
+      // the end of the block on the other, which are the same thing, so
+      // every error looked exactly like a directory with no tapes in it.
+      // The integration stack seasons the trigram model, so a tape dropped
+      // in silence moves every snippet's value.
+      if (!(err instanceof TapeError)) throw err;
+      process.stderr.write(`skipping tape ${plain(name)}: ${plain(err.message)}\n`);
     }
   }
   return integrationSnippets(seeds);

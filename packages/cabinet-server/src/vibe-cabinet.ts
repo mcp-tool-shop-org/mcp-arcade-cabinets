@@ -197,7 +197,18 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
     const code = argOf(args, 'code');
     const title = argOf(args, 'title');
     const notesRaw = argOf(args, 'notes');
-    if (typeof askText !== 'string' || typeof code !== 'string' || typeof title !== 'string') {
+    // All four fields, because the contract marks all four required. A
+    // non-string `notes` used to fall through `splitNotes` to an empty list
+    // and queue as though the caller had sent none, while the refusal for
+    // its three siblings already named it. The stdio transport's zod shape
+    // covers an MCP client; the gap was the in-process caller `tooLong` was
+    // written for.
+    if (
+      typeof askText !== 'string' ||
+      typeof code !== 'string' ||
+      typeof title !== 'string' ||
+      typeof notesRaw !== 'string'
+    ) {
       log.push({ name: 'ask', ok: false });
       return text('ask wants the words, the code, a title and the notes', true);
     }

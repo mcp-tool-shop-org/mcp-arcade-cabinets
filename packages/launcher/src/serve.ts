@@ -31,6 +31,17 @@ import { resolveUnder, typeFor } from './files';
 export const HOST = '127.0.0.1';
 
 const SAY_MAX_BYTES = 32 * 1024;
+/**
+ * The cap on a proxied POST body, which is a different question than the one
+ * `SAY_MAX_BYTES` answers. The say and endless routes hand a fact-blind view
+ * to a seat and 32 KiB is generous for that. `/ollama/api/chat` carries the
+ * page's whole conversation, which grows with the run: capping it at the say
+ * seat's size means a long enough session starts collecting 413s from a
+ * number that was never chosen for it, and the shell answers a failed call by
+ * falling back to the scripted seat — so the player would watch the daemon
+ * quietly stop being used with nothing said anywhere.
+ */
+const PROXY_MAX_BYTES = 1024 * 1024;
 const SAY_MIN_INTERVAL_MS = 400;
 const SAY_TIMEOUT_MS = 12_000;
 const SAY_MAX_RECENT = 16;
@@ -178,12 +189,22 @@ function sendJson(res: ServerResponse, code: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
-function readBody(req: IncomingMessage, cap: number): Promise<Buffer | null> {
+/**
+ * How reading a request body ended. Three outcomes, not two: the body
+ * arrived, the cap was passed, or the request went away under us. They used
+ * to share a `null` and every caller turned that `null` into 413 `too large`,
+ * so a connection reset mid-upload was reported to the page as a size refusal
+ * and sent anyone debugging it at the wrong constant.
+ */
+export type BodyRead = { ok: Buffer } | { tooLarge: true } | { broken: true };
+
+/** Read a request body, or say which way it did not arrive. */
+export function readBody(req: IncomingMessage, cap: number): Promise<BodyRead> {
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
     let size = 0;
     let done = false;
-    const finish = (value: Buffer | null) => {
+    const finish = (value: BodyRead) => {
       if (done) return;
       done = true;
       resolve(value);
@@ -192,15 +213,15 @@ function readBody(req: IncomingMessage, cap: number): Promise<Buffer | null> {
       if (done) return;
       size += chunk.length;
       if (size > cap) {
-        finish(null);
+        finish({ tooLarge: true });
         req.destroy();
         return;
       }
       chunks.push(chunk);
     });
-    req.on('end', () => finish(Buffer.concat(chunks)));
-    req.on('error', () => finish(null));
-    req.on('aborted', () => finish(null));
+    req.on('end', () => finish({ ok: Buffer.concat(chunks) }));
+    req.on('error', () => finish({ broken: true }));
+    req.on('aborted', () => finish({ broken: true }));
   });
 }
 
@@ -256,10 +277,28 @@ async function proxy(
   if (jsonType(req.headers['content-type'])) headers['content-type'] = 'application/json';
   if (token) headers.authorization = `Bearer ${token}`;
   const method = req.method ?? 'GET';
-  const body = method === 'POST' ? await readBody(req, SAY_MAX_BYTES) : null;
-  if (method === 'POST' && body === null) {
-    sendJson(res, 413, { error: 'too large' });
-    return;
+  let body: Buffer | null = null;
+  if (method === 'POST') {
+    // Answered off the declared length where there is one, the way the say
+    // and endless routes do: the cap is reachable in the middle of a body,
+    // and a refusal that arrives after the socket has been torn down reads
+    // to the page as a dropped connection rather than as a size.
+    const declared = Number(req.headers['content-length'] ?? NaN);
+    if (Number.isFinite(declared) && declared > PROXY_MAX_BYTES) {
+      sendJson(res, 413, { error: 'too large' });
+      req.resume();
+      return;
+    }
+    const read = await readBody(req, PROXY_MAX_BYTES);
+    if ('tooLarge' in read) {
+      sendJson(res, 413, { error: 'too large' });
+      return;
+    }
+    // The request went away before it finished. There is nobody left to
+    // answer, so nothing is answered — and in particular not 413, which
+    // would name a cap that was never reached.
+    if ('broken' in read) return;
+    body = read.ok;
   }
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), PROXY_TIMEOUT_MS);
@@ -283,7 +322,16 @@ async function proxy(
         res.end();
         resolve();
       });
-      res.on('close', () => resolve());
+      res.on('close', () => {
+        // The browser hung up. Nothing will read the rest of this, so stop
+        // pulling it: without the abort the socket to the daemon (or the
+        // voice worker) stays open streaming a completion into nowhere until
+        // PROXY_TIMEOUT_MS, and a player who reloads during a long generate
+        // leaves one of those behind every time.
+        ctl.abort();
+        stream.destroy();
+        resolve();
+      });
       stream.on('end', () => resolve());
       stream.pipe(res);
     });
@@ -333,14 +381,17 @@ function sayRoute(opts: ServeOpts) {
     lastAt = now;
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const raw = await readBody(req, SAY_MAX_BYTES);
-      if (raw === null) {
+      const read = await readBody(req, SAY_MAX_BYTES);
+      if ('tooLarge' in read) {
         sendJson(res, 413, { error: 'too large' });
         return;
       }
+      // The request went away mid-upload; nobody is left to be told, and
+      // 413 would name a cap that was never reached.
+      if ('broken' in read) return;
       let parsed: unknown;
       try {
-        parsed = JSON.parse(raw.toString('utf8') || '{}');
+        parsed = JSON.parse(read.ok.toString('utf8') || '{}');
       } catch {
         sendJson(res, 400, { error: 'no answer' });
         return;
@@ -424,14 +475,17 @@ function endlessRoute(opts: ServeOpts) {
     lastAt = now;
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const raw = await readBody(req, SAY_MAX_BYTES);
-      if (raw === null) {
+      const read = await readBody(req, SAY_MAX_BYTES);
+      if ('tooLarge' in read) {
         sendJson(res, 413, { error: 'too large' });
         return;
       }
+      // The request went away mid-upload; nobody is left to be told, and
+      // 413 would name a cap that was never reached.
+      if ('broken' in read) return;
       let parsed: unknown;
       try {
-        parsed = JSON.parse(raw.toString('utf8') || '{}');
+        parsed = JSON.parse(read.ok.toString('utf8') || '{}');
       } catch {
         sendJson(res, 400, { error: 'no answer' });
         return;
@@ -470,12 +524,83 @@ function endlessRoute(opts: ServeOpts) {
   };
 }
 
+/**
+ * The names this cabinet answers to. Binding `127.0.0.1` stops another
+ * machine from reaching the server, and it does nothing at all about DNS
+ * rebinding: a page the player is looking at while the cabinet runs can point
+ * its own hostname at `127.0.0.1` and then read every answer here
+ * same-origin, on a port it can guess (7777 and 7778). What is behind that
+ * is the player's model list, chat and generate against their daemon, the
+ * voice worker with `VOICE_TOKEN` attached on this side, and `/cabinet/say`,
+ * which spends `ANTHROPIC_API_KEY`. The rebound page cannot forge the `Host`
+ * header, so the header is the check.
+ */
+const OWN_NAMES = new Set(['127.0.0.1', 'localhost', '[::1]', '::1']);
+
+/** An authority split into its name and port; brackets stay on an IPv6 name. */
+function splitAuthority(raw: string): { name: string; port: string } | null {
+  const v = raw.trim();
+  if (v === '') return null;
+  if (v.startsWith('[')) {
+    const end = v.indexOf(']');
+    if (end === -1) return null;
+    const rest = v.slice(end + 1);
+    if (rest === '') return { name: v.slice(0, end + 1), port: '' };
+    if (!rest.startsWith(':')) return null;
+    return { name: v.slice(0, end + 1), port: rest.slice(1) };
+  }
+  const parts = v.split(':');
+  if (parts.length === 1) return { name: parts[0] ?? '', port: '' };
+  if (parts.length !== 2) return null;
+  return { name: parts[0] ?? '', port: parts[1] ?? '' };
+}
+
+/**
+ * Is this `Host` header this cabinet's own address on this port? A missing
+ * header, two of them, a name that is not loopback, or the right name on
+ * somebody else's port are all somebody else's request.
+ */
+export function ownHost(raw: string | string[] | undefined, port: number): boolean {
+  if (typeof raw !== 'string') return false;
+  const authority = splitAuthority(raw);
+  if (!authority) return false;
+  if (!OWN_NAMES.has(authority.name.toLowerCase())) return false;
+  return authority.port === String(port);
+}
+
+/**
+ * Is this `Origin` this cabinet's own? No `Origin` is the page's own GET and
+ * is ours; `null` (a sandboxed frame, a redirected form) is not, and neither
+ * is https, since this server only ever speaks plain http on loopback.
+ */
+export function ownOrigin(raw: string | string[] | undefined, port: number): boolean {
+  if (raw === undefined) return true;
+  if (typeof raw !== 'string') return false;
+  const match = /^http:\/\/(.+)$/i.exec(raw.trim());
+  if (!match) return false;
+  return ownHost(match[1], port);
+}
+
 /** Build the cabinet's server. Nothing listens until `listen` is called. */
 export function createCabinetServer(opts: ServeOpts): Server {
   const handleSay = sayRoute(opts);
   const handleEndless = endlessRoute(opts);
   return createServer((req, res) => {
     void (async () => {
+      // Before routing, and so before any socket is opened towards the
+      // daemon or the worker: a request that is not addressed to this
+      // cabinet by name is not answered at all.
+      const port = req.socket.localPort ?? 0;
+      if (!ownHost(req.headers.host, port)) {
+        sendJson(res, 403, { error: 'wrong host' });
+        req.resume();
+        return;
+      }
+      if (!ownOrigin(req.headers.origin, port)) {
+        sendJson(res, 403, { error: 'wrong origin' });
+        req.resume();
+        return;
+      }
       const p = pathOnly(req.url);
       if (p === SAY_PATH) {
         await handleSay(req, res);

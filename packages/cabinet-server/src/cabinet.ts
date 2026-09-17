@@ -80,8 +80,10 @@ function text(t: string, isError = false): ToolResult {
 const GATE_FIX: Record<GateReason, string> = {
   empty: 'empty line',
   long: 'more than twelve words',
+  overlong: 'too long',
   sentences: 'more than one sentence',
   digit: 'a digit is not allowed',
+  character: 'a character off this keyboard',
   forbidden: 'the line used a closed word',
   name: 'that names a tool, model, or seat',
   repeat: 'that line was just said',
@@ -135,8 +137,16 @@ export function createCabinet(host: CabinetHost): Cabinet {
       return text(`lead must be one of ${leads.join(', ')}`, true);
     }
     const raw = argOf(args, 'text');
-    const clipped = typeof raw === 'string' ? raw.slice(0, textCap) : raw;
-    const gate = gateLine(clipped, { recent: host.recent(), maxWords: host.maxWords() });
+    // The bound refuses; it never clips. A line shortened to fit and then
+    // admitted would have the boss say something the caller did not write,
+    // and the caller would read it as accepted. The stdio transport's zod
+    // shape catches an over-long field for an MCP client, so what this
+    // catches is an in-process caller: `pnpm sit`, a test, the shell.
+    const gate = gateLine(raw, {
+      recent: host.recent(),
+      maxWords: host.maxWords(),
+      maxChars: textCap,
+    });
     const r = host.say(gate.ok ? gate.line : null, lead as Lead);
     if (r === 'no boss') {
       log.push({ name: 'say', ok: false, gate: gate.ok ? 'ok' : gate.reason });

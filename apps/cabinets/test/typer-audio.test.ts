@@ -363,22 +363,56 @@ describe('the music setting', () => {
   });
 });
 
+/**
+ * The pack script's own `VIBE_TRACK_KEYS`, read out of its source. The script
+ * is plain node and cannot be imported here, so the array is parsed rather
+ * than searched for: what must hold is that its list *is* the game's list,
+ * which a substring search over the whole file cannot say.
+ */
+function packTrackKeys(source: string): Set<string> {
+  const match = /const VIBE_TRACK_KEYS\s*=\s*\[([^\]]*)\]/.exec(source);
+  if (!match) throw new Error('no VIBE_TRACK_KEYS array in the pack script');
+  const keys = [...match[1]!.matchAll(/'([^']+)'/g)].map((m) => m[1]!);
+  if (keys.length === 0) throw new Error('the pack script names no track keys');
+  return new Set(keys);
+}
+
 describe('the recorded bed, one a stack', () => {
   it('names the same seven stacks the corpus does', () => {
     expect([...VIBE_TRACK_KEYS].sort()).toEqual([...STACKS].sort());
     expect(VIBE_TRACK_KEYS.every((key) => isVibeTrackKey(key))).toBe(true);
     expect(isVibeTrackKey('rust')).toBe(false);
     // And the pack script spells the same seven names, because it is plain
-    // node and may not import this module. That is all this proves: that the
-    // two lists have not drifted apart. Whether the gate actually halts on a
-    // missing bed is exercised against a real dist in
+    // node and may not import this module. Its own list is read out of the
+    // source and compared as a set, in both directions: a substring search
+    // over the whole file passed on a name left behind in a comment or in an
+    // unrelated array, and said nothing at all about an extra or misspelled
+    // name in the pack's list — the direction that ships a tarball with a
+    // stack that has no bed. Whether the gate actually halts on a missing bed
+    // is exercised against a real dist in
     // packages/launcher/test/pack-gate.test.ts.
     const here = path.dirname(fileURLToPath(import.meta.url));
     const pack = readFileSync(
       path.join(here, '..', '..', '..', 'packages', 'launcher', 'scripts', 'build.mjs'),
       'utf8',
     );
-    for (const key of VIBE_TRACK_KEYS) expect(pack).toContain(`'${key}'`);
+    expect([...packTrackKeys(pack)].sort()).toEqual([...VIBE_TRACK_KEYS].sort());
+  });
+
+  it('fails when the pack script names a stack the game does not, or drops one', () => {
+    // The gate above, mutated: this is what it must catch. Both halves are
+    // here because the search it replaced could catch neither.
+    const base = "const VIBE_TRACK_KEYS = ['bash', 'csharp'];";
+    expect([...packTrackKeys(base)]).toEqual(['bash', 'csharp']);
+    expect([...packTrackKeys("const VIBE_TRACK_KEYS = ['bash', 'csharp', 'rust'];")]).toContain(
+      'rust',
+    );
+    expect([...packTrackKeys("const VIBE_TRACK_KEYS = ['bash'];")]).not.toContain('csharp');
+    // A name in a comment is not the list, and an extraction that finds
+    // nothing is a failure rather than a pass.
+    expect(() =>
+      packTrackKeys("// VIBE_TRACK_KEYS: 'bash', 'csharp'\nconst other = [];"),
+    ).toThrow();
   });
 
   it('plays the level stack bed under the mode that asks for one', () => {

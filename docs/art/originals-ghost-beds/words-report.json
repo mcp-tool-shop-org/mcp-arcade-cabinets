@@ -1,0 +1,108 @@
+{
+ "cabinet": "ghost",
+ "model": "faster-whisper small.en",
+ "device": "cpu",
+ "beam_size": 1,
+ "vad_filter": false,
+ "language": "en",
+ "read_from": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks",
+ "beds": [
+  {
+   "key": "inspect",
+   "characters": 149,
+   "text": "music music music music music music music music music music music music music music music music music music music music music music music music music",
+   "segments": 25,
+   "min_no_speech_prob": 0.0006,
+   "mean_no_speech_prob": 0.124,
+   "max_avg_logprob": -0.036,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "poison",
+   "characters": 15,
+   "text": "you you you you",
+   "segments": 4,
+   "min_no_speech_prob": 0.2007,
+   "mean_no_speech_prob": 0.3973,
+   "max_avg_logprob": -0.373,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "rug",
+   "characters": 14,
+   "text": "You Thank you.",
+   "segments": 2,
+   "min_no_speech_prob": 0.5995,
+   "mean_no_speech_prob": 0.618,
+   "max_avg_logprob": -0.963,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "unlisted",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "breather",
+   "characters": 61,
+   "text": "This is the end of the video, thank you so much for watching!",
+   "segments": 1,
+   "min_no_speech_prob": 0.4493,
+   "mean_no_speech_prob": 0.4493,
+   "max_avg_logprob": -1.376,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "whisperer",
+   "characters": 15,
+   "text": "You You You You",
+   "segments": 4,
+   "min_no_speech_prob": 0.1833,
+   "mean_no_speech_prob": 0.4737,
+   "max_avg_logprob": -0.309,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "menu",
+   "characters": 22,
+   "text": "So, let's get started.",
+   "segments": 1,
+   "min_no_speech_prob": 0.5786,
+   "mean_no_speech_prob": 0.5786,
+   "max_avg_logprob": -1.383,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "doorman",
+   "characters": 19,
+   "text": "You You You You You",
+   "segments": 5,
+   "min_no_speech_prob": 0.3647,
+   "mean_no_speech_prob": 0.4829,
+   "max_avg_logprob": -0.351,
+   "no_speech_everywhere": false
+  }
+ ],
+ "no_speech_floor": 0.5,
+ "misses": [
+  "inspect",
+  "poison",
+  "rug",
+  "breather",
+  "whisperer",
+  "menu",
+  "doorman"
+ ],
+ "misses_with_speech": [
+  "inspect",
+  "poison",
+  "breather",
+  "whisperer",
+  "doorman"
+ ]
+}

@@ -304,7 +304,11 @@ export function playTape(
     `policy ${tape.agent_policy}`,
   ];
 
-  let leaked = false;
+  // renderRound now strips the furniture itself, so the canvas can no longer
+  // carry a needle. The transcript still names a caller that handed the
+  // play-through dirty furniture: that is a defect in the caller, not in the
+  // renderer, and the scripted run is where it gets reported.
+  let leaked = furniture.some((t) => SCREEN_FORBIDDEN.test(t));
   let lastTexts: string[] = [];
   const live = { round, state, input: { left: false, right: false, fire: false } };
   const maxTicks = Math.ceil((Number.isFinite(state.duration) ? state.duration : 0) / DT) + 360;

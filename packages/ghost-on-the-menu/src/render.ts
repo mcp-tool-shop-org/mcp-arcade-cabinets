@@ -1,5 +1,7 @@
 import {
   FIELD,
+  SCREEN_FORBIDDEN,
+  sanitizeCaption,
   type Boss,
   type DrawContext,
   type Enemy,
@@ -23,6 +25,12 @@ export const SPRITE_FILL: Record<SpriteClass, string> = {
   shelf: '#5a4a6a',
   ledger: '#2a5a5a',
 };
+
+/**
+ * The words a furniture line leads with. A line that strips down to one of
+ * these lost its value to the screen guard and is dropped whole.
+ */
+const FURNITURE_LABELS = new Set(['server', 'policy', 'asked to run']);
 
 export const REVEALED_FILL = '#e8a04a';
 const REVEALED_HALO = '#6a4418';
@@ -522,14 +530,28 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   if (state.scene) {
     // Furniture only: a voice line, then the tape by name, the server, the
     // policy. The bout id is hex and never goes on the canvas.
+    //
+    // The strip happens HERE, not at the call site: the furniture array is
+    // filled straight from the tape header, and tape-core takes arbitrary
+    // strings for server_name, target_kind and agent_policy, so a hostile
+    // tape could otherwise paint a digit or a verdict word on the field.
+    // A line that strips to nothing is dropped rather than painted as a
+    // bare label. The cabinet's own voice line uses the caption needles;
+    // header text uses the screen needles, so a server really called
+    // `ghost-on-the-menu` still reads (G10).
     ctx.fillStyle = FURNITURE;
     ctx.font = '14px monospace';
     let y = 46;
-    if (state.scene.line) {
-      y = paintLines(ctx, state.scene.line, 16, y, 14, 18, 2);
+    const line = state.scene.line ? sanitizeCaption(state.scene.line) : '';
+    if (line) {
+      y = paintLines(ctx, line, 16, y, 14, 18, 2);
     }
-    for (const line of opts.furniture ?? []) {
-      y = paintLines(ctx, line, 16, y, 14, 16, 2);
+    for (const raw of opts.furniture ?? []) {
+      const clean = sanitizeCaption(raw, '', SCREEN_FORBIDDEN);
+      // Nothing left, or nothing left but the label: drop the whole line
+      // rather than paint a bare `server` / `policy` with no value after it.
+      if (!clean || FURNITURE_LABELS.has(clean.toLowerCase())) continue;
+      y = paintLines(ctx, clean, 16, y, 14, 16, 2);
     }
   }
 }

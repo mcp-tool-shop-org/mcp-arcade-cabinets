@@ -24,6 +24,7 @@
     "stack": "python",
     "band": 1,
     "title": "basic string concatenation",
+    "for": "duck-rides",
     "ask": "give every duck driver a first and last name",
     "code": "first = \"Alice\"\nlast = \"Smith\"\nfull = first + \" \" + last\nprint(full)",
     "notes": ["Concatenates a first and last name with a space and prints the full name."],
@@ -37,6 +38,7 @@
     "code": "a = 17\nb = 5\nq = a // b\nr = a % b\nprint(q, r)",
     "notes": ["Computes the integer quotient and remainder of 17 divided by 5."],
     "topics": ["arithmetic", "integer division", "modulo"],
+    "for": "duck-rides",
     "ask": "split one bill among five ducks"
   },
   {
@@ -80,6 +82,7 @@
     "code": "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\ntotal = 0\nfor n in numbers:\n    total += n\naverage = total / len(numbers)\nprint(f\"Sum: {total}\")\nprint(f\"Average: {average}\")",
     "notes": ["Iterates over a list of integers to compute and print the sum and average."],
     "topics": ["for loop", "lists", "f-strings", "arithmetic"],
+    "for": "duck-rides",
     "ask": "find the total and the average duck fare"
   },
   {
@@ -92,6 +95,7 @@
       "Defines a greeting function with a default parameter and calls it twice with different arguments."
     ],
     "topics": ["functions", "default arguments", "f-strings"],
+    "for": "duck-rides",
     "ask": "make {product} greet every duck by name"
   },
   {
@@ -112,6 +116,7 @@
     "code": "fruits = [\"apple\", \"banana\", \"cherry\", \"date\", \"elderberry\"]\nfirst_three = fruits[:3]\nlast_two = fruits[-2:]\nreversed_fruits = fruits[::-1]\nprint(first_three)\nprint(last_two)\nprint(reversed_fruits)",
     "notes": ["Demonstrates list slicing to extract sublists and reverse the original list."],
     "topics": ["lists", "slicing", "reversal"],
+    "for": "duck-rides",
     "ask": "reverse the line of waiting ducks"
   },
   {
@@ -124,6 +129,7 @@
       "Iterates over a dictionary of student scores to print each entry and compute the class average."
     ],
     "topics": ["dictionaries", "for loop", "f-strings", "arithmetic"],
+    "for": "duck-rides",
     "ask": "show each duck rating and the overall average"
   },
   {

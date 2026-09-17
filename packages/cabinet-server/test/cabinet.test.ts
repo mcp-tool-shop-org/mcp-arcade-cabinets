@@ -19,6 +19,7 @@ import { botFor } from '@mcp-arcade-cabinets/ghost-on-the-menu/src/play';
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createCabinet, viewLines, type CabinetHost } from '../src/cabinet';
+import { toolDef } from '../src/contract';
 import { hostForRound, tapeCards, type Live } from '../src/host';
 
 const DIR = path.resolve(__dirname, '../../../fixtures/tapes');
@@ -223,6 +224,42 @@ describe('the boundary', () => {
       'sfx lamp',
       'speak',
     ]);
+  });
+
+  it('say refuses an over-long line and a character off the keyboard; it never clips', () => {
+    const said: (string | null)[] = [];
+    const host: CabinetHost = {
+      view: () => ({ kind: null, wave: 'breather' }),
+      propose: () => 'proposed',
+      say: (l) => (said.push(l), l === null ? 'fallback' : 'said'),
+      sfx: () => 'queued',
+      speak: () => 'queued',
+      tapes: () => [],
+      recent: () => [],
+      maxWords: () => 12,
+    };
+    const cab = createCabinet(host);
+    const cap = toolDef('say').inputSchema.properties.text as { maxLength: number };
+    // Twelve words, one sentence, no digit, no closed word, no name: the gate
+    // admitted this before, because the caller clipped it to the bound first
+    // and the boss said a line the caller had not written.
+    const long = `${'The plate is out and the plate has opinions about you'}${'.'.repeat(cap.maxLength)}`;
+    expect(long.length).toBeGreaterThan(cap.maxLength);
+    expect(cab.call('say', { text: long, lead: 'short' }).content[0]!.text).toBe(
+      'the gate refused it (too long); the boss says one of its own instead',
+    );
+    expect(
+      cab.call('say', { text: 'The plate is \u202eout.', lead: 'short' }).content[0]!.text,
+    ).toBe(
+      'the gate refused it (a character off this keyboard); the boss says one of its own instead',
+    );
+    // Nothing shortened reached the host: both landed as the seed's own line.
+    expect(said).toEqual([null, null]);
+    expect(cab.log.map((r) => r.gate)).toEqual(['overlong', 'character']);
+    // The bound itself still admits a line that fits.
+    expect(cab.call('say', { text: 'The plate is out.', lead: 'short' }).content[0]!.text).toBe(
+      'the boss will say it',
+    );
   });
 
   it('the view names no boss between waves and never a digit', () => {

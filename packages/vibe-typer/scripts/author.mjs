@@ -2464,7 +2464,7 @@ function writerIndex() {
     const stamp = typeof receipt.stamp === 'string' ? receipt.stamp : file;
     const slot = /-([a-z]+)\.json$/.exec(file)?.[1] ?? '';
     for (const key of Object.keys(candidates)) {
-      for (const name of [key, `${slot} ${key}`]) {
+      for (const name of [key, `${slot}\u0000${key}`]) {
         const seen = index.get(name);
         if (seen === undefined || seen.stamp <= stamp)
           index.set(name, { spec: receipt.model, stamp });
@@ -2486,7 +2486,7 @@ function writerFor(index, job) {
     for (const slot of [...(job.writerSlots ?? []), '']) {
       let hit;
       for (const name of writerLookupNames(key)) {
-        hit = index.get(slot === '' ? name : `${slot} ${name}`);
+        hit = index.get(slot === '' ? name : `${slot}\u0000${name}`);
         if (hit !== undefined) break;
       }
       if (hit === undefined) continue;

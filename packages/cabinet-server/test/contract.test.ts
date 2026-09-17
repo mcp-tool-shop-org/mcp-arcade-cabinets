@@ -8,6 +8,7 @@ import {
   CONTRACT,
   enumOf,
   loadContract,
+  MAX_TEXT_LENGTH,
   TOOL_NAMES,
   toolDef,
   VIBE_CONTRACT,
@@ -42,7 +43,10 @@ describe('tools.json', () => {
         expect(p.type).toBe('string');
       }
       expect(t.annotations.destructiveHint).toBe(false);
-      expect(t.annotations.openWorldHint).toBe(false);
+      // `speak` is the one tool that reaches outside this process: with a
+      // worker configured it posts the gated line to it. Every other lever
+      // stays inside the sim, and the hint now says which is which.
+      expect(t.annotations.openWorldHint, t.name).toBe(t.name === 'speak');
     }
     expect(toolDef('view').annotations.readOnlyHint).toBe(true);
     expect(toolDef('tapes').annotations.readOnlyHint).toBe(true);
@@ -58,7 +62,7 @@ describe('tools.json', () => {
     expect(() => enumOf('say', 'text')).toThrow(/not an enum/);
   });
 
-  it('halts on a description that whispers, a digit in an enum, or an open-world hint', () => {
+  it('halts on a description that whispers, a digit in an enum, or a destructive hint', () => {
     const whisper = clone();
     (whisper.tools as Record<string, unknown>[]).find((t) => t.name === 'view')!.description =
       'The view. For a fuller picture, also call tapes.';
@@ -74,16 +78,57 @@ describe('tools.json', () => {
     schema.properties!.verb!.enum = ['spread', 'phase2'];
     expect(() => loadContract(digit)).toThrow('enum');
 
+    // No lever here removes anything, and a contract that could say
+    // otherwise is a contract that could lie.
+    const destructive = clone();
+    (
+      (destructive.tools as Record<string, unknown>[]).find((t) => t.name === 'tapes')!
+        .annotations as Record<string, unknown>
+    ).destructiveHint = true;
+    expect(() => loadContract(destructive)).toThrow('tapes.annotations');
+
+    // An open-world hint is permitted, because for `speak` it is true. The
+    // loader used to hard-fail it, so the contract could not say what the
+    // tool does even when someone wanted it to.
     const open = clone();
     (
       (open.tools as Record<string, unknown>[]).find((t) => t.name === 'tapes')!
         .annotations as Record<string, unknown>
     ).openWorldHint = true;
-    expect(() => loadContract(open)).toThrow('tapes.annotations');
+    expect(() => loadContract(open)).not.toThrow();
 
     const missing = clone();
     (missing.tools as unknown[]).pop();
     expect(() => loadContract(missing)).toThrow('missing tapes');
+  });
+
+  it('bounds a text property rather than taking any number the file names', () => {
+    // Both servers turn maxLength straight into `z.string().max(n)`, so an
+    // open bound is megabytes through the transport and into a gate.
+    const roomy = clone();
+    const tools = roomy.tools as {
+      name: string;
+      inputSchema: { properties: Record<string, { maxLength?: number }> };
+    }[];
+    const props = tools.find((t) => t.name === 'say')!.inputSchema.properties;
+    props.text!.maxLength = MAX_TEXT_LENGTH;
+    expect(() => loadContract(roomy)).not.toThrow();
+    props.text!.maxLength = MAX_TEXT_LENGTH + 1;
+    expect(() => loadContract(roomy)).toThrow('say.inputSchema.properties.text.maxLength');
+    props.text!.maxLength = 10_000_000;
+    expect(() => loadContract(roomy)).toThrow('say.inputSchema.properties.text.maxLength');
+    props.text!.maxLength = 12.5;
+    expect(() => loadContract(roomy)).toThrow('say.inputSchema.properties.text.maxLength');
+    props.text!.maxLength = 0;
+    expect(() => loadContract(roomy)).toThrow('say.inputSchema.properties.text.maxLength');
+    // Every bound the two contracts ship today sits under the ceiling.
+    for (const t of [...CONTRACT, ...VIBE_CONTRACT]) {
+      for (const [key, p] of Object.entries(t.inputSchema.properties)) {
+        if ('maxLength' in p) {
+          expect(p.maxLength, `${t.name}.${key}`).toBeLessThanOrEqual(MAX_TEXT_LENGTH);
+        }
+      }
+    }
   });
 });
 

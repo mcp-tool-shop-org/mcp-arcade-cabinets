@@ -164,6 +164,12 @@ export interface MediaBed {
   playbackRate: number;
   /** Set true where the browser has it, so a faster bed keeps its key. */
   preservesPitch?: boolean;
+  /**
+   * The file's own length in seconds, once the element knows it. A bed holds
+   * for this, not for a constant, so a loop is never faded four seconds before
+   * it ends or as it restarts. NaN until metadata loads; absent in tests.
+   */
+  readonly duration?: number;
   play(): Promise<void> | void;
   pause(): void;
 }
@@ -180,11 +186,26 @@ export const BURST_RAMP_S = 0.6;
 /** Seconds the music takes to leave at the scene. */
 export const END_FADE_S = 1.5;
 /**
- * Seconds a bed plays before it may give way. ACE-Step loops are about
- * 31–44s; hold one loop, then the wanted wave or boss bed comes in.
+ * Floor for the hold, and the hold itself when a bed will not say how long
+ * it is. A bed that knows its own `duration` holds for THAT, so the loop
+ * finishes: the flat 36 faded the 40 s beds four seconds early and faded a
+ * 36 s bed as it restarted. The music pass is lengthening these files, and
+ * the hold follows whatever length each file has.
  * A wanted change during the hold is remembered and made when it is up.
  */
 export const BED_MIN_S = 36;
+
+/** A scheduled oscillator and the context time it stops at. */
+interface Voice {
+  osc: OscillatorNode;
+  until: number;
+}
+
+/** How long the playing bed holds: its own length when it knows one. */
+function bedHold(bed: MediaBed | undefined, floor: number): number {
+  const d = bed?.duration;
+  return typeof d === 'number' && Number.isFinite(d) && d > 0 ? d : floor;
+}
 /** Recorded beds sit here, not at 1, so shots and the catch still read. */
 export const BED_LEVEL = 0.32;
 
@@ -347,7 +368,8 @@ interface CtxLike {
  * the first user gesture (browsers require it); tests never call this.
  *
  * Beds: if a recorded file exists for the asked wave or boss key, that
- * named bed plays. A change of key waits out BED_MIN_S (one loop), then
+ * named bed plays. A change of key waits out one whole loop (the playing
+ * bed's own duration, or BED_MIN_S when it has none), then
  * crossfades. Pool rotation only when the asked key has no file, and only
  * after the same hold. The seed still picks the opening pool bed when the
  * asked key has no file. A burst speeds the playing bed up (`burstRate`)
@@ -451,8 +473,11 @@ export function attach(
   };
   let musicGain: GainNode | undefined;
   let sfxGain: GainNode | undefined;
-  let barOscs: OscillatorNode[] = [];
-  let sfxOscs: OscillatorNode[] = [];
+  /** A scheduled oscillator and the moment it stops; `until` is what lets a
+   * finished voice be dropped without waiting for an onended the tests never
+   * fire. */
+  let barOscs: Voice[] = [];
+  let sfxOscs: Voice[] = [];
   const musicBus = (): GainNode => {
     if (!musicGain) {
       musicGain = ctx.createGain();
@@ -467,7 +492,7 @@ export function attach(
     }
     return sfxGain;
   };
-  const silenceOscs = (gain: GainNode | undefined, oscs: OscillatorNode[]): OscillatorNode[] => {
+  const silenceOscs = (gain: GainNode | undefined, voices: Voice[]): Voice[] => {
     const now = ctx.currentTime;
     if (gain) {
       try {
@@ -477,7 +502,7 @@ export function attach(
       }
       gain.gain.value = 0;
     }
-    for (const osc of oscs) {
+    for (const { osc } of voices) {
       try {
         osc.stop(now);
       } catch {
@@ -509,8 +534,20 @@ export function attach(
       gain.gain.value = 1;
     }
   };
-  const schedule = (notes: Note[], base: number, bus: GainNode, oscs: OscillatorNode[]) => {
+  const schedule = (notes: Note[], base: number, bus: GainNode, voices: Voice[]) => {
     if (muted) return;
+    // Drop the voices that have already stopped. sfxOscs is emptied only by
+    // silenceSfx (mute or close), and every player shot fires the 'fire'
+    // cue, so a two-to-three-minute round used to retain on the order of a
+    // thousand dead oscillators and their gain nodes, then walk all of them
+    // at mute. The retained set now stays proportional to what is sounding.
+    const nowT = ctx.currentTime;
+    let kept = 0;
+    for (let i = 0; i < voices.length; i++) {
+      const v = voices[i]!;
+      if (v.until > nowT) voices[kept++] = v;
+    }
+    voices.length = kept;
     try {
       bus.gain.setValueAtTime(1, ctx.currentTime);
     } catch {
@@ -528,9 +565,10 @@ export function attach(
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + n.dur);
       osc.connect(g);
       g.connect(bus);
+      const until = t0 + n.dur + 0.02;
       osc.start(t0);
-      osc.stop(t0 + n.dur + 0.02);
-      oscs.push(osc);
+      osc.stop(until);
+      voices.push({ osc, until });
     }
   };
   const collectLive = (): MediaBed[] => {
@@ -582,8 +620,9 @@ export function attach(
       waveKind === 'menu' ||
       waveKind === 'doorman' ||
       waveKind === 'archivist';
-    // One loop (BED_MIN_S) before a playing bed gives way, named or not.
-    if (currentBed && t - bedSince < minBed) return true;
+    // One WHOLE loop before a playing bed gives way, named or not: the bed's
+    // own length when the element knows it, minBed as the floor when it does not.
+    if (currentBed && t - bedSince < bedHold(currentBed, minBed)) return true;
     if (named) return adopt(named, t);
     if (isBoss) {
       // Wanted boss bed is missing: drop the overlay so chiptune can follow.

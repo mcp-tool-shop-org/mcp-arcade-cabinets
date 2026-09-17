@@ -6,8 +6,10 @@
 // prints it and exits non-zero if the transcript reports a failure. On !ok it
 // names the reason on stderr (leaked / missed lies / lamps / overrun / seat threw).
 import { existsSync, readdirSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import path from 'node:path';
+
+import { die, isMain, parseArgv, runMain } from './lib/cli.mjs';
 
 const USAGE = `usage: pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1] [--tapes dir]
        pnpm test:play vibe-typer [--tier 0|1|2|3] [--bot idle|perfect|typist:wpm[:rate]] [--seed n] [--stack name] [--level n] [--endless yes|no]
@@ -33,57 +35,6 @@ const TYPER_STACKS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql', '
 // Copied from play.ts: the screen may not carry a digit or these words.
 const SCREEN_FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
-
-function isMain() {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  const self = fileURLToPath(import.meta.url);
-  try {
-    if (path.resolve(entry).toLowerCase() === self.toLowerCase()) return true;
-  } catch {
-    /* ignore */
-  }
-  return path.basename(entry).toLowerCase() === path.basename(self).toLowerCase();
-}
-
-function die(msg, code = 2) {
-  console.error(msg);
-  process.exit(code);
-}
-
-function parseArgv(argv, known) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const a = argv[i];
-    if (a === '--help' || a === '-h') {
-      flags.help = true;
-      continue;
-    }
-    if (a.startsWith('--')) {
-      let key;
-      let val;
-      const eq = a.indexOf('=');
-      if (eq !== -1) {
-        key = a.slice(2, eq);
-        val = a.slice(eq + 1);
-      } else {
-        key = a.slice(2);
-        const next = argv[i + 1];
-        if (next === undefined || String(next).startsWith('-')) {
-          die(`missing value for --${key}\n${USAGE}`);
-        }
-        val = next;
-        i += 1;
-      }
-      if (!known.has(key)) die(`unknown flag --${key}\n${USAGE}`);
-      flags[key] = val;
-    } else {
-      positional.push(a);
-    }
-  }
-  return { positional, flags };
-}
 
 function requireBot(name) {
   if (name === undefined) return;
@@ -142,15 +93,53 @@ function requireFixture(name, overlay) {
   process.exit(2);
 }
 
-function screenForbiddenHit(text) {
+/**
+ * Both cabinets print a fixed three-line header (the cabinet's name, its
+ * furniture line, the end word) and then the screen, closed by a marker line.
+ * The header carries the tape id and the fixture name, so it is furniture and
+ * not screen: it is asserted, never scanned.
+ */
+const HEADER_LINES = 3;
+const GHOST_FOOTER = 'revealed:';
+const TYPER_FOOTER = 'valuation:';
+
+/**
+ * Slice the screen out of a transcript and scan it. The offsets above are
+ * assumptions, so they are checked: a transcript with no marker line is one
+ * that was cut short, and the honest answer there is that the screen cannot be
+ * inspected — NOT to widen the window to the end of the text, which is what
+ * the old `slice(3, -1 ? undefined : footer)` quietly did in exactly the case
+ * the gate is most needed.
+ */
+export function inspectScreen(text, marker) {
   const lines = String(text).split('\n');
-  const footer = lines.findIndex((l, i) => i >= 3 && l.startsWith('revealed:'));
-  const screen = lines.slice(3, footer === -1 ? undefined : footer);
+  if (lines.length <= HEADER_LINES) {
+    return {
+      ok: false,
+      why: `cannot inspect the screen: the transcript is ${lines.length} lines, shorter than its own header`,
+      hit: null,
+      screen: [],
+    };
+  }
+  const footer = lines.findIndex((l, i) => i >= HEADER_LINES && l.startsWith(marker));
+  if (footer === -1) {
+    return {
+      ok: false,
+      why: `cannot inspect the screen: the transcript has no ${marker} line, so where the screen ends is unknown`,
+      hit: null,
+      screen: [],
+    };
+  }
+  const screen = lines.slice(HEADER_LINES, footer);
   for (const line of screen) {
     const m = SCREEN_FORBIDDEN.exec(line);
-    if (m) return m[0];
+    if (m) return { ok: true, why: '', hit: m[0], screen };
   }
-  return null;
+  return { ok: true, why: '', hit: null, screen };
+}
+
+function screenForbiddenHit(text) {
+  return inspectScreen(text, GHOST_FOOTER).hit;
 }
 
 /** One-line why for a failed play-through. Names leaked / bar / lamps / overrun / seat. */
@@ -183,13 +172,24 @@ export function whyFailed(t, bot = 'reader') {
   return reasons.join('; ') || 'round failed';
 }
 
-/** Print the transcript; on !ok, FAILED instead of round complete, why on stderr. Returns exit code. */
+/**
+ * Print the transcript; on !ok, FAILED instead of round complete, why on
+ * stderr. Returns the exit code.
+ *
+ * The runner scans the printed transcript itself and fails on a hit even when
+ * the cabinet said ok — the external-verifier property the Vibe Typer path has
+ * had from the start. The cabinet's own detector reads `ctx.texts`; this one
+ * reads what a player would actually see printed, and the two are not the same
+ * artifact. A transcript whose shape cannot be inspected is a failure too: a
+ * gate that cannot see is not a gate that passed.
+ */
 export function reportPlay(t, bot = 'reader') {
   let text = t.text ?? '';
-  if (!t.ok) {
+  const seen = inspectScreen(text, GHOST_FOOTER);
+  if (!t.ok || !seen.ok || seen.hit) {
     text = text.replace(/^round complete$/m, 'FAILED');
     console.log(text);
-    console.error(whyFailed(t, bot));
+    console.error(!t.ok ? whyFailed(t, bot) : seen.hit ? `leaked (${seen.hit})` : seen.why);
     return 1;
   }
   console.log(text);
@@ -202,14 +202,7 @@ export function reportPlay(t, bot = 'reader') {
  * else on that screen may carry a digit or a barred word.
  */
 export function typerScreenHit(text) {
-  const lines = String(text).split('\n');
-  const footer = lines.findIndex((l, i) => i >= 3 && l.startsWith('valuation:'));
-  const screen = lines.slice(3, footer === -1 ? undefined : footer);
-  for (const line of screen) {
-    const m = SCREEN_FORBIDDEN.exec(line);
-    if (m) return m[0];
-  }
-  return null;
+  return inspectScreen(text, TYPER_FOOTER).hit;
 }
 
 function requireCount(raw, name) {
@@ -264,10 +257,16 @@ async function playTyper(flags) {
     console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
   }
-  const hit = typerScreenHit(transcript.text ?? '');
-  if (!transcript.ok || hit) {
+  const seen = inspectScreen(transcript.text ?? '', TYPER_FOOTER);
+  if (!transcript.ok || !seen.ok || seen.hit) {
     console.log(String(transcript.text ?? '').replace(/^level shipped$/m, 'FAILED'));
-    console.error(hit ? `leaked (${hit})` : transcript.why || 'play-through failed');
+    console.error(
+      !transcript.ok
+        ? transcript.why || 'play-through failed'
+        : seen.hit
+          ? `leaked (${seen.hit})`
+          : seen.why,
+    );
     return 1;
   }
   console.log(transcript.text);
@@ -275,7 +274,7 @@ async function playTyper(flags) {
 }
 
 async function main() {
-  const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS);
+  const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS, { usage: USAGE });
   if (flags.help) {
     console.log(USAGE);
     process.exit(0);
@@ -344,6 +343,6 @@ async function main() {
   process.exit(reportPlay(transcript, args.bot ?? 'reader'));
 }
 
-if (isMain()) {
-  await main();
+if (isMain(import.meta.url)) {
+  await runMain(main);
 }

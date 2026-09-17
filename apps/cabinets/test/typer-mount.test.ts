@@ -209,6 +209,54 @@ function playToMilestone(m: VibeMount, cap = 4000): string {
   return toast.textContent ?? '';
 }
 
+/**
+ * Play whole lines, whatever the field puts up, until `done()` says so or the
+ * cap runs out. The same walk `playToStandup` takes, with the end left open:
+ * a meeting, a completion offered, a new level.
+ */
+function playUntil(m: VibeMount, done: () => boolean, cap = 6000): boolean {
+  let target = '';
+  for (let i = 0; i < cap; i++) {
+    if (done()) return true;
+    const next = liveTarget();
+    if (next === '' || next === target) {
+      m.tick(STEP);
+      continue;
+    }
+    target = next;
+    for (const ch of next) {
+      press(ch);
+      m.tick(STEP);
+    }
+    press('Enter');
+    m.tick(STEP);
+    m.tick(STEP);
+  }
+  return done();
+}
+
+/** One keydown, on whatever is under focus, reported back so the test can read it. */
+function keyOn(target: EventTarget, key: string): KeyboardEvent {
+  const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  target.dispatchEvent(e);
+  return e;
+}
+
+/** A listed level, mounted. The options every test below starts from. */
+function mountLevel(levelIndex = 0, seed = 1): VibeMount {
+  return mountVibeTyper(root, {
+    tier: 0,
+    endless: false,
+    levelIndex,
+    seed,
+    agentName: 'Sprocket',
+    theme: 'mechanical',
+    integration: [],
+    onExit: () => undefined,
+    startAudio: false,
+  });
+}
+
 /** Play whole lines until the level ends and the standup is up. */
 function playToStandup(m: VibeMount, cap = 4000): boolean {
   let target = '';
@@ -1205,7 +1253,224 @@ describe('the endless seat, mounted', () => {
       // jsdom hands an `Image` no file, so the card preload has nothing.
       cards: 0,
       track: null,
+      level: 0,
+      product: planOf(createRun({ seed: SEED, tier: 0, endless: false, levelIndex: 0 })).product,
+      // Nothing has moved yet, and this browser asked for no less of it.
+      motion: { calm: false, shake: 0, flash: 0, specks: 0 },
     });
     expect(root.querySelector('[data-vibe-seat]')).toBeNull();
+  });
+});
+
+// ——— the keys the field does not own ———————————————————————————————————————
+//
+// The window listener is the field's, not the page's. It used to cancel Tab,
+// Enter and Space for every target and on every frame of the run, which meant
+// focus could not leave the field (a keyboard trap, WCAG 2.1.2) and the two
+// buttons under it — and the standup's — could not be pressed from the
+// keyboard at all (2.1.1).
+
+describe('the keys the field does not own', () => {
+  it('leaves Tab to the browser when no completion is offered', () => {
+    mount = mountLevel();
+    run(mount, 1);
+    expect((root.querySelector('.vibe-tab') as HTMLElement).hidden).toBe(true);
+    expect(keyOn(window, 'Tab').defaultPrevented).toBe(false);
+  });
+
+  it('takes Tab once a completion is on screen', () => {
+    mount = mountLevel();
+    const chip = () => root.querySelector('.vibe-tab') as HTMLElement;
+    expect(playUntil(mount, () => chip().hidden === false)).toBe(true);
+    expect(keyOn(window, 'Tab').defaultPrevented).toBe(true);
+  });
+
+  it('leaves Enter and Space to the button they are pressed on', () => {
+    mount = mountLevel();
+    run(mount, 1);
+    const buttons = [...root.querySelectorAll('button')];
+    expect(buttons.map((b) => b.textContent)).toContain('Back to the cabinets');
+    for (const button of buttons) {
+      for (const key of ['Enter', ' ']) {
+        expect(keyOn(button, key).defaultPrevented, `${button.textContent} · ${key}`).toBe(false);
+      }
+    }
+  });
+
+  it('gives the keyboard back at the standup', () => {
+    mount = mountLevel();
+    expect(playUntil(mount, () => root.querySelector('.vibe-standup') !== null)).toBe(true);
+    // Nothing is typing any more: no key is taken and none is cancelled.
+    for (const key of ['Enter', ' ', 'Tab']) {
+      expect(keyOn(window, key).defaultPrevented, key).toBe(false);
+    }
+    const buttons = [...root.querySelectorAll('.vibe-standup button')];
+    expect(buttons.map((b) => b.textContent)).toEqual(['Back to the cabinets', 'Retro']);
+    for (const button of buttons) {
+      for (const key of ['Enter', ' ']) {
+        expect(keyOn(button, key).defaultPrevented, `${button.textContent} · ${key}`).toBe(false);
+      }
+    }
+  });
+});
+
+// ——— the hint under the field —————————————————————————————————————————————
+
+describe('the hint under the field', () => {
+  it('names what the player can see, and never the sibling cabinet', () => {
+    mount = mountLevel();
+    run(mount, 1);
+    const hint = [...root.querySelectorAll('p.muted')].map((p) => p.textContent).join(' ');
+    expect(hint).toContain('Tab takes the rest when the faded text appears');
+    // "the ghost" is the shooter next to this cabinet on the menu, and this
+    // cabinet takes its chassis and never its grammar. The word is nowhere on
+    // the field: not the hint, not the chat, not the board.
+    expect(/ghost/i.test(root.textContent ?? '')).toBe(false);
+  });
+});
+
+// ——— a quick sync, read as a meeting ———————————————————————————————————————
+
+describe('a quick sync, in the chat', () => {
+  const SYNC_WORD = DEFAULT_PATTERNS.cabinet.words.beats.sync;
+
+  /** The first listed level whose plan draws a meeting, at this seed and tier. */
+  function levelWithSync(): number {
+    for (let i = 0; i < DEFAULT_PATTERNS.levels.levels.length; i++) {
+      const plan = planOf(createRun({ seed: 1, tier: 0, endless: false, levelIndex: i }));
+      if (plan.syncAt !== undefined) return i;
+    }
+    throw new Error('no listed level draws a meeting at this seed');
+  }
+
+  it('brackets the meeting and paints its lines apart from the replies', () => {
+    mount = mountLevel(levelWithSync());
+    const chat = root.querySelector('.vibe-chat')!;
+    const marks = () => [...chat.querySelectorAll('.vibe-mark')].map((n) => n.textContent);
+    expect(playUntil(mount, () => chat.querySelector('li.vibe-sync') !== null)).toBe(true);
+    // The room opens before the first line of it.
+    expect(marks()[0]).toBe(`${SYNC_WORD} starts`);
+    const said = [...chat.querySelectorAll('li.vibe-sync')];
+    expect(said.length).toBeGreaterThan(0);
+    // A meeting line is the agent's voice but not one of its ordinary
+    // replies, which is the whole point: the class differs.
+    for (const li of said) {
+      expect(li.classList.contains('vibe-agent')).toBe(true);
+      expect(li.classList.contains('vibe-nag')).toBe(false);
+    }
+    const ordinary = [...chat.querySelectorAll('li.vibe-agent')].filter(
+      (li) => !li.classList.contains('vibe-sync'),
+    );
+    expect(ordinary.length).toBeGreaterThan(0);
+    // And it closes: the last line of a meeting is said and the meeting shut
+    // inside one step, so the closing row is the half a beat word cannot do.
+    expect(playUntil(mount, () => marks().includes(`${SYNC_WORD} ends`))).toBe(true);
+    expect(marks().filter((m) => m === `${SYNC_WORD} starts`)).toHaveLength(1);
+    // Still not a digit in the pane (G23).
+    expect(/\d/.test(chat.textContent ?? '')).toBe(false);
+  });
+});
+
+// ——— less movement, when the system asks for it ————————————————————————————
+
+describe('less movement, when the system asks for it', () => {
+  /** This browser's answer to the reduced-motion query, for one test. */
+  function stubMotion(reduce: boolean): () => void {
+    const was = window.matchMedia;
+    window.matchMedia = ((query: string) =>
+      ({
+        matches: reduce && query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false,
+      }) as unknown as MediaQueryList) as unknown as typeof window.matchMedia;
+    return () => {
+      window.matchMedia = was;
+    };
+  }
+
+  /** Send one line wrong, which is what the editor's jolt is cued off. */
+  function sendBadLine(m: VibeMount): void {
+    run(m, 1);
+    const target = liveTarget();
+    expect(target).not.toBe('');
+    press(target[0] === 'x' ? 'q' : 'x');
+    run(m, 1);
+    press('Enter');
+    run(m, 2);
+  }
+
+  const paid = () =>
+    Number(root.querySelector('.vibe-valuation .vibe-num')?.textContent ?? '0') > 0;
+
+  it('shakes the editor and throws the confetti when nothing was asked for', () => {
+    const restore = stubMotion(false);
+    try {
+      mount = mountLevel();
+      expect(mount.debug().motion.calm).toBe(false);
+      sendBadLine(mount);
+      expect(mount.debug().motion.shake).toBeGreaterThan(0);
+      const m = mount;
+      // The burst is thrown on a ship and falls out of the air a second or
+      // so later, so the play stops on the frame it appears.
+      expect(playUntil(m, () => m.debug().motion.specks > 0)).toBe(true);
+    } finally {
+      restore();
+    }
+  });
+
+  it('drops the shake, the white and the confetti when it was', () => {
+    const restore = stubMotion(true);
+    try {
+      mount = mountLevel();
+      expect(mount.debug().motion.calm).toBe(true);
+      sendBadLine(mount);
+      // The pane does not move, and the transform is never written.
+      expect(mount.debug().motion.shake).toBe(0);
+      expect((root.querySelector('.vibe-editor') as HTMLElement).style.transform).toBe('');
+      expect(playUntil(mount, paid)).toBe(true);
+      // The ship still lands; the field just does not flash or burst.
+      expect(mount.debug().motion.specks).toBe(0);
+      expect(mount.debug().motion.flash).toBe(0);
+      expect((root.querySelector('.vibe-editor') as HTMLElement).style.transform).toBe('');
+    } finally {
+      restore();
+    }
+  });
+});
+
+// ——— the level, under an endless run ———————————————————————————————————————
+
+describe('the product, in endless', () => {
+  it('moves the chat header and the preview label onto the new level', () => {
+    mount = mountVibeTyper(root, {
+      tier: 0,
+      endless: true,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    const who = () => root.querySelector('.vibe-chat .vibe-who')?.textContent;
+    const label = () => root.querySelector('canvas.vibe-preview')?.getAttribute('aria-label');
+    const first = mount.debug().product;
+    expect(mount.debug().level).toBe(0);
+    expect(who()).toBe(first);
+    expect(label()).toBe(`the product as it is built: ${first}`);
+
+    const m = mount;
+    expect(playUntil(m, () => m.debug().level > 0, 12000)).toBe(true);
+    const second = m.debug().product;
+    // Two levels, two products: the header and the label follow the level
+    // rather than staying on the one the run opened with.
+    expect(second).not.toBe(first);
+    expect(who()).toBe(second);
+    expect(label()).toBe(`the product as it is built: ${second}`);
   });
 });

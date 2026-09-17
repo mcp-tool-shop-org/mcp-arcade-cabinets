@@ -7,6 +7,10 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 
+# compiler output (tsconfig.base.json sets declaration: true) co-located
+# next to hand-written scripts, not authored source
+**/scripts/**/*.d.mts
+
 # 1024 originals for a sprite batch; the cabinet ships 128 px downscales
 docs/art/originals-2/
 

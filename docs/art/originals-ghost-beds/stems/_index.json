@@ -1,0 +1,210 @@
+{
+ "inspect": {
+  "drums": {
+   "job_id": "a374eb9b-d216-48de-b021-3056dd0c9e77",
+   "node": "3",
+   "cloud_filename": "3076605c128a7261778ec63eac3bd30ce3966699870e747fc5355a84d09965e2.flac",
+   "bytes": 1064009
+  },
+  "bass": {
+   "job_id": "a374eb9b-d216-48de-b021-3056dd0c9e77",
+   "node": "4",
+   "cloud_filename": "125db4c6a2e1df4475f62ade7d4e676eebf3b5cd3519c99c4a6ddfff2aae2c7d.flac",
+   "bytes": 1586892
+  },
+  "other": {
+   "job_id": "a374eb9b-d216-48de-b021-3056dd0c9e77",
+   "node": "5",
+   "cloud_filename": "e179f2df5f5c6d7c14324309c56a85cccc81e56f39d513b823feff0809aaaccd.flac",
+   "bytes": 2529316
+  },
+  "vocals": {
+   "job_id": "a374eb9b-d216-48de-b021-3056dd0c9e77",
+   "node": "6",
+   "cloud_filename": "5a7fa6d8fdc40c4c1e6473301a61799c74f25cf839c368ab0c9855a98dc0fc5b.flac",
+   "bytes": 2305002
+  }
+ },
+ "poison": {
+  "drums": {
+   "job_id": "a8b51153-9d0a-46a8-8913-7480fc729def",
+   "node": "3",
+   "cloud_filename": "665798edb26c6075d249dd05ff4e8d17a108c2360679dca0ed6ef6d66687599a.flac",
+   "bytes": 857293
+  },
+  "bass": {
+   "job_id": "a8b51153-9d0a-46a8-8913-7480fc729def",
+   "node": "4",
+   "cloud_filename": "ff60719a309b10bc2596c03d74dcb5dbef9f060e6812786aa5f9623361d99c9a.flac",
+   "bytes": 1275252
+  },
+  "other": {
+   "job_id": "a8b51153-9d0a-46a8-8913-7480fc729def",
+   "node": "5",
+   "cloud_filename": "76d3296ff9524891ca42b94cc3d441477003b33d1c8f2a47263b89f4a3828d4b.flac",
+   "bytes": 1597571
+  },
+  "vocals": {
+   "job_id": "a8b51153-9d0a-46a8-8913-7480fc729def",
+   "node": "6",
+   "cloud_filename": "9f733c0713f4b9cf6560e7c675700a4c0056c1357622be81814493c221a7c79c.flac",
+   "bytes": 1698002
+  }
+ },
+ "rug": {
+  "drums": {
+   "job_id": "36e53c38-6dea-43fb-8981-6bb334d0dd5c",
+   "node": "3",
+   "cloud_filename": "c7be335a6df80b2f568dfd9f92e39e0693962ec8d5ac5ab08636a1b184a0a445.flac",
+   "bytes": 911782
+  },
+  "bass": {
+   "job_id": "36e53c38-6dea-43fb-8981-6bb334d0dd5c",
+   "node": "4",
+   "cloud_filename": "b6f3cc0f33d95b3692e72cdf4dd295e5ec12f99c44a6518a0e4a183c3211fa07.flac",
+   "bytes": 1107068
+  },
+  "other": {
+   "job_id": "36e53c38-6dea-43fb-8981-6bb334d0dd5c",
+   "node": "5",
+   "cloud_filename": "dae4c927eec70a8d93fc2910d88bf7fd1c8d9a12c55ffe8b6e6dfa8a78cecaef.flac",
+   "bytes": 1643459
+  },
+  "vocals": {
+   "job_id": "36e53c38-6dea-43fb-8981-6bb334d0dd5c",
+   "node": "6",
+   "cloud_filename": "2b55a003c2285174959f2c2082a8f5da8c91a8e7b858ca121836966000e94e27.flac",
+   "bytes": 2080816
+  }
+ },
+ "unlisted": {
+  "drums": {
+   "job_id": "8f2f9f36-83a4-4be6-855f-78dc6d093ab0",
+   "node": "3",
+   "cloud_filename": "2d5d68e65b8f3bae9d8c56cbfb6e92c6fb82d0c80969271c00a5784267270bb9.flac",
+   "bytes": 1213954
+  },
+  "bass": {
+   "job_id": "8f2f9f36-83a4-4be6-855f-78dc6d093ab0",
+   "node": "4",
+   "cloud_filename": "46891e95701b77e21649e0c068fa36c7b8e703dbde571d85f8ba04b087a5ad53.flac",
+   "bytes": 1578269
+  },
+  "other": {
+   "job_id": "8f2f9f36-83a4-4be6-855f-78dc6d093ab0",
+   "node": "5",
+   "cloud_filename": "44fbb871d85bb36aa08eabb57481349d3a5ba9ca134d43b212425b439d5e47a5.flac",
+   "bytes": 2913726
+  },
+  "vocals": {
+   "job_id": "8f2f9f36-83a4-4be6-855f-78dc6d093ab0",
+   "node": "6",
+   "cloud_filename": "d087ff52faaf3cf8290311acc99e2d6aea4511a1424451fe60bb53a285fd6017.flac",
+   "bytes": 2502000
+  }
+ },
+ "breather": {
+  "drums": {
+   "job_id": "2f17c16a-a44d-4104-aada-94fcc4cb8713",
+   "node": "3",
+   "cloud_filename": "5c3858de208bae57a78fd169fda60c4480c5436b7dd2c14f7b6141269b3e80b9.flac",
+   "bytes": 909056
+  },
+  "bass": {
+   "job_id": "2f17c16a-a44d-4104-aada-94fcc4cb8713",
+   "node": "4",
+   "cloud_filename": "fc409b9666c39e59a99eaaaed3d55bdf2e53bec72f7c6e4ba51c855013c8ba4d.flac",
+   "bytes": 1255427
+  },
+  "other": {
+   "job_id": "2f17c16a-a44d-4104-aada-94fcc4cb8713",
+   "node": "5",
+   "cloud_filename": "1a694efc1add9b1542452c45285178a0c9e4b1504f4cd1a72ec354b4ae553bd2.flac",
+   "bytes": 1949302
+  },
+  "vocals": {
+   "job_id": "2f17c16a-a44d-4104-aada-94fcc4cb8713",
+   "node": "6",
+   "cloud_filename": "1e4bed53d7b413f94a4262d912dbeca114942b231de04335f25d8a3c4690c315.flac",
+   "bytes": 2366567
+  }
+ },
+ "whisperer": {
+  "drums": {
+   "job_id": "53831281-0c86-4575-850b-dd91b732b178",
+   "node": "3",
+   "cloud_filename": "cbaa3890411fbd08e8d623502600b889257c0d330a42ed52d406fdbb7ca0bb12.flac",
+   "bytes": 1042317
+  },
+  "bass": {
+   "job_id": "53831281-0c86-4575-850b-dd91b732b178",
+   "node": "4",
+   "cloud_filename": "8cb9118a9eeb665908de57abcf9e41fe2bf1dd316eebe2fd91f82719a1618a3f.flac",
+   "bytes": 1604604
+  },
+  "other": {
+   "job_id": "53831281-0c86-4575-850b-dd91b732b178",
+   "node": "5",
+   "cloud_filename": "16afe370e2170ff481d63b9c6fef4274a62eae240129562febb5b3f3ce63c1eb.flac",
+   "bytes": 2529122
+  },
+  "vocals": {
+   "job_id": "53831281-0c86-4575-850b-dd91b732b178",
+   "node": "6",
+   "cloud_filename": "368171b54442b650cbaa7b93da4b957f0c5fe789fdb3a50db05edd9be2cbfd2a.flac",
+   "bytes": 2183639
+  }
+ },
+ "menu": {
+  "drums": {
+   "job_id": "7ce31a6e-16d8-45e9-a902-1df7fdf2f823",
+   "node": "3",
+   "cloud_filename": "03cc3daf79638807d26e9270568280d67858f195d637eccc9626db049081a0ee.flac",
+   "bytes": 1105762
+  },
+  "bass": {
+   "job_id": "7ce31a6e-16d8-45e9-a902-1df7fdf2f823",
+   "node": "4",
+   "cloud_filename": "11e01e650ecdc001b736cbffc84b6f8c264dd48711feee78e82eff11d22e23e0.flac",
+   "bytes": 1559360
+  },
+  "other": {
+   "job_id": "7ce31a6e-16d8-45e9-a902-1df7fdf2f823",
+   "node": "5",
+   "cloud_filename": "2e6d0bf0bc2ffc89ce78166e0eee472a588ddc5e59be2140594b2052e1ae4b08.flac",
+   "bytes": 2324181
+  },
+  "vocals": {
+   "job_id": "7ce31a6e-16d8-45e9-a902-1df7fdf2f823",
+   "node": "6",
+   "cloud_filename": "0253ca9700c4243daf0e0d1c229bb14176ce8f1ae422771d77dc6bde1b570cf3.flac",
+   "bytes": 2594267
+  }
+ },
+ "doorman": {
+  "drums": {
+   "job_id": "4e614fd9-2f96-4396-9b56-13c9165b37ae",
+   "node": "3",
+   "cloud_filename": "fa1635d9d6f348125534c56eb960bfcd961392e58b083937891277c96ca2c06f.flac",
+   "bytes": 1389083
+  },
+  "bass": {
+   "job_id": "4e614fd9-2f96-4396-9b56-13c9165b37ae",
+   "node": "4",
+   "cloud_filename": "5166652589c407942e72d622a37807aba2ef8bf8b610aadd6f5d542f931fb31a.flac",
+   "bytes": 1835267
+  },
+  "other": {
+   "job_id": "4e614fd9-2f96-4396-9b56-13c9165b37ae",
+   "node": "5",
+   "cloud_filename": "93fc35732e7cea87f5cff632c3c821a1e6baf72bccc845876a76894d59d89d7f.flac",
+   "bytes": 3974149
+  },
+  "vocals": {
+   "job_id": "4e614fd9-2f96-4396-9b56-13c9165b37ae",
+   "node": "6",
+   "cloud_filename": "0bf378a7d3d08f0ff81434bd4d676a28c142c34763b5c85c641e21dbb11bcd7e.flac",
+   "bytes": 3624912
+  }
+ }
+}

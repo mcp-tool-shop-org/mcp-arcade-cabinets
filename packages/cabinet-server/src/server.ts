@@ -27,6 +27,7 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 import { createCabinet, type Cabinet } from './cabinet';
 import { assertCatalogTools, CONTRACT, type ToolDef } from './contract';
 import { hostForRound, tapeCards, type Live } from './host';
+import { createStepFaults, guardStep } from './step-guard';
 import { speakLine, voiceHealth } from './voice';
 
 /** Seconds between liveness probes of the voice worker, off the beat. */
@@ -277,11 +278,13 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   });
   const server = buildServer(h.cabinet);
   let last = Date.now();
+  // A throw from the sim is a quiet round, never a dead server (see step-guard).
+  const step = guardStep(h.step, createStepFaults());
   const timer = setInterval(() => {
     const now = Date.now();
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    h.step(dt);
+    step(dt);
   }, 33);
   timer.unref();
   const probeTimer = setInterval(h.probe, VOICE_PROBE_S * 1000);

@@ -1088,6 +1088,7 @@
       "the product shipped and my plants cheered."
     ]
   },
+  "reactionsByTopicEnabled": false,
   "reactionsByTopic": {
     "print": [
       "the ink dries into something i can keep.",
@@ -3530,20 +3531,17 @@
     "my cousin cried a little, in a good way.",
     "the investors want a second demo tomorrow.",
     "it works on my phone and that is all i needed.",
-    "we are live and i have never felt taller.",
     "my mom says it looks very official.",
     "this is the best thing we have ever shipped.",
     "the team is quiet, which means they are impressed.",
     "i refreshed it nine times and it stayed up.",
     "it does exactly what i asked, which is new.",
     "i showed my cousin and now we have a mascot.",
-    "we are going to need a bigger office for this.",
-    "the launch party is on and you are invited."
+    "we are going to need a bigger office for this."
   ],
   "reviewsByProduct": {
     "cat-website": [
       "my cat has never looked more professional.",
-      "my cat now has a working contact form.",
       "the website for my cat understands his brand."
     ],
     "duck-rides": [
@@ -3553,18 +3551,13 @@
     ],
     "handwriting-rater": [
       "my handwriting finally gets the recognition it deserves.",
-      "the website says my loops are very confident.",
-      "the rating for my grocery list is fair."
+      "the website says my loops are very confident."
     ],
     "sandwich-ledger": [
       "my sandwich history is finally fully transparent.",
       "the ledger proves i prefer mustard after all."
     ],
-    "fridge-chain": [
-      "the fridge now knows who takes my yogurt.",
-      "my yogurt has never been more tracked.",
-      "the office fridge finally has perfect memory."
-    ],
+    "fridge-chain": ["the office fridge finally has perfect memory."],
     "plant-dashboard": [
       "my fern has never looked more monitored.",
       "the dashboard says my fern is thriving.",
@@ -3606,7 +3599,6 @@
       "my book club has never been more scenic."
     ],
     "app-that-rates-apps": [
-      "the app gives my calendar high marks.",
       "my apps have never been more judged.",
       "the rating for my notes app feels accurate."
     ],
@@ -3657,7 +3649,6 @@
     "no worries",
     "talk soon",
     "ready when you are",
-    "same link as before",
     "let me know",
     "that clarifies things",
     "appreciate the heads up",
@@ -3676,7 +3667,6 @@
     "almost ready",
     "that is the one",
     "no rush at all",
-    "same page now",
     "makes total sense",
     "checking on my end"
   ]

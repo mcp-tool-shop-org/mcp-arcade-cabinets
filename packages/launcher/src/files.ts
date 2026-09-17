@@ -2,9 +2,17 @@
 //
 // The launcher serves a directory inside its own npm package, so the only
 // way out of it is a crafted path. `resolveUnder` is the one place that
-// turn happens, and it answers null rather than a path whenever the result
-// would leave the root — including through `..`, an absolute path, a
-// backslash on Windows, or a percent-encoded form of any of those.
+// turn happens, and it answers null rather than a path whenever the NAME
+// would leave the root — through `..`, an absolute path, a backslash on
+// Windows, or a percent-encoded form of any of those.
+//
+// The check is lexical and stops there: the served tree is assumed to be
+// link-free. A symlink inside the shell that points outside the package
+// resolves to a name under the root, so this function keeps it and the file
+// is served. That is a decision, not an oversight — the served tree is
+// written by `scripts/build.mjs` out of the repo's own build outputs, and
+// npm tarballs do not carry symlinks — but it is why the comment says
+// "name" and not "file".
 
 import path from 'node:path';
 
@@ -42,6 +50,9 @@ export function typeFor(file: string): string {
  *
  * Decoding happens first, so `%2e%2e%2f` is judged as `../`. A path that
  * will not decode is refused rather than passed through raw.
+ *
+ * Lexical only: links are not resolved, so a link inside the tree that
+ * points outside it is answered. See the note at the top of this file.
  */
 export function resolveUnder(root: string, urlPath: string): string | null {
   let decoded: string;

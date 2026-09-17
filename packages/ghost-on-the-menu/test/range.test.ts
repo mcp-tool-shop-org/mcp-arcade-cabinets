@@ -70,10 +70,20 @@ describe('expressive range', () => {
   // Hole found and closed 2026-09-10: every fixture used to sit at 0.25
   // beats/s because the round was always 4 s per beat. Duration now follows
   // the tier's density from waves.json (W13).
+  // The floor was "at least two distinct points", which closed the 2026-09-10
+  // regression but let nineteen of twenty tapes collapse onto one density
+  // under a title that promises a spread. Measured on the twenty fixtures
+  // 2026-09-16: five distinct density@tier points, density 0.310..0.414
+  // (spread 0.104). The bars below measure the property the title names, with
+  // headroom, instead of the absence of the one regression that caused them.
   it('spreads the fixtures across density and tier, not one point', () => {
     const density = (f: (typeof all)[number]) => f.round.beats.length / f.round.duration;
+    const values = all.map(density);
+    const lo = Math.min(...values);
+    const hi = Math.max(...values);
     const points = new Set(all.map((f) => `${density(f).toFixed(3)}@${f.round.tier}`));
-    expect(points.size).toBeGreaterThanOrEqual(2);
+    expect(points.size, `points: ${[...points].sort().join(' ')}`).toBeGreaterThanOrEqual(4);
+    expect(hi - lo, `density ${lo.toFixed(3)}..${hi.toFixed(3)}`).toBeGreaterThanOrEqual(0.08);
     const tiers = new Set(all.map((f) => f.round.tier));
     expect(tiers.has(0)).toBe(true);
     expect(tiers.has(2)).toBe(true);

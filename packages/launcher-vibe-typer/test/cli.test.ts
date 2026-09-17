@@ -1,6 +1,16 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { main, parseArgs, version } from '../src/cli';
+import { exitAfter, forwardSignals, main, parseArgs, version, versionIn } from '../src/cli';
+
+const PKG = path.resolve(__dirname, '..');
+const DECLARED = (
+  JSON.parse(readFileSync(path.join(PKG, 'package.json'), 'utf8')) as {
+    version: string;
+  }
+).version;
 
 describe('the vibe-typer launcher arguments', () => {
   it('plays in the browser when asked for nothing, on its own port', () => {
@@ -13,7 +23,23 @@ describe('the vibe-typer launcher arguments', () => {
   });
 
   it('says what was wrong with a port rather than picking one', () => {
-    for (const bad of ['0', '65536', '-1', 'eight', '80.5', '']) {
+    for (const bad of [
+      '0',
+      '65536',
+      '-1',
+      'eight',
+      '80.5',
+      '',
+      // Forms `Number` takes and the help text does not describe. Left to
+      // `Number` these are 8080, 7778's neighbor and 1000 — a player who
+      // typed one gets a port they did not ask for and no word about it.
+      '0x1f90',
+      ' 7778 ',
+      '1e3',
+      '+7778',
+      '7778.0',
+      'Infinity',
+    ]) {
       const args = parseArgs(['--port', bad]);
       expect(args.mode, bad).toBe('help');
       expect(args.bad, bad).toMatch(/--port wants 1-65535/);
@@ -54,11 +80,74 @@ describe('the vibe-typer launcher arguments', () => {
     expect(stdout).toContain('OLLAMA_URL');
     // The worker's default port, so a player knows which one `pnpm voice` is.
     expect(stdout).toContain('7788');
+    // CABINET_TAPES is read in --mcp and does nothing in play mode; the
+    // README says so and the help used to list it as a plain variable.
+    expect(stdout).toContain('CABINET_TAPES     with --mcp:');
+    // The allowlist is shared with the shooter and passes generate, which
+    // this text used to leave out — and it is the one verb that writes a
+    // completion on the player's daemon.
+    expect(stdout).toContain('model list, chat and generate');
   });
 
-  it('reports the published version, not a placeholder', () => {
-    expect(version()).toMatch(/^\d+\.\d+\.\d+/);
+  // A regex only ever said "some version". What is being published is this
+  // package's own version, and a launcher reporting a different one than the
+  // tarball it is in is the failure worth catching.
+  it('reports the version this package is publishing', () => {
+    expect(version()).toBe(DECLARED);
     expect(version()).not.toBe('0.0.0');
+  });
+
+  // `version()` resolves package.json one directory above the module, and in
+  // the tarball that module is `dist/cli.js`, not `src/cli.ts` — a different
+  // path than the one every other case exercises. Every failure in there
+  // answers '0.0.0' silently, so the packaged layout is asserted rather than
+  // assumed. No build needed: both layouts sit one directory under the root.
+  it('resolves the same version from the packaged layout as from the source one', () => {
+    expect(versionIn(path.join(PKG, 'src'))).toBe(DECLARED);
+    expect(versionIn(path.join(PKG, 'dist'))).toBe(DECLARED);
+    expect(versionIn(path.join(PKG, 'dist', 'deeper'))).toBe('0.0.0');
+  });
+});
+
+// ——— what the launcher leaves with when the MCP child is killed ——————————————
+//
+// The same pair the shooter's launcher carries, and they change together. The
+// launcher re-raises the child's signal at itself so the MCP host sees a kill
+// rather than an exit; that only works if our own forwarding handlers are
+// gone first, or the re-raised signal is delivered to them, the default
+// terminate action is suppressed, and the launcher leaves with 0.
+
+describe('passing signals to the cabinet server', () => {
+  it('installs both, passes them on, and takes exactly those two off again', () => {
+    const on: string[] = [];
+    const off: string[] = [];
+    const handlers = new Map<string, () => void>();
+    const host = {
+      on(signal: NodeJS.Signals, handler: () => void) {
+        on.push(signal);
+        handlers.set(signal, handler);
+        return undefined;
+      },
+      off(signal: NodeJS.Signals, handler: () => void) {
+        if (handlers.get(signal) === handler) off.push(signal);
+        return undefined;
+      },
+    };
+    const killed: string[] = [];
+    const stop = forwardSignals({ killed: false, kill: (s) => killed.push(s) }, host);
+    expect(on).toEqual(['SIGINT', 'SIGTERM']);
+    handlers.get('SIGTERM')?.();
+    expect(killed).toEqual(['SIGTERM']);
+    stop();
+    expect(off).toEqual(['SIGINT', 'SIGTERM']);
+  });
+
+  it('leaves with the signal, not with zero and not with a flat one', () => {
+    expect(exitAfter(0, null)).toBe(0);
+    expect(exitAfter(3, null)).toBe(3);
+    expect(exitAfter(null, 'SIGINT')).toBe(130);
+    expect(exitAfter(null, 'SIGTERM')).toBe(143);
+    expect(exitAfter(null, 'SIGKILL')).toBe(137);
   });
 });
 

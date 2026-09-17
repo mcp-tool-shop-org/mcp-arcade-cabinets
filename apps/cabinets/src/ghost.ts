@@ -164,6 +164,42 @@ function reduceMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/**
+ * The boss-intent prefetch's per-round bookkeeping: when the last ask went
+ * out, on the round's own clock, and whether one is in flight.
+ */
+export interface QueueClock {
+  lastAsk: number;
+  busy: boolean;
+}
+
+/** A clock for a round that has asked for nothing yet. */
+export function newQueueClock(): QueueClock {
+  return { lastAsk: Number.NEGATIVE_INFINITY, busy: false };
+}
+
+/** Whether a prefetch is owed: verbs are short, none is in flight, the wait has passed. */
+export function queueDue(clock: QueueClock, t: number, wait: number, need: number): boolean {
+  return need > 0 && !clock.busy && t - clock.lastAsk >= wait;
+}
+
+/**
+ * Whether verbs asked for one view may still be pushed onto the round on the
+ * field. A prefetch resolves long after the ask; a restart replaces `state`
+ * wholesale and bumps the fire generation, so an answer drawn for the round
+ * before is dropped rather than queued. The fire seat admits on exactly this
+ * test; the queue path guarded only on having left the mount.
+ */
+export function admitIntents(a: {
+  left: boolean;
+  gen: number;
+  fireGen: number;
+  asked: unknown;
+  live: unknown;
+}): boolean {
+  return !a.left && a.gen === a.fireGen && a.asked === a.live;
+}
+
 function chromeTarget(t: EventTarget | null): boolean {
   return t instanceof Element && Boolean(t.closest('input, select, button, label, textarea'));
 }
@@ -815,8 +851,17 @@ export function mountGhost(
     });
   };
   let fireSeat = newSeat();
-  let queueBusy = false;
-  let lastQueueAsk = Number.NEGATIVE_INFINITY;
+  /**
+   * The boss-intent prefetch's bookkeeping, which belongs to the round and
+   * not to the mount: a restart draws a new round whose clock starts at zero.
+   * Carried over, `lastAsk` holds a time in the new round's future and the
+   * gate below (`state.t - lastAsk >= wait`) stays shut until the new clock
+   * passes it — a restart late in a round left most of the next one with no
+   * queued intents at all, silently on the scripted path. `busy` travels with
+   * it so an ask still in flight over a restart does not hold the new round's
+   * gate shut either.
+   */
+  let queue = newQueueClock();
   // Keep the seat warm (G13): one real ask per model before it is needed.
   const warmed = new Set<string>();
   const warm = () => {
@@ -928,6 +973,9 @@ export function mountGhost(
     live.round = round;
     live.state = state;
     fireSeat = newSeat();
+    // A new round, a new prefetch clock: the one before holds an ask time on
+    // the old round's clock, which the new one starts below.
+    queue = newQueueClock();
     sayKey = '';
     sayAt = Number.NEGATIVE_INFINITY;
     spokenSpawn = '';
@@ -1052,23 +1100,31 @@ export function mountGhost(
         fireSeat.tick(v, state.t, state.bossIntent !== null);
         const k = host.takeSfx();
         if (k && audio) audio.play(k);
-        if (v.kind !== null && !queueBusy) {
+        if (v.kind !== null && !queue.busy) {
           const tier = String(round.tier) as '0' | '1' | '2' | '3';
           const lever = attachedPatterns(round).fire.tiers[tier].boss.pilot;
           const look = lever.lookAhead;
           const period = beatSeconds(round);
           const wait = cadenceAt(lever, state.parallelism ? 1.5 : 1) * period;
           const need = look - state.bossQueue.length;
-          if (need > 0 && state.t - lastQueueAsk >= wait) {
-            queueBusy = true;
-            lastQueueAsk = state.t;
+          if (queueDue(queue, state.t, wait, need)) {
+            // The clock, the generation and the round this ask was drawn for,
+            // held for the answer: the prefetch resolves long after the ask,
+            // and a restart replaces both the clock and `state` wholesale.
+            const clock = queue;
+            const gen = fireGen;
+            const asked = state;
+            clock.busy = true;
+            clock.lastAsk = state.t;
             void askNextIntents(
               { url: '/ollama/api/generate', model: fireOpts().model },
               v,
               need,
             ).then((verbs) => {
-              queueBusy = false;
-              if (left) return;
+              clock.busy = false;
+              // Verbs drawn for a view that is no longer on the field are
+              // dropped, not queued — the same admit the fire seat makes.
+              if (!admitIntents({ left, gen, fireGen, asked, live: state })) return;
               state.bossQueue.push(...verbs);
             });
           }
@@ -1178,4 +1234,17 @@ export function mountGhost(
   });
   if (startAudio) ensureAudio();
   canvas.focus();
+
+  // A handle, for the tests. The page ignores it: `playAt` and the shift both
+  // mount and walk away, and nothing on the field reads any of this.
+  return {
+    unmount: leave,
+    debug: () => ({
+      wave: state.wave,
+      t: state.t,
+      /** The round's prefetch bookkeeping, live — a test writes to it. */
+      queue,
+      queued: state.bossQueue.length,
+    }),
+  };
 }

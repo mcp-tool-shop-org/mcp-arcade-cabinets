@@ -1,0 +1,33 @@
+The voice worker's tests.
+
+Run them from the repo root:
+
+    python -m unittest discover -s voice/tests -t voice/tests
+
+Nothing here needs weights, a GPU or a model download: `test_worker.py` loads
+`voice/worker.py` by path and stands it up on a loopback port with a stub in
+place of Kokoro and faster-whisper. Only `numpy` and `soundfile` (the worker's
+own module-level imports) have to be importable.
+
+What is covered, and why each one matters to the TypeScript side:
+
+  the bearer gate       /speak, /stats and /audio refuse without it, and with
+                        a wrong token of the same length; /health stays open,
+                        because the cabinet's liveness probe leans on that
+  the body cap          an over-long POST is refused on its content-length,
+                        before the body is read
+  the authored ranges   preset, rate, loudness, max_gap_s and the kind/preset
+                        lengths are the bounds personas.json is written to
+  the take              audio is served only when the receipt beside it says
+                        ok, and a take id is the twenty hex characters
+                        `line_id()` mints and nothing else
+  the cache             the oldest take is evicted with its audio at the cap,
+                        and a cached failed receipt is never re-rendered
+  the accept path       a handler timeout, HTTP/1.0, daemon threads and a cap
+                        on the sockets in flight — the bearer gate runs after
+                        a thread is spawned, so it cannot protect this
+  the cast hint         the ASR's vocabulary hint is read from the persona
+                        sheets, so a new boss cannot fall out of step with it
+
+These are not wired into CI here: the workflow files are outside this
+directory's scope.

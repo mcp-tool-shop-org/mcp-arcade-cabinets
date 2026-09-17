@@ -85,9 +85,19 @@ export const MAX_WORDS = 12;
 const MIN_ASKS = 8;
 const MIN_REACTIONS = 36;
 const MIN_CREEPS = 12;
-const MIN_REVIEWS = 12;
-/** A quick sync is three of these; a level must never repeat one. */
-const MIN_SYNCS = 36;
+// Ten since the health pass: the generic reviews also serve as the reaction while
+// the by-topic pool is off, and a level draws at most three reactions and one
+// verdict, so ten leaves room with no repeat; two lines that asserted a launch
+// mid-level were cut by the lead.
+const MIN_REVIEWS = 10;
+/**
+ * A quick sync is three of these; a level must never repeat one. The floor
+ * is what a level's draw needs with room to spare, not the count the pool
+ * happened to have: two sync lines were cut when the pool joined the
+ * lines-neutral gate (they named a piece the request never asked for) and a
+ * floor pinned to the old size would have made the cut a halt.
+ */
+const MIN_SYNCS = 32;
 /** A sync line is chatter, not a sentence: five words is the ceiling (slice 2). */
 const MAX_SYNC_WORDS = 5;
 /** Check-ins and the agent's answers to them: a level draws a few of each. */
@@ -95,7 +105,8 @@ const MIN_NAGS = 16;
 const MIN_NAG_REPLIES = 12;
 const MIN_REPLIES = 16;
 const MIN_HMM = 12;
-const MIN_COMPACTIONS = 24;
+/** Lowered with MIN_SYNCS, and for the same reason: two lines were cut. */
+const MIN_COMPACTIONS = 20;
 const MIN_SHIPS = 8;
 
 /**
@@ -262,6 +273,18 @@ export interface UserSet {
   reactions: TierLines;
   /** Reactions that know what shipped, keyed by a corpus topic (slice 3). */
   reactionsByTopic: Record<string, string[]>;
+  /**
+   * Whether the picker may draw `reactionsByTopic` at all. Off.
+   *
+   * The pool is keyed to the *code construct* a snippet carries, not to the
+   * request the user made, so the line that lands after an ask reads as a
+   * metaphor for a loop or an insert and not as an answer: "the new duck
+   * slips into the lineup." after "add my first sandwich to a ledger". Until
+   * an authoring run writes reactions per snippet, the picker draws the
+   * tier's neutral reactions, which are held to the lines-neutral gate. The
+   * data and the loader stay so that run has somewhere to land.
+   */
+  reactionsByTopicEnabled: boolean;
   creeps: string[];
   reviews: string[];
   /** Reviews that name the product, keyed by level id (slice 3). */
@@ -768,10 +791,16 @@ function loadUser(raw: unknown): UserSet {
       MIN_ASKS,
     );
   }
+  // The lever that decides whether the by-topic pool is ever drawn. Absent
+  // reads as off, so a lever file that predates the switch loads and plays
+  // the neutral reactions.
+  const enabled = obj.reactionsByTopicEnabled;
+  if (enabled !== undefined && typeof enabled !== 'boolean') fail(file, 'reactionsByTopicEnabled');
   return {
     asks,
     reactions: loadTierLines(req(obj, file, 'reactions'), file, 'reactions', MIN_REACTIONS),
     reactionsByTopic: loadPools(req(obj, file, 'reactionsByTopic'), file, 'reactionsByTopic'),
+    reactionsByTopicEnabled: enabled === true,
     creeps: loadLines(req(obj, file, 'creeps'), file, 'creeps', MIN_CREEPS),
     reviews: loadLines(req(obj, file, 'reviews'), file, 'reviews', MIN_REVIEWS),
     reviewsByProduct: loadPools(req(obj, file, 'reviewsByProduct'), file, 'reviewsByProduct'),
@@ -855,6 +884,15 @@ export function loadPatterns(raw: unknown): Patterns {
   for (const [i, def] of levels.levels.entries()) {
     if (!user.asks[def.stack]) fail('user.json', `asks.${def.stack}`);
     if (def.stack === 'integration' && def.snippets) fail('levels.json', `levels.${i}.snippets`);
+  }
+  // A review keyed to a product that is not a level id never fires: the
+  // picker looks the plan's id up and falls through to the generic pool with
+  // no signal at all. Every other lever in this file halts at load on a bad
+  // key, and this one now does too — a renamed level takes its reviews with
+  // it or the cabinet does not start.
+  const levelIds = new Set(levels.levels.map((def) => def.id));
+  for (const name of Object.keys(user.reviewsByProduct)) {
+    if (!levelIds.has(name)) fail('user.json', `reviewsByProduct.${name}`);
   }
   return {
     cabinet: loadCabinet(obj.cabinet),

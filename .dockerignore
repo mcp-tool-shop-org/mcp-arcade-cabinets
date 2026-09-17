@@ -11,3 +11,14 @@ apps/cabinets/src
 .github
 *.md
 !packages/**/*.md
+# In step with .gitignore, which excludes these from the tree but not from
+# the build context. A swarm worktree under .swarm is a whole copy of this
+# repo and would be sent to the daemon on every build; a developer .env
+# beside a package would be copied into the build stage by
+# `COPY packages ./packages`, even though the root COPY list is explicit and
+# nothing but dist/ and the tapes reaches the final image.
+.swarm
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem

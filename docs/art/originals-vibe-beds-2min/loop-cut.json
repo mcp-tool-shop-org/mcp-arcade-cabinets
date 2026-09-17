@@ -1,0 +1,65 @@
+{
+ "bash": {
+  "master": "bash-8202.flac",
+  "window_start_s": 5.91,
+  "body_end_s": 47.2,
+  "bars": 16,
+  "bpm": 96.0,
+  "seconds": 40.0,
+  "sample_rate": 48000
+ },
+ "csharp": {
+  "master": "csharp-8203.flac",
+  "window_start_s": 6.37,
+  "body_end_s": 50.5,
+  "bars": 17,
+  "bpm": 96.0,
+  "seconds": 42.5,
+  "sample_rate": 48000
+ },
+ "java": {
+  "master": "java-8204.flac",
+  "window_start_s": 4.27,
+  "body_end_s": 44.8,
+  "bars": 16,
+  "bpm": 96.0,
+  "seconds": 40.0,
+  "sample_rate": 48000
+ },
+ "javascript": {
+  "master": "javascript-8205.flac",
+  "window_start_s": 7.62,
+  "body_end_s": 50.3,
+  "bars": 17,
+  "bpm": 96.0,
+  "seconds": 42.5,
+  "sample_rate": 48000
+ },
+ "python": {
+  "master": "python-8206.flac",
+  "window_start_s": 7.05,
+  "body_end_s": 45.9,
+  "bars": 15,
+  "bpm": 96.0,
+  "seconds": 37.5,
+  "sample_rate": 48000
+ },
+ "sql": {
+  "master": "sql-8207.flac",
+  "window_start_s": 6.97,
+  "body_end_s": 48.9,
+  "bars": 16,
+  "bpm": 96.0,
+  "seconds": 40.0,
+  "sample_rate": 48000
+ },
+ "integration": {
+  "master": "integration-8208.flac",
+  "window_start_s": 6.47,
+  "body_end_s": 49.3,
+  "bars": 17,
+  "bpm": 96.0,
+  "seconds": 42.5,
+  "sample_rate": 48000
+ }
+}

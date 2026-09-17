@@ -7,7 +7,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { VoiceJob } from '../src/host';
 import { DEFAULT_PERSONAS } from '../src/personas';
-import { createVoicer, speakLine, voiceHealth, type SpeakAnswer } from '../src/voice';
+import { AUDIO_URL, createVoicer, speakLine, voiceHealth, type SpeakAnswer } from '../src/voice';
+
+/** A take id the worker can actually mint: `line_id()` is twenty hex characters. */
+const TAKE = 'a1b2c3d4e5f60718293a';
+const TAKE_URL = `/audio/${TAKE}.wav`;
 
 const JOB: VoiceJob = {
   text: 'The plate is out, and the plate has opinions.',
@@ -31,7 +35,7 @@ function receipt(ok: boolean, cached = false): SpeakAnswer {
     status: ok ? 'voiced' : 'receipt failed',
     ms: 800,
     receipt: {
-      id: 'abc',
+      id: TAKE,
       ok,
       text: JOB.text,
       heard: JOB.text,
@@ -40,7 +44,7 @@ function receipt(ok: boolean, cached = false): SpeakAnswer {
       asr_s: 0.3,
       cached,
       checks: [{ check: 'no_invented_speech', ok, detail: ok ? 'clean' : 'one unscripted word' }],
-      url: ok ? '/audio/abc.wav' : null,
+      url: ok ? TAKE_URL : null,
     },
   };
 }
@@ -63,7 +67,7 @@ describe('the voicer', () => {
     d.resolve(receipt(true));
     await flush();
     v.tick(10.9, own, false, false);
-    expect(played).toEqual(['/audio/abc.wav']);
+    expect(played).toEqual([TAKE_URL]);
     expect(status).toEqual([
       'voice speaking ahead',
       'voice: receipt ok',
@@ -90,7 +94,7 @@ describe('the voicer', () => {
     v.tick(15, null, false, false);
     expect(played).toEqual([]);
     v.tick(20, null, true, false); // the breather
-    expect(played).toEqual(['/audio/abc.wav']);
+    expect(played).toEqual([TAKE_URL]);
     expect(v.stats().playedInBreather).toBe(1);
 
     const e = deferred<SpeakAnswer>();
@@ -136,7 +140,7 @@ describe('the voicer', () => {
     s.resolve(receipt(true));
     await flush();
     u.tick(10.5, { kind: 'wave', text: 'unlisted', line: JOB.text }, false, false);
-    expect(played).toEqual(['/audio/abc.wav']);
+    expect(played).toEqual([TAKE_URL]);
     played.length = 0;
     // A newer line arrives before the breather: the held take is dropped, not played later.
     const e = deferred<SpeakAnswer>();
@@ -211,14 +215,14 @@ describe('the worker client', () => {
       return {
         ok: true,
         status: 200,
-        json: async () => ({ ...receipt(true).receipt, url: '/audio/abc.wav' }),
+        json: async () => ({ ...receipt(true).receipt, url: TAKE_URL }),
       };
     });
     const h = await voiceHealth({ url: '/voice' });
     expect(h?.engine).toBe('kokoro-onnx');
     const a = await speakLine(JOB, { url: '/voice' });
     expect(a.status).toBe('voiced');
-    expect(a.receipt?.url).toBe('/audio/abc.wav');
+    expect(a.receipt?.url).toBe(TAKE_URL);
     const body = JSON.parse(sent[1]!.body!) as Record<string, unknown>;
     expect(body).toEqual({
       text: JOB.text,
@@ -292,7 +296,7 @@ describe('the worker client', () => {
       return {
         ok: true,
         status: 200,
-        json: async () => ({ ...receipt(true).receipt, url: '/audio/abc.wav' }),
+        json: async () => ({ ...receipt(true).receipt, url: TAKE_URL }),
       };
     }) as typeof fetch;
 
@@ -304,6 +308,41 @@ describe('the worker client', () => {
     await speakLine(JOB, { url: 'http://127.0.0.1:7788', fetchImpl });
     expect(sent[0]!.headers?.authorization).toBeUndefined();
     expect(sent[0]!.headers ?? {}).not.toHaveProperty('authorization');
+  });
+
+  it('a passed receipt whose url is not a take path is not a take', async () => {
+    // Both voicers hand receipt.url to a play hook that makes it a media url
+    // in a browser, so a hostile or misconfigured worker at VOICE_URL would
+    // otherwise control that string. The launcher's proxy allowlist blocks
+    // the practical exploit, but it lives in another package.
+    const answer = async (url: unknown): Promise<SpeakAnswer> => {
+      const fetchImpl = (async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({ ...receipt(true).receipt, url }),
+      })) as unknown as typeof fetch;
+      return speakLine(JOB, { url: '/voice', fetchImpl });
+    };
+    for (const bad of [
+      'https://elsewhere.example/take.wav',
+      '//elsewhere.example/audio/a1b2c3d4e5f60718293a.wav',
+      'javascript:alert(1)',
+      '/audio/../../etc/passwd.wav',
+      '/audio/a1b2c3d4e5f60718293a.wav?x=1',
+      '/audio/A1B2C3D4E5F60718293A.wav',
+      '/audio/abc.wav',
+      '/audio/.wav',
+      '',
+      null,
+      42,
+    ]) {
+      const a = await answer(bad);
+      expect(a.status, String(bad)).toBe('receipt failed');
+      expect(AUDIO_URL.test(String(bad)), String(bad)).toBe(false);
+    }
+    const good = await answer(TAKE_URL);
+    expect(good.status).toBe('voiced');
+    expect(good.receipt?.url).toBe(TAKE_URL);
   });
 
   it('voiceHealth probes /stats with the bearer (401 is not ready)', async () => {
