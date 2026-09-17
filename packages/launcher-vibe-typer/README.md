@@ -55,6 +55,19 @@ With the arcade's voice worker running on your machine (`pnpm voice` in the repo
 npx @mcptoolshop/vibe-typer --mcp
 ```
 
+For a client that reads a config file, the same thing as a server entry:
+
+```json
+{
+  "mcpServers": {
+    "vibe-typer": {
+      "command": "npx",
+      "args": ["-y", "@mcptoolshop/vibe-typer", "--mcp"]
+    }
+  }
+}
+```
+
 That speaks MCP on stdio instead of opening the game, and the seat it offers is the user's chair. An endless run plays inside it under a typist at a human pace; your client is the vibe coder, writing for the level after the one being typed. Four tools, all answered in words:
 
 | Tool      | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                        |
