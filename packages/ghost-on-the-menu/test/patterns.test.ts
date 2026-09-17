@@ -636,9 +636,12 @@ describe('the formation fire levers', () => {
   it("reads a rung cap on the ship's shots in flight, null or absent for none", () => {
     const raw = clone();
     const rungs = (raw.ladder as LadderRaw).rungs;
-    for (const r of rungs) expect(r.shotsInFlight ?? null).toBeNull();
+    // As shipped: seat holds three shots in the air; the other rungs say nothing.
     const set = loadPatterns(raw);
-    for (const r of set.ladder.rungs) expect(r.shotsInFlight).toBeNull();
+    for (const r of set.ladder.rungs) {
+      if (r.tier === 1) expect(r.shotsInFlight).toBe(3);
+      else expect(r.shotsInFlight).toBeNull();
+    }
     rungs[1]!.shotsInFlight = 2;
     expect(loadPatterns(raw).ladder.rungs[1]!.shotsInFlight).toBe(2);
     delete rungs[1]!.shotsInFlight;

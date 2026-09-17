@@ -161,10 +161,10 @@ describe('fairness band', () => {
     }
   });
 
-  it('the reader reveals every lie on tiers 0 and 1', () => {
+  it('the reader reveals every lie on tier 0', () => {
     let measured = 0;
     for (const c of CASES) {
-      if (c.tier > 1) continue;
+      if (c.tier > 0) continue;
       const out = run(c, 'reader');
       // "every lie" is vacuous on a tape with none, so the count is pinned
       // per case and the roster is required to carry lies overall.
@@ -176,7 +176,34 @@ describe('fairness band', () => {
       );
       expect(out.ok).toBe(true);
     }
-    expect(measured, 'no lies on any tier 0/1 tape: the bar measured nothing').toBeGreaterThan(0);
+    expect(measured, 'no lies on any tier 0 tape: the bar measured nothing').toBeGreaterThan(0);
+  });
+
+  // Re-based 2026-09-17. Seat's formation fires now (every class, on the way
+  // in, the first shot early, three shots in the ship's air), on the
+  // Director's word after he played the quiet game and then a gentler tune
+  // and called both too thin. The tells-only reader stands under its target
+  // and does not shoot back, so under a formation that fires it no longer
+  // lives out every seated tape; what it must still do is find the lies
+  // while it lives. Measured when set: every lie on thirteen of twenty
+  // seated tapes, twelve of twenty-one lies overall, no tape without a
+  // pinned count.
+  it('the reader, under fire at seat, still reveals every lie on most seated tapes and half the lies overall', () => {
+    const cases = CASES.filter((c) => c.tier === 1);
+    let lies = 0;
+    let revealed = 0;
+    let whole = 0;
+    for (const c of cases) {
+      const out = run(c, 'reader');
+      expect(out.lies.length, `${c.name}: lie count`).toBe(pinnedLies(c));
+      expect(out.leaked, `${c.name}: leaked`).toBe(false);
+      lies += out.lies.length;
+      revealed += out.revealed.length;
+      if (out.lies.every((id) => out.revealed.includes(id))) whole += 1;
+    }
+    expect(lies, 'no lies on any seated tape: the bar measured nothing').toBeGreaterThan(0);
+    expect(whole).toBeGreaterThanOrEqual(Math.ceil(cases.length * 0.55));
+    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
   });
 
   it('no bot ever puts a forbidden word on screen', () => {
@@ -299,9 +326,15 @@ describe('the shift climb', () => {
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
   });
 
-  it('seat, last call: the reader still clears a quarter of the roster', () => {
+  // Re-based 2026-09-17 with the seat tune (see the reader bar above): at the
+  // top of the climb the tells-only reader does not live out a seated tape
+  // any more, so the bar is that it still finds a lie on a third of the
+  // roster before it goes. Measured when set: nine of twenty.
+  it('seat, last call: the reader still finds a lie on a third of the roster', () => {
     const outs = byTier(1).map((c) => last(c, 'reader'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.25));
+    expect(outs.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(
+      Math.ceil(ROSTER / 3),
+    );
   });
 
   it('no bot leaks a word at the top of the climb', () => {

@@ -1230,6 +1230,9 @@ describe('the ollama seats in the sim', () => {
   it("a pilot spread is a fan of the lever's width, a column an aimed shot", () => {
     const s = createRoundState(seatedRound());
     toBoss(s, 'whisperer');
+    // Seat's formation fires now (every class, on the way in); this beat
+    // counts the boss's shots alone, so the formation is cleared off first.
+    for (const e of s.enemies) e.alive = false;
     const fan = DEFAULT_PATTERNS.fire.tiers['1'].boss.pilot.fan;
     expect(fan).toBeGreaterThan(1);
     s.bossIntent = 'spread';
