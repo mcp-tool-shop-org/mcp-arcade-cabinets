@@ -28,7 +28,7 @@
 #   CABINET_TAPES      both     where the tapes are
 #   CABINET_TAPES_USER ghost    operator tapes merged beside the baked menu
 #   CABINET_FIXTURE    ghost    which tape the round plays
-#   CABINET_TIER       ghost    zero to three; anything else is a note and the default; the typing cabinet notes it and plays on
+#   CABINET_TIER       both     zero to three; anything else is a note and the default (one on the shooter, zero on the typing cabinet)
 #   CABINET_SEED       both     a whole number; anything else is a note
 #   CABINET_BOT        vibe     the typist at the keyboard, e.g. typist:45
 #   VOICE_URL          ghost    the host worker's base; empty is silent
