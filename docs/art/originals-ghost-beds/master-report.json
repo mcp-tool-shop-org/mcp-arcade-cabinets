@@ -2,15 +2,21 @@
  "cabinet": "ghost",
  "target_lufs": -12.62,
  "median_lufs_today": -12.25,
+ "target_overrides_lufs": {
+  "whisperer": -10.6,
+  "menu": -10.6,
+  "doorman": -10.6
+ },
+ "override_max_reduction_db": 3.0,
  "reachable_lufs": {
   "inspect": -12.46,
   "poison": -9.46,
   "rug": -12.62,
   "unlisted": -11.56,
   "breather": -11.36,
-  "whisperer": -10.95,
-  "menu": -11.52,
-  "doorman": -9.92
+  "whisperer": -10.52,
+  "menu": -9.92,
+  "doorman": -9.16
  },
  "max_limiter_reduction_db": 6.0,
  "ceiling_dbtp": -1.0,
@@ -230,19 +236,24 @@
     "sample_peak_dbfs": -1.39,
     "true_peak_dbtp": -1.39
    },
-   "arranged_lufs": -14.33,
+   "arranged_lufs": -13.78,
    "after": {
     "file": "docs/art/originals-ghost-beds/mastered/whisperer.flac",
-    "seconds": 112.0,
+    "seconds": 128.0,
     "sample_rate": 48000,
     "channels": 2,
-    "lufs": -12.81,
+    "lufs": -11.63,
     "sample_peak_dbfs": -1.0,
     "true_peak_dbtp": -1.0
    },
-   "gain_db": 1.7,
-   "passes": 1,
-   "limiter_max_reduction_db": -1.31,
+   "target_lufs": -11.39,
+   "target_asked_lufs": -10.6,
+   "target_shortfall_lu": -0.79,
+   "target_source": "override",
+   "max_reduction_budget_db": 3.0,
+   "gain_db": 2.88,
+   "passes": 2,
+   "limiter_max_reduction_db": -2.49,
    "loop_fade_ms": 30.0
   },
   {
@@ -256,19 +267,24 @@
     "sample_peak_dbfs": 1.13,
     "true_peak_dbtp": 1.13
    },
-   "arranged_lufs": -14.34,
+   "arranged_lufs": -12.56,
    "after": {
     "file": "docs/art/originals-ghost-beds/mastered/menu.flac",
     "seconds": 120.0,
     "sample_rate": 48000,
     "channels": 2,
-    "lufs": -12.8,
+    "lufs": -10.98,
     "sample_peak_dbfs": -1.0,
     "true_peak_dbtp": -1.0
    },
-   "gain_db": 1.72,
+   "target_lufs": -10.76,
+   "target_asked_lufs": -10.6,
+   "target_shortfall_lu": -0.16,
+   "target_source": "override",
+   "max_reduction_budget_db": 3.0,
+   "gain_db": 1.8,
    "passes": 1,
-   "limiter_max_reduction_db": -2.63,
+   "limiter_max_reduction_db": -2.71,
    "loop_fade_ms": 30.0
   },
   {
@@ -282,19 +298,24 @@
     "sample_peak_dbfs": 0.47,
     "true_peak_dbtp": 0.47
    },
-   "arranged_lufs": -13.57,
+   "arranged_lufs": -12.74,
    "after": {
     "file": "docs/art/originals-ghost-beds/mastered/doorman.flac",
-    "seconds": 123.637,
+    "seconds": 120.0,
     "sample_rate": 48000,
     "channels": 2,
-    "lufs": -12.64,
+    "lufs": -10.87,
     "sample_peak_dbfs": -1.0,
     "true_peak_dbtp": -1.0
    },
-   "gain_db": 0.95,
+   "target_lufs": -10.76,
+   "target_asked_lufs": -10.6,
+   "target_shortfall_lu": -0.16,
+   "target_source": "override",
+   "max_reduction_budget_db": 3.0,
+   "gain_db": 1.98,
    "passes": 1,
-   "limiter_max_reduction_db": -1.86,
+   "limiter_max_reduction_db": -2.89,
    "loop_fade_ms": 30.0
   }
  ],

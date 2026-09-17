@@ -32,6 +32,19 @@ needs, and releases over RELEASE_MS. A tanh clip would have been half the code
 and would have cost about half a decibel of the measured target, which is what
 the Vibe bed batch recorded; this keeps the measurement honest instead.
 
+PER-KEY OVERRIDES. The paragraph above is how the SET's target is found, and it
+is still how every wave bed is mastered. `TARGET_OVERRIDES` names beds that are
+deliberately not part of that answer: Ghost's three boss beds sit two LU over
+the set, because the boss music did not read as a boss over the game. An
+overridden bed also takes a tighter limiter budget
+(`OVERRIDE_MAX_REDUCTION_DB`), since buying two LU with heavy limiting would
+swap a quiet piece for a flat one; a bed that cannot reach its target inside
+that budget is mastered to the loudest it reaches cleanly and the shortfall is
+recorded rather than squashed or refused.
+
+A run with `--only` merges its rows into `master-report.json` instead of
+replacing the file.
+
 Usage: python scripts/beds/master.py [--only key,key]
 """
 
@@ -83,6 +96,15 @@ LOUDNESS_TOLERANCE_LU = 0.5
 MAX_PASSES = 8
 MAX_REDUCTION_DB = 6.0
 OVERSAMPLE = 4
+#: Beds mastered to their own number instead of the set's, by cabinet and key.
+#: Ghost's three boss beds: -10.6 LUFS, two LU over the set's -12.62.
+TARGET_OVERRIDES = {
+    "ghost": {"whisperer": -10.6, "menu": -10.6, "doorman": -10.6},
+    "vibe": {},
+}
+#: The limiter budget an overridden bed may spend. Tighter than the set's, on
+#: purpose: the point of the override is presence, not density.
+OVERRIDE_MAX_REDUCTION_DB = 3.0
 
 
 class Refused(Exception):
@@ -169,14 +191,16 @@ def loop_fade(x: np.ndarray, sr: int) -> np.ndarray:
     return x
 
 
-def reachable_lufs(raw: np.ndarray, sr: int, base_lufs: float) -> float:
+def reachable_lufs(
+    raw: np.ndarray, sr: int, base_lufs: float, budget: float = MAX_REDUCTION_DB
+) -> float:
     """The loudest this piece gets while the limiter stays under its budget."""
     lo, hi = 0.0, 24.0
     best = base_lufs
     for _ in range(12):
         mid = (lo + hi) / 2
         y, reduction = limit(raw * (10.0 ** (mid / 20.0)), sr, CEILING_DBTP)
-        if reduction < -MAX_REDUCTION_DB:
+        if reduction < -budget:
             hi = mid
         else:
             lo = mid
@@ -196,6 +220,7 @@ def main() -> int:
     ARRANGED = EVIDENCE / "arranged"
     MASTERED = EVIDENCE / "mastered"
     keys = [k for k in (args.only.split(",") if args.only else KEYS) if k]
+    overrides = TARGET_OVERRIDES.get(args.cabinet, {})
 
     before = {k: measure(ORIGINALS / f"{k}.mp3") for k in KEYS}
     median_today = float(np.median([before[k]["lufs"] for k in KEYS]))
@@ -221,20 +246,31 @@ def main() -> int:
             refused.append({"key": key, "refused": f"no arranged piece at {ARRANGED / (key + '.flac')}"})
             continue
         raw, sr, pre_lufs = sources[key]
-        gain_db = target - pre_lufs
+        # An overridden bed is mastered to its own number under its own
+        # limiter budget, and is capped at what that budget actually reaches:
+        # asking for two LU the piece cannot give would either fail the
+        # tolerance check or buy the number with limiting the override exists
+        # to avoid. The shortfall, when there is one, goes in the row.
+        budget = OVERRIDE_MAX_REDUCTION_DB if key in overrides else MAX_REDUCTION_DB
+        asked = overrides.get(key, target)
+        gently = (
+            reachable_lufs(raw, sr, pre_lufs, budget) if key in overrides else reach[key]
+        )
+        key_target = min(asked, gently)
+        gain_db = key_target - pre_lufs
         passes = 0
         for passes in range(1, MAX_PASSES + 1):
             x, reduction_db = limit(raw * (10.0 ** (gain_db / 20.0)), sr, CEILING_DBTP)
             got = loudness(x, sr)
-            if abs(got - target) <= LOUDNESS_TOLERANCE_LU / 2:
+            if abs(got - key_target) <= LOUDNESS_TOLERANCE_LU / 2:
                 break
-            gain_db += target - got
-        if reduction_db < -MAX_REDUCTION_DB:
+            gain_db += key_target - got
+        if reduction_db < -budget:
             refused.append(
                 {
                     "key": key,
-                    "refused": f"reaching {target:.2f} LUFS needs {-reduction_db:.2f} dB of "
-                    f"limiting, past the {MAX_REDUCTION_DB} dB a gentle limiter may take",
+                    "refused": f"reaching {key_target:.2f} LUFS needs {-reduction_db:.2f} dB of "
+                    f"limiting, past the {budget} dB a gentle limiter may take",
                 }
             )
             print(f"REFUSED {key}: {refused[-1]['refused']}", file=sys.stderr)
@@ -244,12 +280,12 @@ def main() -> int:
         out = MASTERED / f"{key}.flac"
         sf.write(out, x, sr, subtype="PCM_24")
         after = measure(out)
-        if abs(after["lufs"] - target) > LOUDNESS_TOLERANCE_LU:
+        if abs(after["lufs"] - key_target) > LOUDNESS_TOLERANCE_LU:
             refused.append(
                 {
                     "key": key,
                     "refused": f"mastered to {after['lufs']:.2f} LUFS, "
-                    f"more than {LOUDNESS_TOLERANCE_LU} LU from the target {target:.2f}",
+                    f"more than {LOUDNESS_TOLERANCE_LU} LU from the target {key_target:.2f}",
                 }
             )
             print(f"REFUSED {key}: {refused[-1]['refused']}", file=sys.stderr)
@@ -267,6 +303,11 @@ def main() -> int:
                 "before": before[key],
                 "arranged_lufs": round(pre_lufs, 2),
                 "after": after,
+                "target_lufs": round(key_target, 2),
+                "target_asked_lufs": round(asked, 2),
+                "target_shortfall_lu": round(key_target - asked, 2),
+                "target_source": "override" if key in overrides else "set",
+                "max_reduction_budget_db": budget,
                 "gain_db": round(gain_db, 2),
                 "passes": passes,
                 "limiter_max_reduction_db": reduction_db,
@@ -283,6 +324,8 @@ def main() -> int:
         "cabinet": args.cabinet,
         "target_lufs": round(target, 2),
         "median_lufs_today": round(median_today, 2),
+        "target_overrides_lufs": overrides,
+        "override_max_reduction_db": OVERRIDE_MAX_REDUCTION_DB,
         "reachable_lufs": {k: round(v, 2) for k, v in reach.items()},
         "max_limiter_reduction_db": MAX_REDUCTION_DB,
         "ceiling_dbtp": CEILING_DBTP,
@@ -291,6 +334,28 @@ def main() -> int:
         "refused": refused,
     }
     path = EVIDENCE / "master-report.json"
+    # A partial run merges, so re-mastering three beds does not delete the
+    # other five's rows from the set's receipt.
+    if path.exists() and args.only:
+        old = json.loads(path.read_text(encoding="utf-8"))
+        fresh = {r["key"]: r for r in rows}
+        touched = set(fresh) | {r["key"] for r in refused}
+        merged = []
+        for row in old.get("beds", []):
+            if row["key"] in fresh:
+                merged.append(fresh.pop(row["key"]))
+            elif row["key"] not in touched:
+                merged.append(row)
+        report["beds"] = merged + [r for r in rows if r["key"] in fresh]
+        report["refused"] = [
+            r for r in old.get("refused", []) if r["key"] not in touched
+        ] + refused
+        # The set's own numbers stay as the full run measured them; a partial
+        # run has not re-derived them for the beds it did not touch.
+        for field in ("target_lufs", "median_lufs_today"):
+            if field in old:
+                report[field] = old[field]
+        report["reachable_lufs"] = {**old.get("reachable_lufs", {}), **report["reachable_lufs"]}
     path.write_text(json.dumps(report, indent=1), encoding="utf-8")
     print(f"report -> {path}")
     return 1 if refused else 0

@@ -18,9 +18,16 @@ the cabinet's own track paths as MP3 128k, the format the shell, the pack gate
 and the release check all name today. Changing the shipped format is code in
 three places and is not this script's to do.
 
+`--only` installs a subset. It does NOT re-run the three-way trial: the format
+decision is the set's and was measured once, so a partial run reads the rung
+back out of `encoding-report.json` and encodes with it, byte-for-byte the same
+compressor setting the rest of the set shipped on. Its rows are merged into the
+report rather than replacing it.
+
 Usage:
   python scripts/beds/encode.py                 # measure only
   python scripts/beds/encode.py --install       # measure, then install 128k
+  python scripts/beds/encode.py --install --only menu,doorman
 """
 
 from __future__ import annotations
@@ -93,12 +100,82 @@ def rung_for(x: np.ndarray, sr: int, fmt: str, subtype: str, kbps: int, scratch:
     return best
 
 
-def measure(cabinet: str, install: bool) -> dict:
+def _report(
+    cabinet: str,
+    conf: dict,
+    mastered: pathlib.Path,
+    keys: list[str],
+    lengths: dict,
+    pick: str,
+    total_seconds: float,
+    trials: list,
+    install: bool,
+    only: list[str] | None,
+    previous: dict,
+) -> dict:
+    """The report, and the install when asked for it.
+
+    `shipped_today_bytes` is read before anything is written, so it is still
+    the weight of what is on disk from the last release even on a partial run.
+    """
+    report = {
+        "cabinet": cabinet,
+        "measured_on": pick,
+        "measured_seconds": round(lengths[pick], 3),
+        "set_seconds": round(total_seconds, 3),
+        "set_count": len(keys),
+        "shipped_today_bytes": previous.get(
+            "shipped_today_bytes",
+            sum(
+                (conf["install"] / f"{k}.mp3").stat().st_size
+                for k in keys
+                if (conf["install"] / f"{k}.mp3").exists()
+            ),
+        ),
+        "trials": trials,
+        "installed": None,
+    }
+    if not install:
+        return report
+
+    fmt, subtype, kbps = SHIPPED
+    level = next(t["compression_level"] for t in trials if t["asked_kbps"] == kbps and t["format"] == fmt)
+    written = {}
+    for key in only or keys:
+        y, s = sf.read(mastered / f"{key}.flac", always_2d=True, dtype="float64")
+        dest = conf["install"] / f"{key}.mp3"
+        size = write_at(dest, y, s, fmt, subtype, level)
+        written[key] = {"key": key, "bytes": size, "seconds": round(y.shape[0] / s, 3)}
+        print(f"  installed {dest.relative_to(REPO)}  {size / 1024:8.1f} KB")
+    # A partial run keeps the rows it did not touch, and the total is read off
+    # the files on disk so it is the real weight of the folder either way.
+    old = {r["key"]: r for r in (previous.get("installed") or {}).get("beds", [])}
+    rows = [written.get(k, old[k]) for k in keys if k in written or k in old]
+    total = sum(
+        (conf["install"] / f"{k}.mp3").stat().st_size
+        for k in keys
+        if (conf["install"] / f"{k}.mp3").exists()
+    )
+    report["installed"] = {
+        "format": "MP3 128k constant",
+        "compression_level": round(level, 4),
+        "installed_now": sorted(written),
+        "beds": rows,
+        "total_bytes": total,
+        "total_mb": round(total / 1e6, 2),
+        "delta_bytes": total - report["shipped_today_bytes"],
+    }
+    return report
+
+
+def measure(cabinet: str, install: bool, only: list[str] | None = None) -> dict:
     conf = CABINETS[cabinet]
     mastered = conf["evidence"] / "mastered"
     scratch = conf["evidence"] / "encodings"
     scratch.mkdir(parents=True, exist_ok=True)
     keys = conf["keys"]
+    report_path = conf["evidence"] / "encoding-report.json"
+    previous = json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else {}
 
     files = [mastered / f"{k}.flac" for k in keys]
     missing = [str(f) for f in files if not f.exists()]
@@ -110,9 +187,23 @@ def measure(cabinet: str, install: bool) -> dict:
     lengths = {k: sf.info(mastered / f"{k}.flac").duration for k in keys}
     median = float(np.median(list(lengths.values())))
     pick = min(keys, key=lambda k: abs(lengths[k] - median))
-    x, sr = sf.read(mastered / f"{pick}.flac", always_2d=True, dtype="float64")
     total_seconds = float(sum(lengths.values()))
 
+    if only:
+        # A partial run does not re-open the format decision. The rungs come
+        # back out of the report the full run wrote, so the beds re-encoded
+        # today carry the same compressor setting as the ones that are not.
+        trials = previous.get("trials")
+        if not trials:
+            raise Refused(f"--only needs the rungs from a full run; none in {report_path}")
+        pick = previous.get("measured_on", pick)
+        print(f"  rungs read back from {report_path.name}, measured on {pick}")
+        return _report(
+            cabinet, conf, mastered, keys, lengths, pick, total_seconds, trials,
+            install, only, previous,
+        )
+
+    x, sr = sf.read(mastered / f"{pick}.flac", always_2d=True, dtype="float64")
     trials = []
     for label, fmt, subtype, kbps in TRIALS:
         level = rung_for(x, sr, fmt, subtype, kbps, scratch)
@@ -141,51 +232,22 @@ def measure(cabinet: str, install: bool) -> dict:
             f"{trials[-1]['projected_set_mb']:6.2f} MB for the {len(keys)}"
         )
 
-    report = {
-        "cabinet": cabinet,
-        "measured_on": pick,
-        "measured_seconds": round(lengths[pick], 3),
-        "set_seconds": round(total_seconds, 3),
-        "set_count": len(keys),
-        "shipped_today_bytes": sum(
-            (conf["install"] / f"{k}.mp3").stat().st_size
-            for k in keys
-            if (conf["install"] / f"{k}.mp3").exists()
-        ),
-        "trials": trials,
-        "installed": None,
-    }
-
-    if install:
-        fmt, subtype, kbps = SHIPPED
-        level = next(t["compression_level"] for t in trials if t["asked_kbps"] == kbps and t["format"] == fmt)
-        rows, total = [], 0
-        for key in keys:
-            y, s = sf.read(mastered / f"{key}.flac", always_2d=True, dtype="float64")
-            dest = conf["install"] / f"{key}.mp3"
-            size = write_at(dest, y, s, fmt, subtype, level)
-            total += size
-            rows.append({"key": key, "bytes": size, "seconds": round(y.shape[0] / s, 3)})
-            print(f"  installed {dest.relative_to(REPO)}  {size / 1024:8.1f} KB")
-        report["installed"] = {
-            "format": "MP3 128k constant",
-            "compression_level": round(level, 4),
-            "beds": rows,
-            "total_bytes": total,
-            "total_mb": round(total / 1e6, 2),
-            "delta_bytes": total - report["shipped_today_bytes"],
-        }
-    return report
+    return _report(
+        cabinet, conf, mastered, keys, lengths, pick, total_seconds, trials,
+        install, None, previous,
+    )
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--cabinet", default="ghost", choices=sorted(CABINETS))
     ap.add_argument("--install", action="store_true")
+    ap.add_argument("--only", default="", help="comma-separated bed keys to install")
     args = ap.parse_args()
+    only = [k for k in args.only.split(",") if k] or None
 
     print(f"{args.cabinet}: three encodings on the bed nearest the median length")
-    report = measure(args.cabinet, args.install)
+    report = measure(args.cabinet, args.install, only)
     out = CABINETS[args.cabinet]["evidence"] / "encoding-report.json"
     out.write_text(json.dumps(report, indent=1), encoding="utf-8")
     print(f"report -> {out}")

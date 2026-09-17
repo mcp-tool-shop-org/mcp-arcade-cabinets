@@ -2,7 +2,7 @@
  "cabinet": "ghost",
  "measured_on": "poison",
  "measured_seconds": 117.473,
- "set_seconds": 949.533,
+ "set_seconds": 961.897,
  "set_count": 8,
  "shipped_today_bytes": 5161792,
  "trials": [
@@ -49,6 +49,11 @@
  "installed": {
   "format": "MP3 128k constant",
   "compression_level": 0.6187,
+  "installed_now": [
+   "doorman",
+   "menu",
+   "whisperer"
+  ],
   "beds": [
    {
     "key": "inspect",
@@ -77,8 +82,8 @@
    },
    {
     "key": "whisperer",
-    "bytes": 1792896,
-    "seconds": 112.0
+    "bytes": 2049024,
+    "seconds": 128.0
    },
    {
     "key": "menu",
@@ -87,12 +92,12 @@
    },
    {
     "key": "doorman",
-    "bytes": 1979136,
-    "seconds": 123.637
+    "bytes": 1921152,
+    "seconds": 120.0
    }
   ],
-  "total_bytes": 15199488,
-  "total_mb": 15.2,
-  "delta_bytes": 10037696
+  "total_bytes": 15397632,
+  "total_mb": 15.4,
+  "delta_bytes": 10235840
  }
 }

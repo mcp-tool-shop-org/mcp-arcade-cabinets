@@ -7,7 +7,10 @@ original mp3 and writes one 48 kHz flac a bed under
 `docs/art/originals-ghost-beds/arranged/`. Nothing is generated here: every
 sample in the result came out of a file the Director already liked.
 
-The shape, per the brief:
+THE TWO SHAPES. `--shape` picks one; `auto` (the default) reads the per-cabinet
+`loop_keys` table below, which names the beds that take the second shape.
+
+`sections` — the wave beds:
 
     intro (4 bars, the quiet layer)
     the full loop
@@ -18,6 +21,32 @@ The shape, per the brief:
 `the full loop` is the ORIGINAL mp3, not the sum of the stems, because a
 separator's residue is audible and the loop is the part the player hears most.
 The stems are used only where a layer has to be taken away.
+
+`loop` — the boss beds (`whisperer`, `menu`, `doorman`):
+
+    the loop, end to end, until the piece is 110-130 s
+
+Nothing else. No intro, no breakdown, no outro, no quiet layer: the boss beds
+opened on a near-empty intro and carried a thin section in the middle, and the
+decision is that a boss bed has no thin part anywhere. Only the original mp3 is
+read, never a stem sum, and the seam rule is the one the other shape uses — one
+beat of equal-power crossfade at every join.
+
+The originals do NOT seam cleanly, and this is measured rather than assumed.
+Each of the three is a 40.000 s file whose music stops early and whose tail is
+digital silence: `whisperer` stops at 32.65 s, `menu` at 35.15 s, `doorman` at
+35.85 s (last 50 ms window above -45 dBFS). Repeating the file as delivered
+would write that silence into the piece three or four times over, which is the
+defect being fixed. So the loop shape trims each copy to the last WHOLE BAR at
+or before the music stops, and the one beat of overlap at each seam is read
+from the material that follows the trim — the decay tail — so the seam
+crossfades real audio into the next copy's downbeat rather than butt-joining
+it. How much tail each bed drops is in the receipt.
+
+The piece is a whole number of bars and ends on a bar line. Whole copies are
+preferred when a whole number of them lands inside the window; otherwise the
+last copy is cut short at a bar line. No fade is written here: the piece ends
+where a bar ends, and `master.py`'s 30 ms loop-safe fade covers the join.
 
 Two measured facts shape the code, and both are recorded in the receipt:
 
@@ -39,7 +68,11 @@ Two measured facts shape the code, and both are recorded in the receipt:
    bar counts scored against the same envelope. The script uses the first and
    refuses when its nearest whole bar count is more than 3 per cent away.
 
-Usage: python scripts/beds/arrange.py [--only key,key]
+Usage: python scripts/beds/arrange.py [--only key,key] [--shape auto|sections|loop]
+
+A run with `--only` merges its rows into `arrange-plan.json` instead of
+replacing the file, so re-cutting three beds does not delete the other five's
+receipt.
 """
 
 from __future__ import annotations
@@ -68,12 +101,16 @@ CABINETS = {
         "source": ("originals", ".mp3"),
         "bpm": None,
         "keys": ["inspect", "poison", "rug", "unlisted", "breather", "whisperer", "menu", "doorman"],
+        #: The boss beds. `--shape auto` gives these the loop shape and every
+        #: other key the section shape.
+        "loop_keys": ["whisperer", "menu", "doorman"],
     },
     "vibe": {
         "evidence": REPO / "docs" / "art" / "originals-vibe-beds-2min",
         "source": ("loops", ".flac"),
         "bpm": 96.0,
         "keys": ["bash", "csharp", "java", "javascript", "python", "sql", "integration"],
+        "loop_keys": [],
     },
 }
 
@@ -99,6 +136,15 @@ TARGET_MAX_S = 130.0
 #: the measured tempo before the bed is refused.
 BPM_LOW, BPM_HIGH = 70.0, 150.0
 BAR_TOLERANCE = 0.03
+#: The loop shape. A 50 ms window at or above this level is the music still
+#: playing; the last one of those is where a copy is trimmed back to a bar
+#: line. -45 dBFS is well under the quietest real bar on any of the three
+#: (menu's quiet half sits around -27) and well over their silent tails
+#: (-67 and below), and the trim point does not move between -40 and -50.
+LOOP_TAIL_FLOOR_DBFS = -45.0
+LOOP_TAIL_WINDOW_S = 0.050
+#: Where inside the window the loop shape aims, when it has a choice.
+LOOP_TARGET_S = 120.0
 
 
 class Refused(Exception):
@@ -251,6 +297,119 @@ def plan_for(bars: int, bar_s: float, loop_s: float) -> tuple[list[tuple[str, in
     )
 
 
+def content_end(mono: np.ndarray, sr: int) -> int:
+    """The sample after the last 50 ms window still carrying music."""
+    w = max(1, int(LOOP_TAIL_WINDOW_S * sr))
+    k = len(mono) // w
+    if k < 1:
+        raise Refused("the loop is shorter than one measurement window")
+    rms = np.sqrt((mono[: k * w].reshape(k, w) ** 2).mean(axis=1))
+    loud = np.nonzero(20 * np.log10(rms + 1e-12) > LOOP_TAIL_FLOOR_DBFS)[0]
+    if not len(loud):
+        raise Refused(f"no 50 ms window above {LOOP_TAIL_FLOOR_DBFS:.0f} dBFS in the loop")
+    return int((loud[-1] + 1) * w)
+
+
+def loop_repeats(trim_bars: int, bar_n: int, sr: int) -> int:
+    """Total bars in the piece: whole copies if any fit, else a cut last copy."""
+    copy_s = trim_bars * bar_n / sr
+    bar_s = bar_n / sr
+    whole = [n for n in range(1, 64) if TARGET_MIN_S <= n * copy_s <= TARGET_MAX_S]
+    if whole:
+        return trim_bars * min(whole, key=lambda n: abs(n * copy_s - LOOP_TARGET_S))
+    bars = [b for b in range(1, 4096) if TARGET_MIN_S <= b * bar_s <= TARGET_MAX_S]
+    if not bars:
+        raise Refused(
+            f"a {copy_s:.2f}s copy of {trim_bars} bars cannot reach "
+            f"{TARGET_MIN_S:.0f}-{TARGET_MAX_S:.0f}s on a bar line"
+        )
+    return min(bars, key=lambda b: abs(b * bar_s - LOOP_TARGET_S))
+
+
+def arrange_loop(key: str, conf: dict) -> dict:
+    """The boss shape: the original loop end to end, nothing else."""
+    folder, ext = conf["source"]
+    mix, sr = read_audio(conf["evidence"] / folder / f"{key}{ext}")
+    bars, bpm, bar_s = bar_grid(mix.mean(axis=1), sr, conf["bpm"])
+    loop_s = mix.shape[0] / sr
+
+    mix = resample(mix, sr, OUT_SR)
+    sr = OUT_SR
+    bar_n = int(round(bar_s * sr))
+    beat_n = int(round(bar_s * sr / BEATS_PER_BAR))
+
+    # Trim each copy back to the last whole bar the music reaches. What is
+    # dropped is the silent tail plus whatever decay sits past that bar line;
+    # the one beat of overlap at each seam reads straight on from the trim, so
+    # the decay is heard into the next downbeat rather than cut at it.
+    end_n = content_end(mix.mean(axis=1), sr)
+    trim_bars = max(1, min(bars, end_n // bar_n))
+    trim_n = trim_bars * bar_n
+    if trim_n + beat_n > mix.shape[0]:
+        raise Refused("no material after the trim for the seam's beat of overlap")
+
+    total_bars = loop_repeats(trim_bars, bar_n, sr)
+    full, rest = divmod(total_bars, trim_bars)
+    counts = [trim_bars] * full + ([rest] if rest else [])
+
+    pieces, order = [], []
+    for i, count in enumerate(counts):
+        length = count * bar_n + (beat_n if i + 1 < len(counts) else 0)
+        pieces.append(tile(mix, 0, length))
+        order.append(f"loop:{count}")
+    out = splice(pieces, beat_n) if len(pieces) > 1 else pieces[0]
+
+    peak = float(np.abs(out).max())
+    if peak > 0.99:
+        out = out * (0.99 / peak)
+
+    arranged = conf["evidence"] / "arranged"
+    arranged.mkdir(parents=True, exist_ok=True)
+    path = arranged / f"{key}.flac"
+    sf.write(path, out, sr, subtype="PCM_24")
+    seconds = out.shape[0] / sr
+    if not TARGET_MIN_S <= seconds <= TARGET_MAX_S:
+        raise Refused(f"arranged to {seconds:.2f}s, outside {TARGET_MIN_S:.0f}-{TARGET_MAX_S:.0f}s")
+
+    def window_floor(a: np.ndarray, span: float) -> float:
+        w = int(span * sr)
+        m = a.mean(axis=1)
+        k = len(m) // w
+        rms = np.sqrt((m[: k * w].reshape(k, w) ** 2).mean(axis=1))
+        return round(float((20 * np.log10(rms + 1e-12)).min()), 2)
+
+    return {
+        "key": key,
+        "shape": "loop",
+        "loop_seconds": round(loop_s, 3),
+        "bpm": round(bpm, 2),
+        "bars_in_loop": bars,
+        "bar_seconds": round(bar_s, 4),
+        "sections": order,
+        "copies": len(counts),
+        "bars_total": total_bars,
+        # What the trim found, so a reader can see why the source is not a
+        # clean loop and how much of it is never played.
+        "content_ends_s": round(end_n / sr, 3),
+        "tail_silence_s": round(loop_s - end_n / sr, 3),
+        "trimmed_to_bars": trim_bars,
+        "trimmed_copy_seconds": round(trim_n / sr, 3),
+        "dropped_per_copy_s": round(loop_s - trim_n / sr, 3),
+        "seams_clean_without_crossfade": False,
+        "seam_source": "the material after the trim, read straight on into the next copy's downbeat",
+        "crossfade_beats": 1,
+        "crossfade_ms": round(beat_n / sr * 1000, 1),
+        "end_fade_ms": 0.0,
+        "ends_on_bar_line": True,
+        "seconds": round(seconds, 3),
+        "sample_rate": sr,
+        "peak_before_master": round(peak, 4),
+        "window_floor_4s_dbfs": window_floor(out, 4.0),
+        "window_floor_1s_dbfs": window_floor(out, 1.0),
+        "file": str(path.relative_to(REPO)).replace("\\", "/"),
+    }
+
+
 def arrange(key: str, conf: dict) -> dict:
     folder, ext = conf["source"]
     mix, sr = read_audio(conf["evidence"] / folder / f"{key}{ext}")
@@ -323,6 +482,7 @@ def arrange(key: str, conf: dict) -> dict:
         raise Refused(f"arranged to {seconds:.2f}s, outside {TARGET_MIN_S:.0f}-{TARGET_MAX_S:.0f}s")
     return {
         "key": key,
+        "shape": "sections",
         "loop_seconds": round(loop_s, 3),
         "bpm": round(bpm, 2),
         "bars_in_loop": bars,
@@ -346,26 +506,52 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--cabinet", default="ghost", choices=sorted(CABINETS))
     ap.add_argument("--only", default="", help="comma-separated bed keys")
+    ap.add_argument(
+        "--shape",
+        default="auto",
+        choices=("auto", "sections", "loop"),
+        help="auto reads the cabinet's loop_keys table",
+    )
     args = ap.parse_args()
     conf = CABINETS[args.cabinet]
     keys = [k for k in (args.only.split(",") if args.only else conf["keys"]) if k]
 
     rows, refused = [], []
     for key in keys:
+        shape = args.shape
+        if shape == "auto":
+            shape = "loop" if key in conf["loop_keys"] else "sections"
         try:
-            row = arrange(key, conf)
+            row = arrange_loop(key, conf) if shape == "loop" else arrange(key, conf)
         except Refused as err:
             refused.append({"key": key, "refused": str(err)})
             print(f"REFUSED {key}: {err}", file=sys.stderr)
             continue
         rows.append(row)
         print(
-            f"{key:12} {row['bpm']:7.2f} bpm  {row['bars_in_loop']:>2} bars/loop  "
+            f"{key:12} {row['shape']:8} {row['bpm']:7.2f} bpm  {row['bars_in_loop']:>2} bars/loop  "
             f"{row['sections']}  -> {row['seconds']:.2f}s"
         )
 
     out = conf["evidence"] / "arrange-plan.json"
-    out.write_text(json.dumps({"cabinet": args.cabinet, "beds": rows, "refused": refused}, indent=1), encoding="utf-8")
+    # A partial run merges. The plan is the receipt for the whole set, and
+    # re-cutting three beds must not delete the other five's rows.
+    plan = {"cabinet": args.cabinet, "beds": [], "refused": []}
+    if out.exists():
+        plan.update(json.loads(out.read_text(encoding="utf-8")))
+    fresh = {r["key"]: r for r in rows}
+    touched = set(fresh) | {r["key"] for r in refused}
+    merged = []
+    for old in plan["beds"]:
+        if old["key"] in fresh:
+            merged.append(fresh.pop(old["key"]))
+        elif old["key"] not in touched:
+            merged.append(old)
+    merged += [r for r in rows if r["key"] in fresh]
+    plan["beds"] = merged
+    plan["refused"] = [r for r in plan["refused"] if r["key"] not in touched] + refused
+    plan["cabinet"] = args.cabinet
+    out.write_text(json.dumps(plan, indent=1), encoding="utf-8")
     print(f"plan -> {out}")
     return 1 if refused else 0
 
