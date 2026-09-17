@@ -85,6 +85,7 @@ export const EVENT_KINDS: Event['kind'][] = [
   'creep',
   'sync',
   'over',
+  'clear',
 ];
 
 /** One event, one cue. The default is `never`: every kind is answered here. */
@@ -119,6 +120,12 @@ export function cueFor(event: Event): Cue {
       return event.on ? cue('syncIn') : cue('syncOut');
     case 'over':
       return event.how === 'shipped' ? cue('endShipped') : cue('endContext');
+    case 'clear':
+      // A courtesy, in the copilot refusal's shape: no shake, no flash, no
+      // toast. A line thrown away sounds like the shimmer going out; a key
+      // that found nothing to erase is the quiet blip, so the player hears
+      // that the press landed.
+      return event.what === 'line' ? cue('shimmerOut') : cue('blip');
     default: {
       const never: never = event;
       throw new Error(`no cue for ${JSON.stringify(never)}`);

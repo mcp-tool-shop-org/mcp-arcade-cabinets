@@ -8,7 +8,15 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_PATTERNS, STACKS } from '@mcp-arcade-cabinets/vibe-typer';
+import {
+  DEFAULT_CORPUS,
+  DEFAULT_PATTERNS,
+  STACKS,
+  WEAK_CLEAN,
+  corpusDigestOf,
+  corpusFingerprint,
+  mintRunCode,
+} from '@mcp-arcade-cabinets/vibe-typer';
 
 import {
   STACK_WORDS,
@@ -213,12 +221,44 @@ describe('the seed box', () => {
   /** Press Play with this in the box, and report the seed the run was given. */
   async function playWith(seed: string): Promise<number> {
     await paint();
-    const box = wrap.querySelector('input[aria-label="seed"]') as HTMLInputElement;
+    const box = wrap.querySelector('input[aria-label="seed or run code"]') as HTMLInputElement;
     box.value = seed;
     (wrap.querySelector('button.commit') as HTMLButtonElement).click();
     const calls = vi.mocked(mountVibeTyper).mock.calls;
     return calls[calls.length - 1]![1].seed;
   }
+
+  it('plays a run code as the run it names, and refuses one with a typo', async () => {
+    await paint();
+    const box = wrap.querySelector('input[aria-label="seed or run code"]') as HTMLInputElement;
+    const play = wrap.querySelector('button.commit') as HTMLButtonElement;
+    // A code minted for an endless run at tier two: the box wins over the
+    // menu's own tier and pick, and the code rides to the mount whole.
+    const code = mintRunCode({
+      seed: 77,
+      tier: 2,
+      endless: true,
+      weak: WEAK_CLEAN,
+      corpus: corpusDigestOf(corpusFingerprint(DEFAULT_CORPUS)),
+    });
+    box.value = code.toLowerCase();
+    play.click();
+    const calls = vi.mocked(mountVibeTyper).mock.calls;
+    const opts = calls[calls.length - 1]![1];
+    expect(opts.seed).toBe(77);
+    expect(opts.tier).toBe(2);
+    expect(opts.endless).toBe(true);
+    expect(opts.code).toBe(code.toLowerCase());
+    expect(box.value, 'kept whole, not cut to a seed').toBe(code.toLowerCase());
+    // One wrong letter is told so under the box, and nothing mounts.
+    const before = calls.length;
+    box.value = code.slice(0, -1) + (code.endsWith('7') ? '8' : '7');
+    play.click();
+    expect(vi.mocked(mountVibeTyper).mock.calls.length).toBe(before);
+    expect(wrap.querySelector('[aria-label="run code status"]')!.textContent).toBe(
+      'that run code has a typo in it',
+    );
+  });
 
   it('plays, stores and shows one seed, however long it was typed', async () => {
     const long = 'a-very-long-seed-phrase';
@@ -228,7 +268,9 @@ describe('the seed box', () => {
     expect(kept).toBe(long.slice(0, SEED_MAX));
     expect(kept!.length).toBe(SEED_MAX);
     // … the box is left showing exactly that …
-    expect((wrap.querySelector('input[aria-label="seed"]') as HTMLInputElement).value).toBe(kept);
+    expect(
+      (wrap.querySelector('input[aria-label="seed or run code"]') as HTMLInputElement).value,
+    ).toBe(kept);
     // … and it is the run that was played, so typing the stored seed back on
     // the menu replays it. The full phrase used to be played and its first
     // twelve characters stored, which hash to a different run.

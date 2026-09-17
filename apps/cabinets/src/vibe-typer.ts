@@ -41,6 +41,7 @@ import {
   type Snippet,
   type Stack,
   type Tier,
+  runCodeOf,
 } from '@mcp-arcade-cabinets/vibe-typer';
 import { coarsePointer } from './pointer';
 import { LOCAL_SEATS, probeSeatModels } from './seats';
@@ -487,6 +488,12 @@ export interface VibeOpts {
   endless: boolean;
   levelIndex?: number;
   seed: number;
+  /**
+   * The run code the player typed, when one was. The seed, tier and endless
+   * flag beside it were read off the same code by the menu; the sim plants
+   * the practice map the code names, which is what makes a replay a replay.
+   */
+  code?: string;
   agentName: string;
   theme: Theme;
   /** The editor type. Left out, the mount takes the stored pref, then `large`. */
@@ -719,6 +726,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     seed: opts.seed,
     tier: opts.tier,
     endless: opts.endless,
+    ...(opts.code !== undefined ? { code: opts.code } : {}),
     weakBigrams: storedWeak,
     agentName,
     ...(opts.levelIndex !== undefined && !opts.endless ? { levelIndex: opts.levelIndex } : {}),
@@ -2574,12 +2582,18 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     if (state.milestones.length > 0) {
       scene.append(el('p', 'muted', state.milestones.join(' · ')));
     }
-    const seedLine = el('p', 'vibe-seed', `seed ${opts.seed}`);
-    // What the seed is for, in the page rather than in a `title` on a
+    // The run code, not the seed. The seed alone never replayed a run on a
+    // browser that had played before: the stored practice map weighted the
+    // draw, so the same seed the next evening was another run. The code
+    // carries the map's digest with the seed, and the sim plants that map on
+    // the way back in, so the code is the promise the seed could not keep.
+    const runCode = runCodeOf(state);
+    const seedLine = el('p', 'vibe-seed', `code ${runCode}`);
+    // What the code is for, in the page rather than in a `title` on a
     // paragraph: a paragraph is not focusable, Tab skips it, a reader's
     // software never announces a title on one, and a touch player has no
-    // hover — so the seed was shown with no statement of what it is.
-    const seedWhy = el('p', 'muted why', 'Type this seed on the menu to play the same run again.');
+    // hover — so the code is shown with a statement of what it is.
+    const seedWhy = el('p', 'muted why', 'Type this code on the menu to play the same run again.');
     scene.append(seedLine, seedWhy);
     // ——— what comes next ——————————————————————————————————————————————————
     //
@@ -2607,11 +2621,14 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       });
     }
     /** The call the menu makes, with this run's settings already in hand. */
-    const remount = (levelIndex: number | null, seed: number) => {
+    const remount = (levelIndex: number | null, seed: number, code?: string) => {
       leave();
+      const { code: _was, ...rest } = opts;
+      void _was;
       mountVibeTyper(root, {
-        ...opts,
+        ...rest,
         ...(levelIndex === null ? {} : { levelIndex }),
+        ...(code === undefined ? {} : { code }),
         endless: levelIndex === null,
         seed,
         startAudio: true,
@@ -2653,10 +2670,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       leave();
       opts.onExit();
     });
-    // The same run again: the same seed is the same run, which is what the
-    // seed line under this row promises.
+    // The same run again, through the code the line under this row shows,
+    // so the practice map this run played on is the one the replay plants.
     replay.addEventListener('click', () => {
-      remount(state.endless ? null : state.levelIndex, opts.seed);
+      remount(state.endless ? null : state.levelIndex, opts.seed, runCode);
     });
     // A new product draws the seed the menu would have drawn for it.
     next?.addEventListener('click', () => {

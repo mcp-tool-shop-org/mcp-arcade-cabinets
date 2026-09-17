@@ -1928,7 +1928,7 @@ describe('what the standup keeps', () => {
     // The one instruction for replaying a run was a `title` on a paragraph,
     // which a touch player and a reader's software both never get.
     const why = seed.nextElementSibling as HTMLElement;
-    expect(why.textContent).toBe('Type this seed on the menu to play the same run again.');
+    expect(why.textContent).toBe('Type this code on the menu to play the same run again.');
     expect(why.className).toContain('why');
   });
 });

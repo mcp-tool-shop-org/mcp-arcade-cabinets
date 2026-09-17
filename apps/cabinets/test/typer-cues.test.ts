@@ -37,6 +37,8 @@ const EVERY: Event[] = [
   { kind: 'sync', on: false },
   { kind: 'over', how: 'shipped' },
   { kind: 'over', how: 'context' },
+  { kind: 'clear', what: 'line' },
+  { kind: 'clear', what: 'nothing' },
 ];
 
 describe('the cue table', () => {
@@ -57,7 +59,7 @@ describe('the cue table', () => {
     expect([...walked].sort()).toEqual([...listed].sort());
     // A kind added to the package with no cue is a type error in cueFor's
     // `never` default; this is the same check at run time.
-    expect(EVENT_KINDS).toHaveLength(12);
+    expect(EVENT_KINDS).toHaveLength(13);
   });
 
   it('gives a distinct name to each side of the events that have two', () => {

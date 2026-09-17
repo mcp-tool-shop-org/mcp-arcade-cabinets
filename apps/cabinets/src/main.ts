@@ -35,6 +35,7 @@ import {
   type IntegrationSeed,
   type Snippet,
   type Tier,
+  parseRunCode,
 } from '@mcp-arcade-cabinets/vibe-typer';
 
 import {
@@ -851,6 +852,17 @@ function integrationSeasoning(): Snippet[] {
   return integration;
 }
 
+/**
+ * Whether the box holds something shaped like a run code: four groups of
+ * four, letters and digits, however the player spaced or cased them. The
+ * shape is checked before the code is read so that a code with one wrong
+ * letter is told so, rather than played as a seed phrase.
+ */
+function looksLikeRunCode(raw: string): boolean {
+  const flat = raw.replace(/[\s-]/g, '');
+  return flat.length === 16 && /^[0-9a-z]+$/i.test(flat);
+}
+
 /** A typed seed replays; a blank box draws the next one off the last run. */
 function seedFrom(raw: string, last: number, runs: number): number {
   const text = raw.trim();
@@ -1088,15 +1100,20 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
   agent.value = prefs.agent ?? VIBE.cabinet.agentName;
   const seedBox = document.createElement('input');
   seedBox.type = 'text';
-  seedBox.setAttribute('aria-label', 'seed');
-  seedBox.placeholder = 'a seed, or leave it blank';
+  seedBox.setAttribute('aria-label', 'seed or run code');
+  seedBox.placeholder = 'a seed or a run code, or leave it blank';
   seedBox.autocomplete = 'off';
   seedBox.spellcheck = false;
   seedBox.size = 18;
   if (prefs.seed) seedBox.value = prefs.seed;
   const play = button('Play', 'commit');
   row2.append(agent, seedBox, play);
-  wrap.append(row, settings, row2);
+  // What the box has to say about a code, under it, in the same live region
+  // grammar the shooter's shift box uses.
+  const codeWord = muted('');
+  codeWord.setAttribute('role', 'status');
+  codeWord.setAttribute('aria-label', 'run code status');
+  wrap.append(row, settings, row2, codeWord);
 
   const start = () => {
     dropSeatLook();
@@ -1106,27 +1123,42 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
     // run and came back as a different one: `hash(full text)` is not
     // `hash(first twelve)`. What is played, what is stored and what the box
     // shows are now the same string.
-    const raw = seedBox.value.trim().slice(0, SEED_MAX);
+    // A run code is longer than a seed phrase is allowed to be, and is kept
+    // whole; anything else is cut to what the box holds.
+    const typed = seedBox.value.trim();
+    const raw = looksLikeRunCode(typed) ? typed : typed.slice(0, SEED_MAX);
     seedBox.value = raw;
-    const seed = seedFrom(raw, prefs.last ?? 1, runs);
+    // A run code in the box wins over the seed and the settings beside it:
+    // the code names the run. Something shaped like a code that does not
+    // read is answered under the box rather than played as a seed phrase.
+    const code = looksLikeRunCode(raw) ? parseRunCode(raw) : null;
+    if (looksLikeRunCode(raw) && !code) {
+      codeWord.textContent = 'that run code has a typo in it';
+      seedBox.focus();
+      return;
+    }
+    codeWord.textContent = '';
+    const seed = code ? code.seed : seedFrom(raw, prefs.last ?? 1, runs);
     const name = cleanName(agent.value) || VIBE.cabinet.agentName;
-    const endless = picked === 'endless';
+    const endless = code ? code.endless : picked === 'endless';
+    const tierPicked = code ? code.tier : (Number(tier.value) as Tier);
     // The run's own fields, and nothing else: the settings row writes itself
     // the moment it is chosen (see the handlers above), so this no longer
     // decides whether a choice is kept.
     writeVibePrefs({
       cabinet: 'vibe',
-      tier: Number(tier.value) as Tier,
-      ...(endless ? {} : { level: picked as number }),
+      tier: tierPicked,
+      ...(endless || picked === 'endless' ? {} : { level: picked as number }),
       endless: endless ? 'on' : 'off',
       agent: name,
       seed: raw,
     });
     mountVibeTyper(app, {
-      tier: Number(tier.value) as Tier,
+      tier: tierPicked,
       endless,
-      ...(endless ? {} : { levelIndex: picked as number }),
+      ...(endless || picked === 'endless' ? {} : { levelIndex: picked as number }),
       seed,
+      ...(code ? { code: raw } : {}),
       agentName: name,
       theme: theme.value as Theme,
       font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
