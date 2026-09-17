@@ -27,7 +27,8 @@
         "onEntry": true,
         "firstShot": 0.3,
         "shooters": ["init", "ready", "menu", "grid", "answer"],
-        "aim": true
+        "aim": true,
+        "fromAbove": 96
       },
       "boss": {
         "period": 4.8,
@@ -58,7 +59,8 @@
         "onEntry": true,
         "firstShot": 0.35,
         "shooters": ["init", "ready", "menu", "grid", "answer"],
-        "aim": true
+        "aim": true,
+        "fromAbove": 96
       },
       "boss": {
         "period": 4.2,
@@ -89,7 +91,8 @@
         "onEntry": true,
         "firstShot": 0.5,
         "shooters": ["init", "ready", "menu", "grid", "answer"],
-        "aim": true
+        "aim": true,
+        "fromAbove": 96
       },
       "boss": {
         "period": 3.6,

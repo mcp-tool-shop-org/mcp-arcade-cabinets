@@ -110,6 +110,13 @@ export interface FireRhythm {
    */
   aim: boolean;
   /**
+   * How far above the ship's row a formation sprite must be before it fires,
+   * in pixels. A sprite that returns from the bottom of the field, or swoops
+   * low on its way in, used to fire from beside or below the ship, where a
+   * shot cannot be dodged (the Director, 2026-09-17). Zero when absent.
+   */
+  fromAbove: number;
+  /**
    * When the first shot comes, as a fraction of the period. One is the old
    * behavior (a sprite waits a whole period before its first shot, which a
    * sprite that lives a second on its path never reaches); a smaller number
@@ -475,6 +482,11 @@ function loadRhythm(value: unknown, file: string, key: string): FireRhythm {
   }
   let aim = false;
   if (Object.prototype.hasOwnProperty.call(obj, 'aim')) aim = asBoolean(obj.aim, file, 'aim');
+  let fromAbove = 0;
+  if (Object.prototype.hasOwnProperty.call(obj, 'fromAbove')) {
+    fromAbove = asNumber(obj.fromAbove, file, 'fromAbove');
+    if (!(fromAbove >= 0)) fail(file, 'fromAbove');
+  }
   let shooters: SpriteClass[] = ['grid', 'menu'];
   if (Object.prototype.hasOwnProperty.call(obj, 'shooters')) {
     shooters = asArray(obj.shooters, file, 'shooters').map((c) => {
@@ -496,6 +508,7 @@ function loadRhythm(value: unknown, file: string, key: string): FireRhythm {
     speed: asNumber(req(obj, file, 'speed'), file, 'speed'),
     onEntry,
     aim,
+    fromAbove,
     shooters,
     firstShot,
   };

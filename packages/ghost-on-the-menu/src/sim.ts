@@ -1415,6 +1415,9 @@ function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   // formation never reached the mode it was allowed to shoot from.
   const entering = rhythm.onEntry && enemy.mode === 'enter' && enemy.y >= 0;
   if (enemy.mode !== 'hover' && enemy.mode !== 'dive' && !entering) return;
+  // Only from above: a shot from beside or below the ship cannot be dodged,
+  // and the answer sprites come in from the bottom of the field.
+  if (enemy.y + enemy.h > state.player.y - rhythm.fromAbove) return;
   const period = rhythm.period * fireScale(state, meta);
   // The cadence is armed from the sprite's entry, not from its first eligible
   // tick (Grok's consult, defect two): a sprite used to pay the whole path

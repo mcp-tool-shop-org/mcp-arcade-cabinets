@@ -2292,3 +2292,58 @@ describe('the voice pools are bags, and they grow', () => {
     expect(readLineBags({ end: { order: [], at: -1, cycle: 0 } })).toEqual({});
   });
 });
+
+// The Director's note (2026-09-17): a shot from beside or below the ship cannot be dodged.
+describe('formation fire comes from above', () => {
+  const still = { left: false, right: false, fire: false };
+  function parkedAt(y: number, fromAbove: number): RoundState {
+    const set = JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as PatternSet;
+    set.fire.tiers['1'].formation!.aim = true;
+    set.fire.tiers['1'].formation!.firstShot = 0.1;
+    set.fire.tiers['1'].formation!.fromAbove = fromAbove;
+    set.ladder.rungs.find((r) => r.tier === 1)!.sweep = 0;
+    const round = roundOf({
+      tapeId: 'bout_above',
+      duration: 30,
+      tier: 1,
+      beats: [
+        {
+          id: 'inspect.tools_list:menu:0',
+          t: 0,
+          x: 240,
+          sprite: 'menu',
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/list',
+            note: 'tools/list',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, set);
+    const state = createRoundState(round);
+    const target = state.enemies[0]!;
+    park(state, target);
+    target.y = y;
+    target.hoverY = y;
+    state.player.x = 8;
+    return state;
+  }
+  it('a sprite beside the ship is silent under the lever; the same sprite high above fires; with the lever at zero the low one fires too', () => {
+    const shotsIn = (state: RoundState) => {
+      for (let i = 0; i < 120; i++) stepRound(state, still, 1 / 60);
+      return state.enemyShots.length;
+    };
+    const low = parkedAt(300, 96);
+    const high = parkedAt(80, 96);
+    const lowNoLever = parkedAt(300, 0);
+    expect(shotsIn(low)).toBe(0);
+    expect(shotsIn(high)).toBeGreaterThan(0);
+    expect(shotsIn(lowNoLever)).toBeGreaterThan(0);
+    for (const k of ['1', '2', '3'] as const)
+      expect(DEFAULT_PATTERNS.fire.tiers[k].formation!.fromAbove).toBeGreaterThan(0);
+  });
+});
