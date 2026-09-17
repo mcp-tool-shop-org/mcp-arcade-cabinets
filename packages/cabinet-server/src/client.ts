@@ -405,6 +405,33 @@ export function sameView(a: SeatView, b: SeatView): boolean {
   return a.kind === b.kind && a.hp === b.hp && a.motion === b.motion && a.wave === b.wave;
 }
 
+/**
+ * How long the seat waits after one failed ask before opening another, in
+ * round seconds, and the ceiling the wait grows to over consecutive
+ * failures.
+ *
+ * A refused TCP connection settles in about a millisecond, so a daemon that
+ * is not running used to cost a failed ask and a status line on very nearly
+ * every frame for the whole round: a permanent failure paid the same price
+ * as a transient one, forever, and the status widget said one sentence
+ * hundreds of times while the operator was reading it for something else.
+ * The voice side next door has had a cadence for exactly this (VOICE_PROBE_S).
+ *
+ * The first wait is shorter than a beat, so a blip costs the seat one beat
+ * at most; the ceiling is well under a round, so a daemon that comes back
+ * mid-round is picked up within it. The scripted floor plays throughout
+ * either way — nothing here decides whether the round is fun, only how often
+ * a dead daemon is asked.
+ */
+export const SEAT_RETRY_S = 0.5;
+export const SEAT_RETRY_MAX_S = 4;
+
+/** The wait after `failures` consecutive failed asks, doubling to the ceiling. */
+export function seatRetryWait(failures: number): number {
+  if (failures <= 0) return 0;
+  return Math.min(SEAT_RETRY_MAX_S, SEAT_RETRY_S * 2 ** (failures - 1));
+}
+
 export function createSeat(opts: SeatOpts): Seat {
   const stats: SeatStats = {
     asked: 0,
@@ -423,7 +450,24 @@ export function createSeat(opts: SeatOpts): Seat {
   let ready: { view: SeatView; answer: FireAnswer | null; error: string | null } | null = null;
   let token = 0;
   let now = 0;
+  /** Consecutive failed asks; cleared by the first answer that comes back. */
+  let failures = 0;
+  /** Round time before which no new ask is opened. */
+  let notBefore = 0;
+  /** The last failure sentence said, so it is said once per change. */
+  let lastFault: string | null = null;
   const say = (s: string) => opts.onStatus?.(s);
+  /**
+   * A failure sentence, said once per change rather than once per attempt,
+   * the way the shooter's voice hook already says its own notes. A daemon
+   * that is down says so, and says it again only when what is wrong changes
+   * or after an answer has come back.
+   */
+  const sayFault = (s: string) => {
+    if (lastFault === s) return;
+    lastFault = s;
+    say(s);
+  };
 
   function ask(view: SeatView) {
     const mine = ++token;
@@ -436,6 +480,11 @@ export function createSeat(opts: SeatOpts): Seat {
         if (!pending || pending.token !== mine) return;
         if (now - pending.tAsked > opts.beatSeconds) stats.late += 1;
         stats.msSum += answer.ms;
+        // An answer is the daemon working: the wait and the said sentence
+        // both start over from here.
+        failures = 0;
+        notBefore = 0;
+        lastFault = null;
         ready = { view, answer, error: null };
         pending = null;
       })
@@ -444,6 +493,8 @@ export function createSeat(opts: SeatOpts): Seat {
         const msg = err instanceof Error ? err.message : String(err);
         if (/ollama timeout/i.test(msg)) stats.timeout += 1;
         else stats.errors += 1;
+        failures += 1;
+        notBefore = now + seatRetryWait(failures);
         ready = { view, answer: null, error: msg };
         pending = null;
       });
@@ -460,7 +511,7 @@ export function createSeat(opts: SeatOpts): Seat {
       // as 'no answer', which is the sentence that sends an operator to
       // check a daemon that is running fine. 'no answer' is the true
       // fall-through and nothing else.
-      say(
+      sayFault(
         /retired/i.test(r.error)
           ? 'seat: model retired'
           : /ollama down/i.test(r.error)
@@ -500,6 +551,9 @@ export function createSeat(opts: SeatOpts): Seat {
 
   return {
     tick(view, t, waiting) {
+      // A new round starts the clock over, and a wait measured on the old
+      // one would otherwise hold the seat shut through the start of it.
+      if (t < now) notBefore = 0;
       now = t;
       if (view.kind === null) {
         if (pending) token += 1;
@@ -518,7 +572,9 @@ export function createSeat(opts: SeatOpts): Seat {
           say('seat: view changed, asking again');
         }
       }
-      if (!pending && !ready) ask(view);
+      // The wait after a failed ask is the only thing between a daemon that
+      // is not running and an ask on every frame of the round.
+      if (!pending && !ready && now >= notBefore) ask(view);
     },
     stats: () => stats,
     busy: () => pending !== null,

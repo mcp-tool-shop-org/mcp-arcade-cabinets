@@ -24,9 +24,9 @@ import {
 import { botFor } from '@mcp-arcade-cabinets/ghost-on-the-menu/src/play';
 import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import { createCabinet, type Cabinet } from './cabinet';
+import { createCabinet, type Cabinet, type TapeSource } from './cabinet';
 import { assertCatalogTools, CONTRACT, type ToolDef } from './contract';
-import { SEED_NOTE, setEnv, tierNote, wholeEnv } from './env';
+import { leverRows, SEED_NOTE, setEnv, STOP_NOTE, tierNote, VARIABLE_ROWS, wholeEnv } from './env';
 import { hostForRound, tapeCards, type Live } from './host';
 import { createStepFaults, guardStep, isStuck } from './step-guard';
 import { speakLine, voiceHealth, type SpeakAnswer } from './voice';
@@ -106,16 +106,33 @@ function listTapesDir(dir: string, warnMissing: boolean): { name: string; tape: 
   return out;
 }
 
-/** Baked dir plus an optional overlay. Overlay miss is empty, not a replace of `dir`. */
-export function listTapes(dir: string, overlayDir?: string): { name: string; tape: Tape }[] {
-  const baked = listTapesDir(dir, true);
+/** One card on the menu, and where it came from. The `tapes` answer says which. */
+export interface MenuTape {
+  name: string;
+  tape: Tape;
+  from: TapeSource;
+}
+
+/**
+ * Baked dir plus an optional overlay. Overlay miss is empty, not a replace of
+ * `dir`.
+ *
+ * Each card carries where it came from, because the overlay is the one thing
+ * the Catalog listing invites an operator to configure and nothing anywhere
+ * said it had landed. A mount the container cannot read and a mount holding
+ * no tapes both merge as nothing, and the menu that comes back is exactly
+ * the baked one; the mark is what lets the answer a client reads tell the
+ * two apart from a mount that worked.
+ */
+export function listTapes(dir: string, overlayDir?: string): MenuTape[] {
+  const baked: MenuTape[] = listTapesDir(dir, true).map((t) => ({ ...t, from: 'baked' }));
   const overlay = overlayDir?.trim();
   if (!overlay) return baked;
   const extra = listTapesDir(overlay, false);
   const seen = new Set(baked.map((t) => t.name));
   for (const t of extra) {
     if (seen.has(t.name)) continue;
-    baked.push(t);
+    baked.push({ ...t, from: 'operator' });
     seen.add(t.name);
   }
   baked.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
@@ -319,7 +336,10 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   };
   probe();
   const host = hostForRound(() => live, {
-    tapes: () => tapeCards(tapes),
+    // The menu, with each card's source and the card the round is playing.
+    // The fixture was resolved right here and a client was shown a menu it
+    // could not find its own position in.
+    tapes: () => tapeCards(tapes, found.name),
     // The round's own health, at the boundary. `guardStep` counts faults and
     // keeps the server listed, which is right, but the count never crossed
     // into anything a client reads.
@@ -374,11 +394,19 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   const cabinet: Cabinet = createCabinet(host);
   const step = (dt: number) => {
     if (live.state.scene) {
+      // A new round is a new state and a new bot, and the host forgets the
+      // recent-line window, the fallback salt and the pending spoken line
+      // underneath whatever the client was holding. The counter is what lets
+      // the view say so; without it a client that read the field before the
+      // scene and again after it saw a plausible round and nothing saying
+      // everything it had queued was gone. Never shown as a count: the view
+      // turns it into one line.
       round = makeRound();
       state = createRoundState(round);
       bot = botFor('sweeper', round);
       live.round = round;
       live.state = state;
+      live.rounds = (live.rounds ?? 0) + 1;
     }
     const next = bot(live.state);
     input.left = next.left;
@@ -475,6 +503,18 @@ export function ghostEnv(
     notes.push('CABINET_BOT is read by the typing cabinet only; this cabinet plays its own bot\n');
   }
 
+  // An operator who said nothing about the voice asked for no voice, and
+  // this used to leave `voiceUrl` undefined, which `headlessRound` reads as
+  // 'use the loopback default'. So every start outside the image — every
+  // `npx ... --mcp` — opened a probe at a port nobody had configured, and
+  // `speak` answered that no worker answers, which sends a client and an
+  // operator looking for a worker that was never asked for. The sentence
+  // written for this case, 'the voice is silent on this cabinet', was
+  // reachable only by setting the variable to the empty string. The loopback
+  // route stays exactly one variable away: DEFAULT_VOICE_URL is what
+  // VOICE_URL means when it is set to that bare default, not what silence
+  // means.
+  if (opts.voiceUrl === undefined && env.VOICE_URL === undefined) out.voiceUrl = null;
   if (opts.voiceUrl === undefined && env.VOICE_URL !== undefined) {
     const raw = env.VOICE_URL.trim();
     const url = raw === '' ? null : voiceUrlOf(raw);
@@ -496,7 +536,92 @@ export function ghostEnv(
   return { opts: { ...out, ...opts }, notes };
 }
 
-export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
+/**
+ * What `--version` answers: this server's own name and version, one line on
+ * stdout, and nothing started.
+ */
+export function versionLine(): string {
+  return `${SERVER_NAME} ${SERVER_VERSION}\n`;
+}
+
+/**
+ * What `--help` answers.
+ *
+ * The image is the only surface a Docker MCP Catalog user ever touches, and
+ * it was the one surface here with no help at all: the ENTRYPOINT forwards
+ * whatever an operator appends after the image name, and this entry read
+ * `process.argv` for nothing but its own module check, so `--help` started a
+ * cabinet and blocked on stdin. Both npm launchers have printed a usage with
+ * the environment table all along.
+ *
+ * Every row is derived rather than written a second time: the levers come
+ * from the contract, so one that lands or leaves moves the help with it, and
+ * the variables come from the image's own canonical table through `env.ts`,
+ * which `surfaces.test.ts` compares line for line.
+ */
+export function helpText(): string {
+  return (
+    [
+      `${SERVER_NAME} ${SERVER_VERSION} — a replay shooter you sit in the boss of, over MCP`,
+      '',
+      'Usage',
+      '  (no arguments)     speak MCP on stdin and stdout',
+      '  --help, -h         this',
+      '  --version          the name and the version',
+      '',
+      'Levers',
+      ...leverRows(CONTRACT),
+      '',
+      'Environment',
+      ...VARIABLE_ROWS,
+      '',
+      'Every note this cabinet writes goes to stderr under its own name. It needs',
+      'no network to list or to play.',
+    ].join('\n') + '\n'
+  );
+}
+
+/**
+ * Close on the signals a container runtime sends first, and say so.
+ *
+ * The ENTRYPOINT's `exec node` replaces the shell, so this process is
+ * process one inside the container — and a process at that position is not
+ * terminated by a signal it has registered nothing for. `docker stop`,
+ * `docker compose down` and a Toolkit shutdown all waited out the full grace
+ * period and then killed the container. The server already ends cleanly on
+ * its own terms (both interval timers are unref'd, so it ends when stdin
+ * closes); the missing piece was only the signal path, and it is the path
+ * every runtime uses first.
+ *
+ * It lives in the server rather than in an init shim in the image, so the
+ * launcher's `--mcp` child gets it too. The write and the leave are taken as
+ * arguments so the whole path can be read in a test.
+ */
+export function stopOn(
+  signals: readonly NodeJS.Signals[],
+  close: () => Promise<void> | void,
+  write: (line: string) => void = warnLine,
+  leave: (code: number) => void = (code) => process.exit(code),
+): void {
+  let stopping = false;
+  for (const signal of signals) {
+    process.on(signal, () => {
+      // A second signal while the first is still closing is the same stop.
+      if (stopping) return;
+      stopping = true;
+      write(STOP_NOTE);
+      void Promise.resolve()
+        .then(close)
+        .catch(() => undefined)
+        .finally(() => leave(0));
+    });
+  }
+}
+
+/** The two a container runtime and a terminal send; both are the same stop here. */
+export const STOP_SIGNALS: readonly NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
+
+export async function startStdio(opts: HeadlessOpts = {}): Promise<StdioServerTransport> {
   checkCatalogListing();
   const read = ghostEnv(process.env, opts);
   for (const note of read.notes) warnLine(note);
@@ -518,12 +643,28 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write(tagged(`${SERVER_VERSION}: ${h.fixture}, tools listed\n`));
+  return transport;
 }
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
 if (invoked === fileURLToPath(import.meta.url)) {
-  startStdio().catch((err: unknown) => {
-    process.stderr.write(tagged(`${err instanceof Error ? err.message : String(err)}\n`));
-    process.exit(1);
-  });
+  // The first argument, and only the first: anything this does not know
+  // stays what it was, so no existing `docker run` of the image changes
+  // meaning. Both answers go to stdout and start nothing, because stdout is
+  // the transport only once there is one.
+  const asked = process.argv[2];
+  if (asked === '--version') {
+    process.stdout.write(versionLine());
+  } else if (asked === '--help' || asked === '-h') {
+    process.stdout.write(helpText());
+  } else {
+    startStdio()
+      .then((transport) => {
+        stopOn(STOP_SIGNALS, () => transport.close());
+      })
+      .catch((err: unknown) => {
+        process.stderr.write(tagged(`${err instanceof Error ? err.message : String(err)}\n`));
+        process.exit(1);
+      });
+  }
 }

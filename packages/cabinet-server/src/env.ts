@@ -66,3 +66,51 @@ export function tierNote(word: string): string {
 export const BOT_NOTE =
   'CABINET_BOT was not understood; it is a name and a pace, written as `typist:<words per minute>`, and the cabinet plays under its house typist' +
   NEWLINE;
+
+/**
+ * The image's variable table, as both `--help` texts print it.
+ *
+ * The rows are the Dockerfile's between its VARIABLES markers, which is the
+ * canonical copy: it ships with the image, so it is the one an operator who
+ * pulled the image can reach. They cannot be read at run time — the image
+ * carries the two bundled servers and the tapes and no Dockerfile — so this
+ * is a fourth copy of a table that has already drifted three ways, and
+ * `surfaces.test.ts` compares it to the canonical rows line for line, the
+ * way it already compares the Catalog listing's copy.
+ *
+ * It lives beside the readers for the same reason the notes above do: the
+ * two cabinets print one table, and two hand-copies is how that stops being
+ * true. The leading spaces are the table's own; the help prints the rows as
+ * they are written here.
+ */
+export const VARIABLE_ROWS: readonly string[] = [
+  '  CABINET            both     ghost (or unset) is the shooter, vibe is the typist',
+  '  CABINET_TAPES      both     where the tapes are (baked at /app/tapes)',
+  '  CABINET_TAPES_USER ghost    operator tapes merged beside the baked menu',
+  '  CABINET_FIXTURE    ghost    which tape the round plays; the image sets its default on the shooter branch only',
+  '  CABINET_TIER       both     zero to three; anything else is a note and the default (one on the shooter, zero on the typing cabinet)',
+  '  CABINET_SEED       both     a whole number; anything else is a note',
+  '  CABINET_BOT        vibe     the typist at the keyboard, as `typist:<words per minute>`',
+  "  VOICE_URL          ghost    the host worker's base; unset or empty (the Catalog default) is silent",
+  "  VOICE_TOKEN        ghost    the worker's bearer, when it binds beyond loopback",
+];
+
+/**
+ * The lever rows a `--help` prints, one to a line: the name, then the words
+ * a client's approval prompt shows for it. Derived from the cabinet's own
+ * contract rather than written out, so a lever that lands or leaves moves
+ * the help with it.
+ */
+export function leverRows(
+  levers: readonly { name: string; title?: string; description: string }[],
+): string[] {
+  const width = Math.max(...levers.map((d) => d.name.length));
+  return levers.map((d) => `  ${d.name.padEnd(width)}  ${d.title ?? d.name}`);
+}
+
+/**
+ * The line a server writes when a stop signal reaches it. The start already
+ * says the cabinet is up; without this the log simply stops, and a container
+ * runtime's own stop reads the same as a crash.
+ */
+export const STOP_NOTE = 'the stop was heard; the cabinet is closed\n';

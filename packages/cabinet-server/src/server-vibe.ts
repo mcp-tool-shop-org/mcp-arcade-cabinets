@@ -30,7 +30,16 @@ import {
 import { botFor, integrationFrom, parseBot } from '@mcp-arcade-cabinets/vibe-typer/src/play';
 
 import { assertCatalogTools, VIBE_CONTRACT, type ToolDef } from './contract';
-import { BOT_NOTE, SEED_NOTE, setEnv, tierNote, wholeEnv } from './env';
+import {
+  BOT_NOTE,
+  leverRows,
+  SEED_NOTE,
+  setEnv,
+  STOP_NOTE,
+  tierNote,
+  VARIABLE_ROWS,
+  wholeEnv,
+} from './env';
 import { createStepFaults, guardStep, isStuck } from './step-guard';
 import { createVibeCabinet, type VibeCabinet } from './vibe-cabinet';
 import { vibeHostFor, type VibeLive } from './vibe-host';
@@ -271,7 +280,73 @@ export function vibeEnv(
   return { opts: { ...out, ...opts }, notes };
 }
 
-export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<void> {
+/** What `--version` answers: this server's own name and version, one line. */
+export function vibeVersionLine(): string {
+  return `${VIBE_SERVER_NAME} ${VIBE_SERVER_VERSION}\n`;
+}
+
+/**
+ * What `--help` answers. The shooter's twin, and for the same reason: the
+ * image forwards whatever an operator appends after the image name, and both
+ * entries read `process.argv` for nothing but their own module check, so
+ * `--help` started a cabinet and blocked on stdin.
+ *
+ * Derived, not written a second time: the levers come from this cabinet's
+ * contract and the variables from the image's own canonical table, which
+ * `surfaces.test.ts` compares line for line.
+ */
+export function vibeHelpText(): string {
+  return (
+    [
+      `${VIBE_SERVER_NAME} ${VIBE_SERVER_VERSION} — a typing arcade you sit in the user of, over MCP`,
+      '',
+      'Usage',
+      '  (no arguments)     speak MCP on stdin and stdout',
+      '  --help, -h         this',
+      '  --version          the name and the version',
+      '',
+      'Levers',
+      ...leverRows(VIBE_CONTRACT),
+      '',
+      'Environment',
+      ...VARIABLE_ROWS,
+      '',
+      'Every note this cabinet writes goes to stderr under its own name. It needs',
+      'no network to list or to play.',
+    ].join('\n') + '\n'
+  );
+}
+
+/**
+ * Close on the signals a container runtime sends first, and say so. The
+ * shooter's twin; see the note there for why it lives in the server rather
+ * than in an init shim in the image.
+ */
+export function vibeStopOn(
+  signals: readonly NodeJS.Signals[],
+  close: () => Promise<void> | void,
+  write: (line: string) => void = warnLine,
+  leave: (code: number) => void = (code) => process.exit(code),
+): void {
+  let stopping = false;
+  for (const signal of signals) {
+    process.on(signal, () => {
+      // A second signal while the first is still closing is the same stop.
+      if (stopping) return;
+      stopping = true;
+      write(STOP_NOTE);
+      void Promise.resolve()
+        .then(close)
+        .catch(() => undefined)
+        .finally(() => leave(0));
+    });
+  }
+}
+
+/** The two a container runtime and a terminal send; both are the same stop here. */
+export const VIBE_STOP_SIGNALS: readonly NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
+
+export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<StdioServerTransport> {
   checkVibeCatalogListing();
   const read = vibeEnv(process.env, opts);
   for (const note of read.notes) warnLine(note);
@@ -292,12 +367,28 @@ export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<void>
   process.stderr.write(
     vibeTagged(`${VIBE_SERVER_VERSION}: endless under ${h.bot}, tools listed\n`),
   );
+  return transport;
 }
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
 if (invoked === fileURLToPath(import.meta.url)) {
-  startVibeStdio().catch((err: unknown) => {
-    process.stderr.write(vibeTagged(`${err instanceof Error ? err.message : String(err)}\n`));
-    process.exit(1);
-  });
+  // The first argument, and only the first: anything this does not know
+  // stays what it was, so no existing `docker run` of the image changes
+  // meaning. Both answers go to stdout and start nothing, because stdout is
+  // the transport only once there is one.
+  const asked = process.argv[2];
+  if (asked === '--version') {
+    process.stdout.write(vibeVersionLine());
+  } else if (asked === '--help' || asked === '-h') {
+    process.stdout.write(vibeHelpText());
+  } else {
+    startVibeStdio()
+      .then((transport) => {
+        vibeStopOn(VIBE_STOP_SIGNALS, () => transport.close());
+      })
+      .catch((err: unknown) => {
+        process.stderr.write(vibeTagged(`${err instanceof Error ? err.message : String(err)}\n`));
+        process.exit(1);
+      });
+  }
 }

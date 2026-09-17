@@ -60,7 +60,7 @@ run:
 #   CABINET_TIER       both     zero to three; anything else is a note and the default (one on the shooter, zero on the typing cabinet)
 #   CABINET_SEED       both     a whole number; anything else is a note
 #   CABINET_BOT        vibe     the typist at the keyboard, as `typist:<words per minute>`
-#   VOICE_URL          ghost    the host worker's base; empty (the Catalog default) is silent
+#   VOICE_URL          ghost    the host worker's base; unset or empty (the Catalog default) is silent
 #   VOICE_TOKEN        ghost    the worker's bearer, when it binds beyond loopback
 # VARIABLES END
 #

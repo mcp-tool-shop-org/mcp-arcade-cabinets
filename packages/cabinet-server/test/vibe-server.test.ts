@@ -269,7 +269,13 @@ describe('the stdio server', () => {
 
     const view = await client.callTool({ name: 'view', arguments: {} });
     expect(text(view)).toMatch(/^product /);
-    expect(text(view)).toMatch(/\nroom the next level (has room|is full)\n?$/);
+    expect(text(view)).toMatch(/\nroom the next level (has room|is full)\n/);
+    // The third write lever's own line, beside the other two: a client used
+    // to learn the reaction slot was taken only by sending a line and
+    // reading back that its own was dropped.
+    expect(text(view)).toMatch(
+      /\nslot (the reaction slot is free|a reaction is already waiting)\n?$/,
+    );
     expect(text(view)).not.toMatch(FORBIDDEN);
 
     const product = await client.callTool({

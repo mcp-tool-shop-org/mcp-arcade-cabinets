@@ -277,6 +277,72 @@ describe('the boundary', () => {
     );
   });
 
+  it('the view says whether a line waits, and says a rollover once', () => {
+    // Two gaps the typing cabinet did not have. Nothing in this view said a
+    // line was waiting to be spoken, so a client that meant to `speak` had
+    // to call it and read 'no line' to find out; and nothing said the round
+    // had been replaced underneath it, although the rebuild clears the
+    // recent-line window, the fallback salt and the pending spoken line.
+    const l = live(raw('naive-ndjson'));
+    const host = hostForRound(() => l);
+    const cab = createCabinet(host);
+    const view = () => cab.call('view', {}).content[0]!.text;
+
+    expect(view()).toContain('line no line is waiting');
+    for (let f = 0; f < 4500 && !(l.state.boss && l.state.boss.alive); f++) {
+      stepRound(l.state, l.input, DT);
+      l.state.lives = l.state.maxLives;
+    }
+    expect(l.state.boss?.alive).toBe(true);
+    cab.call('say', { text: 'Name and protocol.', lead: 'beat' });
+    expect(view()).toContain('line a line is waiting to be spoken');
+    // The rows a client reads positionally stay where they were.
+    expect(view().split('\n')[0]).toMatch(/^wave /);
+
+    // The rollover line is the typing cabinet's own words, last, and fresh
+    // only until it has been read.
+    expect(view()).not.toContain('a new round just started');
+    l.rounds = (l.rounds ?? 0) + 1;
+    const rolled = view();
+    expect(rolled.split('\n').pop()).toBe(
+      'round a new round just started; anything you sent before is gone',
+    );
+    expect(view()).not.toContain('a new round just started');
+    expect(rolled).not.toMatch(SCREEN);
+  });
+
+  it('the tape cards say where a tape came from and which one is playing', () => {
+    // The overlay is the one thing the Catalog listing invites an operator
+    // to configure, and an unreadable mount and a mount with no tapes in it
+    // both merge as nothing and leave exactly the baked menu. The `tapes`
+    // answer was also a menu a client could not find its own position in.
+    const tape = loadTape(raw('naive-ndjson'));
+    const cards = tapeCards(
+      [
+        { name: 'baked-one', tape, from: 'baked' },
+        { name: 'mine', tape, from: 'operator' },
+      ],
+      'mine',
+    );
+    const host: CabinetHost = {
+      view: () => ({ kind: null, wave: 'breather' }),
+      propose: () => 'proposed',
+      say: () => 'said',
+      sfx: () => 'queued',
+      speak: () => 'silent',
+      tapes: () => cards,
+      recent: () => [],
+      maxWords: () => 12,
+    };
+    const lines = createCabinet(host).call('tapes', {}).content[0]!.text.split('\n');
+    expect(lines[0]).toContain('Baked into the cabinet.');
+    expect(lines[0]).not.toContain('playing');
+    expect(lines[1]).toContain('Added by the operator.');
+    expect(lines[1]).toContain('This is the tape the round is playing.');
+    // Words, never a count and never a path.
+    for (const line of lines) expect(line).not.toMatch(SCREEN);
+  });
+
   it('the view names no boss between waves and never a digit', () => {
     expect(viewLines({ kind: null, wave: 'breather' })).toBe('wave breather\nno boss on the field');
     for (const name of [

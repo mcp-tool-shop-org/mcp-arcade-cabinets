@@ -82,7 +82,7 @@
   {
     "name": "view",
     "title": "The shooter: the field in words",
-    "description": "The boss's view of the field, in words: the wave kind, the boss kind, its health word, which column the ship is in, which way the stick pushes, and the boss's motion word. With no boss up, the answer is the wave kind and one line saying the field is empty. When the round reaches its end scene the answer carries a line saying so, and every other lever waits there until a new round starts. When the round has stopped moving the answer carries a last line saying so, and every other lever answers that nothing was queued until it moves again. Read-only. The cabinet never tells the boss which sprites are honest.",
+    "description": "The boss's view of the field, in words: the wave kind, the boss kind, its health word, which column the ship is in, which way the stick pushes, the boss's motion word, and whether a line is waiting to be spoken. With no boss up, the answer is the wave kind, one line saying the field is empty, and that same line about the line waiting. Other lines come last when they apply: one saying the round is at its end scene, where every other lever waits until a new round starts; one saying a new round just started and anything you sent before is gone, said once and then gone itself; and one saying the round has stopped moving, where every other lever answers that nothing was queued until it moves again. Read-only. The cabinet never tells the boss which sprites are honest.",
     "inputSchema": {
       "type": "object",
       "properties": {},
@@ -92,7 +92,7 @@
   {
     "name": "tapes",
     "title": "The shooter: the tapes on this cabinet",
-    "description": "The tapes this cabinet can play, each by name with a difficulty word and a line about the wire. Read-only. Nothing here is graded.",
+    "description": "The tapes this cabinet can play, each by name with a difficulty word and a line about the wire. Each card says where its tape came from, baked into the cabinet or added by the operator, and the card the round is playing says that too. Read-only. Nothing here is graded.",
     "inputSchema": {
       "type": "object",
       "properties": {},

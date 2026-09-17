@@ -20,7 +20,7 @@ import {
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import type { CabinetHost, SeatView, TapeCard } from './cabinet';
+import type { CabinetHost, FieldView, LineWord, TapeCard } from './cabinet';
 import {
   DEFAULT_PERSONAS,
   type BossKind,
@@ -33,6 +33,18 @@ export interface Live {
   round: Round;
   state: RoundState;
   input: RoundInput;
+  /**
+   * Rounds that have ended under this client. Bumped by the step when it
+   * rebuilds the round at the end scene, and the typing cabinet's twin of it
+   * is `VibeLive.runs`.
+   *
+   * It is never shown as a count — nothing here is a number. It is the one
+   * bit the view needs to tell a client that the round it was playing has
+   * been replaced under it: the recent-line window, the fallback salt and
+   * the pending spoken line all belonged to the old state and went with it.
+   * Optional, so a live built by hand in a test need not carry it.
+   */
+  rounds?: number;
 }
 
 /**
@@ -42,15 +54,24 @@ export interface Live {
  * and the view is the only thing a client has to read the field with. It
  * used to be invisible here, so the view said there was a boss while the
  * levers said there was nothing to spend.
+ *
+ * `rolled` is passed in rather than read off the live, because it is fresh
+ * once: the host consumes it, and a second `view` in the same round says
+ * nothing about a rollover the client has already been told about.
  */
-export function seatView(
-  live: Live,
-): SeatView | { kind: null; wave: SeatView['wave']; scene?: boolean } {
+export function seatView(live: Live, rolled = false): FieldView {
   const { round, state, input } = live;
   const wave = waveKindAt(round, state.t);
   const boss = state.boss;
-  const scene = state.scene ? { scene: true as const } : {};
-  if (!boss || !boss.alive) return { kind: null, wave, ...scene };
+  const notes = {
+    ...(state.scene ? { scene: true as const } : {}),
+    ...(rolled ? { rolled: true as const } : {}),
+    // Whether `speak` would find a line, in the same words on an empty field
+    // as on a full one: a client that means to speak used to have to call it
+    // and read 'no line' to find out.
+    line: (state.bossSay && boss && boss.alive ? 'waiting' : 'none') as LineWord,
+  };
+  if (!boss || !boss.alive) return { kind: null, wave, ...notes };
   return {
     kind: boss.kind,
     hp: hpWord(boss.hp, boss.maxHp),
@@ -58,14 +79,28 @@ export function seatView(
     stick: stickWord(input),
     motion: boss.motion,
     wave,
-    ...scene,
+    ...notes,
   };
 }
 
-export function tapeCards(tapes: readonly { name: string; tape: Tape }[]): TapeCard[] {
-  return tapes.map(({ name, tape }) => {
+/**
+ * The menu as cards. `playing` is the name the round resolved, and each
+ * card's own `from` travels through from the merge, so the answer a client
+ * reads says which cards the operator added and which card is up.
+ */
+export function tapeCards(
+  tapes: readonly { name: string; tape: Tape; from?: TapeCard['from'] }[],
+  playing?: string,
+): TapeCard[] {
+  return tapes.map(({ name, tape, from }) => {
     const l = labelTape(tape);
-    return { name, label: l.label, why: l.why };
+    return {
+      name,
+      label: l.label,
+      why: l.why,
+      ...(from === undefined ? {} : { from }),
+      ...(playing !== undefined && playing === name ? { playing: true } : {}),
+    };
   });
 }
 
@@ -124,6 +159,21 @@ export function hostForRound(
 
   // A new round under the host forgets the lines and restarts the fallback
   // salt, so the same call sequence on the same tape lands the same lines.
+  /**
+   * Rounds this host has already told the client about. The rollover line is
+   * fresh until it has been read once, the way the typing cabinet's is fresh
+   * only through the first level of the new run.
+   */
+  let toldRounds: number | null = null;
+  const takeRolled = (live: Live): boolean => {
+    const rounds = live.rounds ?? 0;
+    // The first read is the client arriving, never a rollover, whatever the
+    // round the live was handed to this host on.
+    const rolled = toldRounds !== null && rounds !== toldRounds;
+    toldRounds = rounds;
+    return rolled;
+  };
+
   const forget = (state: RoundState) => {
     if (recentFor === state) return;
     recent.length = 0;
@@ -138,7 +188,10 @@ export function hostForRound(
   };
 
   return {
-    view: () => seatView(get()),
+    view: () => {
+      const live = get();
+      return seatView(live, takeRolled(live));
+    },
     ...(opts.stuck ? { stuck: opts.stuck } : {}),
     propose(verb: PilotIntent) {
       const { state } = get();

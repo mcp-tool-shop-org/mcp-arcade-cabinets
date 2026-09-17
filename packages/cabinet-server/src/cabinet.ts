@@ -16,17 +16,17 @@ import { STUCK_ANSWER, STUCK_VIEW_LINE } from './step-guard';
 import { NO_LEVER } from './tool-names';
 import type { BossKind, Lead } from './personas';
 
-/** The boss's view: the same fact-blind words the shell sends, plus the wave kind. */
-export interface SeatView {
-  kind: BossKind;
-  hp: 'high' | 'mid' | 'low';
-  column: 'left' | 'center' | 'right';
-  stick: 'still' | 'left' | 'right';
-  motion: string;
-  wave: WaveKind;
+/** Whether a line is waiting for `speak`. A word, like everything else here. */
+export type LineWord = 'waiting' | 'none';
+
+/**
+ * The rows a view may carry beyond the field itself. All optional, so a view
+ * built by hand (a test, a prompt fixture) need not carry any of them, and
+ * both shapes of the view carry the same ones.
+ */
+export interface ViewNotes {
   /**
-   * The round is at its end scene. Optional so a view built by hand (a test,
-   * a prompt fixture) need not carry it.
+   * The round is at its end scene.
    *
    * The view and the levers used to disagree here. `view` reported a boss
    * whenever one was alive and never looked at the scene, while `propose`,
@@ -36,17 +36,60 @@ export interface SeatView {
    * ambiguous, and the ambiguity was two tools contradicting each other.
    */
   scene?: boolean;
+  /**
+   * Whether a line is waiting to be spoken. A client that means to `speak`
+   * had to call it and read 'no line' to find out, which is the shooter's
+   * half of the gap the typing cabinet has on its reaction slot: the two
+   * cabinets gain the shape together, so a client can do the same thing on
+   * both.
+   */
+  line?: LineWord;
+  /**
+   * The round was replaced under the client since it last read the view.
+   * Fresh once and then gone, the way the typing cabinet's own line is.
+   */
+  rolled?: boolean;
 }
+
+/** The boss's view: the same fact-blind words the shell sends, plus the wave kind. */
+export interface SeatView extends ViewNotes {
+  kind: BossKind;
+  hp: 'high' | 'mid' | 'low';
+  column: 'left' | 'center' | 'right';
+  stick: 'still' | 'left' | 'right';
+  motion: string;
+  wave: WaveKind;
+}
+
+/** The field with no boss on it, and the same notes a full view may carry. */
+export type FieldView = SeatView | ({ kind: null; wave: WaveKind } & ViewNotes);
+
+/** Where a card on the menu came from: the baked menu, or the operator's own. */
+export type TapeSource = 'baked' | 'operator';
 
 export interface TapeCard {
   name: string;
   label: string;
   why: string;
+  /**
+   * Where this card came from. The overlay is the one thing the Catalog
+   * listing invites an operator to configure, and nothing a client or an
+   * operator could read said whether it had landed: an unreadable mount and
+   * a mount holding no tapes both merge as nothing and leave exactly the
+   * baked menu. Optional, so a card built by hand need not carry it.
+   */
+  from?: TapeSource;
+  /**
+   * Whether this is the card the round is playing. The fixture is resolved
+   * where the menu is built, and a client was shown a menu it could not find
+   * its own position in.
+   */
+  playing?: boolean;
 }
 
 export interface CabinetHost {
   /** Words only. Null kind when no boss is on the field. */
-  view(): SeatView | { kind: null; wave: WaveKind; scene?: boolean };
+  view(): FieldView;
   /** Leave a verb for the sim to spend at the boss's next beat. */
   propose(verb: PilotIntent): 'proposed' | 'no boss' | 'scene';
   /** Land a gate-passed line, or the seed's own line when `line` is null. */
@@ -148,10 +191,39 @@ export const SCENE_ANSWERS = {
   speak: 'the round is at its end scene; the line waits',
 } as const;
 
+/**
+ * What the view says about the line waiting for `speak`. The typing cabinet
+ * says whether its own write levers have room in the same `key value`
+ * grammar, beside its other ordinary rows; this is the shooter's twin, and
+ * it sits with the ordinary rows for the same reason.
+ */
+export const LINE_VIEW_LINES = {
+  waiting: 'line a line is waiting to be spoken',
+  none: 'line no line is waiting',
+} as const;
+
+/**
+ * The `view` line for a round that was replaced under the client.
+ *
+ * The typing cabinet's is `run a new run just started; anything you sent
+ * before is gone`, and this says the same event in the same words in the
+ * same place, because the whole value of the parity is that a client can do
+ * the same thing on both.
+ */
+export const ROLLED_VIEW_LINE = 'round a new round just started; anything you sent before is gone';
+
 /** Render the view as the same lines the pilot prompt carries. Never a digit. */
-export function viewLines(v: SeatView | { kind: null; wave: WaveKind; scene?: boolean }): string {
-  const scene = v.scene === true ? [SCENE_VIEW_LINE] : [];
-  if (v.kind === null) return [`wave ${v.wave}`, 'no boss on the field', ...scene].join('\n');
+export function viewLines(v: FieldView): string {
+  // The exceptional rows last, where the typing cabinet puts its own, so a
+  // client that reads positionally can do the same thing on both.
+  const last = [
+    ...(v.scene === true ? [SCENE_VIEW_LINE] : []),
+    ...(v.rolled === true ? [ROLLED_VIEW_LINE] : []),
+  ];
+  const line = v.line === undefined ? [] : [LINE_VIEW_LINES[v.line]];
+  if (v.kind === null) {
+    return [`wave ${v.wave}`, 'no boss on the field', ...line, ...last].join('\n');
+  }
   return [
     `wave ${v.wave}`,
     `kind ${v.kind}`,
@@ -159,8 +231,29 @@ export function viewLines(v: SeatView | { kind: null; wave: WaveKind; scene?: bo
     `ship ${v.column}`,
     `stick ${v.stick}`,
     `motion ${v.motion}`,
-    ...scene,
+    ...line,
+    ...last,
   ].join('\n');
+}
+
+/**
+ * The two marks a card may carry, as words. Never a count and never a path:
+ * a client reads which cards the operator added and which card the round is
+ * playing, and nothing about where either of them lives.
+ */
+export const TAPE_MARKS = {
+  baked: 'Baked into the cabinet.',
+  operator: 'Added by the operator.',
+  playing: 'This is the tape the round is playing.',
+} as const;
+
+/** One card, as the `tapes` answer prints it. */
+export function tapeLine(card: TapeCard): string {
+  const marks = [
+    ...(card.from === undefined ? [] : [TAPE_MARKS[card.from]]),
+    ...(card.playing === true ? [TAPE_MARKS.playing] : []),
+  ];
+  return [`${card.name}: ${card.label}. ${card.why}`, ...marks].join(' ');
 }
 
 export function createCabinet(host: CabinetHost): Cabinet {
@@ -293,7 +386,7 @@ export function createCabinet(host: CabinetHost): Cabinet {
     log.push({ name: 'tapes', ok: true });
     const cards = host.tapes();
     if (cards.length === 0) return text('no tapes on this cabinet');
-    return text(cards.map((c) => `${c.name}: ${c.label}. ${c.why}`).join('\n'));
+    return text(cards.map(tapeLine).join('\n'));
   }
 
   // One closed list: a tools.json name with no handler here fails at

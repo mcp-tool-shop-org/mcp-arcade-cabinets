@@ -2,6 +2,7 @@
 // stdio lists the tools within two seconds, calls each, and asks for a name
 // that was never on the menu. The headless round underneath is the real sim.
 
+import { execFileSync } from 'node:child_process';
 import { cpSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,12 +13,16 @@ import { build } from 'esbuild';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONTRACT } from '../src/contract';
-import { BOT_NOTE, SEED_NOTE, tierNote } from '../src/env';
+import { BOT_NOTE, SEED_NOTE, STOP_NOTE, tierNote, VARIABLE_ROWS } from '../src/env';
 import { FORBIDDEN } from '../src/gate';
 import {
+  DEFAULT_VOICE_URL,
   ghostEnv,
   headlessRound,
   SERVER_NAME,
+  SERVER_VERSION,
+  stopOn,
+  STOP_SIGNALS,
   tagged,
   voiceNoteFor,
   voiceNotes,
@@ -230,7 +235,10 @@ describe("the shooter's environment overrides", () => {
     // on the shooter played the default and was told nothing.
     const quiet = ghostEnv({ CABINET_TIER: '2', CABINET_SEED: '7', CABINET_FIXTURE: 'a' });
     expect(quiet.notes).toEqual([]);
-    expect(quiet.opts).toEqual({ tier: 2, seed: 7, fixture: 'a' });
+    // `voiceUrl` is null because the operator said nothing about the voice,
+    // which is the cabinet playing silent rather than probing a loopback
+    // port nobody configured.
+    expect(quiet.opts).toEqual({ tier: 2, seed: 7, fixture: 'a', voiceUrl: null });
 
     for (const tier of ['0', '3']) {
       expect(ghostEnv({ CABINET_TIER: tier }).notes).toEqual([]);
@@ -253,7 +261,7 @@ describe("the shooter's environment overrides", () => {
     // An explicit opt wins and is not second-guessed by the environment.
     const given = ghostEnv({ CABINET_TIER: '9', CABINET_SEED: 'x' }, { tier: 1, seed: 4 });
     expect(given.notes).toEqual([]);
-    expect(given.opts).toEqual({ tier: 1, seed: 4 });
+    expect(given.opts).toEqual({ tier: 1, seed: 4, voiceUrl: null });
   });
 
   // The four notes about a value the cabinet could not read used to say only
@@ -310,8 +318,16 @@ describe("the shooter's environment overrides", () => {
       opts: { voiceUrl: 'http://host.docker.internal:7788' },
       notes: [],
     });
-    // Unset is not the same as empty: the cabinet keeps its own default.
-    expect(ghostEnv({}).opts.voiceUrl).toBeUndefined();
+    // An operator who said nothing about the voice asked for no voice. This
+    // used to leave the field undefined, which `headlessRound` reads as the
+    // loopback default, so every start outside the image probed a port
+    // nobody had configured and `speak` answered that no worker answers —
+    // sending a client and an operator looking for a worker that was never
+    // asked for. The sentence written for this case was reachable only by
+    // setting the variable to the empty string.
+    expect(ghostEnv({})).toEqual({ opts: { voiceUrl: null }, notes: [] });
+    // And the loopback route is still exactly one variable away.
+    expect(ghostEnv({ VOICE_URL: DEFAULT_VOICE_URL }).opts.voiceUrl).toBe(DEFAULT_VOICE_URL);
   });
 
   it('says every line path-free, with nowhere for an operator mount to be echoed back', () => {
@@ -343,6 +359,74 @@ describe("the shooter's environment overrides", () => {
     expect(() => headlessRound({ fixture: 'nope', tapesDir: full, voiceUrl: null })).toThrow(
       /^fixture nope is not on the menu \(loaded: .+\); set CABINET_FIXTURE to one of them$/,
     );
+  });
+});
+
+describe('the two answers that start no cabinet', () => {
+  // The image is the only surface a Catalog user ever touches, and it was
+  // the one surface here with no help: the ENTRYPOINT forwards whatever an
+  // operator appends after the image name, and this entry read `process.argv`
+  // for nothing but its own module check, so `--help`, `-h` and `--version`
+  // all started a cabinet and blocked on stdin, answering nothing.
+  const OUT_ARGS = path.join(PKG, 'dist', 'server.args-build.js');
+
+  beforeAll(async () => {
+    await build({
+      entryPoints: [path.join(PKG, 'src', 'server.ts')],
+      bundle: true,
+      platform: 'node',
+      format: 'esm',
+      outfile: OUT_ARGS,
+      logLevel: 'warning',
+    });
+  }, 20_000);
+
+  it('answers the version and the help and leaves, rather than waiting on stdin', () => {
+    const run = (arg: string) =>
+      execFileSync(process.execPath, [OUT_ARGS, arg], { encoding: 'utf8', timeout: 10_000 });
+
+    expect(run('--version').trim()).toBe(`${SERVER_NAME} ${SERVER_VERSION}`);
+    for (const arg of ['--help', '-h']) {
+      const help = run(arg);
+      expect(help, arg).toContain(SERVER_NAME);
+      // The image's own table, and every lever, out of one place each.
+      for (const row of VARIABLE_ROWS) expect(help, arg).toContain(row);
+      for (const def of CONTRACT) expect(help, arg).toContain(def.title ?? def.name);
+    }
+  });
+
+  it('hears a stop, says so once, and leaves with nothing wrong', async () => {
+    // The ENTRYPOINT's `exec node` makes this process one inside the
+    // container, and a process at that position is not terminated by a
+    // signal it has registered nothing for: `docker stop`, `docker compose
+    // down` and a Toolkit shutdown all waited out the full grace period and
+    // then killed the container.
+    const before = process.listeners('SIGTERM');
+    const lines: string[] = [];
+    const left: number[] = [];
+    let closed = 0;
+    stopOn(
+      ['SIGTERM'],
+      () => {
+        closed += 1;
+      },
+      (line) => void lines.push(line),
+      (code) => void left.push(code),
+    );
+    process.emit('SIGTERM');
+    process.emit('SIGTERM'); // a second signal is the same stop
+    await new Promise((r) => setTimeout(r, 0));
+    expect(closed).toBe(1);
+    expect(left).toEqual([0]);
+    expect(lines).toEqual([STOP_NOTE]);
+    // One operator grammar: a tag, then the line, and no path in it.
+    expect(tagged(STOP_NOTE)).toBe(`${SERVER_NAME}: ${STOP_NOTE}`);
+    expect(STOP_NOTE).not.toMatch(/[/\\]/);
+    expect(STOP_NOTE).not.toMatch(FORBIDDEN);
+    expect(STOP_SIGNALS).toEqual(['SIGTERM', 'SIGINT']);
+    for (const l of process.listeners('SIGTERM')) {
+      if (!before.includes(l)) process.off('SIGTERM', l);
+    }
   });
 });
 

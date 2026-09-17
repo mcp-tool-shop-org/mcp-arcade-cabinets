@@ -2,7 +2,7 @@
   {
     "name": "view",
     "title": "The typing cabinet: your side of the chat",
-    "description": "What your side of the chat can see, in words: the thing being built, the team and the language the next job wants, how hard that job should feel, the last few things you asked for, the letter pairs the typist fumbles, whether the next job still wants a name for what you are building, and whether there is still room to send a request for it. The pairs line is there only while the typist is fumbling some. Two more lines come last when they apply: one saying a new run just started and everything you sent before is gone, and one saying the run has stopped moving. Read-only. Nothing here is a number, and nothing here is measured.",
+    "description": "What your side of the chat can see, in words: the thing being built, the team and the language the next job wants, how hard that job should feel, the last few things you asked for, the letter pairs the typist fumbles, whether the next job still wants a name for what you are building, whether there is still room to send a request for it, and whether the slot for a line back is free. The pairs line is there only while the typist is fumbling some. Two more lines come last when they apply: one saying a new run just started and everything you sent before is gone, and one saying the run has stopped moving. Read-only. Nothing here is a number, and nothing here is measured.",
     "inputSchema": {
       "type": "object",
       "properties": {},

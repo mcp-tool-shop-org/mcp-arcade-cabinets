@@ -10,6 +10,9 @@ import {
   createSeat,
   sameView,
   seatPrompt,
+  seatRetryWait,
+  SEAT_RETRY_MAX_S,
+  SEAT_RETRY_S,
   VERB_FORMAT,
   warmUp,
   type FireAnswer,
@@ -152,10 +155,12 @@ describe('the seat over the fire tool', () => {
     expect(status).toContain('seat: model retired');
     expect(seat.stats().errors).toBe(1);
 
-    seat.tick(V, 2.9, false);
+    // A failed ask is waited out before the next one; the clock has to pass
+    // it before the seat asks again.
+    seat.tick(V, 2.8 + SEAT_RETRY_S, false);
     pending[2]!.resolve(answer(null, false));
     await flush();
-    seat.tick(V, 3.0, false);
+    seat.tick(V, 3.5, false);
     expect(admitted).toEqual(['script', 'script', 'script']);
     expect(seat.stats().scripted).toBe(3);
   });
@@ -210,9 +215,64 @@ describe('the seat over the fire tool', () => {
     expect(st.scripted).toBe(1);
     expect(status.some((s) => /ollama timeout/.test(s))).toBe(true);
     expect(status.join(' ')).not.toMatch(/\d/);
-    // Admit on this tick, then G13 prefetch starts immediately.
+    // Admit on this tick, and then the wait: the G13 prefetch used to start
+    // on the very next frame, which is what let a daemon that is not running
+    // cost a failed ask and a status line on nearly every frame of the
+    // round. The prefetch is not gone, it is one wait away.
+    expect(asks).toHaveLength(1);
+    expect(seat.busy()).toBe(false);
+    seat.tick(V, SEAT_RETRY_S, false);
     expect(asks).toHaveLength(2);
     expect(seat.busy()).toBe(true);
+  });
+
+  it('waits longer after each failed ask, to a ceiling, and says the fault once per change', async () => {
+    // A refused connection settles in about a millisecond, so without this
+    // the seat asked a dead daemon on nearly every frame for a whole round
+    // and the status widget said one sentence hundreds of times.
+    expect(seatRetryWait(0)).toBe(0);
+    expect(seatRetryWait(1)).toBe(SEAT_RETRY_S);
+    expect(seatRetryWait(2)).toBe(SEAT_RETRY_S * 2);
+    expect(seatRetryWait(20)).toBe(SEAT_RETRY_MAX_S);
+
+    const pending: ReturnType<typeof deferred<FireAnswer>>[] = [];
+    const status: string[] = [];
+    const seat = createSeat({
+      ask: () => {
+        const d = deferred<FireAnswer>();
+        pending.push(d);
+        return d.promise;
+      },
+      admit: () => undefined,
+      beatSeconds: 1,
+      onStatus: (s) => status.push(s),
+    });
+
+    let t = 0;
+    for (let i = 0; i < 4; i++) {
+      seat.tick(V, t, false);
+      pending[i]!.reject(new Error('ollama down'));
+      await flush();
+      // Every frame of the wait, the way the server ticks it.
+      const wait = seatRetryWait(i + 1);
+      for (let f = 1; f <= Math.round(wait / 0.033); f++) seat.tick(V, t + f * 0.033, false);
+      t += wait + 0.033;
+    }
+    expect(pending).toHaveLength(4);
+    // One sentence for the whole run of failures, not one per attempt.
+    expect(status.filter((s) => s === 'seat: ollama down, script')).toHaveLength(1);
+
+    // An answer clears both the wait and the said sentence, so the next
+    // failure is said again.
+    seat.tick(V, t, false);
+    pending[4]!.resolve(answer('fog'));
+    await flush();
+    seat.tick(V, t + 0.033, false);
+    seat.tick(V, t + 0.066, false);
+    pending[5]!.reject(new Error('ollama down'));
+    await flush();
+    seat.tick(V, t + 0.099, false);
+    expect(status.filter((s) => s === 'seat: ollama down, script')).toHaveLength(2);
   });
 });
 
@@ -409,7 +469,9 @@ describe('askFire over a daemon', () => {
         }),
       };
     });
-    seat.tick(V, 0.1, false);
+    // Past the wait a failed ask leaves behind, so the prefetch that admits
+    // the next verb below is opened.
+    seat.tick(V, SEAT_RETRY_S + 0.1, false);
     expect(admitted).toEqual(['script']);
     expect(sawSignal).toBe(true);
     const st = seat.stats() as ReturnType<typeof seat.stats> & { timeout?: number };

@@ -18,6 +18,7 @@ import {
   gateCode,
   leversOf,
   planOf,
+  reactionWaiting,
   suppliedAsks,
   suppliedCount,
   suppliedProductOf,
@@ -229,6 +230,15 @@ export function vibeViewLines(live: VibeLive): string {
     ...(pairs.length > 0 ? [`pairs ${pairs.join(' ')}`] : []),
     `next ${named === null ? 'the next level wants a product' : 'the product is set'}`,
     `room ${room ? 'the next level has room' : 'the next level is full'}`,
+    // The third write lever's own line, beside the other two rather than
+    // with the exceptional rows. `room` says whether `ask` still has a slot
+    // and `next` says whether `product` is still wanted; nothing said
+    // whether the single reaction slot was free, and a client learned it
+    // only by sending a line and reading back that its own was dropped —
+    // the one refusal that costs the client something it cannot get back,
+    // because it wrote about a specific request and that request may ship
+    // before it can retry.
+    `slot ${reactionWaiting(state) ? 'a reaction is already waiting' : 'the reaction slot is free'}`,
     ...rolled,
   ].join('\n');
 }

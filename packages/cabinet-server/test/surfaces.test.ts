@@ -23,6 +23,9 @@ import { describe, expect, it } from 'vitest';
 import { SCREEN_FORBIDDEN } from '@mcp-arcade-cabinets/ghost-on-the-menu/src/types';
 import { SCREEN_FORBIDDEN as VIBE_SCREEN } from '@mcp-arcade-cabinets/vibe-typer/src/play';
 
+import { VARIABLE_ROWS } from '../src/env';
+import { helpText, versionLine, SERVER_NAME, SERVER_VERSION } from '../src/server';
+import { vibeHelpText, vibeVersionLine, VIBE_SERVER_NAME } from '../src/server-vibe';
 import { TOOL_NAMES, VIBE_TOOL_NAMES } from '../src/tool-names';
 
 const ROOT = path.resolve(__dirname, '../../..');
@@ -292,6 +295,38 @@ describe('the image variable table', () => {
     // The vibe branch never passes through the ghost function that sets it.
     const vibeBranch = entry.slice(entry.indexOf('vibe)'), entry.indexOf("ghost|''"));
     expect(vibeBranch).not.toContain('CABINET_FIXTURE');
+  });
+
+  it("is the table both cabinets' help prints, row for row", () => {
+    // A fourth copy, and the one an operator who pulled the image is most
+    // likely to reach: the image carries the two bundled servers and the
+    // tapes and no Dockerfile, so the rows cannot be read at run time. Same
+    // gate the Catalog listing's copy already has.
+    expect(VARIABLE_ROWS).toEqual(table('Dockerfile'));
+    for (const help of [helpText(), vibeHelpText()]) {
+      for (const row of VARIABLE_ROWS) expect(help).toContain(row);
+    }
+  });
+
+  it("the help each cabinet prints lists that cabinet's own levers and nothing else", () => {
+    /** The rows between the two headings: one lever to a line, in order. */
+    const levers = (help: string): string[] =>
+      help
+        .slice(help.indexOf('\nLevers\n') + '\nLevers\n'.length, help.indexOf('\nEnvironment\n'))
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line !== '')
+        .map((line) => line.split(/\s+/)[0]!);
+
+    expect(levers(helpText())).toEqual([...TOOL_NAMES]);
+    expect(levers(vibeHelpText())).toEqual([...VIBE_TOOL_NAMES]);
+  });
+
+  it('each version line is that server’s own name and version', () => {
+    expect(versionLine()).toBe(`${SERVER_NAME} ${SERVER_VERSION}\n`);
+    expect(vibeVersionLine()).toContain(VIBE_SERVER_NAME);
+    // The two ship under one version, as the release gate reads it.
+    expect(vibeVersionLine()).toContain(SERVER_VERSION);
   });
 
   it("signs the image's own stderr line the way both servers sign theirs", () => {
