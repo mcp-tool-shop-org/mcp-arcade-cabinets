@@ -339,10 +339,12 @@ describe('full screen, and where the keys are afterwards', () => {
       configurable: true,
       get: () => element,
     });
-    // Full screen is asked of the root, which outlives a remount.
-    const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
-    proto.requestFullscreen = function (this: HTMLElement): Promise<void> {
-      element = this;
+    // Full screen is asked of the root, which outlives a remount: the mock
+    // sits on the root itself, so a request made of any other element (the
+    // old canvas, say) finds no method and the test reads it as a miss.
+    const rootEl = root as unknown as Record<string, unknown>;
+    rootEl.requestFullscreen = function (): Promise<void> {
+      element = root;
       document.dispatchEvent(new Event('fullscreenchange'));
       return Promise.resolve();
     };
@@ -356,7 +358,7 @@ describe('full screen, and where the keys are afterwards', () => {
       element = null;
       Reflect.deleteProperty(document, 'fullscreenElement');
       Reflect.deleteProperty(document, 'exitFullscreen');
-      Reflect.deleteProperty(proto, 'requestFullscreen');
+      Reflect.deleteProperty(rootEl, 'requestFullscreen');
     };
   }
 
