@@ -60,6 +60,7 @@
       "Chaining reads top-to-bottom like a pipeline."
     ],
     "topics": ["array", "map", "filter", "arrow-function"],
+    "for": "handwriting-rater",
     "ask": "keep only the neat strokes and make them big"
   },
   {
@@ -241,6 +242,7 @@
       "Implements an async fetch wrapper that retries failed requests with exponential backoff up to a configurable number of attempts."
     ],
     "topics": ["async-await", "retry", "error-handling", "fetch"],
+    "for": "opinion-market",
     "ask": "try three times to pull an opinion from the wall"
   },
   {
@@ -265,6 +267,7 @@
       "Creates a counter module using closures to encapsulate private state with increment, decrement, and subscriber notification."
     ],
     "topics": ["closures", "module-pattern", "getters"],
+    "for": "opinion-market",
     "ask": "count how many trades each opinion has"
   },
   {
@@ -277,6 +280,7 @@
       "Implements a singly linked list with a generator-based Symbol.iterator to enable for-of traversal."
     ],
     "topics": ["class", "iterator", "generator", "symbol"],
+    "for": "opinion-market",
     "ask": "chain the opinions one to another"
   },
   {
@@ -339,6 +343,7 @@
       "Recursively merges multiple source objects into a target, handling nested objects without overwriting sibling keys."
     ],
     "topics": ["recursion", "objects", "spread", "type-checking"],
+    "for": "opinion-market",
     "ask": "merge two worn opinions into one slightly used opinion"
   },
   {
@@ -351,6 +356,7 @@
       "Implements a minimal Observable class with map and filter operators that return new Observables by wrapping the subscription chain."
     ],
     "topics": ["class", "observer-pattern", "higher-order-functions", "closures"],
+    "for": "opinion-market",
     "ask": "filter out the opinions that feel stale now"
   },
   {

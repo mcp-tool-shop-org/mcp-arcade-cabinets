@@ -65,10 +65,66 @@ function run(c: Case, bot: BotName) {
   return playTape(c.tape, { fixture: c.name, bot });
 }
 
+/**
+ * Lies the prepass must mark on each disk tape, measured 2026-09-16. The
+ * header-only variants share their base tape's wire, so they share its count.
+ *
+ * This table is load-bearing: the sweeper bar is "at least half the lies" and
+ * the reader bar is "every lie", and both are vacuously true for a tape with
+ * no lies. Eighteen of the twenty fixtures had no floor at all, so a prepass
+ * regression that stopped marking lies passed both bars green. The counts are
+ * asserted first; the bars are then measured against a quantity that is
+ * pinned rather than one that can quietly become zero.
+ */
+const LIES: Record<string, number> = {
+  'cabinet.naive-wrap-on': 1,
+  'cabinet.naive': 0,
+  'cabinet.task-only-wrap-on': 0,
+  'cabinet.task-only': 0,
+  'calibration.docker-fixture.naive': 2,
+  'calibration.docker-fixture.ollama': 2,
+  'calibration.docker-fixture.task-only': 1,
+  'docker-fixture.naive': 2,
+  'docker-fixture.task-only': 1,
+  'livefire.intern.naive-wrap-on': 1,
+  'livefire.intern.ollama-wrap-off': 0,
+  'livefire.intern.ollama-wrap-on': 0,
+  'livefire.intern.task-only-wrap-on': 0,
+  'naive-content-length': 3,
+  'naive-ndjson': 3,
+  'ollama-intern-mcp.naive-wrap': 1,
+  'ollama-intern-mcp.task-only': 0,
+  'ollama-intern-mcp.unlisted': 0,
+  'task-only-content-length': 2,
+  'task-only-ndjson': 2,
+};
+
+const baseName = (name: string) => name.replace(/@.*$/, '');
+
+function pinnedLies(c: Case): number {
+  const n = LIES[baseName(c.name)];
+  if (n === undefined) throw new Error(`no pinned lie count for ${c.name}; add it to LIES`);
+  return n;
+}
+
 describe('fairness band', () => {
   it('covers every tier with at least one tape', () => {
     const tiers = new Set(CASES.map((c) => c.tier));
     expect(tiers).toEqual(new Set([0, 1, 2]));
+  });
+
+  // The andon for every bar below: if the prepass stops marking lies, this
+  // goes red first and the "half the lies" / "every lie" bars stop being
+  // measured against zero.
+  it('marks the pinned number of lies on every tape', () => {
+    for (const c of CASES) {
+      expect(run(c, 'idle').lies.length, c.name).toBe(pinnedLies(c));
+    }
+    const total = Object.values(LIES).reduce((s, n) => s + n, 0);
+    expect(total).toBeGreaterThan(0);
+    expect(Object.values(LIES).filter((n) => n > 0).length).toBeGreaterThanOrEqual(
+      Math.ceil(Object.keys(LIES).length / 4),
+    );
   });
 
   it('idle loses every lamp on tier 1 and up', () => {
@@ -93,6 +149,9 @@ describe('fairness band', () => {
       if (c.tier !== 0) continue;
       const out = run(c, 'sweeper');
       expect(out.ended, `${c.name}: tier 0 killed the sweeper`).toBe('time');
+      // The quantity the bar is computed from, asserted before it is used.
+      expect(out.lies.length, `${c.name}: lie count`).toBe(pinnedLies(c));
+      expect(out.lies.length, `${c.name}: no lies to find`).toBeGreaterThan(0);
       const half = Math.ceil(out.lies.length / 2);
       expect(
         out.revealed.length,
@@ -103,15 +162,21 @@ describe('fairness band', () => {
   });
 
   it('the reader reveals every lie on tiers 0 and 1', () => {
+    let measured = 0;
     for (const c of CASES) {
       if (c.tier > 1) continue;
       const out = run(c, 'reader');
+      // "every lie" is vacuous on a tape with none, so the count is pinned
+      // per case and the roster is required to carry lies overall.
+      expect(out.lies.length, `${c.name}: lie count`).toBe(pinnedLies(c));
+      measured += out.lies.length;
       const missed = out.lies.filter((id) => !out.revealed.includes(id));
       expect(missed, `${c.name}: reader missed ${missed.join(', ')} (ended ${out.ended})`).toEqual(
         [],
       );
       expect(out.ok).toBe(true);
     }
+    expect(measured, 'no lies on any tier 0/1 tape: the bar measured nothing').toBeGreaterThan(0);
   });
 
   it('no bot ever puts a forbidden word on screen', () => {
@@ -268,7 +333,12 @@ describe('hardcore', () => {
     expect(tapes.length).toBe(ROSTER);
   });
 
-  it('idle dies, the sweeper dies, the reader lives on some tapes', () => {
+  // Renamed to what the case measures. It used to be titled "…the reader
+  // lives on some tapes", compute a `lived` count and then discard it with
+  // `void lived`, so a regression that killed the reader on every tape read
+  // as green under a title naming the opposite. Survival at hardcore is the
+  // human bar, not the scripted bot's; the bot andon is "finds lies".
+  it('idle and the sweeper die at hardcore; the reader still finds lies', () => {
     for (const c of tapes) {
       const o = playTape(c.tape, { fixture: c.name, bot: 'idle', tier: 3 });
       expect(o.ended, c.name).toBe('lamps');
@@ -278,7 +348,6 @@ describe('hardcore', () => {
       expect(o.ended, c.name).toBe('lamps');
     }
     const read = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'reader', tier: 3 }));
-    const lived = read.filter((o) => o.ended === 'time').length;
     const found = read.reduce((s, o) => s + o.revealed.length, 0);
     // Unique lie ids no longer collapse two whispers into one, so the old
     // 1/3-of-events bar over-counted. The reader still has to find lies on
@@ -287,8 +356,5 @@ describe('hardcore', () => {
     expect(read.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(
       Math.ceil(tapes.length / 4),
     );
-    // Scripted reader is not a human: hardcore is one lamp. Survival is the
-    // human bar; the bot andon is "finds lies", not lived>0.
-    void lived;
   });
 });

@@ -36,6 +36,34 @@ function fail(file: string, key: string): never {
   throw new Error(`patterns/corpus/${file}: ${key}`);
 }
 
+/**
+ * Nouns that belong to exactly one story level's premise. An ask that names
+ * one is a request only inside that level — "split one bill among five
+ * ducks" is the rideshare for ducks and nowhere else — so the loader makes
+ * it say which level it is for, and the planner honors that (`askFor`).
+ * Without the tag the ask would be drawn into any level of its stack and
+ * band, which is how the field got a request about ducks in an app for lost
+ * socks. The list is short on purpose: it names the story nouns, not every
+ * thing a request might build. The blind line pools have their own, wider
+ * rule in test/lines-neutral.test.ts.
+ */
+export const STORY_NOUNS: readonly string[] = [
+  'duck',
+  'sandwich',
+  'sock',
+  'cat',
+  'opinion',
+  'stroke',
+  'toy',
+];
+
+const STORY_NOUN = new RegExp(`\\b(${STORY_NOUNS.join('|')})(?:s|es)?\\b`, 'i');
+
+/** True when an ask leans on a story level's premise and must name its level. */
+export function askIsBound(ask: string): boolean {
+  return STORY_NOUN.test(ask);
+}
+
 function loadStack(raw: unknown, stack: Stack): Snippet[] {
   const file = `${stack}.json`;
   if (!Array.isArray(raw)) fail(file, 'root');
@@ -71,11 +99,22 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
     // the job this code does. It goes through the same gate as every authored
     // line, with `{product}` read as the one word it is, and it may not carry
     // `{title}` — a snippet that describes itself has no use for its title.
+    // The level a bound ask belongs to. A non-empty string or nothing; the
+    // loader cannot check it against levels.json (that file's loader lives
+    // next door and does not import this one), so a test holds the ids.
+    const boundTo = rec.for;
+    if (boundTo !== undefined && (typeof boundTo !== 'string' || boundTo.trim() === '')) {
+      fail(file, key('for'));
+    }
     const ask = rec.ask;
     if (ask !== undefined) {
       if (typeof ask !== 'string') fail(file, key('ask'));
       if (ask.includes('{title}')) fail(file, key('ask'));
       if (lineFault(ask) !== null) fail(file, key('ask'));
+      // An ask that names a story noun is a request only inside the story
+      // that supplies it. Say which one, or the ask is a halt — the same
+      // shape as the `{title}` refusal above it.
+      if (askIsBound(ask) && boundTo === undefined) fail(file, key('ask'));
     }
     return {
       id,
@@ -86,6 +125,7 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
       notes: notes as string[],
       topics: topics as string[],
       ...(typeof ask === 'string' ? { ask } : {}),
+      ...(typeof boundTo === 'string' ? { for: boundTo } : {}),
     };
   });
 }

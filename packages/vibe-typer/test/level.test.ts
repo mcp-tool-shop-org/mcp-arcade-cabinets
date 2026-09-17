@@ -185,6 +185,44 @@ describe('planning a level', () => {
     for (const request of made.requests) expect(request.snippet.stack).toBe(other);
   });
 
+  // A run pinned to one language used to keep the level's id, product and
+  // premise while drawing its four requests from another: `--stack sql
+  // --level 1` announced "a rideshare for ducks", asked for a sandwich
+  // ledger, and closed with the review written for the ducks. Moved off its
+  // stack, the level is moved off its story too.
+  it('moves a level off its story when it moves it off its stack', () => {
+    const def = DEFAULT_PATTERNS.levels.levels[1]!;
+    const moved = plan({ levelIndex: 1, stack: 'sql' as Stack });
+    expect(moved.id).not.toBe(def.id);
+    expect(moved.id.startsWith(def.id)).toBe(true);
+    expect(moved.product).not.toBe(def.product);
+    expect(moved.product).not.toContain('{noun}');
+    expect(moved.story).toBe('');
+    // The generic reviews play: a real draw for the moved id lands in the generic pool.
+    const picker = new LinePicker(DEFAULT_PATTERNS, { seed: 1, tier: 0 });
+    picker.startLevel(0);
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(picker.review(moved.id));
+    // Left on its own stack, nothing moves.
+    const home = plan({ levelIndex: 1, stack: def.stack });
+    expect(home.id).toBe(def.id);
+    expect(home.product).toBe(def.product);
+    expect(home.story).toBe(def.story);
+  });
+
+  // A snippet whose ask was written against one story's premise is a request
+  // only inside that story. Anywhere else the template pool plays.
+  it('plays a bound ask only inside the level it was written for', () => {
+    const bound = DEFAULT_CORPUS.snippets.find((s) => s.for !== undefined && s.ask)!;
+    expect(bound.for).toBeDefined();
+    const picker = new LinePicker(DEFAULT_PATTERNS, { seed: 2, tier: 0 });
+    const own = picker.ask('python', 'a rideshare for ducks', bound, bound.for);
+    expect(own).toBe(bound.ask);
+    const elsewhere = picker.ask('python', 'an app for lost socks', bound, 'endless-3');
+    expect(elsewhere).not.toBe(bound.ask);
+    // And a caller that names no level gets the safe pool, not the story.
+    expect(picker.ask('python', 'an app for lost socks', bound)).not.toBe(bound.ask);
+  });
+
   it('carries the level story onto the plan, and nothing onto an endless one', () => {
     for (const [i, def] of DEFAULT_PATTERNS.levels.levels.entries()) {
       expect(lineFault(def.story), `levels.${i}.story`).toBeNull();
@@ -209,6 +247,40 @@ describe('planning a level', () => {
     const earlyBand = Math.max(...early.requests.map((r) => r.snippet.band));
     const lateBand = Math.min(...late.requests.map((r) => r.snippet.band));
     expect(lateBand).toBeGreaterThan(earlyBand);
+  });
+
+  // The seat's buffer used to be an untagged queue: a seat that
+  // over-delivered for one level left the surplus behind, and the next
+  // endless level draws a fresh random stack, so those leftovers were typed
+  // under another language's bed, palette and device frame carrying an ask
+  // written for the previous product.
+  it('uses a fed request only in the level it was written for', () => {
+    const python = DEFAULT_CORPUS.byStack.python!.filter((s) => s.band <= 2).slice(0, 2);
+    const at = { levelIndex: 3, endless: true, stack: 'python' as Stack, seed: 5 };
+
+    const mine = python.map((snippet) => ({ snippet, levelIndex: 3, stack: 'python' as Stack }));
+    const taken = plan({ ...at, supplied: mine });
+    expect(taken.requests.slice(0, 2).map((r) => r.snippet.id)).toEqual(python.map((s) => s.id));
+    expect(mine).toHaveLength(0);
+
+    // Written for the level before this one: spliced off and dropped, and
+    // the level draws from the corpus instead — the no-seat path.
+    const stale = python.map((snippet) => ({ snippet, levelIndex: 2, stack: 'python' as Stack }));
+    const dropped = plan({ ...at, supplied: stale });
+    expect(dropped.requests.map((r) => r.snippet.id)).toEqual(
+      plan({ ...at }).requests.map((r) => r.snippet.id),
+    );
+
+    // Written for this level but against another language: also dropped.
+    const wrongStack = python.map((snippet) => ({
+      snippet,
+      levelIndex: 3,
+      stack: 'sql' as Stack,
+    }));
+    const other = plan({ ...at, supplied: wrongStack });
+    expect(other.requests.map((r) => r.snippet.id)).toEqual(
+      plan({ ...at }).requests.map((r) => r.snippet.id),
+    );
   });
 
   it('plans the integration stack from tape-seasoned snippets', () => {

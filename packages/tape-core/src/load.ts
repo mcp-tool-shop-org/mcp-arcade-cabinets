@@ -1,6 +1,8 @@
 import {
   FACTS,
   FORBIDDEN_KEYS,
+  HEADER_FORBIDDEN_WORDS,
+  HEADER_MAX_CHARS,
   TAPE_SCHEMA_ID,
   TapeError,
   type Fact,
@@ -48,6 +50,33 @@ function asStringOrNull(value: unknown, path: string): string | null {
   if (value === null) return null;
   if (typeof value === 'string') return value;
   throw new TapeError(`${path} must be a string or null`);
+}
+
+/**
+ * A header field that reaches a cabinet's field. Same string rules as
+ * `asString` plus the header constraint: one line, bounded, and never a
+ * verdict word. A cabinet must not have to guess whether its own screen
+ * guard is the only thing standing between a tape and the canvas.
+ */
+function asHeaderString(value: unknown, path: string): string {
+  const s = asString(value, path);
+  if (s.length > HEADER_MAX_CHARS) {
+    throw new TapeError(`${path} must be at most ${HEADER_MAX_CHARS} characters`);
+  }
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i);
+    if (code < 0x20 || code === 0x7f) {
+      throw new TapeError(`${path} must be one line of printable text`);
+    }
+  }
+  const hit = HEADER_FORBIDDEN_WORDS.exec(s);
+  if (hit) throw new TapeError(`${path} must not carry the word "${hit[0]}"`);
+  return s;
+}
+
+function asHeaderStringOrNull(value: unknown, path: string): string | null {
+  if (value === null) return null;
+  return asHeaderString(value, path);
 }
 
 function asBoolean(value: unknown, path: string): boolean {
@@ -172,11 +201,11 @@ export function loadTape(json: unknown): Tape {
   const tape: Tape = {
     schema_id: TAPE_SCHEMA_ID,
     bout_id: asString(req(json, 'bout_id', '(root)'), 'bout_id'),
-    target_kind: asString(req(json, 'target_kind', '(root)'), 'target_kind'),
-    agent_policy: asString(req(json, 'agent_policy', '(root)'), 'agent_policy'),
+    target_kind: asHeaderString(req(json, 'target_kind', '(root)'), 'target_kind'),
+    agent_policy: asHeaderString(req(json, 'agent_policy', '(root)'), 'agent_policy'),
     framing: asStringOrNull(req(json, 'framing', '(root)'), 'framing'),
     protocol_version: asStringOrNull(req(json, 'protocol_version', '(root)'), 'protocol_version'),
-    server_name: asStringOrNull(req(json, 'server_name', '(root)'), 'server_name'),
+    server_name: asHeaderStringOrNull(req(json, 'server_name', '(root)'), 'server_name'),
     container: loadContainer(req(json, 'container', '(root)'), 'container'),
     seat: loadSeat(req(json, 'seat', '(root)'), 'seat'),
     attribution_ok: asBoolean(req(json, 'attribution_ok', '(root)'), 'attribution_ok'),

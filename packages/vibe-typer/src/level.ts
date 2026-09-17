@@ -8,7 +8,7 @@ import { value as valueOf } from './difficulty';
 import type { LinePicker } from './lines';
 import { CORPUS_STACKS, type LevelDef, type Patterns } from './patterns';
 import { mixSeed, seededRandom, weightedPick } from './seed';
-import type { Band, LevelPlan, Request, Snippet, Stack, Tier } from './types';
+import type { Band, FedSnippet, LevelPlan, Request, Snippet, Stack, Tier } from './types';
 
 export interface PlanOpts {
   set: Patterns;
@@ -29,8 +29,11 @@ export interface PlanOpts {
    * requests in order and are spliced off this buffer; the rest of the
    * level is drawn from the corpus exactly as it always was. A listed
    * level ignores the buffer entirely - the levels are the band's ground.
+   *
+   * Each item carries the level and stack it was written for, and the
+   * planner drops one whose tag does not match the level it is planning.
    */
-  supplied?: Snippet[];
+  supplied?: FedSnippet[];
   /**
    * The product the seat named for a new endless level. The noun list is
    * still drawn first, so the seed's stream is untouched whether or not a
@@ -108,6 +111,9 @@ export function endlessPeek(opts: {
   return endlessDef(at, seededRandom(levelSeedFor(opts.seed, opts.levelIndex, opts.tier)));
 }
 
+/** The suffix a level's id carries once the run has moved it off its stack. */
+export const MOVED_SUFFIX = '-moved';
+
 /** The level definition at an index, or null when a listed run is finished. */
 export function levelDefAt(opts: PlanOpts, rng: () => number): LevelDef | null {
   if (opts.endless) return endlessDef(opts, rng);
@@ -118,7 +124,25 @@ export function levelDefAt(opts: PlanOpts, rng: () => number): LevelDef | null {
   // language is not the level's own: those ids live in the level's stack, and
   // a run that moved the stack asked for the band, not for the story.
   if (opts.stack === def.stack) return { ...def, stack: opts.stack };
-  const moved: LevelDef = { ...def, stack: opts.stack };
+  // Moved off its stack, the level is moved off its story too. It used to
+  // keep the authored id, product and premise while drawing its four
+  // requests from another language: `--stack sql --level 1` announced "a
+  // rideshare for ducks", asked for a sandwich ledger in SQL, and closed
+  // with the review written for the ducks. The product now comes from the
+  // list the endless ladder draws from, the premise goes (there is none for
+  // this pairing), and the id carries a suffix so `reviewsByProduct` misses
+  // and the generic reviews play — the same three moves `endlessDef` makes
+  // for a level that has no authored story at all.
+  const products = opts.set.products;
+  const noun = products.nouns[Math.floor(rng() * products.nouns.length)]!;
+  const template = products.templates[Math.floor(rng() * products.templates.length)]!;
+  const moved: LevelDef = {
+    ...def,
+    id: `${def.id}${MOVED_SUFFIX}`,
+    product: template.split('{noun}').join(noun),
+    story: '',
+    stack: opts.stack,
+  };
   delete moved.snippets;
   return moved;
 }
@@ -165,7 +189,16 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
   // Splicing them off is what makes the buffer a queue the shell refills
   // one request at a time while the current one is typed (G13).
   const buffer = opts.endless ? (opts.supplied ?? []) : [];
-  const taken = buffer.length > 0 ? buffer.splice(0, Math.min(def.requests, buffer.length)) : [];
+  const spliced = buffer.length > 0 ? buffer.splice(0, Math.min(def.requests, buffer.length)) : [];
+  // A fed request is used only in the level it was written for. A seat that
+  // over-delivers leaves the surplus in the buffer, and the next level draws
+  // a fresh random stack; without this the leftovers were typed under
+  // another language's bed, palette and device frame, carrying an ask
+  // written for the previous product. A dropped one is dropped, not
+  // requeued: the corpus draw below is the no-seat path and is always right.
+  const taken = spliced
+    .filter((fed) => fed.levelIndex === opts.levelIndex && fed.stack === stack)
+    .map((fed) => fed.snippet);
   // The noun list was drawn above, inside `levelDefAt`, so the stream is
   // the same whether or not a seat is sitting. The override lands after.
   //
@@ -209,7 +242,7 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
       // template pool (sub-slice B part two). A seated snippet always has
       // its own, which is the point of the seat: the request describes the
       // job this code actually does. Nothing special is needed here for it.
-      ask: opts.picker.ask(stack, product, snippet),
+      ask: opts.picker.ask(stack, product, snippet, def.id),
       reply: opts.picker.reply(),
       snippet,
       value: valueOf(snippet, opts.corpus.model, opts.set.difficulty),

@@ -4,6 +4,7 @@
     "stack": "sql",
     "band": 1,
     "title": "select all columns",
+    "for": "sandwich-ledger",
     "ask": "show every sandwich in the list",
     "code": "SELECT *\nFROM users;",
     "notes": ["Retrieves all columns from the users table."],
@@ -17,6 +18,7 @@
     "code": "INSERT INTO tags (name)\nVALUES ('urgent');",
     "notes": ["Inserts a single row into the tags table with a name value."],
     "topics": ["insert", "dml"],
+    "for": "sandwich-ledger",
     "ask": "add my first sandwich to {product}"
   },
   {
@@ -84,6 +86,7 @@
       "Aggregates employee stats per department with rounding, null handling, and a minimum headcount filter."
     ],
     "topics": ["group-by", "having", "aggregate", "coalesce"],
+    "for": "sandwich-ledger",
     "ask": "group my sandwiches by filling and skip the small groups"
   },
   {
@@ -116,6 +119,7 @@
     "code": "INSERT INTO colors (name, hex, rgb_r, rgb_g, rgb_b)\nVALUES\n    ('red', '#FF0000', 255, 0, 0),\n    ('green', '#00FF00', 0, 255, 0),\n    ('blue', '#0000FF', 0, 0, 255),\n    ('white', '#FFFFFF', 255, 255, 255),\n    ('black', '#000000', 0, 0, 0);",
     "notes": ["Inserts five color rows with hex codes and RGB components in a single statement."],
     "topics": ["insert", "multi-row", "values"],
+    "for": "sandwich-ledger",
     "ask": "enter all the sandwiches from last week"
   },
   {

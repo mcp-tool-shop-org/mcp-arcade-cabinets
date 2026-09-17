@@ -10,9 +10,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   createCabinetServer,
   listenFrom,
+  ownHost,
+  ownOrigin,
   parseEndlessView,
   parseSeatView,
   parseStrings,
+  readBody,
 } from '../src/serve';
 
 /**
@@ -20,10 +23,13 @@ import {
  * socket, so it cannot ask the question a traversal attempt asks. This
  * writes the request line by hand.
  */
-function rawGet(port: number, line: string): Promise<string> {
+function rawGet(port: number, line: string, headers: string[] = []): Promise<string> {
   return new Promise((resolve, reject) => {
     const socket = connect(port, '127.0.0.1', () => {
-      socket.write(`GET ${line} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n`);
+      // The Host carries the port, because that is what a browser sends and
+      // because the server now checks it.
+      const sent = headers.length > 0 ? headers : [`Host: 127.0.0.1:${port}`];
+      socket.write(`GET ${line} HTTP/1.1\r\n${sent.join('\r\n')}\r\nConnection: close\r\n\r\n`);
     });
     const chunks: Buffer[] = [];
     socket.on('data', (c: Buffer) => chunks.push(c));
@@ -413,5 +419,298 @@ describe('the endless route', () => {
     await new Promise((r) => setTimeout(r, 450));
     const retired = await post({ view: { ...view, product: 'a gone for houseplants' } });
     expect(await retired.json()).toEqual({ error: 'model retired' });
+  });
+});
+
+// ——— who the cabinet is willing to be talked to as (the rebinding gate) ——————
+//
+// Binding 127.0.0.1 keeps other machines out and does nothing about DNS
+// rebinding: a page the player has open while the cabinet runs can point its
+// own hostname at 127.0.0.1 and then read every answer here same-origin, on a
+// port it can guess. Behind that sit the player's model list, chat and
+// generate against their daemon, the voice worker with its bearer added on
+// this side, and the say seat, which spends their ANTHROPIC_API_KEY. The
+// rebound page cannot forge Host, so Host is the check.
+
+describe('the names the cabinet answers to', () => {
+  it('takes its own address on its own port, and nothing else', () => {
+    for (const good of ['127.0.0.1:7777', 'localhost:7777', 'LOCALHOST:7777', '[::1]:7777']) {
+      expect(ownHost(good, 7777), good).toBe(true);
+    }
+    for (const bad of [
+      undefined,
+      '',
+      'cabinet.example.com:7777',
+      '127.0.0.1',
+      'localhost',
+      '127.0.0.1:7778',
+      '127.0.0.2:7777',
+      '127.0.0.1.example.com:7777',
+      'localhost:7777:7777',
+      ['localhost:7777', 'evil.example.com:7777'],
+    ]) {
+      expect(ownHost(bad as string | string[] | undefined, 7777), String(bad)).toBe(false);
+    }
+  });
+
+  it('takes no Origin at all, and its own, and refuses every other one', () => {
+    expect(ownOrigin(undefined, 7777)).toBe(true);
+    expect(ownOrigin('http://127.0.0.1:7777', 7777)).toBe(true);
+    expect(ownOrigin('http://localhost:7777', 7777)).toBe(true);
+    for (const bad of [
+      'null',
+      'http://evil.example.com',
+      'http://evil.example.com:7777',
+      'https://127.0.0.1:7777',
+      'http://127.0.0.1:7778',
+      'file://',
+    ]) {
+      expect(ownOrigin(bad, 7777), bad).toBe(false);
+    }
+  });
+});
+
+describe('a request addressed to somebody else', () => {
+  it('refuses a Host that is not this cabinet, and serves the one that is', async () => {
+    const port = (cabinet.address() as { port: number }).port;
+    const mine = await rawGet(port, '/', [`Host: 127.0.0.1:${port}`]);
+    expect(mine.split('\r\n')[0]).toMatch(/^HTTP\/1\.1 200 /);
+    expect(mine).toContain('cabinet');
+    for (const host of [
+      'cabinet.example.com',
+      `cabinet.example.com:${port}`,
+      `127.0.0.1:${port + 1}`,
+    ]) {
+      const raw = await rawGet(port, '/', [`Host: ${host}`]);
+      expect(raw.split('\r\n')[0], host).toMatch(/^HTTP\/1\.1 403 /);
+      expect(raw, host).not.toContain('<title>cabinet');
+    }
+  });
+
+  it('refuses a cross-origin call and never opens a socket to the daemon', async () => {
+    seen.length = 0;
+    const port = (cabinet.address() as { port: number }).port;
+    const raw = await rawGet(port, '/ollama/api/tags', [
+      `Host: 127.0.0.1:${port}`,
+      'Origin: http://evil.example.com',
+    ]);
+    expect(raw.split('\r\n')[0]).toMatch(/^HTTP\/1\.1 403 /);
+    expect(raw).toContain('wrong origin');
+    expect(seen).toEqual([]);
+    const ours = await rawGet(port, '/ollama/api/tags', [
+      `Host: 127.0.0.1:${port}`,
+      `Origin: http://127.0.0.1:${port}`,
+    ]);
+    expect(ours.split('\r\n')[0]).toMatch(/^HTTP\/1\.1 200 /);
+    expect(seen).toHaveLength(1);
+  });
+
+  it('refuses the say seat to a rebound page before it can spend a key', async () => {
+    const res = await fetch(`${base}/cabinet/say`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'http://evil.example.com' },
+      body: JSON.stringify({ view: {} }),
+    });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'wrong origin' });
+  });
+});
+
+// ——— the three ways a request body ends ——————————————————————————————————————
+//
+// They used to share one `null` and every caller answered 413 for it, so a
+// connection reset mid-upload was reported to the page as a size refusal and
+// sent anyone debugging it at the wrong constant.
+
+describe('reading a request body', () => {
+  function fakeRequest() {
+    const handlers = new Map<string, ((value?: unknown) => void)[]>();
+    const state = { destroyed: false };
+    const req = {
+      on(event: string, handler: (value?: unknown) => void) {
+        handlers.set(event, [...(handlers.get(event) ?? []), handler]);
+        return req;
+      },
+      destroy() {
+        state.destroyed = true;
+      },
+    };
+    return {
+      req: req as unknown as Parameters<typeof readBody>[0],
+      emit: (event: string, value?: unknown) => {
+        for (const handler of handlers.get(event) ?? []) handler(value);
+      },
+      state,
+    };
+  }
+
+  it('hands back the body it read', async () => {
+    const fake = fakeRequest();
+    const read = readBody(fake.req, 1024);
+    fake.emit('data', Buffer.from('half '));
+    fake.emit('data', Buffer.from('a body'));
+    fake.emit('end');
+    expect(await read).toEqual({ ok: Buffer.from('half a body') });
+  });
+
+  it('says the cap was passed, and stops reading', async () => {
+    const fake = fakeRequest();
+    const read = readBody(fake.req, 4);
+    fake.emit('data', Buffer.from('too much'));
+    expect(await read).toEqual({ tooLarge: true });
+    expect(fake.state.destroyed).toBe(true);
+  });
+
+  it('says the request went away, which is not the same as too large', async () => {
+    const reset = fakeRequest();
+    const read = readBody(reset.req, 1024);
+    reset.emit('data', Buffer.from('half'));
+    reset.emit('error', new Error('ECONNRESET'));
+    expect(await read).toEqual({ broken: true });
+
+    const gone = fakeRequest();
+    const second = readBody(gone.req, 1024);
+    gone.emit('aborted');
+    expect(await second).toEqual({ broken: true });
+  });
+});
+
+// ——— what the proxy will carry ———————————————————————————————————————————————
+
+describe('the cap on a proxied body', () => {
+  it('carries a chat history well past the say seat size', async () => {
+    seen.length = 0;
+    const res = await fetch(`${base}/ollama/api/chat`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      // Bigger than SAY_MAX_BYTES, which used to cap this route and answer
+      // 413 for it. The shell reads a failed call as a reason to fall back
+      // to the scripted seat, so a long enough session would watch the
+      // daemon quietly stop being used with nothing said anywhere.
+      body: JSON.stringify({ model: 'x', messages: [{ content: 'x'.repeat(200 * 1024) }] }),
+    });
+    expect(res.status).toBe(200);
+    expect(seen.map((s) => s.url)).toEqual(['/api/chat']);
+  });
+
+  it('still refuses a body past its own cap', async () => {
+    seen.length = 0;
+    const res = await fetch(`${base}/ollama/api/chat`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'x', messages: [{ content: 'x'.repeat(1024 * 1024 + 64) }] }),
+    });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'too large' });
+    expect(seen).toEqual([]);
+  });
+});
+
+// ——— the upstream when the browser hangs up ——————————————————————————————————
+
+describe('a player who reloads during a long generate', () => {
+  it('lets go of the upstream instead of leaving it streaming into nowhere', async () => {
+    let closed = false;
+    const slow = createServer((req, res) => {
+      req.on('close', () => {
+        closed = true;
+      });
+      res.statusCode = 200;
+      res.setHeader('content-type', 'application/json');
+      // Headers and a first chunk, then nothing: a streamed completion.
+      res.write('{"partial":');
+    });
+    const slowPort = await listenFrom(slow, 24_611);
+    const front = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      endlessModule: null,
+      ollamaUrl: `http://127.0.0.1:${slowPort}`,
+      voiceUrl: null,
+      voiceToken: null,
+      anthropicKey: null,
+    });
+    const frontPort = await listenFrom(front, 24_711);
+    try {
+      const ctl = new AbortController();
+      const res = await fetch(`http://127.0.0.1:${frontPort}/ollama/api/tags`, {
+        signal: ctl.signal,
+      });
+      expect(res.status).toBe(200);
+      ctl.abort();
+      for (let i = 0; i < 40 && !closed; i += 1) {
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      expect(closed).toBe(true);
+    } finally {
+      await new Promise<void>((r) => front.close(() => r()));
+      await new Promise<void>((r) => slow.close(() => r()));
+    }
+  });
+});
+
+// ——— the seats a Ghost-shaped cabinet lights ————————————————————————————————
+//
+// `endlessModule` left absent falls back to the say module, so the shooter's
+// package used to publish a second model-prompting route, handed the player's
+// key, that nothing on its page ever called. Its launcher passes null now,
+// and this is the shape that makes.
+
+describe('a Ghost-shaped cabinet', () => {
+  it('answers the endless seat with 503 while the say seat is lit', async () => {
+    const moduleDir = await mkdtemp(path.join(os.tmpdir(), 'ghost-seats-'));
+    await writeFile(
+      path.join(moduleDir, 'seat.mjs'),
+      'export async function askSayFor() { return { line: "hello" }; }\n',
+      'utf8',
+    );
+    const shooter = createCabinetServer({
+      playDir: play,
+      sayModule: path.join(moduleDir, 'seat.mjs'),
+      endlessModule: null,
+      ollamaUrl: upstreamBase,
+      voiceUrl: upstreamBase,
+      voiceToken: null,
+      anthropicKey: 'not-a-real-key',
+    });
+    const port = await listenFrom(shooter, 24_811);
+    try {
+      const endless = await fetch(`http://127.0.0.1:${port}/cabinet/endless`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          view: {
+            product: 'a diary for houseplants',
+            stack: 'python',
+            bandMin: 1,
+            bandMax: 2,
+            recent: [],
+            weak: [],
+            newLevel: false,
+          },
+        }),
+      });
+      expect(endless.status).toBe(503);
+      expect(await endless.json()).toEqual({ error: 'no cabinet server built' });
+      const say = await fetch(`http://127.0.0.1:${port}/cabinet/say`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          view: {
+            kind: 'menu',
+            hp: 'mid',
+            column: 'left',
+            stick: 'still',
+            motion: 'leaning',
+            wave: 'poison',
+          },
+        }),
+      });
+      expect(say.status).toBe(200);
+      expect(await say.json()).toEqual({ line: 'hello' });
+    } finally {
+      await new Promise<void>((r) => shooter.close(() => r()));
+      await rm(moduleDir, { recursive: true, force: true });
+    }
   });
 });

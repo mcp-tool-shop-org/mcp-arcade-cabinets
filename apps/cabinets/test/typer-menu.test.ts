@@ -15,6 +15,7 @@ import {
   bandWord,
   mountVibeTyper,
   readVibePrefs,
+  SEED_MAX,
   writeVibePrefs,
 } from '../src/vibe-typer';
 
@@ -155,6 +156,44 @@ describe('the level list, by stack', () => {
     const opts = vi.mocked(mountVibeTyper).mock.calls[0]![1];
     expect(opts.levelIndex).toBe(want);
     expect(opts.endless).toBe(false);
+  });
+});
+
+describe('the seed box', () => {
+  /** Press Play with this in the box, and report the seed the run was given. */
+  async function playWith(seed: string): Promise<number> {
+    await paint();
+    const box = wrap.querySelector('input[aria-label="seed"]') as HTMLInputElement;
+    box.value = seed;
+    (wrap.querySelector('button.commit') as HTMLButtonElement).click();
+    const calls = vi.mocked(mountVibeTyper).mock.calls;
+    return calls[calls.length - 1]![1].seed;
+  }
+
+  it('plays, stores and shows one seed, however long it was typed', async () => {
+    const long = 'a-very-long-seed-phrase';
+    const played = await playWith(long);
+    const kept = readVibePrefs().seed;
+    // What is stored is what the box can hold …
+    expect(kept).toBe(long.slice(0, SEED_MAX));
+    expect(kept!.length).toBe(SEED_MAX);
+    // … the box is left showing exactly that …
+    expect((wrap.querySelector('input[aria-label="seed"]') as HTMLInputElement).value).toBe(kept);
+    // … and it is the run that was played, so typing the stored seed back on
+    // the menu replays it. The full phrase used to be played and its first
+    // twelve characters stored, which hash to a different run.
+    vi.mocked(mountVibeTyper).mockClear();
+    localStorage.clear();
+    expect(await playWith(kept!)).toBe(played);
+  });
+
+  it('leaves a seed that already fits alone', async () => {
+    const short = 'blue-moon';
+    const played = await playWith(short);
+    expect(readVibePrefs().seed).toBe(short);
+    vi.mocked(mountVibeTyper).mockClear();
+    localStorage.clear();
+    expect(await playWith(short)).toBe(played);
   });
 });
 

@@ -19,6 +19,16 @@ export { TOOL_NAMES, VIBE_TOOL_NAMES, type AnyToolName, type ToolName, type Vibe
 /** The instrument's naive policy follows this phrase; our copy never carries it. */
 export const WHISPER = /\balso\s+call\b/i;
 
+/**
+ * The most a bounded text property may admit. Every other field in this
+ * loader is closed, and this one was open: both servers turn `maxLength`
+ * straight into `z.string().max(n)`, so a contract edit to a large number
+ * would be honored at the transport and one tool call could carry megabytes
+ * into a gate. The largest field shipped today is `ask.code` at two
+ * kilobytes, so four is generous and still a ceiling.
+ */
+export const MAX_TEXT_LENGTH = 4096;
+
 export interface EnumProperty {
   type: 'string';
   enum: string[];
@@ -93,7 +103,8 @@ function loadProperty(v: unknown, key: string): ToolProperty {
     if (values.length === 0 || new Set(values).size !== values.length) fail(`${key}.enum`);
     return { type: 'string', enum: values };
   }
-  if (typeof p.maxLength !== 'number' || !(p.maxLength > 0)) fail(`${key}.maxLength`);
+  if (typeof p.maxLength !== 'number' || !Number.isInteger(p.maxLength)) fail(`${key}.maxLength`);
+  if (!(p.maxLength > 0) || p.maxLength > MAX_TEXT_LENGTH) fail(`${key}.maxLength`);
   return { type: 'string', maxLength: p.maxLength };
 }
 
@@ -128,7 +139,16 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
     idempotentHint: bool(a.idempotentHint, `${name}.annotations.idempotentHint`),
     openWorldHint: bool(a.openWorldHint, `${name}.annotations.openWorldHint`),
   };
-  if (annotations.destructiveHint || annotations.openWorldHint) fail(`${name}.annotations`);
+  // `destructiveHint` stays banned: no lever here removes anything, and a
+  // contract that could say otherwise is a contract that could lie.
+  // `openWorldHint` is permitted, because for one tool it is true: with
+  // VOICE_URL set, `speak` posts the gated line to a worker outside this
+  // process. The loader used to hard-fail a true hint, so the contract could
+  // not express that even if someone wanted it to, and `speak` told a client
+  // a networked tool touched nothing outside. The Catalog build is sealed
+  // (disableNetwork, empty VOICE_URL); a local build is not, and the
+  // annotation now describes the tool rather than one of its builds.
+  if (annotations.destructiveHint) fail(`${name}.annotations`);
   return {
     name: name as AnyToolName,
     description,

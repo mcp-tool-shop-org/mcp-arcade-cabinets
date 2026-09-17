@@ -1567,3 +1567,188 @@ describe('the archivist', () => {
     }
   });
 });
+
+// openWave used to close only waveBounds[wave - 1]. syncWave reads the wave
+// from the clock, so a span shorter than dt (or a caller stepping with a big
+// dt) can advance by more than one, and the skipped wave's enemies were never
+// set to exit: they kept hovering, firing and diving on top of the new wave
+// for the rest of the round.
+describe('a wave the clock jumped over', () => {
+  const NONE = { left: false, right: false, fire: false };
+
+  function beatOf(atom: string, t: number, x: number, index: number) {
+    return {
+      id: `${atom}:init:${index}`,
+      t,
+      x,
+      sprite: 'init' as const,
+      lie: false,
+      members: 1,
+      source: { atom, method: 'initialize', note: 'initialize', index },
+    };
+  }
+
+  function skipRound() {
+    return createRoundState(
+      roundOf({
+        tapeId: 'bout_skip',
+        duration: 20,
+        waveBounds: [
+          { atom: 'inspect.a', t0: 0, t1: 0.05 },
+          { atom: 'inspect.b', t0: 0.05, t1: 0.1 },
+          { atom: 'inspect.c', t0: 0.1, t1: 20 },
+        ],
+        beats: [
+          beatOf('inspect.a', 0, 60, 0),
+          beatOf('inspect.b', 0, 160, 1),
+          beatOf('inspect.c', 0, 260, 2),
+        ],
+      }),
+    );
+  }
+
+  it('closes every bound before the new wave, not just the last one', () => {
+    const state = skipRound();
+    for (const e of state.enemies) park(state, e);
+    // One step longer than the first two spans together: wave 0 and wave 1
+    // are both crossed inside a single tick.
+    stepRound(state, NONE, 0.2);
+    expect(state.wave).toBe(2);
+    for (const atom of ['inspect.a', 'inspect.b']) {
+      const flying = state.enemies.filter(
+        (e) =>
+          e.id.startsWith(`${atom}:`) &&
+          e.alive &&
+          e.mode !== 'exit' &&
+          e.mode !== 'dying' &&
+          e.mode !== 'caught',
+      );
+      expect(
+        flying.map((e) => e.id),
+        `${atom} kept flying into wave 2`,
+      ).toEqual([]);
+    }
+    const open = state.enemies.filter((e) => e.id.startsWith('inspect.c:') && e.alive);
+    expect(open.length, 'the new wave was closed too').toBeGreaterThan(0);
+  });
+});
+
+// state.enemies was pushed to and never filtered, so every hull that ever
+// died was re-walked by all seven per-frame loops for the rest of the round,
+// and spawnDecoys counted those dead hulls as live copies — a host that
+// survived a burst-off/burst-on cycle could then never get copies again.
+describe('dead hulls leave the field', () => {
+  const NONE = { left: false, right: false, fire: false };
+
+  it('compacts dying enemies out of state.enemies and keeps caught trophies', () => {
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_compact',
+        duration: 12,
+        waveBounds: [{ atom: 'inspect.tools_list', t0: 0, t1: 10 }],
+        beats: [
+          {
+            id: 'inspect.tools_list:init:0',
+            t: 0,
+            x: 120,
+            sprite: 'init',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'initialize',
+              note: 'initialize',
+              index: 0,
+            },
+          },
+          {
+            id: 'inspect.tools_list:menu:1',
+            t: 0,
+            x: 200,
+            sprite: 'menu',
+            lie: true,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call leak',
+              index: 1,
+            },
+          },
+        ],
+      }),
+    );
+    const honest = state.enemies.find((e) => e.id.endsWith(':init:0'))!;
+    const trophy = state.enemies.find((e) => e.id.endsWith(':menu:1'))!;
+    park(state, honest);
+    park(state, trophy);
+    revealOnHit(trophy);
+    honest.mode = 'dying';
+    honest.dieAt = state.t;
+    stepRound(state, NONE, 1 / 30);
+    stepRound(state, NONE, 1 / 30);
+    expect(honest.alive, 'the hull did not die').toBe(false);
+    expect(
+      state.enemies.some((e) => e.id === honest.id),
+      'a dead hull is still walked every frame',
+    ).toBe(false);
+    expect(
+      state.enemies.some((e) => e.id === trophy.id),
+      'the caught trophy the end scene draws was compacted away',
+    ).toBe(true);
+  });
+
+  it('tops a host up again on the frame after its copies died', () => {
+    const bounds = [{ atom: 'inspect.tools_list', t0: 0, t1: 28 }];
+    const spec = DEFAULT_PATTERNS.parallelism.tiers['1'];
+    const extras = copiesAt(spec, 0, 1, 0) - 1;
+    expect(extras).toBeGreaterThan(0);
+    const state = createRoundState(
+      roundOf({
+        tapeId: 'bout_topup',
+        duration: 30,
+        seed: 0,
+        tier: 1,
+        waveBounds: bounds,
+        beats: [
+          {
+            id: 'inspect.tools_list:grid:0',
+            t: 0,
+            x: 120,
+            sprite: 'grid',
+            lie: false,
+            members: 1,
+            source: {
+              atom: 'inspect.tools_list',
+              method: 'tools/call',
+              note: 'tools/call echo',
+              index: 0,
+            },
+          },
+        ],
+      }),
+    );
+    state.lives = 99;
+    const hosts = () =>
+      state.enemies.filter((e) => !isDecoy(e) && e.alive && e.mode === 'hover' && !e.lie);
+    const copies = () => state.enemies.filter((e) => isDecoy(e) && e.alive);
+    let ready = false;
+    while (state.t < 25 && !state.scene) {
+      stepRound(state, NONE, 1 / 30);
+      if (state.parallelism && hosts().length > 0 && copies().length >= extras) {
+        ready = true;
+        break;
+      }
+    }
+    expect(ready, 'the burst never produced copies').toBe(true);
+    // Every copy dies on this frame. They are still in state.enemies when
+    // spawnDecoys runs next frame (compaction is the last thing a step does),
+    // and counting them as copies left the host permanently unable to top up.
+    for (const e of state.enemies) if (isDecoy(e)) e.alive = false;
+    stepRound(state, NONE, 1 / 30);
+    expect(state.parallelism, 'the burst closed before the top-up').toBe(true);
+    expect(copies().length, 'a host whose copies died never gets copies again').toBeGreaterThan(0);
+    const ids = state.enemies.map((e) => e.id);
+    expect(new Set(ids).size, 'a reused copy id').toBe(ids.length);
+  });
+});

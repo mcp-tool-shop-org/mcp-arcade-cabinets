@@ -1,0 +1,103 @@
+{
+ "cabinet": "ghost",
+ "model": "faster-whisper small.en",
+ "device": "cpu",
+ "beam_size": 1,
+ "vad_filter": false,
+ "language": "en",
+ "read_from": "docs/art/originals-ghost-beds/originals",
+ "beds": [
+  {
+   "key": "inspect",
+   "characters": 43,
+   "text": "So, let's get started. Thanks for watching!",
+   "segments": 2,
+   "min_no_speech_prob": 0.5493,
+   "mean_no_speech_prob": 0.6711,
+   "max_avg_logprob": -0.995,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "poison",
+   "characters": 7,
+   "text": "You You",
+   "segments": 2,
+   "min_no_speech_prob": 0.5353,
+   "mean_no_speech_prob": 0.6164,
+   "max_avg_logprob": -0.35,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "rug",
+   "characters": 24,
+   "text": "Thanks for watching! you",
+   "segments": 2,
+   "min_no_speech_prob": 0.5327,
+   "mean_no_speech_prob": 0.6994,
+   "max_avg_logprob": -0.902,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "unlisted",
+   "characters": 2,
+   "text": "D-",
+   "segments": 1,
+   "min_no_speech_prob": 0.6767,
+   "mean_no_speech_prob": 0.6767,
+   "max_avg_logprob": -0.971,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "breather",
+   "characters": 3,
+   "text": "you",
+   "segments": 1,
+   "min_no_speech_prob": 0.8664,
+   "mean_no_speech_prob": 0.8664,
+   "max_avg_logprob": -0.604,
+   "no_speech_everywhere": true
+  },
+  {
+   "key": "whisperer",
+   "characters": 22,
+   "text": "\ud83c\udfb5 Thanks for watching!",
+   "segments": 2,
+   "min_no_speech_prob": 0.4916,
+   "mean_no_speech_prob": 0.6387,
+   "max_avg_logprob": -0.956,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "menu",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  },
+  {
+   "key": "doorman",
+   "characters": 0,
+   "text": "",
+   "segments": 0,
+   "min_no_speech_prob": null,
+   "mean_no_speech_prob": null,
+   "max_avg_logprob": null,
+   "no_speech_everywhere": false
+  }
+ ],
+ "no_speech_floor": 0.5,
+ "misses": [
+  "inspect",
+  "poison",
+  "rug",
+  "unlisted",
+  "breather",
+  "whisperer"
+ ],
+ "misses_with_speech": [
+  "whisperer"
+ ]
+}

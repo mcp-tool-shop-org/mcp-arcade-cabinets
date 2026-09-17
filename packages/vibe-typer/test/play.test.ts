@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -128,6 +129,28 @@ describe('the play-through', () => {
     expect(out.ok).toBe(false);
     expect(out.why).toBe('no tapes');
     expect(integrationFrom(path.join(ROOT, 'no-such-dir'))).toEqual([]);
+  });
+
+  // The catch used to `continue` on one branch and fall off the end of the
+  // block on the other, which are the same thing: a JSON syntax error, an
+  // unreadable file and a genuinely malformed tape all looked exactly like a
+  // directory with no tapes in it. The integration stack seasons the trigram
+  // model, so a tape dropped in silence moves every snippet's value.
+  it('halts on a broken fixture and only skips a tape it cannot read', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'vibe-tapes-'));
+    try {
+      const good = readFileSync(path.join(TAPES, 'naive-ndjson.tape.json'), 'utf8');
+      writeFileSync(path.join(dir, 'good.tape.json'), good);
+      // A tape this cabinet cannot read: skipped, and the rest still load.
+      writeFileSync(path.join(dir, 'wrong.tape.json'), JSON.stringify({ schema: 'not-ours' }));
+      expect(integrationFrom(dir).length).toBeGreaterThan(0);
+
+      // A file that is not JSON at all is a broken fixture, not a tape.
+      writeFileSync(path.join(dir, 'torn.tape.json'), '{ "schema": ');
+      expect(() => integrationFrom(dir)).toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

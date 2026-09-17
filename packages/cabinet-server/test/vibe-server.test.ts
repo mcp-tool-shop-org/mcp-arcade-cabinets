@@ -23,7 +23,13 @@ import {
 import { VIBE_CONTRACT } from '../src/contract';
 import { FORBIDDEN } from '../src/gate';
 import { SERVER_VERSION } from '../src/server';
-import { vibeHeadlessRound, VIBE_SERVER_VERSION, wholeEnv } from '../src/server-vibe';
+import {
+  vibeEnv,
+  vibeHeadlessRound,
+  VIBE_BOT,
+  VIBE_SERVER_VERSION,
+  wholeEnv,
+} from '../src/server-vibe';
 
 const PKG = path.resolve(__dirname, '..');
 const OUT = path.join(PKG, 'dist', 'server-vibe.test-build.js');
@@ -57,6 +63,60 @@ describe('the environment overrides', () => {
       expect(wholeEnv(bad), bad).toBeNull();
     }
     expect(wholeEnv(undefined)).toBeNull();
+  });
+
+  it('says out loud every read that did not take, and which default stands', () => {
+    // The reads around wholeEnv did the very thing it exists to prevent: a
+    // value that reaches a default through a failed parse reads afterwards
+    // as though the operator had asked for the default.
+    const quiet = vibeEnv({ CABINET_SEED: '7', CABINET_TIER: '2', CABINET_BOT: 'typist:30' });
+    expect(quiet.notes).toEqual([]);
+    expect(quiet.opts).toEqual({ seed: 7, tier: 2, bot: 'typist:30' });
+
+    // In range, parsed, and silent at the edges of the band.
+    for (const tier of ['0', '3']) {
+      expect(vibeEnv({ CABINET_TIER: tier }).notes).toEqual([]);
+    }
+
+    for (const bad of ['9', '-1', '4', 'abc', '1.5']) {
+      const read = vibeEnv({ CABINET_TIER: bad });
+      expect(read.opts.tier, bad).toBeUndefined();
+      expect(read.notes, bad).toEqual([
+        'CABINET_TIER was not understood; the cabinet plays at tier 0\n',
+      ]);
+    }
+
+    const bot = vibeEnv({ CABINET_BOT: 'nonsense' });
+    expect(bot.opts.bot).toBeUndefined();
+    expect(bot.notes).toEqual([
+      `CABINET_BOT was not understood; the cabinet plays under ${VIBE_BOT}\n`,
+    ]);
+
+    // The overlay is the shooter's menu: the image sets CABINET_TAPES_USER
+    // for both cabinets and the Catalog mounts an operator directory at it,
+    // and this cabinet has no menu to merge it into. Silence read like a
+    // mount that had not worked.
+    const overlay = vibeEnv({ CABINET_TAPES_USER: '/tapes-user' });
+    expect(overlay.notes).toEqual([
+      'CABINET_TAPES_USER is read by the shooter cabinet only; this cabinet plays the baked tapes\n',
+    ]);
+    expect(overlay.opts).toEqual({});
+    expect(vibeEnv({ CABINET_TAPES_USER: '' }).notes).toEqual([]);
+
+    // Every line is path-free and menu-shaped: an operator's mount point is
+    // never echoed back at them.
+    for (const note of [...overlay.notes, ...bot.notes, ...vibeEnv({ CABINET_TIER: '9' }).notes]) {
+      expect(note).not.toMatch(/[/\\]/);
+      expect(note.endsWith('\n')).toBe(true);
+    }
+
+    // An explicit opt wins, and is not second-guessed by the environment.
+    const given = vibeEnv(
+      { CABINET_TIER: '9', CABINET_BOT: 'nonsense' },
+      { tier: 1, bot: 'typist:20' },
+    );
+    expect(given.notes).toEqual([]);
+    expect(given.opts).toEqual({ tier: 1, bot: 'typist:20' });
   });
 });
 

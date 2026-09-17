@@ -13,7 +13,7 @@ import playerJson from '../patterns/player.json';
 import voiceJson from '../patterns/voice.json';
 import wavesJson from '../patterns/waves.json';
 
-const SPRITE_CLASSES: readonly SpriteClass[] = [
+const SPRITE_CLASSES = [
   'init',
   'ready',
   'menu',
@@ -26,9 +26,9 @@ const SPRITE_CLASSES: readonly SpriteClass[] = [
   'probe',
   'shelf',
   'ledger',
-];
+] as const satisfies readonly SpriteClass[];
 /** Classes that spawn as enemies. Fog becomes a FogBank, never a path. */
-const SPAWN_CLASSES: readonly SpriteClass[] = [
+const SPAWN_CLASSES = [
   'init',
   'ready',
   'menu',
@@ -40,7 +40,12 @@ const SPAWN_CLASSES: readonly SpriteClass[] = [
   'probe',
   'shelf',
   'ledger',
-];
+  // `as const` is load-bearing: it keeps the indexed-access type at these
+  // eleven names instead of widening to the whole SpriteClass union, so the
+  // formations sprite map's type matches exactly the keys loadFormations
+  // fills. Widened, that map claimed a `fog` entry it never has, and a
+  // reader who forgot the fog guard typechecked and threw at runtime.
+] as const satisfies readonly SpriteClass[];
 
 const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;

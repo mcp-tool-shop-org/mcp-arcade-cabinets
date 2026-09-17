@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { askFor, fill, LinePicker, safeTitle } from '../src/lines';
-import { DEFAULT_PATTERNS, lineFault } from '../src/patterns';
+import { DEFAULT_PATTERNS, lineFault, type Patterns } from '../src/patterns';
 import { DEFAULT_CORPUS } from '../src/corpus';
 import type { Snippet } from '../src/types';
 
@@ -94,14 +94,26 @@ describe('the line picker', () => {
       expect(lineFault(line)).toBeNull();
       expect(line.split(/\s+/).length).toBeLessThanOrEqual(5);
     }
-    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(36);
+    expect(DEFAULT_PATTERNS.user.syncs.length).toBeGreaterThanOrEqual(32);
   });
 
   it('reads hardcore in tier two words', () => {
+    // The ask pool is keyed by tier, and hardcore borrows tier two's.
     const hard = picker(6, 3);
     const easy = picker(6, 2);
-    // A snippet whose topics carry no pool of their own reads the tier pool.
-    expect(hard.reaction(NO_TOPIC_POOL)).toBe(easy.reaction(NO_TOPIC_POOL));
+    expect(hard.ask('bash', 'a website for my cat', SNIPPET)).toBe(
+      easy.ask('bash', 'a website for my cat', SNIPPET),
+    );
+    // So is the reaction fallback, on the levers that draw it: a snippet
+    // whose topics carry no pool of their own reads the tier pool.
+    const on: Patterns = {
+      ...DEFAULT_PATTERNS,
+      user: { ...DEFAULT_PATTERNS.user, reactionsByTopicEnabled: true },
+    };
+    const hardOn = new LinePicker(on, { seed: 6, tier: 3 });
+    const easyOn = new LinePicker(on, { seed: 6, tier: 2 });
+    expect(hardOn.reaction(NO_TOPIC_POOL)).toBe(easyOn.reaction(NO_TOPIC_POOL));
+    expect(DEFAULT_PATTERNS.user.reactions['2']).toContain(hardOn.reaction(NO_TOPIC_POOL));
   });
 
   it('walks the check-ins and the answers without a repeat inside a level', () => {
@@ -128,17 +140,71 @@ describe('the line picker', () => {
     expect(DEFAULT_PATTERNS.agent.nagReplies.length).toBeGreaterThanOrEqual(12);
   });
 
-  it('reacts to the piece by its topic when a topic has been written for', () => {
+  // Neither authored reaction pool plays while the lever is off. The
+  // by-topic one is keyed to the snippet's code construct and not to the
+  // request, so it draws a metaphor for a loop or an insert; the tier one
+  // was authored as "the user names the thing that just shipped" and seventy
+  // of its hundred and eight lines name a piece the request never asked for.
+  // The generic reviews are true of any piece, and the lines-neutral gate
+  // holds them.
+  it('draws the generic reviews for every snippet while the by-topic lever is off', () => {
     const byTopic = DEFAULT_PATTERNS.user.reactionsByTopic;
     const topic = SNIPPET.topics.find((t) => byTopic[t] !== undefined);
     expect(topic).toBeDefined();
-    const pool = byTopic[topic!]!;
+    expect(DEFAULT_PATTERNS.user.reactionsByTopicEnabled).toBe(false);
     const p = picker();
+    for (let i = 0; i < 8; i++) {
+      const said = p.reaction(SNIPPET);
+      expect(byTopic[topic!]).not.toContain(said);
+      expect(DEFAULT_PATTERNS.user.reactions['0']).not.toContain(said);
+      expect(DEFAULT_PATTERNS.user.reviews).toContain(said);
+    }
+    // And a snippet nobody wrote a topic for reads the same pool.
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(picker().reaction(NO_TOPIC_POOL));
+  });
+
+  it('says four different lines across a level and its deploy', () => {
+    // Three reactions and the verdict, out of one bag: the deploy is never a
+    // line the user already said mid-level.
+    const p = picker();
+    const said = [p.reaction(SNIPPET), p.reaction(SNIPPET), p.reaction(SNIPPET)];
+    const verdict = p.review('no-such-level');
+    expect(new Set([...said, verdict]).size).toBe(4);
+    expect(said).not.toContain(verdict);
+    for (const line of [...said, verdict]) {
+      expect(DEFAULT_PATTERNS.user.reviews).toContain(line);
+    }
+    // A level with a product pool of its own is untouched: its verdict comes
+    // from that pool, which no reaction can have said.
+    const withPool = picker();
+    const id = Object.keys(DEFAULT_PATTERNS.user.reviewsByProduct)[0]!;
+    withPool.reaction(SNIPPET);
+    expect(DEFAULT_PATTERNS.user.reviewsByProduct[id]).toContain(withPool.review(id));
+  });
+
+  it('starts the reaction bag over at each level', () => {
+    const p = picker();
+    const first = [p.reaction(SNIPPET), p.reaction(SNIPPET)];
+    p.startLevel(1);
+    const verdict = p.review('no-such-level');
+    // A new level may say a line the level before it said; what it may not
+    // do is repeat inside itself.
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(verdict);
+    expect(first).toHaveLength(2);
+  });
+
+  it('reacts by topic again the moment the lever is on', () => {
+    const byTopic = DEFAULT_PATTERNS.user.reactionsByTopic;
+    const topic = SNIPPET.topics.find((t) => byTopic[t] !== undefined)!;
+    const pool = byTopic[topic]!;
+    const on: Patterns = {
+      ...DEFAULT_PATTERNS,
+      user: { ...DEFAULT_PATTERNS.user, reactionsByTopicEnabled: true },
+    };
+    const p = new LinePicker(on, { seed: 7, tier: 0 });
     const said = new Set<string>();
     for (let i = 0; i < pool.length; i++) said.add(p.reaction(SNIPPET));
     expect([...said].sort()).toEqual([...pool].sort());
-    // The tier pool still answers a snippet nobody has written a topic for.
-    expect(DEFAULT_PATTERNS.user.reactions['0']).toContain(picker().reaction(NO_TOPIC_POOL));
   });
 
   it('reviews a product from its own pool, and falls back to the generic one', () => {
@@ -174,6 +240,44 @@ describe('the ask a snippet carries', () => {
     // The template bag is untouched, so the next drawn ask is the pool's first.
     const fresh = picker();
     expect(p.ask('bash', product, SNIPPET)).toBe(fresh.ask('bash', product, SNIPPET));
+  });
+
+  // The endless ladder builds its products from templates, and one of them
+  // is a relative clause: "an app that rates hat collections". Dropped into
+  // `make {product} <verb phrase>` that garden-paths — the reader finishes
+  // the clause, takes the request for done, and the verb reads as a second
+  // request jammed onto the first. The field showed "make an app that rates
+  // hat collections give the engineering team a raise".
+  it('says one request when the product carries its own clause', () => {
+    const jam: Snippet = { ...SNIPPET, ask: 'make {product} give the engineering team a raise' };
+    expect(fill(jam.ask!, 'an app that rates hat collections', jam)).toBe(
+      'make it give the engineering team a raise',
+    );
+    // A product with no clause in it reads fine and is left alone.
+    expect(fill(jam.ask!, 'a rideshare for ducks', jam)).toBe(
+      'make a rideshare for ducks give the engineering team a raise',
+    );
+    // And the product at the end of the line never jammed, so it still fills.
+    const tail: Snippet = { ...SNIPPET, ask: 'add my first sandwich to {product}' };
+    expect(fill(tail.ask!, 'an app that rates hat collections', tail)).toBe(
+      'add my first sandwich to an app that rates hat collections',
+    );
+  });
+
+  it('never jams a request in any product the endless ladder can build', () => {
+    const { nouns, templates } = DEFAULT_PATTERNS.products;
+    const products = templates.flatMap((t) => nouns.map((n) => t.split('{noun}').join(n)));
+    const asks = DEFAULT_CORPUS.snippets
+      .map((s) => s.ask)
+      .filter((ask): ask is string => typeof ask === 'string' && ask.startsWith('make {product} '));
+    expect(asks.length).toBeGreaterThan(0);
+    for (const product of products) {
+      const clause = /\b(that|which|who)\b/i.test(product);
+      for (const ask of asks) {
+        const said = fill(ask, product, SNIPPET);
+        expect(said.startsWith(clause ? 'make it ' : `make ${product} `), said).toBe(true);
+      }
+    }
   });
 
   it('falls back to the template pool for a snippet without one', () => {

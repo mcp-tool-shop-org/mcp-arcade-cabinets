@@ -57,8 +57,27 @@ const STDIO_BUNDLES = {
 };
 const TAPES = path.join(repo, 'fixtures', 'tapes');
 
-/** Every public directory the shell ships, so the copy can leave the rest out. */
-const PUBLIC_DIRS = ['sprites', 'tracks', 'keys', 'vibe'];
+/**
+ * Vite's own build output, which is not a public directory and belongs to
+ * both cabinets. Everything else at the top of `play/` is a public folder and
+ * has to belong to one cabinet or the other.
+ */
+const SHELL_DIRS = ['assets'];
+
+/**
+ * How to tell which cabinet's stdio server a `dist/cabinet-stdio.js` is.
+ *
+ * Not a tool name, though that is the obvious choice: both servers bundle
+ * both contracts (`tools.json` and `tools.vibe.json` are imported by
+ * `contract.ts`), so `fire` and `product` are in both bundles and neither
+ * discriminates. Measured on the built bundles, 2026-09-16. What is in
+ * exactly one of them is the name each server answers `initialize` with,
+ * which is also the thing that would be wrong if the mapping crossed over.
+ */
+const STDIO_MARKS = {
+  ghost: ['"ghost-on-the-menu"', 'the name the shooter answers initialize with'],
+  vibe: ['"vibe-typer"', 'the name the typing cabinet answers initialize with'],
+};
 
 /**
  * The typing cabinet's recorded beds, one a corpus stack. This is the same
@@ -73,7 +92,15 @@ const PUBLIC_DIRS = ['sprites', 'tracks', 'keys', 'vibe'];
  * run time and the wrong one at pack time, where the only sign of a bed left
  * out of the tarball would be a stack that quietly never plays its music.
  */
-const VIBE_TRACK_KEYS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql', 'integration'];
+export const VIBE_TRACK_KEYS = [
+  'bash',
+  'csharp',
+  'java',
+  'javascript',
+  'python',
+  'sql',
+  'integration',
+];
 
 /**
  * What each cabinet's package carries, and how to tell from the built shell
@@ -127,7 +154,18 @@ const CABINETS = {
   },
 };
 
-function halt(lines) {
+/**
+ * Every public directory some cabinet claims, derived from the table above
+ * rather than kept by hand beside it. The copy filter and the stray gate are
+ * both built from this, so a hand-kept list that fell behind the table would
+ * have meant a folder neither dropped from the other cabinet's package nor
+ * reported by `checkDist` — shipped in both tarballs, silently. What is in
+ * the built shell and in nobody's list is caught in `checkDist`.
+ */
+const PUBLIC_DIRS = [...new Set(Object.values(CABINETS).flatMap((spec) => spec.public))];
+
+/** Write the lines and stop. Exported so a wrapper package halts the same way. */
+export function halt(lines) {
   for (const line of lines) process.stderr.write(`${line}\n`);
   process.exit(1);
 }
@@ -183,6 +221,10 @@ function layoutOf(spec) {
     'cabinet-server.js',
     'cabinet-stdio.js',
     path.join('play', 'index.html'),
+    // Vite's output, and the directory the marker gate reads. Named here so
+    // that a shell copied without it is a halt that says which directory is
+    // missing, rather than an ENOENT out of the readdir further down.
+    path.join('play', 'assets'),
     'tapes',
     ...spec.public.map((dir) => path.join('play', dir)),
     ...(spec.files ?? []),
@@ -229,6 +271,55 @@ export async function checkDist({ cabinet, out }) {
       ...strays.map((rel) => `- should not be here: dist/${rel}`),
       '',
       'next: check the public split in packages/launcher/scripts/build.mjs',
+    ]);
+  }
+
+  // The split above is a denylist of the folders we already know about. This
+  // is the other question: what is in the built shell that nobody has claimed?
+  // A directory added to apps/cabinets/public and to neither cabinet's list
+  // would otherwise be dropped from no package and reported by nothing, and
+  // would ship in both tarballs. Halting here makes a new asset folder a
+  // decision instead.
+  const claimed = new Set([...PUBLIC_DIRS, ...SHELL_DIRS]);
+  const unknown = (await readdir(path.join(dist, 'play'), { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory() && !claimed.has(entry.name))
+    .map((entry) => entry.name);
+  if (unknown.length > 0) {
+    halt([
+      `launcher: the shell has a public directory no cabinet claims`,
+      ...unknown.map((name) => `- unclaimed: dist/${path.join('play', name)}`),
+      '',
+      'next: add it to one cabinet (or both) in the CABINETS table in',
+      '     packages/launcher/scripts/build.mjs, so the split decides where',
+      '     it ships instead of it shipping in every tarball',
+    ]);
+  }
+
+  // Which cabinet's `--mcp` this package actually carries. The layout check
+  // above only asks whether cabinet-stdio.js is there; nothing asked whose it
+  // was, so a crossed STDIO_BUNDLES mapping (or a cabinet-server build that
+  // wrote the wrong file) would pass prepack and publish the other cabinet's
+  // server under this name — the exact failure the 0.9.0 split was made to
+  // prevent, on the half of the package the marker gate never looked at.
+  const stdioJs = await readFile(path.join(dist, 'cabinet-stdio.js'), 'utf8');
+  const [mark, whatMark] = STDIO_MARKS[spec.stdio];
+  if (!stdioJs.includes(mark)) {
+    halt([
+      `launcher: ${spec.name}'s --mcp server is not the ${spec.stdio} one`,
+      `- missing: ${whatMark}`,
+      '',
+      'next: pnpm -F @mcp-arcade-cabinets/cabinet-server build, then',
+      '     pnpm build:launcher; and check STDIO_BUNDLES in this file',
+    ]);
+  }
+  for (const [other, [otherMark, whatOther]] of Object.entries(STDIO_MARKS)) {
+    if (other === spec.stdio || !stdioJs.includes(otherMark)) continue;
+    halt([
+      `launcher: ${spec.name}'s --mcp server is the ${other} cabinet's`,
+      `- in the bundle: ${whatOther}`,
+      '',
+      'next: check STDIO_BUNDLES in packages/launcher/scripts/build.mjs and',
+      '     the cabinet-server build that writes server.js and server-vibe.js',
     ]);
   }
 

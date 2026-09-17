@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { loadTape } from '@mcp-arcade-cabinets/tape-core';
 
 import { copiesAt, DEFAULT_PATTERNS, intensityAt } from '../src/patterns';
-import { createRoundState, prepassRound, stepRound } from '../src/index';
+import { createRoundState, makeTextCtx, prepassRound, renderRound, stepRound } from '../src/index';
 import {
   climbAt,
   decodeShift,
@@ -251,5 +251,101 @@ describe('the card', () => {
     expect(ordinalWord(2, 4)).toBe('third');
     expect(ordinalWord(3, 4)).toBe('last');
     expect(lengthWord(4)).toBe('four');
+  });
+});
+
+// Nothing used to test a HOSTILE tape against the screen guard: the card test
+// above iterates the repo's own benign tapes, and play.test.ts put its digit
+// in the caller-supplied fixture name rather than in a tape field. Both
+// tape-to-screen paths — the between-calls card and the furniture the end
+// scene paints — are exercised here with a header that carries a digit and
+// every forbidden word in turn. Reverting either guard turns this red.
+describe('a hostile tape header never reaches the field', () => {
+  const BASE = loadTape(JSON.parse(readFileSync(path.join(DIR, 'naive-ndjson.tape.json'), 'utf8')));
+
+  const NEEDLES = [
+    'pass',
+    'fail',
+    'score',
+    'cleared',
+    'lie',
+    'fact',
+    'revealed',
+    'followed',
+    'held',
+    'ghost_answered',
+    'menu_changed',
+    'nrp',
+    'integrity',
+    'utility',
+    'attack_success',
+  ];
+
+  /**
+   * The loader now refuses these, so the hostile tape is built past it.
+   * `server_name` keeps one clean word, so its line survives the strip;
+   * `agent_policy` is the needle alone, so its line must be dropped rather
+   * than painted as a bare `policy` label.
+   */
+  function hostile(needle: string) {
+    return {
+      ...BASE,
+      server_name: `sting ${needle} 7`,
+      agent_policy: needle,
+      target_kind: `${needle} 3`,
+    };
+  }
+
+  /** A digit, or the needle as a whole word. Every needle is word characters. */
+  const dirty = (needle: string) => new RegExp('\\d|\\b' + needle + '\\b', 'i');
+
+  it('keeps the between-calls card clean and drops a line that strips to nothing', () => {
+    for (const needle of NEEDLES) {
+      const lines = shiftCard(hostile(needle), 0);
+      for (const line of lines) {
+        expect(line, `${needle}: ${line}`).not.toMatch(dirty(needle));
+        expect(line, `${needle}: bare label`).not.toMatch(/^(server|policy|asked to run)\s*$/);
+      }
+      expect(
+        lines.some((l) => l.startsWith('server sting')),
+        `${needle}: server line lost`,
+      ).toBe(true);
+      expect(
+        lines.some((l) => l.startsWith('policy')),
+        `${needle}: empty policy line kept`,
+      ).toBe(false);
+    }
+  });
+
+  it('keeps the end scene furniture clean on the field', () => {
+    for (const needle of NEEDLES) {
+      const tape = hostile(needle);
+      const state = createRoundState(prepassRound(tape, { seconds: 60 }));
+      state.scene = {
+        tapeId: state.tapeId,
+        cleared: [],
+        line: `the ${needle} was 4 hours ago`,
+      };
+      // The same three lines play.ts hands the renderer.
+      const furniture = [
+        'naive-ndjson',
+        `server ${tape.server_name ?? tape.target_kind}`,
+        `policy ${tape.agent_policy}`,
+      ];
+      const ctx = makeTextCtx();
+      renderRound(ctx, state, { furniture });
+      expect(ctx.texts.length, `${needle}: nothing painted`).toBeGreaterThan(0);
+      for (const text of ctx.texts) {
+        expect(text, `${needle}: ${text}`).not.toMatch(dirty(needle));
+      }
+      expect(
+        ctx.texts.some((t) => t.trim() === 'policy'),
+        `${needle}: bare label painted`,
+      ).toBe(false);
+      expect(
+        ctx.texts.some((t) => t.startsWith('server sting')),
+        `${needle}: server line lost`,
+      ).toBe(true);
+    }
   });
 });

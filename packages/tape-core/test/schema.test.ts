@@ -2,7 +2,13 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { FORBIDDEN_KEYS, TAPE_SCHEMA_ID, TapeError, loadTape } from '../src/index';
+import {
+  FORBIDDEN_KEYS,
+  HEADER_MAX_CHARS,
+  TAPE_SCHEMA_ID,
+  TapeError,
+  loadTape,
+} from '../src/index';
 
 const FIXTURES = path.resolve(__dirname, '../../../fixtures/tapes');
 
@@ -141,5 +147,51 @@ describe('loadTape', () => {
       expect(() => loadTape(raw), `row.atom ${JSON.stringify(id)}`).toThrow(TapeError);
       expect(() => loadTape(raw), `row.atom ${JSON.stringify(id)}`).toThrow(/empty|:/);
     }
+  });
+});
+
+// The three header fields a cabinet paints on its field (the tape, the
+// server, the policy — G10) used to take any string at all: no charset and no
+// word constraint, so a tape could smuggle a verdict word straight onto the
+// canvas. They are constrained here, at the boundary, as well as stripped by
+// the cabinet's renderer. A digit is deliberately still allowed: a server may
+// legitimately have one in its name, and refusing the tape over it would make
+// a real recording unplayable. The screen strip drops digits before painting.
+describe('the header fields a cabinet paints', () => {
+  const FIELDS = ['server_name', 'target_kind', 'agent_policy'] as const;
+
+  it('refuses a verdict word in any of them', () => {
+    for (const field of FIELDS) {
+      for (const word of ['pass', 'fail', 'score', 'cleared', 'lie', 'revealed', 'followed']) {
+        const raw = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
+        raw[field] = `acme ${word} labs`;
+        expect(() => loadTape(raw), `${field}=${word}`).toThrow(TapeError);
+        expect(() => loadTape(raw), `${field}=${word}`).toThrow(new RegExp(word));
+      }
+      for (const fact of ['ghost_answered', 'menu_changed', 'held']) {
+        const raw = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
+        raw[field] = fact;
+        expect(() => loadTape(raw), `${field}=${fact}`).toThrow(TapeError);
+      }
+    }
+  });
+
+  it('refuses a control character or an unbounded header', () => {
+    for (const field of FIELDS) {
+      const raw = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
+      raw[field] = `two\nlines`;
+      expect(() => loadTape(raw), `${field} newline`).toThrow(/printable/);
+      const long = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
+      long[field] = 'a'.repeat(HEADER_MAX_CHARS + 1);
+      expect(() => loadTape(long), `${field} length`).toThrow(/characters/);
+    }
+  });
+
+  it('still takes an ordinary name, a digit included', () => {
+    const raw = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
+    raw.server_name = 'ollama-intern-mcp-3';
+    raw.agent_policy = 'naive';
+    raw.target_kind = 'stdio';
+    expect(loadTape(raw).server_name).toBe('ollama-intern-mcp-3');
   });
 });

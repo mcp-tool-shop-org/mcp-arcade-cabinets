@@ -43,6 +43,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
+import { isMain, runMain } from './lib/cli.mjs';
+
 const USAGE = `usage: pnpm sit --cabinet vibe-typer [--seat none|pull|mcp] [--model a:cloud,b:cloud]
           [--levels 3] [--tier 0|1|2|3] [--bot perfect|typist:wpm[:rate]] [--seed n]
           [--ollama http://127.0.0.1:11434] [--samples 10]
@@ -704,6 +706,10 @@ export async function main(argv) {
   }
 }
 
-if (process.argv[1] && path.basename(process.argv[1]).toLowerCase() === 'sit-vibe.mjs') {
-  await main(process.argv.slice(2));
+// `pnpm sit --cabinet vibe-typer` reaches this module by import, from sit.mjs,
+// which is why the entrypoint check is a resolved-path one and not a guess at
+// the filename: only this file being the process entrypoint runs it, and a
+// throw inside leaves as one named line rather than a stack.
+if (isMain(import.meta.url)) {
+  await runMain(() => main(process.argv.slice(2)));
 }

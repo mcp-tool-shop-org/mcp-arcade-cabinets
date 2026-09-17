@@ -379,6 +379,22 @@
       .vibe-agent {
         color: #e6e6e6;
       }
+      /* A quick sync: the lines are the other party's half of a call, so they
+         are not painted as the agent's ordinary replies, and a quiet row
+         marks where the meeting starts and ends. */
+      .vibe-sync {
+        color: #cdbf9a;
+        border-left: 2px solid #6a5a3a;
+        padding-left: 0.5rem;
+      }
+      .vibe-mark {
+        color: #8a7a5a;
+        font-size: 0.8em;
+        letter-spacing: 0.08em;
+        text-transform: lowercase;
+        border-top: 1px solid #3a3a44;
+        padding-top: 0.35rem;
+      }
       .vibe-beat {
         font-size: var(--vibe-font, 0.95rem);
       }

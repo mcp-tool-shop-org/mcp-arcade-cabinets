@@ -31,6 +31,7 @@ import {
   type Shot,
   type SpriteClass,
   kindOfAtom,
+  sanitizeCaption,
 } from './types';
 import { type PilotIntent } from './pilot';
 import { BEAT_GAP } from './prepass';
@@ -95,18 +96,6 @@ function overlaps(
   b: { x: number; y: number; w: number; h: number },
 ): boolean {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
-/**
- * Same needles as play.ts SCREEN_FORBIDDEN plus VOICE_FORBIDDEN's \bghost\b.
- * Digits and fact words never reach the canvas; empty after strip is dropped.
- */
-const CAPTION_FORBIDDEN =
-  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable|ghost)\b/gi;
-
-function sanitizeCaption(raw: string, fallback = ''): string {
-  const clean = (s: string) => s.replace(CAPTION_FORBIDDEN, ' ').replace(/\s+/g, ' ').trim();
-  return clean(raw) || clean(fallback);
 }
 
 function rungOf(patterns: PatternSet, tier: 0 | 1 | 2 | 3): LadderRung {
@@ -557,8 +546,13 @@ function closeWave(state: RoundState, atom: string): void {
 }
 
 function openWave(state: RoundState, meta: Meta, wave: number): void {
-  if (wave > 0) {
-    const prev = meta.round.waveBounds[wave - 1];
+  // Close EVERY bound still open before the new one, not just wave - 1.
+  // syncWave reads the wave from the clock, so a span shorter than dt (or a
+  // caller stepping with a large dt) can advance by more than one, and a
+  // skipped wave's enemies would otherwise keep hovering, firing and diving
+  // on top of the new wave for the rest of the round.
+  for (let i = Math.max(0, meta.captionedWave); i < wave; i++) {
+    const prev = meta.round.waveBounds[i];
     if (prev) closeWave(state, prev.atom);
   }
   const bound = meta.round.waveBounds[wave];
@@ -772,19 +766,30 @@ function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void
       (e.sprite === 'grid' || e.sprite === 'menu' || e.sprite === 'answer'),
   );
   const born: Enemy[] = [];
+  // Ids already handed out, so a top-up after a burst-off/burst-on cycle
+  // cannot reuse the id of a copy that is still parked as a trophy.
+  const taken = new Set<string>();
+  for (const e of state.enemies) taken.add(e.id);
   for (const host of hosts) {
     const prefix = decoyPrefix(host);
+    // Count LIVE copies only. The old count walked every enemy ever spawned,
+    // so a host whose copies had exited and died was read as already full and
+    // could never get copies again once the burst window reopened.
     let have = 0;
     for (const e of state.enemies) {
-      if (e.id.startsWith(prefix)) have += 1;
+      if (e.alive && e.id.startsWith(prefix)) have += 1;
     }
     for (const e of born) {
       if (e.id.startsWith(prefix)) have += 1;
     }
+    let nextId = 0;
     for (let i = have; i < extras; i++) {
+      while (taken.has(`${prefix}${nextId}`)) nextId += 1;
+      const id = `${prefix}${nextId}`;
+      taken.add(id);
       // Copies match the host formation box and segment count (G7).
       const decoy: Enemy = {
-        id: `${prefix}${i}`,
+        id,
         x: wrapX(host.x + (i + 1) * 28, host.w),
         y: host.y,
         w: host.w,
@@ -1343,12 +1348,8 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     if (state.caption.t <= 0) state.caption = null;
   }
   if (meta) {
-    const prevWave = state.wave;
     syncWave(state, meta);
     if (meta.round.waveBounds.length > 0 && state.wave !== meta.captionedWave) {
-      if (meta.captionedWave >= 0 && state.wave !== prevWave) {
-        /* closeWave runs inside openWave */
-      }
       openWave(state, meta, state.wave);
     }
     meta.waveHold = Math.max(0, meta.waveHold - dt);
@@ -1529,6 +1530,11 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
 
   state.shots = state.shots.filter((s: Shot) => !s.dead);
   state.enemyShots = state.enemyShots.filter((s: Shot) => !s.dead);
+  // Enemies are compacted the same way. Without this every hull that ever
+  // died stayed in the array and was re-walked by all seven per-frame loops
+  // for the rest of the round. Caught lies are kept: they are the trophies
+  // the end scene draws.
+  state.enemies = state.enemies.filter((e: Enemy) => e.alive || e.mode === 'caught');
   return state;
 }
 

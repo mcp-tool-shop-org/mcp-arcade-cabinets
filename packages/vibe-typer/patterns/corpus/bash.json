@@ -17,6 +17,7 @@
     "code": "name=developer\necho $name",
     "notes": ["Assigns a string to a variable and prints it without quotes."],
     "topics": ["variables", "echo"],
+    "for": "cat-website",
     "ask": "use her name in the greeting"
   },
   {
@@ -54,6 +55,7 @@
     "stack": "bash",
     "band": 1,
     "title": "For loop",
+    "for": "cat-website",
     "ask": "show every toy she has reviewed",
     "code": "for file in *.txt; do\n    echo \"Processing: $file\"\ndone",
     "notes": [
@@ -131,6 +133,7 @@
       "Always quote ${arr[@]} to handle spaces in elements."
     ],
     "topics": ["arrays", "indexing", "length"],
+    "for": "cat-website",
     "ask": "make {product} greet every friend my cat has"
   },
   {

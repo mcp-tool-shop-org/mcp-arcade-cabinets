@@ -1,3 +1,14 @@
+# Measured, not estimated (F-13e1f059): a completed real run of this workflow
+# (run 35153016420, push to main, 2026-09-16) billed 2 ubuntu-latest minutes
+# for "Build handbook and play" (21:33:14-21:35:03, 109s -> 2 min) and 1
+# ubuntu-latest minute for "Deploy Pages" (21:35:07-21:35:14, 7s -> 1 min) --
+# 3 ubuntu-latest minutes for a push to main in that run; a non-main push
+# (paths-gated PR) only runs the build job's non-`main`-gated steps
+# (install + `pnpm build:play` + the site build), since lint/typecheck/test/
+# product build/play-through/deploy are all gated on
+# `github.ref == 'refs/heads/main'`. Re-measure with
+# `gh api repos/mcp-tool-shop-org/mcp-arcade-cabinets/actions/runs/<id>/jobs`
+# rather than trusting this comment to stay current.
 name: Site
 
 on:
@@ -19,7 +30,6 @@ on:
       - '.gitignore'
       - '.github/workflows/pages.yml'
   pull_request:
-    branches: [main]
     paths:
       - 'site/**'
       - 'apps/**'

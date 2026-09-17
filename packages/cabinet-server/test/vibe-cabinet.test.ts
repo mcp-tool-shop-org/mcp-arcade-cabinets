@@ -352,6 +352,30 @@ describe('the boundary', () => {
     );
   });
 
+  it('ask type-checks all four required fields, notes with the rest', () => {
+    const seen: number[] = [];
+    const host: VibeHost = {
+      view: () => 'product a thing',
+      product: () => 'set',
+      ask: (r) => (seen.push(r.notes.length), { kind: 'queued' as const }),
+      react: () => 'waiting',
+      recent: () => [],
+    };
+    const cab = createVibeCabinet(host);
+    const good = { ask: 'make it sing', code: 'echo hi', title: 'a song', notes: 'one\ntwo' };
+    // A non-string notes used to fall through splitNotes to an empty list and
+    // queue as though the caller had sent none, while the same refusal
+    // already named notes for its three siblings.
+    for (const bad of [42, null, ['one', 'two'], { one: 'two' }, undefined]) {
+      const r = cab.call('ask', { ...good, notes: bad });
+      expect(r.isError, String(bad)).toBe(true);
+      expect(r.content[0]!.text).toBe('ask wants the words, the code, a title and the notes');
+    }
+    expect(seen, 'nothing reached the host').toEqual([]);
+    expect(cab.call('ask', good).content[0]!.text).toBe('the next request is queued');
+    expect(seen).toEqual([2]);
+  });
+
   it('notes are one field split on lines, and nothing is trimmed away', () => {
     expect(splitNotes('one\n\n  two  \nthree')).toEqual(['one', 'two', 'three']);
     expect(splitNotes('one\ntwo\nthree\nfour')).toHaveLength(4);

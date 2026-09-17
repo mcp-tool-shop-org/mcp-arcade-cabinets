@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  askIsBound,
   buildModel,
   codeLines,
   DEFAULT_CORPUS,
@@ -57,6 +58,40 @@ describe('the ported corpus', () => {
     const titled = JSON.parse(JSON.stringify(rest)) as typeof rest;
     titled.bash![2]!.ask = 'can we have {title} again';
     expect(() => loadCorpus(titled)).toThrow('patterns/corpus/bash.json: 2.ask');
+  });
+
+  // An ask written against one story level's premise is a request only
+  // inside that level. Untagged, it was drawn into any in-band level of its
+  // stack: the endless ladder starts at the band those asks live in, so an
+  // app for lost socks opened by asking for ducks.
+  it('halts on a story ask that does not say which level it is for', () => {
+    const rest = Object.fromEntries(
+      CORPUS_STACKS.map((s) => [s, DEFAULT_CORPUS.byStack[s]!.map((x) => ({ ...x }))]),
+    ) as Record<string, Record<string, unknown>[]>;
+
+    const loose = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    loose.bash![3]!.ask = 'reverse the line of waiting ducks';
+    delete loose.bash![3]!.for;
+    expect(() => loadCorpus(loose)).toThrow('patterns/corpus/bash.json: 3.ask');
+
+    // The same ask, now saying whose story it belongs to, loads.
+    const bound = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    bound.bash![3]!.ask = 'reverse the line of waiting ducks';
+    bound.bash![3]!.for = 'duck-rides';
+    expect(loadCorpus(bound).byStack.bash![3]!.for).toBe('duck-rides');
+
+    // And an empty tag is no tag at all.
+    const blank = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    blank.bash![4]!.for = '  ';
+    expect(() => loadCorpus(blank)).toThrow('patterns/corpus/bash.json: 4.for');
+  });
+
+  it('flags a story ask and leaves an ordinary one alone', () => {
+    expect(askIsBound('split one bill among five ducks')).toBe(true);
+    expect(askIsBound('keep only the socks with no partner')).toBe(true);
+    expect(askIsBound('use unknown if the sock has no owner')).toBe(true);
+    expect(askIsBound('add two numbers and show the answer.')).toBe(false);
+    expect(askIsBound('let {product} announce it is here.')).toBe(false);
   });
 
   it('keeps the ask a snippet carries, and leaves the rest without one', () => {

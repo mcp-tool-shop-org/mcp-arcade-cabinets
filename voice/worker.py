@@ -30,15 +30,26 @@ here sees a fact; the worker never sees the tape, only the line.
 
 Hardened on Grok's slice-4 review: a bearer token on the hook, a cap on the
 cache (oldest takes evicted), no rig path default for the weights, and a
-take served only with a passed receipt beside it.
+take served only with a passed receipt beside it. Hardened again on the
+wave-3 pass: the bearer is compared in constant time, a take id must be the
+twenty hex characters `line_id` mints, and the accept path is bounded (a
+handler timeout and a cap on the sockets in flight), because a thread is
+spawned and the request line parsed before the bearer gate runs — the gate
+does not protect the accept path.
+
+Tests: `python -m unittest discover -s voice/tests -t voice/tests` from the
+repo root. They stand the worker up on a loopback port with a stub voice, so
+no weights, no GPU and no model download are needed.
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -50,7 +61,39 @@ import numpy as np
 import soundfile as sf
 
 HERE = Path(__file__).resolve().parent
-CAST_HINT = 'The Whisperer, the Menu, the Doorman. A tools list, a menu, a plate.'
+PERSONAS = HERE.parent / 'packages' / 'cabinet-server' / 'personas.json'
+# The cast, when the persona sheets cannot be read (a worker copied out of
+# the repo). Kept only as the floor; the sheets are the source of truth.
+CAST_FALLBACK = ('whisperer', 'menu', 'doorman', 'archivist')
+# A take id is exactly what line_id() mints: twenty lowercase hex characters.
+# `str.isalnum()` was Unicode-wide and admitted fullwidth digits, superscripts
+# and non-Latin letters — no traversal, but it did not describe the set.
+TAKE_ID = re.compile(r'[0-9a-f]{20}')
+
+
+def cast_kinds(path: Path = PERSONAS) -> tuple[str, ...]:
+    """The boss kinds, read from the persona sheets the cabinet ships.
+
+    Hardcoding the list let it fall out of step: the Archivist shipped in
+    personas.json and never reached the hint, so its name was the one the
+    ASR was most likely to misspell and the receipt most likely to refuse.
+    """
+    try:
+        raw = json.loads(path.read_text(encoding='utf-8'))
+        kinds = tuple(k for k in raw['boss'] if isinstance(k, str) and k.isascii() and k.isalpha())
+    except (OSError, ValueError, KeyError, TypeError):
+        kinds = ()
+    return kinds or CAST_FALLBACK
+
+
+def cast_hint(kinds: tuple[str, ...] | None = None) -> str:
+    """The cast's proper nouns as one vocabulary hint for the ASR."""
+    names = [k[:1].upper() + k[1:] for k in (kinds if kinds is not None else cast_kinds())]
+    listed = ', '.join(['The ' + names[0]] + ['the ' + n for n in names[1:]]) if names else ''
+    return f'{listed}. A tools list, a menu, a plate.'
+
+
+CAST_HINT = cast_hint()
 
 
 def _cuda_dirs():
@@ -239,9 +282,22 @@ STATS = {'spoken': 0, 'cached': 0, 'refused': 0, 'started': time.time()}
 MAX_SPEAK_BODY = 4096
 MAX_KIND = 32
 MAX_PRESET = 32
+# Seconds a connection may sit without a complete request before the handler
+# gives up on it.
+CONN_TIMEOUT_S = 10
+# Sockets in flight at once. The whole cabinet is one caller a beat; this is
+# generous for that and finite for anyone else.
+MAX_CONNS = 32
 
 
 class Handler(BaseHTTPRequestHandler):
+    # A thread is spawned and the request line parsed before _allowed() runs,
+    # so a client that opens a socket and says nothing is unauthenticated by
+    # construction. Bound the wait, and stay on HTTP/1.0 (said out loud, not
+    # left to the base class) so no connection is kept alive after its answer.
+    timeout = CONN_TIMEOUT_S
+    protocol_version = 'HTTP/1.0'
+
     def log_message(self, fmt, *args):  # quiet
         return
 
@@ -254,11 +310,17 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def _allowed(self) -> bool:
-        """With VOICE_TOKEN set, /speak and /audio need the bearer; /health never does."""
+        """With VOICE_TOKEN set, /speak and /audio need the bearer; /health never does.
+
+        Constant-time: a short-circuiting `==` leaks a signal proportional to
+        the matching prefix, and the only configuration where the token is
+        mandatory is the one where the worker binds beyond loopback and that
+        signal is remotely observable.
+        """
         if TOKEN is None:
             return True
         got = self.headers.get('authorization', '')
-        return got == f'Bearer {TOKEN}'
+        return hmac.compare_digest(got.encode('utf-8'), f'Bearer {TOKEN}'.encode('utf-8'))
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -282,7 +344,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self._allowed():
                 return self._json(401, {'error': 'a bearer token is required'})
             lid = path[len('/audio/'):-4]
-            if not lid.isalnum():
+            if not TAKE_ID.fullmatch(lid):
                 return self._json(404, {'error': 'no such take'})
             wav = VOICE.cache / f'{lid}.wav'
             rec = VOICE.cache / f'{lid}.receipt.json'
@@ -363,6 +425,42 @@ class Handler(BaseHTTPRequestHandler):
         return self._json(200, out)
 
 
+class Server(ThreadingHTTPServer):
+    """ThreadingHTTPServer with a ceiling on the sockets in flight.
+
+    The bearer gate runs inside the handler, after a thread has been spawned
+    and the request line read, so it cannot protect the accept path: bound
+    the accept path itself. Over the cap a connection is closed at once
+    rather than queued, which is the same answer a busy worker would give and
+    costs no thread. Threads are daemons so a shutdown never waits on one.
+    """
+
+    daemon_threads = True
+    max_conns = MAX_CONNS
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.slots = threading.BoundedSemaphore(self.max_conns)
+        self.refused = 0
+
+    def process_request(self, request, client_address):
+        if not self.slots.acquire(blocking=False):
+            self.refused += 1
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except BaseException:
+            self.slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self.slots.release()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--host', default=os.environ.get('VOICE_HOST', '127.0.0.1'))
@@ -390,7 +488,7 @@ def main() -> int:
         f'ready in {time.time() - t0:.1f}s, http://{args.host}:{args.port}'
         f'{" (bearer token required)" if TOKEN else ""}, cache {VOICE.cache_takes} takes\n'
     )
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server = Server((args.host, args.port), Handler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

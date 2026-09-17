@@ -59,6 +59,7 @@ import {
   mountVibeTyper,
   probeSeatName,
   readVibePrefs,
+  SEED_MAX,
   writeVibePrefs,
   STACK_WORDS,
 } from './vibe-typer';
@@ -773,7 +774,14 @@ export function vibeMenu(wrap: HTMLElement) {
   const start = () => {
     seatLook.abort();
     const runs = (prefs.runs ?? 0) + 1;
-    const seed = seedFrom(seedBox.value, prefs.last ?? 1, runs);
+    // One truncation, before both uses. The box is played from the full text
+    // and stored cut to twelve characters, so a longer seed phrase played one
+    // run and came back as a different one: `hash(full text)` is not
+    // `hash(first twelve)`. What is played, what is stored and what the box
+    // shows are now the same string.
+    const raw = seedBox.value.trim().slice(0, SEED_MAX);
+    seedBox.value = raw;
+    const seed = seedFrom(raw, prefs.last ?? 1, runs);
     const name = cleanName(agent.value) || VIBE.cabinet.agentName;
     const endless = picked === 'endless';
     writeVibePrefs({
@@ -786,7 +794,7 @@ export function vibeMenu(wrap: HTMLElement) {
       font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
       music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC,
       muted: sound.value === 'off' ? 'on' : 'off',
-      seed: seedBox.value.trim().slice(0, 12),
+      seed: raw,
     });
     mountVibeTyper(app, {
       tier: Number(tier.value) as Tier,

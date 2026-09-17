@@ -100,6 +100,7 @@
     "code": "String[] colors = {\"red\", \"green\", \"blue\"};\nfor (String color : colors) {\n    System.out.println(color);\n}\nSystem.out.println(\"Done\");",
     "notes": ["Iterates over a string array with an enhanced for loop and prints each element."],
     "topics": ["arrays", "enhanced-for", "iteration"],
+    "for": "lost-sock-platform",
     "ask": "list every lost sock by color"
   },
   {
@@ -133,6 +134,7 @@
     "code": "List<String> names = List.of(\"Alice\", \"Bob\", \"Charlie\", \"Dave\");\nList<String> short_names = new ArrayList<>();\nfor (String name : names) {\n    if (name.length() <= 4) {\n        short_names.add(name);\n    }\n}\nfor (String name : short_names) {\n    System.out.println(name);\n}",
     "notes": ["Filters a list of names to keep only those with four or fewer characters."],
     "topics": ["list", "filtering", "enhanced-for", "conditionals"],
+    "for": "lost-sock-platform",
     "ask": "keep only the socks with no partner"
   },
   {
@@ -153,6 +155,7 @@
     "code": "Map<String, Integer> scores = new HashMap<>();\nscores.put(\"Alice\", 95);\nscores.put(\"Bob\", 87);\nscores.put(\"Charlie\", 92);\nfor (Map.Entry<String, Integer> entry : scores.entrySet()) {\n    String msg = entry.getKey() + \": \" + entry.getValue();\n    System.out.println(msg);\n}",
     "notes": ["Populates a HashMap and iterates its entry set to print each key-value pair."],
     "topics": ["map", "hashmap", "entry-set", "generics"],
+    "for": "lost-sock-platform",
     "ask": "pair every sock with its current location"
   },
   {
@@ -186,6 +189,7 @@
       ":: is a method reference, a shorthand for lambdas."
     ],
     "topics": ["Optional", "null-safety", "functional"],
+    "for": "lost-sock-platform",
     "ask": "use unknown if the sock has no owner"
   },
   {

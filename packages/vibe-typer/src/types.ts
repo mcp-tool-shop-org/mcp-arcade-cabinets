@@ -29,6 +29,34 @@ export interface Snippet {
    * A seated model writes one for every request it sends (G28 amended).
    */
   ask?: string;
+  /**
+   * The level id whose premise this snippet's `ask` was written against.
+   * Present only on a snippet whose ask names something that belongs to one
+   * story — a duck, a sandwich, a sock, the cat — or leans on a pronoun that
+   * story supplies. The planner uses such an ask only inside that level; the
+   * template pool plays everywhere else, so the request always matches the
+   * product on screen. A snippet a seat writes never carries one: a seated
+   * request is written for the level in hand.
+   */
+  for?: string;
+}
+
+/**
+ * A request a seat wrote, tagged with the level it was written for.
+ *
+ * The seat reads the next level with `endlessPeek` — its stack, its band,
+ * its product — and writes against that. The buffer used to be untagged, so
+ * a surplus left over from one level was typed in the next, which draws a
+ * fresh random stack: the bed, the palette and the device frame all say one
+ * language while the code and the ask are another. The tag is what lets the
+ * planner drop such a request instead of playing it.
+ */
+export interface FedSnippet {
+  snippet: Snippet;
+  /** The endless level index this request was gated for. */
+  levelIndex: number;
+  /** The stack it was gated against, which is the peeked level's stack. */
+  stack: Stack;
 }
 
 export interface Creep {

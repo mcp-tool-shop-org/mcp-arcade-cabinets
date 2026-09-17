@@ -28,7 +28,9 @@ import { createCabinetServer, listenFrom } from '../../launcher/src/serve';
 function rawGet(port: number, line: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const socket = connect(port, '127.0.0.1', () => {
-      socket.write(`GET ${line} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n`);
+      // The Host carries the port, because that is what a browser sends and
+      // because the server checks it before it routes anything.
+      socket.write(`GET ${line} HTTP/1.1\r\nHost: 127.0.0.1:${port}\r\nConnection: close\r\n\r\n`);
     });
     const chunks: Buffer[] = [];
     socket.on('data', (c: Buffer) => chunks.push(c));

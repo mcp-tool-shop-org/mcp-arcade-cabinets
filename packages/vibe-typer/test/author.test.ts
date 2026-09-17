@@ -3,7 +3,7 @@
 // met (a code fence, a preamble, an object keyed by id, an array of arrays),
 // so the parser is held against the mess it will really be handed.
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -684,5 +684,30 @@ describe('settleDrop', () => {
     expect(settleDrop({ atFloor: true, why: 'does not sound like that character' })).toBe('floor');
     expect(settleDrop({ why: 'does not sound like that character' })).toBe('drop');
     expect(settleDrop({})).toBe('drop');
+  });
+});
+
+// A text scanner — ripgrep, grep, the identity scan CLAUDE.md requires before
+// every push, any secret scan — classifies a file with a NUL byte in it as
+// binary and skips its contents. `author.mjs` carried two, used as composite
+// key separators inside template literals, which took its hundred and
+// fifteen kilobytes out of every such scan in silence. A separator can be
+// written as an escape and read the same.
+describe('the scripts are text', () => {
+  const DIR = path.resolve(__dirname, '..', 'scripts');
+
+  it('carries no byte that makes a text scanner skip the file', () => {
+    for (const name of readdirSync(DIR)) {
+      if (!name.endsWith('.mjs')) continue;
+      const bytes = readFileSync(path.join(DIR, name));
+      expect(bytes.includes(0), `${name} carries a NUL byte`).toBe(false);
+    }
+  });
+
+  it('still separates the composite key it was separating', () => {
+    const source = readFileSync(path.join(DIR, 'author.mjs'), 'utf8');
+    expect(source).toContain('\\u0000');
+    // Two halves of the same key: the write and the read agree.
+    expect(source.split('\\u0000').length - 1).toBe(2);
   });
 });

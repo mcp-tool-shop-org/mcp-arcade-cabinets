@@ -28,13 +28,15 @@ about:
   icon: https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/icon.png
 source:
   project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
-  commit: cb019fec44dde5f508afefbab43135c8b86b2b2f
+  commit: f54f93614b08e162a2c597b6c9c359c1e93fd574
 run:
   # The Catalog cabinet is sealed: the voice worker is a host GPU stack no Catalog
   # user runs, and without one the cabinet says the voice is silent and plays on.
   # The voice route (VOICE_URL, VOICE_TOKEN) is documented in the repo for a local build.
   # Local image with a host worker: VOICE_URL=http://host.docker.internal:7788
   # Optional operator tapes: mount beside /app/tapes, never over it. Empty = baked twenty.
+  # The overlay is this listing's cabinet only. The image also carries the typing
+  # cabinet (CABINET=vibe), which has no menu to merge into and does not read it.
   volumes:
     - '{{mcp-arcade-cabinets.tapes}}:/tapes-user:ro'
   disableNetwork: true

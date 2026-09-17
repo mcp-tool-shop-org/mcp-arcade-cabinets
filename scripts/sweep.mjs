@@ -4,64 +4,14 @@
 // revealed of lies present. The tier is forced by rewriting the tape header
 // the way the band test does; rows and facts are untouched. A development
 // tool for tuning the pattern data; the band test is the andon.
-import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { build } from 'esbuild';
+
+import { die, isMain, parseArgv, runMain } from './lib/cli.mjs';
+import { bundleModule } from './lib/bundle.mjs';
 
 const USAGE = 'usage: pnpm sweep [--climb 0|1]';
 const FLAGS = new Set(['climb']);
-
-function isMain() {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  const self = fileURLToPath(import.meta.url);
-  try {
-    if (path.resolve(entry).toLowerCase() === self.toLowerCase()) return true;
-  } catch {
-    /* ignore */
-  }
-  return path.basename(entry).toLowerCase() === path.basename(self).toLowerCase();
-}
-
-function die(msg, code = 2) {
-  console.error(msg);
-  process.exit(code);
-}
-
-function parseArgv(argv, known) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const a = argv[i];
-    if (a === '--help' || a === '-h') {
-      flags.help = true;
-      continue;
-    }
-    if (a.startsWith('--')) {
-      let key;
-      let val;
-      const eq = a.indexOf('=');
-      if (eq !== -1) {
-        key = a.slice(2, eq);
-        val = a.slice(eq + 1);
-      } else {
-        key = a.slice(2);
-        const next = argv[i + 1];
-        if (next === undefined || String(next).startsWith('-')) {
-          die(`missing value for --${key}\n${USAGE}`);
-        }
-        val = next;
-        i += 1;
-      }
-      if (!known.has(key)) die(`unknown flag --${key}\n${USAGE}`);
-      flags[key] = val;
-    } else {
-      positional.push(a);
-    }
-  }
-  return { positional, flags };
-}
 
 /** Scene win (`ended` null) prints `clear`, never the string `null`. */
 export function endLabel(ended) {
@@ -84,7 +34,7 @@ export function parseTapeFile(file, name) {
 }
 
 async function main() {
-  const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS);
+  const { positional, flags } = parseArgv(process.argv.slice(2), FLAGS, { usage: USAGE });
   if (flags.help) {
     console.log(USAGE);
     process.exit(0);
@@ -99,27 +49,18 @@ async function main() {
 
   const out = path.resolve('film');
   mkdirSync(out, { recursive: true });
-  async function bundle(contents, file) {
-    const r = await build({
-      stdin: { contents, resolveDir: process.cwd(), loader: 'ts' },
-      bundle: true,
-      platform: 'node',
-      format: 'esm',
-      write: false,
-      logLevel: 'warning',
-    });
-    const p = path.resolve(out, file);
-    writeFileSync(p, r.outputFiles[0].text);
-    return import(pathToFileURL(p).href);
-  }
-  const g = await bundle(
-    "export { playTape } from './packages/ghost-on-the-menu/src/play.ts';",
-    '.sweep.play.mjs',
-  );
-  const { loadTape } = await bundle(
-    "export { loadTape } from './packages/tape-core/src/index.ts';",
-    '.sweep.tape.mjs',
-  );
+  const g = await bundleModule({
+    contents: "export { playTape } from './packages/ghost-on-the-menu/src/play.ts';",
+    outDir: out,
+    outFile: '.sweep.play.mjs',
+    what: 'the cabinet',
+  });
+  const { loadTape } = await bundleModule({
+    contents: "export { loadTape } from './packages/tape-core/src/index.ts';",
+    outDir: out,
+    outFile: '.sweep.tape.mjs',
+    what: 'tape-core',
+  });
 
   const HEADERS = [
     { target_kind: 'fixture', container: null, seat: null },
@@ -214,6 +155,6 @@ async function main() {
   }
 }
 
-if (isMain()) {
-  await main();
+if (isMain(import.meta.url)) {
+  await runMain(main);
 }
