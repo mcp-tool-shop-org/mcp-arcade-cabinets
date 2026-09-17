@@ -44,9 +44,16 @@ const NAGS_OFF: Patterns = {
   levels: { ...DEFAULT_PATTERNS.levels, nagEvery: { min: 1e9, max: 1e9 } },
 };
 
-/** The run with the words taken out: everything a check-in may not move. */
+/**
+ * The run with the words taken out: everything a check-in may not move.
+ *
+ * `chatCount` goes with the chat. It is the count of lines said, including
+ * the ones off the window, so a run with check-ins in it says more of them by
+ * definition — and the claim here has always been that a check-in moves no
+ * valuation, no vibes, no streak and no plan, never that it says nothing.
+ */
 function bones(report: RunReport): string {
-  return JSON.stringify({ ...report.state, chat: [], events: [] });
+  return JSON.stringify({ ...report.state, chat: [], chatCount: 0, events: [] });
 }
 
 function everyLevel(): number[] {

@@ -129,6 +129,32 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
       if (lineFault(reaction) !== null) fail(file, key('reaction'));
       if (askIsBound(reaction) && boundTo === undefined) fail(file, key('reaction'));
     }
+    // The creep this snippet carries in its own words: the extra line and
+    // the "oh also" that describes it, written together. Without one the
+    // creep beat is two unrelated draws — a row lifted out of some other
+    // snippet in the band and an ask drawn blind from the pool — so the
+    // follow-up request and the code the player types about it are about
+    // nothing in particular. The ask goes through the gate every authored
+    // line goes through, verbatim as the ask row above; the line goes
+    // through the code rules the `code` row goes through, because it IS a
+    // code line the player will type.
+    const creepRaw = rec.creep;
+    let creep: { line: string; ask: string } | undefined;
+    if (creepRaw !== undefined) {
+      if (typeof creepRaw !== 'object' || creepRaw === null || Array.isArray(creepRaw)) {
+        fail(file, key('creep'));
+      }
+      const creepRec = creepRaw as Record<string, unknown>;
+      const line = creepRec.line;
+      if (typeof line !== 'string' || line.trim() === '') fail(file, key('creep.line'));
+      if (/[^\x20-\x7e]/.test(line as string)) fail(file, key('creep.line'));
+      const creepAsk = creepRec.ask;
+      if (typeof creepAsk !== 'string') fail(file, key('creep.ask'));
+      if ((creepAsk as string).includes('{title}')) fail(file, key('creep.ask'));
+      if (lineFault(creepAsk as string) !== null) fail(file, key('creep.ask'));
+      if (askIsBound(creepAsk as string) && boundTo === undefined) fail(file, key('creep.ask'));
+      creep = { line: line as string, ask: creepAsk as string };
+    }
     return {
       id,
       stack,
@@ -139,6 +165,7 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
       topics: topics as string[],
       ...(typeof ask === 'string' ? { ask } : {}),
       ...(typeof reaction === 'string' ? { reaction } : {}),
+      ...(creep === undefined ? {} : { creep }),
       ...(typeof boundTo === 'string' ? { for: boundTo } : {}),
     };
   });
@@ -209,7 +236,20 @@ export function inBand(corpus: Corpus, stack: Stack, min: Band, max: Band): Snip
   return list.filter((s) => s.band >= min && s.band <= max);
 }
 
-/** How many of a snippet's adjacent pairs are pairs the player fumbles. */
+/**
+ * How much one snippet's weight may grow from the player's weak pairs. // Director
+ *
+ * The sum runs over every occurrence of a weak pair in the code, so a long
+ * snippet full of one fumbled pair could reach a weight tens of times the
+ * pool's, the planner converged on the same handful, and a practice bias
+ * turned into repetition. The bias is a lean, not a lock.
+ */
+export const WEAK_SNIPPET_CAP = 24;
+
+/**
+ * How many of a snippet's adjacent pairs are pairs the player fumbles,
+ * capped so no one snippet can run away from the pool.
+ */
 export function weakWeight(snippet: Snippet, weak: Record<string, number>): number {
   let hits = 0;
   const code = snippet.code;
@@ -217,8 +257,34 @@ export function weakWeight(snippet: Snippet, weak: Record<string, number>): numb
     const pair = code.slice(i - 1, i + 1);
     const w = weak[pair];
     if (w !== undefined && w > 0) hits += w;
+    if (hits >= WEAK_SNIPPET_CAP) return WEAK_SNIPPET_CAP;
   }
   return hits;
+}
+
+/**
+ * A short, stable name for exactly this corpus.
+ *
+ * `withIntegration` rebuilds the character trigram model over the seasoned
+ * corpus, so every snippet's surprisal — and therefore its value, the
+ * valuation, the milestones and any comparison against this browser's own
+ * past (G8, G23) — depends on which tape files happen to be on disk. The
+ * same bash level scores differently on a rig with fixtures than on Pages
+ * without them, which makes a stored best from one corpus a meaningless
+ * comparison for a run on another. A caller that keeps a best stores this
+ * beside it and compares only within the same fingerprint.
+ */
+export function corpusFingerprint(corpus: Corpus): string {
+  let h = 2166136261;
+  for (const snippet of corpus.snippets) {
+    for (let i = 0; i < snippet.id.length; i++) {
+      h ^= snippet.id.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    h ^= snippet.code.length;
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(36);
 }
 
 /** A tape's header and its tool names, the only thing the cabinet reads (G30). */

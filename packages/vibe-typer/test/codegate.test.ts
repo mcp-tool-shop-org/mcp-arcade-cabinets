@@ -14,11 +14,13 @@ import {
   MAX_COLS,
   MAX_LINES,
   MAX_TOLERANCE,
+  reasonText,
   VALUE_TOLERANCE,
   type CodeGateCtx,
   type CodeGateReason,
 } from '../src/codegate';
 import { DEFAULT_CORPUS } from '../src/corpus';
+import { britishHit } from '../src/spelling';
 import { value as valueOf } from '../src/difficulty';
 import { CORPUS_STACKS, DEFAULT_PATTERNS, FORM_FORBIDDEN, VOICE_FORBIDDEN } from '../src/patterns';
 import type { Band, Stack } from '../src/types';
@@ -428,5 +430,82 @@ describe('the parts the gate is built from', () => {
     expect(a).toBe(b);
     expect(a!.min).toBeLessThanOrEqual(a!.max);
     expect(bandRange(DEFAULT_CORPUS, SET, 'integration', 1, 7)).toBeNull();
+  });
+});
+
+// ——— what a refusal says ————————————————————————————————————————————————
+//
+// The reason was a machine word and the detail was a bare measurement: `13`
+// for a block of thirteen lines, `94` for a column count, `under` for a value
+// outside the band. A seat, or the operator reading a container refusal,
+// cannot correct the next attempt from a number with no limit beside it — and
+// this gate is the one mechanical thing standing between a model's answer and
+// the field.
+
+describe('the refusal says what it wants', () => {
+  it('puts the bound beside the measurement', () => {
+    const tall = gateCode(
+      candidate({ code: Array.from({ length: MAX_LINES + 1 }, (_, i) => `a${i} = 1`).join('\n') }),
+      ctx('python', 1),
+    );
+    expect(reasonOf(tall)).toBe('too-many-lines');
+    if (!tall.ok) expect(tall.detail).toBe(`${MAX_LINES + 1} of ${MAX_LINES}`);
+
+    const wide = gateCode(
+      candidate({ code: `total = ${'1 + '.repeat(MAX_COLS).trim()}1` }),
+      ctx('python', 1),
+    );
+    expect(reasonOf(wide)).toBe('too-wide');
+    if (!wide.ok) expect(wide.detail).toContain(` of ${MAX_COLS}`);
+  });
+
+  it('says which side of the band a value missed, in words', () => {
+    const over = gateCode(
+      candidate({ code: 'import functools\nq = functools.reduce(lambda a, b: a ^ b, zs, 0)' }),
+      ctx('python', 1),
+    );
+    if (!over.ok && over.reason === 'value-out-of-band') {
+      expect(over.detail).toMatch(/floor|ceiling|corpus|number/);
+    }
+  });
+
+  // One rendering, so the container tool, the sit runner and any future
+  // surface all say the same thing instead of each inventing a phrasing.
+  it('renders one plain sentence per reason, with the constant named', () => {
+    const good = gateCode(candidate(), ctx('python', 1));
+    expect(good.ok).toBe(true);
+    expect(reasonText(good)).toBe('the request is good');
+
+    const tall = gateCode(
+      candidate({ code: Array.from({ length: MAX_LINES + 1 }, (_, i) => `a${i} = 1`).join('\n') }),
+      ctx('python', 1),
+    );
+    const said = reasonText(tall);
+    expect(said).toContain(String(MAX_LINES));
+    expect(said.trim()).toBe(said);
+    expect(said[0]).toBe(said[0]!.toLowerCase());
+
+    // Every reason renders something, and nothing renders empty.
+    const reasons: CodeGateReason[] = [
+      'empty',
+      'not-ascii',
+      'tab',
+      'too-many-lines',
+      'too-wide',
+      'unbalanced',
+      'wrong-language',
+      'barred-word',
+      'names-a-model',
+      'value-out-of-band',
+      'bad-ask',
+      'bad-title',
+      'bad-notes',
+      'bad-product',
+    ];
+    for (const reason of reasons) {
+      const text = reasonText({ ok: false, reason });
+      expect(text.length, reason).toBeGreaterThan(8);
+      expect(britishHit(text), reason).toBeNull();
+    }
   });
 });

@@ -211,6 +211,31 @@ describe('the gate halts', () => {
     expect(() => loadPatterns(gone)).toThrow('patterns/levels.json: syncShare');
   });
 
+  // The reading clock. Both numbers are the Director's and both are seconds
+  // of frame time, so both are range-checked here rather than read as a
+  // plausible value by a cabinet nobody can then say anything to.
+  it('halts on a reading clock that is missing or out of range', () => {
+    const gone = loose();
+    delete gone.levels!.pace;
+    expect(() => loadPatterns(gone)).toThrow('patterns/levels.json: pace');
+
+    const forever = loose();
+    forever.levels!.pace = { beatHold: 90, chatGap: 0.8 };
+    expect(() => loadPatterns(forever)).toThrow('patterns/levels.json: pace.beatHold');
+
+    const still = loose();
+    still.levels!.pace = { beatHold: 1.2, chatGap: 0 };
+    expect(() => loadPatterns(still)).toThrow('patterns/levels.json: pace.chatGap');
+  });
+
+  // The offer is a bounded window in the dispatch, and what bounds it is a
+  // number and not a flag.
+  it('halts on a missing copilot cooldown', () => {
+    const gone = loose();
+    delete gone.score!.copilotCooldown;
+    expect(() => loadPatterns(gone)).toThrow('patterns/score.json: copilotCooldown');
+  });
+
   it('halts on a level with no story and on one that yells', () => {
     const gone = loose();
     delete rowsOf(gone)[0]!.story;

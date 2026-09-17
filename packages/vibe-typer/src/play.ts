@@ -302,24 +302,38 @@ export function play(args: PlayArgs = {}): Transcript {
   let ticks = 0;
   let compactions = 0;
   let overrun = false;
+  // The stack running out is a state of the level, so it is caught while the
+  // run is live rather than read off the last plan at the end: an endless
+  // ladder that recycled on level three and not on level nine would have
+  // said nothing.
+  let recycled = state.plan.recycled === true;
   // The needle is kept, not just the fact of it: the chat is scanned from
   // where the last step left off and the FIRST hit is held, so a line that
   // landed early in a long run is still nameable at the end.
+  //
+  // Scanned by `seq` and not by array length, because the chat is a window
+  // now: past CHAT_CAP the oldest lines fall off, a length-based mark would
+  // point past the end, and every line after the first trim would go
+  // unscanned — in silence, which is the failure this whole block exists to
+  // refuse.
   let leak: Leak | null = firstLeak(state.chat);
   let leaked = leak !== null;
+  let lastSeq = state.chat.length > 0 ? state.chat[state.chat.length - 1]!.seq : -1;
   while (!state.over) {
     if (ticks >= MAX_TICKS) {
       overrun = true;
       break;
     }
     ticks += 1;
-    const before = state.chat.length;
     stepRun(state, bot(state), DT);
     for (const event of state.events) if (event.kind === 'compaction') compactions += 1;
-    const fresh = firstLeak(state.chat.slice(before));
+    if (state.plan.recycled === true) recycled = true;
+    const said = state.chat.filter((line) => line.seq > lastSeq);
+    if (said.length > 0) lastSeq = said[said.length - 1]!.seq;
+    const fresh = firstLeak(said);
     if (fresh) {
       leaked = true;
-      if (!leak) leak = { ...fresh, at: fresh.at + before };
+      if (!leak) leak = { ...fresh, at: said[fresh.at - 1]!.seq + 1 };
     }
   }
   const levels = state.levelIndex + 1;
@@ -350,6 +364,12 @@ export function play(args: PlayArgs = {}): Transcript {
     DEFAULT_PATTERNS.cabinet.name,
     `level ${state.plan.id} stack ${state.plan.stack} tier ${TIER_WORDS[tier]} bot ${spec.name} seed ${seed} endless ${endless ? 'yes' : 'no'}`,
     endName,
+    // `plan.recycled` was written, tested and read by nobody: the comment
+    // that justifies the flag says it is how "the stack ran out" reaches the
+    // shell and the transcript, and that half was never built. A player in a
+    // long endless run started seeing snippets they had already typed and
+    // was told nothing, which is the silence the flag was added to end.
+    ...(recycled ? ['the stack ran out and started again'] : []),
   ];
   const footer = [
     `valuation: ${Math.round(state.valuation)}`,

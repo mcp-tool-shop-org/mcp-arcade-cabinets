@@ -40,6 +40,13 @@ export interface Snippet {
    */
   reaction?: string;
   /**
+   * The creep this snippet carries in its own words, when it has one: the
+   * extra line and the "oh also" that describes it, written together. The
+   * planner prefers it over the band draw, and it honors the same `for`
+   * binding the ask does.
+   */
+  creep?: AuthoredCreep;
+  /**
    * The level id whose premise this snippet's `ask` — or its `reaction` —
    * was written against.
    * Present only on a snippet whose ask names something that belongs to one
@@ -74,6 +81,27 @@ export interface Creep {
   /** One more code line, appended to the request once the creep beat has passed. */
   line: string;
   /** The user's "oh also" ask, shown and voiced before the line is typeable (Q4.1). */
+  ask: string;
+}
+
+/**
+ * A creep a snippet carries in its own words: the extra line and the ask that
+ * describes it, written together.
+ *
+ * Without one the creep is two unrelated draws — a line lifted out of some
+ * other snippet in the band and an "oh also" drawn blind from the pool — so
+ * the follow-up request and the code the player types about it are about
+ * nothing in particular. This is the same closing slice 3 made for requests
+ * (`Snippet.ask`), on the one beat whose whole comedy is that the user is
+ * changing the job mid-build.
+ *
+ * `{product}` may stand in the ask and is the only hole, exactly as in `ask`
+ * and `reaction`. A creep that leans on a story level's premise uses the
+ * SAME `for` binding the ask uses — there is no second binding field — so it
+ * plays only inside that level.
+ */
+export interface AuthoredCreep {
+  line: string;
   ask: string;
 }
 
@@ -125,12 +153,60 @@ export interface RunInput {
   backspace?: boolean;
   enter?: boolean;
   tab?: boolean;
+  /**
+   * Throw the line away and start it again (the shell binds Escape). A
+   * courtesy, never a penalty: no hmm, no failed line, no streak reset. The
+   * only other way back from a line the player has made a mess of is one
+   * backspace per frame, and an abandoned line already costs the time it
+   * took to type.
+   */
+  clear?: boolean;
 }
+
+/**
+ * What kind of line this is. The beat that said it, put on the line, so
+ * every surface downstream labels the same line the same way.
+ *
+ * `state.beat` and the bracketing events are live-only and gone by the time
+ * anything reads the array back, so a verdict on the whole product, a
+ * reaction to one piece, an agent's typo line and a meeting aside all read
+ * as "agent, text" in the transcript, in the container's `view` and to an
+ * assistive reader. The vocabulary is the one the cabinet already authors a
+ * word for per beat, plus the four lines that are not beats of their own.
+ */
+export type ChatKind =
+  | 'ask'
+  | 'reply'
+  | 'meeting'
+  | 'creep'
+  | 'ship'
+  | 'reaction'
+  | 'review'
+  | 'compaction'
+  | 'hmm'
+  | 'nag'
+  | 'nagReply';
 
 export interface ChatLine {
   who: 'user' | 'agent';
   line: string;
   at: number;
+  /** What kind of line it is, from the beat that said it. */
+  kind: ChatKind;
+  /**
+   * Where this line sits in everything the run has said, counting from zero
+   * and never reused. `at` cannot order a frame that says four lines, and
+   * the window below drops the oldest entries, so this is the one number a
+   * consumer can page and re-sync from.
+   */
+  seq: number;
+  /**
+   * The frame-clock reading at which this line should be revealed. The sim
+   * owns the pace: lines said on one frame are spread `pace.chatGap` seconds
+   * apart, so the shell, the container's `view`, the transcript and a screen
+   * reader all pace the same reveal instead of each inventing a rule.
+   */
+  dueAt: number;
   /** A check-in while you type. It costs nothing and changes nothing (slice 3). */
   nag?: true;
 }
@@ -140,19 +216,46 @@ export interface BuiltPiece {
   size: number;
 }
 
+/**
+ * Why a line did not go out. `typo` is a character the player got wrong;
+ * `unfinished` is a line that is right so far and not done. The two used to
+ * be reported with the same word, so the player could not tell "you got a
+ * character wrong" from "you are not finished".
+ */
+export type LineFault = 'typo' | 'unfinished';
+
 export type Event =
   | { kind: 'key'; ok: boolean; pitch: number }
-  | { kind: 'line'; ok: boolean }
+  | { kind: 'line'; ok: boolean; why?: LineFault }
   | { kind: 'hmm' }
   | { kind: 'piece'; size: number }
   | { kind: 'ship'; nearMiss: boolean }
   | { kind: 'message'; who: 'user' | 'agent'; nag?: true }
-  | { kind: 'compaction' }
+  /**
+   * The bar emptied inside a listed level. `streak` and `hype` are what the
+   * compaction cost, the way `{kind:'piece', size}` carries what a ship
+   * gained, so the shell and the cue layer can answer the size of the loss
+   * instead of firing one generic shake over a five-times run.
+   */
+  | { kind: 'compaction'; streak: number; hype: number }
   | { kind: 'milestone'; name: string }
-  | { kind: 'copilot'; on: boolean }
+  /**
+   * `offered: false` is Tab pressed with no offer open — off the code beat,
+   * after the window expired, or in hardcore where the offer never comes.
+   * It used to be silence, which is the one refusal in this sim that said
+   * nothing at all.
+   */
+  | { kind: 'copilot'; on: boolean; offered?: false }
   | { kind: 'creep' }
   | { kind: 'sync'; on: boolean }
-  | { kind: 'over'; how: 'shipped' | 'context' | 'unplanned' };
+  /**
+   * `by` is what took the last of the bar: the player's own time (`drain`)
+   * or the sim's own message cost (`message`). A request whose cost crosses
+   * zero ends the run on the frame after it appeared, and the transcript
+   * and the standup have no business calling that the same thing as a bar
+   * the player drained over three minutes.
+   */
+  | { kind: 'over'; how: 'shipped' | 'context' | 'unplanned'; by?: 'drain' | 'message' };
 
 export interface RunState {
   plan: LevelPlan;
@@ -173,8 +276,16 @@ export interface RunState {
   valuation: number;
   hype: number;
   streak: number;
-  /** Null in hardcore (G26). `until` is a clock reading in seconds. */
-  copilot: { until: number; used: boolean } | null;
+  /**
+   * Null in hardcore (G26). `until` is a clock reading in seconds.
+   *
+   * There was a `used` flag here that nothing ever set, so the guard that
+   * read it was dead and every serialized run carried a field that could
+   * only ever be false. The offer is taken once and then closed by setting
+   * this to null; what keeps it from re-arming on the very next clean line
+   * is `score.json: copilotCooldown`, not a flag.
+   */
+  copilot: { until: number } | null;
   /**
    * The pieces the preview is drawn from, newest last, capped at
    * `BUILT_CAP`. A container session has no natural end, so the array a run
@@ -184,7 +295,16 @@ export interface RunState {
   built: BuiltPiece[];
   /** Every piece this run has shipped, including the ones off the window. */
   pieceCount: number;
+  /**
+   * What has been said, newest last, capped at `CHAT_CAP`. Like `built`,
+   * this is a window and not the whole history: four to six lines a request,
+   * four requests a level, for as long as an endless run or a container
+   * session lasts. `chatCount` is the count that never falls off, and every
+   * entry carries a `seq` so a consumer can tell a trim from a gap.
+   */
   chat: ChatLine[];
+  /** Every line this run has said, including the ones off the window. */
+  chatCount: number;
   clock: number;
   over: boolean;
   /**
@@ -193,6 +313,12 @@ export interface RunState {
    * never a product the player finished.
    */
   ended?: 'shipped' | 'context' | 'unplanned';
+  /**
+   * What took the last of the bar when `ended` is `context`: the player's
+   * own time, or the message the sim itself sent. Absent on every other
+   * ending.
+   */
+  endedBy?: 'drain' | 'message';
   /** Drained by the shell each frame; `stepRun` clears them at the top of a step. */
   events: Event[];
   /** Char share of the current request taken by Copilot; folded into the payout at ship. */
@@ -201,7 +327,14 @@ export interface RunState {
   creepPending: boolean;
   /** Snippet ids already used in this run; the planner never repeats one. */
   used: string[];
-  /** Weak bigrams the planner biases toward, carried across levels in endless. */
+  /**
+   * Weak bigrams the planner biases toward, carried across levels in endless.
+   *
+   * This is the one number in the package that comes back from the player's
+   * own browser, so `createRun` validates and bounds it the way every lever
+   * file is validated, and a clean line forgives the pairs it contains. A
+   * pair fumbled once is not weak forever.
+   */
   weakBigrams: Record<string, number>;
   /** Milestones already crossed, so a stinger fires once. */
   milestones: string[];

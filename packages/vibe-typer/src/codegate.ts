@@ -384,16 +384,23 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   if (code.includes('\t') || code.includes('\r')) return refuse('tab');
   const lines = code.split('\n');
   const live = lines.filter((line) => line.trim() !== '');
-  if (live.length > MAX_LINES) return refuse('too-many-lines', String(live.length));
+  // The bound goes beside the measurement. A seat, or the operator reading a
+  // container refusal, cannot correct the next attempt from a number with no
+  // limit next to it — and this gate is the one mechanical thing standing
+  // between a model's answer and the field, so its one surface may as well
+  // say what it wants.
+  if (live.length > MAX_LINES) return refuse('too-many-lines', `${live.length} of ${MAX_LINES}`);
   for (const line of lines) {
-    if (line.length > MAX_COLS) return refuse('too-wide', String(line.length));
+    if (line.length > MAX_COLS) return refuse('too-wide', `${line.length} of ${MAX_COLS}`);
   }
   if (!balanced(code, ctx.stack)) return refuse('unbalanced');
   const hints = LANGUAGE_HINTS[ctx.stack];
   if ((hints.needs ?? []).some((re) => !re.test(code))) {
     return refuse('wrong-language', 'missing what the language always has');
   }
-  if (!hints.must.some((re) => re.test(code))) return refuse('wrong-language', 'nothing matched');
+  if (!hints.must.some((re) => re.test(code))) {
+    return refuse('wrong-language', `nothing reads like ${ctx.stack}`);
+  }
   if (hints.mustNot.some((re) => re.test(code)))
     return refuse('wrong-language', 'another language');
   if (BARRED_IN_CODE.test(code)) return refuse('barred-word');
@@ -417,7 +424,12 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   if (!Number.isFinite(v)) return refuse('value-out-of-band', 'not a number');
   const low = range.min * (1 - ctx.tolerance);
   const high = range.max * (1 + ctx.tolerance);
-  if (v < low || v > high) return refuse('value-out-of-band', v < low ? 'under' : 'over');
+  if (v < low || v > high) {
+    return refuse(
+      'value-out-of-band',
+      v < low ? "worth less than the band's floor" : "worth more than the band's ceiling",
+    );
+  }
 
   // The chat gate, the existing one. `{product}` is the one hole the ask
   // may keep, because the level fills it; `{title}` cannot, because a
@@ -458,4 +470,50 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
     return { ok: true, snippet, product: seat.product };
   }
   return { ok: true, snippet };
+}
+
+/**
+ * One American-English sentence for a refusal, with the bound named.
+ *
+ * The reason is a machine word and the detail is a measurement, which is
+ * right for a log and useless to the seat, the sit runner or the operator
+ * reading a container refusal — each of whom was inventing its own phrasing
+ * for the same verdict. This is the one rendering, so every surface says the
+ * same thing. Digits are allowed here: a gate reason is not the screen.
+ *
+ * An accepted candidate has nothing to say, and says so.
+ */
+export function reasonText(result: CodeGateResult): string {
+  if (result.ok) return 'the request is good';
+  const detail = result.detail === undefined ? '' : ` (${result.detail})`;
+  switch (result.reason) {
+    case 'empty':
+      return 'there is no code in it';
+    case 'not-ascii':
+      return 'the code has a character the field cannot show; plain ascii only';
+    case 'tab':
+      return 'the code has a tab or a carriage return in it; spaces and newlines only';
+    case 'too-many-lines':
+      return `the code runs to more than ${MAX_LINES} lines${detail}`;
+    case 'too-wide':
+      return `a line is wider than ${MAX_COLS} columns${detail}`;
+    case 'unbalanced':
+      return 'a bracket or a quote in the code is never closed';
+    case 'wrong-language':
+      return `the code does not read like the language this level is in${detail}`;
+    case 'barred-word':
+      return 'the code uses a word the cabinet never says';
+    case 'names-a-model':
+      return 'the code names a model by name';
+    case 'value-out-of-band':
+      return `the request is outside the band, which the gate may widen by ${VALUE_TOLERANCE} at most${detail}`;
+    case 'bad-ask':
+      return `the ask cannot be said on the field${detail}`;
+    case 'bad-title':
+      return `the title cannot be said on the field${detail}`;
+    case 'bad-notes':
+      return `a note cannot be said on the field, and there may be ${MAX_NOTES} at most${detail}`;
+    case 'bad-product':
+      return `the product cannot be said on the field, and it may run to ${MAX_PRODUCT_WORDS} words at most${detail}`;
+  }
 }

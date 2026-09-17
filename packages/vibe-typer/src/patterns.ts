@@ -187,6 +187,26 @@ export interface EndlessDef {
   shipBonus: number;
 }
 
+/**
+ * How fast the chat comes at you. Both numbers are the Director's, tuned by
+ * ear the way the drains are, and both are seconds of frame time.
+ *
+ * `beatHold` is how long a transitional beat — the ask, the "oh also", the
+ * ship — stays on screen before the next line is the live target. It used to
+ * be one frame, about sixteen milliseconds, which is not reading time; the
+ * player had no authored moment to read the thing they were about to type.
+ * The bar holds still for it, the way it holds still for the meeting: the
+ * game gave the moment, so the game does not charge for it.
+ *
+ * `chatGap` is the least time between two lines appearing. A ship frame can
+ * say four lines at once and the frame after it says a fifth, and `at` — a
+ * clock reading — cannot separate them. `say` spaces them by this.
+ */
+export interface PaceSet {
+  beatHold: number;
+  chatGap: number;
+}
+
 export interface LevelsSet {
   levels: LevelDef[];
   /** Share of requests that carry a scope creep. */
@@ -197,6 +217,8 @@ export interface LevelsSet {
   weakBias: number;
   /** Seconds of frame time between two check-ins, drawn per nag (slice 3). */
   nagEvery: { min: number; max: number };
+  /** The reading clock: how long a beat holds, how far apart two lines land. */
+  pace: PaceSet;
   endless: EndlessDef;
 }
 
@@ -214,6 +236,15 @@ export interface ScoreSet {
   hypeSteps: HypeStep[];
   copilotStreak: number;
   copilotSeconds: number;
+  /**
+   * Seconds of frame time after an offer closes before another may open.
+   *
+   * The dispatch calls the offer a bounded window, and it was not one: the
+   * window re-armed on the very next clean line while the streak still sat
+   * over `copilotStreak`, so past the threshold it stood open on every line
+   * of the run. This is what bounds it.
+   */
+  copilotCooldown: number;
   copilotDiscount: number;
   milestones: Milestone[];
   hardcore: { hypeCap: number; shipMultiplier: number };
@@ -666,6 +697,19 @@ function loadLevels(raw: unknown): LevelsSet {
     max: asPositive(at(nagRaw, 'max', file, 'nagEvery.max'), file, 'nagEvery.max'),
   };
   if (nagEvery.max < nagEvery.min) fail(file, 'nagEvery.max');
+  const paceRaw = asRecord(req(obj, file, 'pace'), file, 'pace');
+  // Both are bounded above as well as below: a beat that holds for a minute
+  // and a chat that reveals one line an hour are levers that read as a hung
+  // cabinet, and this file is loaded before anything can say so.
+  const beatHold = asPositive(
+    at(paceRaw, 'beatHold', file, 'pace.beatHold'),
+    file,
+    'pace.beatHold',
+  );
+  if (beatHold > 10) fail(file, 'pace.beatHold');
+  const chatGap = asPositive(at(paceRaw, 'chatGap', file, 'pace.chatGap'), file, 'pace.chatGap');
+  if (chatGap > 10) fail(file, 'pace.chatGap');
+  const pace: PaceSet = { beatHold, chatGap };
   const endlessRaw = asRecord(req(obj, file, 'endless'), file, 'endless');
   const ekey = (k: string) => `endless.${k}`;
   const products = asString(
@@ -715,7 +759,7 @@ function loadLevels(raw: unknown): LevelsSet {
   };
   if (!(endless.drainGrow >= 1)) fail(file, ekey('drainGrow'));
   if (endless.shipBonus < 0) fail(file, ekey('shipBonus'));
-  return { levels, creepShare, syncShare, weakBias, nagEvery, endless };
+  return { levels, creepShare, syncShare, weakBias, nagEvery, pace, endless };
 }
 
 function loadScore(raw: unknown): ScoreSet {
@@ -776,6 +820,7 @@ function loadScore(raw: unknown): ScoreSet {
     hypeSteps,
     copilotStreak: asCount(req(obj, file, 'copilotStreak'), file, 'copilotStreak'),
     copilotSeconds: asPositive(req(obj, file, 'copilotSeconds'), file, 'copilotSeconds'),
+    copilotCooldown: asPositive(req(obj, file, 'copilotCooldown'), file, 'copilotCooldown'),
     copilotDiscount: asUnit(req(obj, file, 'copilotDiscount'), file, 'copilotDiscount'),
     milestones,
     hardcore,

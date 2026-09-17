@@ -214,6 +214,10 @@
     "min": 60,
     "max": 140
   },
+  "pace": {
+    "beatHold": 1.2,
+    "chatGap": 0.8
+  },
   "endless": {
     "startBand": 1,
     "bandEvery": 2,

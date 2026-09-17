@@ -5,7 +5,7 @@
 
 import { inBand, weakWeight, type Corpus } from './corpus';
 import { value as valueOf } from './difficulty';
-import type { LinePicker } from './lines';
+import { fill, type LinePicker } from './lines';
 import { CORPUS_STACKS, type LevelDef, type Patterns } from './patterns';
 import { mixSeed, seededRandom, weightedPick } from './seed';
 import type { Band, FedSnippet, LevelPlan, Request, Snippet, Stack, Tier } from './types';
@@ -190,6 +190,35 @@ function candidates(
     : { pool: [...all], recycled: all.length > 0 };
 }
 
+/**
+ * The creep for a request, in the snippet's own words when it has them.
+ *
+ * The creep beat's whole comedy is that the user is changing the job
+ * mid-build, and it was the one beat where the ask and the code came from
+ * unrelated draws: the line was lifted out of a randomly chosen OTHER
+ * snippet in the band and the "oh also" was drawn blind from the pool, so
+ * the follow-up request and the line the player typed about it had no
+ * relationship at all. This is the closing slice 3 made for requests
+ * (`Snippet.ask`), on the beat it was left open on.
+ *
+ * A snippet's own creep honors the same `for` binding its ask does — a creep
+ * that leans on one story's premise plays only in that level. A snippet
+ * without one falls through to the band draw and the template pool, which is
+ * the path this cabinet has always played.
+ *
+ * NOT closed here, and the lead's call: the request's own snippet has no
+ * spare row to lend. Every non-blank row of it is typed already, so a creep
+ * drawn from it would repeat a line the player just finished. That is why
+ * the fallback is still another snippet's row rather than this one's.
+ */
+function authoredCreep(snippet: Snippet, levelId: string): { line: string; ask: string } | null {
+  const own = snippet.creep;
+  if (!own) return null;
+  const bound = typeof snippet.for === 'string' && snippet.for !== '';
+  if (bound && snippet.for !== levelId) return null;
+  return { line: own.line, ask: own.ask };
+}
+
 /** A one-line addition from the same stack at or under the request's band. */
 function creepLine(corpus: Corpus, stack: Stack, at: Band, rng: () => number): string | null {
   const pool = inBand(corpus, stack, 1, at).filter(
@@ -282,8 +311,18 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
       value: valueOf(snippet, opts.corpus.model, opts.set.difficulty),
     };
     if (rng() < opts.set.levels.creepShare) {
-      const line = creepLine(opts.corpus, stack, snippet.band, rng);
-      if (line !== null) request.creep = { line, ask: opts.picker.creep() };
+      // The snippet's own creep first. It spends no draw from the band pool
+      // and none from the template bag, exactly as a snippet's own ask
+      // spends none from the template pool — so authoring a creep onto a
+      // snippet moves the stream for the requests after it, the same way
+      // authoring an ask onto one does, and the corpus carries none today.
+      const own = authoredCreep(snippet, def.id);
+      if (own) {
+        request.creep = { line: own.line, ask: fill(own.ask, product, snippet) };
+      } else {
+        const line = creepLine(opts.corpus, stack, snippet.band, rng);
+        if (line !== null) request.creep = { line, ask: opts.picker.creep() };
+      }
     }
     requests.push(request);
   }

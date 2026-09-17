@@ -8,6 +8,7 @@
   ],
   "copilotStreak": 6,
   "copilotSeconds": 8,
+  "copilotCooldown": 20,
   "copilotDiscount": 0.4,
   "milestones": [
     { "name": "seed", "at": 100 },

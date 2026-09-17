@@ -6,6 +6,8 @@ import {
   agentNameOf,
   codeOf,
   BUILT_CAP,
+  CHAT_CAP,
+  cleanWeak,
   createRun,
   feedProduct,
   feedReaction,
@@ -17,8 +19,11 @@ import {
   suppliedCount,
   suppliedProductOf,
   syncOf,
+  WEAK_PAIRS,
+  WEAK_PER_PAIR,
 } from '../src/sim';
-import { endlessPeek } from '../src/level';
+import { endlessPeek, planLevel } from '../src/level';
+import { LinePicker } from '../src/lines';
 import { DEFAULT_CORPUS, type Corpus } from '../src/corpus';
 import type { Event, RunInput, RunState, Tier } from '../src/types';
 import { makeBot, seatFeed } from './helpers';
@@ -31,9 +36,23 @@ function typeable(state: RunState): boolean {
   return state.beat === 'reply' || state.beat === 'code' || state.beat === 'sync';
 }
 
+/**
+ * Frames one transitional beat holds for, plus one. The ask, the "oh also",
+ * the reaction and the compaction each hold for `pace.beatHold` seconds of
+ * frame time now, not for one frame, so every helper that used to spend a
+ * single step on them spends this many.
+ */
+const HOLD_FRAMES = Math.ceil(DEFAULT_PATTERNS.levels.pace.beatHold / DT) + 1;
+
+/** Step until the held beat in hand has been read and the run has moved on. */
+function pass(state: RunState): void {
+  const beat = state.beat;
+  for (let i = 0; i < HOLD_FRAMES * 4 && !state.over && state.beat === beat; i++) step(state);
+}
+
 function toTyping(state: RunState): void {
   let guard = 0;
-  while (!state.over && !typeable(state) && guard < 16) {
+  while (!state.over && !typeable(state) && guard < HOLD_FRAMES * 8) {
     step(state);
     guard += 1;
   }
@@ -55,7 +74,7 @@ function kinds(events: readonly Event[]): string[] {
 }
 
 function shipRequest(state: RunState): void {
-  const guard = 400;
+  const guard = 4000;
   let n = 0;
   const index = state.requestIndex;
   while (!state.over && state.requestIndex === index && n < guard) {
@@ -75,7 +94,7 @@ function toShip(state: RunState): void {
   sendLine(state);
   for (let i = 0; i < lines; i++) sendLine(state);
   if (state.beat === 'creep') {
-    step(state);
+    pass(state);
     sendLine(state);
   }
 }
@@ -94,10 +113,13 @@ describe('the beats', () => {
     const state = createRun({ seed: 4, tier: 0, endless: false });
     const request = state.plan.requests[0]!;
     expect(state.beat).toBe('request');
-    expect(state.chat[0]).toMatchObject({ who: 'user', line: request.ask });
+    expect(state.chat[0]).toMatchObject({ who: 'user', line: request.ask, kind: 'ask', seq: 0 });
     expect(state.context).toBeCloseTo(1 - state.plan.messageCost, 10);
 
+    // The ask holds for the Director's reading time and not for one frame.
     step(state);
+    expect(state.beat).toBe('request');
+    pass(state);
     expect(state.beat).toBe('reply');
     expect(state.target).toBe(request.reply);
 
@@ -110,7 +132,7 @@ describe('the beats', () => {
     const lines = codeOf(state).length;
     for (let i = 0; i < lines; i++) sendLine(state);
     if (state.beat === 'creep') {
-      step(state);
+      pass(state);
       sendLine(state);
     }
     expect(state.beat).toBe('ship');
@@ -118,7 +140,7 @@ describe('the beats', () => {
     expect(state.valuation).toBeGreaterThan(0);
     expect(state.built[0]!.size).toBeCloseTo(request.value, 6);
 
-    step(state);
+    pass(state);
     expect(state.requestIndex).toBe(1);
     expect(state.beat).toBe('request');
   });
@@ -138,7 +160,7 @@ describe('the beats', () => {
     const state = createRun({ seed: 4, tier: 0, endless: true });
     const first = state.plan.id;
     for (let i = 0; i < state.plan.requests.length; i++) shipRequest(state);
-    step(state);
+    pass(state);
     expect(state.over).toBe(false);
     expect(state.levelIndex).toBe(1);
     expect(state.plan.id).not.toBe(first);
@@ -225,21 +247,79 @@ describe('the context bar', () => {
     expect(state.hype).toBe(1);
     expect(state.streak).toBe(0);
     expect(state.chat.at(-1)!.who).toBe('agent');
+    expect(state.chat.at(-1)!.kind).toBe('compaction');
+  });
+
+  // The largest scoring change a listed level has used to carry no payload at
+  // all, so the cue layer had one generic shake for a player who had a
+  // five-times run going and the agent's line was the only statement of it.
+  it('says what the compaction cost, and is a beat the player can read', () => {
+    // Level one opens on a four-line piece, so two clean lines leave the run
+    // on a code beat with a streak to lose. The bar holds still on a
+    // transitional beat, so a compaction can only be reached on one the
+    // player is actually typing.
+    const state = createRun({ seed: 4, tier: 0, endless: false, levelIndex: 1 });
+    sendLine(state);
+    sendLine(state);
+    expect(state.beat).toBe('code');
+    expect(state.streak).toBeGreaterThan(0);
+    const streak = state.streak;
+    const hype = state.hype;
+    const beat = state.beat;
+    const target = state.target;
+    state.context = 0.00001;
+    step(state);
+    expect(state.events).toContainEqual({ kind: 'compaction', streak, hype });
+    // The one authored word for this moment is reachable: it is a beat, it
+    // holds long enough to read, and the line in the player's hands is
+    // exactly where they left it when the hold is spent.
+    expect(state.beat).toBe('compaction');
+    expect(DEFAULT_PATTERNS.cabinet.words.beats.compaction).toBeTruthy();
+    pass(state);
+    expect(state.beat).toBe(beat);
+    expect(state.target).toBe(target);
   });
 
   it('ends the run on an empty bar in endless and in hardcore', () => {
     const endless = createRun({ seed: 4, tier: 0, endless: true });
+    toTyping(endless);
     endless.context = 0.00001;
     step(endless);
     expect(endless.over).toBe(true);
     expect(endless.ended).toBe('context');
+    // The player's own time took it, not a message the sim sent.
+    expect(endless.endedBy).toBe('drain');
+    expect(endless.events).toContainEqual({ kind: 'over', how: 'context', by: 'drain' });
 
     const hard = createRun({ seed: 4, tier: 3, endless: false });
+    toTyping(hard);
     hard.context = 0.00001;
     step(hard);
     expect(hard.over).toBe(true);
     expect(hard.ended).toBe('context');
     expect(kinds(hard.events)).toContain('over');
+  });
+
+  // A run could end on a line the player never typed, with the same word
+  // they get when their own typing drained the bar over three minutes.
+  it('says when the message cost took the last of the bar', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: true });
+    // Leave the bar with less than one message in it and ship the request,
+    // so the next ask is what crosses zero.
+    while (!state.over && state.beat !== 'ship') {
+      if (typeable(state)) sendLine(state);
+      else step(state);
+    }
+    state.context = state.plan.messageCost / 2;
+    // The ship beat hands over to the next ask, whose cost crosses zero; the
+    // step after it is where an empty bar is read.
+    pass(state);
+    expect(state.beat).toBe('request');
+    step(state);
+    expect(state.over).toBe(true);
+    expect(state.ended).toBe('context');
+    expect(state.endedBy).toBe('message');
+    expect(state.events).toContainEqual({ kind: 'over', how: 'context', by: 'message' });
   });
 
   it('burns the bar on a mistyped character in hardcore only', () => {
@@ -259,6 +339,16 @@ describe('the context bar', () => {
 });
 
 describe('copilot', () => {
+  /** Step to a code line and put an offer on the table that will not expire. */
+  function offered(state: RunState, bot: (s: RunState) => RunInput): void {
+    let guard = 0;
+    while (!state.over && state.beat !== 'code' && guard < 40000) {
+      step(state, bot(state));
+      guard += 1;
+    }
+    state.copilot = { until: state.clock + 1000 };
+  }
+
   it('turns on at the streak, takes a line on tab, and pays less for it', () => {
     const state = createRun({ seed: 2, tier: 0, endless: false });
     const bot = makeBot('perfect', 2);
@@ -268,7 +358,7 @@ describe('copilot', () => {
       guard += 1;
     }
     expect(state.copilot).not.toBeNull();
-    while (state.beat !== 'code' && !state.over) step(state, bot(state));
+    offered(state, bot);
     const request = state.plan.requests[state.requestIndex]!;
     step(state, { tab: true });
     expect(state.typed).toBe(state.target);
@@ -290,20 +380,14 @@ describe('copilot', () => {
   it('does not take the reply line, and keeps the offer for the code', () => {
     const state = createRun({ seed: 2, tier: 0, endless: false });
     const bot = makeBot('perfect', 2);
-    let guard = 0;
-    while (!state.over && state.copilot === null && guard < 40000) {
-      step(state, bot(state));
-      guard += 1;
-    }
-    expect(state.copilot).not.toBeNull();
     // Wind on to a request's reply line, where the offer used to be free.
-    guard = 0;
+    let guard = 0;
     while (!state.over && state.beat !== 'reply' && guard < 40000) {
       step(state, bot(state));
       guard += 1;
     }
     expect(state.beat).toBe('reply');
-    expect(state.copilot).not.toBeNull();
+    state.copilot = { until: state.clock + 1000 };
     const typed = state.typed;
     const share = state.discountShare;
     step(state, { tab: true });
@@ -311,6 +395,52 @@ describe('copilot', () => {
     expect(state.discountShare).toBe(share);
     // And the offer is still standing, for the code lines it was meant for.
     expect(state.copilot).not.toBeNull();
+  });
+
+  // Tab with no offer open used to return in silence AND eat the frame, so a
+  // Tab pressed mid-word swallowed the next character's step too. Every other
+  // refusal in this sim says something.
+  it('answers a tab with no offer open, and does not eat the frame', () => {
+    const state = createRun({ seed: 2, tier: 0, endless: false });
+    toTyping(state);
+    expect(state.copilot).toBeNull();
+    const key = state.target[0]!;
+    step(state, { tab: true, key });
+    expect(state.events).toContainEqual({ kind: 'copilot', on: false, offered: false });
+    // The keystroke of that same frame still lands.
+    expect(state.typed).toBe(key);
+  });
+
+  // The dispatch calls the offer a bounded window and it was not one: it
+  // re-armed on the very next clean line while the streak still stood over
+  // the threshold, so past the threshold it was open on every line.
+  it('does not re-open until the cooldown has gone by', () => {
+    const cooldown = DEFAULT_PATTERNS.score.copilotCooldown;
+    expect(cooldown).toBeGreaterThan(0);
+    const state = createRun({ seed: 2, tier: 0, endless: true });
+    const bot = makeBot('perfect', 2);
+    let guard = 0;
+    while (!state.over && state.copilot === null && guard < 40000) {
+      step(state, bot(state));
+      guard += 1;
+    }
+    expect(state.copilot).not.toBeNull();
+    offered(state, bot);
+    step(state, { tab: true });
+    expect(state.copilot).toBeNull();
+    const closed = state.clock;
+    // Clean lines keep coming and the streak stays over the threshold; the
+    // offer stays shut until the cooldown is spent.
+    guard = 0;
+    let stepped = 0;
+    while (!state.over && state.clock < closed + cooldown * 0.8 && guard < 40000) {
+      step(state, bot(state));
+      expect(state.copilot, `re-armed at ${state.clock}`).toBeNull();
+      stepped += 1;
+      guard += 1;
+    }
+    expect(stepped, 'the run ended before the cooldown could be measured').toBeGreaterThan(60);
+    expect(state.streak).toBeGreaterThanOrEqual(DEFAULT_PATTERNS.score.copilotStreak);
   });
 
   it('never offers copilot in hardcore', () => {
@@ -342,12 +472,98 @@ describe('scope creep', () => {
     sendLine(state); // the reply
     for (let i = 0; i < lines; i++) sendLine(state);
     expect(state.beat).toBe('creep');
-    expect(state.chat.at(-1)).toMatchObject({ who: 'user', line: request.creep!.ask });
-    step(state, { key: 'a' }); // the creep frame swallows the keystroke
+    expect(state.chat.at(-1)).toMatchObject({
+      who: 'user',
+      line: request.creep!.ask,
+      kind: 'creep',
+    });
+    // The creep beat swallows the input of every frame it holds, and it
+    // holds for reading time rather than for one frame: the "oh also" was on
+    // screen for about sixteen milliseconds before the line it describes was
+    // the live target.
+    const held = state.clock;
+    step(state, { key: 'a' });
+    expect(state.typed).toBe('');
+    expect(state.beat).toBe('creep');
+    pass(state);
+    expect(state.clock - held).toBeGreaterThanOrEqual(DEFAULT_PATTERNS.levels.pace.beatHold);
     expect(state.typed).toBe('');
     expect(state.beat).toBe('code');
     expect(state.target).toBe(request.creep!.line);
     expect(codeOf(state)).toHaveLength(lines + 1);
+  });
+
+  // The creep's line and its ask came from unrelated draws: the line was
+  // lifted out of a randomly chosen OTHER snippet in the band and the ask was
+  // drawn blind from the pool, so the follow-up request and the code the
+  // player typed about it had no relationship at all.
+  it('takes the snippet own creep when it has one, and honors its binding', () => {
+    const own = { line: 'print("one more thing")', ask: 'can it say one more thing at the end' };
+    const levers: Patterns = {
+      ...DEFAULT_PATTERNS,
+      levels: { ...DEFAULT_PATTERNS.levels, creepShare: 1 },
+    };
+    const plain = planLevel({
+      set: levers,
+      corpus: DEFAULT_CORPUS,
+      picker: new LinePicker(levers, { seed: 1, tier: 0 }),
+      levelIndex: 0,
+      seed: 1,
+      tier: 0,
+      endless: false,
+      weakBigrams: {},
+      used: new Set<string>(),
+    })!;
+    expect(plain.requests[0]!.creep).toBeDefined();
+    // The same level, with its first snippet carrying a creep of its own.
+    const seasoned: Corpus = {
+      ...DEFAULT_CORPUS,
+      byStack: Object.fromEntries(
+        Object.entries(DEFAULT_CORPUS.byStack).map(([stack, list]) => [
+          stack,
+          list.map((s) => (s.id === plain.requests[0]!.snippet.id ? { ...s, creep: own } : s)),
+        ]),
+      ),
+    };
+    const authored = planLevel({
+      set: levers,
+      corpus: seasoned,
+      picker: new LinePicker(levers, { seed: 1, tier: 0 }),
+      levelIndex: 0,
+      seed: 1,
+      tier: 0,
+      endless: false,
+      weakBigrams: {},
+      used: new Set<string>(),
+    })!;
+    expect(authored.requests[0]!.creep).toEqual(own);
+
+    // A creep written against one story level's premise plays only there.
+    const bound: Corpus = {
+      ...DEFAULT_CORPUS,
+      byStack: Object.fromEntries(
+        Object.entries(DEFAULT_CORPUS.byStack).map(([stack, list]) => [
+          stack,
+          list.map((s) =>
+            s.id === plain.requests[0]!.snippet.id
+              ? { ...s, creep: own, for: 'some-other-level' }
+              : s,
+          ),
+        ]),
+      ),
+    };
+    const elsewhere = planLevel({
+      set: levers,
+      corpus: bound,
+      picker: new LinePicker(levers, { seed: 1, tier: 0 }),
+      levelIndex: 0,
+      seed: 1,
+      tier: 0,
+      endless: false,
+      weakBigrams: {},
+      used: new Set<string>(),
+    })!;
+    expect(elsewhere.requests[0]!.creep).not.toEqual(own);
   });
 });
 
@@ -414,22 +630,37 @@ describe('the quick sync', () => {
     });
   });
 
-  it('answers a short line with the agent own hmm and leaves the streak alone', () => {
+  it('answers a mistyped line with the agent own hmm and leaves the streak alone', () => {
     const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
     toSync(state);
     const streak = state.streak;
     const before = state.chat.length;
     const target = state.target;
     expect(target.length).toBeGreaterThan(1);
-    // Every character right, one short of the line: the send is what is wrong.
+
+    // One short of the line is not a mistake, it is an unfinished line: it
+    // says so with its own word and keeps every character already typed.
     for (const ch of target.slice(0, target.length - 1)) step(state, { key: ch });
+    const typed = state.typed;
+    step(state, { enter: true });
+    expect(state.events).toContainEqual({ kind: 'line', ok: false, why: 'unfinished' });
+    expect(state.chat.length, 'an unfinished line was answered as a typo').toBe(before);
+    expect(state.typed).toBe(typed);
+    expect(state.streak).toBe(streak);
+
+    // A wrong character is the mistake, and that is what the hmm answers. The
+    // keystroke costs the streak wherever it lands, in a meeting as anywhere
+    // else; what the meeting never does is take one for the SEND.
+    step(state, { key: target.at(-1) === 'z' ? 'q' : 'z' });
+    const afterKey = state.streak;
     step(state, { enter: true });
     expect(state.chat.length).toBe(before + 1);
     expect(state.chat.at(-1)!.who).toBe('agent');
+    expect(state.chat.at(-1)!.kind).toBe('hmm');
     expect(DEFAULT_PATTERNS.agent.hmm).toContain(state.chat.at(-1)!.line);
     expect(state.typed).toBe('');
     expect(state.errors).toEqual([]);
-    expect(state.streak).toBe(streak);
+    expect(state.streak).toBe(afterKey);
     expect(state.beat).toBe('sync');
     expect(state.target).toBe(target);
   });
@@ -438,7 +669,7 @@ describe('the quick sync', () => {
     const state = createRun({ seed: SEED, tier: 0, endless: false, levelIndex: LEVEL });
     let syncs = 0;
     let guard = 0;
-    while (!state.over && guard < 400) {
+    while (!state.over && guard < 4000) {
       if (typeable(state)) sendLine(state);
       else step(state);
       syncs += state.events.filter((e) => e.kind === 'sync' && e.on).length;
@@ -1020,5 +1251,352 @@ describe('the ship', () => {
     expect(said.who).toBe('user');
     expect(said.line).not.toBe('the ducks are all lined up now');
     expect(DEFAULT_PATTERNS.user.reviews).toContain(said.line);
+  });
+});
+
+// ——— what a line in hand costs, and what it does not ————————————————————
+
+describe('sending a line', () => {
+  // `clean` was `no errors and typed === target`, so an accidental Enter with
+  // an untouched buffer — a stray press after the ship beat, a key repeat,
+  // someone who thought the line was done — got the typo cue, a line from the
+  // pool authored for mistypes, and the streak and the hype to zero. The
+  // player recorded no error and the sim told them they had made one.
+  it('does nothing at all on an enter with an untouched line', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    sendLine(state); // the reply, clean, so the streak stands at one
+    expect(state.beat).toBe('code');
+    const streak = state.streak;
+    const hype = state.hype;
+    const chat = state.chat.length;
+    const target = state.target;
+    step(state, { enter: true });
+    expect(state.events).toEqual([]);
+    expect(state.chat).toHaveLength(chat);
+    expect(state.streak).toBe(streak);
+    expect(state.hype).toBe(hype);
+    expect(state.target).toBe(target);
+    expect(state.typed).toBe('');
+  });
+
+  // A line that is correct so far and not finished was reported with the typo
+  // word, so the player could not tell "you got a character wrong" from "you
+  // are not finished" — and the buffer they had typed correctly was thrown
+  // away for it.
+  it('tells an unfinished line from a typo, and keeps what was typed', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    sendLine(state);
+    const target = state.target;
+    expect(target.length).toBeGreaterThan(2);
+    const streak = state.streak;
+    for (const ch of target.slice(0, target.length - 1)) step(state, { key: ch });
+    const typed = state.typed;
+    step(state, { enter: true });
+    expect(state.events).toContainEqual({ kind: 'line', ok: false, why: 'unfinished' });
+    expect(kinds(state.events)).not.toContain('hmm');
+    expect(state.typed, 'the correct characters were thrown away').toBe(typed);
+    expect(state.streak).toBe(streak);
+
+    // And a genuine typo still says so, with its own word.
+    step(state, { key: target.at(-1) === 'z' ? 'q' : 'z' });
+    step(state, { enter: true });
+    expect(state.events).toContainEqual({ kind: 'line', ok: false, why: 'typo' });
+    expect(kinds(state.events)).toContain('hmm');
+    expect(state.typed).toBe('');
+  });
+
+  // `typeKey` appended before it checked, and `expected` is undefined once the
+  // buffer reaches the target, so every further key was appended and pushed
+  // onto `errors` with no ceiling — a player leaning on a key grew both
+  // without bound, and in hardcore each of those keys burned the bar.
+  it('refuses a key past the end of the line, and still answers it', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    const target = state.target;
+    for (const ch of target) step(state, { key: ch });
+    expect(state.typed).toBe(target);
+    for (let i = 0; i < 40; i++) step(state, { key: 'z' });
+    expect(state.typed).toBe(target);
+    expect(state.errors).toEqual([]);
+    // Refused, not silent: the shell has something to answer with.
+    expect(state.events.some((e) => e.kind === 'key' && !e.ok)).toBe(true);
+    // And the line still goes out clean, because nothing was wrong with it.
+    step(state, { enter: true });
+    expect(state.events).toContainEqual({ kind: 'line', ok: true });
+  });
+
+  // The only ways back from a line the player has made a mess of were N
+  // backspaces at one per frame or an Enter that cost the streak.
+  it('clears the line on demand with no hmm and no cost', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    sendLine(state);
+    const target = state.target;
+    const chat = state.chat.length;
+    step(state, { key: target[0] === 'z' ? 'q' : 'z' });
+    step(state, { key: 'z' });
+    expect(state.errors.length).toBeGreaterThan(0);
+    const streak = state.streak;
+    step(state, { clear: true });
+    expect(state.typed).toBe('');
+    expect(state.errors).toEqual([]);
+    expect(state.target).toBe(target);
+    expect(state.chat).toHaveLength(chat);
+    expect(state.events.some((e) => e.kind === 'line' || e.kind === 'hmm')).toBe(false);
+    // The streak was already lost to the mistyped character; the clearing
+    // itself takes nothing at all.
+    expect(state.streak).toBe(streak);
+  });
+});
+
+// ——— what the chat carries ————————————————————————————————————————————
+
+describe('the chat', () => {
+  // `ChatLine` carried one marker and no others, so a verdict on the whole
+  // product, a reaction to one piece, an agent's typo line and a meeting
+  // aside all read as "agent, text" to the transcript, to the container's
+  // view and to an assistive reader.
+  it('marks every line with the beat that said it, in a total order', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    for (let i = 0; i < state.plan.requests.length; i++) shipRequest(state);
+    expect(state.chat.length).toBeGreaterThan(4);
+    const seen = new Set<string>();
+    state.chat.forEach((line, i) => {
+      expect(typeof line.kind, `line ${i}`).toBe('string');
+      expect(line.kind, `line ${i}`).not.toBe('');
+      seen.add(line.kind);
+    });
+    expect([...seen]).toContain('ask');
+    expect([...seen]).toContain('reply');
+    expect([...seen]).toContain('ship');
+    expect([...seen]).toContain('review');
+    // The order is total and never reused, which `at` — a clock reading —
+    // cannot be: a ship frame says four lines on one reading.
+    const seqs = state.chat.map((line) => line.seq);
+    expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
+    expect(new Set(seqs).size).toBe(seqs.length);
+    expect(state.chatCount).toBe(state.chat.length);
+  });
+
+  // Five lines used to land across two frames with the same timestamp and no
+  // ordering hint, and `at` is the only pacing information the sim handed out.
+  it('paces the lines it says so a reader can keep up', () => {
+    const gap = DEFAULT_PATTERNS.levels.pace.chatGap;
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    for (let i = 0; i < state.plan.requests.length; i++) shipRequest(state);
+    for (let i = 1; i < state.chat.length; i++) {
+      const prev = state.chat[i - 1]!;
+      const line = state.chat[i]!;
+      expect(line.dueAt, `line ${i} lands on top of the one before it`).toBeGreaterThanOrEqual(
+        prev.dueAt + gap - 1e-9,
+      );
+      // A line is never revealed before it was said.
+      expect(line.dueAt).toBeGreaterThanOrEqual(line.at - 1e-9);
+    }
+  });
+
+  // `built` was capped and the seat buffer was capped, both with comments
+  // naming the day-long container session as the reason. The array that grows
+  // fastest had no cap at all.
+  it('keeps a window and not a history, and counts what falls off', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const said = state.chatCount;
+    for (let i = 0; i < CHAT_CAP + 20; i++) {
+      state.chat.push({ who: 'agent', line: 'x', at: 0, kind: 'ship', seq: -1, dueAt: 0 });
+    }
+    shipRequest(state);
+    expect(state.chat.length).toBeLessThanOrEqual(CHAT_CAP);
+    expect(state.chatCount).toBeGreaterThan(said);
+    // The newest line is still the newest line after the trim.
+    expect(state.chat.at(-1)!.seq).toBe(state.chatCount - 1);
+  });
+});
+
+// ——— the check-in, settled rather than dropped ————————————————————————
+
+describe('the check-in debt', () => {
+  function fastNags(): Patterns {
+    return {
+      ...DEFAULT_PATTERNS,
+      levels: { ...DEFAULT_PATTERNS.levels, nagEvery: { min: 0.5, max: 0.5 } },
+    };
+  }
+
+  // `maybeNag` runs before the frame's input is read, so a clean Enter on
+  // that frame found the flag it had just set and answered it. A question
+  // and its answer with no elapsed time between them is not an interruption.
+  it('never answers a check-in on the frame it was asked', () => {
+    const state = createRun({
+      levers: fastNags(),
+      seed: 1,
+      tier: 0,
+      endless: false,
+      levelIndex: 1,
+    });
+    sendLine(state);
+    sendLine(state);
+    let guard = 0;
+    let answers = 0;
+    while (!state.over && guard < 6000 && answers < 2) {
+      guard += 1;
+      const before = state.chat.length;
+      // Type the line out, then press Enter on every frame from there: one of
+      // those Enters lands on the frame a check-in is raised.
+      if (typeable(state) && state.typed.length < state.target.length) {
+        step(state, { key: state.target[state.typed.length]! });
+      } else if (typeable(state)) {
+        step(state, { enter: true });
+      } else {
+        step(state);
+      }
+      const said = state.chat.slice(before);
+      const asked = said.some((line) => line.nag === true);
+      const answered = said.some((line) => line.kind === 'nagReply');
+      expect(asked && answered, 'asked and answered on one frame').toBe(false);
+      if (answered) answers += 1;
+    }
+    expect(answers, 'no check-in was ever answered').toBeGreaterThan(0);
+  });
+
+  // `startNagClock` cleared the flag outright for every new endless level and
+  // a listed run just ended, so a check-in that landed late in a level — the
+  // common case — sat in the chat forever with no reply from an agent whose
+  // whole character is that it answers everything.
+  it('settles an owed check-in rather than dropping it at the end', () => {
+    const state = createRun({
+      levers: fastNags(),
+      seed: 1,
+      tier: 0,
+      endless: false,
+      levelIndex: 1,
+    });
+    for (let i = 0; i < state.plan.requests.length; i++) shipRequest(state);
+    expect(state.over).toBe(true);
+    const asked = state.chat.filter((line) => line.nag === true).length;
+    const answered = state.chat.filter((line) => line.kind === 'nagReply').length;
+    expect(asked).toBeGreaterThan(0);
+    expect(answered, 'a question was left in the chat with no answer').toBe(asked);
+  });
+});
+
+// ——— the weak pairs the browser hands back ————————————————————————————
+
+describe('the weak pairs', () => {
+  // The one number in this package that comes back from the player's own
+  // browser, and it was neither validated, bounded nor decayed. A single
+  // non-finite count made every planner weight NaN, `weightedPick` then
+  // returns index zero for every request, and a level's seeded variety
+  // collapsed with no event, no flag and no word.
+  it('takes only what it can use, and bounds what it takes', () => {
+    const dirty = {
+      ab: 3,
+      c: 9,
+      toolong: 2,
+      de: Number.NaN,
+      fg: Number.POSITIVE_INFINITY,
+      hi: -4,
+      jk: 0,
+      lm: 1e9,
+    } as unknown as Record<string, number>;
+    const clean = cleanWeak(dirty);
+    expect(Object.keys(clean).sort()).toEqual(['ab', 'lm']);
+    expect(clean.ab).toBe(3);
+    expect(clean.lm).toBe(WEAK_PER_PAIR);
+    for (const n of Object.values(clean)) expect(Number.isFinite(n)).toBe(true);
+
+    const many: Record<string, number> = {};
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+    for (const a of alphabet) for (const b of alphabet) many[`${a}${b}`] = 2;
+    expect(Object.keys(cleanWeak(many)).length).toBeLessThanOrEqual(WEAK_PAIRS);
+
+    // And a run built from a spoiled map plans a level rather than collapsing
+    // onto the pool's first snippet for every request.
+    const state = createRun({ seed: 3, tier: 0, endless: true, weakBigrams: dirty });
+    for (const n of Object.values(state.weakBigrams)) expect(Number.isFinite(n)).toBe(true);
+    expect(new Set(state.plan.requests.map((r) => r.snippet.id)).size).toBe(
+      state.plan.requests.length,
+    );
+  });
+
+  // Nothing anywhere decremented these, so a pair fumbled early was weighted
+  // for the rest of the run and for every run after it.
+  it('forgives a pair on a line typed clean', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    const target = state.target;
+    const pair = target.slice(0, 2);
+    expect(pair.length).toBe(2);
+    state.weakBigrams = { [pair]: 4 };
+    sendLine(state);
+    expect(state.weakBigrams[pair]).toBe(3);
+  });
+
+  // A pair only gets so weak, however long the run.
+  it('never lets one pair pass its own ceiling', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const bot = makeBot('typist:60:0.25', 4);
+    for (let i = 0; i < 40000 && !state.over; i++) step(state, bot(state));
+    for (const [key, n] of Object.entries(state.weakBigrams)) {
+      expect(key.length, key).toBe(2);
+      expect(n, key).toBeLessThanOrEqual(WEAK_PER_PAIR);
+    }
+    expect(Object.keys(state.weakBigrams).length).toBeLessThanOrEqual(WEAK_PAIRS);
+  });
+});
+
+// ——— what the container tools are told ————————————————————————————————
+
+describe('what a fed call answers', () => {
+  // `feedRequests` dropped past the cap in silence and returned void, while
+  // both of its siblings answer with a word.
+  it('says how many requests were taken and how many were dropped', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    const cap = DEFAULT_PATTERNS.levels.endless.requests * 2;
+    const feed = seatFeed(5, 0, 1, 4);
+    expect(feed.length).toBe(4);
+    expect(feedRequests(state, [])).toEqual({ taken: 0, dropped: 0 });
+    let taken = 0;
+    let dropped = 0;
+    for (let i = 0; i < 4; i++) {
+      const answer = feedRequests(state, feed);
+      taken += answer.taken;
+      dropped += answer.dropped;
+    }
+    expect(taken).toBe(cap);
+    expect(dropped).toBe(16 - cap);
+    expect(suppliedCount(state)).toBe(cap);
+  });
+
+  // `feedProduct` collapsed three outcomes into 'already set', so a client
+  // that sent a blank product was told the name was already taken.
+  it('says a blank product is blank and not taken', () => {
+    const state = createRun({ seed: 5, tier: 0, endless: true });
+    expect(feedProduct(state, '   ')).toBe('empty');
+    expect(feedProduct(state, '')).toBe('empty');
+    expect(suppliedProductOf(state)).toBeNull();
+    expect(feedProduct(state, 'a diary for houseplants')).toBe('set');
+    expect(feedProduct(state, 'a hat rental for crows')).toBe('already set');
+  });
+});
+
+// ——— the halt names the right file ————————————————————————————————————
+
+describe('a level with nothing to plan from', () => {
+  // Levels nine and sixteen pin no snippets by design, so with no tapes on
+  // disk `candidates` comes back empty and the halt blamed levels.json — the
+  // one file that is correct. `play.ts` guarded only `--stack integration`.
+  it('names the missing tapes rather than the lever file', () => {
+    const bash = DEFAULT_CORPUS.byStack.bash!;
+    const corpus: Corpus = { snippets: bash, byStack: { bash }, model: DEFAULT_CORPUS.model };
+    const integrationLevel = DEFAULT_PATTERNS.levels.levels.findIndex(
+      (def) => def.stack === 'integration',
+    );
+    expect(integrationLevel).toBeGreaterThan(-1);
+    expect(() =>
+      createRun({ seed: 4, tier: 0, endless: false, corpus, levelIndex: integrationLevel }),
+    ).toThrow(`no integration snippets for levels.${integrationLevel}`);
+    // A level index that is not in the file is still a lever fault.
+    expect(() => createRun({ seed: 4, tier: 0, endless: false, levelIndex: 99 })).toThrow(
+      'patterns/levels.json: levels.99',
+    );
   });
 });

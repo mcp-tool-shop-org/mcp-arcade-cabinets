@@ -21,19 +21,47 @@
 // therefore keeps every authored ask and only refreshes what the prototype
 // owns. An id that has gone from the prototype takes its ask with it, and the
 // count of asks carried prints beside the kept and rejected counts.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const DEFAULT_SRC = 'E:/AI/prototypes/packages/dev-op-typer/DevOpTyper/Assets';
 const STACKS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql'];
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, '..', 'patterns', 'corpus');
+
+/**
+ * Where the prototype sits when nobody says. It used to be one rig's
+ * absolute Windows path, checked into git, which cannot work for anyone else
+ * and failed as a JSON read error naming a directory nobody has rather than
+ * as a stated missing-prototype message. The prototype is not in this repo,
+ * so the honest default is next to it — and when it is not there, the script
+ * says what to pass.
+ */
+const DEFAULT_SRC = path.resolve(
+  here,
+  '..',
+  '..',
+  '..',
+  '..',
+  'prototypes',
+  'packages',
+  'dev-op-typer',
+  'DevOpTyper',
+  'Assets',
+);
 
 function srcDir(argv) {
   const i = argv.indexOf('--src');
   if (i !== -1 && argv[i + 1]) return argv[i + 1];
   return process.env.VIBE_TYPER_CORPUS_SRC ?? DEFAULT_SRC;
+}
+
+/** The prototype is not where we looked: say where, and say what to pass. */
+function requireSrc(src) {
+  if (existsSync(path.join(src, 'Calibration')) && existsSync(path.join(src, 'Snippets'))) return;
+  console.error(`no dev-op-typer assets under ${src}`);
+  console.error('pass --src <dir> or set VIBE_TYPER_CORPUS_SRC');
+  process.exit(2);
 }
 
 /** Normalize one code block: \n endings, no trailing blanks, no trailing newline. */
@@ -59,25 +87,37 @@ function readJson(file) {
   return JSON.parse(readFileSync(file, 'utf8'));
 }
 
+/** The fields this repo authors onto a snippet; the prototype has none of them. */
+const AUTHORED = ['ask', 'reaction', 'creep', 'for'];
+
 /**
- * The asks already authored in the file this run is about to overwrite, by
+ * What was authored here in the file this run is about to overwrite, by
  * snippet id. A file that is not there yet, or is not readable, gives none.
+ *
+ * It used to carry `ask` and nothing else, so a re-run silently threw away
+ * every `reaction`, every `for` binding and every authored creep — hours of
+ * the lead's writing, with no message and no way back short of git.
  */
-function existingAsks(file) {
-  const asks = new Map();
+function existingAuthored(file) {
+  const kept = new Map();
   let rows;
   try {
     rows = readJson(file);
   } catch {
-    return asks;
+    return kept;
   }
-  if (!Array.isArray(rows)) return asks;
+  if (!Array.isArray(rows)) return kept;
   for (const row of rows) {
-    if (row && typeof row.id === 'string' && typeof row.ask === 'string' && row.ask !== '') {
-      asks.set(row.id, row.ask);
+    if (!row || typeof row.id !== 'string') continue;
+    const fields = {};
+    for (const field of AUTHORED) {
+      const value = row[field];
+      if (value === undefined || value === null || value === '') continue;
+      fields[field] = value;
     }
+    if (Object.keys(fields).length > 0) kept.set(row.id, fields);
   }
-  return asks;
+  return kept;
 }
 
 function port(src) {
@@ -86,7 +126,7 @@ function port(src) {
   const perStack = [];
   for (const stack of STACKS) {
     const out_file = path.join(OUT, `${stack}.json`);
-    const asks = existingAsks(out_file);
+    const authored = existingAuthored(out_file);
     const calibration = readJson(path.join(src, 'Calibration', `${stack}.json`));
     const snippets = readJson(path.join(src, 'Snippets', `${stack}.json`));
     const rows = [
@@ -119,14 +159,14 @@ function port(src) {
         continue;
       }
       seen.add(row.id);
-      const ask = asks.get(row.id);
+      const kept = authored.get(row.id) ?? {};
       out.push({
         id: row.id,
         stack,
         band: row.band,
         title: String(row.title).trim(),
         // Authored here, never in the prototype: carried across a re-run.
-        ...(ask === undefined ? {} : { ask }),
+        ...kept,
         code,
         notes: row.notes.map((n) => String(n).trim()).filter((n) => n !== ''),
         topics: row.topics.map((t) => String(t).trim()).filter((t) => t !== ''),
@@ -136,9 +176,9 @@ function port(src) {
     writeFileSync(out_file, `${JSON.stringify(out, null, 2)}\n`, 'utf8');
     const bands = {};
     for (const s of out) bands[s.band] = (bands[s.band] ?? 0) + 1;
-    const carried = out.filter((s) => s.ask !== undefined).length;
-    if (carried < asks.size) {
-      console.error(`note ${stack}: ${asks.size - carried} authored asks had no snippet left`);
+    const carried = out.filter((s) => AUTHORED.some((f) => s[f] !== undefined)).length;
+    if (carried < authored.size) {
+      console.error(`note ${stack}: ${authored.size - carried} authored rows had no snippet left`);
     }
     perStack.push({ stack, kept: out.length, rejected, carried, bands });
     totals.kept += out.length;
@@ -157,4 +197,6 @@ function port(src) {
   console.log(`total kept ${totals.kept} rejected ${totals.rejected} asks ${totals.asks}`);
 }
 
-port(srcDir(process.argv.slice(2)));
+const SRC = srcDir(process.argv.slice(2));
+requireSrc(SRC);
+port(SRC);

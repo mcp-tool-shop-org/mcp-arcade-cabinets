@@ -12,13 +12,16 @@
 export const CABINET = 'vibe-typer';
 
 export type {
+  AuthoredCreep,
   Band,
   Beat,
   BuiltPiece,
+  ChatKind,
   ChatLine,
   Creep,
   Event,
   LevelPlan,
+  LineFault,
   Request,
   RunInput,
   RunState,
@@ -61,6 +64,7 @@ export type {
   LevelsSet,
   Milestone,
   Patterns,
+  PaceSet,
   ProductsSet,
   ScoreSet,
   TierLines,
@@ -72,12 +76,14 @@ export {
   buildModel,
   codeLines,
   DEFAULT_CORPUS,
+  corpusFingerprint,
   inBand,
   integrationSnippets,
   loadCorpus,
   STORY_NOUNS,
   surprisal,
   weakWeight,
+  WEAK_SNIPPET_CAP,
   withIntegration,
 } from './corpus';
 export type { Corpus, IntegrationSeed, NgramModel } from './corpus';
@@ -129,6 +135,7 @@ export {
   MAX_PRODUCT_WORDS,
   MAX_TOLERANCE,
   productFault,
+  reasonText,
   VALUE_TOLERANCE,
 } from './codegate';
 export type {
@@ -142,6 +149,8 @@ export type {
 export {
   agentNameOf,
   BUILT_CAP,
+  CHAT_CAP,
+  cleanWeak,
   codeOf,
   corpusOf,
   createRun,
@@ -158,6 +167,8 @@ export {
   suppliedCount,
   suppliedProductOf,
   syncOf,
+  WEAK_PAIRS,
+  WEAK_PER_PAIR,
 } from './sim';
 export type { CreateRunOpts } from './sim';
 

@@ -1,15 +1,26 @@
 // The only stateful module. One keystroke per step, a fixed dt, and every
 // random draw comes from the seed: same levers, same seed, same tier, same
-// endless flag, same weak pairs, same stack and the same input stream give a
-// byte-identical RunState (a test asserts it).
+// endless flag, same weak pairs, same stack, THE SAME CORPUS — tapes and all
+// — and the same input stream give a byte-identical RunState (a test asserts
+// it). The corpus is on that list because `withIntegration` rebuilds the
+// character trigram model over the seasoned corpus and every snippet's value
+// is read off that model, so the tape files on disk are an eighth input to
+// the score. `corpusFingerprint` in ./corpus is what a caller folds into a
+// stored best so a past run is never compared against a differently-seasoned
+// one.
 //
 // The beats run request -> reply -> code -> (creep) -> ship, with a quick
 // sync between two requests on the levels that drew one: three short lines
 // of meeting chatter the player types, which cost the bar nothing, pay
 // nothing and leave the streak where it stands (slice 2). `request`,
-// `creep` and `ship` are transitional: each holds for exactly one step and
-// swallows that step's input, which is what keeps a creep from being appended
-// silently inside a line the player is already transcribing (Q4.1).
+// `creep`, `ship` and `compaction` are transitional: each holds for
+// `levels.pace.beatHold` seconds of frame time and swallows the input of
+// every frame it holds, which is what keeps a creep from being appended
+// silently inside a line the player is already transcribing (Q4.1) and what
+// gives the player an authored moment to READ the ask, the "oh also" and
+// the reaction before the next line is typeable. The bar holds still for a
+// transitional beat, the way it holds still for the meeting: the game gave
+// the moment, so the game does not charge for it.
 //
 // Nothing yells (G25). A mistyped character is recorded and waits for a
 // backspace. A line sent with an error returns the agent's own "hmm", resets
@@ -24,6 +35,8 @@ import { planLevel } from './level';
 import { copilotReady, hypeFor, milestoneCrossed, pay, pitchFor } from './score';
 import { mixSeed, seededRandom } from './seed';
 import type {
+  Beat,
+  ChatKind,
   Event,
   FedSnippet,
   LevelPlan,
@@ -104,6 +117,36 @@ interface RunContext {
    * line before the ship is dropped.
    */
   reactionFor: string | null;
+  /**
+   * Frame time the beat in hand stops swallowing input at. Zero off a
+   * transitional beat.
+   */
+  holdUntil: number;
+  /**
+   * The beat a compaction interrupted, restored when its hold is spent. A
+   * compaction lands wherever the bar happens to empty, and the line in the
+   * player's hands is untouched by it.
+   */
+  resumeBeat: Beat;
+  /**
+   * The earliest frame time the next chat line may be revealed at. `say`
+   * spaces the lines of one frame by `pace.chatGap` off this.
+   */
+  nextLineAt: number;
+  /**
+   * Frame time the check-in in hand was raised at. The answer must land on a
+   * later frame than the question: `maybeNag` runs before the frame's input
+   * is read, so a clean Enter on that same frame used to ask and answer with
+   * no elapsed time at all, and the joke of a check-in is the interruption.
+   */
+  nagArmedAt: number;
+  /** Frame time another Copilot offer may open at. See `copilotCooldown`. */
+  copilotAfter: number;
+  /**
+   * Set when the sim's own message cost — not the player's time — took the
+   * last of the bar, so `empty` can say which it was. Cleared as it is read.
+   */
+  spentByMessage: boolean;
 }
 
 /** Lines in a quick sync. Three is a meeting; more is a level. */
@@ -116,6 +159,43 @@ const SYNC_LINES = 3;
  * stays connected.
  */
 export const BUILT_CAP = 256;
+
+/**
+ * Chat lines the run keeps. The same rule as `BUILT_CAP` on the array that
+ * grows fastest: four to six lines a request, four requests a level, for as
+ * long as an endless run or an MCP client session lasts. The chat is a
+ * window, not a history; `chatCount` is the count that never falls off and
+ * every line's `seq` says where in the whole run it sat, so a consumer can
+ * tell a trim from a gap.
+ */
+export const CHAT_CAP = 512;
+
+/**
+ * The transitional beats: the ones that hold, swallow input and hold the bar
+ * still while the player reads. Everything else is a line in their hands.
+ */
+const HELD_BEATS: readonly Beat[] = ['request', 'creep', 'ship', 'compaction'];
+
+function isHeld(beat: Beat): boolean {
+  return HELD_BEATS.includes(beat);
+}
+
+/**
+ * Weak-pair bookkeeping, bounded. // Director
+ *
+ * `weakBigrams` is the one number in this package that arrives from the
+ * player's own browser, and it was neither validated, bounded nor decayed: a
+ * pair fumbled early was weighted forever, and one non-finite count made
+ * every planner weight NaN, at which point `weightedPick` returns index zero
+ * for every request and the level's seeded variety collapses in silence.
+ *
+ * `WEAK_PER_PAIR` is how weak one pair may get and `WEAK_PAIRS` is how many
+ * pairs the map may name. The third bound — what one snippet's weight may
+ * grow to — is `WEAK_SNIPPET_CAP` beside `weakWeight` in ./corpus, where the
+ * sum is taken.
+ */
+export const WEAK_PER_PAIR = 8;
+export const WEAK_PAIRS = 256;
 
 /**
  * The salt that keeps the nag clock off the planner's generator (slice 3).
@@ -163,26 +243,44 @@ export function corpusOf(state: RunState): Corpus {
  * first one offered for a buffer wins, and the planner drops it once the
  * level has taken its requests.
  */
-export function feedRequests(state: RunState, items: readonly Snippet[], product?: string): void {
+export function feedRequests(
+  state: RunState,
+  items: readonly Snippet[],
+  product?: string,
+): { taken: number; dropped: number } {
   const ctx = runs.get(state);
-  if (!ctx || items.length === 0) return;
+  // What happened, the way both siblings below say what happened. The `break`
+  // past the cap used to discard every remaining item and return nothing at
+  // all, so a client that sent twelve requests into a buffer with room for
+  // two was told the call succeeded — and the shell's prefetch had to guess
+  // from `suppliedCount`.
+  if (!ctx) return { taken: 0, dropped: items.length };
+  if (items.length === 0) return { taken: 0, dropped: 0 };
   // The level these were written for: a client peeks the next level and
   // writes against its stack, its band and its product, so that is the
   // level they are tagged with. The planner drops a request whose tag does
   // not match the level it is planning.
   const levelIndex = state.levelIndex + 1;
   const cap = bufferCap(ctx);
+  let taken = 0;
+  let dropped = 0;
   for (const snippet of items) {
     // The planner takes at most one level's worth and the buffer is the
     // only thing holding the rest, so an unbounded push is a buffer a
     // long-lived container session can grow without end. Past the cap the
-    // request is dropped, the way a second reaction before a ship is.
-    if (ctx.supplied.length >= cap) break;
+    // request is dropped, the way a second reaction before a ship is — and
+    // the caller is told how many, which is the half that was missing.
+    if (ctx.supplied.length >= cap) {
+      dropped += 1;
+      continue;
+    }
     ctx.supplied.push({ snippet, levelIndex, stack: snippet.stack });
+    taken += 1;
   }
   if (product !== undefined && product !== '' && ctx.suppliedProduct === null) {
     ctx.suppliedProduct = product;
   }
+  return { taken, dropped };
 }
 
 /**
@@ -201,13 +299,19 @@ function bufferCap(ctx: RunContext): number {
  * is a call of its own and a client may name the thing before it has written
  * anything for it. The first name offered for a level wins, as it does
  * there, and the planner drops it once that level has been planned.
+ *
+ * A blank name answers `empty` and not `already set`: a client that sent
+ * whitespace was told the name was taken, which is a false thing to say
+ * about its own input and left it no way to tell the two apart.
  */
-export function feedProduct(state: RunState, product: string): 'set' | 'already set' {
+export function feedProduct(state: RunState, product: string): 'set' | 'already set' | 'empty' {
   const ctx = runs.get(state);
+  // No run context at all is a caller bug — a state this module did not
+  // mint — and reads as a name that cannot be taken.
   if (!ctx) return 'already set';
   if (ctx.suppliedProduct !== null) return 'already set';
   const name = product.trim();
-  if (name === '') return 'already set';
+  if (name === '') return 'empty';
   ctx.suppliedProduct = name;
   return 'set';
 }
@@ -275,8 +379,43 @@ function push(state: RunState, event: Event): void {
   state.events.push(event);
 }
 
-function say(state: RunState, who: 'user' | 'agent', line: string, nag = false): void {
-  state.chat.push({ who, line, at: state.clock, ...(nag ? { nag: true as const } : {}) });
+/**
+ * Say one line.
+ *
+ * The sim owns the pace. A ship frame says the check-in, the agent's answer
+ * to it, the ship line and the user's reaction, and the frame after it says
+ * the next ask: five lines, four of them stamped with the same clock reading
+ * and the fifth sixteen milliseconds later. `at` cannot separate them, so
+ * every consumer — the shell, the container's `view`, the transcript, a
+ * screen reader — had to invent a pacing rule the sim does not own, and
+ * whatever rule it invented disagreed with the next consumer's. `dueAt` is
+ * that rule, here, once: never sooner than `pace.chatGap` after the line
+ * before it. `seq` is the total order, which survives the window's trim.
+ */
+function say(
+  state: RunState,
+  who: 'user' | 'agent',
+  line: string,
+  kind: ChatKind,
+  nag = false,
+): void {
+  const ctx = runs.get(state);
+  const gap = ctx?.set.levels.pace.chatGap ?? 0;
+  const dueAt = ctx ? Math.max(state.clock, ctx.nextLineAt) : state.clock;
+  if (ctx) ctx.nextLineAt = dueAt + gap;
+  state.chat.push({
+    who,
+    line,
+    at: state.clock,
+    kind,
+    seq: state.chatCount,
+    dueAt,
+    ...(nag ? { nag: true as const } : {}),
+  });
+  state.chatCount += 1;
+  // A window, not a history — the same rule `built` and the seat buffer
+  // carry, on the array that grows fastest of the three.
+  if (state.chat.length > CHAT_CAP) state.chat.splice(0, state.chat.length - CHAT_CAP);
   push(state, { kind: 'message', who, ...(nag ? { nag: true as const } : {}) });
 }
 
@@ -286,11 +425,51 @@ function armNag(state: RunState, ctx: RunContext): void {
   ctx.nextNagAt = state.clock + min + ctx.nagRng() * (max - min);
 }
 
-/** A new level, a new nag clock, and nothing owed from the level before. */
+/**
+ * Answer a check-in that is still owed, if one is.
+ *
+ * The debt used to be cleared rather than settled: every new endless level
+ * wiped it, and a listed run simply ended. A check-in lands late in a level
+ * more often than not — the debt is only settled on the next clean line, and
+ * the last clean line of a level ships — so the user's question sat in the
+ * chat forever with no reply from an agent whose whole character is that it
+ * answers everything. The chat is the record the standup and the container's
+ * `view` read back, so that hole was permanent and not momentary.
+ */
+function settleNag(state: RunState, ctx: RunContext): void {
+  if (!ctx.nagReplyPending) return;
+  ctx.nagReplyPending = false;
+  say(state, 'agent', ctx.picker.nagReply(), 'nagReply');
+}
+
+/** A new level, a new nag clock, and the level before's question answered. */
 function startNagClock(state: RunState, ctx: RunContext): void {
+  settleNag(state, ctx);
   ctx.nagRng = seededRandom(mixSeed(state.plan.seed, NAG_SALT));
   ctx.nagReplyPending = false;
   armNag(state, ctx);
+}
+
+/** Hold the beat in hand for the Director's reading time and swallow the input. */
+function hold(state: RunState, ctx: RunContext): void {
+  ctx.holdUntil = state.clock + ctx.set.levels.pace.beatHold;
+}
+
+/** True while the transitional beat in hand is still being read. */
+function holding(state: RunState, ctx: RunContext): boolean {
+  return state.clock < ctx.holdUntil;
+}
+
+/**
+ * Spend the level's message cost on a line the SIM sent, and remember that
+ * it was the sim that spent it. An ask whose cost crosses zero ends the run
+ * on the frame after it appeared; the player reads a brand-new request and
+ * is told the context ran out, in the same word they get when their own
+ * typing drained the bar over three minutes.
+ */
+function spendMessage(state: RunState, ctx: RunContext): void {
+  state.context = spend(state.context, state.plan.messageCost);
+  if (state.context <= 0) ctx.spentByMessage = true;
 }
 
 /**
@@ -307,9 +486,55 @@ function maybeNag(state: RunState): void {
   const first =
     state.levelIndex === ctx.levelOffset && state.requestIndex === 0 && state.lineIndex === 0;
   if (first) return;
-  say(state, 'user', ctx.picker.nag(), true);
+  say(state, 'user', ctx.picker.nag(), 'nag', true);
   ctx.nagReplyPending = true;
+  ctx.nagArmedAt = state.clock;
   armNag(state, ctx);
+}
+
+/**
+ * The weak pairs a browser handed back, validated the way every lever file
+ * is validated: two-character keys, finite counts, a cap per pair and a cap
+ * on the size of the map. Everything else is dropped rather than accepted —
+ * one non-finite count made every planner weight NaN, `weightedPick` then
+ * returns index zero for every request, and the level's seeded variety
+ * collapsed with no event, no flag and no word. That is the same
+ * silent-degradation shape the `dt` guard at the bottom of this file refuses,
+ * on the input that arrives from storage instead of per frame.
+ */
+export function cleanWeak(raw: Record<string, number> | undefined): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!raw || typeof raw !== 'object') return out;
+  let kept = 0;
+  for (const key of Object.keys(raw)) {
+    if (kept >= WEAK_PAIRS) break;
+    if (key.length !== 2) continue;
+    const n = raw[key];
+    if (typeof n !== 'number' || !Number.isFinite(n) || n <= 0) continue;
+    out[key] = Math.min(WEAK_PER_PAIR, Math.floor(n));
+    kept += 1;
+  }
+  return out;
+}
+
+/**
+ * A clean line forgives the pairs it contains, one count each.
+ *
+ * Nothing anywhere decremented these, so a pair fumbled early was weighted
+ * for the rest of the run — and for the rest of every run, over a map
+ * carried between visits. The weights of a few snippets ran away from the
+ * pool, the planner converged on the same handful, and the practice bias
+ * turned into repetition on pairs the player had long since mastered. A
+ * bias re-earned is a bias that can be spent.
+ */
+function forgiveWeak(state: RunState, line: string): void {
+  for (let i = 1; i < line.length; i++) {
+    const pair = line.slice(i - 1, i + 1);
+    const n = state.weakBigrams[pair];
+    if (n === undefined) continue;
+    if (n <= 1) delete state.weakBigrams[pair];
+    else state.weakBigrams[pair] = n - 1;
+  }
 }
 
 export function createRun(opts: CreateRunOpts): RunState {
@@ -322,7 +547,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     tier,
   });
   const levelOffset = opts.endless ? 0 : (opts.levelIndex ?? 0);
-  const weakBigrams = { ...(opts.weakBigrams ?? {}) };
+  const weakBigrams = cleanWeak(opts.weakBigrams);
   picker.startLevel(levelOffset);
   const used = new Set<string>();
   const plan = planLevel({
@@ -337,7 +562,20 @@ export function createRun(opts: CreateRunOpts): RunState {
     used,
     ...(opts.stack ? { stack: opts.stack } : {}),
   });
-  if (!plan) throw new Error(`patterns/levels.json: levels.${levelOffset}`);
+  if (!plan) {
+    // A listed level whose stack has nothing in the corpus is a missing-tapes
+    // condition, not a bad lever. The two integration levels pin no snippets
+    // by design, so with no tapes on disk `candidates` comes back empty and
+    // `planLevel` returns null — and the halt then blamed levels.json, which
+    // sends the reader to the one file that is correct. `play.ts` guarded
+    // only the `--stack integration` case; every other caller got the
+    // misleading message.
+    const stack = opts.stack ?? (opts.endless ? undefined : set.levels.levels[levelOffset]?.stack);
+    if (stack !== undefined && (corpus.byStack[stack]?.length ?? 0) === 0) {
+      throw new Error(`no ${stack} snippets for levels.${levelOffset}`);
+    }
+    throw new Error(`patterns/levels.json: levels.${levelOffset}`);
+  }
   const state: RunState = {
     plan,
     endless: opts.endless,
@@ -356,6 +594,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     built: [],
     pieceCount: 0,
     chat: [],
+    chatCount: 0,
     clock: 0,
     over: false,
     events: [],
@@ -383,6 +622,12 @@ export function createRun(opts: CreateRunOpts): RunState {
     suppliedProduct: null,
     reaction: null,
     reactionFor: null,
+    holdUntil: 0,
+    resumeBeat: 'code',
+    nextLineAt: 0,
+    nagArmedAt: 0,
+    copilotAfter: 0,
+    spentByMessage: false,
   };
   runs.set(state, ctx);
   startNagClock(state, ctx);
@@ -402,24 +647,44 @@ function enterRequest(state: RunState): void {
   state.lineIndex = 0;
   state.discountShare = 0;
   state.creepPending = request.creep !== undefined;
-  say(state, 'user', request.ask);
-  state.context = spend(state.context, state.plan.messageCost);
+  say(state, 'user', request.ask, 'ask');
+  spendMessage(state, ctx);
+  hold(state, ctx);
 }
 
 /** An empty bar: a compaction inside a listed level, the end anywhere else. */
 function empty(state: RunState): void {
   const ctx = runs.get(state)!;
+  const by = ctx.spentByMessage ? 'message' : 'drain';
+  ctx.spentByMessage = false;
   if (state.endless || state.plan.tier === 3) {
+    // The agent answers the question it was asked before the lights go out;
+    // the chat is the record, and a question with no answer in it is a hole
+    // that never closes.
+    settleNag(state, ctx);
     state.over = true;
     state.ended = 'context';
-    push(state, { kind: 'over', how: 'context' });
+    state.endedBy = by;
+    push(state, { kind: 'over', how: 'context', by });
     return;
   }
-  push(state, { kind: 'compaction' });
-  say(state, 'agent', ctx.picker.compaction());
+  // What the compaction cost goes on the event. It is the largest scoring
+  // change a listed level has and it used to carry nothing at all, so the
+  // agent's cheerful line was the only statement of it and the cue layer had
+  // one generic shake for a player who had a five-times run going.
+  push(state, { kind: 'compaction', streak: state.streak, hype: state.hype });
+  say(state, 'agent', ctx.picker.compaction(), 'compaction');
   state.hype = 1;
   state.streak = 0;
   state.context = FULL;
+  // The one authored word for this moment — `words.beats.compaction`, which
+  // the cabinet loader has always demanded and gated — was unreachable: no
+  // code path ever set the beat, so the board still named whichever beat the
+  // player was in. It is a beat now, held like the others, and the line in
+  // their hands is untouched: `resumeBeat` puts them back where they were.
+  ctx.resumeBeat = state.beat;
+  state.beat = 'compaction';
+  hold(state, ctx);
 }
 
 function noteWeak(state: RunState, expected: string | undefined): void {
@@ -427,7 +692,12 @@ function noteWeak(state: RunState, expected: string | undefined): void {
   const prev = state.typed.length >= 2 ? state.typed[state.typed.length - 2]! : '';
   const pair = `${prev}${expected}`;
   if (pair.length !== 2) return;
-  state.weakBigrams[pair] = (state.weakBigrams[pair] ?? 0) + 1;
+  const now = state.weakBigrams[pair] ?? 0;
+  // A pair only gets so weak, and the map only names so many pairs: this is
+  // the same bound `cleanWeak` puts on what arrives from storage, applied to
+  // what a long run adds to it.
+  if (now === 0 && Object.keys(state.weakBigrams).length >= WEAK_PAIRS) return;
+  state.weakBigrams[pair] = Math.min(WEAK_PER_PAIR, now + 1);
 }
 
 function setStreak(state: RunState, streak: number): void {
@@ -437,11 +707,25 @@ function setStreak(state: RunState, streak: number): void {
   if (
     streak > 0 &&
     state.copilot === null &&
+    state.clock >= ctx.copilotAfter &&
     copilotReady(streak, state.plan.tier, ctx.set.score)
   ) {
-    state.copilot = { until: state.clock + ctx.set.score.copilotSeconds, used: false };
+    state.copilot = { until: state.clock + ctx.set.score.copilotSeconds };
     push(state, { kind: 'copilot', on: true });
   }
+}
+
+/**
+ * Close the offer and start the cooldown. Taken, expired or refused, the
+ * next one cannot open until `copilotCooldown` has gone by — without which
+ * the window re-armed on the very next clean line while the streak still
+ * stood over the threshold, and a bounded offer was in practice open on
+ * every line of the run.
+ */
+function closeCopilot(state: RunState, ctx: RunContext): void {
+  state.copilot = null;
+  ctx.copilotAfter = state.clock + ctx.set.score.copilotCooldown;
+  push(state, { kind: 'copilot', on: false });
 }
 
 function startLine(state: RunState, target: string): void {
@@ -481,7 +765,11 @@ function ship(state: RunState): void {
     state.milestones.push(milestone.name);
     push(state, { kind: 'milestone', name: milestone.name });
   }
-  say(state, 'agent', ctx.picker.ship());
+  // The deploy is the last moment this level has: a check-in still owed an
+  // answer is settled here, before the ship line and the verdict, rather
+  // than carried into the next level's clock and wiped.
+  if (last) settleNag(state, ctx);
+  say(state, 'agent', ctx.picker.ship(), 'ship');
   // A seat's line, if one is waiting, takes this beat and the authored pool
   // keeps its place in the bag for the next one. With no seat the call below
   // is the call it has always been, on the draw it has always been (a test
@@ -503,9 +791,14 @@ function ship(state: RunState): void {
       (last
         ? ctx.picker.review(state.plan.id)
         : ctx.picker.reaction(request.snippet, state.plan.product, state.plan.id)),
+    last ? 'review' : 'reaction',
   );
   setStreak(state, state.streak + 1);
   state.beat = 'ship';
+  // Nothing to type while the reaction is read; the next request brings its
+  // own line.
+  startLine(state, '');
+  hold(state, ctx);
 }
 
 /**
@@ -536,6 +829,7 @@ function advance(state: RunState): void {
     return;
   }
   if (!state.endless) {
+    settleNag(state, ctx);
     state.over = true;
     state.ended = 'shipped';
     push(state, { kind: 'over', how: 'shipped' });
@@ -573,6 +867,7 @@ function advance(state: RunState): void {
     // and "shipped" is never a true thing to say about the endless ladder,
     // which by definition has no end to reach. It has its own word now so
     // the player, the transcript and the band can tell the two apart.
+    settleNag(state, ctx);
     state.over = true;
     state.ended = 'unplanned';
     push(state, { kind: 'over', how: 'unplanned' });
@@ -612,17 +907,24 @@ function landCreep(state: RunState): void {
  */
 function sendSyncLine(state: RunState): void {
   const ctx = runs.get(state)!;
-  const clean = state.errors.length === 0 && state.typed === state.target;
-  if (!clean) {
-    push(state, { kind: 'line', ok: false });
+  const fault = lineFaultOf(state);
+  if (fault === 'blank') return;
+  if (fault !== null) {
+    push(state, { kind: 'line', ok: false, why: fault });
+    // An unfinished line is not a typo: nothing is wrong with what is there,
+    // it is simply not done. The buffer stands and the player carries on
+    // from where they were; saying the typo line over it would be a false
+    // statement, and throwing the buffer away would be a punishment.
+    if (fault === 'unfinished') return;
     push(state, { kind: 'hmm' });
-    say(state, 'agent', ctx.picker.hmm());
+    say(state, 'agent', ctx.picker.hmm(), 'hmm');
     state.typed = '';
     state.errors = [];
     return;
   }
   push(state, { kind: 'line', ok: true });
-  say(state, 'agent', state.target);
+  forgiveWeak(state, state.target);
+  say(state, 'agent', state.target, 'meeting');
   ctx.syncIndex += 1;
   if (ctx.syncIndex >= ctx.syncLines.length) {
     push(state, { kind: 'sync', on: false });
@@ -633,6 +935,26 @@ function sendSyncLine(state: RunState): void {
   startLine(state, ctx.syncLines[ctx.syncIndex] ?? '');
 }
 
+/**
+ * What is wrong with the line in hand, or null when it is clean.
+ *
+ * `blank` is an Enter on a line the player has not touched — a stray press
+ * after the ship beat, a key repeat, someone who thought the line was done.
+ * It recorded no error and the sim told them they had made one: the typo
+ * cue, a line from the pool authored for mistypes, and the streak and the
+ * hype to zero. An accidental Enter is not a typo, so it is nothing at all.
+ *
+ * `unfinished` is a line that is right so far and not done. It used to be
+ * reported with the same word as a typo, so the player could not tell "you
+ * got a character wrong" from "you are not finished".
+ */
+function lineFaultOf(state: RunState): 'blank' | 'typo' | 'unfinished' | null {
+  if (state.typed === '' && state.target !== '') return 'blank';
+  if (state.errors.length > 0) return 'typo';
+  if (state.typed !== state.target) return 'unfinished';
+  return null;
+}
+
 function sendLine(state: RunState): void {
   const ctx = runs.get(state)!;
   if (state.beat === 'sync') {
@@ -640,27 +962,41 @@ function sendLine(state: RunState): void {
     return;
   }
   const request = state.plan.requests[state.requestIndex]!;
-  const clean = state.errors.length === 0 && state.typed === state.target;
-  if (!clean) {
-    push(state, { kind: 'line', ok: false });
+  const fault = lineFaultOf(state);
+  if (fault === 'blank') return;
+  if (fault !== null) {
+    push(state, { kind: 'line', ok: false, why: fault });
+    // A line that is right so far costs nothing and keeps its buffer: the
+    // player is mid-word, not mistaken. Tension here is a nudge, not a
+    // penalty, so the shell answers the marker and the streak stands.
+    if (fault === 'unfinished') return;
     push(state, { kind: 'hmm' });
-    say(state, 'agent', ctx.picker.hmm());
+    say(state, 'agent', ctx.picker.hmm(), 'hmm');
     setStreak(state, 0);
     state.typed = '';
     state.errors = [];
     return;
   }
   push(state, { kind: 'line', ok: true });
+  // The pairs in a line typed clean are forgiven, one count each, so the
+  // practice bias is re-earned rather than accumulated forever.
+  forgiveWeak(state, state.target);
   setStreak(state, state.streak + 1);
   // A check-in is answered once the line in hand is out clean, so the answer
   // never lands inside what the player is transcribing. A line sent wrong
   // keeps it owed; a ship on this line says the answer before the ship line.
-  if (state.beat === 'code' && ctx.nagReplyPending) {
-    ctx.nagReplyPending = false;
-    say(state, 'agent', ctx.picker.nagReply());
+  //
+  // And never on the frame the question was asked: `maybeNag` runs before
+  // the frame's input is read, so a clean Enter on that same frame found the
+  // flag it had just set and answered with zero time elapsed. The joke is
+  // the interruption; a question and its answer with nothing between them is
+  // not one. The arm time is the check rather than the ordering because it
+  // survives a future reordering of the step.
+  if (state.beat === 'code' && ctx.nagReplyPending && state.clock > ctx.nagArmedAt) {
+    settleNag(state, ctx);
   }
   if (state.beat === 'reply') {
-    say(state, 'agent', request.reply);
+    say(state, 'agent', request.reply, 'reply');
     state.beat = 'code';
     state.lineIndex = 0;
     startLine(state, ctx.lines[0] ?? '');
@@ -673,9 +1009,15 @@ function sendLine(state: RunState): void {
   }
   if (state.creepPending && request.creep) {
     state.beat = 'creep';
+    // The line just finished is put down for the length of the hold, the way
+    // `enterRequest` puts one down: a held beat has nothing to type, and a
+    // finished line left in the buffer for a second and a bit reads as a line
+    // the player is somehow still in.
+    startLine(state, '');
     push(state, { kind: 'creep' });
-    say(state, 'user', request.creep.ask);
-    state.context = spend(state.context, state.plan.messageCost);
+    say(state, 'user', request.creep.ask, 'creep');
+    spendMessage(state, ctx);
+    hold(state, ctx);
     return;
   }
   ship(state);
@@ -690,23 +1032,43 @@ function sendLine(state: RunState): void {
  * filled the warm-up of every request at no price and the Enter after it
  * took the clean-line branch and grew the streak. A free line is not a
  * discount, so the offer is simply not open off the code beat.
+ *
+ * Tab with no offer open used to return in silence AND eat the frame, so a
+ * Tab pressed mid-word also swallowed the next character's step. The states
+ * that covers are not rare — every reply line, all three lines of a quick
+ * sync, the whole of hardcore, the seconds after the window expires — and
+ * every other refusal in this sim says something. It says something now,
+ * and it costs the frame nothing: `true` means the offer was taken.
  */
-function takeCopilot(state: RunState): void {
+function takeCopilot(state: RunState): boolean {
   const ctx = runs.get(state)!;
-  if (!state.copilot || state.copilot.used) return;
-  if (state.beat !== 'code') return;
+  if (!state.copilot || state.beat !== 'code') {
+    push(state, { kind: 'copilot', on: false, offered: false });
+    return false;
+  }
   const total = ctx.lines.reduce((n, line) => n + line.length, 0);
   if (total > 0) state.discountShare += state.target.length / total;
   state.typed = state.target;
   state.errors = [];
-  state.copilot = null;
-  push(state, { kind: 'copilot', on: false });
+  closeCopilot(state, ctx);
+  return true;
 }
 
 function typeKey(state: RunState, key: string): void {
   const ctx = runs.get(state)!;
   const expected = state.target[state.typed.length];
-  const ok = expected !== undefined && key === expected;
+  // Past the end of the line the key is refused rather than appended. It
+  // used to be pushed onto `typed` and onto `errors` with no ceiling, so a
+  // player leaning on a key grew both without bound, the buffer is rendered
+  // verbatim by design, and in hardcore every one of those keys burned the
+  // bar. Every such key is an error by construction and appending it adds
+  // nothing the player can act on — but the refusal is audible, because a
+  // key that does nothing and says nothing is the thing being fixed.
+  if (expected === undefined) {
+    push(state, { kind: 'key', ok: false, pitch: pitchFor(state.streak) });
+    return;
+  }
+  const ok = key === expected;
   state.typed += key;
   if (!ok) {
     state.errors.push(state.typed.length - 1);
@@ -727,6 +1089,18 @@ function backspace(state: RunState): void {
 }
 
 /**
+ * Throw the line away and start it again. A courtesy, never a penalty: no
+ * hmm, no failed line, no streak reset, no event of failure. The only other
+ * way back from a line the player has made a mess of was one backspace per
+ * frame or an Enter that cost the streak, and an abandoned line already
+ * costs the time it took to type.
+ */
+function clearLine(state: RunState): void {
+  state.typed = '';
+  state.errors = [];
+}
+
+/**
  * One step. `dt` is seconds; the shell and the bots both run a fixed frame.
  * Events are cleared at the top, so what the shell drains is this step's.
  *
@@ -743,43 +1117,60 @@ export function stepRun(state: RunState, input: RunInput, dt: number): RunState 
   if (typeof dt !== 'number' || !Number.isFinite(dt) || dt <= 0) {
     throw new Error('stepRun: dt must be a finite positive number of seconds');
   }
+  const ctx = runs.get(state)!;
   state.events.length = 0;
   if (state.over) return state;
   state.clock += dt;
   // A quick sync is a breather: the meeting costs the bar nothing at all, so
-  // the bar holds still for it (slice 2). The clock runs; only the drain stops.
-  if (state.beat !== 'sync') {
+  // the bar holds still for it (slice 2). The clock runs; only the drain
+  // stops. A transitional beat is the same bargain: the ask, the "oh also",
+  // the reaction and the compaction are the game's own reading time, and the
+  // game does not charge the player for the one thing it asked them to do.
+  if (state.beat !== 'sync' && !isHeld(state.beat)) {
     state.context = drain(state.context, rateAt(state.plan, state.requestIndex), dt);
   }
   if (state.copilot && state.clock >= state.copilot.until) {
-    state.copilot = null;
-    push(state, { kind: 'copilot', on: false });
+    closeCopilot(state, ctx);
   }
   if (state.context <= 0) {
     empty(state);
     if (state.over) return state;
   }
-  if (state.beat === 'request') {
-    const request = state.plan.requests[state.requestIndex]!;
-    state.beat = 'reply';
-    startLine(state, request.reply);
-    return state;
-  }
-  if (state.beat === 'creep') {
-    landCreep(state);
-    return state;
-  }
-  if (state.beat === 'ship') {
+  // The transitional beats, each held for `pace.beatHold` seconds of frame
+  // time. The swallow is what it always was — a held frame reads no input —
+  // and it now lasts long enough to be reading time rather than one tick.
+  if (isHeld(state.beat)) {
+    if (holding(state, ctx)) return state;
+    if (state.beat === 'compaction') {
+      // Back to the line in their hands, exactly as it stood. A transitional
+      // beat the compaction interrupted is given its reading time again.
+      state.beat = ctx.resumeBeat;
+      if (isHeld(state.beat)) hold(state, ctx);
+      return state;
+    }
+    if (state.beat === 'request') {
+      const request = state.plan.requests[state.requestIndex]!;
+      state.beat = 'reply';
+      startLine(state, request.reply);
+      return state;
+    }
+    if (state.beat === 'creep') {
+      landCreep(state);
+      return state;
+    }
     advance(state);
     return state;
   }
   // After the transitional beats, so a check-in can never land on the frame
   // that shows a creep, a ship or an ask — those steps have already returned.
   maybeNag(state);
-  if (input.tab) {
-    takeCopilot(state);
+  if (input.clear) {
+    clearLine(state);
     return state;
   }
+  // Tab with no offer open answers and does NOT eat the frame, so a Tab
+  // pressed mid-word no longer swallows the next character's step too.
+  if (input.tab && takeCopilot(state)) return state;
   if (input.backspace) {
     backspace(state);
     return state;
