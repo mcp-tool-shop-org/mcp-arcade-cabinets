@@ -464,7 +464,8 @@ function sayFailLine(err: unknown): string {
   if (/no cabinet server built/i.test(cleaned)) return 'say seat: the local game is not built';
   const k = errorKind(err);
   if (k !== 'script') return `say seat: ${WHY_WORD[k]}`;
-  if (cleaned && cleaned !== 'say') return `say seat: ${cleaned}`;
+  // A script fault says the plain word and never the message: the message
+  // is whatever threw, which is not a player's line (Kimi's review of Stage C).
   return `say seat: ${WHY_WORD.script}`;
 }
 
@@ -952,10 +953,12 @@ export function mountGhost(
    *
    * Entering: focus the field, which is the element the browser is showing;
    * the Full screen button is one Tab away from it, as it is the rest of the
-   * time. Leaving: the field keeps the keys, because the arrows and F are the
-   * field's and a player who has just left full screen is still playing — but
-   * a player who left by clicking the button never lost focus, and nothing is
-   * taken from them.
+   * time. Leaving: the field takes the keys, because the arrows and F are the
+   * field's and a player who has just left full screen is still playing. That
+   * includes a player who left by clicking the button: with focus left on the
+   * button every key after it has a control as its target and none reaches
+   * the game (Kimi's review of Stage C). The one thing not taken is a text
+   * box the player is typing in.
    */
   const followFull = () => {
     if (left) return;
@@ -964,7 +967,8 @@ export function mountGhost(
       canvas.focus();
       return;
     }
-    if (active === null || active === canvas || active === document.body) canvas.focus();
+    if (active instanceof HTMLInputElement && active.type === 'text') return;
+    canvas.focus();
   };
   onFullChange(followFull, true);
   const layoutField = () => {

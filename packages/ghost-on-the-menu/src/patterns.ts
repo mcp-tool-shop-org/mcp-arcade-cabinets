@@ -1471,6 +1471,8 @@ export function readLineBags(raw: unknown): LineBags {
     if (!isPermutation(order as number[])) continue;
     if (!Number.isInteger(v.at) || !Number.isInteger(v.cycle)) continue;
     if ((v.at as number) < 0 || (v.cycle as number) < 0) continue;
+    // A cursor at the length is a spent bag (the next draw reshuffles and
+    // counts a cycle); past the length is not a walk at all.
     if ((v.at as number) > order.length) continue;
     out[key] = { order: order as number[], at: v.at as number, cycle: v.cycle as number };
   }

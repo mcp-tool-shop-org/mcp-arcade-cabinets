@@ -352,6 +352,31 @@ describe('full screen, and where the keys are afterwards', () => {
       undo();
     }
   });
+
+  it('gives the keys back to the field when the player leaves by the button', () => {
+    const undo = fullScreenable();
+    try {
+      const game = mount();
+      const canvas = root.querySelector('canvas')!;
+      const full = [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Full screen',
+      )!;
+      full.click();
+      expect(document.activeElement).toBe(canvas);
+      // The player clicks the button to leave: focus is on the button when
+      // the browser drops out, and a key pressed there reaches no game.
+      full.focus();
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => null,
+      });
+      document.dispatchEvent(new Event('fullscreenchange'));
+      expect(document.activeElement, 'the button kept the keys').toBe(canvas);
+      game.unmount();
+    } finally {
+      undo();
+    }
+  });
 });
 
 // The seat's model pick was field-local, so `fillPilot` fell back to the
