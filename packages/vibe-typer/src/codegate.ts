@@ -13,6 +13,14 @@
 // cannot know: that the text is code, in the right language, worth roughly
 // what a corpus snippet of that band is worth (G24).
 //
+// Every bound below is a SEAT POLICY, not the field's capacity. The authored
+// corpus is not held to them and never has been: it ships lines past 80
+// columns and snippets past 12 live lines, and it plays. The bounds exist so
+// a seated model, writing unproofread into the run in hand, lands inside the
+// shape the lead already reviewed. The refusal sentences say "a seated line"
+// for the same reason — a reader who takes them for the field's width would
+// go looking for a truncation mark that is not there.
+//
 // Pure. No node:, no clock, no state: the same candidate and the same
 // context always give the same verdict.
 
@@ -24,11 +32,17 @@ import { britishHit } from './spelling';
 import type { Band, Snippet, Stack } from './types';
 
 // The bounds the Director owns. // Director
-/** Non-empty code lines a seated request may carry. */
+/**
+ * Non-empty code lines a SEATED request may carry. Not the field's depth:
+ * the authored corpus ships snippets well past this and plays.
+ */
 export const MAX_LINES = 12;
-/** Columns a code line may reach. */
+/**
+ * Columns a SEATED code line may reach. Not the field's width: the authored
+ * corpus ships lines past this and plays.
+ */
 export const MAX_COLS = 80;
-/** Teaching notes a request may carry. */
+/** Teaching notes a seated request may carry. */
 export const MAX_NOTES = 3;
 /** Words the product may run to. */
 export const MAX_PRODUCT_WORDS = 8;
@@ -52,9 +66,23 @@ export const MAX_TOLERANCE = 0.5;
 export interface SeatRequest {
   /** A new product, when the seat was told the level is new. */
   product?: string;
+  /** The user's line on the field. The player reads this one. */
   ask: string;
+  /** The code the player types, character for character. */
   code: string;
+  /**
+   * A short name for the snippet. RECORDED, NOT DISPLAYED: nothing on the
+   * field, in the transcript or in either runner renders a title today. It
+   * rides along in the accepted `Snippet` so a run's JSON, a receipt and any
+   * later shelf pass can name what was played. A seat is not writing it for
+   * a screen, so it is gated for the word list and nothing more.
+   */
   title: string;
+  /**
+   * Teaching notes. RECORDED, NOT DISPLAYED, the same way the title is —
+   * they are there for the record and for a later retro surface, not for
+   * this frame.
+   */
   notes: string[];
 }
 
@@ -88,7 +116,19 @@ export interface CodeGateCtx {
 
 export type CodeGateResult =
   | { ok: true; snippet: Snippet; product?: string }
-  | { ok: false; reason: CodeGateReason; detail?: string };
+  | {
+      ok: false;
+      reason: CodeGateReason;
+      detail?: string;
+      /**
+       * The widening this verdict actually applied, as a fraction. Set only
+       * where a tolerance was applied — the value window — because that is
+       * the one refusal whose sentence names a number, and the number has to
+       * be `ctx.tolerance` rather than the module default a caller may have
+       * overridden.
+       */
+      tolerance?: number;
+    };
 
 /**
  * The barred words, without the digit branch. VOICE_FORBIDDEN refuses any
@@ -287,8 +327,11 @@ export function bandRange(
   return range;
 }
 
-function refuse(reason: CodeGateReason, detail?: string): CodeGateResult {
-  return detail === undefined ? { ok: false, reason } : { ok: false, reason, detail };
+function refuse(reason: CodeGateReason, detail?: string, tolerance?: number): CodeGateResult {
+  const out: CodeGateResult = { ok: false, reason };
+  if (detail !== undefined) out.detail = detail;
+  if (tolerance !== undefined) out.tolerance = tolerance;
+  return out;
 }
 
 /** Trailing whitespace off every line, trailing blank lines off the block. */
@@ -425,9 +468,15 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   const low = range.min * (1 - ctx.tolerance);
   const high = range.max * (1 + ctx.tolerance);
   if (v < low || v > high) {
+    // The bound goes beside the measurement, the way `too-wide` and
+    // `too-many-lines` do it, and the widening reported is the one this
+    // call applied rather than the module default.
+    const side =
+      v < low ? "worth less than the band's floor" : "worth more than the band's ceiling";
     return refuse(
       'value-out-of-band',
-      v < low ? "worth less than the band's floor" : "worth more than the band's ceiling",
+      `${side}: ${Math.round(v)} of ${Math.round(low)}..${Math.round(high)}`,
+      ctx.tolerance,
     );
   }
 
@@ -494,9 +543,9 @@ export function reasonText(result: CodeGateResult): string {
     case 'tab':
       return 'the code has a tab or a carriage return in it; spaces and newlines only';
     case 'too-many-lines':
-      return `the code runs to more than ${MAX_LINES} lines${detail}`;
+      return `a seated request may run to ${MAX_LINES} lines${detail}`;
     case 'too-wide':
-      return `a line is wider than ${MAX_COLS} columns${detail}`;
+      return `a seated line may reach ${MAX_COLS} columns${detail}`;
     case 'unbalanced':
       return 'a bracket or a quote in the code is never closed';
     case 'wrong-language':
@@ -506,13 +555,23 @@ export function reasonText(result: CodeGateResult): string {
     case 'names-a-model':
       return 'the code names a model by name';
     case 'value-out-of-band':
-      return `the request is outside the band, which the gate may widen by ${VALUE_TOLERANCE} at most${detail}`;
+      // The widening named is the one applied. `gateCode` takes a tolerance
+      // anywhere in 0..MAX_TOLERANCE, so the module default would be a lie
+      // for every caller that passes its own, and a seat asked to correct
+      // itself would correct against a bound nobody used. The two value
+      // refusals that apply no tolerance at all (no band in the corpus, a
+      // value that is not a number) carry none and claim none.
+      return result.tolerance === undefined
+        ? `the request is outside the band${detail}`
+        : `the request is outside the band, which this gate widened by ${Math.round(
+            result.tolerance * 100,
+          )}%${detail}`;
     case 'bad-ask':
       return `the ask cannot be said on the field${detail}`;
     case 'bad-title':
-      return `the title cannot be said on the field${detail}`;
+      return `the title must pass the same scan every authored line passes${detail}`;
     case 'bad-notes':
-      return `a note cannot be said on the field, and there may be ${MAX_NOTES} at most${detail}`;
+      return `a note must pass the same scan every authored line passes, and there may be ${MAX_NOTES} at most${detail}`;
     case 'bad-product':
       return `the product cannot be said on the field, and it may run to ${MAX_PRODUCT_WORDS} words at most${detail}`;
   }

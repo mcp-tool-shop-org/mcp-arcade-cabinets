@@ -8,7 +8,7 @@
     "notes": ["Prints the string Hello, World! to standard output."],
     "topics": ["output", "println"],
     "ask": "make {product} say hello to the user",
-    "reaction": "my fern never heard a nicer hello"
+    "reaction": "my fern never heard a nicer hello."
   },
   {
     "id": "cal-jv-d1-002",
@@ -19,7 +19,7 @@
     "notes": ["Declares an integer variable and prints its value."],
     "topics": ["variables", "int", "println"],
     "ask": "make {product} remember a number and show it",
-    "reaction": "the number stays right where i left it"
+    "reaction": "the number stays right where i left it."
   },
   {
     "id": "cal-jv-d1-003",
@@ -30,7 +30,7 @@
     "notes": ["Concatenates two strings with a space separator into a full name."],
     "topics": ["string", "concatenation", "variables"],
     "ask": "make {product} join a first and last name",
-    "reaction": "it joins them while i stretch my legs"
+    "reaction": "it joins them while i stretch my legs."
   },
   {
     "id": "cal-jv-d1-004",
@@ -41,7 +41,7 @@
     "notes": ["Declares two boolean flags and combines them with a logical AND."],
     "topics": ["boolean", "logical-operators", "variables"],
     "ask": "ask {product} if two things are both true",
-    "reaction": "it says yes only when both are true"
+    "reaction": "it says yes only when both are true."
   },
   {
     "id": "cal-jv-d1-005",
@@ -52,13 +52,13 @@
     "notes": ["Multiplies a price by a quantity to compute a total cost."],
     "topics": ["arithmetic", "double", "variables"],
     "ask": "make {product} multiply price by quantity",
-    "reaction": "the total arrives before i finish typing"
+    "reaction": "the total arrives before i finish typing."
   },
   {
     "id": "java-enhanced-for",
     "stack": "java",
     "band": 1,
-    "title": "Enhanced for loop",
+    "title": "enhanced for loop",
     "code": "var colors = List.of(\"red\", \"green\", \"blue\");\nfor (var color : colors) {\n    System.out.println(color.toUpperCase());\n}",
     "notes": [
       "The enhanced for loop iterates without an index.",
@@ -77,7 +77,7 @@
     "notes": ["Uses an if-else block to classify a temperature value as hot or cool."],
     "topics": ["if-else", "conditionals", "variables"],
     "ask": "make {product} say hot or cool",
-    "reaction": "it knows the difference without asking"
+    "reaction": "it knows the difference without asking."
   },
   {
     "id": "cal-jv-d2-002",
@@ -88,7 +88,7 @@
     "notes": ["Sums the integers from 1 to 10 using a for loop and prints the result."],
     "topics": ["for-loop", "accumulator", "arithmetic"],
     "ask": "make {product} add up numbers from one to ten",
-    "reaction": "it counts them while i check my watch"
+    "reaction": "it counts them while i check my watch."
   },
   {
     "id": "cal-jv-d2-003",
@@ -99,7 +99,7 @@
     "notes": ["Counts down from 5 to 1 using a while loop then prints Go."],
     "topics": ["while-loop", "decrement", "println"],
     "ask": "count down until {product} goes live",
-    "reaction": "it builds the drama just right"
+    "reaction": "it builds the drama just right."
   },
   {
     "id": "cal-jv-d2-004",
@@ -111,7 +111,7 @@
     "topics": ["arrays", "enhanced-for", "iteration"],
     "for": "lost-sock-platform",
     "ask": "list every lost sock by color",
-    "reaction": "the list shouts every color back at me"
+    "reaction": "the list shouts every color back at me."
   },
   {
     "id": "cal-jv-d2-005",
@@ -122,13 +122,13 @@
     "notes": ["Defines a static method that squares an integer and calls it from main."],
     "topics": ["methods", "return-value", "static"],
     "ask": "teach {product} how to square a number",
-    "reaction": "the square arrives before i ask"
+    "reaction": "the square arrives before i ask."
   },
   {
     "id": "java-stringbuilder",
     "stack": "java",
     "band": 2,
-    "title": "StringBuilder loop",
+    "title": "stringbuilder loop",
     "code": "var sb = new StringBuilder();\nfor (int i = 1; i <= 5; i++)\n    sb.append(i).append(i < 5 ? \", \" : \"\\n\");\nSystem.out.print(sb);",
     "notes": [
       "StringBuilder avoids costly string concatenation in loops.",
@@ -136,7 +136,7 @@
     ],
     "topics": ["StringBuilder", "loops", "string-building"],
     "ask": "make {product} build a comma list of numbers",
-    "reaction": "every comma lands just where it should"
+    "reaction": "every comma lands just where it should."
   },
   {
     "id": "cal-jv-d3-001",
@@ -148,7 +148,7 @@
     "topics": ["list", "filtering", "enhanced-for", "conditionals"],
     "for": "lost-sock-platform",
     "ask": "keep only the socks with no partner",
-    "reaction": "the lonely socks now stand out proud"
+    "reaction": "the lonely socks now stand out proud."
   },
   {
     "id": "cal-jv-d3-002",
@@ -159,7 +159,7 @@
     "notes": ["Uses a switch expression with arrow syntax to map a month number to a season name."],
     "topics": ["switch-expression", "pattern-matching", "methods"],
     "ask": "make {product} know the season from the month",
-    "reaction": "it picks them while i tie my shoes"
+    "reaction": "it picks them while i tie my shoes."
   },
   {
     "id": "cal-jv-d3-003",
@@ -171,7 +171,7 @@
     "topics": ["map", "hashmap", "entry-set", "generics"],
     "for": "lost-sock-platform",
     "ask": "pair every sock with its current location",
-    "reaction": "the pairs march in perfect order"
+    "reaction": "the pairs march in perfect order."
   },
   {
     "id": "cal-jv-d3-004",
@@ -182,7 +182,7 @@
     "notes": ["Attempts to parse a string as an integer and returns a fallback value on failure."],
     "topics": ["try-catch", "exception-handling", "parsing"],
     "ask": "make {product} read a number safely",
-    "reaction": "the numbers arrive while i sip my tea"
+    "reaction": "the numbers arrive while i sip my tea."
   },
   {
     "id": "cal-jv-d3-005",
@@ -193,13 +193,13 @@
     "notes": ["Defines a record with area, perimeter, and describe methods for a rectangle."],
     "topics": ["records", "methods", "string-format"],
     "ask": "size each loyalty card and show its area",
-    "reaction": "my fern never saw such neat rectangles"
+    "reaction": "my fern never saw such neat rectangles."
   },
   {
     "id": "java-optional",
     "stack": "java",
     "band": 3,
-    "title": "Optional usage",
+    "title": "optional usage",
     "code": "Optional<String> name = Optional.ofNullable(getInput());\nString display = name\n    .map(String::toUpperCase)\n    .orElse(\"Anonymous\");",
     "notes": [
       "Optional avoids null checks with a fluent API.",
@@ -208,13 +208,13 @@
     "topics": ["Optional", "null-safety", "functional"],
     "for": "lost-sock-platform",
     "ask": "use unknown if the sock has no owner",
-    "reaction": "the sock knows when it is alone"
+    "reaction": "the sock knows when it is alone."
   },
   {
     "id": "java-try-resources",
     "stack": "java",
     "band": 3,
-    "title": "Try-with-resources",
+    "title": "try-with-resources",
     "code": "try (var reader = new BufferedReader(new FileReader(path))) {\n    String line;\n    while ((line = reader.readLine()) != null)\n        System.out.println(line);\n}",
     "notes": [
       "Resources in the try header are auto-closed on exit.",
@@ -222,7 +222,7 @@
     ],
     "topics": ["try-with-resources", "io", "auto-close"],
     "ask": "load the regulars from the member file",
-    "reaction": "it loads them while i stretch my legs"
+    "reaction": "it loads them while i stretch my legs."
   },
   {
     "id": "cal-jv-d4-001",
@@ -235,7 +235,7 @@
     ],
     "topics": ["enum", "abstract-method", "polymorphism"],
     "ask": "add subtract or multiply the stamps they earn",
-    "reaction": "it handles them while i take a breath"
+    "reaction": "it handles them while i take a breath."
   },
   {
     "id": "cal-jv-d4-002",
@@ -248,7 +248,7 @@
     ],
     "topics": ["generics", "class", "encapsulation", "toString"],
     "ask": "pair each member with their usual order",
-    "reaction": "every member now has their own shadow"
+    "reaction": "every member now has their own shadow."
   },
   {
     "id": "cal-jv-d4-003",
@@ -289,7 +289,7 @@
     "id": "java-interface-default",
     "stack": "java",
     "band": 4,
-    "title": "Interface default method",
+    "title": "interface default method",
     "code": "public interface Greeter {\n    String greet(String name);\n    default String shout(String name) {\n        return greet(name).toUpperCase();\n    }\n}",
     "notes": [
       "default methods let interfaces evolve without breaking implementors.",
@@ -297,18 +297,18 @@
     ],
     "topics": ["interface", "default-method", "abstraction"],
     "ask": "make {product} greet them and shout it",
-    "reaction": "the hello now shouts back at me"
+    "reaction": "the hello now shouts back at me."
   },
   {
     "id": "java-stream",
     "stack": "java",
     "band": 4,
-    "title": "Stream pipeline",
+    "title": "stream pipeline",
     "code": "var result = list.stream()\n    .filter(x -> x % 2 == 0)\n    .map(x -> x * x)\n    .collect(java.util.stream.Collectors.toList());",
     "notes": ["Pipeline uses lambdas and method chaining.", "Mind arrows, dots, and semicolons."],
     "topics": ["streams", "lambda", "collect"],
     "ask": "make {product} filter a list and change it",
-    "reaction": "the list bends and comes back perfect"
+    "reaction": "the list bends and comes back perfect."
   },
   {
     "id": "cal-jv-d5-001",
@@ -321,7 +321,7 @@
     ],
     "topics": ["streams", "collectors", "groupingBy", "lambda", "generics"],
     "ask": "make {product} group words by how big they are",
-    "reaction": "the words line up by their own size"
+    "reaction": "the words line up by their own size."
   },
   {
     "id": "cal-jv-d5-002",
@@ -373,13 +373,13 @@
     ],
     "topics": ["exceptions", "inheritance", "nested-class", "constructors"],
     "ask": "make {product} complain with specific error types",
-    "reaction": "the errors now have names and faces"
+    "reaction": "the errors now have names and faces."
   },
   {
     "id": "java-record",
     "stack": "java",
     "band": 5,
-    "title": "Record + method",
+    "title": "record + method",
     "code": "public record Point(int x, int y) {\n    public String fmt() {\n        return String.format(\"(%d, %d)\", x, y);\n    }\n}",
     "notes": [
       "Records are concise data carriers.",
@@ -387,7 +387,7 @@
     ],
     "topics": ["records", "methods", "string-format"],
     "ask": "make {product} store a point and format it",
-    "reaction": "it remembers the spot and tells me where"
+    "reaction": "it remembers the spot and tells me where."
   },
   {
     "id": "cal-jv-d6-001",
@@ -452,7 +452,7 @@
     ],
     "topics": ["annotations", "reflection", "serialization", "custom-annotation"],
     "ask": "make {product} turn marked fields into strings",
-    "reaction": "it takes the marks and makes them talk"
+    "reaction": "it takes the marks and makes them talk."
   },
   {
     "id": "cal-jv-d7-001",
@@ -497,7 +497,7 @@
       "switch-expression"
     ],
     "ask": "make {product} do sums written as little boxes",
-    "reaction": "the boxes now add and multiply on their own"
+    "reaction": "the boxes now add and multiply on their own."
   },
   {
     "id": "cal-jv-d7-004",

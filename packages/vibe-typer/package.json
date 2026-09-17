@@ -14,6 +14,8 @@
     "build": "esbuild src/play.ts --bundle --platform=node --format=esm --outfile=dist/play.js --log-level=warning",
     "port:corpus": "node scripts/port-corpus.mjs",
     "author": "node scripts/author.mjs",
-    "sweep:levels": "node scripts/sweep-levels.mjs"
+    "sweep:levels": "node scripts/sweep-levels.mjs",
+    "normalize": "node scripts/normalize-lines.mjs",
+    "normalize:check": "node scripts/normalize-lines.mjs --check"
   }
 }

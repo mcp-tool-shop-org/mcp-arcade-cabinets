@@ -8,7 +8,7 @@
     "code": "echo hello world",
     "notes": ["Prints hello world to standard output using echo."],
     "topics": ["echo", "commands"],
-    "reaction": "my cousin asked for this exact hello"
+    "reaction": "my cousin asked for this exact hello."
   },
   {
     "id": "cal-sh-d1-002",
@@ -59,7 +59,7 @@
     "id": "sh-for-loop",
     "stack": "bash",
     "band": 1,
-    "title": "For loop",
+    "title": "for loop",
     "for": "cat-website",
     "ask": "show every toy she has reviewed",
     "code": "for file in *.txt; do\n    echo \"Processing: $file\"\ndone",
@@ -137,7 +137,7 @@
     "id": "sh-array",
     "stack": "bash",
     "band": 2,
-    "title": "Array operations",
+    "title": "array operations",
     "code": "servers=(\"web01\" \"web02\" \"db01\")\necho \"Count: ${#servers[@]}\"\nfor s in \"${servers[@]}\"; do\n    echo \"Pinging $s\"\ndone",
     "notes": [
       "${#arr[@]} returns the array length.",
@@ -152,7 +152,7 @@
     "id": "sh-if-else",
     "stack": "bash",
     "band": 2,
-    "title": "If/else file check",
+    "title": "if/else file check",
     "code": "if [ -f \"$1\" ]; then\n    echo \"File exists: $1\"\nelse\n    echo \"Not found: $1\" >&2\n    exit 1\nfi",
     "notes": [
       "-f tests if a path is a regular file.",
@@ -160,7 +160,7 @@
     ],
     "topics": ["if-else", "test", "conditionals"],
     "ask": "check if {product} has the file it needs",
-    "reaction": "it tells me if the file is ready"
+    "reaction": "it tells me if the file is ready."
   },
   {
     "id": "cal-sh-d3-001",
@@ -225,7 +225,7 @@
     "id": "sh-function",
     "stack": "bash",
     "band": 3,
-    "title": "Shell function",
+    "title": "shell function",
     "code": "log() {\n    local level=\"$1\"; shift\n    printf \"[%s] %s\\n\" \"$level\" \"$*\"\n}\nlog INFO \"Deployment started\"",
     "notes": [
       "local scopes variables to the function.",
@@ -239,7 +239,7 @@
     "id": "sh-safe",
     "stack": "bash",
     "band": 3,
-    "title": "Safer shell",
+    "title": "safer shell",
     "code": "set -euo pipefail\n\nDIR=\"${1:-.}\"\nfind \"$DIR\" -type f -name \"*.log\" -print0 | xargs -0 wc -l",
     "notes": ["Pipefail helps surface errors.", "Practice quotes, ${} expansions, and pipes."],
     "topics": ["set", "pipefail", "variables"],
@@ -314,7 +314,7 @@
     "notes": ["Deploys a release tarball with automatic rollback on error using a trap handler."],
     "topics": ["trap", "functions", "set", "deployment", "rollback"],
     "ask": "release the new {product} and undo if it breaks",
-    "reaction": "it lets go when it should"
+    "reaction": "it lets go when it should."
   },
   {
     "id": "cal-sh-d5-002",
@@ -438,7 +438,7 @@
     ],
     "topics": ["monitoring", "functions", "awk", "while-loop", "indirect-expansion"],
     "ask": "watch {product} breathe and yell if it wheezes",
-    "reaction": "it shouts before the room gets sick"
+    "reaction": "it shouts before the room gets sick."
   },
   {
     "id": "cal-sh-d7-001",

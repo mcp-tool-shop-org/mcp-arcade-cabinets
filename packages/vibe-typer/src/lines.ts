@@ -137,7 +137,7 @@ export class LinePicker {
    * ONE PATH COMES BEFORE ALL OF THAT: a snippet that carries its own
    * `reaction` says the line written beside its own ask, so the reaction
    * answers the request the player just read. It is filled the way the ask
-   * is (`{product}` and nothing else), it honours the same `for` binding —
+   * is (`{product}` and nothing else), it honors the same `for` binding —
    * a reaction leaning on one story's premise plays only in that level —
    * and it spends NO draw from the generic bag and is not recorded as said,
    * exactly as a snippet's own ask spends no draw from the template pool.

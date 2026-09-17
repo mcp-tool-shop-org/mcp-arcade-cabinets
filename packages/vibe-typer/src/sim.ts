@@ -781,8 +781,8 @@ function ship(state: RunState): void {
   ctx.reaction = null;
   ctx.reactionFor = null;
   // The product and the level id go to the picker so a snippet's own
-  // reaction can fill `{product}` and can honour the `for` binding its ask
-  // already honours. Without them the picker could do neither, and a
+  // reaction can fill `{product}` and can honor the `for` binding its ask
+  // already honors. Without them the picker could do neither, and a
   // reaction authored beside an ask would have been unreachable.
   say(
     state,

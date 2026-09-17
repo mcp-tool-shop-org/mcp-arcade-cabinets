@@ -12,7 +12,7 @@
   "copilotDiscount": 0.4,
   "milestones": [
     { "name": "seed", "at": 100 },
-    { "name": "series a", "at": 500 },
+    { "name": "Series A", "at": 500 },
     { "name": "unicorn", "at": 1800 }
   ],
   "hardcore": {

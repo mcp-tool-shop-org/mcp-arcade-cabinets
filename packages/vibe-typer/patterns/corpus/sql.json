@@ -32,7 +32,7 @@
     "notes": ["Removes all rows from sessions where the expired flag is true."],
     "topics": ["delete", "where", "dml"],
     "ask": "remove the ones that were just okay",
-    "reaction": "the ones that were just okay now have a home"
+    "reaction": "the ones that were just okay now have a home."
   },
   {
     "id": "cal-sq-d1-004",
@@ -43,7 +43,7 @@
     "notes": ["Counts the number of orders with a shipped status."],
     "topics": ["aggregate", "count", "where"],
     "ask": "make {product} count the shipped orders",
-    "reaction": "the shipped ones now shout their number back"
+    "reaction": "the shipped ones now shout their number back."
   },
   {
     "id": "cal-sq-d1-005",
@@ -60,7 +60,7 @@
     "id": "sql-insert",
     "stack": "sql",
     "band": 1,
-    "title": "INSERT row",
+    "title": "insert row",
     "code": "INSERT INTO products (name, price, category)\nVALUES ('Mechanical Keyboard', 89.99, 'peripherals');",
     "notes": [
       "INSERT INTO adds a new row to a table.",
@@ -68,7 +68,7 @@
     ],
     "topics": ["insert", "values", "dml"],
     "ask": "make {product} add a new product",
-    "reaction": "the new one now has a spot in the family"
+    "reaction": "the new one now has a spot in the family."
   },
   {
     "id": "cal-sq-d2-001",
@@ -107,8 +107,8 @@
       "Left joins users to profiles, substituting defaults for null bio and avatar fields."
     ],
     "topics": ["left-join", "coalesce", "null-handling"],
-    "ask": "show my ferns and their photos, default if none.",
-    "reaction": "the photos line up without a single empty spot"
+    "ask": "show my ferns and their photos, default if none",
+    "reaction": "the photos line up without a single empty spot."
   },
   {
     "id": "cal-sq-d2-004",
@@ -119,7 +119,7 @@
     "notes": ["Inserts aggregated monthly stats per region using a SELECT with type casts."],
     "topics": ["insert-select", "type-cast", "aggregate"],
     "ask": "build me a monthly summary from {product}",
-    "reaction": "the months now tell their own story"
+    "reaction": "the months now tell their own story."
   },
   {
     "id": "cal-sq-d2-005",
@@ -137,7 +137,7 @@
     "id": "sql-join",
     "stack": "sql",
     "band": 2,
-    "title": "Inner JOIN",
+    "title": "inner join",
     "code": "SELECT o.id, c.name, o.total\nFROM orders o\nINNER JOIN customers c ON c.id = o.customer_id\nWHERE o.total > 100;",
     "notes": [
       "JOIN combines rows from two tables on a matching key.",
@@ -151,7 +151,7 @@
     "id": "sql-update",
     "stack": "sql",
     "band": 2,
-    "title": "UPDATE with WHERE",
+    "title": "update with where",
     "code": "UPDATE employees\nSET salary = salary * 1.05,\n    updated_at = CURRENT_TIMESTAMP\nWHERE department = 'engineering';",
     "notes": [
       "Always include a WHERE clause to avoid updating every row.",
@@ -159,7 +159,7 @@
     ],
     "topics": ["update", "set", "where", "dml"],
     "ask": "make {product} give the engineering team a raise",
-    "reaction": "the team sits there with their raise"
+    "reaction": "the team sits there with their raise."
   },
   {
     "id": "cal-sq-d3-001",
@@ -171,8 +171,8 @@
       "Uses a CTE for monthly payment totals, then filters for months above average via a subquery."
     ],
     "topics": ["cte", "subquery", "aggregation"],
-    "ask": "show months where i spend more than my average.",
-    "reaction": "the big months stand out neat"
+    "ask": "show months where i spend more than my average",
+    "reaction": "the big months stand out neat."
   },
   {
     "id": "cal-sq-d3-002",
@@ -211,7 +211,7 @@
     ],
     "topics": ["ddl", "create-table", "constraints", "references"],
     "ask": "make a table for every plant and its spot",
-    "reaction": "the table holds every plant and its favorite spot"
+    "reaction": "the table holds every plant and its favorite spot."
   },
   {
     "id": "cal-sq-d3-005",
@@ -222,13 +222,13 @@
     "notes": ["Finds customers who have at least one shipped or delivered order using EXISTS."],
     "topics": ["exists", "subquery", "in-list"],
     "ask": "spot the plants that got water or new soil",
-    "reaction": "it finds the thirsty ones before i even check"
+    "reaction": "it finds the thirsty ones before i even check."
   },
   {
     "id": "sql-subquery",
     "stack": "sql",
     "band": 3,
-    "title": "Subquery filter",
+    "title": "subquery filter",
     "code": "SELECT name, email\nFROM users\nWHERE id IN (\n  SELECT user_id FROM purchases\n  WHERE amount >= 500\n);",
     "notes": [
       "Subqueries let you filter by results from another query.",
@@ -249,7 +249,7 @@
     ],
     "topics": ["window-function", "rank", "partition-by"],
     "ask": "make {product} rank employees in each department by salary",
-    "reaction": "every department now knows its stars"
+    "reaction": "every department now knows its stars."
   },
   {
     "id": "cal-sq-d4-002",
@@ -260,7 +260,7 @@
     "notes": ["Chains two CTEs to join active users with their recent 90-day order activity."],
     "topics": ["cte", "multi-cte", "left-join", "interval"],
     "ask": "make {product} show active users and their recent orders",
-    "reaction": "the active ones now have their orders"
+    "reaction": "the active ones now have their orders."
   },
   {
     "id": "cal-sq-d4-003",
@@ -271,7 +271,7 @@
     "notes": ["Decrements inventory based on confirmed order totals from a nested derived table."],
     "topics": ["update-from", "subquery", "nested-in"],
     "ask": "make {product} subtract recent confirmed orders from inventory",
-    "reaction": "the shelves stay honest without me lifting a finger"
+    "reaction": "the shelves stay honest without me lifting a finger."
   },
   {
     "id": "cal-sq-d4-004",
@@ -282,7 +282,7 @@
     "notes": ["Finds customers with recent large orders who have no unresolved complaints."],
     "topics": ["exists", "not-exists", "correlated-subquery"],
     "ask": "make {product} find customers with big orders and no complaints",
-    "reaction": "the happy ones now have their own spot"
+    "reaction": "the happy ones now have their own spot."
   },
   {
     "id": "cal-sq-d4-005",
@@ -295,18 +295,18 @@
     ],
     "topics": ["upsert", "on-conflict", "insert-select", "greatest"],
     "ask": "make {product} add today views to stats or update them",
-    "reaction": "the views march in and find their own home"
+    "reaction": "the views march in and find their own home."
   },
   {
     "id": "sql-cte",
     "stack": "sql",
     "band": 4,
-    "title": "CTE + aggregate",
+    "title": "cte + aggregate",
     "code": "WITH counts AS (\n  SELECT user_id, COUNT(*) AS n\n  FROM events\n  WHERE event_type = 'click'\n  GROUP BY user_id\n)\nSELECT user_id, n\nFROM counts\nORDER BY n DESC\nLIMIT 10;",
     "notes": ["CTEs make queries readable.", "Practice quotes, commas, and indentation."],
     "topics": ["cte", "group-by", "order-by"],
     "ask": "make {product} find the top ten users who click most",
-    "reaction": "the top ten now shout their own names"
+    "reaction": "the top ten now shout their own names."
   },
   {
     "id": "cal-sq-d5-001",
@@ -319,7 +319,7 @@
     ],
     "topics": ["window-function", "lag", "case", "cte"],
     "ask": "make {product} label each day as growth or decline",
-    "reaction": "growth and decline sit there side by side"
+    "reaction": "growth and decline sit there side by side."
   },
   {
     "id": "cal-sq-d5-002",
@@ -345,7 +345,7 @@
     ],
     "topics": ["ntile", "percent-rank", "window-function", "cte"],
     "ask": "make {product} find the top quarter earners in each department",
-    "reaction": "the top earners now stand out neat"
+    "reaction": "the top earners now stand out neat."
   },
   {
     "id": "cal-sq-d5-004",
@@ -358,7 +358,7 @@
     ],
     "topics": ["writeable-cte", "upsert", "returning"],
     "ask": "make {product} add new stock and freshen the old counts",
-    "reaction": "the new stock arrives and the old counts breathe easy"
+    "reaction": "the new stock arrives and the old counts breathe easy."
   },
   {
     "id": "cal-sq-d5-005",
@@ -371,7 +371,7 @@
     ],
     "topics": ["grouping-sets", "filter-clause", "aggregate"],
     "ask": "make {product} show totals by region category and everything combined",
-    "reaction": "every region and category gets its own voice"
+    "reaction": "every region and category gets its own voice."
   },
   {
     "id": "cal-sq-d6-001",
@@ -384,7 +384,7 @@
     ],
     "topics": ["recursive-cte", "hierarchy", "array"],
     "ask": "make {product} draw the company family tree",
-    "reaction": "every name finds its spot and its own line"
+    "reaction": "every name finds its spot and its own line."
   },
   {
     "id": "cal-sq-d6-002",
@@ -397,7 +397,7 @@
     ],
     "topics": ["cte", "window-function", "lag", "case", "rank"],
     "ask": "make {product} show top five products each month with trends",
-    "reaction": "the board finally sees the whole year at once"
+    "reaction": "the board finally sees the whole year at once."
   },
   {
     "id": "cal-sq-d6-003",
@@ -410,7 +410,7 @@
     ],
     "topics": ["function", "plpgsql", "generate-series", "returns-table"],
     "ask": "make {product} group orders into weeks or days",
-    "reaction": "the weeks line up without me lifting a finger"
+    "reaction": "the weeks line up without me lifting a finger."
   },
   {
     "id": "cal-sq-d6-004",
@@ -436,7 +436,7 @@
     ],
     "topics": ["json-agg", "json-build-object", "correlated-subquery", "case"],
     "ask": "make {product} build department lists with nested skills",
-    "reaction": "every department now sees its whole family at once"
+    "reaction": "every department now sees its whole family at once."
   },
   {
     "id": "cal-sq-d7-001",
@@ -449,7 +449,7 @@
     ],
     "topics": ["recursive-cte", "graph", "cycle-detection", "array", "unnest"],
     "ask": "make {product} map service dependencies and spot loops",
-    "reaction": "every department stands there with its own voice"
+    "reaction": "every department stands there with its own voice."
   },
   {
     "id": "cal-sq-d7-002",
@@ -475,7 +475,7 @@
     ],
     "topics": ["pivot", "cross-join", "cte", "case", "generate-series"],
     "ask": "make {product} pivot monthly sales by category",
-    "reaction": "the months now hold hands and show their answer"
+    "reaction": "the months now hold hands and show their answer."
   },
   {
     "id": "cal-sq-d7-004",
@@ -501,6 +501,6 @@
     ],
     "topics": ["recursive-cte", "bill-of-materials", "window-function", "array", "cost-rollup"],
     "ask": "make {product} break down a product into parts and costs",
-    "reaction": "the pieces now line up by their own size"
+    "reaction": "the pieces now line up by their own size."
   }
 ]

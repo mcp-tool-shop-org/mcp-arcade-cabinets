@@ -76,7 +76,14 @@ function endlessDef(opts: EndlessAt, rng: () => number): LevelDef {
   const stack = opts.stack ?? stacks[Math.floor(rng() * stacks.length)]!;
   const bands = endlessBandAt(opts.set, i);
   return {
-    id: `endless-${i}`,
+    // One-based, because every other count of the same thing is. `play`
+    // reports `levels played: 3` and the transcript runner heads its rows
+    // `lvl 3`, while this minted `endless-2` for the same level one line
+    // away — two numbers for one thing, and the id is the only name the
+    // shell has to say WHICH level to a player. Nothing parses the ordinal
+    // back out of the id, so the name moves to the count rather than the
+    // other way round.
+    id: `endless-${i + 1}`,
     product: template.split('{noun}').join(noun),
     // An endless level has no authored premise; the standup shows nothing.
     story: '',
@@ -111,8 +118,26 @@ export function endlessPeek(opts: {
   return endlessDef(at, seededRandom(levelSeedFor(opts.seed, opts.levelIndex, opts.tier)));
 }
 
-/** The suffix a level's id carries once the run has moved it off its stack. */
+/**
+ * The suffix a level's id carries once the run has moved it off its stack.
+ *
+ * It is a LOOKUP KEY and not a name: it exists so `reviewsByProduct` misses
+ * and the generic reviews play. `play` strips it before printing and says
+ * what happened in words instead — `level duck-rides-moved` told a reader
+ * that a level existed with a hyphenated suffix and no explanation of what
+ * had moved or where. Use `printableLevelId` on any surface a reader sees.
+ */
 export const MOVED_SUFFIX = '-moved';
+
+/** True when this id carries the planner's own bookkeeping suffix. */
+export function wasMoved(id: string): boolean {
+  return id.endsWith(MOVED_SUFFIX);
+}
+
+/** A level id with the planner's bookkeeping off it, for a reader. */
+export function printableLevelId(id: string): string {
+  return wasMoved(id) ? id.slice(0, -MOVED_SUFFIX.length) : id;
+}
 
 /** The level definition at an index, or null when a listed run is finished. */
 export function levelDefAt(opts: PlanOpts, rng: () => number): LevelDef | null {

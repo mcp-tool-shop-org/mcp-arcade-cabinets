@@ -17,6 +17,8 @@ import {
   SCREEN_FORBIDDEN,
   typistBot,
 } from '../src/play';
+import { endlessPeek, MOVED_SUFFIX, printableLevelId } from '../src/level';
+import { DEFAULT_PATTERNS } from '../src/patterns';
 import { loadTape } from '@mcp-arcade-cabinets/tape-core';
 import { readFileSync } from 'node:fs';
 
@@ -79,7 +81,77 @@ describe('the play-through', () => {
     const lines = out.text.split('\n');
     expect(lines[0]).toBe('Vibe Typer');
     expect(lines[2]).toBe('level shipped');
-    expect(out.text).toMatch(/^valuation: \d+$/m);
+    expect(out.text).toMatch(/^valuation: \d+ \w+$/m);
+  });
+
+  // One label convention for the whole printed block. It used to say
+  // `stack javascript` four lines above `pieces: 4`, and the word `level`
+  // carried an id in the header and a count in the footer six lines apart.
+  it('labels every field the same way and never calls a count a level', () => {
+    const out = play({ tier: 0, bot: 'perfect', seed: 3 });
+    const lines = out.text.split('\n');
+    // No field is labelled with a bare space any more. The end word
+    // (`level shipped`) and the moved note are sentences and not fields, so
+    // the scan is anchored to the start of a line and to the field names.
+    for (const label of ['stack', 'product', 'agent', 'valuation', 'pieces']) {
+      expect(out.text, label).not.toMatch(new RegExp(`^${label} [a-z0-9]`, 'm'));
+    }
+    expect(lines[1]).toMatch(
+      /^level: \S+ · stack: \S+ · tier: \w+ · bot: \S+ · seed: \d+ · endless: no$/,
+    );
+    expect(out.text).toMatch(/^levels played: \d+$/m);
+    expect(out.text).not.toMatch(/^levels: /m);
+    expect(out.text).toMatch(/^product: /m);
+    expect(out.text).toMatch(/^agent: /m);
+  });
+
+  // The scoreboard's headline number had no unit on any surface while the
+  // milestones crossing it are named after funding rounds.
+  it('gives the valuation its unit off the field, from the lever', async () => {
+    const out = play({ tier: 0, bot: 'perfect', seed: 3 });
+    const unit = DEFAULT_PATTERNS.cabinet.words.valuationUnit;
+    expect(unit.length).toBeGreaterThan(0);
+    expect(out.text).toMatch(new RegExp(`^valuation: \\d+ ${unit}$`, 'm'));
+    // The board itself keeps the bare number: the unit is said off the field.
+    const { typerScreenHit } = await playCli();
+    expect(typerScreenHit(out.text)).toBeNull();
+  });
+
+  // The header used to be built after the loop from the level the run died
+  // on and printed as though it described the whole run: an endless run was
+  // headed with one product over a body that built three.
+  it('heads an endless run with the run, and records every level it played', async () => {
+    const out = play({ tier: 1, bot: 'typist:40', seed: 3, endless: true });
+    expect(out.levels).toBeGreaterThan(1);
+    const lines = out.text.split('\n');
+    expect(lines[1]).toMatch(/^last level: endless-\d+ ·/);
+    expect(lines[1]).toContain(`levels played: ${out.levels}`);
+    const products = lines.filter((line) => line.startsWith('product: '));
+    expect(products).toHaveLength(out.levels);
+    for (const line of products) expect(line).toMatch(/^product: .+ · stack: \w+$/);
+    const { typerScreenHit } = await playCli();
+    expect(typerScreenHit(out.text)).toBeNull();
+  });
+
+  // An endless level's only name was zero-based and was printed one line
+  // from a one-based count of the same thing.
+  it('names an endless level with the ordinal the rest of the cabinet counts with', () => {
+    expect(endlessPeek({ set: DEFAULT_PATTERNS, seed: 3, tier: 1, levelIndex: 0 }).id).toBe(
+      'endless-1',
+    );
+    expect(endlessPeek({ set: DEFAULT_PATTERNS, seed: 3, tier: 1, levelIndex: 2 }).id).toBe(
+      'endless-3',
+    );
+  });
+
+  // The planner's own bookkeeping suffix used to be printed as the level's
+  // only name: `--stack sql --level 1` read `level duck-rides-moved`.
+  it('says a moved level moved instead of gluing it to the name', () => {
+    expect(printableLevelId(`duck-rides${MOVED_SUFFIX}`)).toBe('duck-rides');
+    expect(printableLevelId('duck-rides')).toBe('duck-rides');
+    const out = play({ tier: 0, bot: 'perfect', seed: 3, stack: 'sql', level: 0 });
+    expect(out.text).not.toContain(MOVED_SUFFIX);
+    expect(out.text).toContain('the level was moved off its own stack');
   });
 
   it('fails the run when the bar empties on the gentlest tier', () => {
@@ -113,7 +185,7 @@ describe('the play-through', () => {
     }
     const out = play({ tier: 0, bot: 'perfect', seed: 1, stack: 'integration' });
     expect(out.ok, out.why).toBe(true);
-    expect(out.text).toMatch(/stack integration/);
+    expect(out.text).toMatch(/stack: integration/);
   });
 
   it('takes a tool name off a tape row and never a fact', () => {
@@ -221,10 +293,10 @@ describe('the runner', () => {
     const { typerScreenHit } = await playCli();
     const clean = [
       'Vibe Typer',
-      'level a stack bash tier easy',
+      'level: a · stack: bash · tier: easy',
       'level shipped',
-      'product ducks',
-      'valuation: 12',
+      'product: ducks',
+      'valuation: 12 points',
     ];
     expect(typerScreenHit(clean.join('\n'))).toBeNull();
     const dirty = [...clean];
@@ -239,7 +311,7 @@ describe('the runner', () => {
     expect(ok.status, ok.stderr).toBe(0);
     expect(ok.stdout).toMatch(/^Vibe Typer$/m);
     expect(ok.stdout).toMatch(/^level shipped$/m);
-    expect(ok.stdout).toMatch(/^valuation: \d+$/m);
+    expect(ok.stdout).toMatch(/^valuation: \d+ \w+$/m);
   });
 
   it('names a bad bot, a bad stack, a bad flag and an unknown cabinet', () => {

@@ -143,6 +143,17 @@ export interface CabinetSet {
   voice: VoiceSet;
   words: {
     valuation: string;
+    /**
+     * What the valuation is counted in, said only OFF the field: the runners
+     * print `valuation: 54 points` and the board keeps the bare number.
+     *
+     * The number had no unit anywhere while the milestones crossing it are
+     * named seed, series a and unicorn — funding rounds, and a unicorn is a
+     * billion — so a player read `milestone unicorn` beside `valuation
+     * 1800` and was told two incompatible scales. This says which one the
+     * number is on. It is a lever because the scale is the Director's.
+     */
+    valuationUnit: string;
     hype: string;
     streak: string;
     context: string;
@@ -151,6 +162,15 @@ export interface CabinetSet {
   };
 }
 
+/**
+ * One authored level. Three units run through the numbers below and nothing
+ * on the field distinguishes them, so each says which it is: a SHARE OF THE
+ * CONTEXT BAR is a fraction of 0..1 of the bar the player watches drain;
+ * VALUATION is the scoreboard's own number, the one the milestones sit on;
+ * and a BAND is a rung 1..7 of the corpus difficulty ladder. `refillShare`
+ * 0.5 and `shipBonus` 5 sit three lines apart and are counted in two
+ * different things.
+ */
 export interface LevelDef {
   id: string;
   product: string;
@@ -163,27 +183,70 @@ export interface LevelDef {
    * Absent, the level draws from its band as it always has.
    */
   snippets?: string[];
+  /** How many requests the level runs, a count. Four is the shipped shape. */
   requests: number;
+  /** The easiest rung the level draws from, 1..7 of the corpus ladder. */
   bandMin: Band;
+  /** The hardest rung it draws from. Never below `bandMin`. */
   bandMax: Band;
+  /**
+   * Share of the context bar the level drains per second, 0..1 of the whole
+   * bar. Small on purpose: 0.01 empties a full bar in a hundred seconds.
+   * Absent, the tier's own base rate stands in (`ContextTier.drainPerSec`).
+   */
   drainPerSec?: number;
+  /**
+   * Fraction `drainPerSec` climbs by across the level, 0..1. At 0.25 the
+   * last request drains a quarter faster than the first, ramped straight
+   * line by request index. Zero is a flat level. The only mid-level ramp.
+   */
   drainRamp: number;
+  /**
+   * Share of the EMPTY part of the context bar a ship gives back, 0..1. At
+   * 0.5 a ship halves the gap to full, so it never fills and never stalls.
+   * Absent, the tier's own share stands in.
+   */
   refillShare?: number;
+  /**
+   * Share of the whole context bar one user message costs, 0..1. At 0.04 a
+   * level's chatter is worth a couple of seconds of drain. Absent, the
+   * tier's own cost stands in.
+   */
   messageCost?: number;
+  /**
+   * Extra VALUATION paid on the level's last ship, on the scoreboard's
+   * scale, not the bar's — 5 here and 0.5 in `refillShare` are not the same
+   * kind of number. Never negative.
+   */
   shipBonus: number;
 }
 
+/**
+ * The endless ladder, which mints a level per rung rather than authoring one.
+ * The same three units as `LevelDef`: share of the context bar, valuation,
+ * and a band 1..7.
+ */
 export interface EndlessDef {
+  /** The rung the first endless level draws from, 1..7 of the corpus ladder. */
   startBand: Band;
-  /** Bands climb by one every this many levels. */
+  /** Bands climb by one every this many levels. A count of levels. */
   bandEvery: number;
+  /**
+   * Share of the context bar the FIRST endless level drains per second,
+   * 0..1 of the whole bar. 0.0046 is about three and a half minutes to
+   * empty a full bar; every later level multiplies it by `drainGrow`.
+   */
   drainStart: number;
-  /** Multiplier on the drain each further level. */
+  /** Multiplier on the drain each further level. Above one, or it never climbs. */
   drainGrow: number;
   products: 'products.json';
+  /** How many requests each endless level runs, a count. */
   requests: number;
+  /** Share of the EMPTY part of the context bar a ship gives back, 0..1. */
   refillShare: number;
+  /** Share of the whole context bar one user message costs, 0..1. */
   messageCost: number;
+  /** Extra VALUATION on each endless level's last ship, the scoreboard's scale. */
   shipBonus: number;
 }
 
@@ -251,12 +314,18 @@ export interface ScoreSet {
 }
 
 export interface ContextTier {
-  /** The tier's own base rate, used when a level does not name one. */
+  /**
+   * The tier's own base rate, used when a level does not name one. Share of
+   * the context bar per second, 0..1 of the whole bar.
+   */
   drainPerSec: number;
   /** What the tier does to a level's rate. Tier zero is one by definition. */
   drainScale: number;
+  /** Share of the whole context bar one user message costs, 0..1. */
   messageCost: number;
+  /** Share of the EMPTY part of the bar a ship gives back, 0..1. */
   refillShare: number;
+  /** Share of the whole context bar one mistyped character burns, 0..1. */
   hardcoreBurnPerError: number;
 }
 
@@ -356,8 +425,18 @@ export interface Patterns {
   products: ProductsSet;
 }
 
-function fail(file: string, key: string): never {
-  throw new Error(`patterns/${file}: ${key}`);
+/**
+ * A halt at load, with the rule in words beside the pointer.
+ *
+ * The pointer alone was the whole message — `patterns/user.json: asks.bash.7`
+ * — and the audience is the lead running `scripts/author.mjs --apply`, who
+ * was handed a JSON pointer into a 144 KB lever file and had to diff it to
+ * learn which of four rules fired. `rule` is one short American-English
+ * clause saying what is wrong, in the vocabulary `codegate.reasonText`
+ * already uses, borrowed verbatim where the rule is the same one.
+ */
+function fail(file: string, key: string, rule: string): never {
+  throw new Error(`patterns/${file}: ${key} — ${rule}`);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -365,63 +444,66 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function req(obj: Record<string, unknown>, file: string, key: string): unknown {
-  if (!Object.prototype.hasOwnProperty.call(obj, key)) fail(file, key);
+  if (!Object.prototype.hasOwnProperty.call(obj, key)) fail(file, key, 'the lever is missing it');
   return obj[key];
 }
 
 /** Like `req`, for a property whose message key is not its own name. */
 function at(obj: Record<string, unknown>, prop: string, file: string, key: string): unknown {
-  if (!Object.prototype.hasOwnProperty.call(obj, prop)) fail(file, key);
+  if (!Object.prototype.hasOwnProperty.call(obj, prop)) fail(file, key, 'the lever is missing it');
   return obj[prop];
 }
 
 function asString(value: unknown, file: string, key: string): string {
-  if (typeof value !== 'string') fail(file, key);
+  if (typeof value !== 'string') fail(file, key, 'it is a string');
   return value;
 }
 
 function asNumber(value: unknown, file: string, key: string): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) fail(file, key);
+  if (typeof value !== 'number' || !Number.isFinite(value)) fail(file, key, 'it is a number');
   return value;
 }
 
 function asArray(value: unknown, file: string, key: string): unknown[] {
-  if (!Array.isArray(value)) fail(file, key);
+  if (!Array.isArray(value)) fail(file, key, 'it is a list');
   return value;
 }
 
 function asRecord(value: unknown, file: string, key: string): Record<string, unknown> {
-  if (!isRecord(value)) fail(file, key);
+  if (!isRecord(value)) fail(file, key, 'it is an object');
   return value;
 }
 
 function asUnit(value: unknown, file: string, key: string): number {
   const n = asNumber(value, file, key);
-  if (n < 0 || n > 1) fail(file, key);
+  if (n < 0 || n > 1) fail(file, key, 'it is a share from 0 to 1');
   return n;
 }
 
 function asPositive(value: unknown, file: string, key: string): number {
   const n = asNumber(value, file, key);
-  if (!(n > 0)) fail(file, key);
+  if (!(n > 0)) fail(file, key, 'it is above zero');
   return n;
 }
 
 function asCount(value: unknown, file: string, key: string): number {
   const n = asNumber(value, file, key);
-  if (!Number.isInteger(n) || n < 1) fail(file, key);
+  if (!Number.isInteger(n) || n < 1) fail(file, key, 'it is a whole count of one or more');
   return n;
 }
 
 function asBand(value: unknown, file: string, key: string): Band {
   const n = asNumber(value, file, key);
-  if (!Number.isInteger(n) || n < 1 || n > 7) fail(file, key);
+  if (!Number.isInteger(n) || n < 1 || n > 7)
+    fail(file, key, 'a band is a whole number from 1 to 7');
   return n as Band;
 }
 
 function asStack(value: unknown, file: string, key: string): Stack {
   const s = asString(value, file, key);
-  if (!(STACKS as readonly string[]).includes(s)) fail(file, key);
+  if (!(STACKS as readonly string[]).includes(s)) {
+    fail(file, key, `a stack is one of ${STACKS.join(', ')}`);
+  }
   return s as Stack;
 }
 
@@ -554,10 +636,12 @@ export function lineFault(line: string): string | null {
 /** A pool of authored lines: each one passes the gate, no two are the same. */
 function loadLines(raw: unknown, file: string, key: string, min: number): string[] {
   const list = asArray(raw, file, key).map((item, i) => asString(item, file, `${key}.${i}`));
-  if (list.length < min) fail(file, key);
+  if (list.length < min) fail(file, key, `a pool carries at least ${min} lines (${list.length})`);
   const seen = new Set<string>();
   list.forEach((line, i) => {
-    if (lineFault(line) !== null || seen.has(line)) fail(file, `${key}.${i}`);
+    if (seen.has(line)) fail(file, `${key}.${i}`, 'two lines in this pool are the same');
+    const fault = lineFault(line);
+    if (fault !== null) fail(file, `${key}.${i}`, `the line cannot be said on the field: ${fault}`);
     seen.add(line);
   });
   return list;
@@ -586,17 +670,23 @@ function loadVoice(raw: unknown, file: string): VoiceSet {
     file,
     'voice.user.preset',
   );
-  if (!PRESET_RE.test(preset)) fail(file, 'voice.user.preset');
+  if (!PRESET_RE.test(preset)) {
+    fail(file, 'voice.user.preset', 'a preset name is a short ascii token');
+  }
   const rate = asNumber(at(userRaw, 'rate', file, 'voice.user.rate'), file, 'voice.user.rate');
-  if (!(rate >= 0.5 && rate <= 2)) fail(file, 'voice.user.rate');
+  if (!(rate >= 0.5 && rate <= 2)) fail(file, 'voice.user.rate', 'the rate is from 0.5 to 2');
   const loudness = asNumber(
     at(userRaw, 'loudness', file, 'voice.user.loudness'),
     file,
     'voice.user.loudness',
   );
-  if (!(loudness >= -24 && loudness <= 12)) fail(file, 'voice.user.loudness');
+  if (!(loudness >= -24 && loudness <= 12)) {
+    fail(file, 'voice.user.loudness', 'the gain is from -24 to 12 decibels');
+  }
   const maxGap = asNumber(at(obj, 'maxGap', file, 'voice.maxGap'), file, 'voice.maxGap');
-  if (!(maxGap >= 0.1 && maxGap <= 3)) fail(file, 'voice.maxGap');
+  if (!(maxGap >= 0.1 && maxGap <= 3)) {
+    fail(file, 'voice.maxGap', 'the longest held pause is from 0.1 to 3 seconds');
+  }
   return { user: { preset, rate, loudness }, maxGap };
 }
 
@@ -606,22 +696,31 @@ function loadCabinet(raw: unknown): CabinetSet {
   const name = asString(req(obj, file, 'name'), file, 'name');
   const tagline = asString(req(obj, file, 'tagline'), file, 'tagline');
   const agentName = asString(req(obj, file, 'agentName'), file, 'agentName');
-  if (lineFault(name) !== null) fail(file, 'name');
-  if (lineFault(tagline) !== null) fail(file, 'tagline');
-  if (lineFault(agentName) !== null) fail(file, 'agentName');
+  for (const [key, text] of [
+    ['name', name],
+    ['tagline', tagline],
+    ['agentName', agentName],
+  ] as const) {
+    const fault = lineFault(text);
+    if (fault !== null) fail(file, key, `it cannot be said on the field: ${fault}`);
+  }
   const voice = loadVoice(req(obj, file, 'voice'), file);
   const wordsRaw = asRecord(req(obj, file, 'words'), file, 'words');
   const words = { beats: {} as Record<Beat, string> } as CabinetSet['words'];
-  for (const key of ['valuation', 'hype', 'streak', 'context'] as const) {
+  for (const key of ['valuation', 'valuationUnit', 'hype', 'streak', 'context'] as const) {
     const word = asString(at(wordsRaw, key, file, `words.${key}`), file, `words.${key}`);
-    if (lineFault(word) !== null) fail(file, `words.${key}`);
+    const wordFault = lineFault(word);
+    if (wordFault !== null) {
+      fail(file, `words.${key}`, `it cannot be said on the field: ${wordFault}`);
+    }
     words[key] = word;
   }
   const beatsRaw = asRecord(at(wordsRaw, 'beats', file, 'words.beats'), file, 'words.beats');
   for (const beat of BEATS) {
     const key = `words.beats.${beat}`;
     const word = asString(at(beatsRaw, beat, file, key), file, key);
-    if (lineFault(word) !== null) fail(file, key);
+    const beatFault = lineFault(word);
+    if (beatFault !== null) fail(file, key, `it cannot be said on the field: ${beatFault}`);
     words.beats[beat] = word;
   }
   return { name, tagline, agentName, voice, words };
@@ -631,21 +730,30 @@ function loadLevels(raw: unknown): LevelsSet {
   const file = 'levels.json';
   const obj = asRecord(raw, file, 'levels');
   const rows = asArray(req(obj, file, 'levels'), file, 'levels');
-  if (rows.length < 8) fail(file, 'levels');
+  if (rows.length < 8)
+    fail(file, 'levels', `the ladder carries at least 8 levels (${rows.length})`);
   const ids = new Set<string>();
   const levels = rows.map((row, i) => {
     const rec = asRecord(row, file, `levels.${i}`);
     const key = (k: string) => `levels.${i}.${k}`;
     const id = asString(at(rec, 'id', file, key('id')), file, key('id'));
-    if (id.trim() === '' || ids.has(id)) fail(file, key('id'));
+    if (id.trim() === '' || ids.has(id)) {
+      fail(file, key('id'), 'an id is a non-empty string and no two levels share one');
+    }
     ids.add(id);
     const product = asString(at(rec, 'product', file, key('product')), file, key('product'));
-    if (lineFault(product) !== null) fail(file, key('product'));
+    const productFault = lineFault(product);
+    if (productFault !== null) {
+      fail(file, key('product'), `the product cannot be said on the field: ${productFault}`);
+    }
     const story = asString(at(rec, 'story', file, key('story')), file, key('story'));
-    if (lineFault(story) !== null) fail(file, key('story'));
+    const storyFault = lineFault(story);
+    if (storyFault !== null) {
+      fail(file, key('story'), `the story cannot be said on the field: ${storyFault}`);
+    }
     const bandMin = asBand(at(rec, 'bandMin', file, key('bandMin')), file, key('bandMin'));
     const bandMax = asBand(at(rec, 'bandMax', file, key('bandMax')), file, key('bandMax'));
-    if (bandMax < bandMin) fail(file, key('bandMax'));
+    if (bandMax < bandMin) fail(file, key('bandMax'), 'the hardest band is not below the easiest');
     const def: LevelDef = {
       id,
       product,
@@ -657,7 +765,7 @@ function loadLevels(raw: unknown): LevelsSet {
       drainRamp: asUnit(at(rec, 'drainRamp', file, key('drainRamp')), file, key('drainRamp')),
       shipBonus: asNumber(at(rec, 'shipBonus', file, key('shipBonus')), file, key('shipBonus')),
     };
-    if (def.shipBonus < 0) fail(file, key('shipBonus'));
+    if (def.shipBonus < 0) fail(file, key('shipBonus'), 'a ship bonus is never negative');
     if (rec.drainPerSec !== undefined) {
       def.drainPerSec = asPositive(rec.drainPerSec, file, key('drainPerSec'));
     }
@@ -675,11 +783,17 @@ function loadLevels(raw: unknown): LevelsSet {
       const pinned = asArray(rec.snippets, file, key('snippets')).map((item, j) =>
         asString(item, file, `${key('snippets')}.${j}`),
       );
-      if (pinned.length !== def.requests) fail(file, key('snippets'));
+      if (pinned.length !== def.requests) {
+        fail(
+          file,
+          key('snippets'),
+          `a pinned level lists exactly one snippet per request (${pinned.length} of ${def.requests})`,
+        );
+      }
       const seenIds = new Set<string>();
       pinned.forEach((snippetId, j) => {
         if (snippetId.trim() === '' || seenIds.has(snippetId)) {
-          fail(file, `${key('snippets')}.${j}`);
+          fail(file, `${key('snippets')}.${j}`, 'a pinned snippet id is a non-empty string');
         }
         seenIds.add(snippetId);
       });
@@ -690,13 +804,15 @@ function loadLevels(raw: unknown): LevelsSet {
   const creepShare = asUnit(req(obj, file, 'creepShare'), file, 'creepShare');
   const syncShare = asUnit(req(obj, file, 'syncShare'), file, 'syncShare');
   const weakBias = asNumber(req(obj, file, 'weakBias'), file, 'weakBias');
-  if (weakBias < 0) fail(file, 'weakBias');
+  if (weakBias < 0) fail(file, 'weakBias', 'the weak-pair lean is never negative');
   const nagRaw = asRecord(req(obj, file, 'nagEvery'), file, 'nagEvery');
   const nagEvery = {
     min: asPositive(at(nagRaw, 'min', file, 'nagEvery.min'), file, 'nagEvery.min'),
     max: asPositive(at(nagRaw, 'max', file, 'nagEvery.max'), file, 'nagEvery.max'),
   };
-  if (nagEvery.max < nagEvery.min) fail(file, 'nagEvery.max');
+  if (nagEvery.max < nagEvery.min) {
+    fail(file, 'nagEvery.max', 'the longest gap between check-ins is not below the shortest');
+  }
   const paceRaw = asRecord(req(obj, file, 'pace'), file, 'pace');
   // Both are bounded above as well as below: a beat that holds for a minute
   // and a chat that reveals one line an hour are levers that read as a hung
@@ -706,9 +822,9 @@ function loadLevels(raw: unknown): LevelsSet {
     file,
     'pace.beatHold',
   );
-  if (beatHold > 10) fail(file, 'pace.beatHold');
+  if (beatHold > 10) fail(file, 'pace.beatHold', 'a beat holds for 10 seconds at most');
   const chatGap = asPositive(at(paceRaw, 'chatGap', file, 'pace.chatGap'), file, 'pace.chatGap');
-  if (chatGap > 10) fail(file, 'pace.chatGap');
+  if (chatGap > 10) fail(file, 'pace.chatGap', 'two lines land 10 seconds apart at most');
   const pace: PaceSet = { beatHold, chatGap };
   const endlessRaw = asRecord(req(obj, file, 'endless'), file, 'endless');
   const ekey = (k: string) => `endless.${k}`;
@@ -717,7 +833,9 @@ function loadLevels(raw: unknown): LevelsSet {
     file,
     ekey('products'),
   );
-  if (products !== 'products.json') fail(file, ekey('products'));
+  if (products !== 'products.json') {
+    fail(file, ekey('products'), 'endless draws its products from products.json and nowhere else');
+  }
   const endless: EndlessDef = {
     startBand: asBand(
       at(endlessRaw, 'startBand', file, ekey('startBand')),
@@ -757,8 +875,14 @@ function loadLevels(raw: unknown): LevelsSet {
       ekey('shipBonus'),
     ),
   };
-  if (!(endless.drainGrow >= 1)) fail(file, ekey('drainGrow'));
-  if (endless.shipBonus < 0) fail(file, ekey('shipBonus'));
+  if (!(endless.drainGrow >= 1)) {
+    fail(
+      file,
+      ekey('drainGrow'),
+      'the drain multiplier is one or more, or the ladder never climbs',
+    );
+  }
+  if (endless.shipBonus < 0) fail(file, ekey('shipBonus'), 'a ship bonus is never negative');
   return { levels, creepShare, syncShare, weakBias, nagEvery, pace, endless };
 }
 
@@ -766,7 +890,7 @@ function loadScore(raw: unknown): ScoreSet {
   const file = 'score.json';
   const obj = asRecord(raw, file, 'hypeSteps');
   const stepsRaw = asArray(req(obj, file, 'hypeSteps'), file, 'hypeSteps');
-  if (stepsRaw.length < 2) fail(file, 'hypeSteps');
+  if (stepsRaw.length < 2) fail(file, 'hypeSteps', 'the hype ladder carries at least 2 steps');
   const hypeSteps = stepsRaw.map((row, i) => {
     const rec = asRecord(row, file, `hypeSteps.${i}`);
     return {
@@ -778,13 +902,19 @@ function loadScore(raw: unknown): ScoreSet {
       hype: asPositive(at(rec, 'hype', file, `hypeSteps.${i}.hype`), file, `hypeSteps.${i}.hype`),
     };
   });
-  if (hypeSteps[0]!.streak !== 0 || hypeSteps[0]!.hype !== 1) fail(file, 'hypeSteps.0');
+  if (hypeSteps[0]!.streak !== 0 || hypeSteps[0]!.hype !== 1) {
+    fail(file, 'hypeSteps.0', 'the first step is a streak of 0 at a hype of 1');
+  }
   for (let i = 1; i < hypeSteps.length; i++) {
-    if (hypeSteps[i]!.streak <= hypeSteps[i - 1]!.streak) fail(file, `hypeSteps.${i}.streak`);
-    if (hypeSteps[i]!.hype <= hypeSteps[i - 1]!.hype) fail(file, `hypeSteps.${i}.hype`);
+    if (hypeSteps[i]!.streak <= hypeSteps[i - 1]!.streak) {
+      fail(file, `hypeSteps.${i}.streak`, 'each step climbs above the one before it');
+    }
+    if (hypeSteps[i]!.hype <= hypeSteps[i - 1]!.hype) {
+      fail(file, `hypeSteps.${i}.hype`, 'each step climbs above the one before it');
+    }
   }
   const milestonesRaw = asArray(req(obj, file, 'milestones'), file, 'milestones');
-  if (milestonesRaw.length < 1) fail(file, 'milestones');
+  if (milestonesRaw.length < 1) fail(file, 'milestones', 'there is at least one milestone');
   let last = 0;
   const milestones = milestonesRaw.map((row, i) => {
     const rec = asRecord(row, file, `milestones.${i}`);
@@ -793,13 +923,17 @@ function loadScore(raw: unknown): ScoreSet {
       file,
       `milestones.${i}.name`,
     );
-    if (lineFault(name) !== null) fail(file, `milestones.${i}.name`);
+    const milestoneFault = lineFault(name);
+    if (milestoneFault !== null) {
+      fail(file, `milestones.${i}.name`, `it cannot be said on the field: ${milestoneFault}`);
+    }
     const threshold = asPositive(
       at(rec, 'at', file, `milestones.${i}.at`),
       file,
       `milestones.${i}.at`,
     );
-    if (threshold <= last) fail(file, `milestones.${i}.at`);
+    if (threshold <= last)
+      fail(file, `milestones.${i}.at`, 'each milestone sits above the one before it');
     last = threshold;
     return { name, at: threshold };
   });
@@ -862,11 +996,14 @@ function loadContext(raw: unknown): ContextSet {
       ),
     };
   }
-  if (tiers['3'].hardcoreBurnPerError <= 0) fail(file, '3.hardcoreBurnPerError');
-  if (tiers['0'].drainScale !== 1) fail(file, '0.drainScale');
+  if (tiers['3'].hardcoreBurnPerError <= 0) {
+    fail(file, '3.hardcoreBurnPerError', 'hardcore burns something per mistyped character');
+  }
+  if (tiers['0'].drainScale !== 1)
+    fail(file, '0.drainScale', 'tier zero scales the drain by one, by definition');
   for (const key of ['1', '2', '3'] as const) {
     if (tiers[key].drainScale < tiers[String(Number(key) - 1) as '0' | '1' | '2'].drainScale) {
-      fail(file, `${key}.drainScale`);
+      fail(file, `${key}.drainScale`, 'each tier scales the drain above the tier below it');
     }
   }
   return { tiers };
@@ -878,10 +1015,10 @@ function loadDifficulty(raw: unknown): DifficultySet {
   const keysRaw = asRecord(req(obj, file, 'keys'), file, 'keys');
   const keys: Record<string, KeyPos> = {};
   for (const [ch, value] of Object.entries(keysRaw)) {
-    if (ch.length !== 1) fail(file, `keys.${ch}`);
+    if (ch.length !== 1) fail(file, `keys.${ch}`, 'a key is one character');
     const rec = asRecord(value, file, `keys.${ch}`);
     const hand = asString(at(rec, 'hand', file, `keys.${ch}.hand`), file, `keys.${ch}.hand`);
-    if (hand !== 'l' && hand !== 'r') fail(file, `keys.${ch}.hand`);
+    if (hand !== 'l' && hand !== 'r') fail(file, `keys.${ch}.hand`, 'a hand is l or r');
     keys[ch] = {
       row: asNumber(at(rec, 'row', file, `keys.${ch}.row`), file, `keys.${ch}.row`),
       col: asNumber(at(rec, 'col', file, `keys.${ch}.col`), file, `keys.${ch}.col`),
@@ -889,12 +1026,14 @@ function loadDifficulty(raw: unknown): DifficultySet {
       finger: asNumber(at(rec, 'finger', file, `keys.${ch}.finger`), file, `keys.${ch}.finger`),
     };
   }
-  if (Object.keys(keys).length < 40) fail(file, 'keys');
+  if (Object.keys(keys).length < 40) fail(file, 'keys', 'the keyboard carries at least 40 keys');
   const shiftRaw = asRecord(req(obj, file, 'shift'), file, 'shift');
   const shift: Record<string, string> = {};
   for (const [ch, value] of Object.entries(shiftRaw)) {
     const base = asString(value, file, `shift.${ch}`);
-    if (ch.length !== 1 || base.length !== 1 || !keys[base]) fail(file, `shift.${ch}`);
+    if (ch.length !== 1 || base.length !== 1 || !keys[base]) {
+      fail(file, `shift.${ch}`, 'a shifted key is one character over a key the board has');
+    }
     shift[ch] = base;
   }
   const costsRaw = asRecord(req(obj, file, 'costs'), file, 'costs');
@@ -911,7 +1050,7 @@ function loadDifficulty(raw: unknown): DifficultySet {
     'unknown',
   ] as const) {
     const n = asNumber(at(costsRaw, key, file, `costs.${key}`), file, `costs.${key}`);
-    if (n < 0) fail(file, `costs.${key}`);
+    if (n < 0) fail(file, `costs.${key}`, 'a cost is never negative');
     costs[key] = n;
   }
   const weightsRaw = asRecord(req(obj, file, 'weights'), file, 'weights');
@@ -927,11 +1066,13 @@ function loadDifficulty(raw: unknown): DifficultySet {
     'scale',
   ] as const) {
     const n = asNumber(at(weightsRaw, key, file, `weights.${key}`), file, `weights.${key}`);
-    if (n < 0) fail(file, `weights.${key}`);
+    if (n < 0) fail(file, `weights.${key}`, 'a weight is never negative');
     weights[key] = n;
   }
-  if (!(weights.scale > 0)) fail(file, 'weights.scale');
-  if (!(weights.identifierMin >= 1)) fail(file, 'weights.identifierMin');
+  if (!(weights.scale > 0)) fail(file, 'weights.scale', 'the scale is above zero');
+  if (!(weights.identifierMin >= 1)) {
+    fail(file, 'weights.identifierMin', 'the shortest identifier counted is one character or more');
+  }
   return { keys, shift, costs, weights };
 }
 
@@ -952,7 +1093,9 @@ function loadUser(raw: unknown): UserSet {
   // reads as off, so a lever file that predates the switch loads and plays
   // the neutral reactions.
   const enabled = obj.reactionsByTopicEnabled;
-  if (enabled !== undefined && typeof enabled !== 'boolean') fail(file, 'reactionsByTopicEnabled');
+  if (enabled !== undefined && typeof enabled !== 'boolean') {
+    fail(file, 'reactionsByTopicEnabled', 'it is true or false');
+  }
   const reactions = loadTierLines(req(obj, file, 'reactions'), file, 'reactions', MIN_REACTIONS);
   const reactionsByTopic = loadPools(req(obj, file, 'reactionsByTopic'), file, 'reactionsByTopic');
   // The lever was a one-character cliff with nothing behind it. Flipping it
@@ -972,12 +1115,24 @@ function loadUser(raw: unknown): UserSet {
   if (enabled === true) {
     for (const [name, pool] of Object.entries(reactionsByTopic)) {
       pool.forEach((line, i) => {
-        if (namesAPiece(line)) fail(file, `reactionsByTopic.${name}.${i}`);
+        if (namesAPiece(line)) {
+          fail(
+            file,
+            `reactionsByTopic.${name}.${i}`,
+            'a blind line names a thing a request might build, and it lands against requests that never built one',
+          );
+        }
       });
     }
     for (const tier of LINE_TIERS) {
       reactions[tier].forEach((line, i) => {
-        if (namesAPiece(line)) fail(file, `reactions.${tier}.${i}`);
+        if (namesAPiece(line)) {
+          fail(
+            file,
+            `reactions.${tier}.${i}`,
+            'a blind line names a thing a request might build, and it lands against requests that never built one',
+          );
+        }
       });
     }
   }
@@ -1003,7 +1158,7 @@ function loadPools(raw: unknown, file: string, key: string): Record<string, stri
   const obj = asRecord(raw, file, key);
   const out: Record<string, string[]> = {};
   for (const name of Object.keys(obj)) {
-    if (name.trim() === '') fail(file, key);
+    if (name.trim() === '') fail(file, key, 'a name is a non-empty string');
     out[name] = loadLines(obj[name], file, `${key}.${name}`, 1);
   }
   return out;
@@ -1013,7 +1168,9 @@ function loadPools(raw: unknown, file: string, key: string): Record<string, stri
 function loadSyncs(raw: unknown, file: string, key: string): string[] {
   const list = loadLines(raw, file, key, MIN_SYNCS);
   list.forEach((line, i) => {
-    if (line.split(/\s+/).length > MAX_SYNC_WORDS) fail(file, `${key}.${i}`);
+    if (line.split(/\s+/).length > MAX_SYNC_WORDS) {
+      fail(file, `${key}.${i}`, `a sync line is chatter: ${MAX_SYNC_WORDS} words at most`);
+    }
   });
   return list;
 }
@@ -1036,7 +1193,7 @@ function loadProducts(raw: unknown): ProductsSet {
   const nouns = loadLines(req(obj, file, 'nouns'), file, 'nouns', 16);
   const templates = loadLines(req(obj, file, 'templates'), file, 'templates', 8);
   for (const [i, t] of templates.entries()) {
-    if (!t.includes('{noun}')) fail(file, `templates.${i}`);
+    if (!t.includes('{noun}')) fail(file, `templates.${i}`, 'a template carries the {noun} hole');
   }
   return { nouns, templates };
 }
@@ -1054,9 +1211,11 @@ const FILES = [
 
 /** Validate every lever. The message is `patterns/<file>: <key>` for the first bad key. */
 export function loadPatterns(raw: unknown): Patterns {
-  const obj = isRecord(raw) ? raw : fail('cabinet.json', 'cabinet');
+  const obj = isRecord(raw) ? raw : fail('cabinet.json', 'cabinet', 'the lever pack is an object');
   for (const name of FILES) {
-    if (!Object.prototype.hasOwnProperty.call(obj, name)) fail(`${name}.json`, name);
+    if (!Object.prototype.hasOwnProperty.call(obj, name)) {
+      fail(`${name}.json`, name, 'the lever pack is missing this file');
+    }
   }
   const levels = loadLevels(obj.levels);
   const user = loadUser(obj.user);
@@ -1067,8 +1226,16 @@ export function loadPatterns(raw: unknown): Patterns {
   // integration level therefore draws its four requests from its band, and a
   // pinned list on one is the halt.
   for (const [i, def] of levels.levels.entries()) {
-    if (!user.asks[def.stack]) fail('user.json', `asks.${def.stack}`);
-    if (def.stack === 'integration' && def.snippets) fail('levels.json', `levels.${i}.snippets`);
+    if (!user.asks[def.stack]) {
+      fail('user.json', `asks.${def.stack}`, 'a level runs a stack the ask pools do not cover');
+    }
+    if (def.stack === 'integration' && def.snippets) {
+      fail(
+        'levels.json',
+        `levels.${i}.snippets`,
+        'the integration stack is seasoned in from the tapes, so it has no snippet to pin',
+      );
+    }
   }
   // A review keyed to a product that is not a level id never fires: the
   // picker looks the plan's id up and falls through to the generic pool with
@@ -1077,7 +1244,13 @@ export function loadPatterns(raw: unknown): Patterns {
   // it or the cabinet does not start.
   const levelIds = new Set(levels.levels.map((def) => def.id));
   for (const name of Object.keys(user.reviewsByProduct)) {
-    if (!levelIds.has(name)) fail('user.json', `reviewsByProduct.${name}`);
+    if (!levelIds.has(name)) {
+      fail(
+        'user.json',
+        `reviewsByProduct.${name}`,
+        'the reviews name a level the ladder does not have',
+      );
+    }
   }
   return {
     cabinet: loadCabinet(obj.cabinet),

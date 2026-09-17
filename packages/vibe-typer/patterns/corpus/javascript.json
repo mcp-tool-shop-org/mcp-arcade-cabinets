@@ -19,7 +19,7 @@
     "notes": ["Declares two constants and logs them to the console."],
     "topics": ["const", "variables"],
     "ask": "make {product} store a name and an age",
-    "reaction": "now it remembers names and ages together"
+    "reaction": "now it remembers names and ages together."
   },
   {
     "id": "cal-js-d1-003",
@@ -30,7 +30,7 @@
     "notes": ["Declares two numbers, adds them, and logs the result."],
     "topics": ["let", "arithmetic"],
     "ask": "make {product} add two numbers and show the sum",
-    "reaction": "the numbers now hold hands and show their sum"
+    "reaction": "the numbers now hold hands and show their sum."
   },
   {
     "id": "cal-js-d1-004",
@@ -41,7 +41,7 @@
     "notes": ["Uses a template literal to interpolate variables into a string."],
     "topics": ["template-literals", "variables"],
     "ask": "make {product} say what something costs in a sentence",
-    "reaction": "it tells me the price in plain words"
+    "reaction": "it tells me the price in plain words."
   },
   {
     "id": "cal-js-d1-005",
@@ -52,13 +52,13 @@
     "notes": ["Uses the nullish coalescing operator to provide a fallback for a null value."],
     "topics": ["nullish-coalescing", "const"],
     "ask": "use a default if the sample has no name",
-    "reaction": "it picks the right word when i forget"
+    "reaction": "it picks the right word when i forget."
   },
   {
     "id": "js-map-filter",
     "stack": "javascript",
     "band": 1,
-    "title": "Map and filter",
+    "title": "map and filter",
     "code": "const names = users\n  .filter((u) => u.active)\n  .map((u) => u.name.toUpperCase());",
     "notes": [
       "filter keeps matching items; map transforms each one.",
@@ -67,13 +67,13 @@
     "topics": ["array", "map", "filter", "arrow-function"],
     "for": "handwriting-rater",
     "ask": "keep only the neat strokes and make them big",
-    "reaction": "the neat ones stand out big"
+    "reaction": "the neat ones stand out big."
   },
   {
     "id": "js-ternary",
     "stack": "javascript",
     "band": 1,
-    "title": "Ternary expression",
+    "title": "ternary expression",
     "code": "const label = count === 1 ? \"item\" : \"items\";\nconsole.log(`${count} ${label} in cart`);",
     "notes": [
       "The ternary operator is a concise if/else expression.",
@@ -81,7 +81,7 @@
     ],
     "topics": ["ternary", "conditional", "expression"],
     "ask": "make {product} say item or items depending on the count",
-    "reaction": "it picks the right word every time"
+    "reaction": "it picks the right word every time."
   },
   {
     "id": "cal-js-d2-001",
@@ -94,7 +94,7 @@
     ],
     "topics": ["arrow-function", "template-literals"],
     "ask": "want {product} to shout the grade",
-    "reaction": "the grade arrives in perfect caps"
+    "reaction": "the grade arrives in perfect caps."
   },
   {
     "id": "cal-js-d2-002",
@@ -107,7 +107,7 @@
     ],
     "topics": ["spread", "rest", "destructuring"],
     "ask": "chain yesterday's items to today's list",
-    "reaction": "the list knows yesterday and today"
+    "reaction": "the list knows yesterday and today."
   },
   {
     "id": "cal-js-d2-003",
@@ -120,7 +120,7 @@
     ],
     "topics": ["objects", "shorthand-properties"],
     "ask": "give every item a name and owner",
-    "reaction": "every item has a name and a home"
+    "reaction": "every item has a name and a home."
   },
   {
     "id": "cal-js-d2-004",
@@ -133,7 +133,7 @@
     ],
     "topics": ["for-of", "entries", "destructuring"],
     "ask": "list each letter with its position",
-    "reaction": "the list knows every letter by heart"
+    "reaction": "the list knows every letter by heart."
   },
   {
     "id": "cal-js-d2-005",
@@ -146,13 +146,13 @@
     ],
     "topics": ["default-parameters", "functions", "objects"],
     "ask": "make {product} fill in the blanks when i forget",
-    "reaction": "it fills the blanks without asking"
+    "reaction": "it fills the blanks without asking."
   },
   {
     "id": "js-destructuring",
     "stack": "javascript",
     "band": 2,
-    "title": "Object destructuring",
+    "title": "object destructuring",
     "code": "const { name, age = 0, role = \"guest\" } = user;\nconsole.log(`${name} (${age}) - ${role}`);",
     "notes": [
       "Destructuring extracts properties into variables.",
@@ -160,7 +160,7 @@
     ],
     "topics": ["destructuring", "objects", "defaults"],
     "ask": "pull out the loops swirls and tails",
-    "reaction": "the loops and swirls come right out"
+    "reaction": "the loops and swirls come right out."
   },
   {
     "id": "cal-js-d3-001",
@@ -186,7 +186,7 @@
     ],
     "topics": ["promises", "fetch", "error-handling"],
     "ask": "have {product} ask the office who can take this",
-    "reaction": "the office now knows who can take it"
+    "reaction": "the office now knows who can take it."
   },
   {
     "id": "cal-js-d3-003",
@@ -199,7 +199,7 @@
     ],
     "topics": ["class", "getter", "constructor", "methods"],
     "ask": "make {product} know the area of a rectangle",
-    "reaction": "it knows the shape and its size"
+    "reaction": "it knows the shape and its size."
   },
   {
     "id": "cal-js-d3-004",
@@ -212,7 +212,7 @@
     ],
     "topics": ["reduce", "grouping", "nullish-coalescing"],
     "ask": "group every item by its type",
-    "reaction": "the items now line up by their own kind"
+    "reaction": "the items now line up by their own kind."
   },
   {
     "id": "cal-js-d3-005",
@@ -225,13 +225,13 @@
     ],
     "topics": ["set", "map", "for-of", "iterables"],
     "ask": "find every unique item in the fridge",
-    "reaction": "the fridge now knows every unique one"
+    "reaction": "the fridge now knows every unique one."
   },
   {
     "id": "js-promise-chain",
     "stack": "javascript",
     "band": 3,
-    "title": "Promise chain",
+    "title": "promise chain",
     "code": "fetch(\"/api/data\")\n  .then((res) => res.json())\n  .then((data) => console.log(data.length))\n  .catch((err) => console.error(err.message));",
     "notes": [
       ".then() chains async steps; .catch() handles errors.",
@@ -239,18 +239,18 @@
     ],
     "topics": ["promises", "then", "catch", "chaining"],
     "ask": "make {product} get data and count what came back",
-    "reaction": "it gets the data and counts them all"
+    "reaction": "it gets the data and counts them all."
   },
   {
     "id": "js-reduce",
     "stack": "javascript",
     "band": 3,
-    "title": "Reduce to map",
+    "title": "reduce to map",
     "code": "const counts = items.reduce((m, x) => {\n  m[x] = (m[x] ?? 0) + 1;\n  return m;\n}, {});",
     "notes": ["Reduce builds a single value from a list.", "Practice ?? and arrow functions."],
     "topics": ["array", "reduce", "arrow-function"],
     "ask": "make {product} count how many times each thing appears",
-    "reaction": "every thing now knows how many friends it has"
+    "reaction": "every thing now knows how many friends it has."
   },
   {
     "id": "cal-js-d4-001",
@@ -264,7 +264,7 @@
     "topics": ["async-await", "retry", "error-handling", "fetch"],
     "for": "opinion-market",
     "ask": "try three times to pull an opinion from the wall",
-    "reaction": "the wall now gives me three chances to listen"
+    "reaction": "the wall now gives me three chances to listen."
   },
   {
     "id": "cal-js-d4-002",
@@ -277,7 +277,7 @@
     ],
     "topics": ["class", "map", "events", "spread"],
     "ask": "make {product} listen for a signal and shout hello",
-    "reaction": "it listens and shouts hello back"
+    "reaction": "it listens and shouts hello back."
   },
   {
     "id": "cal-js-d4-003",
@@ -291,7 +291,7 @@
     "topics": ["closures", "module-pattern", "getters"],
     "for": "opinion-market",
     "ask": "count how many trades each opinion has",
-    "reaction": "the trades now know their own number"
+    "reaction": "the trades now know their own number."
   },
   {
     "id": "cal-js-d4-004",
@@ -305,7 +305,7 @@
     "topics": ["class", "iterator", "generator", "symbol"],
     "for": "opinion-market",
     "ask": "chain the opinions one to another",
-    "reaction": "the opinions know their own chain"
+    "reaction": "the opinions know their own chain."
   },
   {
     "id": "cal-js-d4-005",
@@ -318,13 +318,13 @@
     ],
     "topics": ["closures", "timers", "higher-order-functions"],
     "ask": "make {product} wait until i stop typing to act",
-    "reaction": "it waits until my fingers stop"
+    "reaction": "it waits until my fingers stop."
   },
   {
     "id": "js-async-await",
     "stack": "javascript",
     "band": 4,
-    "title": "Async fetch",
+    "title": "async fetch",
     "code": "export async function getUser(id) {\n  const res = await fetch(`/api/users/${id}`);\n  if (!res.ok) throw new Error(`HTTP ${res.status}`);\n  return await res.json();\n}",
     "notes": [
       "Async/await reads like synchronous code.",
@@ -332,13 +332,13 @@
     ],
     "topics": ["async", "await", "fetch", "json"],
     "ask": "make {product} go get a user and complain if missing",
-    "reaction": "it goes and gets the user or complains"
+    "reaction": "it goes and gets the user or complains."
   },
   {
     "id": "js-class",
     "stack": "javascript",
     "band": 4,
-    "title": "ES6 class",
+    "title": "es6 class",
     "code": "class Timer {\n  constructor(label) {\n    this.label = label;\n    this.start = Date.now();\n  }\n  elapsed() {\n    return Date.now() - this.start;\n  }\n}",
     "notes": [
       "Classes group state and behavior together.",
@@ -346,7 +346,7 @@
     ],
     "topics": ["class", "constructor", "methods", "this"],
     "ask": "make {product} track how long something takes",
-    "reaction": "the seconds now march out in perfect order"
+    "reaction": "the seconds now march out in perfect order."
   },
   {
     "id": "cal-js-d5-001",
@@ -373,7 +373,7 @@
     "topics": ["recursion", "objects", "spread", "type-checking"],
     "for": "opinion-market",
     "ask": "merge two worn opinions into one slightly used opinion",
-    "reaction": "the opinions now hold hands and become one"
+    "reaction": "the opinions now hold hands and become one."
   },
   {
     "id": "cal-js-d5-003",
@@ -400,7 +400,7 @@
     ],
     "topics": ["middleware", "async-await", "closures", "pipeline"],
     "ask": "have {product} chain the steps and time the whole trip",
-    "reaction": "the steps now know how long they took"
+    "reaction": "the steps now know how long they took."
   },
   {
     "id": "cal-js-d5-005",
@@ -439,7 +439,7 @@
     ],
     "topics": ["proxy", "validation", "closures", "higher-order-functions"],
     "ask": "make {product} check the name and email before accepting them",
-    "reaction": "the email now knows when it is wrong"
+    "reaction": "the email now knows when it is wrong."
   },
   {
     "id": "cal-js-d6-003",
@@ -452,7 +452,7 @@
     ],
     "topics": ["parser", "recursion", "ast", "closures"],
     "ask": "make {product} read a math sentence and map it out",
-    "reaction": "the map now knows every plus and times"
+    "reaction": "the map now knows every plus and times."
   },
   {
     "id": "cal-js-d6-004",
@@ -478,7 +478,7 @@
     ],
     "topics": ["dependency-injection", "class", "private-fields", "factory-pattern"],
     "ask": "make {product} build the logger only when someone needs it",
-    "reaction": "it waits until i ask for the thing"
+    "reaction": "it waits until i ask for the thing."
   },
   {
     "id": "cal-js-d7-001",
@@ -491,7 +491,7 @@
     ],
     "topics": ["virtual-dom", "diffing", "recursion", "tree-algorithms"],
     "ask": "make {product} spot the difference between two page sketches",
-    "reaction": "the pages now know when they change"
+    "reaction": "the pages now know when they change."
   },
   {
     "id": "cal-js-d7-002",
@@ -530,7 +530,7 @@
     ],
     "topics": ["state-machine", "guards", "actions", "private-fields", "design-patterns"],
     "ask": "make {product} move between idle and loading and check retries",
-    "reaction": "the room now knows when to wait and when to go"
+    "reaction": "the room now knows when to wait and when to go."
   },
   {
     "id": "cal-js-d7-005",
@@ -549,6 +549,6 @@
       "design-patterns"
     ],
     "ask": "make {product} let addons plug in and change the text",
-    "reaction": "the addons now plug in and change the words"
+    "reaction": "the addons now plug in and change the words."
   }
 ]

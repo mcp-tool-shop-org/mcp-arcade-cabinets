@@ -32,8 +32,23 @@ export interface Corpus {
   model: NgramModel;
 }
 
-function fail(file: string, key: string): never {
-  throw new Error(`patterns/corpus/${file}: ${key}`);
+/**
+ * A halt at load, with the rule in words beside the pointer.
+ *
+ * The pointer alone was the whole message, and five distinct defects on one
+ * row collapsed onto the same string: `patterns/corpus/bash.json:
+ * cal-sh-d4-001.code` said nothing about whether the code was empty, had a
+ * tab, had a character the field cannot show, or ended in a space. The
+ * audience is the lead running `scripts/author.mjs --apply`, holding a
+ * pointer into a file they now have to diff to learn which rule fired.
+ *
+ * `rule` is one short American-English clause, present tense, saying what is
+ * wrong — the vocabulary `codegate.reasonText` already uses, borrowed
+ * verbatim where the rule is the same one, so the loader and the code gate
+ * say the same sentence about the same defect.
+ */
+function fail(file: string, key: string, rule: string): never {
+  throw new Error(`patterns/corpus/${file}: ${key} — ${rule}`);
 }
 
 /**
@@ -66,34 +81,48 @@ export function askIsBound(ask: string): boolean {
 
 function loadStack(raw: unknown, stack: Stack): Snippet[] {
   const file = `${stack}.json`;
-  if (!Array.isArray(raw)) fail(file, 'root');
-  if (raw.length < 20) fail(file, 'root');
+  if (!Array.isArray(raw)) fail(file, 'root', 'a corpus file is a list of snippets');
+  if (raw.length < 20) fail(file, 'root', 'a stack carries at least 20 snippets');
   const ids = new Set<string>();
   return raw.map((row, i) => {
-    if (typeof row !== 'object' || row === null) fail(file, String(i));
+    if (typeof row !== 'object' || row === null) fail(file, String(i), 'a snippet is an object');
     const rec = row as Record<string, unknown>;
     const key = (k: string) => `${i}.${k}`;
     const id = rec.id;
-    if (typeof id !== 'string' || id.trim() === '' || ids.has(id)) fail(file, key('id'));
+    if (typeof id !== 'string' || id.trim() === '' || ids.has(id)) {
+      fail(file, key('id'), 'an id is a non-empty string and no two snippets share one');
+    }
     ids.add(id);
-    if (rec.stack !== stack) fail(file, key('stack'));
+    if (rec.stack !== stack) fail(file, key('stack'), `a snippet in this file says it is ${stack}`);
     const band = rec.band;
     if (typeof band !== 'number' || !Number.isInteger(band) || band < 1 || band > 7) {
-      fail(file, key('band'));
+      fail(file, key('band'), 'a band is a whole number from 1 to 7');
     }
     const title = rec.title;
-    if (typeof title !== 'string' || title.trim() === '') fail(file, key('title'));
+    if (typeof title !== 'string' || title.trim() === '') {
+      fail(file, key('title'), 'a title is a non-empty string');
+    }
     const code = rec.code;
-    if (typeof code !== 'string' || code.trim() === '') fail(file, key('code'));
-    if (code.includes('\t')) fail(file, key('code'));
-    if (code.includes('\r')) fail(file, key('code'));
-    if (/[^\x20-\x7e\n]/.test(code)) fail(file, key('code'));
-    if (/[ ]$/m.test(code)) fail(file, key('code'));
+    if (typeof code !== 'string') fail(file, key('code'), 'code is a string');
+    if (code.trim() === '') fail(file, key('code'), 'there is no code in it');
+    if (code.includes('\t') || code.includes('\r')) {
+      fail(
+        file,
+        key('code'),
+        'the code has a tab or a carriage return in it; spaces and newlines only',
+      );
+    }
+    if (/[^\x20-\x7e\n]/.test(code)) {
+      fail(file, key('code'), 'the code has a character the field cannot show; plain ascii only');
+    }
+    if (/[ ]$/m.test(code)) fail(file, key('code'), 'a code line ends in a space');
     const notes = rec.notes;
-    if (!Array.isArray(notes) || notes.some((n) => typeof n !== 'string')) fail(file, key('notes'));
+    if (!Array.isArray(notes) || notes.some((n) => typeof n !== 'string')) {
+      fail(file, key('notes'), 'notes are a list of strings');
+    }
     const topics = rec.topics;
     if (!Array.isArray(topics) || topics.some((t) => typeof t !== 'string')) {
-      fail(file, key('topics'));
+      fail(file, key('topics'), 'topics are a list of strings');
     }
     // The snippet's own ask, when it has one (slice 3): the user's words for
     // the job this code does. It goes through the same gate as every authored
@@ -104,17 +133,23 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
     // next door and does not import this one), so a test holds the ids.
     const boundTo = rec.for;
     if (boundTo !== undefined && (typeof boundTo !== 'string' || boundTo.trim() === '')) {
-      fail(file, key('for'));
+      fail(file, key('for'), 'a level binding is a non-empty level id');
     }
     const ask = rec.ask;
     if (ask !== undefined) {
-      if (typeof ask !== 'string') fail(file, key('ask'));
-      if (ask.includes('{title}')) fail(file, key('ask'));
-      if (lineFault(ask) !== null) fail(file, key('ask'));
+      if (typeof ask !== 'string') fail(file, key('ask'), 'an ask is a string');
+      if (ask.includes('{title}')) {
+        fail(file, key('ask'), 'an ask cannot carry a {title} hole; nothing ever fills one');
+      }
+      const askFault = lineFault(ask);
+      if (askFault !== null)
+        fail(file, key('ask'), `the ask cannot be said on the field: ${askFault}`);
       // An ask that names a story noun is a request only inside the story
       // that supplies it. Say which one, or the ask is a halt — the same
       // shape as the `{title}` refusal above it.
-      if (askIsBound(ask) && boundTo === undefined) fail(file, key('ask'));
+      if (askIsBound(ask) && boundTo === undefined) {
+        fail(file, key('ask'), 'the ask names a story noun, so it says which level it is for');
+      }
     }
     // The snippet's own reaction: the line the user says when this piece
     // ships. The same gate as the ask one row up, verbatim — a string, no
@@ -124,10 +159,25 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
     // disk on the reaction row that could not reach it on the ask row.
     const reaction = rec.reaction;
     if (reaction !== undefined) {
-      if (typeof reaction !== 'string') fail(file, key('reaction'));
-      if (reaction.includes('{title}')) fail(file, key('reaction'));
-      if (lineFault(reaction) !== null) fail(file, key('reaction'));
-      if (askIsBound(reaction) && boundTo === undefined) fail(file, key('reaction'));
+      if (typeof reaction !== 'string') fail(file, key('reaction'), 'a reaction is a string');
+      if (reaction.includes('{title}')) {
+        fail(
+          file,
+          key('reaction'),
+          'a reaction cannot carry a {title} hole; nothing ever fills one',
+        );
+      }
+      const reactionFault = lineFault(reaction);
+      if (reactionFault !== null) {
+        fail(file, key('reaction'), `the reaction cannot be said on the field: ${reactionFault}`);
+      }
+      if (askIsBound(reaction) && boundTo === undefined) {
+        fail(
+          file,
+          key('reaction'),
+          'the reaction names a story noun, so it says which level it is for',
+        );
+      }
     }
     // The creep this snippet carries in its own words: the extra line and
     // the "oh also" that describes it, written together. Without one the
@@ -142,17 +192,36 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
     let creep: { line: string; ask: string } | undefined;
     if (creepRaw !== undefined) {
       if (typeof creepRaw !== 'object' || creepRaw === null || Array.isArray(creepRaw)) {
-        fail(file, key('creep'));
+        fail(file, key('creep'), 'a creep is an object with a line and an ask');
       }
       const creepRec = creepRaw as Record<string, unknown>;
       const line = creepRec.line;
-      if (typeof line !== 'string' || line.trim() === '') fail(file, key('creep.line'));
-      if (/[^\x20-\x7e]/.test(line as string)) fail(file, key('creep.line'));
+      if (typeof line !== 'string' || line.trim() === '') {
+        fail(file, key('creep.line'), 'a creep line is a non-empty string');
+      }
+      if (/[^\x20-\x7e]/.test(line as string)) {
+        fail(
+          file,
+          key('creep.line'),
+          'the code has a character the field cannot show; plain ascii only',
+        );
+      }
       const creepAsk = creepRec.ask;
-      if (typeof creepAsk !== 'string') fail(file, key('creep.ask'));
-      if ((creepAsk as string).includes('{title}')) fail(file, key('creep.ask'));
-      if (lineFault(creepAsk as string) !== null) fail(file, key('creep.ask'));
-      if (askIsBound(creepAsk as string) && boundTo === undefined) fail(file, key('creep.ask'));
+      if (typeof creepAsk !== 'string') fail(file, key('creep.ask'), 'a creep ask is a string');
+      if ((creepAsk as string).includes('{title}')) {
+        fail(file, key('creep.ask'), 'an ask cannot carry a {title} hole; nothing ever fills one');
+      }
+      const creepFault = lineFault(creepAsk as string);
+      if (creepFault !== null) {
+        fail(file, key('creep.ask'), `the ask cannot be said on the field: ${creepFault}`);
+      }
+      if (askIsBound(creepAsk as string) && boundTo === undefined) {
+        fail(
+          file,
+          key('creep.ask'),
+          'the ask names a story noun, so it says which level it is for',
+        );
+      }
       creep = { line: line as string, ask: creepAsk as string };
     }
     return {

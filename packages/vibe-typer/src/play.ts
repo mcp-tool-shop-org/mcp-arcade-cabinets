@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { loadTape, TapeError, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { integrationSnippets, type IntegrationSeed } from './corpus';
+import { printableLevelId, wasMoved } from './level';
 import { createRun, stepRun, type CreateRunOpts } from './sim';
 import { DEFAULT_PATTERNS } from './patterns';
 import { hashString, seededRandom, mixSeed } from './seed';
@@ -234,6 +235,45 @@ export interface Transcript {
 
 const TIER_WORDS = ['easy', 'warm', 'hot', 'hardcore'];
 
+/** The cabinet's own words, including the unit the valuation is counted in. */
+const WORDS = DEFAULT_PATTERNS.cabinet.words;
+
+/**
+ * One label convention for the whole print: `label: value`, and ` · `
+ * between fields on a line.
+ *
+ * The block used to say `stack javascript` four lines above `pieces: 4` —
+ * one document, two conventions — and the word `level` carried an id in the
+ * header and a count in the footer six lines apart. The colon is the one
+ * that stays because `scripts/play.mjs` finds the footer by the literal
+ * `valuation:`, so it is the convention already load-bearing outside this
+ * module.
+ */
+function field(label: string, value: string | number): string {
+  return `${label}: ${value}`;
+}
+
+/** One level the run passed through, in the order it passed through them. */
+interface PlayedLevel {
+  /** The id as planned, suffix and all — what the JSON and a lookup want. */
+  rawId: string;
+  /** The id as a reader sees it, with the planner's bookkeeping off it. */
+  id: string;
+  product: string;
+  stack: Stack;
+  moved: boolean;
+}
+
+function playedFrom(plan: RunState['plan']): PlayedLevel {
+  return {
+    rawId: plan.id,
+    id: printableLevelId(plan.id),
+    product: plan.product,
+    stack: plan.stack,
+    moved: wasMoved(plan.id),
+  };
+}
+
 function fail(text: string, why: string): Transcript {
   return {
     ok: false,
@@ -316,6 +356,14 @@ export function play(args: PlayArgs = {}): Transcript {
   // point past the end, and every line after the first trim would go
   // unscanned — in silence, which is the failure this whole block exists to
   // refuse.
+  // One record per level the run passed through, kept IN the loop.
+  // `furniture` and `header` were built after it from `state.plan` — by then
+  // the level the run died on — and printed as though they described the
+  // run: an endless run was headed `product an app that rates the group
+  // chat` over a body whose first level was a loyalty program for hat
+  // collections, and its `stack` was one word over a body that changed
+  // language three times.
+  const played: PlayedLevel[] = [playedFrom(state.plan)];
   let leak: Leak | null = firstLeak(state.chat);
   let leaked = leak !== null;
   let lastSeq = state.chat.length > 0 ? state.chat[state.chat.length - 1]!.seq : -1;
@@ -328,6 +376,7 @@ export function play(args: PlayArgs = {}): Transcript {
     stepRun(state, bot(state), DT);
     for (const event of state.events) if (event.kind === 'compaction') compactions += 1;
     if (state.plan.recycled === true) recycled = true;
+    if (state.plan.id !== played[played.length - 1]!.rawId) played.push(playedFrom(state.plan));
     const said = state.chat.filter((line) => line.seq > lastSeq);
     if (said.length > 0) lastSeq = said[said.length - 1]!.seq;
     const fresh = firstLeak(said);
@@ -337,11 +386,16 @@ export function play(args: PlayArgs = {}): Transcript {
     }
   }
   const levels = state.levelIndex + 1;
+  const last = played[played.length - 1]!;
   const tail = state.chat.slice(-4).map((c) => `${c.who} ${c.line}`);
+  // The screen is scanned for digits, so nothing here may number a level.
+  // A multi-level run gets one line per level in the order it played them,
+  // which is the record the header could never be.
   const furniture = [
-    `product ${state.plan.product}`,
-    `stack ${state.plan.stack}`,
-    `agent ${DEFAULT_PATTERNS.cabinet.agentName}`,
+    ...(played.length === 1
+      ? [field('product', last.product), field('stack', last.stack)]
+      : played.map((l) => `${field('product', l.product)} · ${field('stack', l.stack)}`)),
+    field('agent', DEFAULT_PATTERNS.cabinet.agentName),
   ];
   if (!screenClean([...furniture, ...tail])) leaked = true;
   // The offending line is printed where the operator will look: the tail of
@@ -362,8 +416,23 @@ export function play(args: PlayArgs = {}): Transcript {
         : 'level shipped';
   const header = [
     DEFAULT_PATTERNS.cabinet.name,
-    `level ${state.plan.id} stack ${state.plan.stack} tier ${TIER_WORDS[tier]} bot ${spec.name} seed ${seed} endless ${endless ? 'yes' : 'no'}`,
+    [
+      // In a run of more than one level the header describes the RUN, and
+      // says so: the id it carries is the last level's and is labelled that
+      // way rather than standing in for every level above it.
+      field(played.length === 1 ? 'level' : 'last level', last.id),
+      field('stack', last.stack),
+      field('tier', TIER_WORDS[tier]!),
+      field('bot', spec.name),
+      field('seed', seed),
+      field('endless', endless ? 'yes' : 'no'),
+      ...(played.length === 1 ? [] : [field('levels played', levels)]),
+    ].join(' · '),
     endName,
+    // The planner's own bookkeeping, said in words rather than glued to the
+    // level's name. A run pinned to a language the level was not authored
+    // for used to read `level duck-rides-moved`.
+    ...(last.moved ? ['the level was moved off its own stack'] : []),
     // `plan.recycled` was written, tested and read by nobody: the comment
     // that justifies the flag says it is how "the stack ran out" reaches the
     // shell and the transcript, and that half was never built. A player in a
@@ -372,10 +441,16 @@ export function play(args: PlayArgs = {}): Transcript {
     ...(recycled ? ['the stack ran out and started again'] : []),
   ];
   const footer = [
-    `valuation: ${Math.round(state.valuation)}`,
-    `pieces: ${state.pieceCount}`,
-    `levels: ${levels}`,
-    `compactions: ${compactions}`,
+    // The headline number carries its unit off the field. `valuation: 54`
+    // named no scale at all while the milestones crossing it are called
+    // seed, series a and unicorn, which are funding rounds; the unit word is
+    // the cabinet's to set, and it is set in `patterns/cabinet.json`.
+    field('valuation', `${Math.round(state.valuation)} ${WORDS.valuationUnit}`),
+    field('pieces', state.pieceCount),
+    // Renamed so it stops colliding with the header's `level`, which is an
+    // id: one block said `level cat-website` and `levels: 1` six lines apart.
+    field('levels played', levels),
+    field('compactions', compactions),
   ];
   const text = [...header, ...screen, ...footer].join('\n');
   const contextOut = state.ended === 'context';

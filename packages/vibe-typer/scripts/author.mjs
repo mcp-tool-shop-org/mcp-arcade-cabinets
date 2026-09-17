@@ -82,25 +82,6 @@ const PATTERNS = path.join(PKG, 'patterns');
 const CORPUS_DIR = path.join(PATTERNS, 'corpus');
 const AUTHORING = path.join(PKG, 'authoring');
 
-const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] [--level <id>] [--out <base>]
-       node scripts/author.mjs run --model <spec> [--only <slot>] [--pool <key>] [--chunk <n>]
-                                  [--spare <n>] [--concurrency <n>] [--revoice] [--apply]
-       node scripts/author.mjs edit --model <spec> [--pool <key>] [--concurrency <n>] [--apply]
-                                   [--same-family <reason>]
-
-  <spec>      openrouter:<model-id> | ollama:<tag>
-  <slot>      premises | stories | asks | nags | reactions | reviews | pools |
-              snippet-reactions
-  --pool      dotted pool names, comma separated; a head matches its whole branch
-  --chunk     items one call writes for; the default is forty
-  --spare     lines over the floor a pool is written to; four when re-voicing, none otherwise
-  --concurrency  calls in flight at once; the answers are folded in key order either way
-  --revoice   write each pool fresh at its floor instead of topping it up
-  --same-family  the reason for seating the editor in the family that wrote the pool
-  --skip      pools this run leaves alone, named the way --pool names them
-  --editor    the second family that reads the snippet reactions back, and drops
-  edit        read each whole pool back and drop the lines that break the voice`;
-
 /** Flags that take a value. */
 const FLAGS = new Set([
   'model',
@@ -190,6 +171,57 @@ const DEFAULT_CHUNK = 40;
  * never costs another call, because a call count is a ceiling over the chunk.
  */
 const REVOICE_SPARE = 4;
+
+/**
+ * The ONE statement of what this script takes, declared after the defaults so
+ * it can name them.
+ *
+ * Three flags it accepts — `--temperature`, `--timeout` and `--ollama` — used
+ * to appear nowhere in it, so the only description of `--temperature` was a
+ * source comment the lead running the script never saw; `--skip` and
+ * `--editor` were in the body and in none of the synopsis lines; and six of
+ * the eight documented flags stated no default. Every flag here carries its
+ * default in the same shape.
+ */
+const USAGE = `usage: node scripts/author.mjs <command> --model <spec> [flags]
+
+commands
+  sample      forty lines from each model named, for the Director to pick from
+  run         the full authoring pass over the slots
+  edit        read each whole pool back and drop the lines that break the voice
+
+  node scripts/author.mjs sample --model <spec>[,<spec>...] [--level <id>] [--out <base>]
+  node scripts/author.mjs run --model <spec> [--only <slot>] [--pool <key>] [--skip <key>]
+                             [--chunk <n>] [--spare <n>] [--concurrency <n>] [--editor <spec>]
+                             [--revoice] [--apply]
+  node scripts/author.mjs edit --model <spec> [--pool <key>] [--skip <key>] [--concurrency <n>]
+                              [--same-family <reason>] [--apply]
+
+  <spec>      openrouter:<model-id> | ollama:<tag>
+  <slot>      premises | stories | asks | nags | reactions | reviews | pools |
+              snippet-reactions
+  --level     the level \`sample\` writes for; default the first listed level
+  --out       the base path \`sample\` writes its .json and .md to; default
+              docs/vibe-typer.author-sample
+  --only      the slot to run; default every slot of the full pass
+  --pool      dotted pool names, comma separated; a head matches its whole branch;
+              default every pool the slot owns
+  --skip      pools this run leaves alone, named the way --pool names them; default none
+  --chunk     items one call writes for; default ${DEFAULT_CHUNK}
+  --spare     lines over the floor a pool is written to; default ${REVOICE_SPARE} when
+              re-voicing, none otherwise
+  --concurrency  calls in flight at once; default ${DEFAULT_CONCURRENCY}. The answers are
+              folded in key order either way, so the file is the same at any width
+  --temperature  the sampling temperature; default ${DEFAULT_TEMPERATURE} writing,
+              ${EDIT_TEMPERATURE} editing
+  --timeout   milliseconds one call may take; default ${DEFAULT_TIMEOUT_MS}
+  --ollama    the Ollama host for an ollama: spec; default ${DEFAULT_OLLAMA}
+  --editor    the second family that reads the snippet reactions back, and drops;
+              default none, and every other slot is read by \`edit\` in its own pass
+  --same-family  the reason for seating the editor in the family that wrote the pool;
+              default none, and the clash is a halt
+  --revoice   write each pool fresh at its floor instead of topping it up
+  --apply     write the levers; without it the run writes candidates only`;
 
 /** The level the sample reads, and how many snippets it asks about. */
 const SAMPLE_LEVEL = 'duck-rides';
@@ -1661,10 +1693,25 @@ async function commandRun(args, gates) {
     path.join(AUTHORING, `${stamp}-run.json`),
     ...only.map((name) => path.join(AUTHORING, `${stamp}-${name}.json`)),
   ]);
+  // The same closing shape `edit` prints, read off the receipt already in
+  // hand. `run` is the command that rewrites whole pools across six slots and
+  // costs the most, and it used to close with no kept count, no dropped count
+  // and only the directory rather than the receipt file — while `edit`, the
+  // smaller command, closed with all of it.
+  const slots = Object.values(receipt.slots);
+  const total = (what) => slots.reduce((a, slot) => a + (slot[what] ?? 0), 0);
+  const dropped = slots.reduce(
+    (a, slot) => a + Object.values(slot.dropped ?? {}).reduce((x, y) => x + y, 0),
+    0,
+  );
   console.log(
-    apply
-      ? `applied ${only.join(', ')} into the levers in ${receipt.calls} calls; run pnpm test before committing`
-      : `wrote candidates for ${only.join(', ')} under ${path.relative(ROOT, AUTHORING)}`,
+    `${receipt.calls} calls; ${total('kept')} lines kept, ${dropped} dropped at the gate, ` +
+      `${total('missing')} never came back; ${apply ? 'applied' : 'not applied'} ` +
+      `${only.join(', ')}; receipt ${path.relative(
+        ROOT,
+        path.join(AUTHORING, `${stamp}-run.json`),
+      )}` +
+      (apply ? '\nrun pnpm test before committing' : ''),
   );
 }
 
@@ -2459,7 +2506,10 @@ async function slotSnippetReactions(ctx) {
   const write = async (group) => {
     // One line a call, because a slot of thirty-odd cloud calls with a single
     // line of output at the end of it is a run nobody can tell from a stall.
-    process.stderr.write(`  write ${group.length} (${kept.size}/${jobs.length} held)\n`);
+    // 'kept' in the breadcrumb and 'kept' in the closing line: they used to
+    // be 'held' and 'kept', so a lead could not add the breadcrumbs up to the
+    // total they were watching for.
+    process.stderr.write(`  write ${group.length} (${kept.size}/${jobs.length} kept)\n`);
     const slot = await askSlot(
       ctx.target,
       ctx.system.user,

@@ -114,6 +114,13 @@ export interface Request {
   creep?: Creep;
 }
 
+/**
+ * One level as the sim runs it: an authored `LevelDef`, or an endless rung,
+ * with its tier applied and its snippets drawn. The numbers carry the same
+ * three units `LevelDef` names — a SHARE OF THE CONTEXT BAR (0..1 of the bar
+ * the player watches), VALUATION (the scoreboard's own scale), and a BAND
+ * 1..7 — and nothing on the field distinguishes them, so each says which.
+ */
 export interface LevelPlan {
   id: string;
   product: string;
@@ -122,11 +129,21 @@ export interface LevelPlan {
   stack: Stack;
   tier: Tier;
   requests: Request[];
+  /**
+   * Share of the context bar drained per second at the level's FIRST
+   * request, 0..1 of the whole bar, the tier's scale already applied.
+   */
   drainPerSec: number;
   /** Fraction added to drainPerSec by the level's last request (the only mid-level ramp, G26). */
   drainRamp: number;
+  /** Share of the EMPTY part of the context bar a ship gives back, 0..1. */
   refillShare: number;
+  /** Share of the whole context bar one user message costs, 0..1. */
   messageCost: number;
+  /**
+   * Extra VALUATION paid on the level's last ship — the scoreboard's scale,
+   * not the bar's.
+   */
   shipBonus: number;
   /**
    * The request index a quick sync sits in front of, when this level drew one.
@@ -207,7 +224,21 @@ export interface ChatLine {
    * reader all pace the same reveal instead of each inventing a rule.
    */
   dueAt: number;
-  /** A check-in while you type. It costs nothing and changes nothing (slice 3). */
+  /**
+   * A check-in while you type. It costs nothing and changes nothing (slice 3).
+   *
+   * A MIRROR OF `kind === 'nag'`, never a second opinion. `kind` is the
+   * authoritative label — its own doc comment is why it exists, so every
+   * surface downstream labels the same line the same way — and this boolean
+   * survives beside it only because two readers outside this package still
+   * take it: the shell's chat renderer and `scripts/transcript.mjs`. Both
+   * move to `kind` and this field goes, which is a cross-package change and
+   * not this one. `test/sim.test.ts` holds the two together in the meantime,
+   * so they can never disagree while both are here.
+   *
+   * `Event.nag` on the message event is a separate channel with no kind of
+   * its own and is not affected.
+   */
   nag?: true;
 }
 

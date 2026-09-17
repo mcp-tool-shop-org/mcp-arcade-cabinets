@@ -58,7 +58,7 @@
     "id": "cs-foreach",
     "stack": "csharp",
     "band": 1,
-    "title": "Foreach loop",
+    "title": "foreach loop",
     "code": "var names = new[] { \"Alice\", \"Bob\", \"Carol\" };\nforeach (var name in names)\n    Console.WriteLine($\"Hello, {name}!\");",
     "notes": [
       "foreach iterates every element without an index variable.",
@@ -72,7 +72,7 @@
     "id": "cs-string-interpolation",
     "stack": "csharp",
     "band": 1,
-    "title": "String interpolation",
+    "title": "string interpolation",
     "code": "var name = \"Alice\";\nvar total = 42.567;\nConsole.WriteLine($\"{name} owes {total:C2}\");",
     "notes": [
       "$ before the string enables {expression} placeholders.",
@@ -80,7 +80,7 @@
     ],
     "topics": ["string-interpolation", "formatting", "variables"],
     "ask": "show alice owes money in {product}",
-    "reaction": "alice sits there with her number"
+    "reaction": "alice sits there with her number."
   },
   {
     "id": "cal-cs-d2-001",
@@ -91,7 +91,7 @@
     "notes": ["Uses a simple if-else to assign pass or fail based on a score threshold."],
     "topics": ["if-else", "comparison", "branching"],
     "ask": "only say the nice thing if i earned it",
-    "reaction": "it only says nice things when i earn them"
+    "reaction": "it only says nice things when i earn them."
   },
   {
     "id": "cal-cs-d2-002",
@@ -124,7 +124,7 @@
     "notes": ["Counts down from 5 to 1 using a while loop and prints done when finished."],
     "topics": ["while-loop", "decrement"],
     "ask": "count down from five until {product} is live",
-    "reaction": "five seconds until the whole room cheers"
+    "reaction": "five seconds until the whole room cheers."
   },
   {
     "id": "cal-cs-d2-005",
@@ -206,7 +206,7 @@
     "id": "cs-async-await",
     "stack": "csharp",
     "band": 3,
-    "title": "Async/await",
+    "title": "async/await",
     "code": "public async Task<string> GetPageAsync(string url)\n{\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}",
     "notes": [
       "async methods return Task<T> and use await for I/O.",
@@ -220,7 +220,7 @@
     "id": "cs-interface",
     "stack": "csharp",
     "band": 3,
-    "title": "Interface definition",
+    "title": "interface definition",
     "code": "public interface ILogger\n{\n    void Log(string message);\n    void Warn(string message) => Log($\"WARN: {message}\");\n}",
     "notes": [
       "Interfaces define a contract that classes must implement.",
@@ -299,7 +299,7 @@
     "id": "cs-linq",
     "stack": "csharp",
     "band": 4,
-    "title": "LINQ pipeline",
+    "title": "linq pipeline",
     "code": "var result = items\n    .Where(x => x % 2 == 0)\n    .Select(x => x * x)\n    .ToList();",
     "notes": ["LINQ is a fluent query style.", "Mind dots, arrows, and semicolons."],
     "topics": ["linq", "lambda", "select", "where"],
@@ -310,7 +310,7 @@
     "id": "cs-switch-expr",
     "stack": "csharp",
     "band": 4,
-    "title": "Switch expression",
+    "title": "switch expression",
     "code": "string grade = score switch\n{\n    >= 90 => \"A\",\n    >= 80 => \"B\",\n    >= 70 => \"C\",\n    _ => \"F\"\n};",
     "notes": [
       "Switch expressions return a value inline.",
@@ -370,7 +370,7 @@
     ],
     "topics": ["async-enumerable", "yield", "cancellation", "task-run"],
     "ask": "use only primes for the tables",
-    "reaction": "the tables hum with perfect numbers"
+    "reaction": "the tables hum with perfect numbers."
   },
   {
     "id": "cal-cs-d5-005",
@@ -389,7 +389,7 @@
     "id": "cs-record",
     "stack": "csharp",
     "band": 5,
-    "title": "Record + with",
+    "title": "record + with",
     "code": "public record User(string Name, int Age);\n\nvar u1 = new User(\"Ada\", 37);\nvar u2 = u1 with { Age = 38 };",
     "notes": [
       "Records are immutable-ish data types.",
@@ -423,7 +423,7 @@
     ],
     "topics": ["merge-sort", "recursion", "arrays", "divide-and-conquer"],
     "ask": "sort a list by splitting and merging in {product}",
-    "reaction": "the list splits and heals itself"
+    "reaction": "the list splits and heals itself."
   },
   {
     "id": "cal-cs-d6-003",
@@ -449,7 +449,7 @@
     ],
     "topics": ["bfs", "grid", "pathfinding", "dictionary", "tuples", "backtracking"],
     "ask": "find the shortest way through a maze in {product}",
-    "reaction": "it finds the way before i finish my thought"
+    "reaction": "it finds the way before i finish my thought."
   },
   {
     "id": "cal-cs-d6-005",
@@ -462,7 +462,7 @@
     ],
     "topics": ["gaussian-elimination", "linear-algebra", "pivoting", "multidimensional-arrays"],
     "ask": "solve a system of equations for {product}",
-    "reaction": "it solves them while i tie my shoes"
+    "reaction": "it solves them while i tie my shoes."
   },
   {
     "id": "cal-cs-d7-001",
@@ -475,7 +475,7 @@
     ],
     "topics": ["matrix-multiplication", "sparse", "normalization", "nested-loops"],
     "ask": "multiply two sparse grids and scale results for {product}",
-    "reaction": "every scale fits just where it belongs"
+    "reaction": "every scale fits just where it belongs."
   },
   {
     "id": "cal-cs-d7-002",
@@ -488,7 +488,7 @@
     ],
     "topics": ["image-processing", "sobel", "convolution", "edge-detection", "nested-loops"],
     "ask": "find the edges in a picture for {product}",
-    "reaction": "it finds every line before i blink"
+    "reaction": "it finds every line before i blink."
   },
   {
     "id": "cal-cs-d7-003",
@@ -527,6 +527,6 @@
     ],
     "topics": ["dynamic-programming", "knapsack", "backtracking", "arrays", "optimization"],
     "ask": "pack the most valuable items without overloading in {product}",
-    "reaction": "it picks them while i sip my tea"
+    "reaction": "it picks them while i sip my tea."
   }
 ]

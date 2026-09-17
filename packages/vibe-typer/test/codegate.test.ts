@@ -508,4 +508,74 @@ describe('the refusal says what it wants', () => {
       expect(britishHit(text), reason).toBeNull();
     }
   });
+
+  // The one refusal sentence that carries a number used to print the module
+  // constant while the gate applied `ctx.tolerance`, so a caller gating at
+  // 0.3 told the seat the ceiling was 0.15 and the seat corrected against a
+  // bound nobody used.
+  it('names the widening it actually applied, not the module default', () => {
+    const wider = { ...ctx('python', 3), tolerance: 0.3 };
+    const under = gateCode(candidate({ code: 'x = 1' }), wider);
+    expect(reasonOf(under)).toBe('value-out-of-band');
+    if (under.ok) throw new Error('expected a refusal');
+    expect(under.tolerance).toBe(0.3);
+    const said = reasonText(under);
+    expect(said).toContain('30%');
+    expect(said).not.toContain('15%');
+    expect(said).not.toContain('0.15');
+
+    // And the default caller still hears its own number.
+    const plain = gateCode(candidate({ code: 'x = 1' }), ctx('python', 3));
+    if (plain.ok) throw new Error('expected a refusal');
+    expect(reasonText(plain)).toContain('15%');
+  });
+
+  // The bound goes beside the measurement, the way too-wide and
+  // too-many-lines already do it.
+  it('puts the value beside the window it missed', () => {
+    const under = gateCode(candidate({ code: 'x = 1' }), ctx('python', 3));
+    if (under.ok) throw new Error('expected a refusal');
+    expect(under.detail).toMatch(/floor: \d+ of \d+\.\.\d+$/);
+  });
+
+  // The two value refusals that apply no tolerance claim no number.
+  it('claims no widening where none was applied', () => {
+    const none = gateCode(candidate({ code: 'tools/call' }), ctx('integration', 1));
+    if (none.ok) throw new Error('expected a refusal');
+    expect(none.tolerance).toBeUndefined();
+    expect(reasonText(none)).not.toMatch(/%/);
+  });
+
+  // 80 columns and 12 lines bound a seated ask; the authored corpus ships
+  // past both and plays, so the sentences may not say "the field".
+  it('says the seat is the thing the width and depth bound', () => {
+    const wide = gateCode(candidate({ code: `x = "${'a'.repeat(MAX_COLS)}"` }), ctx('python', 1));
+    if (wide.ok) throw new Error('expected a refusal');
+    expect(reasonText(wide)).toContain('a seated line may reach');
+    const tall = gateCode(
+      candidate({ code: Array.from({ length: MAX_LINES + 1 }, (_, i) => `a${i} = 1`).join('\n') }),
+      ctx('python', 1),
+    );
+    if (tall.ok) throw new Error('expected a refusal');
+    expect(reasonText(tall)).toContain('a seated request may run to');
+    for (const said of [reasonText(wide), reasonText(tall)]) {
+      expect(said).not.toContain('the field');
+    }
+  });
+
+  // The title and the notes are recorded, never rendered, so a refusal over
+  // them may not be phrased as a field constraint.
+  it('says what the title and the notes are held to, not where they show', () => {
+    const badTitle = gateCode(candidate({ title: 'a colour wheel' }), ctx('python', 1));
+    expect(reasonOf(badTitle)).toBe('bad-title');
+    if (badTitle.ok) throw new Error('expected a refusal');
+    expect(reasonText(badTitle)).toContain('the same scan every authored line passes');
+    expect(reasonText(badTitle)).not.toContain('said on the field');
+
+    const badNotes = gateCode(candidate({ notes: ['it honours the list'] }), ctx('python', 1));
+    expect(reasonOf(badNotes)).toBe('bad-notes');
+    if (badNotes.ok) throw new Error('expected a refusal');
+    expect(reasonText(badNotes)).toContain('the same scan every authored line passes');
+    expect(reasonText(badNotes)).not.toContain('said on the field');
+  });
 });

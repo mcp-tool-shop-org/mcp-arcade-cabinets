@@ -2,11 +2,21 @@
 // decision of 2026-09-15, after playing v0.9.0: British spellings had shipped
 // in a level name). This test is the gate that keeps them out.
 //
-// It scans three places, and names the file, the key path and the word on a
+// It scans four places, and names the file, the key path and the word on a
 // hit: every string in every lever; every snippet's title, notes and topics;
-// and the shell's own source for the cabinet. Snippet `code` is out of scope —
-// it is the text the player types, quoted from the corpus, and a string
-// literal inside it is the code's business, not the product's voice.
+// the shell's own source for the cabinet; and this package's own source and
+// the comments of its own tests. Snippet `code` is out of scope — it is the
+// text the player types, quoted from the corpus, and a string literal inside
+// it is the code's business, not the product's voice.
+//
+// The fourth place was the hole: the package that owns the word list was the
+// one surface the list never looked at, and four British spellings had
+// settled into doc comments here (`honours`, `behaviour`) — tooltips every
+// shell author reads on hover. `src/*.ts` is scanned whole, the way the
+// shell's modules are. `test/*.ts` is scanned on its COMMENT lines only,
+// because a test's string literals are where the British form is deliberately
+// the subject ('make the colour warmer' is a fixture, not a spelling). The
+// word list and its own proof are skipped for the same reason.
 
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -92,12 +102,50 @@ function hits(): string[] {
     note('apps/cabinets/src/main.ts', `line ${start + i + 1}`, line);
   });
 
+  // This package. `src` whole, the way the shell's modules are scanned;
+  // `test` on its comment lines only, because a fixture string is where the
+  // British form is the thing under test. `spelling.ts` and this file are the
+  // word list and its own proof, so every British form in them is the
+  // subject rather than a defect.
+  const OWN_SKIP = new Set(['spelling.ts', 'spelling.test.ts']);
+  const COMMENT = /^\s*(\/\/|\*|\/\*)/;
+  for (const [dir, commentsOnly] of [
+    ['src', false],
+    ['test', true],
+  ] as const) {
+    for (const name of readdirSync(path.join(PKG, dir))) {
+      if (!name.endsWith('.ts') || OWN_SKIP.has(name)) continue;
+      const text = readFileSync(path.join(PKG, dir, name), 'utf8');
+      text.split('\n').forEach((line, i) => {
+        if (commentsOnly && !COMMENT.test(line)) return;
+        note(`packages/vibe-typer/${dir}/${name}`, `line ${i + 1}`, line);
+      });
+    }
+  }
+
   return found;
 }
 
 describe('American English', () => {
   it('has no British spelling on any surface', () => {
     expect(hits()).toEqual([]);
+  });
+
+  // The scan reaches this package's own source, which it did not until the
+  // Stage D pass: four British spellings had settled into doc comments in
+  // `lines.ts` and `sim.ts`, on the one surface the gate never looked at.
+  it('scans this package too, and a comment here is a surface', () => {
+    const scanned = readdirSync(path.join(PKG, 'src')).filter(
+      (n) => n.endsWith('.ts') && n !== 'spelling.ts',
+    );
+    expect(scanned).toContain('lines.ts');
+    expect(scanned).toContain('sim.ts');
+    for (const name of scanned) {
+      const text = readFileSync(path.join(PKG, 'src', name), 'utf8');
+      text.split('\n').forEach((line, i) => {
+        expect(britishHit(line), `src/${name} line ${i + 1}`).toBeNull();
+      });
+    }
   });
 
   it('flags the British form and lets the American one through', () => {

@@ -801,6 +801,14 @@ describe('the check-in', () => {
     while (!state.over && state.beat !== 'code') sendLine(state);
     toNag(state);
     expect(state.chat.filter((c) => c.nag === true)).toHaveLength(2);
+    // A check-in is recorded twice on one object, in two vocabularies:
+    // `kind` is the authoritative label and `nag` is a mirror kept for two
+    // readers outside this package. While both are here they may not
+    // disagree, and a consumer reading the type is told which one is the
+    // fact.
+    for (const line of state.chat) {
+      expect(line.nag === true, line.line).toBe(line.kind === 'nag');
+    }
   });
 
   it('plans the level the same whether the check-ins are on or off', () => {
@@ -1138,7 +1146,7 @@ describe("the seat's reaction", () => {
     expect(feedReaction(onTime, line, inHand)).toBe('waiting');
     expect(shipAndHear(onTime)).toBe(line);
 
-    // And a caller that names no request keeps the old behaviour: the
+    // And a caller that names no request keeps the old behavior: the
     // request in hand when the call landed.
     const bare = createRun({ seed: 5, tier: 0, endless: true });
     expect(feedReaction(bare, line)).toBe('waiting');
@@ -1224,7 +1232,7 @@ describe('the step', () => {
 describe('the ship', () => {
   // `ship` called the picker with neither the product nor the level id, so a
   // reaction authored beside an ask could not have its `{product}` filled and
-  // could not honour the `for` binding its ask already honours — the authoring
+  // could not honor the `for` binding its ask already honors — the authoring
   // run would have been rewritten afterwards. Both go across now.
   it('lets the request answer itself, with the product filled', () => {
     const state = createRun({ seed: 4, tier: 0, endless: false });
