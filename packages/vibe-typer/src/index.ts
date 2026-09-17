@@ -150,6 +150,12 @@ export {
   agentNameOf,
   BUILT_CAP,
   CHAT_CAP,
+  CHECK_INS_MAX,
+  CHECK_INS_MIN,
+  CHECK_INS_OFF,
+  cleanCheckIns,
+  cleanPaceScale,
+  cleanStartBand,
   cleanWeak,
   codeOf,
   corpusOf,
@@ -160,8 +166,11 @@ export {
   leversOf,
   NAG_SALT,
   nextSeed,
+  PACE_MAX,
+  PACE_MIN,
   planOf,
   reactionWaiting,
+  runCodeOf,
   stepRun,
   suppliedAsks,
   suppliedCount,
@@ -171,6 +180,22 @@ export {
   WEAK_PER_PAIR,
 } from './sim';
 export type { CreateRunOpts } from './sim';
+
+// The run code: the string the end card hands the player and the menu box
+// takes back. `runCodeOf` above mints it off a live run; these two are the
+// same pair for a shell that has a code and no run yet — it parses what was
+// typed, refuses a typo by answering null, and hands `createRun` the fields
+// beside the code itself.
+export {
+  corpusDigestOf,
+  mintRunCode,
+  parseRunCode,
+  RUN_CODE_VERSION,
+  weakDigestOf,
+  weakFromDigest,
+  WEAK_CLEAN,
+} from './runcode';
+export type { RunCode } from './runcode';
 
 export { hashString, mixSeed, seededRandom, shuffleOrder, weightedPick } from './seed';
 

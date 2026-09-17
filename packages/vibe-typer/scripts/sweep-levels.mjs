@@ -46,12 +46,16 @@ const USAGE = `usage: node packages/vibe-typer/scripts/sweep-levels.mjs [flags]
   --cap <ticks>        ticks one run may take before it is called an overrun;
                        default ${DEFAULT_CAP}
   --suggest            also print the drain each level would want
+  --reach              print which snippets each mode can actually draw and
+                       run nothing else; it needs no runs, so it is quick
+  --milestones         print which rungs of the scoreboard ladder each mode
+                       and tier crosses, and run nothing else
   --json               print the rows as JSON instead of the table
   --help, -h           this`;
 
 /** Every flag this script takes. Anything else is a halt, not a shrug. */
 const VALUE_FLAGS = new Set(['tier', 'bot', 'seeds', 'cap']);
-const BARE_FLAGS = new Set(['suggest', 'json']);
+const BARE_FLAGS = new Set(['suggest', 'json', 'reach', 'milestones']);
 
 function die(why) {
   console.error(`${why}\n${USAGE}`);
@@ -60,6 +64,9 @@ function die(why) {
 
 /** The share of the bar a level is tuned to spend, measured off slice one. */
 const BAR_BUDGET = 0.93;
+
+/** One line break. The reports below join their rows with it. */
+const NEWLINE = String.fromCharCode(10);
 
 function parseArgv(argv) {
   const flags = {};
@@ -144,18 +151,23 @@ function runOne(pkg, integration, { level, tier, bot, seed, cap }) {
   let ticks = 0;
   let compactions = 0;
   let nags = 0;
+  const milestones = [];
   while (!state.over && ticks < cap) {
     ticks += 1;
     pkg.stepRun(state, drive(state), pkg.DT);
     for (const e of state.events) {
       if (e.kind === 'compaction') compactions += 1;
       else if (e.kind === 'message' && e.nag === true) nags += 1;
+      // Which rungs of the scoreboard ladder this run crossed, in the order
+      // it crossed them. `--milestones` is the only reader today.
+      else if (e.kind === 'milestone') milestones.push(e.name);
     }
   }
   return {
     seconds: ticks * pkg.DT,
     compactions,
     nags,
+    milestones,
     // `state.built` is a window capped at BUILT_CAP; `pieceCount` is the
     // count that never falls off. A listed level never reaches the cap
     // today, so the old reading was right by luck and not by rule.
@@ -166,6 +178,159 @@ function runOne(pkg, integration, { level, tier, bot, seed, cap }) {
 }
 
 const mean = (xs) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
+
+/**
+ * The reach report: which of the authored snippets each mode can actually
+ * draw.
+ *
+ * Two hundred and forty-nine snippets are authored, each with its own ask and
+ * its own reaction written beside it. The sixteen listed levels pin fifty-six
+ * ids between them and their band ranges top out at five to five, so the
+ * snippets in bands six and seven appear in no listed level at all and are
+ * reachable only through the endless ladder, which starts at band one and
+ * climbs one band every two levels — six levels for a clean ninety-word
+ * typist and two for a forty-word one, by the fairness band's own bar. The
+ * next authoring run should write for bands a player will see, and until
+ * this was printed nowhere there was no way to know which those are.
+ *
+ * It counts what a mode CAN draw, not what one evening does draw, and it
+ * needs no runs at all.
+ */
+const CLIMB = 8;
+
+function share(n, total) {
+  return `${Math.round((n / Math.max(1, total)) * 100)} percent`;
+}
+
+function listedReach(pkg, corpus) {
+  const ids = new Set();
+  for (const def of pkg.DEFAULT_PATTERNS.levels.levels) {
+    for (const id of def.snippets ?? []) ids.add(id);
+    for (const s of pkg.inBand(corpus, def.stack, def.bandMin, def.bandMax)) ids.add(s.id);
+  }
+  return ids;
+}
+
+function endlessReach(pkg, corpus, startBand, levels = CLIMB) {
+  const ids = new Set();
+  for (let i = 0; i < levels; i += 1) {
+    const bands = pkg.endlessBandAt(pkg.DEFAULT_PATTERNS, i, startBand);
+    // An endless level draws its stack at random, so every stack is in reach.
+    for (const stack of pkg.CORPUS_STACKS) {
+      for (const s of pkg.inBand(corpus, stack, bands.bandMin, bands.bandMax)) ids.add(s.id);
+    }
+  }
+  return ids;
+}
+
+/**
+ * The milestone report: which rungs of the scoreboard's ladder each mode and
+ * tier actually crosses.
+ *
+ * The ladder's named rungs each have a card drawn and shipped for them — seed,
+ * Series A, unicorn — and until this was printed nowhere, nothing in the repo
+ * said whether any mode reaches the top two at all: the two whole-run prints
+ * on record closed at fifty-four and a hundred and seventy-nine against a top
+ * rung at eighteen hundred. `test/band.test.ts` holds the bars — the ladder
+ * is climbed in order, a rung is never claimed above the valuation that paid
+ * for it, and the clean ninety in endless crosses all of it. This is the
+ * reading a lead takes to the Director before the ladder, or the question of
+ * carrying a run across levels, is decided. Neither is decided here.
+ */
+function milestoneRows(pkg, integration, { seeds, cap }) {
+  const ladder = pkg.DEFAULT_PATTERNS.score.milestones;
+  const levels = pkg.DEFAULT_PATTERNS.levels.levels;
+  const rows = [
+    `the ladder: ${ladder.map((m) => `${m.name} at ${m.at}`).join(' · ')}`,
+    '',
+    `${pad('mode', 42)} ${pad('rungs crossed', 26)} valuation`,
+  ];
+  for (const tier of [0, 1, 2, 3]) {
+    const bot = tier === 3 ? 'perfect' : DEFAULT_BOT;
+    let best = [];
+    let top = 0;
+    for (const [i] of levels.entries()) {
+      for (const seed of seeds) {
+        const out = runOne(pkg, integration, { level: i, tier, bot, seed, cap });
+        if (out.milestones.length > best.length) best = out.milestones;
+        top = Math.max(top, out.valuation);
+      }
+    }
+    rows.push(
+      `${pad(`listed · tier ${tier} · ${bot}`, 42)} ${pad(best.join(', ') || 'none', 26)} ` +
+        `best level ${Math.round(top)}`,
+    );
+  }
+  for (const bot of [DEFAULT_BOT, 'perfect']) {
+    for (const seed of seeds) {
+      const state = driveEndless(pkg, integration, { tier: 0, bot, seed, cap });
+      const crossed = state.milestones.join(', ') || 'none';
+      rows.push(
+        `${pad(`endless · tier 0 · ${bot} · seed ${seed}`, 42)} ${pad(crossed, 26)} ` +
+          `${Math.round(state.valuation)} over ${state.levelIndex + 1} levels`,
+      );
+    }
+  }
+  return rows;
+}
+
+/** One endless run to its end, handed back whole. That ladder has no levels. */
+function driveEndless(pkg, integration, { tier, bot, seed, cap }) {
+  const state = pkg.createRun({ seed, tier, endless: true, integration });
+  const drive = pkg.botFor(pkg.parseBot(bot), seed);
+  let ticks = 0;
+  while (!state.over && ticks < cap) {
+    ticks += 1;
+    pkg.stepRun(state, drive(state), pkg.DT);
+  }
+  return state;
+}
+
+function reachRows(pkg, corpus) {
+  const total = corpus.snippets.length;
+  const byBand = new Map();
+  for (const s of corpus.snippets) byBand.set(s.band, (byBand.get(s.band) ?? 0) + 1);
+  const bandLine = [...byBand.keys()]
+    .sort((a, b) => a - b)
+    .map((b) => `band ${b}: ${byBand.get(b)}`)
+    .join(' · ');
+  const rows = [
+    `the corpus holds ${total} snippets, the tapes included`,
+    bandLine,
+    '',
+    `${pad('mode', 34)} ${padLeft('ids in reach', 13)}  share of the corpus`,
+  ];
+  const listed = listedReach(pkg, corpus);
+  rows.push(
+    `${pad('the sixteen listed levels', 34)} ${padLeft(listed.size, 13)}  ${share(listed.size, total)}`,
+  );
+  for (let rung = 1; rung <= 7; rung += 1) {
+    const ids = endlessReach(pkg, corpus, rung);
+    const bands = pkg.endlessBandAt(pkg.DEFAULT_PATTERNS, 0, rung);
+    const name = `endless from rung ${rung} (bands ${bands.bandMin}-${bands.bandMax} up)`;
+    rows.push(`${pad(name, 34)} ${padLeft(ids.size, 13)}  ${share(ids.size, total)}`);
+  }
+  const shipped = pkg.DEFAULT_PATTERNS.levels.endless.startBand;
+  const everywhere = new Set(listed);
+  for (const id of endlessReach(pkg, corpus, shipped)) everywhere.add(id);
+  const unseen = corpus.snippets.filter((s) => !everywhere.has(s.id));
+  rows.push('');
+  rows.push(
+    `${unseen.length} snippets sit outside the listed levels AND outside a ladder started at ` +
+      `the shipped rung over ${CLIMB} levels`,
+  );
+  if (unseen.length > 0) {
+    const bands = new Map();
+    for (const s of unseen) bands.set(s.band, (bands.get(s.band) ?? 0) + 1);
+    rows.push(
+      `  they are in ${[...bands.keys()]
+        .sort((a, b) => a - b)
+        .map((b) => `band ${b}: ${bands.get(b)}`)
+        .join(' · ')}`,
+    );
+  }
+  return rows;
+}
 
 function pad(s, n) {
   const t = String(s);
@@ -187,6 +352,23 @@ async function main() {
   const pkg = await loadPackage();
   const integration = pkg.integrationFrom(path.resolve(ROOT, 'fixtures/tapes'));
   const levels = pkg.DEFAULT_PATTERNS.levels.levels;
+
+  // The reach report runs nothing, so it answers on its own and returns
+  // rather than making a lead sit through four tiers of play-throughs to
+  // read a count of ids.
+  if (flags.reach) {
+    const corpus = pkg.withIntegration(pkg.DEFAULT_CORPUS, integration);
+    console.log(reachRows(pkg, corpus).join(NEWLINE));
+    return;
+  }
+
+  // The milestone report drives runs, so it says which: the readings the
+  // drains are set from over the listed levels, and the two endless bots the
+  // fairness band measures.
+  if (flags.milestones) {
+    console.log(milestoneRows(pkg, integration, { seeds, cap }).join(NEWLINE));
+    return;
+  }
 
   // The four readings the drains are set from: the forty-word typist at the
   // three gentler tiers, and the clean ninety at hardcore.

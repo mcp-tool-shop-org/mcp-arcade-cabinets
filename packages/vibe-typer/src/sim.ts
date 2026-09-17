@@ -27,14 +27,22 @@
 // that line, and costs nothing else. An empty bar inside a listed level is a
 // compaction, not a loss; only endless and hardcore end on it.
 
-import { codeLines, DEFAULT_CORPUS, withIntegration, type Corpus } from './corpus';
+import {
+  codeLines,
+  corpusFingerprint,
+  DEFAULT_CORPUS,
+  withIntegration,
+  type Corpus,
+} from './corpus';
 import { drain, isNearMiss, rateAt, refill, spend, burn, FULL } from './context';
 import { LinePicker } from './lines';
 import { DEFAULT_PATTERNS, tierContext, type Patterns } from './patterns';
 import { planLevel } from './level';
 import { copilotReady, hypeFor, milestoneCrossed, pay, pitchFor } from './score';
+import { corpusDigestOf, mintRunCode, parseRunCode, weakDigestOf, weakFromDigest } from './runcode';
 import { mixSeed, seededRandom } from './seed';
 import type {
+  Band,
   Beat,
   ChatKind,
   Event,
@@ -62,7 +70,73 @@ export interface CreateRunOpts {
   /** Dated jokes, off by default (Q5.7). */
   /** Which listed level to play. Ignored in endless, which has its own ladder. */
   levelIndex?: number;
+  /**
+   * The rung the endless ladder starts on, 1..7, in place of
+   * `levels.endless.startBand`. The lever does not move; this is the rung a
+   * player who has climbed is put back on, and it is what makes the top two
+   * bands reachable at all — sixteen listed levels pin fifty-six ids between
+   * them and top out at band five, so sixty authored snippets sit in bands
+   * the game only reaches through a long endless climb.
+   *
+   * A whole number, the way `levelIndex` above is. Out of range, fractional
+   * or absent: the lever's own rung, and the run is the run this cabinet has
+   * always played. It is dropped rather than clamped — a caller asking for
+   * rung nine is asking for a ladder this game does not have, and quietly
+   * handing them rung seven is a silent degradation.
+   */
+  startBand?: number;
+  /**
+   * How long the game gives the player to read, as a multiplier on
+   * `levels.pace` — both the hold on a transitional beat and the least gap
+   * between two chat lines. Above one is more reading time.
+   *
+   * The two numbers are the Director's and do not move; what this buys is a
+   * player who reads at their own speed, which the cabinet's settings could
+   * not reach at all. Bounded at both ends, validated the way `weakBigrams`
+   * is: anything outside `PACE_MIN..PACE_MAX`, non-finite or absent reads as
+   * one, and one is today's game to the byte.
+   */
+  paceScale?: number;
+  /**
+   * How often the user checks in while you type, as a multiplier on
+   * `levels.nagEvery` — or `'off'`, which pushes the next check-in past the
+   * end of any run rather than branching inside `maybeNag`. Above one is
+   * fewer interruptions.
+   *
+   * The shipped interval does not move. Bounded and validated the same way:
+   * anything outside `CHECK_INS_MIN..CHECK_INS_MAX`, non-finite or absent
+   * reads as one.
+   */
+  checkIns?: number | 'off';
+  /**
+   * A run code from an end card. Its practice map is planted in place of
+   * this browser's, which is what makes a code a replay rather than a seed
+   * that means something different on every machine.
+   *
+   * The code also names the seed, the tier, the stack, the endless flag, the
+   * ladder's first rung and the corpus. A caller passes those beside it —
+   * `play` reads them straight off the parsed code — and a code that
+   * disagrees with the options beside it halts rather than plays some third
+   * run neither of them asked for.
+   */
+  code?: string;
 }
+
+/** The bounds on `paceScale`. A quarter of the reading time, or four times it. */
+export const PACE_MIN = 0.25;
+export const PACE_MAX = 4;
+
+/** The bounds on `checkIns`, and the interval `'off'` stands for. */
+export const CHECK_INS_MIN = 0.25;
+export const CHECK_INS_MAX = 8;
+/**
+ * Seconds of frame time `'off'` puts between check-ins: past the end of any
+ * run there is. The band's own levers already turn the check-ins off this
+ * way rather than by a branch, and a branch inside `maybeNag` would be a
+ * second code path through the one beat whose whole point is that it lands
+ * on the player's clock.
+ */
+export const CHECK_INS_OFF = 1e9;
 
 interface RunContext {
   set: Patterns;
@@ -85,6 +159,29 @@ interface RunContext {
   nagRng: () => number;
   /** Frame time the next check-in is due at. */
   nextNagAt: number;
+  /**
+   * The run's own reading clock and its own check-in interval, both read off
+   * the levers and scaled once at `createRun`. `hold`, `say` and `armNag`
+   * read these rather than the lever set, so a player who reads at their own
+   * speed costs the hot path nothing and a scale of one is the shipped
+   * number to the byte.
+   */
+  beatHold: number;
+  chatGap: number;
+  nagEvery: { min: number; max: number };
+  /**
+   * The digest of the practice map this run plans with, kept so a code minted
+   * off the run says what the run actually used. A run started FROM a code
+   * carries that code's digest, which is what makes minting a code off a
+   * replay give back the code that was typed.
+   */
+  weakDigest: number;
+  /**
+   * The rung the endless ladder started on, or undefined for the lever's
+   * own. `advance` plans every further level with it, so a ladder that
+   * started high stays high.
+   */
+  startBand: Band | undefined;
   /** A check-in is waiting for the agent's answer; a second one does not land. */
   nagReplyPending: boolean;
   /**
@@ -400,7 +497,7 @@ function say(
   nag = false,
 ): void {
   const ctx = runs.get(state);
-  const gap = ctx?.set.levels.pace.chatGap ?? 0;
+  const gap = ctx?.chatGap ?? 0;
   const dueAt = ctx ? Math.max(state.clock, ctx.nextLineAt) : state.clock;
   if (ctx) ctx.nextLineAt = dueAt + gap;
   state.chat.push({
@@ -421,7 +518,7 @@ function say(
 
 /** The next check-in is due this many seconds of frame time from now. */
 function armNag(state: RunState, ctx: RunContext): void {
-  const { min, max } = ctx.set.levels.nagEvery;
+  const { min, max } = ctx.nagEvery;
   ctx.nextNagAt = state.clock + min + ctx.nagRng() * (max - min);
 }
 
@@ -450,9 +547,14 @@ function startNagClock(state: RunState, ctx: RunContext): void {
   armNag(state, ctx);
 }
 
-/** Hold the beat in hand for the Director's reading time and swallow the input. */
+/**
+ * Hold the beat in hand for the reading time and swallow the input. The
+ * Director's `pace.beatHold` is the number; `ctx.beatHold` is that number
+ * with the run's own reading-speed multiplier already on it, which is the
+ * same number for every run that asked for nothing.
+ */
 function hold(state: RunState, ctx: RunContext): void {
-  ctx.holdUntil = state.clock + ctx.set.levels.pace.beatHold;
+  ctx.holdUntil = state.clock + ctx.beatHold;
 }
 
 /** True while the transitional beat in hand is still being read. */
@@ -518,6 +620,42 @@ export function cleanWeak(raw: Record<string, number> | undefined): Record<strin
 }
 
 /**
+ * The reading-time multiplier a caller handed in, bounded the way the weak
+ * pairs are: anything non-finite or outside the bounds is dropped rather
+ * than accepted, and one is the answer when nothing was asked for. One is
+ * the shipped game — `x * 1` is `x` for every finite number, so a run with
+ * no scale on it holds every beat and spaces every line exactly as it always
+ * did.
+ */
+export function cleanPaceScale(raw: number | undefined): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 1;
+  return Math.min(PACE_MAX, Math.max(PACE_MIN, raw));
+}
+
+/**
+ * The check-in multiplier, the same way, with `'off'` as its own position:
+ * the interval goes past the end of any run rather than a branch going into
+ * `maybeNag`.
+ */
+export function cleanCheckIns(raw: number | 'off' | undefined): number | 'off' {
+  if (raw === 'off') return 'off';
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 1;
+  return Math.min(CHECK_INS_MAX, Math.max(CHECK_INS_MIN, raw));
+}
+
+/**
+ * The endless ladder's first rung a caller handed in: a whole band or
+ * nothing. Out of range or fractional is dropped, not clamped — a caller
+ * asking for rung nine is asking for something this ladder does not have,
+ * and quietly handing them rung seven is the silent degradation the weak-pair
+ * guard above refuses.
+ */
+export function cleanStartBand(raw: number | undefined): Band | undefined {
+  if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 1 || raw > 7) return undefined;
+  return raw as Band;
+}
+
+/**
  * A clean line forgives the pairs it contains, one count each.
  *
  * Nothing anywhere decremented these, so a pair fumbled early was weighted
@@ -542,12 +680,51 @@ export function createRun(opts: CreateRunOpts): RunState {
   const base = opts.corpus ?? DEFAULT_CORPUS;
   const corpus = opts.integration ? withIntegration(base, opts.integration) : base;
   const tier = opts.tier;
+  // The run code, when one was typed. A code that does not parse is a caller
+  // bug and halts the way a bad plan and a bad `dt` do: the menu box asks
+  // `parseRunCode` first and answers the player itself, so a code reaching
+  // here has already been read once.
+  const code = opts.code === undefined ? null : parseRunCode(opts.code);
+  if (opts.code !== undefined && !code) {
+    throw new Error('createRun: the run code does not parse');
+  }
+  if (code) {
+    const same =
+      code.seed === opts.seed >>> 0 &&
+      code.tier === tier &&
+      code.endless === opts.endless &&
+      code.stack === opts.stack &&
+      code.startBand === cleanStartBand(opts.startBand);
+    // Two statements of one run that disagree. Playing either of them is a
+    // guess, and the seed on the end card was wrong for exactly this reason.
+    if (!same) throw new Error('createRun: the run code and the options beside it name two runs');
+    if (code.corpus !== corpusDigestOf(corpusFingerprint(corpus))) {
+      // Every snippet's value is read off a trigram model built over the
+      // seasoned corpus, so the same code on a build with other tapes plays
+      // the same requests for other money. A run that only looks like the
+      // one the code names is the thing this refuses.
+      throw new Error('createRun: the run code was minted from another corpus');
+    }
+  }
   const picker = new LinePicker(set, {
     seed: opts.seed,
     tier,
   });
   const levelOffset = opts.endless ? 0 : (opts.levelIndex ?? 0);
-  const weakBigrams = cleanWeak(opts.weakBigrams);
+  // A code plants the map it names; a browser hands its own in. Either way
+  // the map goes through `cleanWeak`, which is the one gate on it.
+  const weakBigrams = cleanWeak(code ? weakFromDigest(code.weak) : opts.weakBigrams);
+  const weakDigest = code ? code.weak : weakDigestOf(weakBigrams);
+  const startBand = code?.startBand ?? cleanStartBand(opts.startBand);
+  const paceScale = cleanPaceScale(opts.paceScale);
+  const checkIns = cleanCheckIns(opts.checkIns);
+  const nagEvery =
+    checkIns === 'off'
+      ? { min: CHECK_INS_OFF, max: CHECK_INS_OFF }
+      : {
+          min: set.levels.nagEvery.min * checkIns,
+          max: set.levels.nagEvery.max * checkIns,
+        };
   picker.startLevel(levelOffset);
   const used = new Set<string>();
   const plan = planLevel({
@@ -561,6 +738,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     weakBigrams,
     used,
     ...(opts.stack ? { stack: opts.stack } : {}),
+    ...(startBand !== undefined ? { startBand } : {}),
   });
   if (!plan) {
     // A listed level whose stack has nothing in the corpus is a missing-tapes
@@ -617,6 +795,11 @@ export function createRun(opts: CreateRunOpts): RunState {
     syncDone: false,
     nagRng: () => 0,
     nextNagAt: 0,
+    beatHold: set.levels.pace.beatHold * paceScale,
+    chatGap: set.levels.pace.chatGap * paceScale,
+    nagEvery,
+    weakDigest,
+    startBand,
     nagReplyPending: false,
     supplied: [],
     suppliedProduct: null,
@@ -852,6 +1035,7 @@ function advance(state: RunState): void {
     weakBigrams: state.weakBigrams,
     used,
     supplied: ctx.supplied,
+    ...(ctx.startBand !== undefined ? { startBand: ctx.startBand } : {}),
     ...(ctx.suppliedProduct !== null ? { product: ctx.suppliedProduct } : {}),
     ...(ctx.opts.stack ? { stack: ctx.opts.stack } : {}),
   });
@@ -1081,8 +1265,17 @@ function typeKey(state: RunState, key: string): void {
   push(state, { kind: 'key', ok, pitch: pitchFor(state.streak) });
 }
 
+/**
+ * One character back. With nothing behind the caret it says so rather than
+ * returning in silence: a key that does nothing and says nothing is the
+ * thing being fixed here, the same fix a Tab with no offer open and a key
+ * struck past the end of a line already carry. No penalty is attached.
+ */
 function backspace(state: RunState): void {
-  if (state.typed.length === 0) return;
+  if (state.typed.length === 0) {
+    push(state, { kind: 'clear', what: 'nothing' });
+    return;
+  }
   const at = state.typed.length - 1;
   state.typed = state.typed.slice(0, at);
   state.errors = state.errors.filter((i) => i !== at);
@@ -1094,8 +1287,15 @@ function backspace(state: RunState): void {
  * way back from a line the player has made a mess of was one backspace per
  * frame or an Enter that cost the streak, and an abandoned line already
  * costs the time it took to type.
+ *
+ * It says something now. It used to empty the buffer and push nothing at
+ * all, so there was no sound and no cue, and a deliberate restart was
+ * indistinguishable from a key that never registered. `what` is whether
+ * there was anything there to throw away, so the cue layer can answer a
+ * restart and an empty line differently.
  */
 function clearLine(state: RunState): void {
+  push(state, { kind: 'clear', what: state.typed.length > 0 ? 'line' : 'nothing' });
   state.typed = '';
   state.errors = [];
 }
@@ -1183,6 +1383,30 @@ export function stepRun(state: RunState, input: RunInput, dt: number): RunState 
     typeKey(state, input.key);
   }
   return state;
+}
+
+/**
+ * The code for this run: the string the end card hands the player and the
+ * menu box takes back.
+ *
+ * It carries everything this module's own header names as an input — the
+ * seed, the tier, the stack, the endless flag, the ladder's first rung, the
+ * practice map and the corpus — where the seed alone carried one of them.
+ * The shell mints it at the end of a run and parses what a player types with
+ * `parseRunCode` before it ever reaches `createRun`.
+ */
+export function runCodeOf(state: RunState): string {
+  const ctx = runs.get(state);
+  if (!ctx) return '';
+  return mintRunCode({
+    seed: ctx.opts.seed >>> 0,
+    tier: ctx.opts.tier,
+    endless: ctx.opts.endless,
+    ...(ctx.opts.stack ? { stack: ctx.opts.stack } : {}),
+    ...(ctx.startBand !== undefined ? { startBand: ctx.startBand } : {}),
+    weak: ctx.weakDigest,
+    corpus: corpusDigestOf(corpusFingerprint(ctx.corpus)),
+  });
 }
 
 /** The plan of the level in hand. The shell renders the product from it. */

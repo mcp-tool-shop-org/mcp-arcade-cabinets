@@ -20,7 +20,8 @@ import { loadTape, TapeError, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { integrationSnippets, type IntegrationSeed } from './corpus';
 import { printableLevelId, wasMoved } from './level';
-import { createRun, stepRun, type CreateRunOpts } from './sim';
+import { parseRunCode } from './runcode';
+import { cleanStartBand, createRun, runCodeOf, stepRun, type CreateRunOpts } from './sim';
 import { DEFAULT_PATTERNS } from './patterns';
 import { hashString, seededRandom, mixSeed } from './seed';
 import type { RunInput, RunState, Snippet, Stack, Tier } from './types';
@@ -183,6 +184,22 @@ export interface PlayArgs {
   level?: number;
   /** Where the tapes live; only read for the integration stack. */
   tapes?: string;
+  /**
+   * The endless ladder's first rung, 1..7, in place of the lever's own. The
+   * sweep and this play-through are how a ladder that starts high gets
+   * measured: sixty of the authored snippets live in bands six and seven,
+   * which no listed level draws from and which the climb from band one
+   * reaches on nobody's evening.
+   */
+  startBand?: number;
+  /**
+   * A run code from a past run, beside the four flags that used to be the
+   * whole of a run's identity. It names the seed, the tier, the stack, the
+   * endless flag, the ladder's first rung, the practice map and the corpus,
+   * and it WINS over each of those args: two statements of one run that
+   * disagree are not a run, and the code is the one a player typed.
+   */
+  code?: string;
 }
 
 /**
@@ -231,6 +248,18 @@ export interface Transcript {
   compactions: number;
   overrun: boolean;
   why: string;
+  /** The code this run plays under; typing it back plays the same run. */
+  code: string;
+  /**
+   * The milestones the run crossed, in the order it crossed them.
+   *
+   * The scoreboard's rungs are authored for a scale nothing had measured:
+   * the two whole-run prints on record closed at fifty-four and a hundred
+   * and seventy-nine while the ladder names a rung at eighteen hundred, and
+   * neither the band nor this play-through said a word about which rungs any
+   * mode reaches. This is that half, on the side a reader sees.
+   */
+  milestones: string[];
 }
 
 const TIER_WORDS = ['easy', 'warm', 'hot', 'hardcore'];
@@ -286,6 +315,8 @@ function fail(text: string, why: string): Transcript {
     compactions: 0,
     overrun: false,
     why,
+    code: '',
+    milestones: [],
   };
 }
 
@@ -300,16 +331,28 @@ function screenClean(lines: readonly string[]): boolean {
 export function play(args: PlayArgs = {}): Transcript {
   const spec = parseBot(args.bot);
   if (!spec) return fail(`unknown bot ${args.bot}`, 'unknown bot; use idle, perfect or typist:wpm');
-  const tier = (args.tier ?? 0) as Tier;
-  const seed = args.seed ?? 1;
-  const endless = args.endless === true;
-  const stack = args.stack;
+  // A code, when one was given, is the whole statement of the run: the four
+  // flags beside it are read off it rather than off the caller, because a
+  // code and a flag that disagree are two runs and playing either one is a
+  // guess. A code that does not parse is a failed play-through with a
+  // sentence saying so, not a halt.
+  const code = args.code === undefined ? null : parseRunCode(args.code);
+  if (args.code !== undefined && !code) {
+    return fail(`unknown run code ${args.code}`, 'unknown run code');
+  }
+  const tier = code ? code.tier : ((args.tier ?? 0) as Tier);
+  const seed = code ? code.seed : (args.seed ?? 1);
+  const endless = code ? code.endless : args.endless === true;
+  const stack = code ? code.stack : args.stack;
+  const startBand = cleanStartBand(code ? code.startBand : args.startBand);
   const opts: CreateRunOpts = {
     seed,
     tier,
     endless,
     ...(stack ? { stack } : {}),
+    ...(startBand !== undefined ? { startBand } : {}),
     ...(args.level !== undefined ? { levelIndex: args.level } : {}),
+    ...(args.code !== undefined ? { code: args.code } : {}),
   };
   // The tapes are read for every run, not only for a run forced to the
   // integration stack: two of the sixteen listed levels are integration
@@ -338,10 +381,14 @@ export function play(args: PlayArgs = {}): Transcript {
     const msg = err instanceof Error ? err.message : String(err);
     return fail(msg, msg);
   }
+  // Minted off the run rather than off the args: it is the run's own
+  // statement of itself, corpus digest and practice map included.
+  const runCode = runCodeOf(state);
   const bot = botFor(spec, seed);
   let ticks = 0;
   let compactions = 0;
   let overrun = false;
+  const milestones: string[] = [];
   // The stack running out is a state of the level, so it is caught while the
   // run is live rather than read off the last plan at the end: an endless
   // ladder that recycled on level three and not on level nine would have
@@ -374,7 +421,13 @@ export function play(args: PlayArgs = {}): Transcript {
     }
     ticks += 1;
     stepRun(state, bot(state), DT);
-    for (const event of state.events) if (event.kind === 'compaction') compactions += 1;
+    for (const event of state.events) {
+      if (event.kind === 'compaction') compactions += 1;
+      // What the run crossed, in the order it crossed it. `state.milestones`
+      // says the same thing, and reading the events is what keeps this
+      // honest about the ORDER on a ship that crosses two at once.
+      else if (event.kind === 'milestone') milestones.push(event.name);
+    }
     if (state.plan.recycled === true) recycled = true;
     if (state.plan.id !== played[played.length - 1]!.rawId) played.push(playedFrom(state.plan));
     const said = state.chat.filter((line) => line.seq > lastSeq);
@@ -451,6 +504,14 @@ export function play(args: PlayArgs = {}): Transcript {
     // id: one block said `level cat-website` and `levels: 1` six lines apart.
     field('levels played', levels),
     field('compactions', compactions),
+    // Which rungs of the scoreboard's ladder this run actually reached. It
+    // sits under `valuation:`, which is where the screen ends, because a
+    // milestone name is furniture for the operator and not the field.
+    field('milestones', milestones.length > 0 ? milestones.join(', ') : 'none'),
+    // The whole run in one string. The seed alone was a replay only on the
+    // browser that minted it; this carries the tier, the stack, the endless
+    // flag, the ladder's first rung, the practice map and the corpus with it.
+    field('code', runCode),
   ];
   const text = [...header, ...screen, ...footer].join('\n');
   const contextOut = state.ended === 'context';
@@ -482,5 +543,7 @@ export function play(args: PlayArgs = {}): Transcript {
     compactions,
     overrun,
     why,
+    code: runCode,
+    milestones,
   };
 }

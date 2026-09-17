@@ -277,6 +277,20 @@ export type Event =
    * nothing at all.
    */
   | { kind: 'copilot'; on: boolean; offered?: false }
+  /**
+   * A courtesy, in the shape the copilot refusal above uses: one kind, no
+   * penalty attached, no streak change and no failed line. `line` is Escape
+   * throwing away a line the player had typed something into; `nothing` is a
+   * key that found nothing to erase — Escape on an untouched line, or a
+   * backspace with nothing behind the caret.
+   *
+   * Both used to be silence. Escape emptied the buffer and said nothing at
+   * all, so a deliberate restart was indistinguishable from a key that did
+   * not register, and a backspace on an empty line was the same hole — while
+   * every other refusal and courtesy in this sim says something (a key
+   * struck past the end of a line, a Tab with no offer open).
+   */
+  | { kind: 'clear'; what: 'line' | 'nothing' }
   | { kind: 'creep' }
   | { kind: 'sync'; on: boolean }
   /**

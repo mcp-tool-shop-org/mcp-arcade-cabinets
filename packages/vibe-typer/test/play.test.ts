@@ -336,3 +336,109 @@ describe('the runner', () => {
     expect(usage.stdout).toMatch(/pnpm test:play vibe-typer/);
   });
 });
+
+// The end card handed the player a seed and told them to type it on the menu
+// to play the same run again, and on a browser that had played before that
+// was not true. The play-through is where the code is measured: it prints one
+// off every run, and feeding that code back plays the run it names.
+//
+// The milestones print beside it. Nothing anywhere asserted that any mode
+// crosses any rung of a ladder whose top card sits at eighteen hundred, and
+// the two whole-run prints on record closed at fifty-four and a hundred and
+// seventy-nine.
+describe('the run code and the milestones on the print', () => {
+  it('prints a code off the run and a list of the rungs it crossed', async () => {
+    const out = play({ tier: 0, bot: 'perfect', seed: 3 });
+    expect(out.ok, out.text).toBe(true);
+    expect(out.code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    expect(out.text).toMatch(/^code: [0-9A-Z-]+$/m);
+    expect(out.text).toMatch(/^milestones: .+$/m);
+    expect(out.milestones.every((name) => typeof name === 'string')).toBe(true);
+    // Both sit under `valuation:`, which is where the screen ends: a code
+    // carries digits and a milestone is a name for the operator, and neither
+    // is the field.
+    const lines = out.text.split('\n');
+    const footer = lines.findIndex((l) => l.startsWith('valuation:'));
+    expect(footer).toBeGreaterThan(0);
+    expect(lines.findIndex((l) => l.startsWith('code:'))).toBeGreaterThan(footer);
+    expect(lines.findIndex((l) => l.startsWith('milestones:'))).toBeGreaterThan(footer);
+    const { typerScreenHit } = await playCli();
+    expect(typerScreenHit(out.text)).toBeNull();
+  });
+
+  it('plays the run the code names, from the code alone', () => {
+    const first = play({ tier: 2, bot: 'perfect', seed: 12, stack: 'python' });
+    // One argument in place of the four: the code carries the seed, the
+    // tier, the stack, the endless flag, the ladder's rung, the practice map
+    // and the corpus, and it wins over any of them passed beside it.
+    const again = play({ bot: 'perfect', code: first.code });
+    expect(again.text).toBe(first.text);
+    expect(again.valuation).toBe(first.valuation);
+    expect(again.milestones).toEqual(first.milestones);
+    const wrong = play({ bot: 'perfect', code: 'ZZZZ-ZZZZ-ZZZZ-ZZZZ' });
+    expect(wrong.ok).toBe(false);
+    expect(wrong.why).toBe('unknown run code');
+  });
+
+  it('starts the endless ladder on the rung it is given', () => {
+    const low = play({ tier: 0, bot: 'perfect', seed: 2, endless: true });
+    const high = play({ tier: 0, bot: 'perfect', seed: 2, endless: true, startBand: 6 });
+    expect(high.text).not.toBe(low.text);
+    // The rung travels in the code with everything else, so a run that
+    // started high replays as a run that started high.
+    expect(play({ bot: 'perfect', code: high.code }).text).toBe(high.text);
+  });
+});
+
+// The end card handed the player a seed and told them to type it on the menu
+// to play the same run again, and on a browser that had played before that
+// was not true. The play-through is where the code is measured: it prints one
+// off every run, and feeding that code back plays the run it names.
+//
+// The milestones print beside it. Nothing anywhere asserted that any mode
+// crosses any rung of a ladder whose top card sits at eighteen hundred, and
+// the two whole-run prints on record closed at fifty-four and a hundred and
+// seventy-nine.
+describe('the run code and the milestones on the print', () => {
+  it('prints a code off the run and a list of the rungs it crossed', async () => {
+    const out = play({ tier: 0, bot: 'perfect', seed: 3 });
+    expect(out.ok, out.text).toBe(true);
+    expect(out.code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    expect(out.text).toMatch(/^code: [0-9A-Z-]+$/m);
+    expect(out.text).toMatch(/^milestones: .+$/m);
+    expect(out.milestones.every((name) => typeof name === 'string')).toBe(true);
+    // Both sit under `valuation:`, which is where the screen ends: a code
+    // carries digits and a milestone is a name for the operator, and neither
+    // is the field.
+    const lines = out.text.split('\n');
+    const footer = lines.findIndex((l) => l.startsWith('valuation:'));
+    expect(footer).toBeGreaterThan(0);
+    expect(lines.findIndex((l) => l.startsWith('code:'))).toBeGreaterThan(footer);
+    expect(lines.findIndex((l) => l.startsWith('milestones:'))).toBeGreaterThan(footer);
+    const { typerScreenHit } = await playCli();
+    expect(typerScreenHit(out.text)).toBeNull();
+  });
+
+  it('plays the run the code names, from the code alone', () => {
+    const first = play({ tier: 2, bot: 'perfect', seed: 12, stack: 'python' });
+    // One argument in place of the four: the code carries the seed, the
+    // tier, the stack, the endless flag, the ladder's rung, the practice map
+    // and the corpus, and it wins over any of them passed beside it.
+    const again = play({ bot: 'perfect', code: first.code });
+    expect(again.text).toBe(first.text);
+    expect(again.valuation).toBe(first.valuation);
+    expect(again.milestones).toEqual(first.milestones);
+    const wrong = play({ bot: 'perfect', code: 'ZZZZ-ZZZZ-ZZZZ-ZZZZ' });
+    expect(wrong.ok).toBe(false);
+    expect(wrong.why).toBe('unknown run code');
+  });
+
+  it('starts the endless ladder on the rung it is given', () => {
+    const low = play({ tier: 0, bot: 'perfect', seed: 2, endless: true });
+    const high = play({ tier: 0, bot: 'perfect', seed: 2, endless: true, startBand: 6 });
+    expect(high.text).not.toBe(low.text);
+    // The rung travels in the code with everything else, so a run that
+    // started high replays as a run that started high.
+    expect(play({ bot: 'perfect', code: high.code }).text).toBe(high.text);
+  });
+});

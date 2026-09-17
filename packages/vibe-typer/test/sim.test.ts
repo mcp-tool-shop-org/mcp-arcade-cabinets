@@ -7,6 +7,11 @@ import {
   codeOf,
   BUILT_CAP,
   CHAT_CAP,
+  CHECK_INS_MAX,
+  CHECK_INS_MIN,
+  cleanCheckIns,
+  cleanPaceScale,
+  cleanStartBand,
   cleanWeak,
   createRun,
   feedProduct,
@@ -14,7 +19,10 @@ import {
   feedRequests,
   leversOf,
   planOf,
+  PACE_MAX,
+  PACE_MIN,
   reactionWaiting,
+  runCodeOf,
   stepRun,
   suppliedCount,
   suppliedProductOf,
@@ -22,7 +30,8 @@ import {
   WEAK_PAIRS,
   WEAK_PER_PAIR,
 } from '../src/sim';
-import { endlessPeek, planLevel } from '../src/level';
+import { endlessBandAt, endlessPeek, planLevel } from '../src/level';
+import { mintRunCode, parseRunCode, weakDigestOf, weakFromDigest } from '../src/runcode';
 import { LinePicker } from '../src/lines';
 import { DEFAULT_CORPUS, type Corpus } from '../src/corpus';
 import type { Event, RunInput, RunState, Tier } from '../src/types';
@@ -1606,5 +1615,262 @@ describe('a level with nothing to plan from', () => {
     expect(() => createRun({ seed: 4, tier: 0, endless: false, levelIndex: 99 })).toThrow(
       'patterns/levels.json: levels.99',
     );
+  });
+});
+
+// ——— the courtesies that used to be silence ————————————————————————————————
+
+describe('the keys that erase', () => {
+  // Escape emptied the buffer and pushed nothing at all, so there was no
+  // sound and no cue and a deliberate restart read exactly like a key that
+  // never registered. A backspace with nothing behind the caret was the same
+  // hole. Both say something now, in the shape the copilot refusal uses: one
+  // kind, no penalty, no streak change, no failed line.
+  it('says the line was thrown away, and says when there was nothing to throw', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    sendLine(state);
+    const chat = state.chat.length;
+    step(state, { key: state.target[0] === 'z' ? 'q' : 'z' });
+    // The streak was already lost to the mistyped character; what is measured
+    // here is that the clearing itself takes nothing.
+    const streak = state.streak;
+    step(state, { clear: true });
+    expect(state.events).toContainEqual({ kind: 'clear', what: 'line' });
+    expect(state.events.some((e) => e.kind === 'line' || e.kind === 'hmm')).toBe(false);
+    expect(state.streak).toBe(streak);
+    expect(state.chat).toHaveLength(chat);
+    // Nothing in the buffer: the same kind, and it says so.
+    step(state, { clear: true });
+    expect(state.events).toContainEqual({ kind: 'clear', what: 'nothing' });
+  });
+
+  it('answers a backspace with nothing behind the caret', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    toTyping(state);
+    const streak = state.streak;
+    step(state, { backspace: true });
+    expect(state.typed).toBe('');
+    expect(state.events).toContainEqual({ kind: 'clear', what: 'nothing' });
+    expect(state.streak).toBe(streak);
+    // A backspace that finds something to erase is not a refusal and says
+    // nothing: the buffer moving is the whole answer.
+    step(state, { key: state.target[0]! });
+    step(state, { backspace: true });
+    expect(state.typed).toBe('');
+    expect(state.events.some((e) => e.kind === 'clear')).toBe(false);
+  });
+});
+
+// ——— the run code ——————————————————————————————————————————————————————————
+
+describe('the run code', () => {
+  // The end card used to hand the player the seed and say typing it plays the
+  // same run again. On a browser that had played before, it did not: the
+  // planner weights every candidate by the weak pairs the browser stored, so
+  // the same seed the next evening plans different requests and the same seed
+  // on a friend's machine is a different run outright.
+  it('carries every input the header names, and reads back as itself', () => {
+    const code = mintRunCode({
+      seed: 123456,
+      tier: 2,
+      endless: true,
+      stack: 'python',
+      startBand: 6,
+      weak: 4242,
+      corpus: 777,
+    });
+    expect(code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    expect(parseRunCode(code)).toEqual({
+      seed: 123456,
+      tier: 2,
+      endless: true,
+      stack: 'python',
+      startBand: 6,
+      weak: 4242,
+      corpus: 777,
+    });
+    // A run that pinned nothing says so by leaving the fields out, rather
+    // than by naming a stack and a rung nobody asked for.
+    const plain = mintRunCode({ seed: 1, tier: 0, endless: false, weak: 0, corpus: 0 });
+    expect(parseRunCode(plain)).toEqual({
+      seed: 1,
+      tier: 0,
+      endless: false,
+      weak: 0,
+      corpus: 0,
+    });
+  });
+
+  it('forgives how a player types it and refuses a typo', () => {
+    const code = mintRunCode({ seed: 99, tier: 1, endless: false, weak: 5, corpus: 6 });
+    const typed = code.toLowerCase().split('-').join(' ');
+    expect(parseRunCode(typed)).toEqual(parseRunCode(code));
+    // The four characters the alphabet leaves out are what a player reaches
+    // for anyway: an I for a one, an O for a zero.
+    const loose = code.split('0').join('O').split('1').join('I');
+    expect(parseRunCode(loose)).toEqual(parseRunCode(code));
+    // One character wrong is not a run. The check at the end is what tells
+    // a typo from a code, and a code it cannot verify is answered with null
+    // rather than with somebody else's run.
+    const chars = [...code.split('-').join('')];
+    chars[5] = chars[5] === 'Z' ? 'Y' : 'Z';
+    expect(parseRunCode(chars.join(''))).toBeNull();
+    expect(parseRunCode('')).toBeNull();
+    expect(parseRunCode('not a run code at all')).toBeNull();
+  });
+
+  it('mints off a run and plays that run again from the code alone', () => {
+    const made = createRun({ seed: 4, tier: 0, endless: false });
+    const code = runCodeOf(made);
+    const again = createRun({ seed: 4, tier: 0, endless: false, code });
+    expect(JSON.stringify(again.plan)).toBe(JSON.stringify(made.plan));
+    // A code minted off the replay is the code that was typed.
+    expect(runCodeOf(again)).toBe(code);
+  });
+
+  it('plants the practice map the code names in place of this browser own', () => {
+    const weak = { th: 4, re: 2 };
+    const mine = createRun({ seed: 11, tier: 0, endless: true, weakBigrams: weak });
+    const code = runCodeOf(mine);
+    expect(parseRunCode(code)!.weak).toBe(weakDigestOf(weak));
+    // A friend's machine, with a map of its own and nothing in common.
+    const theirs = createRun({
+      seed: 11,
+      tier: 0,
+      endless: true,
+      weakBigrams: { qq: 8, zz: 8 },
+      code,
+    });
+    expect(theirs.weakBigrams).toEqual(cleanWeak(weakFromDigest(parseRunCode(code)!.weak)));
+    // And the same code on both machines is the same run.
+    const twice = createRun({ seed: 11, tier: 0, endless: true, code });
+    expect(JSON.stringify(twice.plan)).toBe(JSON.stringify(theirs.plan));
+    // A map with nothing in it is the one the band, the sweep and a fresh
+    // browser play, and it round-trips as itself.
+    expect(weakFromDigest(weakDigestOf({}))).toEqual({});
+  });
+
+  it('halts on a code that names another run, another corpus or nothing at all', () => {
+    const code = runCodeOf(createRun({ seed: 4, tier: 0, endless: false }));
+    expect(() => createRun({ seed: 5, tier: 0, endless: false, code })).toThrow(
+      'the run code and the options beside it name two runs',
+    );
+    expect(() => createRun({ seed: 4, tier: 1, endless: false, code })).toThrow(
+      'the run code and the options beside it name two runs',
+    );
+    expect(() => createRun({ seed: 4, tier: 0, endless: false, code: 'ZZZZ-ZZZZ' })).toThrow(
+      'the run code does not parse',
+    );
+    // The corpus is an input to every snippet's value, so a code minted
+    // against another one names a run that only looks like this one.
+    const bash = DEFAULT_CORPUS.byStack.bash!;
+    const thin: Corpus = { snippets: bash, byStack: { bash }, model: DEFAULT_CORPUS.model };
+    const pinned = runCodeOf(createRun({ seed: 4, tier: 0, endless: false, stack: 'bash' }));
+    expect(() =>
+      createRun({ seed: 4, tier: 0, endless: false, corpus: thin, stack: 'bash', code: pinned }),
+    ).toThrow('the run code was minted from another corpus');
+  });
+});
+
+// ——— the ladder, the reading clock and the check-in interval ————————————————
+
+describe('the endless ladder first rung', () => {
+  // Sixteen listed levels pin fifty-six ids between them and their band
+  // ranges top out at five, so the sixty snippets in bands six and seven
+  // appear in no listed level at all; the ladder climbs one band every two
+  // levels from band one, and the band's own bar for endless is six levels
+  // for a clean ninety-word typist. The lever that opens the rest was
+  // reachable only by editing the JSON.
+  it('starts where it is told, and where the lever says when it is told nothing', () => {
+    expect(endlessBandAt(DEFAULT_PATTERNS, 0)).toEqual({ bandMin: 1, bandMax: 2 });
+    expect(endlessBandAt(DEFAULT_PATTERNS, 0, 6)).toEqual({ bandMin: 6, bandMax: 7 });
+    // The climb is the same climb, from wherever it starts, and it never
+    // walks off the top of the corpus ladder.
+    expect(endlessBandAt(DEFAULT_PATTERNS, 4, 6)).toEqual({ bandMin: 7, bandMax: 7 });
+    const high = createRun({ seed: 3, tier: 0, endless: true, startBand: 6 });
+    expect(high.plan.requests.every((r) => r.snippet.band >= 5)).toBe(true);
+    expect(high.plan.requests.some((r) => r.snippet.band >= 6)).toBe(true);
+  });
+
+  it('is the run this cabinet has always played at the lever own rung', () => {
+    const plain = createRun({ seed: 3, tier: 0, endless: true });
+    const named = createRun({ seed: 3, tier: 0, endless: true, startBand: 1 });
+    expect(JSON.stringify(named.plan)).toBe(JSON.stringify(plain.plan));
+    // A rung this ladder does not have is dropped rather than clamped to
+    // the nearest one it does: asking for nine is asking for nothing.
+    expect(cleanStartBand(9)).toBeUndefined();
+    expect(cleanStartBand(0)).toBeUndefined();
+    expect(cleanStartBand(2.5)).toBeUndefined();
+    expect(cleanStartBand(undefined)).toBeUndefined();
+    expect(cleanStartBand(7)).toBe(7);
+    const junk = createRun({ seed: 3, tier: 0, endless: true, startBand: 9 });
+    expect(JSON.stringify(junk.plan)).toBe(JSON.stringify(plain.plan));
+  });
+});
+
+describe('the reading clock', () => {
+  /** Step a run for a while and hand it back. */
+  function after(state: RunState, frames: number): RunState {
+    for (let i = 0; i < frames && !state.over; i++) step(state);
+    return state;
+  }
+
+  it('is the shipped pace when nothing asks for another one', () => {
+    const plain = after(createRun({ seed: 4, tier: 0, endless: false }), HOLD_FRAMES * 3);
+    const one = after(
+      createRun({ seed: 4, tier: 0, endless: false, paceScale: 1, checkIns: 1 }),
+      HOLD_FRAMES * 3,
+    );
+    expect(JSON.stringify(one)).toBe(JSON.stringify(plain));
+    expect(cleanPaceScale(undefined)).toBe(1);
+    expect(cleanPaceScale(Number.NaN)).toBe(1);
+    expect(cleanPaceScale(0)).toBe(PACE_MIN);
+    expect(cleanPaceScale(99)).toBe(PACE_MAX);
+    expect(cleanCheckIns(undefined)).toBe(1);
+    expect(cleanCheckIns(0)).toBe(CHECK_INS_MIN);
+    expect(cleanCheckIns(99)).toBe(CHECK_INS_MAX);
+    expect(cleanCheckIns('off')).toBe('off');
+  });
+
+  it('holds a beat longer for a player who reads slower', () => {
+    const slow = createRun({ seed: 4, tier: 0, endless: false, paceScale: 2 });
+    const quick = createRun({ seed: 4, tier: 0, endless: false });
+    // The ask is on screen for both; the quick one is typeable first.
+    for (let i = 0; i < HOLD_FRAMES; i++) {
+      step(slow);
+      step(quick);
+    }
+    expect(quick.beat).not.toBe('request');
+    expect(slow.beat).toBe('request');
+    // And two lines said on the same frame land further apart, which is the
+    // same clock: a ship says the ship line and the user's answer to it at
+    // one clock reading, and `say` is what spaces them.
+    const gap = (state: RunState): number => {
+      toShip(state);
+      const n = state.chat.length;
+      return state.chat[n - 1]!.dueAt - state.chat[n - 2]!.dueAt;
+    };
+    expect(gap(createRun({ seed: 4, tier: 0, endless: false, paceScale: 2 }))).toBeGreaterThan(
+      gap(createRun({ seed: 4, tier: 0, endless: false })),
+    );
+  });
+
+  it('turns the check-ins off by pushing them past the end of the run', () => {
+    const count = (state: RunState, seed: number): number => {
+      const drive = makeBot('typist:40:0.03', seed);
+      let n = 0;
+      for (let i = 0; i < 60 * 60 * 8 && !state.over; i++) {
+        stepRun(state, drive(state), DT);
+        for (const e of state.events) if (e.kind === 'message' && e.nag === true) n += 1;
+      }
+      return n;
+    };
+    expect(count(createRun({ seed: 5, tier: 0, endless: false, checkIns: 'off' }), 5)).toBe(0);
+    // A longer interval is fewer of them, not none: the position is a lever
+    // and the off is one end of it.
+    const often = count(createRun({ seed: 5, tier: 0, endless: false }), 5);
+    const rare = count(createRun({ seed: 5, tier: 0, endless: false, checkIns: 8 }), 5);
+    expect(often).toBeGreaterThan(0);
+    expect(rare).toBeLessThan(often);
   });
 });

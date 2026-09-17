@@ -297,6 +297,72 @@ describe('replay', () => {
   });
 });
 
+// The scoreboard's named rungs — seed, Series A, unicorn — each have a card
+// drawn and shipped for them, and nothing anywhere asserted that any mode
+// reaches any of them. The two whole-run prints on record in this repo's own
+// findings closed at fifty-four and a hundred and seventy-nine, against a top
+// rung at eighteen hundred, so "the top two cards are for a run nobody
+// plays" was a live possibility with no measurement either way.
+//
+// These are the bars. They assert what this band can stand behind: every
+// mode and tier climbs the ladder in order, a rung is never claimed above the
+// valuation that paid for it, and the whole ladder IS reachable — by the
+// clean ninety in endless, and by that alone of everything measured here.
+//
+// The readable half — which rungs each mode and tier actually reaches, and
+// what it pays — is printed by `scripts/sweep-levels.mjs --milestones`, not
+// from in here: this runner surfaces no console output from a passing test at
+// any verbosity, so a report logged here would be a report nobody reads, and
+// the band has no business writing a file into the tree. The sweep is where a
+// lead reads numbers anyway; the reach report went there for the same reason.
+//
+// It does NOT move the ladder and it does not carry a run across levels.
+// Both of those are the Director's, and these are the numbers he asked to see
+// before either is decided.
+describe('the milestones', () => {
+  const LADDER = DEFAULT_PATTERNS.score.milestones;
+  const NAMES = LADDER.map((m) => m.name);
+
+  /** The ladder is climbed from the bottom, in order, once each. */
+  function isPrefix(crossed: readonly string[]): boolean {
+    return crossed.length <= NAMES.length && crossed.every((name, i) => name === NAMES[i]);
+  }
+
+  it('climbs the ladder in order and never claims a rung the valuation did not pay for', () => {
+    for (const tier of TIERS) {
+      const bot = tier === 3 ? 'perfect' : 'typist:40:0.03';
+      for (const level of everyLevel()) {
+        const run = drive({ bot, seed: 1, tier, level });
+        const where = `listed tier ${tier} level ${level}`;
+        expect(isPrefix(run.milestones), `${where}: ${run.milestones.join(', ')}`).toBe(true);
+        for (const name of run.milestones) {
+          const rung = LADDER.find((m) => m.name === name)!;
+          expect(run.valuation, `${where}: ${name}`).toBeGreaterThanOrEqual(rung.at);
+        }
+      }
+    }
+  });
+
+  it('finds the whole ladder in endless at a clean ninety, and nowhere else measured', () => {
+    for (const bot of ['typist:40:0.03', 'perfect']) {
+      for (const seed of SEEDS) {
+        const run = drive({ bot, seed, tier: 0, endless: true });
+        const where = `endless ${bot} seed ${seed} [${run.milestones.join(', ')}]`;
+        expect(isPrefix(run.milestones), where).toBe(true);
+        // The bar the band never had: the whole ladder is climbable, and
+        // this is the mode that climbs it. A failure here means the top
+        // rungs pay for cards no player sees — the finding, measured rather
+        // than guessed.
+        if (bot === 'perfect') expect(run.milestones, where).toEqual(NAMES);
+        // And the forty-word typist does not, which is why the report beside
+        // the sweep matters: the ladder is written for one mode of the six
+        // this band drives.
+        else expect(run.milestones.length, where).toBeLessThan(NAMES.length);
+      }
+    }
+  });
+});
+
 describe('copilot', () => {
   it('offers itself at least once a level to a clean typist, and never in hardcore', () => {
     for (const level of everyLevel()) {

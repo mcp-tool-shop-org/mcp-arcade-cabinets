@@ -40,16 +40,36 @@ export interface PlanOpts {
    * seat is sitting; this overrides the drawn string afterwards.
    */
   product?: string;
+  /**
+   * The rung the endless ladder starts on, 1..7, in place of
+   * `levels.endless.startBand`. Absent, the lever's own, which is the ladder
+   * this cabinet has always climbed.
+   */
+  startBand?: Band;
 }
 
 function band(n: number): Band {
   return Math.min(7, Math.max(1, Math.round(n))) as Band;
 }
 
-/** Which bands the endless ladder draws from at a level index (G27). */
-export function endlessBandAt(set: Patterns, levelIndex: number): { bandMin: Band; bandMax: Band } {
+/**
+ * Which bands the endless ladder draws from at a level index (G27).
+ *
+ * `startBand` is the rung the ladder starts on. The lever
+ * (`levels.endless.startBand`) is the default and does not move; what this
+ * argument buys is a player who has climbed to a rung being put back on it,
+ * because the ladder climbs one band every two levels from band one and the
+ * band's own measurement is six levels for a clean typist and two for a
+ * forty-word one — so sixty of the authored snippets sit in bands a player
+ * reaches on nobody's evening.
+ */
+export function endlessBandAt(
+  set: Patterns,
+  levelIndex: number,
+  startBand?: Band,
+): { bandMin: Band; bandMax: Band } {
   const e = set.levels.endless;
-  const low = band(e.startBand + Math.floor(levelIndex / e.bandEvery));
+  const low = band((startBand ?? e.startBand) + Math.floor(levelIndex / e.bandEvery));
   return { bandMin: low, bandMax: band(low + 1) };
 }
 
@@ -63,6 +83,7 @@ interface EndlessAt {
   set: Patterns;
   levelIndex: number;
   stack?: Stack;
+  startBand?: Band;
 }
 
 /** An endless level: the product is drawn, the band climbs, the drain grows. */
@@ -74,7 +95,7 @@ function endlessDef(opts: EndlessAt, rng: () => number): LevelDef {
   const template = products.templates[Math.floor(rng() * products.templates.length)]!;
   const stacks = CORPUS_STACKS;
   const stack = opts.stack ?? stacks[Math.floor(rng() * stacks.length)]!;
-  const bands = endlessBandAt(opts.set, i);
+  const bands = endlessBandAt(opts.set, i, opts.startBand);
   return {
     // One-based, because every other count of the same thing is. `play`
     // reports `levels played: 3` and the transcript runner heads its rows
@@ -112,9 +133,12 @@ export function endlessPeek(opts: {
   tier: Tier;
   levelIndex: number;
   stack?: Stack;
+  /** The ladder's first rung, when the run was started on one. */
+  startBand?: Band;
 }): LevelDef {
   const at: EndlessAt = { set: opts.set, levelIndex: opts.levelIndex };
   if (opts.stack) at.stack = opts.stack;
+  if (opts.startBand !== undefined) at.startBand = opts.startBand;
   return endlessDef(at, seededRandom(levelSeedFor(opts.seed, opts.levelIndex, opts.tier)));
 }
 
