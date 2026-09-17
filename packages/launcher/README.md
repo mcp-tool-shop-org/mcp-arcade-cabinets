@@ -85,11 +85,12 @@ No telemetry, no analytics, no network call of its own. The `--mcp` server needs
 ## Options
 
 ```
---mcp             speak MCP on stdio instead of opening the game
---port <n>        port to listen on (default 7777; takes the next free one)
---no-open         start the server but do not open a browser
--h, --help        the usage
--v, --version     the version
+  --mcp              speak MCP on stdio instead of opening the game
+  --port <n>         port to listen on (default 7777; takes the next
+                     free one when that is busy)
+  --no-open          start the server but do not open a browser
+  -h, --help         this
+  -v, --version      the version
 ```
 
 | Environment          |                                                                  |

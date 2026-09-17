@@ -455,6 +455,27 @@ describe('recorded beds', () => {
     }
   });
 
+  it('a piece that ends during the scene is followed at once, not at the next tick', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of BED_POOL) beds[k] = bed(120);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 0 });
+    out.tick(0, 'inspect');
+    const first = BED_POOL.find((k) => beds[k]!.playing)!;
+    out.end(true);
+    beds[first]!.ended = true;
+    out.keep();
+    const now = BED_POOL.filter((k) => beds[k]!.playing && !beds[k]!.ended);
+    expect(now).toHaveLength(1);
+    expect(now[0]).not.toBe(first);
+    // Nothing to do while the piece still plays, and nothing after leaving.
+    out.keep();
+    expect(BED_POOL.filter((k) => beds[k]!.playing && !beds[k]!.ended)).toEqual(now);
+    out.end();
+    beds[now[0]!]!.ended = true;
+    out.keep();
+    expect(BED_POOL.filter((k) => beds[k]!.playing && !beds[k]!.ended)).toEqual([]);
+  });
+
   it('a restart during END_FADE_S keeps the new song playing when leftover end timers fire', () => {
     vi.useFakeTimers();
     try {

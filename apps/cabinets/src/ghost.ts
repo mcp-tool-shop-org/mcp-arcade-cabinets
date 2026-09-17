@@ -1635,6 +1635,10 @@ export function mountGhost(
         // The song plays on through the scene into the next tape, and in a
         // shift through the card to the next call; only the chiptune stops.
         audio.end(true);
+      } else {
+        // The scene holds and the clock is stopped: a piece that ends here
+        // is followed by the next at once, not at the next round's tick.
+        audio.keep();
       }
     }
     if (ollama.checked && !state.scene) {

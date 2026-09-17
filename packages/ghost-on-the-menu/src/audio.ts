@@ -345,6 +345,13 @@ export interface AudioOut {
    * music leaves over END_FADE_S on the wall clock (back to the cabinets).
    */
   end(keepSong?: boolean): void;
+  /**
+   * Between rounds (the scene, a shift's card): the round clock is stopped
+   * and nothing ticks, so a piece that ends there would leave silence until
+   * the next round's first tick. This draws the next piece the moment the
+   * playing one has ended, and does nothing else.
+   */
+  keep(): void;
   /** Seed the opening song for a round about to start; ignored while a song plays. */
   seed(seed: number): void;
   setMuted(muted: boolean): void;
@@ -794,6 +801,9 @@ export function attach(
       // Only an opening is seeded; a song that is playing keeps its rotation.
       if (currentBed || pool.length === 0) return;
       poolAt = Math.abs(seed) % pool.length;
+    },
+    keep() {
+      if (currentBed && currentBed.ended === true) keepSong();
     },
     end(keepSong = false) {
       // The round clock has stopped; step the fade on the wall clock.

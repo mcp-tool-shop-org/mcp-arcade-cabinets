@@ -103,7 +103,7 @@ CABINETS = {
         "keys": ["inspect", "poison", "rug", "unlisted", "breather", "whisperer", "menu", "doorman"],
         #: The boss beds. `--shape auto` gives these the loop shape and every
         #: other key the section shape.
-        "loop_keys": ["whisperer", "menu", "doorman"],
+        "loop_keys": ["inspect", "poison", "rug", "unlisted", "breather", "whisperer", "doorman"],
     },
     "vibe": {
         "evidence": REPO / "docs" / "art" / "originals-vibe-beds-2min",

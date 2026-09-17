@@ -87,6 +87,7 @@ NO_SPEECH_FLOOR = 0.5
 CAPTION_PHRASES = [
     "this is the end of the video",
     "thanks for watching",
+    "i'll see you next time",
     "thank you",
     "subtitles by",
     "music",

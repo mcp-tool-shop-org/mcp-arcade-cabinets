@@ -97,9 +97,9 @@ MAX_PASSES = 8
 MAX_REDUCTION_DB = 6.0
 OVERSAMPLE = 4
 #: Beds mastered to their own number instead of the set's, by cabinet and key.
-#: Ghost's three boss beds: -10.6 LUFS, two LU over the set's -12.62.
+#: None today: the playlist plays one piece after another at one level.
 TARGET_OVERRIDES = {
-    "ghost": {"whisperer": -10.6, "menu": -10.6, "doorman": -10.6},
+    "ghost": {},
     "vibe": {},
 }
 #: The limiter budget an overridden bed may spend. Tighter than the set's, on
