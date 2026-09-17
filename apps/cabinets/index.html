@@ -386,13 +386,27 @@
         outline: 2px solid #e8a04a;
         outline-offset: 3px;
       }
-      canvas.field:fullscreen,
-      canvas.field:-webkit-full-screen {
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: none;
-        max-height: none;
-        object-fit: contain;
+      /* Full screen is the shell's root, which outlives a remount, so the
+         flow into the next tape keeps the screen. While the cabinet is
+         playing, only the field shows: everything else is hidden in place
+         and the field's box is pinned over the whole screen with the field
+         centered in it. The touch zones ride inside the box, so a phone in
+         full screen keeps its controls. */
+      main.playing:fullscreen,
+      main.playing:-webkit-full-screen {
+        background: #000;
+      }
+      main.playing:fullscreen > *,
+      main.playing:-webkit-full-screen > * {
+        visibility: hidden;
+      }
+      main.playing:fullscreen .field-box,
+      main.playing:-webkit-full-screen .field-box {
+        visibility: visible;
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
         background: #000;
       }
       /* ——— Vibe Typer ——————————————————————————————————————————————

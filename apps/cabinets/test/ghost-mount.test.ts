@@ -339,18 +339,72 @@ describe('full screen, and where the keys are afterwards', () => {
       configurable: true,
       get: () => element,
     });
-    const proto = HTMLCanvasElement.prototype as unknown as Record<string, unknown>;
-    proto.requestFullscreen = function (this: HTMLCanvasElement): Promise<void> {
-      element = root.querySelector('canvas');
+    // Full screen is asked of the root, which outlives a remount.
+    const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
+    proto.requestFullscreen = function (this: HTMLElement): Promise<void> {
+      element = this;
+      document.dispatchEvent(new Event('fullscreenchange'));
+      return Promise.resolve();
+    };
+    const docProto = document as unknown as Record<string, unknown>;
+    docProto.exitFullscreen = function (): Promise<void> {
+      element = null;
       document.dispatchEvent(new Event('fullscreenchange'));
       return Promise.resolve();
     };
     return () => {
       element = null;
       Reflect.deleteProperty(document, 'fullscreenElement');
+      Reflect.deleteProperty(document, 'exitFullscreen');
       Reflect.deleteProperty(proto, 'requestFullscreen');
     };
   }
+
+  it('asks the root for the screen, so the flow into the next tape keeps it', () => {
+    const undo = fullScreenable();
+    try {
+      const game = mount();
+      const full = [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Full screen',
+      )!;
+      full.click();
+      expect(document.fullscreenElement, 'the root, not the field').toBe(root);
+      // The flow: the mount leaves and the next tape mounts in the same root,
+      // the way playAt does. The root never left the document, so the screen
+      // is still ours and the new field takes the keys.
+      game.unmount();
+      const next = mount();
+      expect(document.fullscreenElement).toBe(root);
+      const label = [...root.querySelectorAll('button')].find((b) =>
+        /full screen$/i.test(b.textContent ?? ''),
+      )!;
+      expect(label.textContent).toBe('Exit full screen');
+      expect(document.activeElement).toBe(root.querySelector('canvas'));
+      next.unmount();
+    } finally {
+      undo();
+    }
+  });
+
+  it('gives the screen back on the way to the menu', () => {
+    const undo = fullScreenable();
+    try {
+      const game = mount();
+      const full = [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Full screen',
+      )!;
+      full.click();
+      expect(document.fullscreenElement).toBe(root);
+      const back = [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Back to the cabinets',
+      )!;
+      back.click();
+      expect(document.fullscreenElement, 'the menu is not fullscreen').toBeNull();
+      game.unmount();
+    } finally {
+      undo();
+    }
+  });
 
   it('follows the field in, so the arrows and F still reach the game', () => {
     const undo = fullScreenable();
@@ -940,7 +994,7 @@ describe('the chrome under the field', () => {
   });
 
   it('names F where F works, and takes a shift last clause without it', () => {
-    const proto = HTMLCanvasElement.prototype as unknown as Record<string, unknown>;
+    const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
     proto.requestFullscreen = function (): Promise<void> {
       return Promise.resolve();
     };

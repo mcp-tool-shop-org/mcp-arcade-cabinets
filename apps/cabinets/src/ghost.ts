@@ -966,7 +966,7 @@ export function mountGhost(
     repeat the promise either.
   */
   const canFull = Boolean(
-    canvas.requestFullscreen ?? (canvas as HTMLCanvasElement & FullEl).webkitRequestFullscreen,
+    root.requestFullscreen ?? (root as HTMLElement & FullEl).webkitRequestFullscreen,
   );
   hint.textContent = [
     // What a finger does, said only where a finger is what the player has.
@@ -1074,26 +1074,43 @@ export function mountGhost(
     writeChrome();
   };
 
-  type FullEl = HTMLCanvasElement & { webkitRequestFullscreen?: () => Promise<void> };
+  type FullEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
   type FullDoc = Document & {
     webkitFullscreenElement?: Element;
     webkitExitFullscreen?: () => Promise<void>;
   };
-  const fullNode = canvas as FullEl;
+  /*
+    Full screen is the shell's root, not the canvas.
+
+    The canvas used to be the fullscreen element, and the flow into the next
+    tape remounts the cabinet: the field is replaced, the browser sees its
+    fullscreen element leave the document and gives the screen back, just as
+    the next tape starts (the Director, 2026-09-17). No gesture is available
+    at that moment to ask for it again. The root outlives every remount, so
+    the screen stays; the stylesheet shows only the field while the root is
+    fullscreen and the cabinet is playing, and `layoutField` sizes the field
+    to the screen at an integer step. Leaving for the menu gives the screen
+    back on purpose, since the menu is not a thing to be fullscreen in.
+  */
+  const fullNode = root as FullEl;
   const fullDoc = document as FullDoc;
   const requestFull =
-    canvas.requestFullscreen?.bind(canvas) ?? fullNode.webkitRequestFullscreen?.bind(canvas);
+    root.requestFullscreen?.bind(root) ?? fullNode.webkitRequestFullscreen?.bind(root);
   if (!requestFull) {
     full.hidden = true;
     full.disabled = true;
   }
-  // Full screen is the canvas alone, letterboxed by the browser; keys keep working.
+  const dropFull = () => {
+    const current = document.fullscreenElement ?? fullDoc.webkitFullscreenElement;
+    if (!current) return;
+    const exit =
+      document.exitFullscreen?.bind(document) ?? fullDoc.webkitExitFullscreen?.bind(document);
+    if (exit) void Promise.resolve(exit()).catch(() => {});
+  };
   const goFull = () => {
     const current = document.fullscreenElement ?? fullDoc.webkitFullscreenElement;
     if (current) {
-      const exit =
-        document.exitFullscreen?.bind(document) ?? fullDoc.webkitExitFullscreen?.bind(document);
-      if (exit) void Promise.resolve(exit()).catch(() => {});
+      dropFull();
       return;
     }
     if (!requestFull) {
@@ -1115,7 +1132,7 @@ export function mountGhost(
   const fullEl = (): Element | null =>
     document.fullscreenElement ?? fullDoc.webkitFullscreenElement ?? null;
   const syncFullLabel = () => {
-    const on = fullEl() === canvas;
+    const on = fullEl() === root;
     full.textContent = on ? 'Exit full screen' : 'Full screen';
     full.classList.toggle('picked', on);
   };
@@ -1130,6 +1147,9 @@ export function mountGhost(
     }
   };
   onFullChange(syncFullLabel, true);
+  // A remount while the screen is ours (the flow into the next tape) has no
+  // change event to read; the label is set from the state at mount.
+  syncFullLabel();
   /**
    * Where focus goes when the browser enters or leaves full screen.
    *
@@ -1153,7 +1173,7 @@ export function mountGhost(
   const followFull = () => {
     if (left) return;
     const active = document.activeElement;
-    if (fullEl() === canvas) {
+    if (fullEl() === root) {
       canvas.focus();
       return;
     }
@@ -1162,13 +1182,13 @@ export function mountGhost(
   };
   onFullChange(followFull, true);
   const layoutField = () => {
-    if (fullEl() === canvas) {
-      canvas.style.removeProperty('width');
-      canvas.style.removeProperty('height');
-      return;
-    }
-    const maxW = wrap.clientWidth || FIELD.width;
-    const maxH = Math.max(FIELD.height, window.innerHeight - chromeAllowance());
+    // On the whole screen the field is bounded by the screen alone; the
+    // integer step below applies there too, so a full screen is crisp.
+    const onFull = fullEl() === root;
+    const maxW = onFull ? window.innerWidth : wrap.clientWidth || FIELD.width;
+    const maxH = onFull
+      ? window.innerHeight
+      : Math.max(FIELD.height, window.innerHeight - chromeAllowance());
     const s = Math.min(Math.floor(maxW / FIELD.width), Math.floor(maxH / FIELD.height));
     /*
       Pixel-locked from one times up, not from two.
@@ -2092,6 +2112,9 @@ export function mountGhost(
     root.classList.remove('playing');
   };
   back.addEventListener('click', () => {
+    // The menu is not a thing to be fullscreen in; the root stays, so the
+    // screen has to be given back here rather than by the field leaving.
+    dropFull();
     leave();
     // Back to the cabinets: the music leaves; the player stays for the next round.
     if (audio && (!state.scene || extra.holdMusic)) audio.end();
