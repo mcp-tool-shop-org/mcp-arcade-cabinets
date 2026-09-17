@@ -539,6 +539,68 @@ describe('recorded beds', () => {
       'the cabinet stayed silent behind a bed that is not playing',
     ).toBeGreaterThan(0);
   });
+
+  // Stage C. Under the playlist, two things the score did behind the player's
+  // back: it re-adopted a song the browser had already refused whenever the
+  // shell's bag came round to it again, and it kept spending songs out of that
+  // bag while the cabinet was muted.
+  describe('the playlist under a refusal and under a mute', () => {
+    it('does not re-adopt a song the browser has refused, even from the bag', () => {
+      // A bag re-serves every element once it empties and refills. A refused
+      // one was adopted again, the tick said it had a bed and silenced the
+      // chiptune, and the rejection landed a microtask later and handed the
+      // round back: one dropout per redraw, and with a short bag a stutter.
+      const bad = bed();
+      bad.play = () => Promise.reject(new Error('autoplay'));
+      const good = bed(120);
+      const order = [bad, bad, good];
+      let at = 0;
+      const failed: { key: string | null }[] = [];
+      const out = attach(silentCtx(), undefined, () => undefined, {
+        pool: [],
+        nextBed: () => {
+          const b = order[Math.min(at++, order.length - 1)]!;
+          return { bed: b, key: b === bad ? 'refused-one' : 'good-one' };
+        },
+        onBedFail: (_b, key) => failed.push({ key }),
+      });
+      out.tick(0, 'inspect');
+      return Promise.resolve().then(() => {
+        // The refusal is reported WITH the key, so the shell can drop that song
+        // from its own bag instead of reverse-mapping the element's identity.
+        expect(failed.map((f) => f.key)).toContain('refused-one');
+        out.tick(1, 'inspect');
+        expect(bad.playing).toBe(false);
+        expect(good.playing).toBe(true);
+      });
+    });
+
+    it('pauses the song on mute and resumes it where it left off', () => {
+      const song = bed(120);
+      let draws = 0;
+      const out = attach(silentCtx(), undefined, () => undefined, {
+        pool: [],
+        nextBed: () => {
+          draws += 1;
+          return song;
+        },
+      });
+      out.tick(0, 'inspect');
+      expect(song.playing).toBe(true);
+      const drawnBefore = draws;
+      out.setMuted(true);
+      expect(song.playing).toBe(false);
+      // Muted, the element is paused, so it never ends, so nothing is drawn and
+      // no song is spent out of the bag while nobody can hear it.
+      song.ended = true;
+      for (let t = 1; t < 20; t += 0.5) out.tick(t, 'inspect');
+      expect(draws).toBe(drawnBefore);
+      song.ended = false;
+      out.setMuted(false);
+      expect(song.playing).toBe(true);
+      expect(draws).toBe(drawnBefore);
+    });
+  });
 });
 
 describe('finished oscillators do not pile up', () => {

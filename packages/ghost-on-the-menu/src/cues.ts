@@ -65,7 +65,12 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
   if (!prev) return [];
   const out: SfxName[] = [];
   if (next.caught > prev.caught) out.push('catch');
-  if (next.dropCatches > prev.dropCatches) out.push('drop');
+  // A lamp coming back has its own sound. The four drop kinds used to fire
+  // one cue between them, so catching a life back and catching a spread were
+  // acoustically identical — and 'lamp' is the LOSS sound, so reusing it for
+  // a gain would have read backwards.
+  if (next.lives > prev.lives) out.push('lampback');
+  else if (next.dropCatches > prev.dropCatches) out.push('drop');
   if (next.lives < prev.lives) out.push('lamp');
   if (next.ended && !prev.ended) out.push('end');
   if (next.waveCard && !prev.waveCard) out.push('wave');

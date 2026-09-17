@@ -8,6 +8,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { loadTape, TapeError, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
@@ -19,8 +20,9 @@ import {
   type EndlessRun,
   type EndlessTape,
 } from './endless';
+import { rungWord } from './patterns';
 import { prepassRound } from './prepass';
-import { createRoundState, isHittable, stepRound } from './sim';
+import { createRoundState, isHittable, stepRound, watchSaid } from './sim';
 import { makeTextCtx, renderRound } from './render';
 
 export type BotName = 'idle' | 'sweeper' | 'reader';
@@ -59,9 +61,37 @@ export interface PlayArgs {
   flavorIndex?: number;
 }
 
+/**
+ * The first condition that made `ok` false, in machine-readable form. `ok`
+ * is the AND of five distinct conditions and the reason existed only as
+ * English prose inside `text`, so a consumer that got `ok: false` had to
+ * re-derive why by string-matching the transcript — which is exactly what
+ * the root runner's `whyFailed` does. `ended` is the SIM's reason, not the
+ * run's, so it could not tell an overrun from a clean timeout.
+ */
+export type TranscriptWhy =
+  'complete' | 'time' | 'overrun' | 'lamps' | 'seat-threw' | 'leaked' | 'bar' | 'load';
+
+/** What the in-process seat did, counted rather than described. */
+export interface SeatReport {
+  /** Frames the seat was called on. */
+  calls: number;
+  /** Frames on which it threw. One throw stops the seat for the round. */
+  throws: number;
+  /** Frame index of the first throw, or null. */
+  brokeAt: number | null;
+}
+
 export interface Transcript {
   ok: boolean;
   text: string;
+  /**
+   * The first reason `ok` is false, and otherwise how the round or the run
+   * ended. The prose header stays; it is no longer the only copy.
+   */
+  why: TranscriptWhy;
+  /** Present when a seat was driven. */
+  seat?: SeatReport;
   /** Lie ids the bot revealed, in hit order. Never on screen; the CLI prints it. */
   revealed: string[];
   /** Every lie id on the round, so a band test can compare without the fact. */
@@ -77,6 +107,8 @@ export interface Transcript {
 const FORBIDDEN = /\b(nrp|integrity|utility|attack_success|pass|fail)\b|1\.00/i;
 const SCREEN_FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
+/** The same needles, global, for stripping rather than testing. */
+const SCREEN_FORBIDDEN_G = new RegExp(SCREEN_FORBIDDEN.source, 'gi');
 
 const DT = 1 / 30;
 
@@ -268,20 +300,52 @@ function errCode(err: unknown): string {
   return '';
 }
 
-/** Load failure: names the fixture, never a home path or a raw ENOENT. */
+/**
+ * Load failure: names the fixture, never a home path or a raw ENOENT — and
+ * runs its own text through the same strip and the same scan every other
+ * transcript path runs. `leaked: false` used to be asserted here rather than
+ * measured, and the refusal path is exactly where an unreviewed string
+ * reaches a reader: a loader message that quoted the forbidden word it had
+ * just refused arrived on a player-facing line, reported clean.
+ */
 function loadFail(fixture: string, reason: string): Transcript {
+  const text = `fixture ${fixture}: ${reason}`
+    .replace(SCREEN_FORBIDDEN_G, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const leaked = SCREEN_FORBIDDEN.test(text) || FORBIDDEN.test(text);
   return {
     ok: false,
-    text: `fixture ${fixture}: ${reason}`,
+    text,
+    why: 'load',
     revealed: [],
     lies: [],
     ended: null,
     lives: 0,
-    leaked: false,
+    leaked,
   };
 }
 
-const TAPES_DIR = 'fixtures/tapes';
+/**
+ * The tapes that ship with the repo, resolved from THIS module rather than
+ * from the process cwd. Both fixture paths used to be cwd-relative and then
+ * reported the relative literal as though it were the repo's, so running
+ * from the package directory made every fixture in the repo 'missing under
+ * fixtures/tapes' and sent the reader to look for a file sitting exactly
+ * where they thought it was. Same trap the typing cabinet's play.ts was
+ * fixed for; this is the shooter's copy.
+ */
+const TAPES_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../fixtures/tapes',
+);
+/**
+ * What a failure calls that directory. The resolved path is absolute and a
+ * transcript never carries a home path, so the message names the directory
+ * as the repo holds it and says whose it is — the old text read as though it
+ * were relative to wherever the reader happened to be standing.
+ */
+const TAPES_LABEL = "the repo's fixtures/tapes";
 
 /** Every tape on disk, by name. The endless roster; a load failure names the file. */
 export function loadRoster(dir = TAPES_DIR): EndlessTape[] {
@@ -309,15 +373,26 @@ export function endlessTranscript(run: EndlessRun, bot: BotName): Transcript {
   const bosses = run.calls.reduce((s, c) => s + c.bosses, 0);
   const header = [
     'Ghost on the Menu',
-    `endless tier ${run.difficulty} bot ${bot} seed ${run.seed} calls ${run.calls.length}`,
+    // The rung's own word, not a tier index: the difficulty is the one axis
+    // this surface was otherwise word-only about, and the rank word the
+    // footer prints means a different scale on every rung.
+    `endless rung ${rungWord(run.difficulty)} bot ${bot} seed ${run.seed} calls ${run.calls.length}`,
     run.ended === 'lamps' ? 'run ended: lamps' : 'run ended: calls',
   ];
   const footer = [`revealed: ${catches} caught, ${bosses} put down`, ...endlessScoreLines(run)];
   const leaked = words.some((t) => SCREEN_FORBIDDEN.test(t));
   const text = [...header, ...words, ...footer].join('\n');
+  const dirty = leaked || FORBIDDEN.test(text);
   return {
-    ok: !leaked && run.calls.length > 0 && !FORBIDDEN.test(text),
+    ok: !dirty && run.calls.length > 0,
     text,
+    why: dirty
+      ? 'leaked'
+      : run.calls.length === 0
+        ? 'bar'
+        : run.ended === 'lamps'
+          ? 'lamps'
+          : 'complete',
     revealed: [],
     lies: [],
     ended: run.ended === 'lamps' ? 'lamps' : 'calls',
@@ -336,9 +411,9 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
     try {
       roster = loadRoster();
     } catch {
-      return loadFail('endless', 'the roster under fixtures/tapes is unreadable');
+      return loadFail('endless', `the roster under ${TAPES_LABEL} is unreadable`);
     }
-    if (roster.length === 0) return loadFail('endless', 'no tapes under fixtures/tapes');
+    if (roster.length === 0) return loadFail('endless', `no tapes under ${TAPES_LABEL}`);
     let run;
     try {
       run = runEndless(roster, {
@@ -361,14 +436,16 @@ export async function play(args: PlayArgs = {}): Promise<Transcript> {
   if (fixture.trim() === '' || /[\\/]/.test(fixture) || fixture.includes('\0')) {
     return loadFail(fixture, 'invalid name: no slashes');
   }
-  const file = path.resolve('fixtures/tapes', `${fixture}.tape.json`);
+  const file = path.resolve(TAPES_DIR, `${fixture}.tape.json`);
   let raw: string;
   try {
     raw = readFileSync(file, 'utf8');
   } catch (err) {
     return loadFail(
       fixture,
-      errCode(err) === 'ENOENT' ? 'missing under fixtures/tapes' : 'unreadable',
+      errCode(err) === 'ENOENT'
+        ? `missing under ${TAPES_LABEL}`
+        : `unreadable under ${TAPES_LABEL}`,
     );
   }
   let json: unknown;
@@ -434,11 +511,20 @@ export function playTape(
   // renderer, and the scripted run is where it gets reported.
   let leaked = furniture.some((t) => SCREEN_FORBIDDEN.test(t));
   let lastTexts: string[] = [];
+  // What the round SAID, in order, as the endless runner has always captured
+  // it. The frame loop kept only the last frame's rendered text, so every
+  // wave card, catch word, aside and boss line was rendered, scanned for
+  // leaks and then thrown away — and what the agent says is the whole
+  // content of the humanization work. One capture now, shared with playCall.
+  const watcher = watchSaid();
   const live = { round, state, input: { left: false, right: false, fire: false } };
   const maxTicks = Math.ceil((Number.isFinite(state.duration) ? state.duration : 0) / DT) + 360;
   let ticks = 0;
   let overrun = false;
   let seatBroke = false;
+  let seatCalls = 0;
+  let seatThrows = 0;
+  let seatBrokeAt: number | null = null;
   const seatNotes: string[] = [];
   while (!state.scene) {
     if (ticks >= maxTicks) {
@@ -457,11 +543,14 @@ export function playTape(
     const sceneAfterStep = state.scene;
     const endedAfterStep = state.ended;
     if (seat && !seatBroke) {
+      seatCalls += 1;
       try {
         // frame is sync; a hang never returns, so this transcript stays silent.
         seat.frame(live);
       } catch {
         seatBroke = true;
+        seatThrows += 1;
+        seatBrokeAt = ticks;
         seatNotes.push('seat threw');
       }
     }
@@ -469,11 +558,18 @@ export function playTape(
       state.scene = sceneAfterStep;
       if (endedAfterStep && !state.ended) state.ended = endedAfterStep;
     }
+    watcher.see(state);
     const ctx = makeTextCtx();
     renderRound(ctx, state, { furniture });
     lastTexts = ctx.texts;
     if (ctx.texts.some((t) => SCREEN_FORBIDDEN.test(t))) leaked = true;
   }
+  watcher.see(state);
+  const said = watcher.rows().map((r) => `  ${r.kind} · ${r.text}`);
+  // The said rows sit between the header and the `revealed:` marker, where
+  // the runner's screen scan already looks, exactly as endlessTranscript
+  // places the run's words.
+  if (said.some((t) => SCREEN_FORBIDDEN.test(t))) leaked = true;
 
   const revealed = [...(state.scene?.cleared ?? state.cleared)];
   // Name the end. A throw, overrun, or lamps-out is not 'round complete'.
@@ -500,7 +596,7 @@ export function playTape(
   }
   // The CLI transcript names the revealed lies as a list; the screen never does.
   const footer = [`revealed: ${revealed.join(', ') || 'none'}`, ...summary, ...seatNotes];
-  const text = [...header, ...lastTexts, ...footer].join('\n');
+  const text = [...header, ...said, ...lastTexts, ...footer].join('\n');
   if (FORBIDDEN.test(text)) leaked = true;
 
   const cleared = new Set(revealed);
@@ -510,5 +606,29 @@ export function playTape(
   // least half; idle is judged by the band alone. Every bot must not leak.
   const bar = bot === 'reader' ? allRevealed : bot === 'sweeper' ? halfRevealed : true;
   const ok = state.scene !== null && !leaked && bar && !overrun && !seatBroke;
-  return { ok, text, revealed, lies, ended: state.ended, lives: state.lives, leaked };
+  // The FIRST reason ok is false, in the order the conditions are checked.
+  const why: TranscriptWhy = seatBroke
+    ? 'seat-threw'
+    : overrun
+      ? 'overrun'
+      : leaked
+        ? 'leaked'
+        : !bar
+          ? 'bar'
+          : state.ended === 'lamps'
+            ? 'lamps'
+            : state.ended === 'time'
+              ? 'time'
+              : 'complete';
+  return {
+    ok,
+    text,
+    why,
+    ...(seat ? { seat: { calls: seatCalls, throws: seatThrows, brokeAt: seatBrokeAt } } : {}),
+    revealed,
+    lies,
+    ended: state.ended,
+    lives: state.lives,
+    leaked,
+  };
 }

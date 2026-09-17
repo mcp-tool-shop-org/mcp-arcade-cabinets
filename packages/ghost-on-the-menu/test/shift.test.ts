@@ -22,6 +22,7 @@ import {
   ordinalWord,
   rosterFits,
   shiftCard,
+  shiftTitle,
 } from '../src/shift';
 import type { Round, RoundState } from '../src/types';
 
@@ -347,5 +348,36 @@ describe('a hostile tape header never reaches the field', () => {
         `${needle}: server line lost`,
       ).toBe(true);
     }
+  });
+});
+
+// Stage C. A roster shorter than the shift is a legitimate configuration —
+// a container started with one mounted tape — and the draw was silently
+// shortened with nothing recorded, so a one-tape cabinet announced four
+// calls and played one, and its very first card already read 'last'.
+describe('a draw that came up short says so', () => {
+  it('carries what was asked for beside what was drawn', () => {
+    const full = drawShift(ROSTER, 1, 2);
+    expect(full.names.length).toBe(DEFAULT_PATTERNS.shift.length);
+    expect(full.asked).toBe(DEFAULT_PATTERNS.shift.length);
+
+    const one = drawShift([ROSTER[0]!], 1, 2);
+    expect(one.names.length).toBe(1);
+    expect(one.asked).toBe(DEFAULT_PATTERNS.shift.length);
+    expect(one.names.length).toBeLessThan(one.asked);
+  });
+
+  it('writes the title off the draw rather than off the lever', () => {
+    const full = drawShift(ROSTER, 1, 2);
+    const title = shiftTitle(full);
+    expect(title).toContain(lengthWord(full.names.length));
+    expect(title).not.toMatch(/shorter than a full shift/);
+    expect(title).not.toMatch(/\d/);
+
+    const one = shiftTitle(drawShift([ROSTER[0]!], 1, 2));
+    expect(one).toContain('one call');
+    expect(one).not.toContain('one calls');
+    expect(one).toMatch(/shorter than a full shift/);
+    expect(one).not.toMatch(/\d/);
   });
 });

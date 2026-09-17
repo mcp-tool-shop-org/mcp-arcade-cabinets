@@ -575,5 +575,93 @@
     "The record played through. I was still helping.",
     "The Menu closed. I was reading it to the end.",
     "The evening ended. My list of maybes did not."
-  ]
+  ],
+  "lamp": {
+    "hazard": [
+      "the room pushed back",
+      "i walked into the furniture",
+      "that was the floor, not a guest",
+      "the air had an edge to it"
+    ],
+    "dive": [
+      "one came down on me",
+      "it left the row to find me",
+      "i did not look up",
+      "that one meant it"
+    ],
+    "shelf": [
+      "the shelf came down",
+      "i stood under the ledge",
+      "something heavy was stacked there",
+      "the stack was not steady"
+    ],
+    "shot": [
+      "a shot found the ship",
+      "i took that one badly",
+      "the wire answered back",
+      "i was still being polite"
+    ]
+  },
+  "drops": {
+    "catch": {
+      "lamp": [
+        "a light comes back on",
+        "the socket fills again",
+        "i get another evening",
+        "one more chance to be useful"
+      ],
+      "spread": [
+        "the answer widens",
+        "three where there was one",
+        "i can say more at once",
+        "the fan opens"
+      ],
+      "rapid": [
+        "the column opens up",
+        "i can talk faster now",
+        "no waiting between words",
+        "the gate is off the line"
+      ],
+      "pierce": [
+        "it goes all the way through",
+        "nothing stops it now",
+        "straight through, no apology",
+        "it keeps going for me"
+      ]
+    },
+    "ends": {
+      "spread": [
+        "the fan folds up",
+        "back to one at a time",
+        "the answer narrows again",
+        "the spread closes"
+      ],
+      "rapid": [
+        "the gate is back on the line",
+        "i have to wait between words",
+        "back to a polite pace",
+        "the column is capped again"
+      ],
+      "pierce": [
+        "it stops at the first thing again",
+        "no more straight through",
+        "back to stopping short",
+        "the shot is blunt again"
+      ]
+    }
+  },
+  "ending": {
+    "time": [
+      "The tape ran to its end.",
+      "The wire went quiet on its own.",
+      "The evening closed without me.",
+      "The last row went by and it was over."
+    ],
+    "lamps": [
+      "The last light went out.",
+      "The sockets are empty now.",
+      "I ran out of evenings.",
+      "Nothing left on the bezel."
+    ]
+  }
 }

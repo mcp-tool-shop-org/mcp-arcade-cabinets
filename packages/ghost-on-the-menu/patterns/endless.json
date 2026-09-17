@@ -129,6 +129,40 @@
     "timeoutMs": 4000,
     "fallback": "seeded"
   },
+  "progress": {
+    "places": [
+      {
+        "at": 12,
+        "word": "deep into the shift"
+      },
+      {
+        "at": 18,
+        "word": "past the handover"
+      },
+      {
+        "at": 26,
+        "word": "nobody else is on the board"
+      },
+      {
+        "at": 34,
+        "word": "the board is yours alone"
+      }
+    ],
+    "beyond": [
+      {
+        "at": 0,
+        "word": "the ceiling itself"
+      },
+      {
+        "at": 32,
+        "word": "over the ceiling"
+      },
+      {
+        "at": 40,
+        "word": "nothing above this"
+      }
+    ]
+  },
   "notes": {
     "openingCalls": "Three calls sit flat on the tape-alone reach before anything rises: density held low for an opening stretch reads as an invitation, and three calls is about five minutes at the round lengths waves.json already ships.",
     "approach": "The opening band plays below the tape as it stands, not at it: the copies and the fire of an endless burst are scaled by this fraction on the first call and rise straight to the tape-alone reach by the last call of the band. It is endless's own band and it relaxes nothing: the tape-alone bars and the shift bar are measured on the shipped set, where this lever does not exist.",
@@ -142,6 +176,7 @@
     "score": "A boss is five catches and a drop is a quarter of one, so the points encode the risk. The call bonus starts at fifty and rises with the reach, so lasting long pays without time itself ever being scored.",
     "chainCap": "Eight whole links. A discrete multiplier that resets to one is legible where a decaying one is not, and eight is as far as a single call's catches and drops can carry it.",
     "rank": "Thresholds per tier on the banked score, set from the scripted bots over twenty seeds with the pool these levers give: at live a mover banks between twelve and fifty-six thousand and a reader between two hundred and nine thousand, and the tighter rungs are an order smaller. The middle words are where an ordinary run lands and the top word is a run that went further than the bots do. No row for the gentlest rung: endless is not offered there. The words are the lead's: a shift on the board, from clocking in to closing the floor.",
-    "seat": "Four seconds for the seat to pick off the menu and write its tell; past that the seeded pick stands and the run's record says the call was seeded."
+    "seat": "Four seconds for the seat to pick off the menu and write its tell; past that the seeded pick stands and the run's record says the call was seeded.",
+    "progress": "Two word ladders that pick up where the hard-coded ones stop. The named places run to the twelfth call and the climb's own words saturate near the twenty-eighth, so a run of fifty calls read, in words, exactly like a run of thirteen. `places` names the call past the last ordinal; `beyond` names the reach once the ceiling is held, so the ceiling stops being the last thing the run ever says. Both are data: the lead extends either without touching the code."
   }
 }

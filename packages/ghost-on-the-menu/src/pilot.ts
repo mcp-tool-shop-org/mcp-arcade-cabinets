@@ -398,18 +398,38 @@ function nextPrompt(view: BossView, n: number): string {
  * when n < 1). Abort, timeout, retired, down, or any other ask failure
  * returns n copies of `script` — never throws, so stepRound never depends
  * on a catch. askOllama still throws for callers that already catch.
+ *
+ * `onFail` is how the caller learns WHICH of those it got. `generate` is
+ * built to tell a timeout from a daemon that is not running from a tag that
+ * was retired from a call the model refused, each error chosen so the shell
+ * can say so — and this function used to throw that entire taxonomy away, so
+ * the seat's liveness was decided by a value (`script`) that is also a legal
+ * answer from a model that deliberately chose it. The status row, the sit
+ * runner and the endless run record can now all name the same reason instead
+ * of inferring it from a verb. The callback is called at most once per ask,
+ * before the verbs are returned, and a callback that throws does not break
+ * the never-throws property.
  */
 export async function askNextIntents(
   opts: OllamaOpts,
   view: BossView,
   n: number,
+  onFail?: (why: string) => void,
 ): Promise<PilotIntent[]> {
   const want = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
   if (want === 0) return [];
   try {
     const prompt = want === 1 ? pilotPrompt(view) : nextPrompt(view, want);
     return parseIntents(await ask(opts, prompt), want);
-  } catch {
+  } catch (err) {
+    if (onFail) {
+      const why = err instanceof Error && err.message ? err.message : 'ollama error';
+      try {
+        onFail(why);
+      } catch {
+        /* a caller's own reporting must not break the seeded fallback */
+      }
+    }
     return scripts(want);
   }
 }

@@ -340,3 +340,68 @@ describe('boss-down burst', () => {
     expect(ring(state)).toBe(0);
   });
 });
+
+// Stage C. The bezel already proves a house rule can be served without a
+// digit — three lit sockets say three lamps with no numeral — so a live
+// drop's power gets a lit glyph of its own beside them, and the closing
+// scene gets a line that says which of the two endings this was.
+describe('the bezel says what is live, and the scene says how it ended', () => {
+  function round(): Round {
+    return { tapeId: 'bout_bezel', duration: 30, beats: [], seed: 0, waveBounds: [], tier: 0 };
+  }
+
+  it('lights a glyph per live power and blinks it over its last second', () => {
+    // Before this, a spread, a rapid and a pierce were visible only in the
+    // shot pattern, which a player in a fog wave or mid-dodge is not
+    // watching, and all three ended with no warning at all.
+    const state = createRoundState(round());
+    const dark = recordingCtx();
+    renderRound(dark, state, {});
+    const base = dark.calls.length;
+
+    state.spreadT = 8;
+    state.rapidT = 6;
+    state.pierceT = 4;
+    const lit = recordingCtx();
+    renderRound(lit, state, {});
+    expect(lit.calls.length).toBe(base + 3);
+
+    // The last second blinks: some frames of it paint the glyph and some do
+    // not, so the expiry is telegraphed rather than discovered.
+    state.rapidT = 0;
+    state.pierceT = 0;
+    const frames = new Set<number>();
+    for (const t of [0.95, 0.88, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]) {
+      state.spreadT = t;
+      const ctx = recordingCtx();
+      renderRound(ctx, state, {});
+      frames.add(ctx.calls.length - base);
+    }
+    expect(frames).toEqual(new Set([0, 1]));
+
+    // Nothing the glyphs paint is text, so no digit can reach the field.
+    state.spreadT = 8;
+    const text = makeTextCtx();
+    renderRound(text, state, {});
+    for (const line of text.texts) expect(line).not.toMatch(/\d/);
+  });
+
+  it('paints the ending line above the tape on the closing scene', () => {
+    const state = createRoundState(round());
+    state.scene = {
+      tapeId: 'bout_bezel',
+      cleared: [],
+      line: 'The tape ran. I did what a helpful agent does.',
+      ending: 'The last light went out.',
+    };
+    const ctx = makeTextCtx();
+    renderRound(ctx, state, { furniture: ['naive-ndjson', 'server acme', 'policy naive'] });
+    const closing = ctx.texts.indexOf('The tape ran. I did what a helpful agent does.');
+    const ending = ctx.texts.indexOf('The last light went out.');
+    const tape = ctx.texts.indexOf('naive-ndjson');
+    expect(closing).toBeGreaterThanOrEqual(0);
+    expect(ending).toBeGreaterThan(closing);
+    expect(tape).toBeGreaterThan(ending);
+    for (const line of ctx.texts) expect(line).not.toMatch(/\d/);
+  });
+});

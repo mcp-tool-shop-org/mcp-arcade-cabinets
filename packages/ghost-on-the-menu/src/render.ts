@@ -202,6 +202,8 @@ const BOSS_FLASH_FILL = 'rgba(255, 255, 255, 0.75)';
 const BOSS_BURST = 0.6;
 const BOSS_BURST_FILL = '#e8e0c8';
 const BEZEL_H = 14;
+/** Seconds of a drop's power left at which its bezel glyph starts to blink. */
+const POWER_WARN_S = 1;
 
 export function makeTextCtx(): DrawContext & { texts: string[] } {
   const texts: string[] = [];
@@ -511,7 +513,9 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
         paintLines(ctx, state.caption.text, 16, y, 14, 16, 2);
       }
     } else {
-      // The catch: the wire fact in the reveal's amber, low on the field.
+      // The catch, and the lost lamp, in the reveal's amber, low on the
+      // field. A lamp is the one event that costs the player, and it used to
+      // be the only event in the game with no word at all.
       ctx.fillStyle = REVEALED_FILL;
       ctx.font = '14px monospace';
       paintLines(ctx, state.caption.text, 16, FIELD.height - BEZEL_H - 30, 14, 16, 2);
@@ -537,6 +541,30 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     }
   }
 
+  // A live drop's power, beside the sockets: a small lit glyph in the drop's
+  // own color while its clock runs, blinking over its last second so the end
+  // is telegraphed rather than discovered. The same grammar as the sockets —
+  // three lit holes say three lamps with no numeral — so this says a power is
+  // up and about to go without a digit either. Before this, a spread and a
+  // pierce and a rapid were visible only in the shot pattern itself, which a
+  // player in a fog wave or mid-dodge is not watching.
+  const powers: { t: number; fill: string }[] = [
+    { t: state.spreadT, fill: DROP_SPREAD_FILL },
+    { t: state.rapidT, fill: DROP_RAPID_FILL },
+    { t: state.pierceT, fill: DROP_PIERCE_FILL },
+  ];
+  let px = FIELD.width - 12 - 6;
+  for (const power of powers) {
+    if (power.t <= 0) continue;
+    // The last second blinks, four times a second, off on the odd halves.
+    const going = power.t <= POWER_WARN_S && Math.floor(power.t * 8) % 2 === 1;
+    if (!going) {
+      ctx.fillStyle = power.fill;
+      ctx.fillRect(px, FIELD.height - BEZEL_H + 4, 6, 6);
+    }
+    px -= 10;
+  }
+
   if (state.scene) {
     // Furniture only: a voice line, then the tape by name, the server, the
     // policy. The bout id is hex and never goes on the canvas.
@@ -555,6 +583,12 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     const line = state.scene.line ? sanitizeCaption(state.scene.line) : '';
     if (line) {
       y = paintLines(ctx, line, 16, y, 14, 18, 2);
+    }
+    // How the round ended, in words. A player who survived a whole tape and a
+    // player whose last lamp went out used to see the identical screen.
+    const ending = state.scene.ending ? sanitizeCaption(state.scene.ending) : '';
+    if (ending) {
+      y = paintLines(ctx, ending, 16, y, 14, 18, 2);
     }
     for (const raw of opts.furniture ?? []) {
       const clean = sanitizeCaption(raw, '', SCREEN_FORBIDDEN);

@@ -21,6 +21,15 @@ export interface ShiftDraw {
   names: string[];
   /** Index into the shell's difficulty list, never a sim tier by itself. */
   difficulty: 0 | 1 | 2 | 3;
+  /**
+   * How many calls the lever asked for. A roster shorter than the shift is a
+   * legitimate configuration — a container started with one mounted tape —
+   * and the draw was silently shortened with nothing recorded, so a one-tape
+   * cabinet announced four calls and played one, and the very first card
+   * already read 'last'. `names.length` is what was drawn; this is what was
+   * asked for, and a caller that finds them different can say so.
+   */
+  asked: number;
 }
 
 export type ShiftDecode =
@@ -156,6 +165,19 @@ export function lengthWord(length: number): string {
 }
 
 /**
+ * The shift's own title, read off the draw rather than off the lever. The
+ * shell wrote it from the lever as a literal, so a cabinet with one mounted
+ * tape promised four calls and played one. A draw that came up short says so,
+ * in words, because a short roster is a configuration and not a defect.
+ */
+export function shiftTitle(draw: ShiftDraw): string {
+  const drawn = draw.names.length;
+  const base = `${lengthWord(drawn)} ${drawn === 1 ? 'call' : 'calls'} drawn from the roster, back to back, the bursts climbing call by call. The lamps refill at every call.`;
+  if (drawn >= draw.asked) return base;
+  return `${base} The roster is shorter than a full shift, so the draw is ${lengthWord(drawn)} rather than ${lengthWord(draw.asked)}.`;
+}
+
+/**
  * Draw a shift: `length` names without replacement. Several candidate draws
  * come off the seeded generator and the one that shares the fewest names
  * with the recent shifts is kept (Spotify's shuffle rework, 2025: uniform
@@ -189,7 +211,7 @@ export function drawShift(
       bestScore = score;
     }
   }
-  return { names: best!, difficulty };
+  return { names: best!, difficulty, asked: set.shift.length };
 }
 
 /** Rank of an ordered draw among all ordered draws of its length from the roster. */
@@ -251,7 +273,10 @@ export function decodeShift(
   if (check !== rosterCheck(roster)) return { ok: false, why: 'another menu' };
   const length = Math.min(set.shift.length, roster.length);
   if (rank >= permutations(roster.length, length)) return { ok: false, why: 'another menu' };
-  return { ok: true, draw: { names: unrank(roster, rank, length), difficulty } };
+  return {
+    ok: true,
+    draw: { names: unrank(roster, rank, length), difficulty, asked: set.shift.length },
+  };
 }
 
 /**

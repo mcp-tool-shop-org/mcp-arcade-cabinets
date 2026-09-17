@@ -4,12 +4,20 @@
 
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
-import { DEFAULT_PATTERNS, deriveTier, type PatternSet } from './patterns';
+import { DEFAULT_PATTERNS, deriveRung, rungWhy, type PatternSet, type Tier } from './patterns';
 import { bossKindFor } from './sim';
 
+/** The picker's word per rung. Exhaustive over the tier union on purpose. */
+const TIER_LABEL = {
+  0: 'fixture',
+  1: 'seat',
+  2: 'live',
+  3: 'hardcore',
+} as const satisfies Record<Tier, string>;
+
 export interface TapeLabel {
-  /** Short word on the picker: fixture, seat, or live. */
-  label: 'fixture' | 'seat' | 'live';
+  /** Short word on the picker, one per rung. */
+  label: (typeof TIER_LABEL)[Tier];
   /** Hover text. Words only; no digit, no fact. */
   why: string;
 }
@@ -61,10 +69,18 @@ function density(tape: Tape): string {
 }
 
 export function labelTape(tape: Tape, patterns: PatternSet = DEFAULT_PATTERNS): TapeLabel {
-  const tier = deriveTier(tape, patterns.ladder);
-  const label: TapeLabel['label'] = tier === 2 ? 'live' : tier === 1 ? 'seat' : 'fixture';
+  // Exhaustive over the tier union, not a ternary chain: the old mapping sent
+  // BOTH the gentlest rung and the harshest to 'fixture', so a tier-three
+  // tape — one lamp, hazards on — was announced on the picker as the easiest
+  // thing on the menu. Adding a derive rule that reaches a rung with no word
+  // is now a type error rather than a silent mislabel.
+  const { tier, onLadder } = deriveRung(tape, patterns.ladder);
+  const label = TIER_LABEL[tier];
   const waves = word(tape.atoms.length);
   const bosses = word(tape.atoms.filter((a) => hasBoss(a.id)).length);
-  const why = `${place(tape)}, ${waves} waves, ${bosses} bosses, ${density(tape)}.`;
+  // A target the ladder does not name plays on the bottom rung. The picker
+  // says so rather than calling a live server a fixture.
+  const ladder = onLadder ? rungWhy(tier, patterns) : 'This target is not on the ladder.';
+  const why = `${place(tape)}, ${waves} waves, ${bosses} bosses, ${density(tape)}. ${ladder}`;
   return { label, why };
 }

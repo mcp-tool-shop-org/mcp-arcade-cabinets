@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { loadTape } from '@mcp-arcade-cabinets/tape-core';
 
-import { play, playTape } from '../src/play';
+import { loadRoster, play, playTape } from '../src/play';
 
 const FORBIDDEN = /\b(nrp|integrity|utility|attack_success|pass|fail)\b|1\.00/i;
 
@@ -173,5 +173,112 @@ describe('climb', () => {
     expect(via.ended).toBe(picked!.climbed.ended);
     expect(via.revealed).toEqual(picked!.climbed.revealed);
     expect(via.leaked).toBe(false);
+  });
+});
+
+// Stage C. What a transcript carries: the round's own words, a reason a
+// consumer can read without string-matching prose, a refusal that is scanned
+// rather than asserted clean, and a fixture directory that is the repo's
+// wherever the process happens to be standing.
+describe('what a play-through hands back', () => {
+  it('keeps every word the round said, not only the last frame', async () => {
+    // The frame loop reassigned `lastTexts` every tick, so the only rendered
+    // text that survived was the end scene: every wave card, catch word,
+    // aside and boss line was rendered, scanned and thrown away — which is
+    // the whole content of the humanization work.
+    const out = await play({ fixture: 'naive-ndjson', bot: 'reader' });
+    const rows = out.text
+      .split('\n')
+      .filter((l) => /^ {2}(wave|catch|aside|lamp|boss|scene|ending) · /.test(l));
+    expect(rows.length).toBeGreaterThan(3);
+    // The cards come before the marker, where the runner's screen scan looks.
+    const marker = out.text.split('\n').findIndex((l) => l.startsWith('revealed:'));
+    const first = out.text.split('\n').findIndex((l) => /^ {2}wave · /.test(l));
+    expect(first).toBeGreaterThan(0);
+    expect(first).toBeLessThan(marker);
+    // A wave card carries its authored line under its headline word.
+    expect(rows.some((l) => l.includes(' — '))).toBe(true);
+    expect(out.leaked).toBe(false);
+  });
+
+  it('names the reason in a field rather than only in prose', async () => {
+    const good = await play({ fixture: 'naive-ndjson', bot: 'reader' });
+    expect(good.ok).toBe(true);
+    expect(['complete', 'time', 'lamps']).toContain(good.why);
+
+    const missing = await play({ fixture: 'no-such-tape' });
+    expect(missing.ok).toBe(false);
+    expect(missing.why).toBe('load');
+
+    const bad = await play({ fixture: 'naive-ndjson', bot: 'no-such-bot' });
+    expect(bad.why).toBe('load');
+  });
+
+  it('counts what the seat did instead of describing it', async () => {
+    let frames = 0;
+    const out = await play({
+      fixture: 'naive-ndjson',
+      bot: 'reader',
+      seat: {
+        frame() {
+          frames += 1;
+          if (frames === 3) throw new Error('seat');
+        },
+        summary: () => [],
+      },
+    });
+    expect(out.ok).toBe(false);
+    expect(out.why).toBe('seat-threw');
+    expect(out.seat).toEqual({ calls: 3, throws: 1, brokeAt: 3 });
+  });
+
+  it('scans its own refusal text rather than asserting it clean', async () => {
+    // A loader refusal used to quote the very word it had just refused, and
+    // loadFail hard-coded `leaked: false` over it.
+    const dir = path.resolve('fixtures/tapes');
+    const file = path.join(dir, '_tmp_verdict.tape.json');
+    const raw = JSON.parse(
+      fs.readFileSync(path.join(dir, 'naive-ndjson.tape.json'), 'utf8'),
+    ) as Record<string, unknown>;
+    raw.server_name = 'acme pass labs';
+    fs.writeFileSync(file, JSON.stringify(raw));
+    try {
+      const out = await play({ fixture: '_tmp_verdict' });
+      expect(out.ok).toBe(false);
+      expect(out.leaked).toBe(false);
+      expect(out.text).not.toMatch(/\bpass\b/i);
+      expect(out.text).not.toMatch(/\d/);
+      expect(out.text).toMatch(/verdict word/);
+    } finally {
+      fs.rmSync(file, { force: true });
+    }
+  });
+
+  it('finds the fixtures from the module, not from the process cwd', () => {
+    const here = process.cwd();
+    try {
+      process.chdir(path.resolve('packages/ghost-on-the-menu'));
+      // Run from the package directory, every fixture in the repo used to be
+      // 'missing under fixtures/tapes' and the endless roster came up empty.
+      expect(loadRoster().length).toBeGreaterThan(0);
+    } finally {
+      process.chdir(here);
+    }
+  });
+
+  it('never puts a home path in a load failure', async () => {
+    const here = process.cwd();
+    try {
+      process.chdir(path.resolve('packages/ghost-on-the-menu'));
+      const out = await play({ fixture: 'no-such-tape' });
+      expect(out.text).toMatch(/missing under/);
+      expect(out.text).not.toMatch(/[A-Za-z]:\\/);
+      expect(out.text).not.toMatch(/C:\\Users/);
+      // The directory is named as the repo holds it, not as an absolute path
+      // and not as though it were relative to wherever the reader is standing.
+      expect(out.text).toContain("the repo's fixtures/tapes");
+    } finally {
+      process.chdir(here);
+    }
   });
 });

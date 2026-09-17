@@ -23,11 +23,17 @@
       "image": false,
       "seat": false,
       "tier": 0
+    },
+    {
+      "offLadder": true,
+      "tier": 0
     }
   ],
   "rungs": [
     {
       "tier": 0,
+      "name": "gentle",
+      "why": "Three lamps, a slow field, and the formation keeps its guns down.",
       "pools": [
         "grid-swoop-slow",
         "menu-drop",
@@ -55,6 +61,8 @@
     },
     {
       "tier": 1,
+      "name": "seat",
+      "why": "The formation fires back, and the field moves at its own speed.",
       "pools": [
         "grid-swoop-slow",
         "grid-swoop-mid",
@@ -84,6 +92,8 @@
     },
     {
       "tier": 2,
+      "name": "live",
+      "why": "A quicker field, less room after a hit, and the sweep reaches the edges.",
       "pools": [
         "grid-swoop-slow",
         "grid-swoop-mid",
@@ -114,6 +124,8 @@
     },
     {
       "tier": 3,
+      "name": "hardcore",
+      "why": "One lamp, the fastest field, hazards on, and the boss is angry from the first hit.",
       "pools": [
         "grid-swoop-slow",
         "grid-swoop-mid",

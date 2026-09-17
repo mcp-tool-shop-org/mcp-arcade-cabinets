@@ -215,6 +215,15 @@ export interface BossLinePick {
 export interface BossSay {
   text: string;
   at: number;
+  /**
+   * Round time past which the line is dropped instead of said. A line has a
+   * start and now an expiry: without one it simply waited for the field to
+   * clear, so a line written for a boss's entrance could surface seconds
+   * later, commenting on a moment the player has already left. Absent, the
+   * sim gives it the window a said line holds the field for, so a caller
+   * that does not set one still gets a line that goes stale.
+   */
+  until?: number;
 }
 
 export interface Scene {
@@ -222,13 +231,24 @@ export interface Scene {
   cleared: string[];
   /** Furniture line above the tape/server/policy. Never a fact. */
   line?: string;
+  /**
+   * How the round ended, in words, painted under the closing line. The scene
+   * used to look identical after a clean finish and after the last lamp went
+   * out, which is the one thing that screen exists to say.
+   */
+  ending?: string;
 }
 
 export interface Caption {
   text: string;
   t: number;
-  /** Wave card vs catch. Optional so older callers still typecheck. */
-  kind?: 'wave' | 'catch' | 'aside';
+  /**
+   * Wave card vs catch vs aside vs the lamp that was just lost. Optional so
+   * older callers still typecheck. `lamp` paints where a catch does, in the
+   * catch's own register: it is the one event that costs the player and it
+   * used to have no word at all.
+   */
+  kind?: 'wave' | 'catch' | 'aside' | 'lamp';
   /** Furniture line under the wave word. Never a fact. */
   line?: string;
 }

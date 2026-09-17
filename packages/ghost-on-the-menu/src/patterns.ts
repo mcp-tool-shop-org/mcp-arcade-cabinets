@@ -52,6 +52,12 @@ const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const TIER_KEYS = ['0', '1', '2', '3'] as const;
 const WAVE_VOICE_KEYS = ['inspect', 'poison', 'rug', 'unlisted'] as const;
+/** What took the lamp, as the four call sites already know it. */
+export const LAMP_CAUSES = ['hazard', 'dive', 'shelf', 'shot'] as const;
+/** The three drops that run on a clock and therefore end. The lamp does not. */
+export const TIMED_DROP_KINDS = ['spread', 'rapid', 'pierce'] as const;
+/** The two ways a round ends, as the closing scene names them. */
+const END_WHYS = ['time', 'lamps'] as const;
 const DROP_KINDS = ['lamp', 'spread', 'rapid', 'pierce'] as const;
 /** The kinds a formation lets fall; the draw among them is by `weight`. */
 export const FORMATION_DROP_KINDS = ['spread', 'rapid', 'pierce'] as const;
@@ -188,11 +194,22 @@ export interface DeriveRule {
   image?: boolean;
   seat?: boolean;
   live?: boolean;
+  /**
+   * The table's catch-all: a rule that matches anything the rows above it do
+   * not name. It carries a tier like every other rule, and it says so, which
+   * is what lets the picker tell a tape whose target is on the ladder from
+   * one that merely landed on the bottom rung because nothing matched.
+   */
+  offLadder?: boolean;
   tier: 0 | 1 | 2;
 }
 
 export interface LadderRung {
   tier: Tier;
+  /** The rung's word on any surface that names a difficulty. No digit. */
+  name: string;
+  /** What this rung changes, in the lead's register. Hover text; no digit. */
+  why: string;
   pools: string[];
   bossFires: boolean;
   formationFires: boolean;
@@ -289,6 +306,9 @@ export interface DropSpec {
 
 export type VoiceWaveKey = (typeof WAVE_VOICE_KEYS)[number];
 export type VoiceBossKey = (typeof BOSS_KINDS)[number];
+export type LampCause = (typeof LAMP_CAUSES)[number];
+export type TimedDropKind = (typeof TIMED_DROP_KINDS)[number];
+export type EndWhy = (typeof END_WHYS)[number];
 
 export interface VoiceSet {
   wave: Record<VoiceWaveKey, string[]>;
@@ -296,7 +316,24 @@ export interface VoiceSet {
   aside: Record<VoiceWaveKey, string[]>;
   /** Closed player set for a catch caption. Never a tape note. */
   catch: Record<VoiceWaveKey, string[]>;
+  /**
+   * The one event that costs the player, keyed by what took the lamp. Every
+   * other event in the round says something; this one used to say nothing at
+   * all, and said it the same way for four different classes of threat.
+   */
+  lamp: Record<LampCause, string[]>;
+  /** A word on picking a drop up, and a word when a timed one runs out. */
+  drops: {
+    catch: Record<DropKind, string[]>;
+    ends: Record<TimedDropKind, string[]>;
+  };
   end: string[];
+  /**
+   * A second furniture line on the closing scene that names how the round
+   * ended. The end pool stays one pool and one bag; this says which of the
+   * two endings the player is looking at, which the scene never did.
+   */
+  ending: Record<EndWhy, string[]>;
 }
 
 export interface PatternSet {
@@ -400,6 +437,15 @@ export interface EndlessSet {
   rank: Record<'1' | '2' | '3', EndlessRank[]>;
   /** The word for each chain link, index zero being one link. Length is chainCap. */
   chainWords: string[];
+  /**
+   * Two word ladders that pick up where the hard-coded ones run out. `places`
+   * carries the run past the last named call, `beyond` carries it past the
+   * climb's ceiling. Both saturated at a constant, so from the thirteenth
+   * call on nothing in the header varied but the tape's own words — and in a
+   * mode whose whole progress signal is words, that is the progression
+   * disappearing. Written as data so the lead can extend either ladder.
+   */
+  progress: { places: EndlessRank[]; beyond: EndlessRank[] };
   seat: { timeoutMs: number; fallback: 'seeded' };
   /** Lever name to the decision and the reason. Never on screen. */
   notes: Record<string, string>;
@@ -721,9 +767,22 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
     if (Object.prototype.hasOwnProperty.call(rec, 'live')) {
       rule.live = asBoolean(rec.live, file, 'live');
     }
+    if (Object.prototype.hasOwnProperty.call(rec, 'offLadder')) {
+      rule.offLadder = asBoolean(rec.offLadder, file, 'offLadder');
+    }
     return rule;
   });
   if (derive.length === 0) fail(file, 'derive');
+  // The table must end in a catch-all, and only there: a rule that matches
+  // everything anywhere else would swallow the rows beneath it, and a table
+  // with none leaves the fallthrough in the code where nothing can name it.
+  const last = derive[derive.length - 1]!;
+  if (last.offLadder !== true) fail(file, 'derive');
+  if (last.target_kind !== undefined || last.image !== undefined) fail(file, 'derive');
+  if (last.seat !== undefined || last.live !== undefined) fail(file, 'derive');
+  for (const rule of derive.slice(0, -1)) {
+    if (rule.offLadder === true) fail(file, 'derive');
+  }
   const rungs = asArray(req(obj, file, 'rungs'), file, 'rungs').map((item) => {
     const rec = asRecord(item, file, 'rungs');
     // Optional: a rung that does not say (or says null) keeps the uncapped column.
@@ -744,6 +803,8 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
     }
     return {
       tier: asTier(req(rec, file, 'tier'), file, 'tier'),
+      name: asRungWords(req(rec, file, 'name'), file, 'name'),
+      why: asRungWords(req(rec, file, 'why'), file, 'why'),
       pools: asArray(req(rec, file, 'pools'), file, 'pools').map((p) => asString(p, file, 'pools')),
       bossFires: asBoolean(req(rec, file, 'bossFires'), file, 'bossFires'),
       formationFires: asBoolean(req(rec, file, 'formationFires'), file, 'formationFires'),
@@ -760,6 +821,10 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
   });
   const seen = new Set(rungs.map((r) => r.tier));
   if (!seen.has(0) || !seen.has(1) || !seen.has(2) || !seen.has(3)) fail(file, 'rungs');
+  // A rung's word is what the picker, the endless footer and the transcript
+  // header say instead of a tier index, so two rungs may not share one.
+  const words = new Set(rungs.map((r) => r.name));
+  if (words.size !== rungs.length) fail(file, 'name');
   for (const rung of rungs) {
     for (const id of rung.pools) {
       if (!pathIds.has(id)) fail(file, 'pools');
@@ -1029,6 +1094,13 @@ function asCount(value: unknown, file: string, key: string, min: number): number
   return n;
 }
 
+/** Rung prose: words only, never a digit — it is painted where a tier index used to be. */
+function asRungWords(value: unknown, file: string, key: string): string {
+  const w = asString(value, file, key);
+  if (w.trim() === '' || /\d/.test(w) || VOICE_FORBIDDEN.test(w)) fail(file, key);
+  return w;
+}
+
 function asWord(value: unknown, file: string, key: string, seen: Set<string>): string {
   const w = asString(value, file, key);
   if (!ENDLESS_WORD.test(w) || VOICE_FORBIDDEN.test(w) || seen.has(w)) fail(file, key);
@@ -1067,6 +1139,30 @@ function loadEndlessRank(raw: unknown, file: string, key: string): EndlessRank[]
  * hazard ceiling against the rung) are checked in loadPatterns, where both
  * files are in hand.
  */
+/**
+ * A word ladder keyed by call index: ascending, distinct words, and a stated
+ * first step so a reader can see where the ladder starts rather than infer it.
+ */
+function loadEndlessSteps(
+  raw: unknown,
+  file: string,
+  key: string,
+  minAt: number,
+  exactFirst: number | null,
+): EndlessRank[] {
+  const list = asArray(raw, file, key);
+  if (list.length < 2) fail(file, key);
+  const seen = new Set<string>();
+  let last = -1;
+  return list.map((item, i) => {
+    const rec = asRecord(item, file, key);
+    const at = asCount(req(rec, file, 'at'), file, 'at', minAt);
+    if (i === 0 ? exactFirst !== null && at !== exactFirst : at <= last) fail(file, key);
+    last = at;
+    return { at, word: asWord(req(rec, file, 'word'), file, key, seen) };
+  });
+}
+
 function loadEndless(raw: unknown): EndlessSet {
   const file = 'endless.json';
   const obj = asRecord(raw, file, 'climb');
@@ -1134,6 +1230,9 @@ function loadEndless(raw: unknown): EndlessSet {
   if (chainRaw.length !== chainCap) fail(file, 'chainWords');
   const chainSeen = new Set<string>();
   const chainWords = chainRaw.map((w) => asWord(w, file, 'chainWords', chainSeen));
+  const progressRaw = asRecord(req(obj, file, 'progress'), file, 'progress');
+  const places = loadEndlessSteps(req(progressRaw, file, 'places'), file, 'places', 1, null);
+  const beyond = loadEndlessSteps(req(progressRaw, file, 'beyond'), file, 'beyond', 0, 0);
   const seatRaw = asRecord(req(obj, file, 'seat'), file, 'seat');
   const timeoutMs = asCount(req(seatRaw, file, 'timeoutMs'), file, 'timeoutMs', 100);
   const fallback = asString(req(seatRaw, file, 'fallback'), file, 'fallback');
@@ -1154,6 +1253,7 @@ function loadEndless(raw: unknown): EndlessSet {
     score: { catch: catchLine, drop, boss, callBonusBase, chainCap },
     rank,
     chainWords,
+    progress: { places, beyond },
     seat: { timeoutMs, fallback },
     notes,
   };
@@ -1269,12 +1369,36 @@ function loadVoice(raw: unknown): VoiceSet {
   for (const key of WAVE_VOICE_KEYS) {
     catchLines[key] = loadLines(req(catchRaw, file, key), file, key, VOICE_POOL_MAX);
   }
+  const lampRaw = asRecord(req(obj, file, 'lamp'), file, 'lamp');
+  const lamp = {} as VoiceSet['lamp'];
+  for (const key of LAMP_CAUSES) {
+    lamp[key] = loadLines(req(lampRaw, file, key), file, key, VOICE_POOL_MAX);
+  }
+  const dropsRaw = asRecord(req(obj, file, 'drops'), file, 'drops');
+  const dropCatchRaw = asRecord(req(dropsRaw, file, 'catch'), file, 'catch');
+  const dropCatch = {} as VoiceSet['drops']['catch'];
+  for (const key of DROP_KINDS) {
+    dropCatch[key] = loadLines(req(dropCatchRaw, file, key), file, key, VOICE_POOL_MAX);
+  }
+  const dropEndsRaw = asRecord(req(dropsRaw, file, 'ends'), file, 'ends');
+  const dropEnds = {} as VoiceSet['drops']['ends'];
+  for (const key of TIMED_DROP_KINDS) {
+    dropEnds[key] = loadLines(req(dropEndsRaw, file, key), file, key, VOICE_POOL_MAX);
+  }
+  const endingRaw = asRecord(req(obj, file, 'ending'), file, 'ending');
+  const ending = {} as VoiceSet['ending'];
+  for (const key of END_WHYS) {
+    ending[key] = loadLines(req(endingRaw, file, key), file, key, VOICE_POOL_MAX);
+  }
   return {
     wave,
     boss,
     aside,
     catch: catchLines,
+    lamp,
+    drops: { catch: dropCatch, ends: dropEnds },
     end: loadLines(req(obj, file, 'end'), file, 'end', VOICE_POOL_MAX),
+    ending,
   };
 }
 
@@ -1315,16 +1439,39 @@ export function bagFor(bags: LineBags, key: string): LineBag {
   return bag;
 }
 
-/** A bag store read back from storage: only the shape `LineBags` has, or nothing. */
+/** True when `order` is a permutation of 0..order.length-1 — nothing else indexes a pool. */
+function isPermutation(order: readonly number[]): boolean {
+  const seen = new Set<number>();
+  for (const n of order) {
+    if (!Number.isInteger(n) || n < 0 || n >= order.length || seen.has(n)) return false;
+    seen.add(n);
+  }
+  return true;
+}
+
+/**
+ * A bag store read back from storage: only the shape `LineBags` has, or
+ * nothing. `order` is the field that indexes the pool, so it is the field
+ * checked hardest: a stored order is taken only when it is a permutation of
+ * its own length. An out-of-range or negative entry yielded `undefined`,
+ * which dropped a wave card's line and threw inside a catch caption; a
+ * duplicate was quieter and worse — the bag still walked its length, but one
+ * line played twice a cycle and another never played at all, which is the
+ * one promise the bag exists to keep.
+ */
 export function readLineBags(raw: unknown): LineBags {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
   const out: LineBags = {};
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
     const v = value as Record<string, unknown>;
-    const order = Array.isArray(v.order) ? v.order.filter((n) => Number.isInteger(n)) : null;
-    if (!order || !Number.isInteger(v.at) || !Number.isInteger(v.cycle)) continue;
+    if (!Array.isArray(v.order)) continue;
+    const order = v.order as unknown[];
+    if (!order.every((n) => typeof n === 'number')) continue;
+    if (!isPermutation(order as number[])) continue;
+    if (!Number.isInteger(v.at) || !Number.isInteger(v.cycle)) continue;
     if ((v.at as number) < 0 || (v.cycle as number) < 0) continue;
+    if ((v.at as number) > order.length) continue;
     out[key] = { order: order as number[], at: v.at as number, cycle: v.cycle as number };
   }
   return out;
@@ -1360,9 +1507,19 @@ export function nextBagLine(
     bag.order = shuffleOrder(lines.length, seed ^ salt, bag.cycle);
     bag.at = 0;
   }
-  const i = bag.order[bag.at]!;
+  const i = bag.order[bag.at];
   bag.at += 1;
-  return lines[i]!;
+  const line = i === undefined ? undefined : lines[i];
+  if (line === undefined) {
+    // Belt and braces behind readLineBags: a bag whose order does not index
+    // this pool is spent, not a source of `undefined`. Reshuffle and draw
+    // again rather than hand a caller a line that is not a string.
+    bag.cycle += 1;
+    bag.order = shuffleOrder(lines.length, seed ^ salt, bag.cycle);
+    bag.at = 1;
+    return lines[bag.order[0]!]!;
+  }
+  return line;
 }
 
 /** Wave voice key for an atom kind. Breath and unknowns share inspect's lines. */
@@ -1445,11 +1602,18 @@ export function attachedPatterns(host: object): PatternSet {
 }
 
 /**
- * First matching derive rule wins.
- * stdio → 2; docker with image_id → 2 even if seated; seat on a non-live
- * target → 1; fixture, or docker without image and without seat → 0.
+ * The rung a tape plays on, and whether the table actually named its target.
+ * First matching derive rule wins: stdio → 2; docker with image_id → 2 even
+ * if seated; seat on a non-live target → 1; fixture, or docker without image
+ * and without seat → 0. Anything else falls to the table's catch-all, which
+ * still plays on the bottom rung but says so, so a live target from a
+ * transport the ladder has never heard of is not announced to the player as
+ * the easiest thing on the menu.
  */
-export function deriveTier(header: TapeHeader, ladder: PatternSet['ladder']): 0 | 1 | 2 {
+export function deriveRung(
+  header: TapeHeader,
+  ladder: PatternSet['ladder'],
+): { tier: 0 | 1 | 2; onLadder: boolean } {
   const kind = header.target_kind;
   const image = Boolean(header.container?.image_id);
   const seated = header.seat !== null;
@@ -1459,9 +1623,25 @@ export function deriveTier(header: TapeHeader, ladder: PatternSet['ladder']): 0 
     if (rule.image !== undefined && rule.image !== image) continue;
     if (rule.seat !== undefined && rule.seat !== seated) continue;
     if (rule.live !== undefined && rule.live !== live) continue;
-    return rule.tier;
+    return { tier: rule.tier, onLadder: rule.offLadder !== true };
   }
-  return 0;
+  // Unreachable: loadLadder refuses a table with no catch-all.
+  return { tier: 0, onLadder: false };
+}
+
+/** The rung alone, for every caller that only builds a round. */
+export function deriveTier(header: TapeHeader, ladder: PatternSet['ladder']): 0 | 1 | 2 {
+  return deriveRung(header, ladder).tier;
+}
+
+/** The rung's word, for any surface that would otherwise print a tier index. */
+export function rungWord(tier: Tier, set: PatternSet = DEFAULT_PATTERNS): string {
+  return set.ladder.rungs.find((r) => r.tier === tier)?.name ?? set.ladder.rungs[0]!.name;
+}
+
+/** What the rung changes, in words, for hover text and a picker's reason. */
+export function rungWhy(tier: Tier, set: PatternSet = DEFAULT_PATTERNS): string {
+  return set.ladder.rungs.find((r) => r.tier === tier)?.why ?? set.ladder.rungs[0]!.why;
 }
 
 export const DEFAULT_PATTERNS: PatternSet = loadPatterns({

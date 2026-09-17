@@ -167,7 +167,12 @@ describe('the header fields a cabinet paints', () => {
         const raw = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
         raw[field] = `acme ${word} labs`;
         expect(() => loadTape(raw), `${field}=${word}`).toThrow(TapeError);
-        expect(() => loadTape(raw), `${field}=${word}`).toThrow(new RegExp(word));
+        // The refusal names the field and the class, never the value: this
+        // message is rendered into a player-facing transcript, so quoting
+        // the needle put the needle on the surface.
+        expect(() => loadTape(raw), `${field}=${word}`).toThrow(
+          new RegExp(`^${field} carries a verdict word$`),
+        );
       }
       for (const fact of ['ghost_answered', 'menu_changed', 'held']) {
         const raw = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
@@ -184,7 +189,7 @@ describe('the header fields a cabinet paints', () => {
       expect(() => loadTape(raw), `${field} newline`).toThrow(/printable/);
       const long = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
       long[field] = 'a'.repeat(HEADER_MAX_CHARS + 1);
-      expect(() => loadTape(long), `${field} length`).toThrow(/characters/);
+      expect(() => loadTape(long), `${field} length`).toThrow(/longer than a header field/);
     }
   });
 
@@ -238,7 +243,7 @@ describe('the size of a tape the loader will take', () => {
       raw.rows[0]![field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
       expect(() => loadTape(raw), field).toThrow(TapeError);
       expect(() => loadTape(raw), field).toThrow(
-        `rows[0].${field} must be at most ${TEXT_MAX_CHARS} characters`,
+        `rows[0].${field} is longer than a tape field may be`,
       );
     }
   });
@@ -249,7 +254,7 @@ describe('the size of a tape the loader will take', () => {
       raw[field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
       expect(() => loadTape(raw), field).toThrow(TapeError);
       expect(() => loadTape(raw), field).toThrow(
-        new RegExp(`${field} must be at most ${TEXT_MAX_CHARS} characters`),
+        new RegExp(`${field} is longer than a tape field may be`),
       );
     }
   });

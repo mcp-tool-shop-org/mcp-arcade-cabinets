@@ -13,6 +13,7 @@ export type SfxName =
   | 'drop'
   | 'fog'
   | 'lamp'
+  | 'lampback'
   | 'phase'
   | 'end'
   | 'wave'
@@ -238,6 +239,13 @@ export function sfx(name: SfxName): Note[] {
         { at: 0, freq: 196, dur: 0.12, wave: 'square', gain: 0.14 },
         { at: 0.14, freq: 147, dur: 0.25, wave: 'square', gain: 0.12 },
       ];
+    case 'lampback':
+      // The lamp cue, read upward: a socket filling is not a socket going out.
+      return [
+        { at: 0, freq: 147, dur: 0.12, wave: 'square', gain: 0.12 },
+        { at: 0.14, freq: 196, dur: 0.12, wave: 'square', gain: 0.13 },
+        { at: 0.26, freq: 294, dur: 0.3, wave: 'triangle', gain: 0.14 },
+      ];
     case 'phase':
       return [
         { at: 0, freq: 262, dur: 0.1, wave: 'square', gain: 0.1 },
@@ -380,16 +388,20 @@ export function attach(
      * The next song, when the playing one has ended or there is none. The
      * shell draws from a bag it keeps in the browser; a runner leaves this
      * out and the pool rotates from the seed. Undefined means no song: the
-     * chiptune plays until one is handed back.
+     * chiptune plays until one is handed back. A draw may name the song it
+     * hands back, and then a refusal can name it too.
      */
-    nextBed?: () => MediaBed | undefined;
+    nextBed?: () => MediaBed | { bed: MediaBed; key: string } | undefined;
     burstRate?: number;
     /**
-     * A bed the browser would not play. The shell writes its status word off
-     * this — `music: chiptune` is a true thing to say once a file has been
-     * refused — and stops handing the same element back.
+     * A bed the browser would not play, and the key it was drawn under when
+     * the draw named one. Under the playlist a refusal is not silence: the
+     * next song plays, so the true status word is `one song will not play`,
+     * and only an exhausted pool is `music: chiptune`. The shell drops that
+     * key from its bag; before the key was carried it had to reverse-map the
+     * element's identity to know which song to drop.
      */
-    onBedFail?: (bed: MediaBed) => void;
+    onBedFail?: (bed: MediaBed, key: string | null) => void;
   } = {},
 ): AudioOut {
   const pool = opts.pool ?? BED_POOL;
@@ -474,6 +486,8 @@ export function attach(
    * silence the chiptune once a frame for a bed that will not play.
    */
   const refusedBeds = new WeakSet<MediaBed>();
+  /** The key a bed was drawn under, so a refusal can name the song. */
+  const bedKeys = new WeakMap<MediaBed, string>();
   const bedRefused = (bed: MediaBed) => {
     refusedBeds.add(bed);
     fades = fades.filter((f) => f.bed !== bed);
@@ -488,7 +502,7 @@ export function attach(
     // A rejection can land after the round has already moved on, in which
     // case this bed is not the one holding the level and nothing else changes.
     if (bed === currentBed) currentBed = undefined;
-    onBedFail?.(bed);
+    onBedFail?.(bed, bedKeys.get(bed) ?? null);
   };
   const bringIn = (bed: MediaBed, level: number, dur: number, rate: number) => {
     // Restart during END_FADE_S reuses this element; stale end() steps must not.
@@ -661,9 +675,11 @@ export function attach(
   };
   const poolBed = (): MediaBed | undefined => {
     for (let i = 0; i < pool.length; i++) {
-      const b = bedFor(pool[(poolAt + i) % pool.length]!);
+      const key = pool[(poolAt + i) % pool.length]!;
+      const b = bedFor(key);
       if (b) {
         poolAt = (poolAt + i) % pool.length;
+        bedKeys.set(b, key);
         return b;
       }
     }
@@ -682,9 +698,31 @@ export function attach(
     // rather than silence the chiptune for a bed that is not playing.
     return Boolean(currentBed);
   };
-  /** The next song: the shell's bag draw, or the pool's rotation. */
+  /**
+   * The next song: the shell's bag draw, or the pool's rotation — and the bag
+   * draw goes through the same refusal filter the pool draw does. It did not,
+   * and a bag re-serves every element once it empties and refills: a refused
+   * song was adopted again, the tick said it had a bed and silenced the bar,
+   * the rejection landed a microtask later and handed the round back. One
+   * music dropout per redraw, and with a short bag a stutter. The bag is
+   * walked a bounded number of times so a bag that is entirely refused falls
+   * to the pool rather than spinning.
+   */
+  const BAG_TRIES = 8;
   const nextSong = (): MediaBed | undefined => {
-    if (nextBed) return nextBed();
+    if (nextBed) {
+      for (let i = 0; i < BAG_TRIES; i++) {
+        const drawn = nextBed();
+        // The bag has nothing to hand back: that is silence and the chiptune
+        // plays, exactly as it did. The pool is not a fallback for an empty
+        // bag — only for a bag whose every draw has already been refused.
+        if (!drawn) return undefined;
+        const b = 'bed' in drawn ? drawn.bed : drawn;
+        if ('bed' in drawn) bedKeys.set(b, drawn.key);
+        if (!refusedBeds.has(b)) return b;
+      }
+      return poolBed();
+    }
     if (pool.length === 0) return undefined;
     if (currentBed) poolAt = (poolAt + 1) % pool.length;
     return poolBed();
@@ -695,6 +733,13 @@ export function attach(
    * is not read here at all: a song is not the wave's and not the boss's.
    */
   const keepSong = () => {
+    // Muted, the playlist holds where it is: the element is paused, so it
+    // does not end, so no song is drawn and none is spent out of the shell's
+    // bag while nobody can hear it. A player who mutes for ten minutes used
+    // to come back mid-song with several pieces gone that they never heard,
+    // which under the Director's one-piece-to-its-end rule is the one thing
+    // they can be sure of losing.
+    if (muted) return Boolean(currentBed);
     if (currentBed && currentBed.ended !== true) return true;
     const next = nextSong();
     if (!next) {
@@ -788,14 +833,41 @@ export function attach(
       endTimers.push(setTimeout(step, (END_FADE_S * 1000) / steps));
     },
     setMuted(m) {
+      const was = muted;
       muted = m;
       for (const b of live) b.muted = m;
       if (currentBed) currentBed.muted = m;
       if (m) {
         silenceBar();
         silenceSfx();
+        // Pause rather than run on: the element keeps its position, so unmute
+        // lands where mute left it.
+        if (currentBed && was !== m) {
+          try {
+            currentBed.pause();
+          } catch {
+            /* an element that never started has nothing to pause */
+          }
+        }
       } else {
         restoreBuses();
+        if (currentBed && was !== m) {
+          try {
+            const started = currentBed.play() as Promise<void> | void;
+            if (started && typeof (started as Promise<void>).catch === 'function') {
+              const resumed = currentBed;
+              void (started as Promise<void>).catch(() => {
+                try {
+                  bedRefused(resumed);
+                } catch {
+                  /* the round plays on; the refusal was already recorded */
+                }
+              });
+            }
+          } catch {
+            /* a resume the browser will not take falls to the next tick */
+          }
+        }
       }
     },
     setBedDuck(on) {

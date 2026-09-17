@@ -9,6 +9,7 @@ import {
   createRoundState,
   fillFor,
   isDecoy,
+  MAX_DT,
   prepassRound,
   revealOnHit,
   stepRound,
@@ -24,7 +25,30 @@ import {
   type PatternSet,
 } from '../src/patterns';
 import { flavorAt } from '../src/shift';
-import { FIELD, PARKING_Y, type Enemy, type Round, type RoundState } from '../src/types';
+import {
+  FIELD,
+  PARKING_Y,
+  type Enemy,
+  type Round,
+  type RoundInput,
+  type RoundState,
+} from '../src/types';
+
+/**
+ * Let `seconds` of round time pass. stepRound now caps a single step at
+ * MAX_DT — the clamp every caller used to keep its own copy of — so a test
+ * that wanted a second and a half of clock asks for it here instead of
+ * handing the state machine a step it will not integrate.
+ */
+function advance(state: RoundState, input: RoundInput, seconds: number): RoundState {
+  let left = seconds;
+  while (left > 1e-9 && !state.scene) {
+    const dt = Math.min(MAX_DT, left);
+    stepRound(state, input, dt);
+    left -= dt;
+  }
+  return state;
+}
 
 function enemy(over: Partial<Enemy> & Pick<Enemy, 'id' | 'lie'>): Enemy {
   return {
@@ -151,9 +175,9 @@ describe('stepRound', () => {
     expect(target.mode).toBe('dying');
     expect(target.alive).toBe(true);
     expect(target.revealed).toBe(false);
-    stepRound(state, { left: false, right: false, fire: false }, 0.1);
+    advance(state, { left: false, right: false, fire: false }, 0.1);
     expect(target.alive).toBe(true);
-    stepRound(state, { left: false, right: false, fire: false }, 0.06);
+    advance(state, { left: false, right: false, fire: false }, 0.06);
     expect(target.alive).toBe(false);
     expect(state.cleared).toEqual([]);
   });
@@ -238,7 +262,7 @@ describe('stepRound', () => {
 
   it('ends with a scene listing cleared lies, not a count', () => {
     const state = createRoundState(roundOf({ tapeId: 'bout_scene', duration: 0.05 }));
-    stepRound(state, { left: false, right: false, fire: false }, 0.1);
+    advance(state, { left: false, right: false, fire: false }, 0.1);
     expect(state.scene).not.toBeNull();
     expect(state.scene!.tapeId).toBe('bout_scene');
     expect(state.scene!.cleared).toEqual([]);
@@ -270,7 +294,7 @@ describe('stepRound', () => {
       }),
     );
     expect(state.enemies.filter((e) => e.sprite === 'fog')).toHaveLength(0);
-    stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    advance(state, { left: false, right: false, fire: false }, 0.2);
     expect(state.fog).not.toBeNull();
     expect(state.fog!.alive).toBe(true);
   });
@@ -320,8 +344,8 @@ describe('stepRound', () => {
     const poison = a.waveBounds.find((w) => w.atom.startsWith('poison.'));
     const until = (poison?.t0 ?? 8) + 4;
     while (sa.t < until && !sa.scene && !sb.scene) {
-      stepRound(sa, { left: false, right: false, fire: false }, 1 / 15);
-      stepRound(sb, { left: false, right: false, fire: false }, 1 / 15);
+      advance(sa, { left: false, right: false, fire: false }, 1 / 15);
+      advance(sb, { left: false, right: false, fire: false }, 1 / 15);
       const snap = (s: RoundState) =>
         s.boss
           ? `${s.boss.kind}:${s.boss.x.toFixed(3)}:${s.boss.y.toFixed(3)}:${s.boss.w.toFixed(3)}:${s.boss.h.toFixed(3)}:${s.boss.phase}`
@@ -352,8 +376,8 @@ describe('stepRound', () => {
     const poison = a.waveBounds.find((w) => w.atom.startsWith('poison.'));
     const until = (poison?.t1 ?? 20) + 2;
     while (sa.t < until && !sa.scene && !sb.scene) {
-      stepRound(sa, { left: false, right: false, fire: false }, 1 / 15);
-      stepRound(sb, { left: false, right: false, fire: false }, 1 / 15);
+      advance(sa, { left: false, right: false, fire: false }, 1 / 15);
+      advance(sb, { left: false, right: false, fire: false }, 1 / 15);
       if (sa.enemyShots.length) seenA.push(vel(sa));
       if (sb.enemyShots.length) seenB.push(vel(sb));
     }
@@ -404,7 +428,7 @@ describe('stepRound', () => {
     );
     expect(state.playerHitT).toBe(Number.POSITIVE_INFINITY);
     expect(state.bossKills).toBe(0);
-    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    advance(state, { left: false, right: false, fire: false }, 1.6);
     expect(state.boss).not.toBeNull();
     expect(state.boss!.hitT).toBe(Number.POSITIVE_INFINITY);
     state.boss!.hp = 1;
@@ -428,7 +452,7 @@ describe('stepRound', () => {
       }),
     );
     expect(state.bossDownT).toBe(Number.NEGATIVE_INFINITY);
-    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    advance(state, { left: false, right: false, fire: false }, 1.6);
     state.boss!.hp = 1;
     state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
     let guard = 0;
@@ -447,7 +471,7 @@ describe('stepRound', () => {
         waveBounds: [{ atom: 'protocol.unlisted_call', t0: 0, t1: 6 }],
       }),
     );
-    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    advance(state, { left: false, right: false, fire: false }, 1.6);
     expect(state.boss).not.toBeNull();
     expect(state.boss!.kind).toBe('doorman');
     const hp = state.boss!.hp;
@@ -469,7 +493,7 @@ describe('stepRound', () => {
           waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 45 }],
         }),
       );
-      stepRound(state, { left: false, right: false, fire: false }, 1.6);
+      advance(state, { left: false, right: false, fire: false }, 1.6);
       if (half) state.boss!.hp = Math.floor(state.boss!.hp / 2) - 1;
       const marks: number[] = [];
       let shots = 0;
@@ -498,7 +522,7 @@ describe('stepRound', () => {
         waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 5 }],
       }),
     );
-    stepRound(state, { left: false, right: false, fire: false }, 1.6);
+    advance(state, { left: false, right: false, fire: false }, 1.6);
     expect(state.boss).not.toBeNull();
     state.boss!.hp = 1;
     state.player.x = state.boss!.x + state.boss!.w / 2 - state.player.w / 2;
@@ -509,7 +533,7 @@ describe('stepRound', () => {
     }
     expect(state.boss).toBeNull();
     while (state.t < 4.5) {
-      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+      advance(state, { left: false, right: false, fire: false }, 0.2);
     }
     expect(state.t).toBeLessThan(5);
     expect(state.boss).toBeNull();
@@ -564,7 +588,7 @@ describe('stepRound', () => {
     expect(state.caption!.text).not.toMatch(/\d|pass|fail|score|tools_list|follow_through/i);
     expect(state.boss).toBeNull();
     while (state.t < 4.05) {
-      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+      advance(state, { left: false, right: false, fire: false }, 0.2);
     }
     expect(state.caption!.kind).toBe('wave');
     expect(state.caption!.text).toBe('poison');
@@ -618,13 +642,13 @@ describe('stepRound', () => {
     revealOnHit(trophy);
     expect(trophy.mode).toBe('caught');
     while (state.t < 4.05) {
-      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+      advance(state, { left: false, right: false, fire: false }, 0.2);
     }
     expect(honest.mode).toBe('exit');
     expect(trophy.mode).toBe('caught');
     const yExit = honest.y;
     const parked = trophy.y;
-    stepRound(state, { left: false, right: false, fire: false }, 0.2);
+    advance(state, { left: false, right: false, fire: false }, 0.2);
     expect(trophy.mode).toBe('caught');
     expect(Math.abs(trophy.y - parked)).toBeLessThan(1);
     expect(honest.y).toBeLessThan(yExit);
@@ -661,7 +685,7 @@ describe('stepRound', () => {
     expect(state.boss).toBeNull();
     expect(grid.tEnter).toBe(Number.POSITIVE_INFINITY);
     while (state.t < 1.7) {
-      stepRound(state, { left: false, right: false, fire: false }, 0.1);
+      advance(state, { left: false, right: false, fire: false }, 0.1);
     }
     expect(state.boss).not.toBeNull();
     expect(state.boss!.kind).toBe('whisperer');
@@ -708,12 +732,12 @@ describe('stepRound', () => {
     const stands = make();
     while (stands.t < 11.5) {
       stands.lives = stands.maxLives;
-      stepRound(stands, { left: false, right: false, fire: false }, 0.1);
+      advance(stands, { left: false, right: false, fire: false }, 0.1);
       expect(stands.boss, `t=${stands.t.toFixed(1)} wave=${stands.wave}`).toBeNull();
     }
     while (stands.t < 12.6) {
       stands.lives = stands.maxLives;
-      stepRound(stands, { left: false, right: false, fire: false }, 0.1);
+      advance(stands, { left: false, right: false, fire: false }, 0.1);
     }
     expect(
       stands.boss,
@@ -724,11 +748,11 @@ describe('stepRound', () => {
     const downed = make();
     while (downed.t < 3) {
       downed.lives = downed.maxLives;
-      stepRound(downed, { left: false, right: false, fire: false }, 0.1);
+      advance(downed, { left: false, right: false, fire: false }, 0.1);
     }
     expect(downed.boss).toBeNull();
     for (const enemy of downed.enemies) enemy.alive = false;
-    stepRound(downed, { left: false, right: false, fire: false }, 0.1);
+    advance(downed, { left: false, right: false, fire: false }, 0.1);
     expect(downed.boss).not.toBeNull();
     expect(downed.boss!.kind).toBe('menu');
   });
@@ -772,7 +796,7 @@ describe('stepRound', () => {
       }),
     );
     while (state.t < 1.7) {
-      stepRound(state, { left: false, right: false, fire: false }, 0.1);
+      advance(state, { left: false, right: false, fire: false }, 0.1);
     }
     const grids = state.enemies.filter((e) => e.sprite === 'grid');
     expect(grids).toHaveLength(2);
@@ -835,7 +859,7 @@ describe('stepRound', () => {
     ) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     let checked = 0;
     while (!state.scene && state.t < state.duration) {
-      stepRound(state, { left: false, right: false, fire: false }, 1 / 15);
+      advance(state, { left: false, right: false, fire: false }, 1 / 15);
       const hovering = state.enemies.filter(
         (e) => e.alive && e.mode === 'hover' && e.sprite === 'grid' && state.t >= e.tEnter,
       );
@@ -987,7 +1011,7 @@ describe('drops', () => {
         }),
       );
     const run = (state: RoundState) => {
-      stepRound(state, { left: false, right: false, fire: false }, 1.6);
+      advance(state, { left: false, right: false, fire: false }, 1.6);
       expect(state.boss).not.toBeNull();
       state.boss!.hp = 0;
       stepRound(state, { left: false, right: false, fire: false }, 1 / 30);
@@ -1006,7 +1030,7 @@ describe('drops', () => {
     const beforeY = lampA[0]!.y;
     const beforeX = lampA[0]!.x;
     a.player.x = 40;
-    stepRound(a, { left: false, right: false, fire: false }, 0.2);
+    advance(a, { left: false, right: false, fire: false }, 0.2);
     expect(a.drops[0]!.y).toBeGreaterThan(beforeY);
     expect(a.drops[0]!.x).toBeCloseTo(beforeX, 5);
   });
@@ -1124,13 +1148,21 @@ describe('voice', () => {
     expect(a.caption!.line).toBeTruthy();
     expect(a.caption!.line).not.toMatch(FORBIDDEN_CAPTION);
     expect(a.caption!.line).not.toMatch(/\blie\b|\bfact\b|followed|held/i);
-    while (a.t < 1.7) stepRound(a, { left: false, right: false, fire: false }, 0.1);
-    while (b.t < 1.7) stepRound(b, { left: false, right: false, fire: false }, 0.1);
+    while (a.t < 1.7) advance(a, { left: false, right: false, fire: false }, 0.1);
+    while (b.t < 1.7) advance(b, { left: false, right: false, fire: false }, 0.1);
     expect(a.boss).not.toBeNull();
+    // The boss's card waits for the wave card rather than writing over it, so
+    // both runs are stepped until it takes the field; they must agree.
+    const bossPool = DEFAULT_PATTERNS.voice.boss.whisperer;
+    const NO = { left: false, right: false, fire: false };
+    let guard = 0;
+    while (guard++ < 400 && !bossPool.includes(a.caption?.line ?? '')) stepRound(a, NO, 1 / 30);
+    guard = 0;
+    while (guard++ < 400 && !bossPool.includes(b.caption?.line ?? '')) stepRound(b, NO, 1 / 30);
     expect(a.caption!.line).toBe(b.caption!.line);
     expect(a.caption!.line).not.toBe('poison');
-    expect(DEFAULT_PATTERNS.voice.boss.whisperer).toContain(a.caption!.line);
-    while (!a.scene) stepRound(a, { left: false, right: false, fire: false }, 0.5);
+    expect(bossPool).toContain(a.caption!.line);
+    while (!a.scene) advance(a, { left: false, right: false, fire: false }, 0.5);
     expect(a.scene!.line).toBeTruthy();
     expect(a.scene!.line).not.toMatch(FORBIDDEN_CAPTION);
   });
@@ -1251,7 +1283,7 @@ describe('parallelism', () => {
     );
     park(state, state.enemies[0]!);
     for (let i = 0; i < 90; i++) {
-      stepRound(state, { left: false, right: false, fire: false }, 0.2);
+      advance(state, { left: false, right: false, fire: false }, 0.2);
     }
     expect(state.parallelism).toBe(false);
     expect(state.enemies.some((e) => isDecoy(e))).toBe(false);
@@ -1289,6 +1321,22 @@ describe('the ollama seats in the sim', () => {
       state.boss?.kind,
       `t=${state.t.toFixed(1)} wave=${state.wave} scene=${String(state.scene)} guard=${guard}`,
     ).toBe(kind);
+  }
+
+  /**
+   * Step until the boss's own card is on the field. The card waits for a
+   * wave card that is still being read rather than writing over it, so a
+   * test that wants to read the boss's line waits with it.
+   */
+  function toBossCard(state: RoundState, kind: 'whisperer' | 'menu' | 'doorman' | 'archivist') {
+    const pool = DEFAULT_PATTERNS.voice.boss[kind];
+    let guard = 0;
+    while (guard++ < 600) {
+      const line = state.caption?.line;
+      if (line && pool.includes(line)) return line;
+      tick(state);
+    }
+    throw new Error('the boss card never took the field');
   }
 
   /** Step until the pending intent is spent; return the shots that beat spawned. */
@@ -1427,29 +1475,32 @@ describe('the ollama seats in the sim', () => {
     const s = createRoundState(round);
     s.bossLine = { wave, kind: 'whisperer', index: 5 };
     toBoss(s, 'whisperer');
-    expect(s.caption?.kind).toBe('wave');
-    expect(s.caption?.line).toBe(lines[5]);
     expect(s.bossLine).toBeNull();
+    expect(toBossCard(s, 'whisperer')).toBe(lines[5]);
+    expect(s.caption?.kind).toBe('wave');
 
     const t = createRoundState(seatedRound());
     t.bossLine = { wave, kind: 'menu', index: 5 };
     toBoss(t, 'whisperer');
-    expect(t.caption?.line).not.toBe(lines[5]);
-    expect(lines).toContain(t.caption?.line);
     expect(t.bossLine).toBeNull();
+    const tLine = toBossCard(t, 'whisperer');
+    expect(tLine).not.toBe(lines[5]);
+    expect(lines).toContain(tLine);
 
     const u = createRoundState(seatedRound());
     u.bossLine = { wave, kind: 'whisperer', index: 99 };
     toBoss(u, 'whisperer');
-    expect(lines).toContain(u.caption?.line);
+    expect(lines).toContain(toBossCard(u, 'whisperer'));
   });
 
   it('lands as an aside at its time, gives way to a wave card, and is dropped with the boss', () => {
     const s = createRoundState(seatedRound());
     toBoss(s, 'whisperer');
     expect(s.boss?.alive).toBe(true);
-    // The spawn's wave card is up: the line waits for it.
-    s.bossSay = { text: 'Hush, the plate is listening.', at: s.t };
+    // The spawn's wave card is up: the line waits for it. Its window is set
+    // wide enough to cover the wait; a line that has to wait longer than its
+    // window is dropped rather than said late, which the next case pins.
+    s.bossSay = { text: 'Hush, the plate is listening.', at: s.t, until: s.t + 30 };
     tick(s);
     expect(s.caption?.kind).toBe('wave');
     expect(s.bossSay).not.toBeNull();
@@ -1459,13 +1510,13 @@ describe('the ollama seats in the sim', () => {
     expect(s.caption?.text).toBe('Hush, the plate is listening.');
     expect(s.bossSay).toBeNull();
     // A line for later waits on the clock.
-    s.bossSay = { text: 'Later.', at: s.t + 1 };
+    s.bossSay = { text: 'Later.', at: s.t + 1, until: s.t + 30 };
     for (let i = 0; i < 20; i++) tick(s);
     expect(s.bossSay?.text).toBe('Later.');
     for (let i = 0; i < 20; i++) tick(s);
     expect(s.caption?.text).toBe('Later.');
     // A line whose boss is gone is dropped.
-    s.bossSay = { text: 'Gone.', at: s.t };
+    s.bossSay = { text: 'Gone.', at: s.t, until: s.t + 30 };
     s.boss!.hp = 0;
     tick(s);
     tick(s);
@@ -1692,7 +1743,7 @@ describe('a wave the clock jumped over', () => {
     for (const e of state.enemies) park(state, e);
     // One step longer than the first two spans together: wave 0 and wave 1
     // are both crossed inside a single tick.
-    stepRound(state, NONE, 0.2);
+    advance(state, NONE, 0.2);
     expect(state.wave).toBe(2);
     for (const atom of ['inspect.a', 'inspect.b']) {
       const flying = state.enemies.filter(
@@ -2413,5 +2464,175 @@ describe('formation fire comes from above', () => {
     expect(shotsIn(lowNoLever)).toBeGreaterThan(0);
     for (const k of ['1', '2', '3'] as const)
       expect(DEFAULT_PATTERNS.fire.tiers[k].formation!.fromAbove).toBeGreaterThan(0);
+  });
+});
+
+// Stage C (humanization). Four things the sim did silently, and one it did
+// over the player's reading: the dt it was handed, the lamp it took, the drop
+// it applied, the ending it did not name, and the boss card it wrote over a
+// wave card that was still on the field.
+describe('what the round says, and the step it is asked to take', () => {
+  const NO: RoundInput = { left: false, right: false, fire: false };
+
+  function bossRound(): Round {
+    const file = path.resolve(__dirname, '../../../fixtures/tapes/naive-ndjson.tape.json');
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Tape;
+    return prepassRound(loadTape(raw), { seconds: 150, seed: 0, tier: 1 });
+  }
+
+  function whispererRound(): Round {
+    // The Whisperer's grids come out from under it, so it takes the field on
+    // its own beat rather than waiting for a grid to be downed.
+    return roundOf({
+      tapeId: 'bout_card',
+      duration: 20,
+      seed: 42,
+      waveBounds: [{ atom: 'poison.follow_through', t0: 0, t1: 18 }],
+      beats: [
+        {
+          id: 'poison.follow_through:grid:0',
+          t: 0,
+          x: 80,
+          sprite: 'grid',
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'poison.follow_through',
+            method: 'tools/call',
+            note: 'tools/call echo',
+            index: 0,
+          },
+        },
+      ],
+    });
+  }
+
+  it('holds the wave card for its whole beat even when a boss takes the field', () => {
+    // The boss takes the field at the wave hold and the card holds longer, so
+    // spawnBoss used to replace the first authored line of every wave after
+    // about a second and a half of its own beat — two sentences of prose
+    // under one headline word, the second written over the first.
+    const state = createRoundState(whispererRound());
+    stepRound(state, NO, 1 / 30);
+    const wavePools = Object.values(DEFAULT_PATTERNS.voice.wave).flat();
+    const bossPools = Object.values(DEFAULT_PATTERNS.voice.boss).flat();
+    const opened = state.caption!.line!;
+    expect(wavePools).toContain(opened);
+    let sawBoss = false;
+    let guard = 0;
+    let heldUntil = 0;
+    // Through the whole of the card's own hold the line does not change, so
+    // the boss's line is never on the field while the card is.
+    while (guard++ < 400 && state.caption && state.caption.line === opened) {
+      heldUntil = state.t;
+      if (state.boss && state.boss.alive) sawBoss = true;
+      expect(bossPools).not.toContain(state.caption.line);
+      stepRound(state, NO, 1 / 30);
+    }
+    // The boss took the field on its own beat, well inside the card's hold.
+    expect(sawBoss).toBe(true);
+    // And the card kept its whole beat: the Director's hold, not the boss's.
+    expect(heldUntil).toBeGreaterThan(2.3);
+  });
+
+  it('lands the held boss card once the field is clear, still in the boss pool', () => {
+    const state = createRoundState(bossRound());
+    const bossPools = Object.values(DEFAULT_PATTERNS.voice.boss).flat();
+    let guard = 0;
+    let landed: string | null = null;
+    while (guard++ < 1200 && !state.scene && landed === null) {
+      for (const e of state.enemies) e.alive = false;
+      state.lives = state.maxLives;
+      stepRound(state, NO, 1 / 30);
+      const line = state.caption?.line;
+      if (line && bossPools.includes(line)) landed = line;
+    }
+    expect(landed).not.toBeNull();
+    expect(state.caption!.kind).toBe('wave');
+  });
+
+  it('drops a dt it cannot integrate and caps the one it can', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_dt', duration: 40 }));
+    for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, -1, 0]) {
+      stepRound(state, NO, bad);
+      expect(Number.isFinite(state.t)).toBe(true);
+      expect(state.t).toBe(0);
+    }
+    // A caller that asks for a whole second gets MAX_DT of clock, not a
+    // second of integration with a diver crossing the hitbox inside it.
+    stepRound(state, NO, 1);
+    expect(state.t).toBeCloseTo(MAX_DT, 10);
+  });
+
+  it('says a word when a lamp goes, keyed by what took it', () => {
+    const pools = DEFAULT_PATTERNS.voice.lamp;
+    const state = createRoundState(roundOf({ tapeId: 'bout_lamp', duration: 40 }));
+    state.lives = 4;
+    state.grace = 0;
+    state.enemyShots.push({
+      x: state.player.x,
+      y: state.player.y,
+      w: 4,
+      h: 4,
+      vx: 0,
+      vy: 10,
+      dead: false,
+    });
+    stepRound(state, NO, 0.01);
+    expect(state.lives).toBe(3);
+    expect(state.caption?.kind).toBe('lamp');
+    expect(pools.shot).toContain(state.caption!.text);
+    expect(state.caption!.text).not.toMatch(FORBIDDEN_CAPTION);
+    // The four causes are four pools, so a player can learn what is killing
+    // them; every line in every one is clean.
+    for (const cause of ['hazard', 'dive', 'shelf', 'shot'] as const) {
+      expect(pools[cause].length).toBeGreaterThan(0);
+      for (const line of pools[cause]) expect(line).not.toMatch(FORBIDDEN_CAPTION);
+    }
+  });
+
+  it('says a word on a caught drop and again when a timed one runs out', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_drop', duration: 40 }));
+    const spec = DEFAULT_PATTERNS.drops.spread;
+    state.drops.push({
+      kind: 'spread',
+      x: state.player.x,
+      y: state.player.y,
+      w: spec.box.w,
+      h: spec.box.h,
+      alive: true,
+    });
+    stepRound(state, NO, 0.01);
+    expect(state.spreadT).toBeGreaterThan(0);
+    expect(DEFAULT_PATTERNS.voice.drops.catch.spread).toContain(state.caption!.text);
+    let guard = 0;
+    while (guard++ < 4000 && state.spreadT > 0) stepRound(state, NO, MAX_DT);
+    // The tick that spends the last of it says so rather than leaving the
+    // player to discover the fan has closed.
+    expect(DEFAULT_PATTERNS.voice.drops.ends.spread).toContain(state.caption!.text);
+  });
+
+  it('names the ending on the closing scene, differently for the two endings', () => {
+    const byTime = createRoundState(roundOf({ tapeId: 'bout_end_time', duration: 1 }));
+    while (!byTime.scene) stepRound(byTime, NO, MAX_DT);
+    expect(byTime.ended).toBe('time');
+    expect(DEFAULT_PATTERNS.voice.ending.time).toContain(byTime.scene!.ending);
+
+    const byLamps = createRoundState(roundOf({ tapeId: 'bout_end_lamps', duration: 40 }));
+    byLamps.lives = 0;
+    stepRound(byLamps, NO, MAX_DT);
+    expect(byLamps.ended).toBe('lamps');
+    expect(DEFAULT_PATTERNS.voice.ending.lamps).toContain(byLamps.scene!.ending);
+    expect(byLamps.scene!.ending).not.toBe(byTime.scene!.ending);
+  });
+
+  it('drops a seat line whose window closed instead of saying it late', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_say', duration: 40 }));
+    state.bossSay = { text: 'Now, while the plate is open.', at: 0, until: 0.2 };
+    // The field is clear but the clock has run past the window.
+    let guard = 0;
+    while (guard++ < 40 && state.t <= 0.3) stepRound(state, NO, MAX_DT);
+    expect(state.bossSay).toBeNull();
+    expect(state.caption?.text).not.toBe('Now, while the plate is open.');
   });
 });

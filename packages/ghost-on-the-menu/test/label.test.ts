@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { loadTape, type Fact, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { labelTape } from '../src/label';
+import { DEFAULT_PATTERNS, type PatternSet } from '../src/patterns';
 
 const DIR = path.resolve(__dirname, '../../../fixtures/tapes');
 
@@ -67,5 +68,42 @@ describe('labelTape', () => {
     expect(fixture.label).not.toBe(live.label);
     expect(fixture.why).not.toBe(live.why);
     expect(fixture.why).not.toBe(framed.why);
+  });
+});
+
+// Stage C. The picker's word used to map BOTH the gentlest rung and the
+// harshest to 'fixture', so a tier-three tape — one lamp, hazards on — was
+// announced as the easiest thing on the menu.
+describe('the picker names every rung', () => {
+  const LADDER = DEFAULT_PATTERNS.ladder;
+
+  it('gives all four rungs a word of their own', () => {
+    const words = new Set<string>();
+    for (const rung of LADDER.rungs) {
+      const tape = { ...load('naive-ndjson') };
+      const forced: PatternSet = {
+        ...DEFAULT_PATTERNS,
+        ladder: { ...LADDER, derive: [{ tier: rung.tier as 0 | 1 | 2, offLadder: true }] },
+      };
+      const out = labelTape(tape, forced);
+      expect(out.label).toBeTruthy();
+      expect(words.has(out.label), out.label).toBe(false);
+      words.add(out.label);
+      expect(out.why).not.toMatch(FORBIDDEN);
+    }
+    // Four rungs, four words. The harshest used to share the gentlest's.
+    expect(words.size).toBe(LADDER.rungs.length);
+    expect(words.size).toBe(4);
+  });
+
+  it('says so when the target is not on the ladder', () => {
+    const tape = load('naive-ndjson');
+    const off = labelTape({ ...tape, target_kind: 'websocket' });
+    expect(off.why).toMatch(/not on the ladder/);
+    expect(off.why).not.toMatch(FORBIDDEN);
+    const on = labelTape(tape);
+    expect(on.why).not.toMatch(/not on the ladder/);
+    // And a tape that IS on the ladder says what the rung changes.
+    expect(on.why).toContain(DEFAULT_PATTERNS.ladder.rungs[0]!.why);
   });
 });

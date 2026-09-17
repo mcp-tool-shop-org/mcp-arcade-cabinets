@@ -24,11 +24,13 @@ import {
   DEFAULT_PATTERNS,
   deriveTier,
   intensityAt,
+  rungWord,
+  type LineBags,
   type PatternSet,
   type Tier,
 } from './patterns';
 import { prepassRound } from './prepass';
-import { createRoundState, stepRound } from './sim';
+import { createRoundState, stepRound, watchSaid } from './sim';
 import {
   CHECK_SPACE,
   codeWords,
@@ -69,6 +71,15 @@ export type DensityBand = 'thin' | 'even' | 'thick';
 /** A tape on the menu, named by header words only. Never a fact (G32). */
 export interface EndlessCandidate {
   name: string;
+  /**
+   * The name as a screen may show it: stripped, and made distinct against the
+   * rest of this menu. The strip replaces every needle with a space and a
+   * digit is a needle, so two mounted tapes called `run-1` and `run-2` both
+   * rendered as the same row and a name that was all digits rendered as
+   * nothing at all. The pick is still resolved on `name`; this is what a
+   * reader — and, from G32, a seat picking BY NAME off this menu — sees.
+   */
+  display: string;
   /** Index into the flavor list; the flavor this candidate would be played with. */
   flavorIndex: number;
   role: FlavorRole;
@@ -172,11 +183,25 @@ export interface EndlessOpts {
 export interface EndlessRunOpts extends EndlessOpts {
   /** The bot for a round, as `botFor(name, round)` gives it. */
   bot: (round: Round) => (state: RoundState) => RoundInput;
+  /**
+   * The voice pools' bags for the WHOLE run. Endless is the mode a player
+   * sits in longest and it used to start fresh bags on every call: forty
+   * calls of four waves is about a hundred and sixty wave-card draws out of
+   * pools of thirty-one, each call restarting the walk, so the Director's
+   * rule that a line is not heard again until its pool has been heard held
+   * inside one round and was abandoned across the run. A caller that already
+   * owns a bag store (the shell, across a session) hands its own in; absent,
+   * the run makes one and keeps it.
+   */
+  bags?: LineBags;
 }
 
 /** What a run refuses when it is asked for at the gentlest rung. */
-export const ENDLESS_NO_TIER_ZERO =
-  'endless: the gentlest rung cannot take a last lamp, so a run there would never end; start at seat';
+export const ENDLESS_NO_TIER_ZERO = `endless: the ${rungWord(0)} rung cannot take a last lamp, so a run there would never end; start at ${rungWord(1)}`;
+
+/** What a run refuses when a tape on the roster has no name a screen can show. */
+export const ENDLESS_NAMELESS_TAPE =
+  'endless: a tape on the roster has no name the screen can show';
 
 /**
  * The difficulty an endless run is taken at when the picker says nothing.
@@ -202,11 +227,39 @@ const PLACES = [
   'twelfth',
 ];
 
-/** The call's place in words. Past the table it is simply another call. */
-export function placeWord(index: number): string {
-  const word = PLACES[index];
-  return word ? `the ${word} call` : 'another call';
+/** The highest step in a word ladder this call index has reached, or null. */
+function stepWord(steps: readonly { at: number; word: string }[], index: number): string | null {
+  let word: string | null = null;
+  for (const step of steps) if (index >= step.at) word = step.word;
+  return word;
 }
+
+/**
+ * The call's place in words. Past the named ordinals it climbs the lever'd
+ * ladder in endless.json rather than saturating at one constant: a run of
+ * fifty calls used to read, in words, exactly like a run of thirteen.
+ */
+export function placeWord(index: number, set: PatternSet = DEFAULT_PATTERNS): string {
+  const word = PLACES[index];
+  if (word) return `the ${word} call`;
+  return stepWord(set.endless.progress.places, index) ?? 'another call';
+}
+
+/**
+ * The reach's word once the climb is at its ceiling: the second word ladder,
+ * so 'the ceiling itself' stops being the last thing the run ever says.
+ */
+export function beyondWord(index: number, set: PatternSet = DEFAULT_PATTERNS): string {
+  return stepWord(set.endless.progress.beyond, index) ?? 'the ceiling itself';
+}
+
+/**
+ * A breather's own word for the climb. The trough flavor's telegraph already
+ * says the call is a rest, and the header carried the same phrase again in
+ * this slot and a third time in 'no return fire'; the climb being HELD is a
+ * different thing to say than the call being restful.
+ */
+export const BREATHER_REACH = 'the climb is held where it was';
 
 /**
  * How much a tape said on the wire, as a band. Header-shaped: it counts rows,
@@ -367,6 +420,7 @@ function menuFor(
       return {
         candidate: {
           name: entry.name,
+          display: strip(entry.name),
           flavorIndex,
           role,
           band,
@@ -396,7 +450,34 @@ function menuFor(
     out.push(s.candidate);
     if (out.length >= endless.menu.candidates) break;
   }
-  return out;
+  return distinctDisplays(out, set);
+}
+
+/**
+ * Every row on a menu gets a name no other row on it shares. The strip
+ * replaces each needle with a space and a digit is a needle, so `run-1` and
+ * `run-2` both came out as the same row. A collision takes a word from the
+ * code's own noun list — a word, never a digit — so the two rows are told
+ * apart in the grammar the cabinet already speaks. The pick is resolved on
+ * the raw name, so nothing about the run changes; only the surface does.
+ */
+function distinctDisplays(candidates: EndlessCandidate[], set: PatternSet): EndlessCandidate[] {
+  const nouns = [...set.shift.words.even, ...set.shift.words.odd];
+  const taken = new Set<string>();
+  return candidates.map((c, i) => {
+    let display = c.display;
+    for (let n = 0; taken.has(display) && n <= nouns.length; n++) {
+      const noun = nouns[(hashWords(c.name) + i + n) % nouns.length]!;
+      display = `${c.display} ${noun}`;
+    }
+    taken.add(display);
+    if (display === c.display) return c;
+    // The header's first word IS the name, so it carries the same fix: a
+    // header row and a menu row must not disagree about which tape this is.
+    const header = [...c.header];
+    if (header[0] === c.display) header[0] = display;
+    return { ...c, display, header };
+  });
 }
 
 /**
@@ -410,6 +491,12 @@ export function endlessPlan(
   opts: EndlessOpts & { calls: number },
 ): EndlessPlanCall[] {
   if (roster.length === 0) throw new Error('endless: empty roster');
+  // A name that strips to nothing is refused here rather than at paint: a
+  // header row with a server and a policy and no name is not a menu row, and
+  // from G32 the seat picks a tape BY NAME off this menu.
+  for (const entry of roster) {
+    if (strip(entry.name) === '') throw new Error(ENDLESS_NAMELESS_TAPE);
+  }
   const set = opts.patterns ?? DEFAULT_PATTERNS;
   const seed = opts.seed % SEED_SPACE;
   const order = rosterOrder(roster, seed);
@@ -432,11 +519,15 @@ export function endlessPlan(
     seen.roles.set(pick.role, (seen.roles.get(pick.role) ?? 0) + 1);
     out.push({
       index,
-      place: placeWord(index),
+      place: placeWord(index, set),
       breather,
       reach,
       approach: approachAt(index, set),
-      reachWord: breather ? 'a rest between peaks' : reachWord(reach, approachAt(index, set)),
+      reachWord: breather
+        ? BREATHER_REACH
+        : reach >= CLIMB_MAX
+          ? beyondWord(index, set)
+          : reachWord(reach, approachAt(index, set)),
       flavorIndex: pick.flavorIndex,
       role: pick.role,
       candidates,
@@ -550,6 +641,8 @@ function playCall(
     chain: number;
     set: PatternSet;
     bot: (round: Round) => (state: RoundState) => RoundInput;
+    /** The run's bags, so the no-repeat rule holds across calls, not inside one. */
+    bags: LineBags;
   },
 ): CallResult {
   const { tier, set } = opts;
@@ -565,12 +658,13 @@ function playCall(
   // with the pool as both its lamps and its bezel length, so nothing here
   // writes `state.lives` after the fact or once a tick.
   const maxLamps = opts.pool;
-  const state = createRoundState(round, { lives: Math.min(maxLamps, Math.max(1, opts.lamps)) });
+  const state = createRoundState(round, {
+    lives: Math.min(maxLamps, Math.max(1, opts.lamps)),
+    bags: opts.bags,
+  });
   const score = set.endless.score;
   const input = opts.bot(round);
-  const said: { at: number; kind: string; text: string }[] = [];
-  let lastCaption = '';
-  let lastBoss = '';
+  const watcher = watchSaid();
   let chain = Math.min(score.chainCap, Math.max(1, opts.chain));
   let catches = 0;
   let drops = 0;
@@ -625,27 +719,10 @@ function playCall(
     const alive = state.hazards.filter((h) => h.alive).length;
     if (alive > hazardPeak) hazardPeak = alive;
 
-    const boss = state.boss && state.boss.alive ? state.boss.kind : '';
-    if (boss !== lastBoss) {
-      if (boss !== '') said.push({ at: state.t, kind: 'boss', text: `${boss} takes the field` });
-      lastBoss = boss;
-    }
-    const cap = state.caption;
-    const key = cap ? `${cap.kind ?? 'wave'}|${cap.text}|${cap.line ?? ''}` : '';
-    if (key !== lastCaption) {
-      if (cap) {
-        // One row a card: the word and its furniture line together, the way
-        // the shell paints them, so the transcript reads as the screen did.
-        said.push({
-          at: state.t,
-          kind: cap.kind ?? 'wave',
-          text: cap.line ? `${cap.text} — ${cap.line}` : cap.text,
-        });
-      }
-      lastCaption = key;
-    }
+    watcher.see(state);
   }
-  if (state.scene?.line) said.push({ at: state.t, kind: 'scene', text: state.scene.line });
+  watcher.see(state);
+  const said = watcher.rows();
   // What the round's own climb asked of the schedule, so the band can prove
   // the ceiling held without reaching inside the sim.
   const spec = lit.parallelism.tiers[String(tier) as '0' | '1' | '2' | '3'];
@@ -693,6 +770,9 @@ export function runEndless(roster: readonly EndlessTape[], opts: EndlessRunOpts)
   const byName = new Map(roster.map((r) => [r.name, r]));
   const endless = set.endless;
   const calls: EndlessCall[] = [];
+  // One bag store for the whole run: a line is not heard again until its pool
+  // has been heard, across the calls and not merely inside one.
+  const bags: LineBags = opts.bags ?? {};
   const lines: EndlessLines = { catches: 0, bosses: 0, calls: 0 };
   let score = 0;
   let chain = 1;
@@ -709,6 +789,7 @@ export function runEndless(roster: readonly EndlessTape[], opts: EndlessRunOpts)
       chain,
       set,
       bot: opts.bot,
+      bags,
     });
     // The call's end banks the chain's value, with a call bonus that rises
     // with the reach (Downwell's cash-out). Lasting long pays because later
@@ -814,18 +895,26 @@ function rosterNames(roster: readonly EndlessTape[] | readonly string[]): string
  */
 export function endlessWords(run: EndlessRun, set: PatternSet = DEFAULT_PATTERNS): string[] {
   const out: string[] = [];
+  const last = run.calls[run.calls.length - 1];
   for (const call of run.calls) {
+    // De-duplicated: a breather forces the trough flavor, whose telegraph and
+    // whose reach word and whose 'no return fire' were three ways of saying
+    // one thing, and the header printed all three.
     const head = [
-      call.place,
-      ...call.pick.header,
-      set.shift.flavors[call.flavorIndex]?.telegraph ?? '',
-      call.reachWord,
-      call.breather ? 'no return fire' : '',
-    ]
-      .map(strip)
-      .filter(Boolean);
+      ...new Set(
+        [
+          call.place,
+          ...call.pick.header,
+          set.shift.flavors[call.flavorIndex]?.telegraph ?? '',
+          call.reachWord,
+          call.breather ? 'no return fire' : '',
+        ]
+          .map(strip)
+          .filter(Boolean),
+      ),
+    ];
     out.push(head.join(' · '));
-    out.push(`  on the menu: ${call.candidates.map((c) => strip(c.name)).join(', ')}`);
+    out.push(`  on the menu: ${call.candidates.map((c) => c.display).join(', ')}`);
     out.push(`  the pick came from the seed${call.seeded ? '' : ' and the seat'}`);
     out.push(
       `  the tell: ${call.tell === null ? 'the seat has not sat down yet' : strip(call.tell)}`,
@@ -834,11 +923,22 @@ export function endlessWords(run: EndlessRun, set: PatternSet = DEFAULT_PATTERNS
       const text = strip(line.text);
       if (text) out.push(`  ${line.kind} · ${text}`);
     }
-    out.push(
-      `  ${call.clean ? 'the call ran clean and a lamp comes back' : 'a lamp went'}; the chain reads ${call.chainWord}`,
-    );
+    // The refill is read off the record, not guessed from `clean`: a clean
+    // call taken at a full pool gives no lamp back, which is the ordinary
+    // case and includes the first call of every run. And the call that ends
+    // the run says so in its own line rather than leaving the player to find
+    // out from a footer two rows down.
+    const ran =
+      call === last && run.ended === 'lamps'
+        ? 'the last lamp went'
+        : call.lampsBack > 0
+          ? 'the call ran clean and a lamp comes back'
+          : call.clean
+            ? 'the call ran clean'
+            : 'a lamp went';
+    out.push(`  ${ran}; the chain reads ${call.chainWord}`);
   }
-  out.push(`the run: ${strip(run.rank)}`);
+  out.push(`the run: ${strip(run.rank)}, at ${strip(rungWord(run.difficulty, set))}`);
   out.push(`the run ended ${run.ended === 'lamps' ? 'at the last lamp' : 'with lamps to spare'}`);
   out.push(`the code: ${run.code}`);
   return out.filter((l) => l.trim() !== '');
@@ -850,11 +950,19 @@ export function endlessWords(run: EndlessRun, set: PatternSet = DEFAULT_PATTERNS
  * screen's — the field canvas has no digit on it at all (G7, G35).
  */
 export function endlessScoreLines(run: EndlessRun): string[] {
+  // The three lines hold POINTS, and they used to be labelled with the names
+  // of counts: `catches: 3000` after thirty catches, and `calls: 1040` two
+  // rows above `calls taken: 7`, so one word meant two things in adjacent
+  // lines of one footer. Each line now says what it holds, and the deeds are
+  // carried beside the points where the record already has both.
+  const catches = run.calls.reduce((n, c) => n + c.catches, 0);
+  const drops = run.calls.reduce((n, c) => n + c.drops, 0);
+  const bosses = run.calls.reduce((n, c) => n + c.bosses, 0);
   return [
-    `catches: ${run.lines.catches}`,
-    `bosses: ${run.lines.bosses}`,
-    `calls: ${run.lines.calls}`,
-    `banked: ${run.score}`,
+    `from catches: ${run.lines.catches} (${catches} caught, ${drops} picked up)`,
+    `from bosses: ${run.lines.bosses} (${bosses} put down)`,
+    `banked at each call's end: ${run.lines.calls}`,
+    `total: ${run.score}`,
     `calls taken: ${run.calls.length} · lamps left: ${run.lamps} · seeded picks: ${run.calls.filter((c) => c.seeded).length}`,
   ];
 }

@@ -20,6 +20,8 @@ import { loadTape } from '@mcp-arcade-cabinets/tape-core';
 
 import {
   approachAt,
+  beyondWord,
+  BREATHER_REACH,
   chainWord,
   ENDLESS_NO_TIER_ZERO,
   decodeEndless,
@@ -28,6 +30,7 @@ import {
   endlessScoreLines,
   endlessWords,
   isBreather,
+  placeWord,
   rankWord,
   reachAt,
   runEndless,
@@ -42,6 +45,8 @@ import {
   DEFAULT_PATTERNS,
   intensityAt,
   loadPatterns,
+  rungWord,
+  type LineBags,
   type PatternSet,
   type Tier,
 } from '../src/patterns';
@@ -595,10 +600,22 @@ describe('what the run says', () => {
 
   it('keeps the digits in the score lines, where a screen never looks', () => {
     const lines = endlessScoreLines(out);
-    expect(lines[0]).toBe(`catches: ${out.lines.catches}`);
-    expect(lines.some((l) => l.startsWith('bosses: '))).toBe(true);
-    expect(lines.some((l) => l.startsWith('calls: '))).toBe(true);
     expect(lines.some((l) => l.includes(String(out.score)))).toBe(true);
+    // Each line says what it HOLDS. The three lines hold points and used to
+    // be labelled with the names of counts, so `catches: 3000` read as three
+    // thousand catches after thirty, and `calls: 1040` sat directly above
+    // `calls taken: 7` — one word meaning two things in one footer.
+    expect(lines[0]).toBe(
+      `from catches: ${out.lines.catches} (${out.calls.reduce((n, c) => n + c.catches, 0)} caught, ${out.calls.reduce((n, c) => n + c.drops, 0)} picked up)`,
+    );
+    expect(lines[1]).toBe(
+      `from bosses: ${out.lines.bosses} (${out.calls.reduce((n, c) => n + c.bosses, 0)} put down)`,
+    );
+    expect(lines[2]).toBe(`banked at each call's end: ${out.lines.calls}`);
+    expect(lines[3]).toBe(`total: ${out.score}`);
+    expect(lines.some((l) => l.startsWith('calls taken: '))).toBe(true);
+    // No line starts with a bare count word that means points.
+    expect(lines.some((l) => /^(catches|bosses|calls):/.test(l))).toBe(false);
   });
 });
 
@@ -646,5 +663,154 @@ describe('the code', () => {
   it('a run carries the code of its own draw', () => {
     const out = run(21, 2, 'reader', 4);
     expect(decodeEndless(names, out.code)).toEqual({ ok: true, seed: 21, difficulty: 2 });
+  });
+});
+
+// Stage C. The run's words: what a menu row is called, what a header says
+// twice, what the progress ladders say once they run out, what a call's line
+// claims about a lamp, and which bags the calls walk.
+describe('what a long run says about itself', () => {
+  const OPTS = { seed: 11, tier: 2 as Tier, calls: 6 };
+
+  it('gives every row on a menu a name no other row shares', () => {
+    // `strip` replaces each needle with a space and a digit is a needle, so
+    // two tapes called `run-1` and `run-2` rendered as one row; the pick is
+    // still resolved on the raw name, so only the surface was ambiguous —
+    // and from G32 the seat picks a tape BY NAME off this menu.
+    const roster: EndlessTape[] = [
+      { name: 'run-1', tape: ROSTER[0]!.tape },
+      { name: 'run-2', tape: ROSTER[1]!.tape },
+      { name: 'run-3', tape: ROSTER[2]!.tape },
+      ...ROSTER.slice(3),
+    ];
+    const plan = endlessPlan(roster, { seed: 5, calls: 12 });
+    for (const call of plan) {
+      const shown = call.candidates.map((c) => c.display);
+      expect(new Set(shown).size, shown.join('|')).toBe(shown.length);
+      for (const c of call.candidates) {
+        expect(c.display).not.toMatch(SCREEN_FORBIDDEN);
+        expect(c.display.trim()).not.toBe('');
+        // The header row and the menu row agree about which tape this is.
+        expect(c.header[0]).toBe(c.display);
+      }
+    }
+  });
+
+  it('refuses a roster whose tape has no name a screen can show', () => {
+    const roster: EndlessTape[] = [{ name: '2026', tape: ROSTER[0]!.tape }, ...ROSTER.slice(1)];
+    expect(() => endlessPlan(roster, { seed: 1, calls: 2 })).toThrow(/no name the screen can show/);
+  });
+
+  it('says a breather once, not three times in one header', () => {
+    const run = runEndless(ROSTER, { ...OPTS, calls: 10, bot: (r) => botFor('idle', r) });
+    const words = endlessWords(run);
+    for (const line of words) {
+      if (!line.includes(' · ')) continue;
+      const parts = line.split(' · ');
+      expect(new Set(parts).size, line).toBe(parts.length);
+    }
+    // The breather's climb word says the climb is held; the trough flavor's
+    // telegraph already says the call is a rest.
+    const breather = endlessPlan(ROSTER, { seed: 3, calls: 10 }).find((c) => c.breather);
+    expect(breather).toBeDefined();
+    expect(breather!.reachWord).toBe(BREATHER_REACH);
+    expect(breather!.reachWord).not.toBe(
+      DEFAULT_PATTERNS.shift.flavors.find((f) => f.role === 'trough')?.telegraph,
+    );
+  });
+
+  it('keeps climbing both word ladders past the tables that used to saturate', () => {
+    // Both ladders ran out — the places at twelve, the reach near the
+    // twenty-eighth — so a fifty-call run read exactly like a thirteen-call
+    // one, in a mode whose whole progress signal is words.
+    const places = new Set<string>();
+    for (const i of [11, 12, 17, 18, 25, 26, 33, 34, 50]) places.add(placeWord(i));
+    expect(places.size).toBeGreaterThan(4);
+    expect(placeWord(12)).not.toBe(placeWord(11));
+    expect(placeWord(40)).not.toBe(placeWord(12));
+    expect(beyondWord(0)).not.toBe(beyondWord(40));
+    for (const word of [...places, beyondWord(0), beyondWord(40)]) {
+      expect(word).not.toMatch(/\d/);
+    }
+  });
+
+  it('walks one bag store across the whole run, not a fresh one per call', () => {
+    // Forty calls of four waves is about a hundred and sixty wave-card draws
+    // out of pools of thirty-one; a fresh bag per call restarted the walk and
+    // abandoned the no-repeat rule in the one mode a player sits in long
+    // enough to notice.
+    const bags: LineBags = {};
+    const run = runEndless(ROSTER, {
+      seed: 11,
+      tier: 2,
+      calls: 8,
+      bot: (r) => botFor('sweeper', r),
+      bags,
+    });
+    expect(run.calls.length).toBeGreaterThan(1);
+
+    const pools = new Map<string, string[]>(Object.entries(DEFAULT_PATTERNS.voice.wave));
+    const drawn = new Map<string, string[]>();
+    for (const call of run.calls) {
+      for (const row of call.said) {
+        if (row.kind !== 'wave') continue;
+        const line = row.text.includes(' — ') ? row.text.split(' — ')[1]! : '';
+        for (const [key, pool] of pools) {
+          if (!pool.includes(line)) continue;
+          const seen = drawn.get(key) ?? [];
+          seen.push(line);
+          drawn.set(key, seen);
+        }
+      }
+    }
+    expect(drawn.size).toBeGreaterThan(0);
+    for (const [key, seen] of drawn) {
+      // Inside one cycle of a pool no line is heard twice, across the run.
+      const cycle = seen.slice(0, pools.get(key)!.length);
+      expect(new Set(cycle).size, `${key}: ${cycle.join(' | ')}`).toBe(cycle.length);
+    }
+
+    // And the store the caller handed in is the one every call walked: its
+    // walk length matches the draws the run actually made.
+    let total = 0;
+    for (const [key, seen] of drawn) {
+      const bag = bags[`wave/${key}`];
+      expect(bag, key).toBeDefined();
+      expect(bag!.cycle * bag!.order.length + bag!.at, key).toBe(seen.length);
+      total += seen.length;
+    }
+    // More draws than there were calls, so the walk provably crossed a call
+    // boundary rather than restarting inside each one.
+    expect(total).toBeGreaterThan(run.calls.length);
+  });
+
+  it('reads a call line off the record rather than guessing from clean', () => {
+    const run = runEndless(ROSTER, { ...OPTS, calls: 8, bot: (r) => botFor('reader', r) });
+    const words = endlessWords(run);
+    const lines = words.filter((l) => l.includes('the chain reads'));
+    expect(lines.length).toBe(run.calls.length);
+    run.calls.forEach((call, i) => {
+      const line = lines[i]!;
+      // A lamp only 'comes back' when one actually did: a clean call taken at
+      // a full pool refills nothing, which is the ordinary case and includes
+      // the first call of every run.
+      if (call.lampsBack > 0) expect(line).toContain('a lamp comes back');
+      else expect(line).not.toContain('a lamp comes back');
+      if (call.clean && call.lampsBack === 0) expect(line).toContain('the call ran clean');
+    });
+    // The call that ENDS the run says so in its own line.
+    if (run.ended === 'lamps') expect(lines[lines.length - 1]).toContain('the last lamp went');
+  });
+
+  it('names the rung in words wherever it used to print a tier index', () => {
+    const run = runEndless(ROSTER, { ...OPTS, calls: 3, bot: (r) => botFor('idle', r) });
+    const words = endlessWords(run);
+    const footer = words.find((l) => l.startsWith('the run:'))!;
+    expect(footer).toContain(rungWord(run.difficulty));
+    // The rank word means a different scale on every rung, so the rung is
+    // named beside it rather than left to be inferred.
+    expect(footer).toContain(run.rank);
+    expect(ENDLESS_NO_TIER_ZERO).toContain(rungWord(0));
+    expect(ENDLESS_NO_TIER_ZERO).toContain(rungWord(1));
   });
 });

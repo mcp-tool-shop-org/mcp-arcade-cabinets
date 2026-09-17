@@ -26,8 +26,16 @@ export type {
   SpriteClass,
 } from './types';
 export { prepassRound } from './prepass';
-export { bossKindFor, createRoundState, isDecoy, revealOnHit, stepRound } from './sim';
-export type { RoundStateOpts } from './sim';
+export {
+  bossKindFor,
+  createRoundState,
+  isDecoy,
+  MAX_DT,
+  revealOnHit,
+  stepRound,
+  watchSaid,
+} from './sim';
+export type { RoundStateOpts, SaidRow } from './sim';
 export {
   attachedPatterns,
   bagFor,
@@ -39,8 +47,14 @@ export {
   emptyLineBag,
   nextBagLine,
   pickLine,
+  deriveRung,
+  deriveTier,
+  LAMP_CAUSES,
   readLineBags,
+  rungWhy,
+  rungWord,
   shuffleOrder,
+  TIMED_DROP_KINDS,
   voiceWaveKey,
 } from './patterns';
 export type {
@@ -51,10 +65,16 @@ export type {
   EndlessRank,
   EndlessScore,
   EndlessSet,
+  EndWhy,
+  LadderRung,
+  LampCause,
   ParallelismTier,
   PatternSet,
   PilotLever,
   ShiftSet,
+  Tier,
+  TimedDropKind,
+  VoiceSet,
 } from './patterns';
 export {
   approachAt,
@@ -65,9 +85,12 @@ export {
   densityBand,
   encodeEndless,
   endlessPlan,
+  ENDLESS_NAMELESS_TAPE,
   ENDLESS_NO_TIER_ZERO,
   endlessScoreLines,
   endlessWords,
+  beyondWord,
+  BREATHER_REACH,
   isBreather,
   placeWord,
   rankWord,
@@ -99,6 +122,7 @@ export {
   hashWords,
   lengthWord,
   ordinalWord,
+  shiftTitle,
   codeWords,
   rosterCheck,
   rosterFits,
@@ -148,4 +172,4 @@ export type { AudioOut, BedLookup, MediaBed, MusicPattern, Note, SfxName, TrackK
 // The scripted play-through (`./play`) reads fixtures from disk and is built
 // separately into dist/play.js for `pnpm test:play`; it stays off the barrel
 // so the browser bundle never pulls node:fs.
-export type { PlayArgs, PlaySeat, Transcript } from './play';
+export type { PlayArgs, PlaySeat, SeatReport, Transcript, TranscriptWhy } from './play';

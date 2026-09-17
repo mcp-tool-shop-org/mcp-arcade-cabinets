@@ -1,14 +1,22 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
   burstActive,
   copiesAt,
   DEFAULT_PATTERNS,
+  deriveRung,
+  deriveTier,
   intensityAt,
   loadPatterns,
   emptyLineBag,
   nextBagLine,
   pickLine,
+  readLineBags,
+  rungWhy,
+  rungWord,
   voiceWaveKey,
 } from '../src/patterns';
 
@@ -701,5 +709,151 @@ describe('the hover sweep levers', () => {
     rungs[1]!.sweep = 0.5;
     rungs[1]!.sweepPeriod = 0;
     expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: sweepPeriod');
+  });
+});
+
+// Stage C. The derive table's fallthrough, the rung's own word, and the one
+// field of a stored bag that indexes an array.
+describe('the ladder names its rungs and its fallthrough', () => {
+  const LADDER = DEFAULT_PATTERNS.ladder;
+
+  type Header = Parameters<typeof deriveTier>[0];
+  function header(over: Partial<Header> = {}): Header {
+    return { target_kind: 'fixture', seat: null, container: null, ...over };
+  }
+  const SEAT = { model: 'a', template_sha256: null };
+
+  it('walks every rule in the table and the catch-all beneath it', () => {
+    // deriveTier had no test at all: it was exercised only through the
+    // prepass on the shipped fixtures, so no branch of the table and not the
+    // fallthrough was ever asserted — and it decides the lamps, the speed,
+    // the grace, the fog and whether hazards exist.
+    expect(deriveRung(header({ target_kind: 'stdio' }), LADDER)).toEqual({
+      tier: 2,
+      onLadder: true,
+    });
+    expect(
+      deriveRung(
+        header({
+          target_kind: 'docker',
+          container: { image_id: 'sha', name_prefix: null },
+        }),
+        LADDER,
+      ),
+    ).toEqual({ tier: 2, onLadder: true });
+    // A seat on a live target does not beat the live rules above it.
+    expect(
+      deriveRung(
+        header({
+          target_kind: 'docker',
+          seat: SEAT,
+          container: { image_id: 'sha', name_prefix: null },
+        }),
+        LADDER,
+      ),
+    ).toEqual({ tier: 2, onLadder: true });
+    expect(deriveRung(header({ target_kind: 'docker', seat: SEAT }), LADDER)).toEqual({
+      tier: 1,
+      onLadder: true,
+    });
+    expect(deriveRung(header({ target_kind: 'fixture' }), LADDER)).toEqual({
+      tier: 0,
+      onLadder: true,
+    });
+    expect(deriveRung(header({ target_kind: 'docker' }), LADDER)).toEqual({
+      tier: 0,
+      onLadder: true,
+    });
+    // A transport the table has never heard of still plays, on the bottom
+    // rung, and SAYS it is not on the ladder rather than passing for a fixture.
+    for (const kind of ['http', 'sse', 'websocket', '']) {
+      expect(deriveRung(header({ target_kind: kind }), LADDER), kind).toEqual({
+        tier: 0,
+        onLadder: false,
+      });
+    }
+    expect(deriveTier(header({ target_kind: 'http' }), LADDER)).toBe(0);
+  });
+
+  it('covers every target_kind the shipped roster carries', () => {
+    const dir = path.resolve(__dirname, '../../../fixtures/tapes');
+    const kinds = new Set<string>();
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.tape.json')) continue;
+      const tape = JSON.parse(readFileSync(path.join(dir, f), 'utf8')) as { target_kind: string };
+      kinds.add(tape.target_kind);
+    }
+    expect(kinds.size).toBeGreaterThan(0);
+    for (const kind of kinds) {
+      expect(deriveRung(header({ target_kind: kind }), LADDER).onLadder, kind).toBe(true);
+    }
+  });
+
+  it('gives every rung a distinct word and a reason with no digit', () => {
+    const words = new Set<string>();
+    for (const tier of [0, 1, 2, 3] as const) {
+      const word = rungWord(tier);
+      expect(word).toBeTruthy();
+      expect(word).not.toMatch(/\d/);
+      expect(words.has(word)).toBe(false);
+      words.add(word);
+      expect(rungWhy(tier)).not.toMatch(/\d/);
+      expect(rungWhy(tier).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('refuses a rung with no word, and a table with no catch-all', () => {
+    const raw = clone();
+    const ladder = raw.ladder as { rungs: Record<string, unknown>[]; derive: unknown[] };
+    delete ladder.rungs[1]!.name;
+    expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: name');
+
+    const two = clone();
+    const l2 = two.ladder as { rungs: Record<string, unknown>[] };
+    l2.rungs[1]!.name = l2.rungs[0]!.name;
+    expect(() => loadPatterns(two)).toThrow('patterns/ladder.json: name');
+
+    const three = clone();
+    const l3 = three.ladder as { derive: unknown[] };
+    l3.derive = l3.derive.slice(0, -1);
+    expect(() => loadPatterns(three)).toThrow('patterns/ladder.json: derive');
+
+    const four = clone();
+    const l4 = four.ladder as { rungs: Record<string, unknown>[] };
+    l4.rungs[2]!.why = 'lamps: 1';
+    expect(() => loadPatterns(four)).toThrow('patterns/ladder.json: why');
+  });
+});
+
+describe('a bag read back from storage', () => {
+  it('takes an order only when it is a permutation of its own length', () => {
+    // `order` is the field that INDEXES the pool and was the one field with
+    // no bound: an out-of-range entry dropped a wave card's line and threw
+    // inside a catch caption, and a duplicate was quieter and worse — one
+    // line twice a cycle and another never, which is the promise the bag
+    // exists to keep.
+    expect(readLineBags({ ok: { order: [2, 0, 1], at: 1, cycle: 0 } })).toEqual({
+      ok: { order: [2, 0, 1], at: 1, cycle: 0 },
+    });
+    for (const order of [
+      [0, 1, 5],
+      [-1, 0, 1],
+      [0, 0, 1],
+      [0, 1, 1.5],
+      [3, 1, 2],
+    ]) {
+      expect(readLineBags({ bad: { order, at: 0, cycle: 0 } }), String(order)).toEqual({});
+    }
+    // `at` past the order is not a walk either.
+    expect(readLineBags({ bad: { order: [0, 1], at: 3, cycle: 0 } })).toEqual({});
+  });
+
+  it('treats a bag that does not index the pool as spent rather than yielding nothing', () => {
+    const lines = ['a', 'b', 'c'];
+    // Same length as the pool, so nextBagLine used to trust it outright.
+    const bag = { order: [7, 8, 9], at: 0, cycle: 0 };
+    const out = nextBagLine(lines, bag, 3, 5);
+    expect(lines).toContain(out);
+    expect(typeof out).toBe('string');
   });
 });

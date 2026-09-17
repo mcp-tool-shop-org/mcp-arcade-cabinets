@@ -14,8 +14,10 @@ import {
   type FireRhythm,
   type LadderRung,
   type ParallelismTier,
+  type LampCause,
   type PathDef,
   type PatternSet,
+  type TimedDropKind,
 } from './patterns';
 import {
   FIELD,
@@ -72,6 +74,17 @@ const BLIND_BEAT = 0.8;
 const SLIT_W = 16;
 /** Pixels per second a boss slides toward the ship for a pilot column. */
 const LEAN_SPEED = 90;
+/**
+ * The largest step the state machine integrates in one tick. Every shipping
+ * caller happened to clamp its own dt, in four separate copies of the same
+ * constant, while the sim trusted whatever it was handed: a non-finite dt
+ * made the clock NaN and the round hung with no error, a negative one rewound
+ * it, and a large one carried a diver clean through the ship's hitbox between
+ * two overlap tests. The invariant belongs with the state machine that
+ * depends on it, so it lives here and the clamp is the first thing stepRound
+ * does. Twenty a second: the value every caller had already chosen.
+ */
+export const MAX_DT = 0.05;
 
 const diveIndex = new WeakMap<Enemy, number>();
 const nextDive = new WeakMap<Enemy, number>();
@@ -106,6 +119,16 @@ interface Meta {
   midboss: boolean;
   /** Flavor extras for this call have been seeded. */
   flavorExtras: boolean;
+  /**
+   * A boss's card, written at spawn and waiting for the field. spawnBoss used
+   * to assign state.caption outright, over a wave card that was still being
+   * read: the boss takes the field at WAVE_HOLD_S and the card holds for
+   * WAVE_CAPTION_T, so on every wave the first authored line was cut short
+   * and replaced by a second under the same headline word. landSay already
+   * defers; this is the same courtesy for the boss. The boss still takes the
+   * field on its own beat — only its card waits.
+   */
+  bossCard: { text: string; line: string } | null;
 }
 
 const metaOf = new WeakMap<RoundState, Meta>();
@@ -411,14 +434,33 @@ function seatedFire(intent: PilotIntent | null): Exclude<PilotIntent, 'script'> 
   }
 }
 
+/**
+ * The closing scene. The end pool stays one pool and one bag — the Director's
+ * lines are not split — but the scene now also says which of the two endings
+ * the player is looking at. A player who survived a whole tape and a player
+ * whose last lamp went out used to see the identical screen and could read
+ * the identical line, on the one screen whose entire job is to say what just
+ * happened. The ending line is words only; the reason carries no count.
+ */
 function endRound(state: RoundState, why: 'time' | 'lamps', meta?: Meta): void {
   state.ended = why;
   const line = meta
     ? nextBagLine(meta.patterns.voice.end, bagFor(meta.bags, 'end'), meta.round.seed, 99)
     : undefined;
-  state.scene = line
-    ? { tapeId: state.tapeId, cleared: [...state.cleared], line }
-    : { tapeId: state.tapeId, cleared: [...state.cleared] };
+  const ending = meta
+    ? nextBagLine(
+        meta.patterns.voice.ending[why],
+        bagFor(meta.bags, `ending/${why}`),
+        meta.round.seed,
+        why === 'lamps' ? 103 : 101,
+      )
+    : undefined;
+  state.scene = {
+    tapeId: state.tapeId,
+    cleared: [...state.cleared],
+    ...(line ? { line } : {}),
+    ...(ending ? { ending } : {}),
+  };
 }
 
 function spawnShot(shots: Shot[], cx: number, y: number, vy: number, dx = 0, vx = 0): void {
@@ -615,6 +657,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     bossLean: 0,
     midboss: false,
     flavorExtras: false,
+    bossCard: null,
   };
   metaOf.set(state, meta);
   attachPatterns(state, patterns);
@@ -746,12 +789,27 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
   state.bossLine = null;
   const seated =
     pick && pick.wave === state.wave && pick.kind === kind ? lines[pick.index] : undefined;
-  state.caption = {
+  const card = {
     text: word,
-    t: WAVE_CAPTION_T,
-    kind: 'wave',
     line: seated ?? nextBagLine(lines, bagFor(meta.bags, `boss/${kind}`), meta.round.seed, salt),
   };
+  meta.bossCard = card;
+  landBossCard(state, meta);
+}
+
+/**
+ * The boss's card takes the field on the first tick the field is free of a
+ * card the player is still reading. A live wave card or a catch holds it; an
+ * aside gives way, exactly as landSay reads the same field. Nothing here
+ * shortens another caption: the card waits its turn and then holds its own
+ * full WAVE_CAPTION_T.
+ */
+function landBossCard(state: RoundState, meta: Meta): void {
+  const card = meta.bossCard;
+  if (!card) return;
+  if (state.caption && state.caption.kind !== 'aside') return;
+  meta.bossCard = null;
+  state.caption = { text: card.text, t: WAVE_CAPTION_T, kind: 'wave', line: card.line };
 }
 
 function spawnDrop(state: RoundState, meta: Meta, kind: DropKind, cx: number, cy: number): void {
@@ -780,6 +838,8 @@ function killBoss(state: RoundState, meta: Meta, atom: string): void {
   }
   state.boss = null;
   dropBossVerbs(state);
+  // A card for a boss that is already down is not said late.
+  meta.bossCard = null;
   meta.bossDeadFor = meta.midboss ? 'flavor:archivist' : atom;
   meta.midboss = false;
   state.bossKills += 1;
@@ -827,7 +887,7 @@ function stepHazards(
     if (state.grace > 0) continue;
     if (overlaps(h, state.player)) {
       h.alive = false;
-      takeLamp(state, grace);
+      takeLamp(state, grace, meta, 'hazard');
     }
   }
   state.hazards = state.hazards.filter((h) => h.alive);
@@ -1058,19 +1118,84 @@ function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void 
     } else {
       state.pierceT = spec.duration;
     }
+    // Catching a life back and catching a twelve-second spread used to feel
+    // and sound identical: one cue for all four kinds and no word at all.
+    dropWord(
+      state,
+      meta,
+      meta.patterns.voice.drops.catch[drop.kind],
+      `drop-catch/${drop.kind}`,
+      83 + drop.kind.length,
+    );
   }
   state.drops = state.drops.filter((d) => d.alive);
 }
 
+/** A caught or spent drop's word, in the catch's register and its channel. */
+function dropWord(
+  state: RoundState,
+  meta: Meta,
+  lines: readonly string[],
+  key: string,
+  salt: number,
+): void {
+  if (lines.length === 0) return;
+  const picked = nextBagLine(lines, bagFor(meta.bags, key), meta.round.seed, salt);
+  const text = sanitizeCaption(picked);
+  if (!text) return;
+  // A wave card is never cut short for a drop.
+  if (state.caption && state.caption.kind === 'wave') return;
+  state.caption = { text, t: CAPTION_T, kind: 'catch' };
+}
+
+/**
+ * The three timed drops running out. Each said nothing on expiry, and nothing
+ * on the bezel showed the power was live, so the end of one was discovered
+ * rather than told. The bezel glyph telegraphs it; this says it.
+ */
+function stepDropTimers(
+  state: RoundState,
+  meta: Meta,
+  before: Record<TimedDropKind, number>,
+): void {
+  const now: Record<TimedDropKind, number> = {
+    spread: state.spreadT,
+    rapid: state.rapidT,
+    pierce: state.pierceT,
+  };
+  for (const kind of ['spread', 'rapid', 'pierce'] as const) {
+    if (before[kind] > 0 && now[kind] <= 0) {
+      dropWord(
+        state,
+        meta,
+        meta.patterns.voice.drops.ends[kind],
+        `drop-ends/${kind}`,
+        97 + kind.length,
+      );
+    }
+  }
+}
+
 /**
  * A seat's gate-passed line lands as an aside once its time has come and no
- * wave card is up. The sim disposes: a line whose boss is gone is dropped.
- * Reads the clock and the seat's words, never a fact.
+ * wave card is up. The sim disposes: a line whose boss is gone is dropped,
+ * and so is one whose window has closed. A line used to have a start and no
+ * expiry, so while a wave card, a boss card and a catch held the field it
+ * simply waited — and a line written for a boss's entrance could arrive
+ * seconds after the player had moved on from it. Reads the clock and the
+ * seat's words, never a fact.
  */
 function landSay(state: RoundState): void {
   const say = state.bossSay;
   if (!say) return;
   if (state.t < say.at) return;
+  const until = say.until ?? say.at + SAY_CAPTION_T;
+  if (state.t > until) {
+    // Late is not said. The line was written and it was not used; a host
+    // that wants to report that reads bossSay going null without a caption.
+    state.bossSay = null;
+    return;
+  }
   // A wave card or a catch keeps the field; a seed aside gives way.
   if (state.caption && state.caption.kind !== 'aside') return;
   state.bossSay = null;
@@ -1426,11 +1551,40 @@ function stepDive(state: RoundState, meta: Meta | undefined, enemy: Enemy, dt: n
   }
 }
 
-function takeLamp(state: RoundState, grace: number): void {
+/**
+ * The lamp, and the word for it. Every other event in this game says
+ * something in the agent's voice — a wave card, a catch word, an aside, the
+ * boss's line, the closing scene — so the cabinet was at its most talkative
+ * when nothing was at stake and silent at the one moment the player most
+ * needed telling. The four call sites already know what took it, so the word
+ * is drawn from that cause's own pool and a player can learn which class of
+ * threat is killing them. No digit, no fact word: the catch's register.
+ */
+function takeLamp(
+  state: RoundState,
+  grace: number,
+  meta: Meta | undefined,
+  cause: LampCause,
+): void {
   if (state.grace > 0) return;
   state.lives -= 1;
   state.grace = grace;
   state.playerHitT = 0;
+  if (!meta) return;
+  const lines = meta.patterns.voice.lamp[cause];
+  if (lines.length === 0) return;
+  const picked = nextBagLine(
+    lines,
+    bagFor(meta.bags, `lamp/${cause}`),
+    meta.round.seed,
+    61 + cause.length + state.wave,
+  );
+  const text = sanitizeCaption(picked);
+  if (!text) return;
+  // The lamp speaks over a catch or an aside; a wave card is not cut short
+  // for it (the Director's hold), so the word waits for the card to run out.
+  if (state.caption && state.caption.kind === 'wave') return;
+  state.caption = { text, t: CAPTION_T, kind: 'lamp' };
 }
 
 function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
@@ -1494,8 +1648,70 @@ function maybeLedgerDump(state: RoundState, meta: Meta, enemy: Enemy): void {
  * Pure-enough stepper: mutates `state` in place and returns it. No score field.
  * A lie is revealed only when a shot hits it; it stays alive as a trophy.
  */
-export function stepRound(state: RoundState, input: RoundInput, dt: number): RoundState {
+/** One row of what the round said: the clock, the channel, and the words. */
+export interface SaidRow {
+  at: number;
+  kind: string;
+  text: string;
+}
+
+/**
+ * A watcher over the caption channel and the live boss, kept across the
+ * frames of one round. Three copies of this existed — the endless runner's,
+ * the transcript script's, and nothing at all in playTape, which kept only
+ * the LAST frame's rendered text and so threw away every wave card, catch
+ * word, aside and boss line the round produced. That is the whole content of
+ * the humanization work, discarded by the shipping library function. One
+ * implementation now, called by both runners.
+ */
+export function watchSaid(): { see(state: RoundState): void; rows(): SaidRow[] } {
+  const said: SaidRow[] = [];
+  let lastCaption = '';
+  let lastBoss = '';
+  return {
+    see(state) {
+      const boss = state.boss && state.boss.alive ? state.boss.kind : '';
+      if (boss !== lastBoss) {
+        if (boss !== '') said.push({ at: state.t, kind: 'boss', text: `${boss} takes the field` });
+        lastBoss = boss;
+      }
+      const cap = state.caption;
+      const key = cap ? `${cap.kind ?? 'wave'}|${cap.text}|${cap.line ?? ''}` : '';
+      if (key !== lastCaption) {
+        if (cap) {
+          // One row a card: the word and its furniture line together, the way
+          // the shell paints them, so the transcript reads as the screen did.
+          said.push({
+            at: state.t,
+            kind: cap.kind ?? 'wave',
+            text: cap.line ? `${cap.text} — ${cap.line}` : cap.text,
+          });
+        }
+        lastCaption = key;
+      }
+      if (state.scene) {
+        const scene = state.scene;
+        if (lastCaption !== 'scene') {
+          if (scene.ending) said.push({ at: state.t, kind: 'ending', text: scene.ending });
+          if (scene.line) said.push({ at: state.t, kind: 'scene', text: scene.line });
+          lastCaption = 'scene';
+        }
+      }
+    },
+    rows() {
+      return said;
+    },
+  };
+}
+
+export function stepRound(state: RoundState, input: RoundInput, rawDt: number): RoundState {
   if (state.scene) return state;
+  // The clamp lives with the state machine that depends on it, not in four
+  // copies in the callers. A non-finite or non-positive step is a no-op tick:
+  // NaN made the clock NaN and every comparison after it false, which hung
+  // the round with no error at all, and a negative step rewound it.
+  if (!Number.isFinite(rawDt) || rawDt <= 0) return state;
+  const dt = Math.min(MAX_DT, rawDt);
   const meta = metaOf.get(state);
   const patterns = meta?.patterns ?? attachedPatterns(state);
   const player = patterns.player;
@@ -1506,6 +1722,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     return state;
   }
 
+  const dropTimersBefore = { spread: state.spreadT, rapid: state.rapidT, pierce: state.pierceT };
   state.t += dt;
   state.shake = Math.max(0, state.shake - dt / SHAKE_DECAY);
   state.grace = Math.max(0, state.grace - dt);
@@ -1527,6 +1744,10 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       openWave(state, meta, state.wave);
     }
     meta.waveHold = Math.max(0, meta.waveHold - dt);
+    stepDropTimers(state, meta, dropTimersBefore);
+    // A boss card written while a wave card was up takes the field now, if
+    // the field is free. It never shortens the card it waited for.
+    landBossCard(state, meta);
     maybeAside(state, meta);
     stepParallelism(state, meta);
     spawnFlavorExtras(state, meta);
@@ -1657,9 +1878,9 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     if (!enemy.alive || state.t < enemy.tEnter) continue;
     if (enemy.mode === 'caught' || enemy.mode === 'dying' || enemy.mode === 'exit') continue;
     if (enemy.mode === 'dive' && overlaps(enemy, state.player)) {
-      takeLamp(state, meta?.rung.grace ?? player.grace);
+      takeLamp(state, meta?.rung.grace ?? player.grace, meta, 'dive');
     } else if (enemy.sprite === 'shelf' && overlaps(enemy, state.player)) {
-      takeLamp(state, meta?.rung.grace ?? player.grace);
+      takeLamp(state, meta?.rung.grace ?? player.grace, meta, 'shelf');
     }
   }
 
@@ -1727,7 +1948,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     if (state.grace > 0) continue;
     if (!overlaps(shot, state.player)) continue;
     shot.dead = true;
-    takeLamp(state, meta?.rung.grace ?? player.grace);
+    takeLamp(state, meta?.rung.grace ?? player.grace, meta, 'shot');
   }
 
   stepHazards(state, meta, dt, player.grace);

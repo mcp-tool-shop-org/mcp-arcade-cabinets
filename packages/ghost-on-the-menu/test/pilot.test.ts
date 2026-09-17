@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_PATTERNS } from '../src/patterns';
 import {
+  askNextIntents,
   askOllama,
   askOllamaLine,
   columnWord,
@@ -286,6 +287,64 @@ describe('askOllama over a daemon', () => {
     expect(out).toHaveLength(2);
     expect(sawSignal).toBe(true);
   }, 10_000);
+
+  it('names WHY it fell back to script instead of hiding the whole taxonomy', async () => {
+    // generate distinguishes a timeout from a daemon that is not running from
+    // a retired tag from a refusal, each error chosen so the shell can say
+    // so — and the prefetch used to swallow all of it, so the seat's liveness
+    // was decided by a value that is also a legal answer from a model that
+    // deliberately chose it.
+    const cases: { fetch: () => Promise<Response>; why: RegExp }[] = [
+      {
+        fetch: () => Promise.reject(Object.assign(new Error('nope'), { code: 'ECONNREFUSED' })),
+        why: /ollama down/,
+      },
+      {
+        fetch: () => Promise.resolve({ ok: false, status: 404 } as Response),
+        why: /ollama missing/,
+      },
+      {
+        fetch: () => Promise.resolve({ ok: false, status: 401 } as Response),
+        why: /ollama refused/,
+      },
+      {
+        fetch: () =>
+          Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ error: 'model has been retired' }),
+          } as unknown as Response),
+        why: /ollama model retired/,
+      },
+    ];
+    for (const c of cases) {
+      vi.stubGlobal('fetch', c.fetch);
+      const seen: string[] = [];
+      const out = await askNextIntents({ url: '/x', model: 'm' }, view, 2, (w) => seen.push(w));
+      // The never-throws property is unchanged: length is always n.
+      expect(out).toEqual(['script', 'script']);
+      expect(seen).toHaveLength(1);
+      expect(seen[0]).toMatch(c.why);
+    }
+  });
+
+  it('says nothing on a real answer, and a reporter that throws does not break the fallback', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ response: 'spread hold' }),
+      } as unknown as Response),
+    );
+    const seen: string[] = [];
+    const good = await askNextIntents({ url: '/x', model: 'm' }, view, 2, (w) => seen.push(w));
+    expect(good).toEqual(['spread', 'hold']);
+    expect(seen).toEqual([]);
+
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('fetch failed')));
+    const out = await askNextIntents({ url: '/x', model: 'm' }, view, 3, () => {
+      throw new Error('a reporter of my own');
+    });
+    expect(out).toEqual(['script', 'script', 'script']);
+  });
 
   it('throws ollama down on ECONNREFUSED / TypeError, and bad payload on a broken body', async () => {
     vi.stubGlobal('fetch', async () => {
