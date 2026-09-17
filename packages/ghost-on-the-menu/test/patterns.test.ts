@@ -648,8 +648,10 @@ describe('the formation fire levers', () => {
     // the recorded rung and hardcore say nothing.
     const set = loadPatterns(raw);
     for (const r of set.ladder.rungs) {
-      if (r.tier === 1 || r.tier === 2) expect(r.shotsInFlight).toBe(4);
-      else if (r.tier === 3) expect(r.shotsInFlight).toBe(3);
+      // The Director (2026-09-17): a column of two or three read as weak;
+      // six at seat and live, five at hardcore, and the rapid drop above it.
+      if (r.tier === 1 || r.tier === 2) expect(r.shotsInFlight).toBe(6);
+      else if (r.tier === 3) expect(r.shotsInFlight).toBe(5);
       else expect(r.shotsInFlight).toBeNull();
     }
     rungs[1]!.shotsInFlight = 2;

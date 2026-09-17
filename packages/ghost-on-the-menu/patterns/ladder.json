@@ -86,7 +86,7 @@
       "grace": 0.55,
       "hazards": false,
       "rageStart": false,
-      "shotsInFlight": 4,
+      "shotsInFlight": 6,
       "sweep": 0.9,
       "sweepPeriod": 9
     },
@@ -118,7 +118,7 @@
       "grace": 0.45,
       "hazards": false,
       "rageStart": false,
-      "shotsInFlight": 4,
+      "shotsInFlight": 6,
       "sweep": 1,
       "sweepPeriod": 7
     },
@@ -150,7 +150,7 @@
       "grace": 0.4,
       "hazards": true,
       "rageStart": true,
-      "shotsInFlight": 3,
+      "shotsInFlight": 5,
       "sweep": 1,
       "sweepPeriod": 5
     }

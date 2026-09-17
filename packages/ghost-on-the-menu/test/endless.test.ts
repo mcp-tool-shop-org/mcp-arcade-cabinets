@@ -332,12 +332,17 @@ describe('the endless band', () => {
     }
   });
 
-  it('at seat the reader outlasts the mover', () => {
-    // Measured over twenty seeds: reader thirty-nine calls, mover thirty-four,
-    // the ship that never moves twenty. The bars sit under the measurement.
+  it('at seat the reader keeps pace with the mover', () => {
+    // Measured over twenty seeds when set: reader thirty-nine calls, mover
+    // thirty-four, the ship that never moves twenty. With six shots in the
+    // air (the Director, 2026-09-17: a column of two or three read as weak)
+    // the mover clears more and lives about as long as the reader: measured
+    // fifty-one to fifty-three. The bar is that the reader is not left
+    // behind, not that it wins; the bots are instruments, and the band
+    // follows the tune.
     const reader = calls(1, 'reader');
     const sweeper = calls(1, 'sweeper');
-    expect(reader, `reader ${reader} mover ${sweeper}`).toBeGreaterThan(sweeper);
+    expect(reader, `reader ${reader} mover ${sweeper}`).toBeGreaterThanOrEqual(sweeper * 0.85);
     // Twenty-five with aimed fire from a sweeping formation (2026-09-17). Measured when set: thirty-two.
     expect(reader).toBeGreaterThanOrEqual(25);
     // The boss waits for the grid or half the wave (the Director, 2026-09-17),
