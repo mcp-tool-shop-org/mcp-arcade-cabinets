@@ -100,7 +100,6 @@ describe('the drop cue names the kind that was caught', () => {
     expect(cues(a, caught('spread'))).toEqual(['drop-spread']);
     expect(cues(a, caught('rapid'))).toEqual(['drop-rapid']);
     expect(cues(a, caught('pierce'))).toEqual(['drop-pierce']);
-    expect(new Set(['drop-spread', 'drop-rapid', 'drop-pierce']).size).toBe(3);
   });
 
   it('tells a lamp that comes back from a lamp caught at a full pool', () => {

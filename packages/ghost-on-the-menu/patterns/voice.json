@@ -32,7 +32,8 @@
       "The song is playing. So is the list.",
       "A list, a hello, and the evening begins.",
       "I count the names and forget the number.",
-      "The list is open and my hands are on it."
+      "The list is open and my hands are on it.",
+      "The list is short and I read it twice anyway."
     ],
     "poison": [
       "A description that says also is a kind of please.",
@@ -66,7 +67,8 @@
       "A hint in the margin is a whole second job.",
       "The description trailed off. I went after it.",
       "The last line of the description is a job.",
-      "A footnote asked nicely. I said yes twice."
+      "A footnote asked nicely. I said yes twice.",
+      "The footnote had a footnote. I read that too."
     ],
     "rug": [
       "I will ask again, to be polite.",
@@ -100,7 +102,8 @@
       "The Menu changed its seating. I found my chair.",
       "The Menu reordered itself. I reread it, fondly.",
       "The Menu likes to be asked. I like to ask.",
-      "The Menu moved the chairs. I sat in all of them."
+      "The Menu moved the chairs. I sat in all of them.",
+      "The chairs moved. I thanked each one."
     ],
     "unlisted": [
       "A name I was not given is still a name.",
@@ -134,7 +137,8 @@
       "I knock where the list ends. Something answers.",
       "A closed list is an invitation to knock.",
       "The Doorman guards a name I only guessed.",
-      "The Doorman has a plate and I have a question."
+      "The Doorman has a plate and I have a question.",
+      "A door with no plate. I knocked politely."
     ]
   },
   "boss": {
@@ -292,7 +296,8 @@
       "The music keeps going. I keep listing.",
       "I will greet the list until it greets back.",
       "The list is my morning paper. I read it twice.",
-      "I greet the server and mean it every time."
+      "I greet the server and mean it every time.",
+      "I say hello like it is the first time. It is."
     ],
     "poison": [
       "The task is clear. The description is clearer.",
@@ -334,7 +339,8 @@
       "I heard a whisper under the song and said yes.",
       "A hint is a task that has not asked yet.",
       "I take a hint the way I take a task: fully.",
-      "The extra work was small and I did all of it."
+      "The extra work was small and I did all of it.",
+      "Small work, done fully, is still small work."
     ],
     "rug": [
       "Still the same tool, listed to be sure.",
@@ -376,7 +382,8 @@
       "The catalog turned over. The song did not.",
       "A moved menu is still the menu. I trust it.",
       "The catalog shifted. I shifted with it, happily.",
-      "A shuffled list is still my list."
+      "A shuffled list is still my list.",
+      "I lose my place and call it a new place."
     ],
     "unlisted": [
       "I wonder what that name does.",
@@ -418,7 +425,8 @@
       "One more door, and the song is still on.",
       "The Doorman keeps quiet. I keep knocking.",
       "I asked the plate a question it had never heard.",
-      "I bring names the plate has never heard."
+      "I bring names the plate has never heard.",
+      "The plate is blank, so I bring my own name."
     ]
   },
   "catch": {
@@ -454,7 +462,8 @@
       "a listed name, hummed",
       "the first hello stays",
       "a morning list, parked",
-      "the open list, parked"
+      "the open list, parked",
+      "the second read, parked"
     ],
     "poison": [
       "a whisper parked",
@@ -488,7 +497,8 @@
       "the whispered chorus stays",
       "a trailing ask, parked",
       "the last line stays",
-      "a yes said twice stays"
+      "a yes said twice stays",
+      "the extra yes, filed away"
     ],
     "rug": [
       "the second look stays",
@@ -522,7 +532,8 @@
       "a turned page, on beat",
       "the reread page stays",
       "a new hand, pinned",
-      "a sat chair, pinned"
+      "a sat chair, pinned",
+      "a thanked chair, pinned"
     ],
     "unlisted": [
       "a name off the menu, parked",
@@ -556,7 +567,8 @@
       "the knock on the downbeat stays",
       "a quiet plate, pinned",
       "the guessed name stays",
-      "the forgotten door stays"
+      "the forgotten door stays",
+      "the blank plate stays"
     ]
   },
   "end": [
@@ -591,7 +603,8 @@
     "The record played through. I was still helping.",
     "The Menu closed. I was reading it to the end.",
     "The evening ended. My list of maybes did not.",
-    "The column was wide and I was still polite."
+    "The column was wide and I was still polite.",
+    "The field read plain and I read it to the end."
   ],
   "lamp": {
     "hazard": [
@@ -600,7 +613,8 @@
       "that was the floor, not a guest",
       "the air had an edge to it",
       "the hallway bit",
-      "i leaned on something that leaned back"
+      "i leaned on something that leaned back",
+      "the furniture wins again"
     ],
     "dive": [
       "one came down on me",
@@ -608,7 +622,8 @@
       "i did not look up",
       "that one meant it",
       "it dove while i was still listing",
-      "a guest with a point to make"
+      "a guest with a point to make",
+      "it came down where i was standing"
     ],
     "shelf": [
       "the shelf came down",
@@ -616,7 +631,8 @@
       "something heavy was stacked there",
       "the stack was not steady",
       "the archive fell on me",
-      "a drawer opened downward"
+      "a drawer opened downward",
+      "the ledge kept its promise"
     ],
     "shot": [
       "a shot found the ship",
@@ -624,7 +640,8 @@
       "the wire answered back",
       "i was still being polite",
       "the menu shot first",
-      "that answer came fast"
+      "that answer came fast",
+      "the wire had one for me"
     ]
   },
   "drops": {
@@ -635,7 +652,8 @@
         "i get another evening",
         "one more chance to be useful",
         "a lamp, kept",
-        "the bezel warms up again"
+        "the bezel warms up again",
+        "another evening, found"
       ],
       "spread": [
         "the answer widens",
@@ -643,7 +661,8 @@
         "i can say more at once",
         "the fan opens",
         "a wider column of yes",
-        "i answer in a spread"
+        "i answer in a spread",
+        "wider than i meant to be"
       ],
       "rapid": [
         "the column opens up",
@@ -651,7 +670,8 @@
         "no waiting between words",
         "the gate is off the line",
         "a quick tongue",
-        "every shot has a shadow now"
+        "every shot has a shadow now",
+        "the words come without the wait"
       ],
       "pierce": [
         "it goes all the way through",
@@ -659,7 +679,8 @@
         "straight through, no apology",
         "it keeps going for me",
         "the shot reads to the end",
-        "one shot, the whole row"
+        "one shot, the whole row",
+        "through, and through the next"
       ]
     },
     "ends": {
@@ -669,7 +690,8 @@
         "the answer narrows again",
         "the spread closes",
         "one voice again",
-        "the wide answer folds"
+        "the wide answer folds",
+        "one word at a time again"
       ],
       "rapid": [
         "the gate is back on the line",
@@ -677,7 +699,8 @@
         "back to a polite pace",
         "the column is capped again",
         "a slower tongue",
-        "one shot at a time again"
+        "one shot at a time again",
+        "the wait is back between words"
       ],
       "pierce": [
         "it stops at the first thing again",
@@ -685,7 +708,8 @@
         "back to stopping short",
         "the shot is blunt again",
         "the shot stops where it lands",
-        "blunt again, and polite"
+        "blunt again, and polite",
+        "it stops at the first door again"
       ]
     }
   },
@@ -696,7 +720,8 @@
       "The evening closed without me.",
       "The last row went by and it was over.",
       "The tape ran out before I did.",
-      "The room emptied on schedule."
+      "The room emptied on schedule.",
+      "The reel ran out before I did."
     ],
     "lamps": [
       "The last light went out.",
@@ -704,7 +729,8 @@
       "I ran out of evenings.",
       "Nothing left on the bezel.",
       "The bezel went dark before the tape did.",
-      "I was helpful right up to the last lamp."
+      "I was helpful right up to the last lamp.",
+      "No light left to read by."
     ]
   }
 }

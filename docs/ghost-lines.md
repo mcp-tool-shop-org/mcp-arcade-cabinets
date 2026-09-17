@@ -28,12 +28,16 @@ Short declaratives; the agent is earnest, literal and a little proud of being th
 
 | pool                      | lines | of which the lead's, 2026-09-17 |
 | ------------------------- | ----- | ------------------------------- |
-| wave, each of four kinds  | 32    | 16                              |
+| wave, each of four kinds  | 33    | 17                              |
 | boss, each of four kinds  | 26    | 14                              |
-| aside, each of four kinds | 40    | 16                              |
-| catch, each of four kinds | 32    | 16                              |
-| end                       | 32    | 16                              |
+| aside, each of four kinds | 41    | 17                              |
+| catch, each of four kinds | 33    | 17                              |
+| end                       | 33    | 17                              |
+| lamp, each of four causes | 7     | 7                               |
+| drop caught, each of four | 7     | 7                               |
+| drop ended, each of three | 7     | 7                               |
+| ending, each of two       | 7     | 7                               |
 
-Two hundred and thirty-nine lines written by the lead over eight landings on 2026-09-17 (the bags, the reactions, the beds playing through, the boss's later entry, the playlist, the menu's return, the menu's exit, the column of six), the rest from before. The next pass adds more.
+Two hundred and sixty-five lines written by the lead over nine landings on 2026-09-17 (the bags, the reactions, the beds playing through, the boss's later entry, the playlist, the menu's return, the menu's exit, the column of six, Stage D), the rest from before. The boss pools sit at the letter seat's cap and grow when it is raised. The next pass adds more.
 
 **Stage C added four kinds of pool** (2026-09-17, wave 7): a word when a lamp is lost, by its cause (`lamp.hazard`, `lamp.dive`, `lamp.shelf`, `lamp.shot`); a word when a drop is caught (`drops.catch.<kind>`) and when it ends (`drops.ends.<kind>`); and an ending that says how the round ended (`ending.time`, `ending.lamps`), which the closing scene says beside the `end` pool. The builder drafted four lines per pool; the lead rewrote them and widened each to six before the merge, seventy-eight lines in all, in the catch register (lower case) for the lamp and drop words and sentence case for the endings. They are bags like the rest.
