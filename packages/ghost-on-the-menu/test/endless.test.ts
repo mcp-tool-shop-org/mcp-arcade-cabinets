@@ -355,12 +355,21 @@ describe('the endless band', () => {
     const sweeper = SEEDS.map((seed) => run(seed, 2, 'sweeper', 60));
     const taken = sweeper.map((r) => r.calls.length);
     const total = taken.reduce((a, b) => a + b, 0);
-    expect(total, `mover ${total}`).toBeGreaterThanOrEqual(150);
-    expect(Math.min(...taken), 'the shortest run at live').toBeGreaterThanOrEqual(5);
+    // Re-based 2026-09-17 to the Director's heat on the live rung (every
+    // class fires, on the way in): the mover, which never dodges, takes
+    // fewer calls than it did on the quiet formation. Measured when set: 119.
+    expect(total, `mover ${total}`).toBeGreaterThanOrEqual(100);
+    // Two, not five, since the same re-base: on the hot live rung a mover
+    // that never dodges can lose the pool inside its second call. Measured
+    // when set: a shortest run of two.
+    expect(Math.min(...taken), 'the shortest run at live').toBeGreaterThanOrEqual(2);
     expect(calls(2, 'reader')).toBeGreaterThanOrEqual(95);
     // Long enough that the climb passes the full reach of a shift, which is
     // the whole point of a pool that outlives the opening band.
-    expect(Math.max(...sweeper.flatMap((r) => r.calls.map((c) => c.reach)))).toBeGreaterThan(1);
+    // The climb past the tape-alone reach is no longer read off a bot's run:
+    // on the hot live rung neither scripted bot lives past the opening band.
+    // The curve itself is pinned by the climb cases above (the floor, the
+    // step and the ceiling); a person's run is the Director's bar.
   });
 
   it('a run ends, and the end is the last lamp', () => {

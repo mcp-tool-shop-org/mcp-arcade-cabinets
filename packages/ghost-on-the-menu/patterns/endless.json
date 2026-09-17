@@ -67,7 +67,7 @@
       },
       {
         "at": 12000,
-        "word": "owned the rig"
+        "word": "closed the floor"
       }
     ],
     "2": [
@@ -89,7 +89,7 @@
       },
       {
         "at": 45000,
-        "word": "owned the rig"
+        "word": "closed the floor"
       }
     ],
     "3": [
@@ -111,11 +111,20 @@
       },
       {
         "at": 12000,
-        "word": "owned the rig"
+        "word": "closed the floor"
       }
     ]
   },
-  "chainWords": ["linked", "warm", "steady", "hot", "rolling", "sharp", "blazing", "unbroken"],
+  "chainWords": [
+    "one call",
+    "in step",
+    "steady",
+    "warm",
+    "hot",
+    "on a roll",
+    "blazing",
+    "unbroken"
+  ],
   "seat": {
     "timeoutMs": 4000,
     "fallback": "seeded"
@@ -132,7 +141,7 @@
     "candidates": "Three tapes on the menu each call. Enough for a real choice by the seat, few enough that the cabinet can cover the feature space with them.",
     "score": "A boss is five catches and a drop is a quarter of one, so the points encode the risk. The call bonus starts at fifty and rises with the reach, so lasting long pays without time itself ever being scored.",
     "chainCap": "Eight whole links. A discrete multiplier that resets to one is legible where a decaying one is not, and eight is as far as a single call's catches and drops can carry it.",
-    "rank": "Thresholds per tier on the banked score, set from the scripted bots over twenty seeds with the pool these levers give: at live a mover banks between twelve and fifty-six thousand and a reader between two hundred and nine thousand, and the tighter rungs are an order smaller. The middle words are where an ordinary run lands and the top word is a run that went further than the bots do. No row for the gentlest rung: endless is not offered there. The words are plain drafts and the lead rewrites them.",
+    "rank": "Thresholds per tier on the banked score, set from the scripted bots over twenty seeds with the pool these levers give: at live a mover banks between twelve and fifty-six thousand and a reader between two hundred and nine thousand, and the tighter rungs are an order smaller. The middle words are where an ordinary run lands and the top word is a run that went further than the bots do. No row for the gentlest rung: endless is not offered there. The words are the lead's: a shift on the board, from clocking in to closing the floor.",
     "seat": "Four seconds for the seat to pick off the menu and write its tell; past that the seeded pick stands and the run's record says the call was seeded."
   }
 }
