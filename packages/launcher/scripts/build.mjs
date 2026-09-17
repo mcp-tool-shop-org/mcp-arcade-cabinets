@@ -76,6 +76,27 @@ const PUBLIC_DIRS = ['sprites', 'tracks', 'keys', 'vibe'];
 const VIBE_TRACK_KEYS = ['bash', 'csharp', 'java', 'javascript', 'python', 'sql', 'integration'];
 
 /**
+ * The shooter's recorded beds, the same list as `TRACK_KEYS` in
+ * `packages/ghost-on-the-menu/src/audio.ts`, spelled again for the same reason
+ * as the Vibe list above and checked the same way. It was a directory-only
+ * requirement until the music pass made each bed a two-minute piece: at 38
+ * seconds a missing bed cost the player a loop, and at two minutes it costs
+ * them the piece the Director asked for, so the tarball now names all eight.
+ * `apps/cabinets/test/bed-length.test.ts` fails the build if the two lists
+ * ever disagree.
+ */
+const GHOST_TRACK_KEYS = [
+  'inspect',
+  'poison',
+  'rug',
+  'unlisted',
+  'breather',
+  'whisperer',
+  'menu',
+  'doorman',
+];
+
+/**
  * What each cabinet's package carries, and how to tell from the built shell
  * that it is the right one.
  *
@@ -97,6 +118,8 @@ const CABINETS = {
     /** The stdio cabinet server (`--mcp`): `fire`, `say`, `speak`, `sfx`, `view`, `tapes`. */
     stdio: 'ghost',
     public: ['sprites', 'tracks'],
+    /** One recorded bed a wave and a boss, checked by name. */
+    files: GHOST_TRACK_KEYS.map((key) => path.join('play', 'tracks', `${key}.mp3`)),
     needles: [
       ['data-local-seats', 'the seats mount mark'],
       ['/ollama/api/tags', 'the daemon probe'],

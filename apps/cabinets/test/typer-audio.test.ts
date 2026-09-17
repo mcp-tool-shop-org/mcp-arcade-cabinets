@@ -613,9 +613,13 @@ describe('the recorded bed, one a stack', () => {
       const file = path.join(dir, `${key}.mp3`);
       const size = statSync(file).size;
       expect(size, key).toBeGreaterThan(0);
-      // Seven beds ride in the Vibe package. The ceiling is the brief's, and
-      // it is what keeps the tarball from growing a megabyte a stack.
-      expect(size, key).toBeLessThan(700 * 1024);
+      // Seven beds ride in the Vibe package. The ceiling was 700 KB while a
+      // bed was a 38 second loop; the music pass made each one a two-minute
+      // piece at the Director's word, and the weight moved with it. The
+      // window a bed must play for, and this same ceiling, are asserted for
+      // both cabinets in `bed-length.test.ts`; this line stays so a change to
+      // the Vibe beds alone still trips something here.
+      expect(size, key).toBeLessThan(2.1 * 1024 * 1024);
     }
   });
 
