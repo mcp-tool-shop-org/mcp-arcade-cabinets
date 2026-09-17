@@ -1,103 +1,103 @@
 {
- "cabinet": "ghost",
- "measured_on": "poison",
- "measured_seconds": 117.473,
- "set_seconds": 961.897,
- "set_count": 8,
- "shipped_today_bytes": 5161792,
- "trials": [
-  {
-   "label": "mp3_128k",
-   "format": "MP3",
-   "subtype": "MPEG_LAYER_III",
-   "asked_kbps": 128,
-   "compression_level": 0.6187,
-   "measured_kbps": 128.1,
-   "bytes": 1880448,
-   "kb": 1836.4,
-   "projected_set_bytes": 15199621,
-   "projected_set_mb": 15.2,
-   "file": "docs/art/originals-ghost-beds/encodings/poison.mp3_128k.mp3"
-  },
-  {
-   "label": "mp3_96k",
-   "format": "MP3",
-   "subtype": "MPEG_LAYER_III",
-   "asked_kbps": 96,
-   "compression_level": 0.7734,
-   "measured_kbps": 96.0,
-   "bytes": 1410336,
-   "kb": 1377.3,
-   "projected_set_bytes": 11399716,
-   "projected_set_mb": 11.4,
-   "file": "docs/art/originals-ghost-beds/encodings/poison.mp3_96k.mp3"
-  },
-  {
-   "label": "opus_96k",
-   "format": "OGG",
-   "subtype": "OPUS",
-   "asked_kbps": 96,
-   "compression_level": 0.8341,
-   "measured_kbps": 96.0,
-   "bytes": 1409696,
-   "kb": 1376.7,
-   "projected_set_bytes": 11394542,
-   "projected_set_mb": 11.39,
-   "file": "docs/art/originals-ghost-beds/encodings/poison.opus_96k.opus"
+  "cabinet": "ghost",
+  "measured_on": "poison",
+  "measured_seconds": 117.473,
+  "set_seconds": 961.897,
+  "set_count": 8,
+  "shipped_today_bytes": 5161792,
+  "trials": [
+    {
+      "label": "mp3_128k",
+      "format": "MP3",
+      "subtype": "MPEG_LAYER_III",
+      "asked_kbps": 128,
+      "compression_level": 0.6187,
+      "measured_kbps": 128.1,
+      "bytes": 1880448,
+      "kb": 1836.4,
+      "projected_set_bytes": 15199621,
+      "projected_set_mb": 15.2,
+      "file": "docs/art/originals-ghost-beds/encodings/poison.mp3_128k.mp3"
+    },
+    {
+      "label": "mp3_96k",
+      "format": "MP3",
+      "subtype": "MPEG_LAYER_III",
+      "asked_kbps": 96,
+      "compression_level": 0.7734,
+      "measured_kbps": 96.0,
+      "bytes": 1410336,
+      "kb": 1377.3,
+      "projected_set_bytes": 11399716,
+      "projected_set_mb": 11.4,
+      "file": "docs/art/originals-ghost-beds/encodings/poison.mp3_96k.mp3"
+    },
+    {
+      "label": "opus_96k",
+      "format": "OGG",
+      "subtype": "OPUS",
+      "asked_kbps": 96,
+      "compression_level": 0.8341,
+      "measured_kbps": 96.0,
+      "bytes": 1409696,
+      "kb": 1376.7,
+      "projected_set_bytes": 11394542,
+      "projected_set_mb": 11.39,
+      "file": "docs/art/originals-ghost-beds/encodings/poison.opus_96k.opus"
+    }
+  ],
+  "installed": {
+    "format": "MP3 128k constant",
+    "compression_level": 0.6187,
+    "installed_now": [
+      "doorman",
+      "menu",
+      "whisperer"
+    ],
+    "beds": [
+      {
+        "key": "inspect",
+        "bytes": 1966080,
+        "seconds": 122.823
+      },
+      {
+        "key": "poison",
+        "bytes": 1880448,
+        "seconds": 117.473
+      },
+      {
+        "key": "rug",
+        "bytes": 1767168,
+        "seconds": 110.4
+      },
+      {
+        "key": "unlisted",
+        "bytes": 1843968,
+        "seconds": 115.2
+      },
+      {
+        "key": "breather",
+        "bytes": 2049024,
+        "seconds": 128.0
+      },
+      {
+        "key": "whisperer",
+        "bytes": 2049024,
+        "seconds": 128.0
+      },
+      {
+        "key": "menu",
+        "bytes": 1920768,
+        "seconds": 120.0
+      },
+      {
+        "key": "doorman",
+        "bytes": 1921152,
+        "seconds": 120.0
+      }
+    ],
+    "total_bytes": 15397632,
+    "total_mb": 15.4,
+    "delta_bytes": 10235840
   }
- ],
- "installed": {
-  "format": "MP3 128k constant",
-  "compression_level": 0.6187,
-  "installed_now": [
-   "doorman",
-   "menu",
-   "whisperer"
-  ],
-  "beds": [
-   {
-    "key": "inspect",
-    "bytes": 1966080,
-    "seconds": 122.823
-   },
-   {
-    "key": "poison",
-    "bytes": 1880448,
-    "seconds": 117.473
-   },
-   {
-    "key": "rug",
-    "bytes": 1767168,
-    "seconds": 110.4
-   },
-   {
-    "key": "unlisted",
-    "bytes": 1843968,
-    "seconds": 115.2
-   },
-   {
-    "key": "breather",
-    "bytes": 2049024,
-    "seconds": 128.0
-   },
-   {
-    "key": "whisperer",
-    "bytes": 2049024,
-    "seconds": 128.0
-   },
-   {
-    "key": "menu",
-    "bytes": 1920768,
-    "seconds": 120.0
-   },
-   {
-    "key": "doorman",
-    "bytes": 1921152,
-    "seconds": 120.0
-   }
-  ],
-  "total_bytes": 15397632,
-  "total_mb": 15.4,
-  "delta_bytes": 10235840
- }
 }

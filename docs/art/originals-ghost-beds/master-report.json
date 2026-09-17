@@ -1,323 +1,317 @@
 {
- "cabinet": "ghost",
- "target_lufs": -12.62,
- "median_lufs_today": -12.25,
- "target_overrides_lufs": {
-  "whisperer": -10.6,
-  "menu": -10.6,
-  "doorman": -10.6
- },
- "override_max_reduction_db": 3.0,
- "reachable_lufs": {
-  "inspect": -12.46,
-  "poison": -9.46,
-  "rug": -12.62,
-  "unlisted": -11.56,
-  "breather": -11.36,
-  "whisperer": -10.52,
-  "menu": -9.92,
-  "doorman": -9.16
- },
- "max_limiter_reduction_db": 6.0,
- "ceiling_dbtp": -1.0,
- "originals": {
-  "inspect": {
-   "file": "docs/art/originals-ghost-beds/originals/inspect.mp3",
-   "seconds": 36.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -12.21,
-   "sample_peak_dbfs": 1.5,
-   "true_peak_dbtp": 1.5
+  "cabinet": "ghost",
+  "target_lufs": -12.62,
+  "median_lufs_today": -12.25,
+  "target_overrides_lufs": {
+    "whisperer": -10.6,
+    "doorman": -10.6
   },
-  "poison": {
-   "file": "docs/art/originals-ghost-beds/originals/poison.mp3",
-   "seconds": 36.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -11.03,
-   "sample_peak_dbfs": 1.15,
-   "true_peak_dbtp": 1.15
+  "override_max_reduction_db": 3.0,
+  "reachable_lufs": {
+    "inspect": -12.46,
+    "poison": -9.46,
+    "rug": -12.62,
+    "unlisted": -11.56,
+    "breather": -11.36,
+    "whisperer": -10.52,
+    "menu": -11.52,
+    "doorman": -9.16
   },
-  "rug": {
-   "file": "docs/art/originals-ghost-beds/originals/rug.mp3",
-   "seconds": 36.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -15.72,
-   "sample_peak_dbfs": 0.15,
-   "true_peak_dbtp": 0.15
+  "max_limiter_reduction_db": 6.0,
+  "ceiling_dbtp": -1.0,
+  "originals": {
+    "inspect": {
+      "file": "docs/art/originals-ghost-beds/originals/inspect.mp3",
+      "seconds": 36.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -12.21,
+      "sample_peak_dbfs": 1.5,
+      "true_peak_dbtp": 1.5
+    },
+    "poison": {
+      "file": "docs/art/originals-ghost-beds/originals/poison.mp3",
+      "seconds": 36.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -11.03,
+      "sample_peak_dbfs": 1.15,
+      "true_peak_dbtp": 1.15
+    },
+    "rug": {
+      "file": "docs/art/originals-ghost-beds/originals/rug.mp3",
+      "seconds": 36.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -15.72,
+      "sample_peak_dbfs": 0.15,
+      "true_peak_dbtp": 0.15
+    },
+    "unlisted": {
+      "file": "docs/art/originals-ghost-beds/originals/unlisted.mp3",
+      "seconds": 36.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -11.96,
+      "sample_peak_dbfs": 1.52,
+      "true_peak_dbtp": 1.52
+    },
+    "breather": {
+      "file": "docs/art/originals-ghost-beds/originals/breather.mp3",
+      "seconds": 32.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -12.63,
+      "sample_peak_dbfs": 0.39,
+      "true_peak_dbtp": 0.39
+    },
+    "whisperer": {
+      "file": "docs/art/originals-ghost-beds/originals/whisperer.mp3",
+      "seconds": 40.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -13.76,
+      "sample_peak_dbfs": -1.39,
+      "true_peak_dbtp": -1.39
+    },
+    "menu": {
+      "file": "docs/art/originals-ghost-beds/originals/menu.mp3",
+      "seconds": 40.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -11.61,
+      "sample_peak_dbfs": 1.13,
+      "true_peak_dbtp": 1.13
+    },
+    "doorman": {
+      "file": "docs/art/originals-ghost-beds/originals/doorman.mp3",
+      "seconds": 40.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "lufs": -12.29,
+      "sample_peak_dbfs": 0.47,
+      "true_peak_dbtp": 0.47
+    }
   },
-  "unlisted": {
-   "file": "docs/art/originals-ghost-beds/originals/unlisted.mp3",
-   "seconds": 36.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -11.96,
-   "sample_peak_dbfs": 1.52,
-   "true_peak_dbtp": 1.52
-  },
-  "breather": {
-   "file": "docs/art/originals-ghost-beds/originals/breather.mp3",
-   "seconds": 32.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -12.63,
-   "sample_peak_dbfs": 0.39,
-   "true_peak_dbtp": 0.39
-  },
-  "whisperer": {
-   "file": "docs/art/originals-ghost-beds/originals/whisperer.mp3",
-   "seconds": 40.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -13.76,
-   "sample_peak_dbfs": -1.39,
-   "true_peak_dbtp": -1.39
-  },
-  "menu": {
-   "file": "docs/art/originals-ghost-beds/originals/menu.mp3",
-   "seconds": 40.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -11.61,
-   "sample_peak_dbfs": 1.13,
-   "true_peak_dbtp": 1.13
-  },
-  "doorman": {
-   "file": "docs/art/originals-ghost-beds/originals/doorman.mp3",
-   "seconds": 40.0,
-   "sample_rate": 48000,
-   "channels": 2,
-   "lufs": -12.29,
-   "sample_peak_dbfs": 0.47,
-   "true_peak_dbtp": 0.47
-  }
- },
- "beds": [
-  {
-   "key": "inspect",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/inspect.mp3",
-    "seconds": 36.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.21,
-    "sample_peak_dbfs": 1.5,
-    "true_peak_dbtp": 1.5
-   },
-   "arranged_lufs": -15.17,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/inspect.flac",
-    "seconds": 122.823,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.8,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "gain_db": 4.28,
-   "passes": 4,
-   "limiter_max_reduction_db": -5.19,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "poison",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/poison.mp3",
-    "seconds": 36.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -11.03,
-    "sample_peak_dbfs": 1.15,
-    "true_peak_dbtp": 1.15
-   },
-   "arranged_lufs": -13.08,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/poison.flac",
-    "seconds": 117.473,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.65,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "gain_db": 0.45,
-   "passes": 1,
-   "limiter_max_reduction_db": -1.37,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "rug",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/rug.mp3",
-    "seconds": 36.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -15.72,
-    "sample_peak_dbfs": 0.15,
-    "true_peak_dbtp": 0.15
-   },
-   "arranged_lufs": -16.84,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/rug.flac",
-    "seconds": 110.4,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.78,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "gain_db": 4.88,
-   "passes": 2,
-   "limiter_max_reduction_db": -5.79,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "unlisted",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/unlisted.mp3",
-    "seconds": 36.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -11.96,
-    "sample_peak_dbfs": 1.52,
-    "true_peak_dbtp": 1.52
-   },
-   "arranged_lufs": -14.89,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/unlisted.flac",
-    "seconds": 115.2,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.85,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "gain_db": 2.85,
-   "passes": 2,
-   "limiter_max_reduction_db": -3.76,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "breather",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/breather.mp3",
-    "seconds": 32.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.63,
-    "sample_peak_dbfs": 0.39,
-    "true_peak_dbtp": 0.39
-   },
-   "arranged_lufs": -14.92,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/breather.flac",
-    "seconds": 128.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.72,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "gain_db": 2.64,
-   "passes": 2,
-   "limiter_max_reduction_db": -3.55,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "whisperer",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/whisperer.mp3",
-    "seconds": 40.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -13.76,
-    "sample_peak_dbfs": -1.39,
-    "true_peak_dbtp": -1.39
-   },
-   "arranged_lufs": -13.78,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/whisperer.flac",
-    "seconds": 128.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -11.63,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "target_lufs": -11.39,
-   "target_asked_lufs": -10.6,
-   "target_shortfall_lu": -0.79,
-   "target_source": "override",
-   "max_reduction_budget_db": 3.0,
-   "gain_db": 2.88,
-   "passes": 2,
-   "limiter_max_reduction_db": -2.49,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "menu",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/menu.mp3",
-    "seconds": 40.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -11.61,
-    "sample_peak_dbfs": 1.13,
-    "true_peak_dbtp": 1.13
-   },
-   "arranged_lufs": -12.56,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/menu.flac",
-    "seconds": 120.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -10.98,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "target_lufs": -10.76,
-   "target_asked_lufs": -10.6,
-   "target_shortfall_lu": -0.16,
-   "target_source": "override",
-   "max_reduction_budget_db": 3.0,
-   "gain_db": 1.8,
-   "passes": 1,
-   "limiter_max_reduction_db": -2.71,
-   "loop_fade_ms": 30.0
-  },
-  {
-   "key": "doorman",
-   "before": {
-    "file": "docs/art/originals-ghost-beds/originals/doorman.mp3",
-    "seconds": 40.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -12.29,
-    "sample_peak_dbfs": 0.47,
-    "true_peak_dbtp": 0.47
-   },
-   "arranged_lufs": -12.74,
-   "after": {
-    "file": "docs/art/originals-ghost-beds/mastered/doorman.flac",
-    "seconds": 120.0,
-    "sample_rate": 48000,
-    "channels": 2,
-    "lufs": -10.87,
-    "sample_peak_dbfs": -1.0,
-    "true_peak_dbtp": -1.0
-   },
-   "target_lufs": -10.76,
-   "target_asked_lufs": -10.6,
-   "target_shortfall_lu": -0.16,
-   "target_source": "override",
-   "max_reduction_budget_db": 3.0,
-   "gain_db": 1.98,
-   "passes": 1,
-   "limiter_max_reduction_db": -2.89,
-   "loop_fade_ms": 30.0
-  }
- ],
- "refused": []
+  "beds": [
+    {
+      "key": "inspect",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/inspect.mp3",
+        "seconds": 36.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.21,
+        "sample_peak_dbfs": 1.5,
+        "true_peak_dbtp": 1.5
+      },
+      "arranged_lufs": -15.17,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/inspect.flac",
+        "seconds": 122.823,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.8,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "gain_db": 4.28,
+      "passes": 4,
+      "limiter_max_reduction_db": -5.19,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "poison",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/poison.mp3",
+        "seconds": 36.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -11.03,
+        "sample_peak_dbfs": 1.15,
+        "true_peak_dbtp": 1.15
+      },
+      "arranged_lufs": -13.08,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/poison.flac",
+        "seconds": 117.473,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.65,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "gain_db": 0.45,
+      "passes": 1,
+      "limiter_max_reduction_db": -1.37,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "rug",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/rug.mp3",
+        "seconds": 36.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -15.72,
+        "sample_peak_dbfs": 0.15,
+        "true_peak_dbtp": 0.15
+      },
+      "arranged_lufs": -16.84,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/rug.flac",
+        "seconds": 110.4,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.78,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "gain_db": 4.88,
+      "passes": 2,
+      "limiter_max_reduction_db": -5.79,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "unlisted",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/unlisted.mp3",
+        "seconds": 36.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -11.96,
+        "sample_peak_dbfs": 1.52,
+        "true_peak_dbtp": 1.52
+      },
+      "arranged_lufs": -14.89,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/unlisted.flac",
+        "seconds": 115.2,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.85,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "gain_db": 2.85,
+      "passes": 2,
+      "limiter_max_reduction_db": -3.76,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "breather",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/breather.mp3",
+        "seconds": 32.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.63,
+        "sample_peak_dbfs": 0.39,
+        "true_peak_dbtp": 0.39
+      },
+      "arranged_lufs": -14.92,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/breather.flac",
+        "seconds": 128.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.72,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "gain_db": 2.64,
+      "passes": 2,
+      "limiter_max_reduction_db": -3.55,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "whisperer",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/whisperer.mp3",
+        "seconds": 40.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -13.76,
+        "sample_peak_dbfs": -1.39,
+        "true_peak_dbtp": -1.39
+      },
+      "arranged_lufs": -13.78,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/whisperer.flac",
+        "seconds": 128.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -11.63,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "target_lufs": -11.39,
+      "target_asked_lufs": -10.6,
+      "target_shortfall_lu": -0.79,
+      "target_source": "override",
+      "max_reduction_budget_db": 3.0,
+      "gain_db": 2.88,
+      "passes": 2,
+      "limiter_max_reduction_db": -2.49,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "menu",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/menu.mp3",
+        "seconds": 40.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -11.61,
+        "sample_peak_dbfs": 1.13,
+        "true_peak_dbtp": 1.13
+      },
+      "arranged_lufs": -14.34,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/menu.flac",
+        "seconds": 120.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.8,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "gain_db": 1.72,
+      "passes": 1,
+      "limiter_max_reduction_db": -2.63,
+      "loop_fade_ms": 30.0
+    },
+    {
+      "key": "doorman",
+      "before": {
+        "file": "docs/art/originals-ghost-beds/originals/doorman.mp3",
+        "seconds": 40.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -12.29,
+        "sample_peak_dbfs": 0.47,
+        "true_peak_dbtp": 0.47
+      },
+      "arranged_lufs": -12.74,
+      "after": {
+        "file": "docs/art/originals-ghost-beds/mastered/doorman.flac",
+        "seconds": 120.0,
+        "sample_rate": 48000,
+        "channels": 2,
+        "lufs": -10.87,
+        "sample_peak_dbfs": -1.0,
+        "true_peak_dbtp": -1.0
+      },
+      "target_lufs": -10.76,
+      "target_asked_lufs": -10.6,
+      "target_shortfall_lu": -0.16,
+      "target_source": "override",
+      "max_reduction_budget_db": 3.0,
+      "gain_db": 1.98,
+      "passes": 1,
+      "limiter_max_reduction_db": -2.89,
+      "loop_fade_ms": 30.0
+    }
+  ],
+  "refused": []
 }

@@ -26,12 +26,12 @@ Short declaratives; the agent is earnest, literal and a little proud of being th
 
 ## The pools as of 2026-09-17
 
-| pool                      | lines | first pass | second | third | fourth | fifth |
-| ------------------------- | ----- | ---------- | ------ | ----- | ------ | ----- |
-| wave, each of four kinds  | 29    | 8          | 2      | 1     | 1      | 1     |
-| boss, each of four kinds  | 23    | 6          | 2      | 1     | 1      | 1     |
-| aside, each of four kinds | 37    | 8          | 2      | 1     | 1      | 1     |
-| catch, each of four kinds | 29    | 8          | 2      | 1     | 1      | 1     |
-| end                       | 29    | 8          | 2      | 1     | 1      | 1     |
+| pool                      | lines | first pass | second | third | fourth | fifth | sixth |
+| ------------------------- | ----- | ---------- | ------ | ----- | ------ | ----- | ----- |
+| wave, each of four kinds  | 30    | 8          | 2      | 1     | 1      | 1     | 1     |
+| boss, each of four kinds  | 24    | 6          | 2      | 1     | 1      | 1     | 1     |
+| aside, each of four kinds | 38    | 8          | 2      | 1     | 1      | 1     | 1     |
+| catch, each of four kinds | 30    | 8          | 2      | 1     | 1      | 1     | 1     |
+| end                       | 30    | 8          | 2      | 1     | 1      | 1     | 1     |
 
-A hundred and twenty lines written by the lead in the first pass (the bags landing), thirty-four in the second (the reactions landing), seventeen in the third (the beds playing through), seventeen in the fourth (the boss's later entry) and seventeen in the fifth (the playlist), all the same day. The next pass adds more.
+A hundred and twenty lines written by the lead in the first pass (the bags landing), then thirty-four, seventeen, seventeen, seventeen and seventeen over the day's five further landings (the reactions, the beds playing through, the boss's later entry, the playlist, the menu's return). The next pass adds more.
