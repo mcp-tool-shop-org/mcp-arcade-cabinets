@@ -103,6 +103,13 @@ export interface FireRhythm {
    */
   shooters: readonly SpriteClass[];
   /**
+   * Whether a formation sprite aims at the ship rather than firing straight
+   * down. Straight-down fire from a sprite that is not over the ship never
+   * lands, which is why a player parked at an edge was hit only by divers
+   * (the Director, 2026-09-17). Off when absent; the boss has its own `aim`.
+   */
+  aim: boolean;
+  /**
    * When the first shot comes, as a fraction of the period. One is the old
    * behavior (a sprite waits a whole period before its first shot, which a
    * sprite that lives a second on its path never reaches); a smaller number
@@ -466,6 +473,8 @@ function loadRhythm(value: unknown, file: string, key: string): FireRhythm {
   if (Object.prototype.hasOwnProperty.call(obj, 'onEntry')) {
     onEntry = asBoolean(obj.onEntry, file, 'onEntry');
   }
+  let aim = false;
+  if (Object.prototype.hasOwnProperty.call(obj, 'aim')) aim = asBoolean(obj.aim, file, 'aim');
   let shooters: SpriteClass[] = ['grid', 'menu'];
   if (Object.prototype.hasOwnProperty.call(obj, 'shooters')) {
     shooters = asArray(obj.shooters, file, 'shooters').map((c) => {
@@ -486,6 +495,7 @@ function loadRhythm(value: unknown, file: string, key: string): FireRhythm {
     spread: asNumber(req(obj, file, 'spread'), file, 'spread'),
     speed: asNumber(req(obj, file, 'speed'), file, 'speed'),
     onEntry,
+    aim,
     shooters,
     firstShot,
   };

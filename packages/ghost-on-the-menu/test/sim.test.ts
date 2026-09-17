@@ -370,6 +370,11 @@ describe('stepRound', () => {
     const b = prepassRound(loadTape(flipped), { seconds: 150, seed: 0, tier: 1 });
     const sa = createRoundState(a);
     const sb = createRoundState(b);
+    // The schedule is what is measured, not survival: since the formation
+    // fires aimed and on entry (2026-09-17) a ship that never moves is gone
+    // in seconds, before the first dive.
+    sa.lives = 1000;
+    sb.lives = 1000;
     const snap = (s: RoundState) =>
       s.enemies
         .filter((e) => e.sprite === 'grid')
@@ -1992,6 +1997,8 @@ describe('the fire drops', () => {
   it("a rapid drop opens the column: the cap and the cooldown are the drop's while it runs", () => {
     const { state, set } = parked();
     state.player.x = 20;
+    // The clock is what is measured, not survival under aimed fire.
+    state.lives = 1000;
     const rung = set.ladder.rungs.find((r) => r.tier === 1)!;
     let peak = 0;
     for (let i = 0; i < 60; i++) {
@@ -2132,5 +2139,59 @@ describe('the hover sweeps the field', () => {
       expect(r.sweep, `tier ${r.tier}`).toBeGreaterThanOrEqual(0.9);
       expect(r.sweepPeriod).toBeGreaterThan(0);
     }
+  });
+});
+
+// The Director's note (2026-09-17): from the side only the divers hit.
+describe('aimed formation fire', () => {
+  const still = { left: false, right: false, fire: false };
+  function shooter(aim: boolean): RoundState {
+    const set = JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as PatternSet;
+    set.fire.tiers['1'].formation!.aim = aim;
+    set.fire.tiers['1'].formation!.firstShot = 0.1;
+    set.ladder.rungs.find((r) => r.tier === 1)!.sweep = 0;
+    const round = roundOf({
+      tapeId: 'bout_aim',
+      duration: 30,
+      tier: 1,
+      beats: [
+        {
+          id: 'inspect.tools_list:menu:0',
+          t: 0,
+          x: 240,
+          sprite: 'menu',
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/list',
+            note: 'tools/list',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, set);
+    const state = createRoundState(round);
+    park(state, state.enemies[0]!);
+    // The ship parked at the far left; the sprite hovers mid-field.
+    state.player.x = 8;
+    return state;
+  }
+  it('lands on a ship parked at the edge when the rung aims, and never when it does not', () => {
+    const aimed = shooter(true);
+    const straight = shooter(false);
+    let aimedHit = false;
+    let straightHit = false;
+    for (let i = 0; i < 60 * 8; i++) {
+      stepRound(aimed, still, 1 / 60);
+      stepRound(straight, still, 1 / 60);
+      if (aimed.lives < aimed.maxLives) aimedHit = true;
+      if (straight.lives < straight.maxLives) straightHit = true;
+    }
+    expect(aimedHit).toBe(true);
+    expect(straightHit).toBe(false);
+    for (const k of ['1', '2', '3'] as const)
+      expect(DEFAULT_PATTERNS.fire.tiers[k].formation!.aim).toBe(true);
   });
 });

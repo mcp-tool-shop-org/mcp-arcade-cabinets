@@ -202,26 +202,58 @@ const HOVER_STRIDE = 40;
 const hoverHome = new WeakMap<Enemy, number>();
 
 /**
- * Where a hovering sprite is this frame. With the rung's `sweep` the hover
- * is a march across the field that comes back in on the far side, the whole
- * formation moving as one so its spacing holds; `sweep` is how much of the
- * field it crosses in `sweepPeriod` seconds, and the direction turns with
- * the wave. A player parked at an edge is under the formation as often as
- * a player in the middle. With no sweep it is the old six-pixel wobble
- * about the home. The Director's ask, 2026-09-17: the formation never
- * reached the edges, so the edges were safe.
+ * The room a wave's hovering formation has on each side: the gap between its
+ * leftmost sprite's home and the field's edge, and its rightmost's. The
+ * sweep swings the whole formation inside that room, so it moves as one
+ * block and its outer sprites are the ones that reach the edges (Galaxian's
+ * drift). Measured once a frame, keyed by the wave's atom.
  */
-function hoverX(state: RoundState, meta: Meta | undefined, enemy: Enemy, home: number): number {
+function formationRoom(state: RoundState): Map<string, { left: number; right: number }> {
+  const room = new Map<string, { left: number; right: number }>();
+  for (const e of state.enemies) {
+    if (!e.alive || state.t < e.tEnter) continue;
+    if (e.mode !== 'hover' && e.mode !== 'dive') continue;
+    if (e.sprite === 'shelf') continue;
+    const home = hoverHome.get(e) ?? e.x;
+    const atom = atomOf(e);
+    const have = room.get(atom) ?? {
+      left: Number.POSITIVE_INFINITY,
+      right: Number.POSITIVE_INFINITY,
+    };
+    have.left = Math.min(have.left, home - 8);
+    have.right = Math.min(have.right, FIELD.width - 8 - (home + e.w));
+    room.set(atom, have);
+  }
+  return room;
+}
+
+/**
+ * Where a hovering sprite is this frame. With the rung's `sweep` the hover
+ * is a slow swing of the whole formation across the field, as far as the
+ * room on either side allows times `sweep`, one full swing per `sweepPeriod`
+ * seconds; the sprites keep their spacing and the outer ones reach the
+ * edges, so a player parked at an edge is under the formation as often as
+ * a player in the middle and no more. With no sweep it is the old six-pixel
+ * wobble about the home. The Director's ask, 2026-09-17: the formation never
+ * reached the edges, so the edges were safe. (A march that wrapped around
+ * the field was tried first and read on the pass as a kill lane: every
+ * sprite crossed a parked ship's column once a period.)
+ */
+function hoverX(
+  state: RoundState,
+  meta: Meta | undefined,
+  enemy: Enemy,
+  home: number,
+  room: Map<string, { left: number; right: number }>,
+): number {
   const sweep = meta?.rung.sweep ?? 0;
   if (sweep <= 0) return wrapX(home + Math.sin(state.t * 1.6 + home * 0.02) * 6, enemy.w);
   const period = meta?.rung.sweepPeriod ?? 8;
-  const lo = 8;
-  const span = FIELD.width - enemy.w - 16;
-  if (span <= 0) return lo;
-  const dir = state.wave % 2 === 0 ? 1 : -1;
-  const travel = ((state.t / period) * span * sweep * dir) % span;
-  const x = (((home - lo + travel) % span) + span) % span;
-  return lo + x;
+  const r = room.get(atomOf(enemy));
+  if (!r || !Number.isFinite(r.left) || !Number.isFinite(r.right)) return wrapX(home, enemy.w);
+  const swing = Math.sin((state.t * Math.PI * 2) / period);
+  const reach = (swing >= 0 ? r.right : r.left) * sweep;
+  return wrapX(home + swing * reach, enemy.w);
 }
 
 function wrapX(x: number, w: number): number {
@@ -1377,7 +1409,12 @@ function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
   }
   if (state.t < enemy.fireAt) return;
   enemy.fireAt = state.t + period;
-  fireSpread(state.enemyShots, enemy.x + enemy.w / 2, enemy.y + enemy.h, rhythm);
+  const cx = enemy.x + enemy.w / 2;
+  const by = enemy.y + enemy.h;
+  // Aimed where the rung says so: a formation sprite that is not over the
+  // ship still has a shot at it, and an edge is no longer a quiet corner.
+  if (rhythm.aim) fireAimed(state.enemyShots, cx, by, rhythm, state.player);
+  else fireSpread(state.enemyShots, cx, by, rhythm);
 }
 
 /** Ledger telegraphs, then dumps a column/spread. Reuses formation fire, not a new LLM. */
@@ -1499,6 +1536,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   }
 
   const speed = meta?.rung.speed ?? 1;
+  const room = formationRoom(state);
   for (const enemy of state.enemies) {
     if (!enemy.alive || state.t < enemy.tEnter) continue;
     if (enemy.mode === 'caught') {
@@ -1545,7 +1583,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         hoverHome.set(enemy, home);
       }
       if (enemy.sprite !== 'shelf') {
-        enemy.x = hoverX(state, meta, enemy, home);
+        enemy.x = hoverX(state, meta, enemy, home, room);
       }
       maybeStartDive(state, meta, enemy);
     }

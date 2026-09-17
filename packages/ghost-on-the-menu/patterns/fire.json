@@ -26,7 +26,8 @@
         "speed": 180,
         "onEntry": true,
         "firstShot": 0.3,
-        "shooters": ["init", "ready", "menu", "grid", "answer"]
+        "shooters": ["init", "ready", "menu", "grid", "answer"],
+        "aim": true
       },
       "boss": {
         "period": 4.8,
@@ -56,7 +57,8 @@
         "speed": 120,
         "onEntry": true,
         "firstShot": 0.35,
-        "shooters": ["init", "ready", "menu", "grid", "answer"]
+        "shooters": ["init", "ready", "menu", "grid", "answer"],
+        "aim": true
       },
       "boss": {
         "period": 4.2,
@@ -86,7 +88,8 @@
         "speed": 180,
         "onEntry": true,
         "firstShot": 0.5,
-        "shooters": ["init", "ready", "menu", "grid", "answer"]
+        "shooters": ["init", "ready", "menu", "grid", "answer"],
+        "aim": true
       },
       "boss": {
         "period": 3.6,
