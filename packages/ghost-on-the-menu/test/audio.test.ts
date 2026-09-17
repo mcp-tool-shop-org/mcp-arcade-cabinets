@@ -8,6 +8,7 @@ import {
   bar,
   barSeconds,
   BED_LEVEL,
+  BED_ENTRY_S,
   BED_MAX_S,
   BED_MIN_S,
   BED_POOL,
@@ -644,6 +645,23 @@ describe('a bed plays through whole before a wave change may move it', () => {
     expect(poison.playing).toBe(false);
     out.tick(BED_MIN_S + 0.1, 'poison');
     expect(poison.playing).toBe(true);
+  });
+
+  // A boss bed comes at once and lasts a boss; opened on its silent intro it
+  // read as no music at all (the Director, 2026-09-17). A bed that names an
+  // entry starts there; one that does not starts at the top.
+  it('starts a bed from its entry when it names one', () => {
+    const inspect = bed(120);
+    const whisperer = { ...bed(112), entry: 8 };
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(ctx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    expect(inspect.currentTime).toBe(0);
+    out.tick(5, 'whisperer');
+    expect(whisperer.playing).toBe(true);
+    expect(whisperer.currentTime).toBe(8);
+    expect(BED_ENTRY_S.whisperer).toBeGreaterThan(0);
+    expect(BED_ENTRY_S.inspect).toBeUndefined();
   });
 
   it('carries the hold across a round restart, measured against the file length', () => {

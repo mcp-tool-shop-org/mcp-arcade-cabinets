@@ -53,6 +53,7 @@ import {
   snapshot,
   SPRITE_KEYS,
   stepRound,
+  BED_ENTRY_S,
   TRACK_KEYS,
   readLineBags,
   waveKindAt,
@@ -385,9 +386,11 @@ const loadBeds = () => {
   // open on come first and the three boss beds after, which is already the
   // order a round wants them in.
   for (const key of TRACK_KEYS) {
-    const el = new Audio();
+    const el = new Audio() as HTMLAudioElement & { entry?: number };
     el.preload = 'auto';
     el.loop = true;
+    // A boss bed starts past its thin intro (BED_ENTRY_S); the others from the top.
+    el.entry = BED_ENTRY_S[key] ?? 0;
     const arrived = () => {
       BEDS.set(key, el);
       one(key, true);

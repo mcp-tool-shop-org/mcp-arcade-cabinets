@@ -674,6 +674,65 @@ describe('stepRound', () => {
     expect(Math.abs(origin.y - by)).toBeLessThan(8);
   });
 
+  // The Director (2026-09-17): the boss appeared too quickly. A boss whose
+  // grid enters on its own takes the field once the grid is downed, or at
+  // half the wave if the grid still stands; the Whisperer, whose grids come
+  // from under it, still comes at once (the test above).
+  it('holds a boss back until its grid is downed, or half the wave has passed', () => {
+    const make = () =>
+      createRoundState(
+        roundOf({
+          tapeId: 'bout_entry',
+          duration: 24,
+          waveBounds: [{ atom: 'temporal.list_changed', t0: 0, t1: 20 }],
+          beats: [
+            {
+              id: 'temporal.list_changed:grid:0',
+              t: 0,
+              x: 80,
+              sprite: 'grid',
+              lie: false,
+              members: 3,
+              source: {
+                atom: 'temporal.list_changed',
+                method: 'tools/list',
+                note: 'tools/list again',
+                index: 0,
+              },
+            },
+          ],
+        }),
+      );
+    // The grid stands: no boss until half the wave (t0 + 24/2, since the last
+    // wave runs to the round's duration), then the Menu takes the field.
+    const stands = make();
+    while (stands.t < 11.5) {
+      stands.lives = stands.maxLives;
+      stepRound(stands, { left: false, right: false, fire: false }, 0.1);
+      expect(stands.boss, `t=${stands.t.toFixed(1)} wave=${stands.wave}`).toBeNull();
+    }
+    while (stands.t < 12.6) {
+      stands.lives = stands.maxLives;
+      stepRound(stands, { left: false, right: false, fire: false }, 0.1);
+    }
+    expect(
+      stands.boss,
+      `t=${stands.t.toFixed(1)} wave=${stands.wave} scene=${String(stands.scene)}`,
+    ).not.toBeNull();
+    expect(stands.boss!.kind).toBe('menu');
+    // The grid is downed early: the boss comes on the next step.
+    const downed = make();
+    while (downed.t < 3) {
+      downed.lives = downed.maxLives;
+      stepRound(downed, { left: false, right: false, fire: false }, 0.1);
+    }
+    expect(downed.boss).toBeNull();
+    for (const enemy of downed.enemies) enemy.alive = false;
+    stepRound(downed, { left: false, right: false, fire: false }, 0.1);
+    expect(downed.boss).not.toBeNull();
+    expect(downed.boss!.kind).toBe('menu');
+  });
+
   it('staggers whisperer grids so they never share tEnter or a pixel', () => {
     const state = createRoundState(
       roundOf({
@@ -1214,13 +1273,22 @@ describe('the ollama seats in the sim', () => {
     stepRound(state, input, 1 / 30);
   }
 
-  /** Step until a boss of the given kind is up. */
+  /**
+   * Step until a boss of the given kind is up. The boss waits for its wave's
+   * grid now (the Director, 2026-09-17), so the grid is downed on the way:
+   * these tests are about the boss's beats, and a hovering grid's own fire
+   * would land in them.
+   */
   function toBoss(state: RoundState, kind: string): void {
     let guard = 0;
     while ((!state.boss || state.boss.kind !== kind) && !state.scene && guard++ < 9000) {
+      for (const enemy of state.enemies) enemy.alive = false;
       tick(state);
     }
-    expect(state.boss?.kind).toBe(kind);
+    expect(
+      state.boss?.kind,
+      `t=${state.t.toFixed(1)} wave=${state.wave} scene=${String(state.scene)} guard=${guard}`,
+    ).toBe(kind);
   }
 
   /** Step until the pending intent is spent; return the shots that beat spawned. */

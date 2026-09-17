@@ -149,6 +149,20 @@ export const TRACK_KEYS = [
 ] as const;
 export type TrackKey = (typeof TRACK_KEYS)[number];
 /**
+ * Where each recorded bed starts when it is adopted, in seconds: the length
+ * of the four-bar intro the music pass built from the quiet layer, which on
+ * the boss beds is close to silence (measured 2026-09-17: the first eight,
+ * ten and seven and a half seconds under -30 dBFS). Four bars at each bed's
+ * receipted tempo (`docs/art/originals-ghost-beds/arrange-plan.json`). The
+ * wave beds keep their intros: a round covers them. A rebuilt bed with no
+ * intro sets its entry back to zero here.
+ */
+export const BED_ENTRY_S: Readonly<Partial<Record<TrackKey, number>>> = {
+  whisperer: 8,
+  menu: 10,
+  doorman: 7.3,
+};
+/**
  * The wave beds a round opens on and rotates through (the seed picks the
  * opening); a boss wave brings its own bed instead.
  */
@@ -170,6 +184,14 @@ export interface MediaBed {
    * it ends or as it restarts. NaN until metadata loads; absent in tests.
    */
   readonly duration?: number;
+  /**
+   * Seconds into the file the bed starts from when it is adopted. The boss
+   * beds of the music pass open on a near-silent intro (whisperer eight
+   * seconds, menu ten, doorman seven and a half, measured), and a boss bed
+   * comes at once and lasts a boss: started from the loop, the fight has
+   * music under it (the Director, 2026-09-17). Absent or zero: the top.
+   */
+  entry?: number;
   play(): Promise<void> | void;
   pause(): void;
 }
@@ -525,6 +547,16 @@ export function attach(
     bed.muted = muted;
     if ('preservesPitch' in bed) bed.preservesPitch = true;
     bed.playbackRate = rate;
+    // A bed with a thin intro starts past it. `duration` may still be NaN
+    // when the element has not settled; the seek is skipped rather than
+    // thrown, and the bed plays from the top.
+    if (typeof bed.entry === 'number' && bed.entry > 0) {
+      try {
+        bed.currentTime = bed.entry;
+      } catch {
+        /* the element has no metadata yet: from the top, then */
+      }
+    }
     // A bed comes in from silence when there is a fade to come in on.
     bed.volume = dur > 0 ? 0 : level;
     live.add(bed);

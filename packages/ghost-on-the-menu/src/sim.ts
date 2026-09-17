@@ -51,6 +51,14 @@ const EXIT_SPEED = 220;
 const WAVE_CAPTION_T = 2.4;
 /** The field's beat between a wave card going up and its boss taking the field; the card may outlast it. */
 const WAVE_HOLD_S = 1.5;
+/**
+ * Director (2026-09-17): the boss appeared too quickly. A boss whose grid
+ * enters on its own now waits: it takes the field once that wave's grid is
+ * downed, or this far through the wave if the grid still stands, so the
+ * formation is fought alone first and every wave still gets its boss. The
+ * Whisperer, whose grids come out from under it, still comes at once.
+ */
+const BOSS_ENTRY_AT = 0.5;
 /** Director: how long an aside stays on the field. */
 const ASIDE_HOLD_S = 3.6;
 /** Director: the silence after an aside before the next may land. */
@@ -1151,10 +1159,27 @@ function stepBoss(state: RoundState, meta: Meta, dt: number): void {
     return;
   }
   if (!state.boss || state.boss.kind !== kind || !state.boss.alive) {
+    // A boss that is not yet up waits for its wave's grid to be downed, or
+    // for BOSS_ENTRY_AT of the wave to pass (the Director, 2026-09-17). The
+    // Whisperer is the exception: its grids enter from under it, so there
+    // is nothing to fight before it comes.
+    if (kind !== 'whisperer' && !bossMayEnter(state, bound.atom, bound.t0, until)) {
+      dropBossVerbs(state);
+      return;
+    }
     spawnBoss(state, meta, kind, def);
     if (kind === 'whisperer') emitWaveGrids(state, meta);
   }
   driveBoss(state, meta, dt, def, bound.atom);
+}
+
+/** True once the wave's grid is downed, or BOSS_ENTRY_AT of the wave has passed. */
+function bossMayEnter(state: RoundState, atom: string, t0: number, until: number): boolean {
+  if (state.t >= t0 + (until - t0) * BOSS_ENTRY_AT) return true;
+  return !state.enemies.some(
+    (enemy) =>
+      atomOf(enemy) === atom && enemy.alive && enemy.mode !== 'caught' && enemy.mode !== 'dying',
+  );
 }
 
 function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom: string): void {

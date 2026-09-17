@@ -121,7 +121,16 @@ export {
 export type { Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
-export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
+export {
+  attach,
+  bar,
+  barSeconds,
+  BED_ENTRY_S,
+  DEFAULT_MUSIC,
+  TRACK_KEYS,
+  TRACKS,
+  sfx,
+} from './audio';
 export {
   askNextIntents,
   askOllama,

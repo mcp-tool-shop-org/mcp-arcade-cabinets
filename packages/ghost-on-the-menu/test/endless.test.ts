@@ -335,7 +335,13 @@ describe('the endless band', () => {
     expect(reader, `reader ${reader} mover ${sweeper}`).toBeGreaterThan(sweeper);
     // Twenty-five with aimed fire from a sweeping formation (2026-09-17). Measured when set: thirty-two.
     expect(reader).toBeGreaterThanOrEqual(25);
-    expect(calls(1, 'idle')).toBe(SEEDS.length);
+    // The boss waits for the grid or half the wave (the Director, 2026-09-17),
+    // so a ship that never moves can live past its first call at seat now;
+    // measured when set: twenty-seven over twenty seeds. It never outlasts
+    // the reader.
+    const idle = calls(1, 'idle');
+    expect(idle, `idle ${idle} reader ${reader}`).toBeGreaterThanOrEqual(SEEDS.length);
+    expect(idle, `idle ${idle} reader ${reader}`).toBeLessThanOrEqual(reader);
   });
 
   it('at hardcore the reader outlasts the mover, and neither lasts long', () => {
