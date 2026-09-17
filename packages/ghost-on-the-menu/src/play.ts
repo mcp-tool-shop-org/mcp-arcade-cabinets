@@ -6,12 +6,19 @@
 // reader reads order, class and member count from the Round, which is what
 // a player can see. The reader is the acceptance bot: winning is a scene.
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { loadTape, TapeError, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { FIELD, type Round, type RoundInput, type RoundState } from './types';
+import {
+  endlessScoreLines,
+  endlessWords,
+  runEndless,
+  type EndlessRun,
+  type EndlessTape,
+} from './endless';
 import { prepassRound } from './prepass';
 import { createRoundState, isHittable, stepRound } from './sim';
 import { makeTextCtx, renderRound } from './render';
@@ -36,6 +43,12 @@ export interface PlaySeat {
 export interface PlayArgs {
   fixture?: string;
   bot?: BotName | string;
+  /** Play an endless run over the whole roster instead of one fixture. */
+  endless?: boolean;
+  /** How many calls the endless runner offers; the lamps usually end it first. Default forty. */
+  calls?: number;
+  /** The endless draw's seed. Absent takes the clock, as the shell will. */
+  seed?: number;
   seat?: PlaySeat;
   tier?: 0 | 1 | 2 | 3;
   /** Lamps kept up so every boss on the tape is met (a seat run, as `pnpm sit`). */
@@ -232,7 +245,82 @@ function loadFail(fixture: string, reason: string): Transcript {
   };
 }
 
+const TAPES_DIR = 'fixtures/tapes';
+
+/** Every tape on disk, by name. The endless roster; a load failure names the file. */
+export function loadRoster(dir = TAPES_DIR): EndlessTape[] {
+  const root = path.resolve(dir);
+  const out: EndlessTape[] = [];
+  for (const f of readdirSync(root).sort()) {
+    if (!f.endsWith('.tape.json')) continue;
+    const name = f.replace(/\.tape\.json$/, '');
+    out.push({ name, tape: loadTape(JSON.parse(readFileSync(path.join(root, f), 'utf8'))) });
+  }
+  return out;
+}
+
+/**
+ * The endless run as a transcript, in the shape `pnpm test:play` reads: three
+ * header lines, then the screen (the run in words, no digit anywhere), then
+ * the `revealed:` marker and the footer. The score's digits live in that
+ * footer on purpose — the closing scene may carry the run's number (G35) but
+ * a screen line may not carry a digit at all (G7), and the runner scans
+ * exactly what sits between the header and the marker.
+ */
+export function endlessTranscript(run: EndlessRun, bot: BotName): Transcript {
+  const words = endlessWords(run);
+  const catches = run.calls.reduce((s, c) => s + c.catches, 0);
+  const bosses = run.calls.reduce((s, c) => s + c.bosses, 0);
+  const header = [
+    'Ghost on the Menu',
+    `endless tier ${run.difficulty} bot ${bot} seed ${run.seed} calls ${run.calls.length}`,
+    run.ended === 'lamps' ? 'run ended: lamps' : 'run ended: calls',
+  ];
+  const footer = [`revealed: ${catches} caught, ${bosses} put down`, ...endlessScoreLines(run)];
+  const leaked = words.some((t) => SCREEN_FORBIDDEN.test(t));
+  const text = [...header, ...words, ...footer].join('\n');
+  return {
+    ok: !leaked && run.calls.length > 0 && !FORBIDDEN.test(text),
+    text,
+    revealed: [],
+    lies: [],
+    ended: run.ended === 'lamps' ? 'lamps' : 'time',
+    lives: run.lamps,
+    leaked,
+  };
+}
+
 export async function play(args: PlayArgs = {}): Promise<Transcript> {
+  if (args.endless) {
+    const bot = parseBot(args.bot);
+    if (bot === null) {
+      return loadFail('endless', `unknown bot ${args.bot}; use idle, sweeper or reader`);
+    }
+    let roster: EndlessTape[];
+    try {
+      roster = loadRoster();
+    } catch {
+      return loadFail('endless', 'the roster under fixtures/tapes is unreadable');
+    }
+    if (roster.length === 0) return loadFail('endless', 'no tapes under fixtures/tapes');
+    let run;
+    try {
+      run = runEndless(roster, {
+        seed: args.seed ?? Date.now(),
+        bot: (round) => botFor(bot, round),
+        ...(args.tier !== undefined ? { tier: args.tier } : {}),
+        // A cap, not a bar: the lamps end a run long before it, and a run
+        // that outlives the cap is one the caller asked to stop.
+        calls: args.calls ?? 40,
+      });
+    } catch (err) {
+      // The cabinet's refusals already name themselves `endless: …`, so the
+      // fixture prefix would say the word twice.
+      const why = err instanceof Error ? err.message : 'the run refused';
+      return loadFail('endless', why.replace(/^endless: /, ''));
+    }
+    return endlessTranscript(run, bot);
+  }
   const fixture = args.fixture ?? 'naive-ndjson';
   if (fixture.trim() === '' || /[\\/]/.test(fixture) || fixture.includes('\0')) {
     return loadFail(fixture, 'invalid name: no slashes');

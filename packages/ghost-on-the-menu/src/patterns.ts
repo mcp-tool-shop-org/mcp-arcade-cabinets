@@ -3,6 +3,7 @@ import type { Flavor, FlavorRole, SpriteClass, WaveKind } from './types';
 
 import bossesJson from '../patterns/bosses.json';
 import dropsJson from '../patterns/drops.json';
+import endlessJson from '../patterns/endless.json';
 import fireJson from '../patterns/fire.json';
 import formationsJson from '../patterns/formations.json';
 import ladderJson from '../patterns/ladder.json';
@@ -192,6 +193,8 @@ export interface ParallelismTier {
   copiesLater: number;
   /** Copies the last call of a shift ends on; the shift's climb lifts both ends toward it. */
   copiesShift: number;
+  /** Copies the endless ceiling ends on, one stop above the shift's reach. Never crossed. */
+  copiesEndless: number;
   firstBurst: number;
   laterBurst: number;
   /** Minimum quiet seconds around a burst inside a wave. */
@@ -202,6 +205,8 @@ export interface ParallelismTier {
   intensityLater: number;
   /** Intensity the last call of a shift ends on. */
   intensityShift: number;
+  /** Intensity the endless ceiling ends on, one stop above the shift's reach. Never crossed. */
+  intensityEndless: number;
   decoysFire: boolean;
 }
 
@@ -252,6 +257,7 @@ export interface PatternSet {
   voice: VoiceSet;
   parallelism: { tiers: Record<'0' | '1' | '2' | '3', ParallelismTier> };
   shift: ShiftSet;
+  endless: EndlessSet;
 }
 
 /**
@@ -264,6 +270,76 @@ export interface ShiftSet {
   climb: number[];
   flavors: Flavor[];
   words: { even: string[]; odd: string[] };
+}
+
+/**
+ * Endless (slice E1, G33 and G35): the climb's floor, curve and asymptote,
+ * the breather's cadence, the menu the seat picks from, the lamp pool, the
+ * score table with its rank and chain words, and the seat's patience. Every
+ * number here is a lever; `notes` carries the decision behind each one,
+ * since a JSON file cannot hold a comment.
+ */
+export interface EndlessCeiling {
+  /** Most honest copies a burst may ever carry at this tier. */
+  copies: number;
+  /** Hottest fire the burst may ever reach at this tier. */
+  intensity: number;
+  /** Most concurrent boss hazards this tier permits; zero where the rung has none. */
+  hazards: number;
+}
+
+export interface EndlessClimb {
+  /** Calls held below, then at, the tape-alone reach before anything rises. */
+  openingCalls: number;
+  /**
+   * The fraction of the tape-alone reach the first call of the opening band
+   * plays at, rising straight to one by the band's last call. Endless's own
+   * band; the tape-alone and shift bars never see it.
+   */
+  approach: number;
+  /** How far up the climb one call past the opening band moves. */
+  stepPerCall: number;
+  ceiling: Record<'0' | '1' | '2' | '3', EndlessCeiling>;
+}
+
+export interface EndlessScore {
+  catch: number;
+  drop: number;
+  boss: number;
+  /** The call's end banks the chain times this, lifted by the call's reach. */
+  callBonusBase: number;
+  /** Most links the chain may hold. */
+  chainCap: number;
+}
+
+/** A banked-score threshold and the word a run at or above it is named by. */
+export interface EndlessRank {
+  at: number;
+  word: string;
+}
+
+export interface EndlessSet {
+  climb: EndlessClimb;
+  breatherEvery: number;
+  menu: {
+    candidates: number;
+    widenAt: number[];
+    /** Wire-row counts that split thin from even from thick. Two, ascending. */
+    bands: [number, number];
+  };
+  lamps: {
+    /** The run's own lamp pool per tier. The gentlest rung has no entry. */
+    pool: Record<'1' | '2' | '3', number>;
+    backOnCleanCall: number;
+  };
+  score: EndlessScore;
+  /** A word table per tier endless is offered at. The gentlest rung has no entry. */
+  rank: Record<'1' | '2' | '3', EndlessRank[]>;
+  /** The word for each chain link, index zero being one link. Length is chainCap. */
+  chainWords: string[];
+  seat: { timeoutMs: number; fallback: 'seeded' };
+  /** Lever name to the decision and the reason. Never on screen. */
+  notes: Record<string, string>;
 }
 
 export interface TapeHeader {
@@ -711,17 +787,27 @@ function loadParallelism(raw: unknown): PatternSet['parallelism'] {
     }
     const intensityShift = asNumber(req(rec, file, 'intensityShift'), file, 'intensityShift');
     if (!(intensityShift >= intensityLater)) fail(file, 'intensityShift');
+    // The endless reach is one stop above the shift's, never below it: the
+    // shift bar is not relaxed to make room for a longer run (G21, G33).
+    const copiesEndless = asNumber(req(rec, file, 'copiesEndless'), file, 'copiesEndless');
+    if (!(copiesEndless >= copiesShift) || copiesEndless !== Math.floor(copiesEndless)) {
+      fail(file, 'copiesEndless');
+    }
+    const intensityEndless = asNumber(req(rec, file, 'intensityEndless'), file, 'intensityEndless');
+    if (!(intensityEndless >= intensityShift)) fail(file, 'intensityEndless');
     tiers[key] = {
       enabled: asBoolean(req(rec, file, 'enabled'), file, 'enabled'),
       copies,
       copiesLater,
       copiesShift,
+      copiesEndless,
       firstBurst,
       laterBurst,
       gap,
       intensity,
       intensityLater,
       intensityShift,
+      intensityEndless,
       decoysFire: asBoolean(req(rec, file, 'decoysFire'), file, 'decoysFire'),
     };
   }
@@ -794,6 +880,144 @@ function loadShift(raw: unknown): ShiftSet {
   };
 }
 
+const ENDLESS_WORD = /^[a-z][a-z ]{2,31}$/;
+
+function asCount(value: unknown, file: string, key: string, min: number): number {
+  const n = asNumber(value, file, key);
+  if (!(n >= min) || n !== Math.floor(n)) fail(file, key);
+  return n;
+}
+
+function asWord(value: unknown, file: string, key: string, seen: Set<string>): string {
+  const w = asString(value, file, key);
+  if (!ENDLESS_WORD.test(w) || VOICE_FORBIDDEN.test(w) || seen.has(w)) fail(file, key);
+  seen.add(w);
+  return w;
+}
+
+function loadEndlessCeiling(raw: unknown, file: string, key: string): EndlessCeiling {
+  const rec = asRecord(raw, file, key);
+  const copies = asCount(req(rec, file, 'copies'), file, 'copies', 1);
+  const intensity = asNumber(req(rec, file, 'intensity'), file, 'intensity');
+  if (!(intensity >= 1)) fail(file, 'intensity');
+  const hazards = asCount(req(rec, file, 'hazards'), file, 'hazards', 0);
+  return { copies, intensity, hazards };
+}
+
+function loadEndlessRank(raw: unknown, file: string, key: string): EndlessRank[] {
+  const list = asArray(raw, file, key);
+  if (list.length < 2) fail(file, key);
+  const seen = new Set<string>();
+  let last = -1;
+  return list.map((item, i) => {
+    const rec = asRecord(item, file, key);
+    const at = asCount(req(rec, file, 'at'), file, 'at', 0);
+    // Ascending, and the first threshold is zero: every run has a word.
+    if (i === 0 ? at !== 0 : at <= last) fail(file, 'at');
+    last = at;
+    return { at, word: asWord(req(rec, file, 'word'), file, 'word', seen) };
+  });
+}
+
+/**
+ * `endless.json`. The halting shape is the same as every other pattern file:
+ * `patterns/endless.json: <key>` on the first key that does not hold. The
+ * cross-file bars (the ceiling against parallelism's endless reach, the
+ * hazard ceiling against the rung) are checked in loadPatterns, where both
+ * files are in hand.
+ */
+function loadEndless(raw: unknown): EndlessSet {
+  const file = 'endless.json';
+  const obj = asRecord(raw, file, 'climb');
+  const climbRaw = asRecord(req(obj, file, 'climb'), file, 'climb');
+  const openingCalls = asCount(req(climbRaw, file, 'openingCalls'), file, 'openingCalls', 1);
+  const approach = asNumber(req(climbRaw, file, 'approach'), file, 'approach');
+  if (!(approach > 0) || approach > 1) fail(file, 'approach');
+  const stepPerCall = asNumber(req(climbRaw, file, 'stepPerCall'), file, 'stepPerCall');
+  if (!(stepPerCall > 0) || stepPerCall > 1) fail(file, 'stepPerCall');
+  const ceilingRaw = asRecord(req(climbRaw, file, 'ceiling'), file, 'ceiling');
+  const ceiling = {} as EndlessClimb['ceiling'];
+  for (const key of TIER_KEYS) {
+    ceiling[key] = loadEndlessCeiling(req(ceilingRaw, file, key), file, key);
+  }
+  const breatherEvery = asCount(req(obj, file, 'breatherEvery'), file, 'breatherEvery', 2);
+  const menuRaw = asRecord(req(obj, file, 'menu'), file, 'menu');
+  const candidates = asCount(req(menuRaw, file, 'candidates'), file, 'candidates', 2);
+  if (candidates > 8) fail(file, 'candidates');
+  const widenRaw = asArray(req(menuRaw, file, 'widenAt'), file, 'widenAt');
+  if (widenRaw.length === 0) fail(file, 'widenAt');
+  let lastWiden = 0;
+  const widenAt = widenRaw.map((w) => {
+    const n = asCount(w, file, 'widenAt', 1);
+    if (n <= lastWiden) fail(file, 'widenAt');
+    lastWiden = n;
+    return n;
+  });
+  const bandsRaw = asArray(req(menuRaw, file, 'bands'), file, 'bands');
+  if (bandsRaw.length !== 2) fail(file, 'bands');
+  const bandLow = asCount(bandsRaw[0], file, 'bands', 1);
+  const bandHigh = asCount(bandsRaw[1], file, 'bands', 1);
+  if (bandHigh <= bandLow) fail(file, 'bands');
+  const lampsRaw = asRecord(req(obj, file, 'lamps'), file, 'lamps');
+  const poolRaw = asRecord(req(lampsRaw, file, 'pool'), file, 'pool');
+  // No entry for the gentlest rung on purpose: endless is not offered there.
+  if (Object.prototype.hasOwnProperty.call(poolRaw, '0')) fail(file, 'pool');
+  const pool = {} as EndlessSet['lamps']['pool'];
+  for (const key of ['1', '2', '3'] as const) {
+    // A missing rung is named by the lever, not by the rung: the reader of
+    // this message is looking for the pool, not for a tier called two.
+    if (!Object.prototype.hasOwnProperty.call(poolRaw, key)) fail(file, 'pool');
+    pool[key] = asCount(poolRaw[key], file, 'pool', 1);
+  }
+  const backOnCleanCall = asCount(
+    req(lampsRaw, file, 'backOnCleanCall'),
+    file,
+    'backOnCleanCall',
+    0,
+  );
+  const scoreRaw = asRecord(req(obj, file, 'score'), file, 'score');
+  const catchLine = asCount(req(scoreRaw, file, 'catch'), file, 'catch', 1);
+  const drop = asCount(req(scoreRaw, file, 'drop'), file, 'drop', 1);
+  const boss = asCount(req(scoreRaw, file, 'boss'), file, 'boss', 1);
+  // Points encode risk: a boss outpays a catch and a catch outpays a drop.
+  if (!(drop < catchLine && catchLine < boss)) fail(file, 'score');
+  const callBonusBase = asCount(req(scoreRaw, file, 'callBonusBase'), file, 'callBonusBase', 1);
+  const chainCap = asCount(req(scoreRaw, file, 'chainCap'), file, 'chainCap', 1);
+  const rankRaw = asRecord(req(obj, file, 'rank'), file, 'rank');
+  if (Object.prototype.hasOwnProperty.call(rankRaw, '0')) fail(file, 'rank');
+  const rank = {} as EndlessSet['rank'];
+  for (const key of ['1', '2', '3'] as const) {
+    rank[key] = loadEndlessRank(req(rankRaw, file, key), file, key);
+  }
+  const chainRaw = asArray(req(obj, file, 'chainWords'), file, 'chainWords');
+  if (chainRaw.length !== chainCap) fail(file, 'chainWords');
+  const chainSeen = new Set<string>();
+  const chainWords = chainRaw.map((w) => asWord(w, file, 'chainWords', chainSeen));
+  const seatRaw = asRecord(req(obj, file, 'seat'), file, 'seat');
+  const timeoutMs = asCount(req(seatRaw, file, 'timeoutMs'), file, 'timeoutMs', 100);
+  const fallback = asString(req(seatRaw, file, 'fallback'), file, 'fallback');
+  if (fallback !== 'seeded') fail(file, 'fallback');
+  const notesRaw = asRecord(req(obj, file, 'notes'), file, 'notes');
+  const notes: Record<string, string> = {};
+  for (const [key, value] of Object.entries(notesRaw)) {
+    const note = asString(value, file, 'notes');
+    if (note.trim() === '') fail(file, 'notes');
+    notes[key] = note;
+  }
+  if (Object.keys(notes).length === 0) fail(file, 'notes');
+  return {
+    climb: { openingCalls, approach, stepPerCall, ceiling },
+    breatherEvery,
+    menu: { candidates, widenAt, bands: [bandLow, bandHigh] },
+    lamps: { pool, backOnCleanCall },
+    score: { catch: catchLine, drop, boss, callBonusBase, chainCap },
+    rank,
+    chainWords,
+    seat: { timeoutMs, fallback },
+    notes,
+  };
+}
+
 /** How far through the round's waves this one is, 0 on the first, 1 on the last. */
 export function waveProgress(wave: number, waves: number): number {
   const last = Math.max(1, waves - 1);
@@ -805,23 +1029,42 @@ function lerp(a: number, b: number, t: number): number {
 }
 
 /**
+ * The climb's own ceiling: 0 is the tape alone, 1 is the last call of a
+ * shift, and 2 is the endless asymptote. A caller that asks for more gets
+ * the asymptote, which is the whole point of stating one (the unbounded
+ * curve that hits the input limit by accident reads as broken).
+ */
+export const CLIMB_MAX = 2;
+
+/**
+ * Walk three stops by the climb: `a` at 0, `b` at 1, `c` at 2. Below 1 this
+ * is the shift's own two-stop lerp unchanged, so every shift measurement
+ * stands as it was and the endless reach is added above it, never inside it.
+ */
+function stops(a: number, b: number, c: number, climb: number): number {
+  return climb <= 1 ? lerp(a, b, climb) : lerp(b, c, climb - 1);
+}
+
+/**
  * Honest copies for this wave: climbs from `copies` to `copiesLater` by
  * wave. Up a shift (`climb` in 0..1) the wave's start is lifted toward
  * `copiesLater` and its end toward `copiesShift`, so the last call starts
- * where the first one ended. A multiplier on the schedule, never a fact.
+ * where the first one ended. Up an endless run (1..2) each end is lifted one
+ * stop further, to `copiesShift` and `copiesEndless`. A multiplier on the
+ * schedule, never a fact.
  */
 export function copiesAt(spec: ParallelismTier, wave: number, waves: number, climb = 0): number {
-  const c = Math.min(1, Math.max(0, climb));
-  const start = lerp(spec.copies, spec.copiesLater, c);
-  const end = lerp(spec.copiesLater, spec.copiesShift, c);
+  const c = Math.min(CLIMB_MAX, Math.max(0, climb));
+  const start = stops(spec.copies, spec.copiesLater, spec.copiesShift, c);
+  const end = stops(spec.copiesLater, spec.copiesShift, spec.copiesEndless, c);
   return Math.round(lerp(start, end, waveProgress(wave, waves)));
 }
 
-/** Fire intensity for this wave: climbs from `intensity` to `intensityLater` by wave, lifted by the shift's climb. */
+/** Fire intensity for this wave: climbs from `intensity` to `intensityLater` by wave, lifted by the shift's climb and then by the endless run's. */
 export function intensityAt(spec: ParallelismTier, wave: number, waves: number, climb = 0): number {
-  const c = Math.min(1, Math.max(0, climb));
-  const start = lerp(spec.intensity, spec.intensityLater, c);
-  const end = lerp(spec.intensityLater, spec.intensityShift, c);
+  const c = Math.min(CLIMB_MAX, Math.max(0, climb));
+  const start = stops(spec.intensity, spec.intensityLater, spec.intensityShift, c);
+  const end = stops(spec.intensityLater, spec.intensityShift, spec.intensityEndless, c);
   return lerp(start, end, waveProgress(wave, waves));
 }
 
@@ -965,6 +1208,7 @@ const FILES = [
   'voice',
   'parallelism',
   'shift',
+  'endless',
 ] as const;
 
 /** Validate every pattern file. Message is `patterns/<file>: <key>` for the first bad key. */
@@ -983,6 +1227,22 @@ export function loadPatterns(raw: unknown): PatternSet {
       if (!covered) fail('ladder.json', 'pools');
     }
   }
+  const parallelism = loadParallelism(obj.parallelism);
+  const endless = loadEndless(obj.endless);
+  // The asymptote is stated in one file and reached in another, so the two
+  // are checked against each other here rather than trusted apart: a reach
+  // past the stated ceiling is a ceiling that does not hold, and a hazard
+  // ceiling above what the rung permits is a number no run can ever meet.
+  for (const key of TIER_KEYS) {
+    const reach = parallelism.tiers[key];
+    const ceiling = endless.climb.ceiling[key];
+    if (reach.copiesEndless > ceiling.copies) fail('endless.json', 'ceiling');
+    if (reach.intensityEndless > ceiling.intensity) fail('endless.json', 'ceiling');
+    const rung = ladder.rungs.find((r) => String(r.tier) === key);
+    if (!rung) fail('ladder.json', 'rungs');
+    if (!rung.hazards && ceiling.hazards !== 0) fail('endless.json', 'hazards');
+    if (rung.hazards && ceiling.hazards === 0) fail('endless.json', 'hazards');
+  }
   return {
     paths,
     formations: loadFormations(obj.formations),
@@ -993,8 +1253,9 @@ export function loadPatterns(raw: unknown): PatternSet {
     player: loadPlayer(obj.player),
     drops: loadDrops(obj.drops),
     voice: loadVoice(obj.voice),
-    parallelism: loadParallelism(obj.parallelism),
+    parallelism,
     shift: loadShift(obj.shift),
+    endless,
   };
 }
 
@@ -1040,4 +1301,5 @@ export const DEFAULT_PATTERNS: PatternSet = loadPatterns({
   voice: voiceJson,
   parallelism: parallelismJson,
   shift: shiftJson,
+  endless: endlessJson,
 });

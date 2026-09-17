@@ -2,6 +2,7 @@
 // `pnpm transcript vibe-typer [--tier 0|1|2|3] [--seed n] [--level n] [--endless yes|no]
 //                             [--bot idle|perfect|typist:wpm[:rate]] [--stack name] [--all-levels]`
 // `pnpm transcript ghost --fixture name [--bot idle|sweeper|reader] [--tier 0|1|2|3] [--climb 0|1]`
+// `pnpm transcript ghost --endless yes [--calls n] [--tier 0|1|2|3] [--seed n] [--bot ...]`
 //
 // The whole chat of a run, as one command, so the Director can read what a
 // cabinet actually says without playing it in a browser or reading a diff of
@@ -23,6 +24,7 @@ import { overlayDir, resolveTapeFile, tapeRoster } from './play.mjs';
 const USAGE = `usage: pnpm transcript vibe-typer [--tier 0|1|2|3] [--seed n] [--level n] [--endless yes|no]
                                   [--bot idle|perfect|typist:wpm[:rate]] [--stack name] [--all-levels] [--tapes dir]
        pnpm transcript ghost --fixture name [--bot idle|sweeper|reader] [--tier 0|1|2|3] [--climb 0|1] [--tapes dir]
+       pnpm transcript ghost --endless yes [--calls n] [--tier 0|1|2|3] [--seed n] [--bot idle|sweeper|reader]
        pnpm transcript --self-check
 exit: 0 ok · 1 nothing to read, or a leak · 2 usage`;
 
@@ -37,6 +39,7 @@ const FLAGS = new Set([
   'seed',
   'level',
   'endless',
+  'calls',
   'stack',
   'tapes',
   'all-levels',
@@ -240,11 +243,63 @@ async function vibe(flags, selfCheck) {
   return 0;
 }
 
+/**
+ * An endless run, printed call by call. The cabinet builds the rows (the
+ * header words, the flavor, the climb step in words, the tell, every caption
+ * and aside, the score lines); this runner loads the roster and prints them,
+ * then reads back what it printed the way every other runner here does.
+ */
+async function ghostEndless(flags, g, loadTape, overlay) {
+  const botName = flags.bot ?? 'reader';
+  if (!GHOST_BOTS.includes(botName)) die(`unknown bot ${botName}; use ${GHOST_BOTS.join(', ')}`);
+  const tier = requireInt(flags.tier, 'tier', 0, 3) ?? g.DEFAULT_DIFFICULTY;
+  // The cabinet refuses the gentlest rung by name; say so as usage rather
+  // than letting the refusal arrive as a stack.
+  if (tier === 0) die(g.ENDLESS_NO_TIER_ZERO);
+  const calls = requireInt(flags.calls, 'calls', 1, g.CALLS_MAX) ?? 12;
+  const seed = requireInt(flags.seed, 'seed', 0, Number.MAX_SAFE_INTEGER) ?? 1;
+  const roster = [];
+  for (const name of tapeRoster(overlay)) {
+    const file = resolveTapeFile(name, overlay);
+    if (!file) continue;
+    const json = readJsonFile(file, `fixture ${name}`);
+    try {
+      roster.push({ name, tape: loadTape(json) });
+    } catch (err) {
+      throw cliError(`fixture ${name}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  if (roster.length === 0) {
+    console.error('nothing to read: no tapes under fixtures/tapes');
+    return 1;
+  }
+  const run = g.runEndless(roster, {
+    seed,
+    tier,
+    calls,
+    bot: (round) => g.botFor(botName, round),
+  });
+  console.log(
+    `endless · tier ${tier} · bot ${botName} · seed ${seed} · calls ${run.calls.length} · ended ${run.ended}`,
+  );
+  const rows = g.endlessWords(run);
+  for (const row of rows) console.log(row);
+  for (const line of g.endlessScoreLines(run)) console.log(line);
+  if (rows.length === 0) {
+    console.error('nothing was said: the run printed no call');
+    return 1;
+  }
+  const leaks = leaksIn(rows);
+  for (const leak of leaks) console.error(`leak: ${leak}`);
+  return leaks.length > 0 ? 1 : 0;
+}
+
 async function ghost(flags) {
   const overlay = overlayDir(flags);
   const fixture = flags.fixture ?? 'naive-ndjson';
+  const endless = requireYesNo(flags.endless, 'endless');
   const tapeFile = resolveTapeFile(fixture, overlay);
-  if (!tapeFile) {
+  if (!tapeFile && !endless) {
     console.error(`unknown fixture ${fixture}; have: ${tapeRoster(overlay).join(', ')}`);
     return 2;
   }
@@ -268,6 +323,9 @@ async function ghost(flags) {
     outFile: '.transcript.tape.mjs',
     what: 'tape-core',
   });
+  if (requireYesNo(flags.endless, 'endless')) {
+    return ghostEndless(flags, g, loadTape, overlay);
+  }
   const json = readJsonFile(tapeFile, `fixture ${fixture}`);
   let tape;
   try {
@@ -355,14 +413,20 @@ async function main() {
     die(`unknown cabinet ${cabinet}; use ${CABINETS.join(' or ')}\n${USAGE}`);
   }
   if (cabinet === 'ghost') {
-    if (flags['all-levels'] || flags.seed !== undefined || flags.level !== undefined) {
-      die(`ghost takes no --all-levels, --seed or --level\n${USAGE}`);
+    if (flags['all-levels'] || flags.level !== undefined) {
+      die(`ghost takes no --all-levels or --level\n${USAGE}`);
+    }
+    if (flags.seed !== undefined && flags.endless === undefined) {
+      die(`ghost takes --seed only with --endless yes\n${USAGE}`);
+    }
+    if (flags.calls !== undefined && flags.endless === undefined) {
+      die(`ghost takes --calls only with --endless yes\n${USAGE}`);
     }
     if (selfCheck) die(`--self-check runs the typing cabinet; drop the cabinet name\n${USAGE}`);
     process.exit(await ghost(flags));
   }
-  if (flags.fixture !== undefined || flags.climb !== undefined) {
-    die(`vibe-typer takes no --fixture or --climb\n${USAGE}`);
+  if (flags.fixture !== undefined || flags.climb !== undefined || flags.calls !== undefined) {
+    die(`vibe-typer takes no --fixture, --climb or --calls\n${USAGE}`);
   }
   // The self-check is one short level at the gentlest tier with the fast
   // typist: it asserts the runner still prints something and that what it

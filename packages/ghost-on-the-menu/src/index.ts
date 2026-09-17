@@ -27,10 +27,12 @@ export type {
 } from './types';
 export { prepassRound } from './prepass';
 export { bossKindFor, createRoundState, isDecoy, revealOnHit, stepRound } from './sim';
+export type { RoundStateOpts } from './sim';
 export {
   attachedPatterns,
   burstActive,
   cadenceAt,
+  CLIMB_MAX,
   DEFAULT_PATTERNS,
   intensityAt,
   emptyLineBag,
@@ -39,7 +41,50 @@ export {
   shuffleOrder,
   voiceWaveKey,
 } from './patterns';
-export type { ParallelismTier, PatternSet, PilotLever, ShiftSet } from './patterns';
+export type {
+  EndlessCeiling,
+  EndlessClimb,
+  EndlessRank,
+  EndlessScore,
+  EndlessSet,
+  ParallelismTier,
+  PatternSet,
+  PilotLever,
+  ShiftSet,
+} from './patterns';
+export {
+  approachAt,
+  CALLS_MAX,
+  chainWord,
+  decodeEndless,
+  DEFAULT_DIFFICULTY,
+  densityBand,
+  encodeEndless,
+  endlessPlan,
+  ENDLESS_NO_TIER_ZERO,
+  endlessScoreLines,
+  endlessWords,
+  isBreather,
+  placeWord,
+  rankWord,
+  reachAt,
+  reachWord,
+  runEndless,
+  SEED_SPACE,
+  widenStep,
+} from './endless';
+export type {
+  DensityBand,
+  EndlessCall,
+  EndlessCandidate,
+  EndlessDecode,
+  EndlessLines,
+  EndlessOpts,
+  EndlessPlanCall,
+  EndlessRun,
+  EndlessRunOpts,
+  EndlessTape,
+} from './endless';
 export {
   climbAt,
   decodeShift,
@@ -50,10 +95,13 @@ export {
   hashWords,
   lengthWord,
   ordinalWord,
+  codeWords,
   rosterCheck,
   rosterFits,
   seededRandom,
   shiftCard,
+  valueFromWords,
+  wordsFromValue,
 } from './shift';
 export type { ShiftDecode, ShiftDraw } from './shift';
 export { labelTape } from './label';

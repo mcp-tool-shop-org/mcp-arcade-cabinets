@@ -1,0 +1,138 @@
+{
+  "climb": {
+    "openingCalls": 3,
+    "approach": 0.6,
+    "stepPerCall": 0.08,
+    "ceiling": {
+      "0": {
+        "copies": 2,
+        "intensity": 1.3,
+        "hazards": 0
+      },
+      "1": {
+        "copies": 7,
+        "intensity": 2.6,
+        "hazards": 0
+      },
+      "2": {
+        "copies": 7,
+        "intensity": 2.6,
+        "hazards": 0
+      },
+      "3": {
+        "copies": 6,
+        "intensity": 2.4,
+        "hazards": 4
+      }
+    }
+  },
+  "breatherEvery": 5,
+  "menu": {
+    "candidates": 3,
+    "widenAt": [2, 6, 11],
+    "bands": [30, 36]
+  },
+  "lamps": {
+    "pool": {
+      "1": 4,
+      "2": 5,
+      "3": 3
+    },
+    "backOnCleanCall": 1
+  },
+  "score": {
+    "catch": 100,
+    "drop": 25,
+    "boss": 500,
+    "callBonusBase": 50,
+    "chainCap": 8
+  },
+  "rank": {
+    "1": [
+      {
+        "at": 0,
+        "word": "clocked in"
+      },
+      {
+        "at": 500,
+        "word": "took the calls"
+      },
+      {
+        "at": 2000,
+        "word": "worked the board"
+      },
+      {
+        "at": 5000,
+        "word": "ran the floor"
+      },
+      {
+        "at": 12000,
+        "word": "owned the rig"
+      }
+    ],
+    "2": [
+      {
+        "at": 0,
+        "word": "clocked in"
+      },
+      {
+        "at": 1500,
+        "word": "took the calls"
+      },
+      {
+        "at": 6000,
+        "word": "worked the board"
+      },
+      {
+        "at": 18000,
+        "word": "ran the floor"
+      },
+      {
+        "at": 45000,
+        "word": "owned the rig"
+      }
+    ],
+    "3": [
+      {
+        "at": 0,
+        "word": "clocked in"
+      },
+      {
+        "at": 300,
+        "word": "took the calls"
+      },
+      {
+        "at": 1200,
+        "word": "worked the board"
+      },
+      {
+        "at": 4000,
+        "word": "ran the floor"
+      },
+      {
+        "at": 12000,
+        "word": "owned the rig"
+      }
+    ]
+  },
+  "chainWords": ["linked", "warm", "steady", "hot", "rolling", "sharp", "blazing", "unbroken"],
+  "seat": {
+    "timeoutMs": 4000,
+    "fallback": "seeded"
+  },
+  "notes": {
+    "openingCalls": "Three calls sit flat on the tape-alone reach before anything rises: density held low for an opening stretch reads as an invitation, and three calls is about five minutes at the round lengths waves.json already ships.",
+    "approach": "The opening band plays below the tape as it stands, not at it: the copies and the fire of an endless burst are scaled by this fraction on the first call and rise straight to the tape-alone reach by the last call of the band. It is endless's own band and it relaxes nothing: the tape-alone bars and the shift bar are measured on the shipped set, where this lever does not exist.",
+    "stepPerCall": "Eight hundredths a call, so the shift's full reach arrives near the fifteenth call and the ceiling near the twenty-eighth. A curve with a long tail, not a step per call; a run that ends at the tenth call never met the shift's own top.",
+    "ceiling": "An explicit asymptote per tier, stated here rather than left to the multiplication: an unbounded curve hits the input limit by accident and reads as broken. Each tier's copies and intensity are the reach parallelism.json ends on, and hazards is what the rung permits, so tiers zero through live carry none and hardcore carries four.",
+    "breatherEvery": "Every fifth call has no return fire at all. Scheduled by count and independent of the climb, so the rest arrives on the same beat whether the run is easy or at the ceiling.",
+    "pool": "Endless owns its lamps rather than borrowing the rung's three, because the pool is what makes a run a run: measured, a mover at live loses about a lamp and a half a tape and at seat nearly three, so three lamps ended a run on its second call, before the opening band was over and long before the reach had risen. Five at live, four at seat, three at hardcore, where one lamp is the rung's whole point. The gentlest rung has no entry: it cannot take a last lamp at all, so endless is not offered there.",
+    "widenAt": "The roster slice and the flavor list widen at the third, seventh and twelfth call. The first widening lands before the reach starts to rise, so novelty arrives before lethality does.",
+    "bands": "A tape's density band is read off how much it said on the wire: under the first number is thin, under the second is even, at or above it is thick. On the twenty tapes that ship, that splits the roster seven, nine and four, so all three bands are real and the menu can cover them.",
+    "candidates": "Three tapes on the menu each call. Enough for a real choice by the seat, few enough that the cabinet can cover the feature space with them.",
+    "score": "A boss is five catches and a drop is a quarter of one, so the points encode the risk. The call bonus starts at fifty and rises with the reach, so lasting long pays without time itself ever being scored.",
+    "chainCap": "Eight whole links. A discrete multiplier that resets to one is legible where a decaying one is not, and eight is as far as a single call's catches and drops can carry it.",
+    "rank": "Thresholds per tier on the banked score, set from the scripted bots over twenty seeds with the pool these levers give: at live a mover banks between twelve and fifty-six thousand and a reader between two hundred and nine thousand, and the tighter rungs are an order smaller. The middle words are where an ordinary run lands and the top word is a run that went further than the bots do. No row for the gentlest rung: endless is not offered there. The words are plain drafts and the lead rewrites them.",
+    "seat": "Four seconds for the seat to pick off the menu and write its tell; past that the seeded pick stands and the run's record says the call was seeded."
+  }
+}

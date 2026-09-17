@@ -400,10 +400,23 @@ export function revealOnHit(enemy: Enemy): void {
   enemy.caughtY = PARKING_Y;
 }
 
-export function createRoundState(round: Round): RoundState {
+/**
+ * Options a caller may set on a fresh round. `lives` is the lamp pool a mode
+ * owns rather than the rung's: endless carries one pool across its calls
+ * (G34), and it sets both the pool and the bezel's length here rather than
+ * writing `state.lives` after the fact or once a tick, which is what the
+ * immortal seat run and the first endless draft both did.
+ */
+export interface RoundStateOpts {
+  /** Lamps the round starts with, and the bezel's length. Default is the rung's. */
+  lives?: number;
+}
+
+export function createRoundState(round: Round, opts: RoundStateOpts = {}): RoundState {
   const patterns = attachedPatterns(round);
   attachPatterns(round, patterns);
   const rung = rungOf(patterns, round.tier);
+  const lamps = Math.max(1, Math.floor(opts.lives ?? rung.lamps));
   const player = patterns.player;
   const fogBeats: { t: number; x: number }[] = [];
   const enemies: Enemy[] = [];
@@ -469,8 +482,8 @@ export function createRoundState(round: Round): RoundState {
     scene: null,
     hitstop: 0,
     shake: 0,
-    lives: rung.lamps,
-    maxLives: rung.lamps,
+    lives: lamps,
+    maxLives: lamps,
     fog: null,
     blind: 0,
     wave: 0,
@@ -924,7 +937,10 @@ function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void 
     drop.alive = false;
     state.dropCatches += 1;
     if (drop.kind === 'lamp') {
-      state.lives = Math.min(meta.rung.lamps, state.lives + 1);
+      // The pool the round was built with, not the rung's: a mode that owns
+      // its own pool (endless) must not have a caught lamp clamped back to
+      // the rung's three. For every other caller the two are the same number.
+      state.lives = Math.min(state.maxLives, state.lives + 1);
     } else {
       state.spreadT = spec.duration;
     }

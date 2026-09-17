@@ -113,7 +113,10 @@ export interface Round {
   seed: number;
   waveBounds: WaveBound[];
   tier: 0 | 1 | 2 | 3;
-  /** How far up a shift's climb this round sits, 0 alone, 1 on the last call. Absent is 0. */
+  /**
+   * How far up the climb this round sits: 0 alone, 1 on the last call of a
+   * shift, up to 2 at an endless run's ceiling. Absent is 0.
+   */
   climb?: number;
   /** Authored call flavor. Absent on picker-alone (no flavorIndex). */
   flavor?: Flavor;
@@ -337,7 +340,7 @@ export interface PrepassOpts {
   patterns?: PatternSet;
   /** Override derived tier so a fixture tape can play at live or hardcore. */
   tier?: 0 | 1 | 2 | 3 | undefined;
-  /** The shift's climb for this call, 0..1; the parallelism levers read it. */
+  /** The climb for this call, 0..2 (1 is a shift's last call, 2 the endless ceiling); the parallelism levers read it. */
   climb?: number;
   /** Index into shift.json flavors. Absent is picker-alone: no extras. */
   flavorIndex?: number;

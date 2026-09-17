@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // `pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1]`
+// `pnpm test:play ghost --endless yes [--calls n] [--tier 0|1|2|3] [--seed n] [--bot ...]`
 // `pnpm test:play vibe-typer [--tier 0|1|2|3] [--bot idle|perfect|typist:wpm[:rate]] [--seed n] [--stack name] [--level n] [--endless yes]`
 // A scripted play-through is the acceptance test for a playable slice. Each
 // cabinet registers a `play(args)` that returns a transcript; this runner
@@ -12,6 +13,7 @@ import path from 'node:path';
 import { die, isMain, parseArgv, runMain } from './lib/cli.mjs';
 
 const USAGE = `usage: pnpm test:play ghost [--fixture name] [--bot idle|sweeper|reader] [--seat mcp] [--tier 0|1|2|3] [--climb 0|1] [--tapes dir]
+       pnpm test:play ghost --endless yes [--calls n] [--tier 0|1|2|3] [--seed n] [--bot idle|sweeper|reader]
        pnpm test:play vibe-typer [--tier 0|1|2|3] [--bot idle|perfect|typist:wpm[:rate]] [--seed n] [--stack name] [--level n] [--endless yes|no]
 exit: 0 ok · 1 play-through failed · 2 usage · 3 no build`;
 
@@ -27,6 +29,7 @@ const FLAGS = new Set([
   'stack',
   'level',
   'endless',
+  'calls',
 ]);
 const CABINETS = ['ghost', 'vibe-typer'];
 /** Vibe Typer's bots: the typist carries its speed and its rate of mistypes. */
@@ -227,8 +230,13 @@ async function playTyper(flags) {
   if (flags.stack !== undefined && !TYPER_STACKS.includes(flags.stack)) {
     die(`unknown stack ${flags.stack}; have: ${TYPER_STACKS.join(', ')}`);
   }
-  if (flags.fixture !== undefined || flags.seat !== undefined || flags.climb !== undefined) {
-    die(`vibe-typer takes no --fixture, --seat or --climb\n${USAGE}`);
+  if (
+    flags.fixture !== undefined ||
+    flags.seat !== undefined ||
+    flags.climb !== undefined ||
+    flags.calls !== undefined
+  ) {
+    die(`vibe-typer takes no --fixture, --seat, --climb or --calls\n${USAGE}`);
   }
   const args = {};
   const tier = requireTier(flags.tier);
@@ -298,9 +306,24 @@ async function main() {
   if (flags.seat !== undefined && flags.seat !== 'mcp') {
     die(`unknown seat ${flags.seat}; use mcp`);
   }
+  // Endless plays the whole roster as one run, so it takes no fixture and no
+  // climb of its own: the climb is the run's, out of `endless.json`.
+  const endless = requireYesNo(flags.endless, 'endless');
+  if (endless) {
+    if (flags.fixture !== undefined || flags.climb !== undefined || flags.seat !== undefined) {
+      die(`--endless takes no --fixture, --climb or --seat\n${USAGE}`);
+    }
+    args.endless = true;
+    const calls = requireCount(flags.calls, 'calls');
+    if (calls !== undefined) args.calls = calls;
+    const seed = requireCount(flags.seed, 'seed');
+    if (seed !== undefined) args.seed = seed;
+  } else if (flags.calls !== undefined || flags.seed !== undefined) {
+    die(`--calls and --seed need --endless yes\n${USAGE}`);
+  }
 
   const overlay = overlayDir(flags);
-  requireFixture(flags.fixture ?? 'naive-ndjson', overlay);
+  if (!endless) requireFixture(flags.fixture ?? 'naive-ndjson', overlay);
 
   const pkg = 'ghost-on-the-menu';
   const mod = await import(pathToFileURL(path.resolve(`packages/${pkg}/dist/play.js`)).href).catch(

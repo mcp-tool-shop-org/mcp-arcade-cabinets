@@ -1,6 +1,6 @@
 import { factFor, type Tape, type TapeRow } from '@mcp-arcade-cabinets/tape-core';
 
-import { attachPatterns, DEFAULT_PATTERNS, deriveTier, type WaveTier } from './patterns';
+import { attachPatterns, CLIMB_MAX, DEFAULT_PATTERNS, deriveTier, type WaveTier } from './patterns';
 import { flavorAt } from './shift';
 import {
   FIELD,
@@ -381,7 +381,7 @@ export function prepassRound(tape: Tape, opts: PrepassOpts = {}): Round {
     wave.max,
   );
   duration = fitSpan(beats, waveBounds, duration, wave.tail, wave.min, wave.max);
-  const climb = Math.min(1, Math.max(0, opts.climb ?? 0));
+  const climb = Math.min(CLIMB_MAX, Math.max(0, opts.climb ?? 0));
   const round: Round = { tapeId: tape.bout_id, duration, beats, seed, waveBounds, tier, climb };
   if (opts.flavorIndex !== undefined) {
     round.flavor = flavorAt(opts.flavorIndex, patterns);

@@ -28,9 +28,62 @@ export type ShiftDecode =
 
 const WORD_BITS = 6;
 const CODE_WORDS = 4;
-const DIFFICULTIES = 4;
-const CHECK_SPACE = 16;
+/** Difficulty indices a code can carry; the shell's list is four long. */
+export const DIFFICULTIES = 4;
+/** Values the roster check occupies; four bits. */
+export const CHECK_SPACE = 16;
 const CODE_SPACE = 2 ** (WORD_BITS * CODE_WORDS);
+
+/**
+ * Spell a value as `count` words off the two alternating lists, six bits a
+ * word, most significant first. Extracted from encodeShift so the endless
+ * code (five words: a seed, the difficulty and the roster check) spells
+ * itself the same way instead of a second, drifting copy of the arithmetic.
+ */
+export function wordsFromValue(
+  value: number,
+  count: number,
+  set: PatternSet = DEFAULT_PATTERNS,
+): string[] {
+  const { even, odd } = set.shift.words;
+  const words: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const shift = WORD_BITS * (count - 1 - i);
+    const digit = Math.floor(value / 2 ** shift) % 2 ** WORD_BITS;
+    words.push((i % 2 === 0 ? even : odd)[digit]!);
+  }
+  return words;
+}
+
+/** Split a code into its words: lower case, spaces, commas, dashes or dots. */
+export function codeWords(code: string): string[] {
+  return code
+    .toLowerCase()
+    .trim()
+    .split(/[\s,\-·]+/)
+    .filter(Boolean);
+}
+
+/**
+ * Read `count` words back to the value `wordsFromValue` spelled, or null
+ * when a word is off its list or the count is wrong (a transposition of an
+ * even and an odd word is heard here, which is the point of two lists).
+ */
+export function valueFromWords(
+  words: readonly string[],
+  count: number,
+  set: PatternSet = DEFAULT_PATTERNS,
+): number | null {
+  if (words.length !== count) return null;
+  const { even, odd } = set.shift.words;
+  let value = 0;
+  for (let i = 0; i < count; i++) {
+    const digit = (i % 2 === 0 ? even : odd).indexOf(words[i]!);
+    if (digit === -1) return null;
+    value = value * 2 ** WORD_BITS + digit;
+  }
+  return value;
+}
 
 /** Same hash the prepass uses for its seed: FNV-1a over UTF-16 units. */
 export function hashWords(s: string): number {
@@ -179,14 +232,7 @@ export function encodeShift(
   const value =
     (rankOf(roster, draw.names) * DIFFICULTIES + draw.difficulty) * CHECK_SPACE +
     rosterCheck(roster);
-  const { even, odd } = set.shift.words;
-  const words: string[] = [];
-  for (let i = 0; i < CODE_WORDS; i++) {
-    const shift = WORD_BITS * (CODE_WORDS - 1 - i);
-    const digit = Math.floor(value / 2 ** shift) % 2 ** WORD_BITS;
-    words.push((i % 2 === 0 ? even : odd)[digit]!);
-  }
-  return words.join(' ');
+  return wordsFromValue(value, CODE_WORDS, set).join(' ');
 }
 
 /** Read a code back: the draw it names, or why it does not name one here. */
@@ -195,19 +241,9 @@ export function decodeShift(
   code: string,
   set: PatternSet = DEFAULT_PATTERNS,
 ): ShiftDecode {
-  const words = code
-    .toLowerCase()
-    .trim()
-    .split(/[\s,\-·]+/)
-    .filter(Boolean);
-  if (words.length !== CODE_WORDS) return { ok: false, why: 'not a code' };
-  const { even, odd } = set.shift.words;
-  let value = 0;
-  for (let i = 0; i < CODE_WORDS; i++) {
-    const digit = (i % 2 === 0 ? even : odd).indexOf(words[i]!);
-    if (digit === -1) return { ok: false, why: 'not a code' };
-    value = value * 2 ** WORD_BITS + digit;
-  }
+  const read = valueFromWords(codeWords(code), CODE_WORDS, set);
+  if (read === null) return { ok: false, why: 'not a code' };
+  let value = read;
   const check = value % CHECK_SPACE;
   value = Math.floor(value / CHECK_SPACE);
   const difficulty = (value % DIFFICULTIES) as 0 | 1 | 2 | 3;
