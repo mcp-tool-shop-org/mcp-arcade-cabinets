@@ -81,15 +81,11 @@ import { TAPES } from './tapes';
  */
 const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
 /**
- * Director: seconds the end scene holds before the next tape starts by
- * itself. A round used to stop at its scene until the Next button was
- * clicked, every tape; the Director's word (2026-09-17) is that play flows
- * from one tape into the next. The hold is long enough to read the end line
- * and the trophies; a click on the field inside it replays this tape, and
- * the Next button skips the wait. A mount with nothing to flow into (none
- * offered) holds as before.
+ * Director (2026-09-17): a round flows into the next tape. The scene is a
+ * breath, long enough to read the closing line, not a hold; a seven-second
+ * wait read as the opposite of flowing. Escape holds it for a reader.
  */
-export const NEXT_TAPE_S = 7;
+export const NEXT_TAPE_S = 2.5;
 
 const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
