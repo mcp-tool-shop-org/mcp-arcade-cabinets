@@ -82,6 +82,30 @@ export interface FireRhythm {
   burst: number;
   spread: number;
   speed: number;
+  /**
+   * Whether a formation sprite fires on its way in, once it is on the field,
+   * and not only from the hover. Measured 2026-09-17 with the levers as they
+   * stood: a player holding fire killed eighteen of twenty-seven sprites on
+   * their entry paths, six ever hovered, and the formation fired zero to six
+   * shots in a hundred-and-five-second round, so only the boss ever attacked.
+   * Off by default; each tier's fire.json turns it on.
+   */
+  onEntry: boolean;
+  /**
+   * The spawn classes that fire this rhythm. Grid and menu when the rhythm
+   * does not say, which is what shipped: two of a wave's five sprites, and
+   * the grid dives after a few seconds of hover, so the formation's whole
+   * voice was one menu sprite a wave. A tier that names more classes has a
+   * formation that answers back.
+   */
+  shooters: readonly SpriteClass[];
+  /**
+   * When the first shot comes, as a fraction of the period. One is the old
+   * behavior (a sprite waits a whole period before its first shot, which a
+   * sprite that lives a second on its path never reaches); a smaller number
+   * brings the first shot forward. In (0, 1].
+   */
+  firstShot: number;
 }
 
 /**
@@ -164,6 +188,16 @@ export interface LadderRung {
   hazards: boolean;
   /** Rage from the first shot, not from half health. */
   rageStart: boolean;
+  /**
+   * How many of the ship's shots may be in the air at once; null when the
+   * rung does not say (null rather than Infinity so the loaded set survives
+   * a JSON round trip). The ship fires eight a second at a speed that
+   * crosses the field in under a second, so with no cap a held button is a
+   * wall of six that kills a sprite the frame it comes on. Galaga's rule is
+   * two; a cap makes the aim matter and gives a formation time to enter,
+   * hover, fire and dive.
+   */
+  shotsInFlight: number | null;
 }
 
 export interface WaveTier {
@@ -336,11 +370,33 @@ function asDeriveTier(value: unknown, file: string, key: string): 0 | 1 | 2 {
 
 function loadRhythm(value: unknown, file: string, key: string): FireRhythm {
   const obj = asRecord(value, file, key);
+  // Both optional, so a rhythm that predates them reads as it always did.
+  let onEntry = false;
+  if (Object.prototype.hasOwnProperty.call(obj, 'onEntry')) {
+    onEntry = asBoolean(obj.onEntry, file, 'onEntry');
+  }
+  let shooters: SpriteClass[] = ['grid', 'menu'];
+  if (Object.prototype.hasOwnProperty.call(obj, 'shooters')) {
+    shooters = asArray(obj.shooters, file, 'shooters').map((c) => {
+      const name = asString(c, file, 'shooters');
+      if (!(SPAWN_CLASSES as readonly string[]).includes(name)) fail(file, 'shooters');
+      return name as SpriteClass;
+    });
+    if (shooters.length === 0) fail(file, 'shooters');
+  }
+  let firstShot = 1;
+  if (Object.prototype.hasOwnProperty.call(obj, 'firstShot')) {
+    firstShot = asNumber(obj.firstShot, file, 'firstShot');
+    if (firstShot <= 0 || firstShot > 1) fail(file, 'firstShot');
+  }
   return {
     period: asNumber(req(obj, file, 'period'), file, 'period'),
     burst: asNumber(req(obj, file, 'burst'), file, 'burst'),
     spread: asNumber(req(obj, file, 'spread'), file, 'spread'),
     speed: asNumber(req(obj, file, 'speed'), file, 'speed'),
+    onEntry,
+    shooters,
+    firstShot,
   };
 }
 
@@ -556,6 +612,12 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
   if (derive.length === 0) fail(file, 'derive');
   const rungs = asArray(req(obj, file, 'rungs'), file, 'rungs').map((item) => {
     const rec = asRecord(item, file, 'rungs');
+    // Optional: a rung that does not say (or says null) keeps the uncapped column.
+    let shotsInFlight: number | null = null;
+    if (Object.prototype.hasOwnProperty.call(rec, 'shotsInFlight') && rec.shotsInFlight !== null) {
+      shotsInFlight = asNumber(rec.shotsInFlight, file, 'shotsInFlight');
+      if (!Number.isInteger(shotsInFlight) || shotsInFlight < 1) fail(file, 'shotsInFlight');
+    }
     return {
       tier: asTier(req(rec, file, 'tier'), file, 'tier'),
       pools: asArray(req(rec, file, 'pools'), file, 'pools').map((p) => asString(p, file, 'pools')),
@@ -567,6 +629,7 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
       grace: asNumber(req(rec, file, 'grace'), file, 'grace'),
       hazards: asBoolean(req(rec, file, 'hazards'), file, 'hazards'),
       rageStart: asBoolean(req(rec, file, 'rageStart'), file, 'rageStart'),
+      shotsInFlight,
     };
   });
   const seen = new Set(rungs.map((r) => r.tier));

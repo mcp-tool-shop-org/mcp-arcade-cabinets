@@ -74,6 +74,16 @@ import { TAPES } from './tapes';
  * is never PROD, so the seats stay on there either way.
  */
 const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
+/**
+ * Director: seconds the end scene holds before the next tape starts by
+ * itself. A round used to stop at its scene until the Next button was
+ * clicked, every tape; the Director's word (2026-09-17) is that play flows
+ * from one tape into the next. The hold is long enough to read the end line
+ * and the trophies; a click on the field inside it replays this tape, and
+ * the Next button skips the wait. A mount with nothing to flow into (none
+ * offered) holds as before.
+ */
+export const NEXT_TAPE_S = 7;
 
 const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
@@ -756,6 +766,8 @@ export function mountGhost(
   let last = performance.now();
   let raf = 0;
   let musicEnded = false;
+  /** The frame clock at which the end scene first showed; null while a round is on. */
+  let sceneAt: number | null = null;
   let spokenSpawn = '';
   const seatSay = (text: string) => {
     if (left) return;
@@ -1191,6 +1203,16 @@ export function mountGhost(
       ctx.fillStyle = '#8a6a3a';
       ctx.fillRect(0, 0, FIELD.width, 4);
       nextBtn.disabled = false;
+      // The scene holds NEXT_TAPE_S, then the play flows into the next tape
+      // on its own, the same path the Next button takes.
+      if (sceneAt === null) sceneAt = now;
+      else if (onNext && now - sceneAt >= NEXT_TAPE_S * 1000) {
+        leave();
+        onNext();
+        return;
+      }
+    } else {
+      sceneAt = null;
     }
     raf = requestAnimationFrame(frame);
   }

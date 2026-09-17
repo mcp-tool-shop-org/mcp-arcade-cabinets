@@ -1288,14 +1288,21 @@ function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
     maybeLedgerDump(state, meta, enemy);
     return;
   }
-  if (enemy.sprite !== 'grid' && enemy.sprite !== 'menu') return;
   if (meta.round.flavor && !flavorAllows(meta, 'rain')) return;
   if (isDecoy(enemy) && !decoysMayFire(meta)) return;
   const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].formation;
   if (!rhythm) return;
-  if (enemy.mode !== 'hover') return;
+  if (!rhythm.shooters.includes(enemy.sprite)) return;
+  // From the hover, and, where the tier's lever says so, on the way in once
+  // the sprite is on the field. Hover alone was the whole game's silence: a
+  // player holding fire kills nearly every sprite on its entry path, so the
+  // formation never reached the mode it was allowed to shoot from.
+  const entering = rhythm.onEntry && enemy.mode === 'enter' && enemy.y >= 0;
+  if (enemy.mode !== 'hover' && !entering) return;
   const period = rhythm.period * fireScale(state, meta);
-  if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + period;
+  if (enemy.fireAt === Number.POSITIVE_INFINITY) {
+    enemy.fireAt = state.t + period * rhythm.firstShot;
+  }
   if (state.t < enemy.fireAt) return;
   enemy.fireAt = state.t + period;
   fireSpread(state.enemyShots, enemy.x + enemy.w / 2, enemy.y + enemy.h, rhythm);
@@ -1373,7 +1380,12 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   state.player.x = Math.max(0, Math.min(FIELD.width - state.player.w, state.player.x));
 
   state.fireCooldown = Math.max(0, state.fireCooldown - dt);
-  if (input.fire && state.fireCooldown <= 0) {
+  // The rung's cap on shots in the air: a held button is a column, not a
+  // wall, so a formation can come onto the field and be shot at rather than
+  // shot on the frame it appears.
+  const inFlight = state.shots.length;
+  const mayFire = inFlight < (meta?.rung.shotsInFlight ?? Number.POSITIVE_INFINITY);
+  if (input.fire && state.fireCooldown <= 0 && mayFire) {
     const cx = state.player.x + state.player.w / 2;
     const y = state.player.y - SHOT_H;
     if (state.spreadT > 0) {
