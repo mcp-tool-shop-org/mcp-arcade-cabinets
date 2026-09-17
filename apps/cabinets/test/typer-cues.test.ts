@@ -28,7 +28,7 @@ const EVERY: Event[] = [
   { kind: 'message', who: 'user' },
   { kind: 'message', who: 'user', nag: true },
   { kind: 'message', who: 'agent' },
-  { kind: 'compaction' },
+  { kind: 'compaction', streak: 4, hype: 2 },
   { kind: 'milestone', name: 'seed' },
   { kind: 'copilot', on: true },
   { kind: 'copilot', on: false },
@@ -97,7 +97,7 @@ describe('the cue table', () => {
   it('shakes a bad line and a compaction, and never a bad key', () => {
     expect(cueFor({ kind: 'line', ok: false }).shake).toBe(SHAKE_BAD_LINE);
     expect(cueFor({ kind: 'hmm' }).shake).toBe(SHAKE_BAD_LINE);
-    expect(cueFor({ kind: 'compaction' }).shake).toBe(SHAKE_COMPACTION);
+    expect(cueFor({ kind: 'compaction', streak: 0, hype: 0 }).shake).toBe(SHAKE_COMPACTION);
     expect(cueFor({ kind: 'key', ok: false, pitch: 0 }).shake).toBe(0);
     expect(cueFor({ kind: 'key', ok: true, pitch: 0 }).shake).toBe(0);
     expect(cueFor({ kind: 'piece', size: 40 }).shake).toBe(0);

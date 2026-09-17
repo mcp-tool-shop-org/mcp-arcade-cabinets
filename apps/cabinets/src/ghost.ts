@@ -586,7 +586,7 @@ export function mountGhost(
   const controls = document.createElement('div');
   controls.className = 'row';
   /**
-   * Why a greyed control is grey, as a visible word tied to the control.
+   * Why a grayed control is gray, as a visible word tied to the control.
    *
    * A `title` on a disabled input is delivered to nobody: the element is not
    * focusable, Tab skips it, and a mouse player only learns by hovering
@@ -796,7 +796,7 @@ export function mountGhost(
   // Fixture tapes derive to tier 0, where formations neither fire nor dive; seat is the fun default.
   difficulty.value = extra.difficulty ?? prefs.difficulty ?? 'seat';
   // A locked select is a dead control: Tab skips it, its `title` reaches
-  // nobody, and all it tells a mouse player is that something is grey. A
+  // nobody, and all it tells a mouse player is that something is gray. A
   // shift's rung is a line of plain text instead; the select stays off the
   // page but keeps the value the round is played at.
   const lockedTier = document.createElement('span');

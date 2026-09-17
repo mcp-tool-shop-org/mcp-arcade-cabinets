@@ -517,7 +517,7 @@ function liveStatus(node: HTMLElement, name: string): void {
 }
 
 /**
- * Why a greyed control is grey, as a visible word tied to the control.
+ * Why a grayed control is gray, as a visible word tied to the control.
  * Ghost's helper, for the same reason: a `title` on a disabled input reaches
  * nobody — the element is not focusable, Tab skips it, and a mouse player
  * only learns by hovering something that looks inert.

@@ -163,6 +163,21 @@ function run(mount: VibeMount, steps: number): void {
   for (let i = 0; i < steps; i++) mount.tick(STEP);
 }
 
+/** The reading time the sim takes, off the levers rather than out of a test. */
+const PACE = DEFAULT_PATTERNS.levels.pace;
+
+/**
+ * Step the field past that reading time. A transitional beat — the ask, the
+ * creep, the ship, a compaction — holds for `pace.beatHold` seconds of frame
+ * time and swallows every key pressed while it does, and a line said on that
+ * frame is not shown until `pace.chatGap` after the line before it. A test
+ * that stepped one frame and then read the next beat word, the next target
+ * or the chat off the page was reading the field mid-hold.
+ */
+function settle(m: VibeMount, beats = 1): void {
+  run(m, Math.ceil((beats * (PACE.beatHold + PACE.chatGap)) / STEP) + 2);
+}
+
 /** The editor draws a space as this, so the page hands one back rather than ' '. */
 const NBSP = String.fromCharCode(0xa0);
 
@@ -345,7 +360,8 @@ describe('the field, mounted', () => {
     // The ask is already in the chat; one step turns the reply into a target.
     const chat = root.querySelector('.vibe-chat')!;
     expect(chat.textContent ?? '').not.toBe('');
-    run(mount, 1);
+    // The ask is held for the player to read it before the reply is typeable.
+    settle(mount);
     expect(root.querySelector('.vibe-beat-word')!.textContent).toBe('your reply');
 
     for (const ch of reply) {
@@ -376,7 +392,7 @@ describe('the field, mounted', () => {
       // The field is focusable, and has the keys from the first frame.
       expect(editor.tabIndex).toBe(0);
       expect(document.activeElement).toBe(editor);
-      run(mount, 1);
+      settle(mount);
 
       const sound = [...root.querySelectorAll('button')].find((b) =>
         (b.textContent ?? '').startsWith('sound:'),
@@ -719,7 +735,7 @@ describe('the field, mounted', () => {
     // The beat word is the lever's, never a constant in the shell.
     const beats = DEFAULT_PATTERNS.cabinet.words.beats;
     expect(root.querySelector('.vibe-beat-word')!.textContent).toBe(beats.request);
-    run(mount, 1);
+    settle(mount);
     expect(root.querySelector('.vibe-beat-word')!.textContent).toBe(beats.reply);
   });
 
@@ -799,7 +815,7 @@ describe('the field, mounted', () => {
       onExit: () => undefined,
       startAudio: false,
     });
-    run(mount, 1);
+    settle(mount);
     const live = root.querySelector('.vibe-live')!.textContent ?? '';
     press('a');
     run(mount, 2);
@@ -839,7 +855,7 @@ describe('the field, mounted', () => {
       onExit: () => undefined,
       startAudio: false,
     });
-    run(mount, 1);
+    settle(mount);
     const type = (line: string) => {
       for (const ch of line) {
         press(ch);
@@ -851,7 +867,20 @@ describe('the field, mounted', () => {
     type(request.reply);
     run(mount, 10);
     for (const line of request.snippet.code.split('\n')) type(line);
-    run(mount, 30);
+    // The ship is held too, and the piece is only paid for on the far side.
+    // The frame that ships says more than one line at once, and the sim
+    // spaces them by `pace.chatGap`: each is in the list in its order and
+    // stays hidden with nothing in it until its own turn comes. Reading
+    // the words off the pane on the frame they were said read nothing.
+    const said = () => [...root.querySelectorAll('.vibe-lines li')] as HTMLElement[];
+    const waiting = said().filter((li) => li.hidden);
+    expect(waiting.length).toBeGreaterThan(0);
+    for (const li of waiting) expect(li.textContent).toBe('');
+    settle(mount);
+    for (const li of waiting) {
+      expect(li.hidden).toBe(false);
+      expect(li.textContent).not.toBe('');
+    }
 
     // The request was paid for, so a piece is in the preview.
     const valuation = root.querySelector('.vibe-valuation .vibe-num')!.textContent ?? '0';
@@ -1312,8 +1341,10 @@ describe('the endless seat, mounted', () => {
 
     answering = false;
     // Two asks with nothing at all behind them is a machine that has gone.
+    // An ask comes at a request beat, and a beat now holds for its readable
+    // moment, so each turn settles a beat rather than stepping two frames.
     for (let i = 0; i < 8; i++) {
-      run(mount, 2);
+      settle(mount);
       await flush();
     }
     expect(seat.textContent).toBe('seat: no model on this machine');
@@ -1512,7 +1543,7 @@ describe('less movement, when the system asks for it', () => {
 
   /** Send one line wrong, which is what the editor's jolt is cued off. */
   function sendBadLine(m: VibeMount): void {
-    run(m, 1);
+    settle(m);
     const target = liveTarget();
     expect(target).not.toBe('');
     press(target[0] === 'x' ? 'q' : 'x');
