@@ -221,12 +221,12 @@ describe('the pack gate over the typing cabinet', () => {
     const { halted, said } = await runGate(pkg, 'vibe');
     expect(halted).toBe(true);
     expect(said).toContain('@mcptoolshop/vibe-typer');
-    expect(said).toContain(path.join('play', 'vibe', 'tracks', 'sql.mp3'));
+    expect(said).toContain('play/vibe/tracks/sql.mp3');
     expect(said).toContain('pnpm build:launcher');
     // And only that one: six beds out of seven is the failure a directory
     // check would have waved through, so the message has to be specific.
     for (const key of BEDS.filter((k) => k !== 'sql')) {
-      expect(said, key).not.toContain(path.join('tracks', `${key}.mp3`));
+      expect(said, key).not.toContain(`tracks/${key}.mp3`);
     }
   });
 
@@ -238,10 +238,10 @@ describe('the pack gate over the typing cabinet', () => {
     const { halted, said } = await runGate(pkg, 'vibe');
     expect(halted).toBe(true);
     expect(said).toContain('@mcptoolshop/vibe-typer');
-    expect(said).toContain(path.join('play', 'vibe', 'tracks', 'java.mp3'));
+    expect(said).toContain('play/vibe/tracks/java.mp3');
     expect(said).toContain('too small');
     for (const key of BEDS.filter((k) => k !== 'java')) {
-      expect(said, key).not.toContain(path.join('tracks', `${key}.mp3`));
+      expect(said, key).not.toContain(`tracks/${key}.mp3`);
     }
   });
 
@@ -250,7 +250,7 @@ describe('the pack gate over the typing cabinet', () => {
     const { halted, said } = await runGate(pkg, 'vibe');
     expect(halted).toBe(true);
     for (const key of BEDS) {
-      expect(said, key).toContain(path.join('play', 'vibe', 'tracks', `${key}.mp3`));
+      expect(said, key).toContain(`play/vibe/tracks/${key}.mp3`);
     }
   });
 });
@@ -331,7 +331,7 @@ describe('what a package carries that is not its own', () => {
     const { halted, said } = await runGate(pkg, 'vibe');
     expect(halted).toBe(true);
     expect(said).toContain("is carrying the other cabinet's files");
-    expect(said).toContain(path.join('play', 'sprites'));
+    expect(said).toContain('play/sprites');
   });
 
   it("halts on the typing cabinet's keys inside the shooter's package", async () => {
@@ -339,7 +339,7 @@ describe('what a package carries that is not its own', () => {
     const { halted, said } = await runGate(pkg, 'ghost');
     expect(halted).toBe(true);
     expect(said).toContain("is carrying the other cabinet's files");
-    expect(said).toContain(path.join('play', 'keys'));
+    expect(said).toContain('play/keys');
   });
 
   it('halts on a public directory no cabinet claims, rather than shipping it twice', async () => {
@@ -347,7 +347,7 @@ describe('what a package carries that is not its own', () => {
     const { halted, said } = await runGate(pkg, 'vibe');
     expect(halted).toBe(true);
     expect(said).toContain('no cabinet claims');
-    expect(said).toContain(path.join('play', 'lamps'));
+    expect(said).toContain('play/lamps');
     expect(said).toContain('CABINETS table');
   });
 });
@@ -359,7 +359,7 @@ describe('a shell copied without the bundle directory', () => {
     const pkg = await fakePackage({ cabinet: 'vibe', noAssets: true });
     const { halted, said } = await runGate(pkg, 'vibe');
     expect(halted).toBe(true);
-    expect(said).toContain(`missing: dist/${path.join('play', 'assets')}`);
+    expect(said).toContain('expected: dist/play/assets');
     expect(said).toContain('pnpm build:launcher');
     expect(said).not.toContain('ENOENT');
   });
@@ -384,10 +384,10 @@ describe('the pack gate over the shooter', () => {
     const { halted, said } = await runGate(pkg, 'ghost');
     expect(halted).toBe(true);
     expect(said).toContain('@mcptoolshop/ghost-on-the-menu');
-    expect(said).toContain(path.join('play', 'tracks', 'doorman.mp3'));
+    expect(said).toContain('play/tracks/doorman.mp3');
     expect(said).toContain('pnpm build:launcher');
     for (const key of GHOST_BEDS.filter((k) => k !== 'doorman')) {
-      expect(said, key).not.toContain(path.join('tracks', `${key}.mp3`));
+      expect(said, key).not.toContain(`tracks/${key}.mp3`);
     }
   });
 
@@ -396,7 +396,7 @@ describe('the pack gate over the shooter', () => {
     const { halted, said } = await runGate(pkg, 'ghost');
     expect(halted).toBe(true);
     for (const key of GHOST_BEDS) {
-      expect(said, key).toContain(path.join('play', 'tracks', `${key}.mp3`));
+      expect(said, key).toContain(`play/tracks/${key}.mp3`);
     }
   });
 
@@ -405,7 +405,7 @@ describe('the pack gate over the shooter', () => {
     const { halted, said } = await runGate(pkg, 'ghost');
     expect(halted).toBe(true);
     expect(said).toContain('@mcptoolshop/ghost-on-the-menu');
-    expect(said).toContain(path.join('play', 'tracks', 'whisperer.mp3'));
+    expect(said).toContain('play/tracks/whisperer.mp3');
     expect(said).toContain('too small');
     // The floor is under the lightest bed the cabinet ships (1.69 MB) and
     // over anything a truncated write leaves behind.
@@ -418,9 +418,24 @@ describe('the pack gate over the shooter', () => {
     const { halted, said } = await runGate(dir, 'ghost');
     expect(halted).toBe(true);
     expect(said).toContain('@mcptoolshop/ghost-on-the-menu');
-    expect(said).toContain('missing: dist/cli.js');
-    expect(said).toContain(`missing: dist/${path.join('play', 'sprites')}`);
-    expect(said).toContain(`missing: dist/${path.join('play', 'tracks')}`);
+    expect(said).toContain('expected: dist/cli.js');
+    expect(said).toContain('expected: dist/play/sprites');
+    expect(said).toContain('expected: dist/play/tracks');
+  });
+
+  // `dist/${rel}` spelled a forward slash and then handed the rest of the
+  // path to `path.join`, so a Windows halt read `dist/play\tracks` -- two
+  // separators in one path, in the one message a publisher reads under
+  // pressure. The gate names one bullet label and one separator now.
+  it('spells every path in one separator, whatever the platform', async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'ghost-pack-'));
+    await mkdir(path.join(dir, 'dist'), { recursive: true });
+    const { halted, said } = await runGate(dir, 'ghost');
+    expect(halted).toBe(true);
+    expect(said).not.toContain('\\');
+    // And one word for the relation, not `missing:` here and `expected:` in
+    // the launcher for the same thing.
+    expect(said).not.toContain('missing: ');
   });
 });
 

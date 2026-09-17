@@ -204,6 +204,22 @@ const CABINETS = {
  */
 const PUBLIC_DIRS = [...new Set(Object.values(CABINETS).flatMap((spec) => spec.public))];
 
+/**
+ * A path in a halt line, in one separator. `path.join` and `path.relative`
+ * answer with backslashes on Windows, and the lines they went into spelled
+ * the rest of the path with forward slashes -- so one halt carried two
+ * separators in one path, and the tests that read those lines had to build
+ * the same mixture to match.
+ */
+function slashes(rel) {
+  return rel.split(path.sep).join('/');
+}
+
+/** The same, named from the package root the reader is looking at. */
+function inDist(rel) {
+  return `dist/${slashes(rel)}`;
+}
+
 /** Write the lines and stop. Exported so a wrapper package halts the same way. */
 export function halt(lines) {
   for (const line of lines) process.stderr.write(`${line}\n`);
@@ -328,7 +344,7 @@ export async function checkDist({ cabinet, out }) {
   if (absentFiles.length > 0) {
     halt([
       `launcher: ${spec.name}'s dist is incomplete`,
-      ...absentFiles.map((rel) => `- missing: dist/${rel}`),
+      ...absentFiles.map((rel) => `- expected: ${inDist(rel)}`),
       '',
       'next: pnpm build:launcher (from the repo root)',
     ]);
@@ -344,13 +360,13 @@ export async function checkDist({ cabinet, out }) {
       `launcher: ${spec.name} is carrying a bed that is not a bed`,
       ...thin.map(
         ([rel, size]) =>
-          `- too small: dist/${rel} is ${(size / 1024).toFixed(1)} KB, under the ${(
+          `- too small: ${inDist(rel)} is ${(size / 1024).toFixed(1)} KB, under the ${(
             BED_MIN_BYTES / 1024
           ).toFixed(0)} KB a recorded bed weighs`,
       ),
       '',
       'next: pnpm build:launcher (from the repo root), and check the file in',
-      '     apps/cabinets/public against apps/cabinets/test/bed-length.test.ts',
+      '      apps/cabinets/public against apps/cabinets/test/bed-length.test.ts',
     ]);
   }
   const strays = [];
@@ -362,7 +378,7 @@ export async function checkDist({ cabinet, out }) {
   if (strays.length > 0) {
     halt([
       `launcher: ${spec.name} is carrying the other cabinet's files`,
-      ...strays.map((rel) => `- should not be here: dist/${rel}`),
+      ...strays.map((rel) => `- should not be here: ${inDist(rel)}`),
       '',
       'next: check the public split in packages/launcher/scripts/build.mjs',
     ]);
@@ -381,11 +397,11 @@ export async function checkDist({ cabinet, out }) {
   if (unknown.length > 0) {
     halt([
       `launcher: the shell has a public directory no cabinet claims`,
-      ...unknown.map((name) => `- unclaimed: dist/${path.join('play', name)}`),
+      ...unknown.map((name) => `- unclaimed: ${inDist(`play/${name}`)}`),
       '',
       'next: add it to one cabinet (or both) in the CABINETS table in',
-      '     packages/launcher/scripts/build.mjs, so the split decides where',
-      '     it ships instead of it shipping in every tarball',
+      '      packages/launcher/scripts/build.mjs, so the split decides where',
+      '      it ships instead of it shipping in every tarball',
     ]);
   }
 
@@ -400,10 +416,10 @@ export async function checkDist({ cabinet, out }) {
   if (!stdioJs.includes(mark)) {
     halt([
       `launcher: ${spec.name}'s --mcp server is not the ${spec.stdio} one`,
-      `- missing: ${whatMark}`,
+      `- expected: ${whatMark}`,
       '',
       'next: pnpm -F @mcp-arcade-cabinets/cabinet-server build, then',
-      '     pnpm build:launcher; and check STDIO_BUNDLES in this file',
+      '      pnpm build:launcher; and check STDIO_BUNDLES in this file',
     ]);
   }
   for (const [other, [otherMark, whatOther]] of Object.entries(STDIO_MARKS)) {
@@ -413,7 +429,7 @@ export async function checkDist({ cabinet, out }) {
       `- in the bundle: ${whatOther}`,
       '',
       'next: check STDIO_BUNDLES in packages/launcher/scripts/build.mjs and',
-      '     the cabinet-server build that writes server.js and server-vibe.js',
+      '      the cabinet-server build that writes server.js and server-vibe.js',
     ]);
   }
 
@@ -426,11 +442,11 @@ export async function checkDist({ cabinet, out }) {
   if (stripped.length > 0) {
     halt([
       `launcher: the play shell is not a ${cabinet} launcher shell`,
-      ...stripped.map(([, what]) => `- missing: ${what}`),
+      ...stripped.map(([, what]) => `- expected: ${what}`),
       '',
       `next: cross-env VITE_LOCAL_SEATS=true VITE_CABINET=${cabinet} \\`,
       '        pnpm -F @mcp-arcade-cabinets/cabinets build',
-      '     then pnpm build:launcher',
+      '      then pnpm build:launcher',
     ]);
   }
   const leftover = spec.absent.filter(([needle]) => playJs.includes(needle));
@@ -440,8 +456,8 @@ export async function checkDist({ cabinet, out }) {
       ...leftover.map(([, what]) => `- still in the bundle: ${what}`),
       '',
       `next: the shell was built without VITE_CABINET=${cabinet}; rebuild it`,
-      '     with pnpm build:launcher, and check the define in',
-      '     apps/cabinets/vite.config.ts',
+      '      with pnpm build:launcher, and check the define in',
+      '      apps/cabinets/vite.config.ts',
     ]);
   }
   return spec;
@@ -492,7 +508,7 @@ export async function pack({ cabinet, out }) {
   if (missing.length > 0) {
     halt([
       `launcher: inputs missing for ${spec.name}, nothing was written`,
-      ...missing.map((m) => `- ${m.what}: ${path.relative(repo, m.from)}`),
+      ...missing.map((m) => `- expected: ${slashes(path.relative(repo, m.from))} (${m.what})`),
       '',
       'next: pnpm build:launcher (from the repo root), or individually:',
       ...[...new Set(missing.map((m) => `  ${m.next}`))],
@@ -568,6 +584,15 @@ if (invoked === fileURLToPath(import.meta.url)) {
       }
     })
     .catch((err) => {
-      halt([`launcher: ${err instanceof Error ? err.message : String(err)}`]);
+      // The same `next:` the vibe wrapper's identical catch carries. This
+      // runs from `prepack`, i.e. during `npm publish`: an unexpected failure
+      // here used to print a raw errno with an absolute path in it and
+      // nothing to do about it. The fix was applied to the copy and not back
+      // to the original, so the two entry points halted in two shapes.
+      halt([
+        `launcher: ${err instanceof Error ? err.message : String(err)}`,
+        '',
+        'next: pnpm build:launcher (from the repo root)',
+      ]);
     });
 }

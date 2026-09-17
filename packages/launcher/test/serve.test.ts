@@ -10,6 +10,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   checkSeatUrl,
   createCabinetServer,
+  DARK,
+  faultLine,
   listenFrom,
   listenLines,
   ListenTrouble,
@@ -17,9 +19,11 @@ import {
   ownOrigin,
   parseEndlessView,
   parseSeatView,
+  notFoundLine,
   parseStrings,
   readBody,
   retiredLine,
+  seatHaltLines,
   seatWatch,
   troubleLine,
 } from '../src/serve';
@@ -115,9 +119,18 @@ describe('the launcher server', () => {
     expect(res.headers.get('cache-control')).toBe('no-cache');
   });
 
-  it('404s a file that is not there', async () => {
+  it('404s a file that is not there, in words a person can act on', async () => {
+    const port = (cabinet.address() as { port: number }).port;
     const res = await fetch(`${base}/sprites/nothing.png`);
     expect(res.status).toBe(404);
+    // The rule `sendText` states was applied to two 403s and to nothing
+    // else, while this is the refusal a person meets most often: a mistyped
+    // address bar, or a bookmark from an older shell.
+    expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(await res.text()).toBe(`${notFoundLine('/sprites/nothing.png', port)}\n`);
+    expect(notFoundLine('/x', 7777)).toBe(
+      'this cabinet has nothing at /x; the game is at http://127.0.0.1:7777/',
+    );
   });
 
   it('refuses to climb out of the shell directory', async () => {
@@ -146,6 +159,10 @@ describe('the launcher server', () => {
   it('answers a write to a file path with 405, never a write', async () => {
     const res = await fetch(`${base}/index.html`, { method: 'PUT', body: 'x' });
     expect(res.status).toBe(405);
+    // Only a browser form or a stray fetch reaches this: every path a script
+    // calls was answered above it.
+    expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(await res.text()).toContain('this cabinet only serves the game here');
   });
 
   it('passes the three allowlisted daemon calls through', async () => {
@@ -208,7 +225,11 @@ describe('the launcher server', () => {
     try {
       const missing = await fetch(`${at}/nope.png`);
       expect(missing.status).toBe(404);
-      expect(await missing.json()).toEqual({ error: 'not found' });
+      // Written for the person in the browser window, not for a parser:
+      // every path a script calls is a seat or a proxy prefix and was
+      // answered before this route.
+      expect(missing.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+      expect(await missing.text()).toContain('this cabinet has nothing at /nope.png');
 
       const off = await fetch(`${at}/ollama/api/pull`, { method: 'POST' });
       expect(off.status).toBe(403);
@@ -265,7 +286,12 @@ describe('the launcher server', () => {
       body: JSON.stringify({ view: {} }),
     });
     expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ error: 'no cabinet server built' });
+    // A bundle that was expected on disk and is not there: 503, and it names
+    // the file, because this one is a broken download.
+    expect(await res.json()).toEqual({
+      error: 'no cabinet server built',
+      hint: 'this package is missing dist/cabinet-server.js',
+    });
   });
 });
 
@@ -432,7 +458,23 @@ describe('the endless route', () => {
     expect(plain.status).toBe(415);
     const bad = await post({ view: { stack: 'rust' } });
     expect(bad.status).toBe(400);
-    expect(await bad.json()).toEqual({ error: 'no answer' });
+    // `no answer` is what the seat says when it was asked and said nothing.
+    // A body the route could not read never reached a seat at all, and a
+    // client told otherwise goes off to debug a daemon that was never called.
+    expect(await bad.json()).toEqual({
+      error: 'bad view',
+      hint: 'view must be the seat view this route takes',
+    });
+    // The refusal above took the route's turn; the minimum interval between
+    // two asks is the point of that turn, so wait it out.
+    await new Promise((r) => setTimeout(r, 450));
+    const notJson = await fetch(`${seatedBase}/cabinet/endless`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{oh no',
+    });
+    expect(notJson.status).toBe(400);
+    expect(await notJson.json()).toEqual({ error: 'bad json', hint: 'the body must be JSON' });
   });
 
   it('refuses a body bigger than the cap, and names the cap it met', async () => {
@@ -446,7 +488,10 @@ describe('the endless route', () => {
   it('says so when the package has no cabinet server rather than hanging', async () => {
     const res = await post({ view }, base);
     expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ error: 'no cabinet server built' });
+    expect(await res.json()).toEqual({
+      error: 'no cabinet server built',
+      hint: 'this package is missing dist/cabinet-server.js',
+    });
   });
 
   it('asks the seat and hands back what it said', async () => {
@@ -731,11 +776,11 @@ describe('a player who reloads during a long generate', () => {
 //
 // `endlessModule` left absent falls back to the say module, so the shooter's
 // package used to publish a second model-prompting route, handed the player's
-// key, that nothing on its page ever called. Its launcher passes null now,
+// key, that nothing on its page ever called. Its launcher passes `DARK` now,
 // and this is the shape that makes.
 
 describe('a Ghost-shaped cabinet', () => {
-  it('answers the endless seat with 503 while the say seat is lit', async () => {
+  it('answers the endless seat with 404 while the say seat is lit', async () => {
     const moduleDir = await mkdtemp(path.join(os.tmpdir(), 'ghost-seats-'));
     await writeFile(
       path.join(moduleDir, 'seat.mjs'),
@@ -745,7 +790,7 @@ describe('a Ghost-shaped cabinet', () => {
     const shooter = createCabinetServer({
       playDir: play,
       sayModule: path.join(moduleDir, 'seat.mjs'),
-      endlessModule: null,
+      endlessModule: DARK,
       ollamaUrl: upstreamBase,
       voiceUrl: upstreamBase,
       voiceToken: null,
@@ -768,8 +813,14 @@ describe('a Ghost-shaped cabinet', () => {
           },
         }),
       });
-      expect(endless.status).toBe(503);
-      expect(await endless.json()).toEqual({ error: 'no cabinet server built' });
+      // Not 503: nothing here is missing and there is nothing to rebuild.
+      // The shooter has no endless seat, and a player probing it used to be
+      // told their download was broken.
+      expect(endless.status).toBe(404);
+      expect(await endless.json()).toEqual({
+        error: 'no such seat',
+        hint: 'this cabinet does not light the endless seat',
+      });
       const say = await fetch(`http://127.0.0.1:${port}/cabinet/say`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -869,7 +920,10 @@ describe('what the cabinet says when a seat is not there', () => {
     try {
       const res = await fetch(`http://127.0.0.1:${port}/ollama/api/tags`);
       expect(res.status).toBe(502);
-      expect(await res.json()).toEqual({ error: 'no answer' });
+      expect(await res.json()).toEqual({
+        error: 'upstream quiet',
+        hint: 'the daemon or the worker did not answer',
+      });
       expect(said).toHaveLength(1);
       expect(said[0]!.startsWith(`the daemon at http://127.0.0.1:${deadPort} `)).toBe(true);
     } finally {
@@ -1040,9 +1094,17 @@ describe('what the cabinet says when it cannot take a port', () => {
       7777,
       7777,
     );
-    expect(listenLines(other, 7777)).toEqual(['could not listen on 7777: listen EAFNOSUPPORT']);
+    // The two fall-throughs used to be one bare line of Node's errno text,
+    // which is the one halt shape in the launcher with nothing to do next.
+    expect(listenLines(other, 7777)).toEqual([
+      'could not listen on 7777: listen EAFNOSUPPORT',
+      '',
+      'next: pass --port <n>',
+    ]);
     expect(listenLines(new Error('something else'), 7777)).toEqual([
       'could not listen on 7777: something else',
+      '',
+      'next: pass --port <n>',
     ]);
   });
 
@@ -1093,6 +1155,82 @@ describe('what the cabinet says when it cannot take a port', () => {
     } finally {
       await new Promise<void>((r) => walker.close(() => r()));
       await new Promise<void>((r) => held.close(() => r()));
+    }
+  });
+});
+
+// ——— the one failure the operator could not see ——————————————————————————————
+//
+// Every other failure in this server reaches `opts.onTrouble`: the proxy on
+// the way down and again on the way back up, the allowlist refusal, the host
+// and origin refusals, the say seat's quiet or retired tag. The last-resort
+// catch sent 500 and wrote nothing anywhere, and dropped the error object
+// entirely rather than reducing it to a cause word. It calls this now.
+
+describe('what the last-resort catch says', () => {
+  it('says one sentence with the cause word, and never a stack or a path', () => {
+    expect(faultLine(Object.assign(new Error('x'), { code: 'EACCES' }))).toBe(
+      'the cabinet could not answer that request (EACCES)',
+    );
+    // No errno: the error's own name is the cause word, the way `troubleLine`
+    // reaches for it.
+    expect(faultLine(new TypeError('x is not a function'))).toBe(
+      'the cabinet could not answer that request (TypeError)',
+    );
+    // Nothing thrown that is not an Error still gets a sentence.
+    expect(faultLine('a string')).toBe('the cabinet could not answer that request');
+    const thrown = new Error('at Object.<anonymous> (/home/someone/secret.js:1:1)');
+    expect(faultLine(thrown).includes('at Object.')).toBe(false);
+    expect(faultLine(thrown).includes('/home/someone')).toBe(false);
+  });
+});
+
+// ——— one halt shape, for all three walls a player can meet ——————————————————
+//
+// `missingLines` is the model: headline, `- expected:` where there is one, a
+// blank line, `next:`. The seat check halted in one line with the remedy
+// folded into the sentence, and two of `listenLines`' branches returned a bare
+// errno with no `next:` at all.
+
+describe('the shape every halt takes', () => {
+  it('names the variable to set, under a blank line, like the others', () => {
+    expect(
+      seatHaltLines('OLLAMA_URL wants an http:// or https:// address, got localhost:11434'),
+    ).toEqual([
+      'OLLAMA_URL wants an http:// or https:// address, got localhost:11434',
+      '',
+      'next: set OLLAMA_URL to an http:// address, or unset it for the default',
+    ]);
+    expect(seatHaltLines('VOICE_URL names no host, got http://')[2]).toBe(
+      'next: set VOICE_URL to an http:// address, or unset it for the default',
+    );
+  });
+
+  it('gives the two fall-through listen failures a next: line too', () => {
+    const plain = listenLines(new Error('something else'), 7777);
+    expect(plain).toEqual([
+      'could not listen on 7777: something else',
+      '',
+      'next: pass --port <n>',
+    ]);
+    const odd = listenLines(
+      new ListenTrouble(Object.assign(new Error('EPERM'), { code: 'EPERM' }), 7777, 7779),
+      7777,
+    );
+    const busy = listenLines(
+      new ListenTrouble(Object.assign(new Error('EADDRINUSE'), { code: 'EADDRINUSE' }), 7777, 7797),
+      7777,
+    );
+    // Every halt ends with a `next:`, under a blank line. That is the shape,
+    // not a flourish: two of these used to be one bare line of errno text.
+    for (const lines of [
+      plain,
+      odd,
+      busy,
+      seatHaltLines('OLLAMA_URL names no host, got http://'),
+    ]) {
+      expect(lines[lines.length - 2]).toBe('');
+      expect(lines[lines.length - 1]?.startsWith('next: ')).toBe(true);
     }
   });
 });

@@ -18,7 +18,7 @@ import path from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { createCabinetServer, listenFrom } from '../../launcher/src/serve';
+import { createCabinetServer, DARK, listenFrom } from '../../launcher/src/serve';
 
 /**
  * `fetch` resolves `/../x` against the origin before it ever opens a
@@ -87,7 +87,10 @@ beforeAll(async () => {
   // worker pointed at the same stand-in so a leak past the allowlist shows.
   cabinet = createCabinetServer({
     playDir: play,
-    sayModule: null,
+    // `DARK`, exactly as `src/cli.ts` passes it: this cabinet has no say
+    // seat. The endless module is null here and a path in the package, which
+    // is the other case -- a bundle that was expected on disk.
+    sayModule: DARK,
     endlessModule: null,
     ollamaUrl: upstreamBase,
     voiceUrl: upstreamBase,
@@ -221,8 +224,13 @@ describe('the vibe-typer package as it is served', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ view: {} }),
     });
-    expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ error: 'no cabinet server built' });
+    // 404, not 503: the seat is dark by design and there is nothing to
+    // rebuild. Anyone probing this package used to be told it was broken.
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({
+      error: 'no such seat',
+      hint: 'this cabinet does not light the say seat',
+    });
   });
 
   it('answers the endless route rather than 404ing it', async () => {
@@ -237,6 +245,12 @@ describe('the vibe-typer package as it is served', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ view: {} }),
     });
+    // The bundle is not beside this test, which is the broken-install case
+    // and keeps its 503 -- the seat itself is one this cabinet does light.
     expect(posted.status).toBe(503);
+    expect(await posted.json()).toEqual({
+      error: 'no cabinet server built',
+      hint: 'this package is missing dist/cabinet-server.js',
+    });
   });
 });

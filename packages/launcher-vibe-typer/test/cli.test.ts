@@ -3,7 +3,9 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { CABINET_VARS } from '../../launcher/src/levers';
 import {
+  badArgLines,
   bugsIn,
   checkSeats,
   exitAfter,
@@ -18,6 +20,7 @@ import {
   sayTrouble,
   seatLines,
   version,
+  versionExit,
   versionIn,
 } from '../src/cli';
 
@@ -96,9 +99,6 @@ describe('the vibe-typer launcher arguments', () => {
     expect(stdout).toContain('OLLAMA_URL');
     // The worker's default port, so a player knows which one `pnpm voice` is.
     expect(stdout).toContain('7788');
-    // CABINET_TAPES is read in --mcp and does nothing in play mode; the
-    // README says so and the help used to list it as a plain variable.
-    expect(stdout).toContain('CABINET_TAPES      with --mcp:');
     // The allowlist is shared with the shooter and passes generate, which
     // this text used to leave out — and it is the one verb that writes a
     // completion on the player's daemon.
@@ -139,18 +139,11 @@ describe('the vibe-typer launcher arguments', () => {
     } finally {
       process.stdout.write = out;
     }
-    for (const name of [
-      'CABINET_TAPES',
-      'CABINET_TAPES_USER',
-      'CABINET_FIXTURE',
-      'CABINET_SEED',
-      'CABINET_TIER',
-      'CABINET_BOT',
-    ]) {
-      expect(stdout, name).toContain(name);
-    }
-    // The two this cabinet's server answers with a note rather than a lever.
-    expect(stdout).toContain('CABINET_FIXTURE    with --mcp: the shooter reads this one');
+    // The six themselves, their order and the heading are held by the shared
+    // block at the foot of this file, against `levers.ts`. What is this
+    // cabinet's own is which two it answers with a note rather than a lever.
+    expect(stdout).toContain('CABINET_FIXTURE    the shooter reads this one');
+    expect(stdout).toContain('CABINET_TAPES_USER the shooter reads this one');
   });
 });
 
@@ -377,5 +370,179 @@ describe('what npx says about the seats before the first call', () => {
     expect(said).toContain('VOICE_URL is not an address, got voice');
     expect(said).not.toContain('the shell is missing');
     expect(stdout).toBe('');
+  });
+});
+
+// ——— the two help texts, held to one shape ——————————————————————————————————
+//
+// The six levers were listed in three different orders across four surfaces,
+// the qualifier was repeated on every row instead of sitting on the heading
+// once, the rows carrying a default address ran past eighty columns (which
+// wraps a URL, the one thing on the line that must not be broken), and the
+// description column stepped by one between blocks. One list, in `levers.ts`,
+// is what both help texts are held to now: a seventh lever is one edit there.
+
+describe('the help both cabinets print', () => {
+  async function help(): Promise<string> {
+    const out = process.stdout.write.bind(process.stdout);
+    let stdout = '';
+    process.stdout.write = ((chunk: string) => {
+      stdout += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      await main(['--help']);
+    } finally {
+      process.stdout.write = out;
+    }
+    return stdout;
+  }
+
+  it('names all six levers, in the one order, under a heading that qualifies them', async () => {
+    const stdout = await help();
+    const at = CABINET_VARS.map((name) => stdout.indexOf(name));
+    for (const [i, pos] of at.entries()) expect(pos, CABINET_VARS[i]).toBeGreaterThan(-1);
+    // Both cabinets list them in the same order, so an operator running both
+    // can read the two blocks side by side.
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    // The qualifier is on the heading, once. It used to be on every row, and
+    // that clause is what pushed the first lever row past eighty columns.
+    expect(stdout).toContain('Environment, --mcp only');
+    expect(stdout).not.toContain('with --mcp:');
+  });
+
+  it('fits eighty columns, except a line that holds an address', async () => {
+    for (const line of (await help()).split('\n')) {
+      if (line.includes('http')) continue;
+      expect(line.length, line).toBeLessThanOrEqual(80);
+    }
+  });
+
+  it('runs one description column the length of the page', async () => {
+    const lines = (await help()).split('\n');
+    const rows = lines.filter((l) => /^ {2}(--|-[hv],|[A-Z][A-Z_]+ )/.test(l));
+    // Options, Environment and the levers: every row, not just one block.
+    expect(rows.length).toBeGreaterThan(10);
+    for (const row of rows) {
+      expect(row.slice(0, 21).endsWith(' '), row).toBe(true);
+      expect(row[21], row).not.toBe(' ');
+    }
+    // And a wrapped description lands in the same column as the first one.
+    for (const line of lines.filter((l) => /^ {19,}\S/.test(l))) {
+      expect(line.slice(0, 21), line).toBe(' '.repeat(21));
+      expect(line[21], line).not.toBe(' ');
+    }
+  });
+
+  // The README prints the same rows, and printed different ones: `the usage`
+  // where the help says `this`, and a `--port` row that had been re-worded.
+  // The fenced Options block is a slice of the help, and this holds it there.
+  it('is what the README says it is', async () => {
+    const readme = readFileSync(path.join(PKG, 'README.md'), 'utf8');
+    const fence = /## Options\s*\n+```\n([\s\S]*?)```/.exec(readme);
+    expect(fence, 'the README has a fenced Options block').not.toBeNull();
+    const block = (fence?.[1] ?? '').replace(/\n+$/, '');
+    expect(block.length).toBeGreaterThan(40);
+    expect(await help()).toContain(block);
+  });
+});
+
+// ——— one mistyped argument ————————————————————————————————————————————————
+//
+// The whole usage used to go to stderr under the diagnostic: thirty-four
+// lines, of which the one that says what went wrong scrolls off a
+// twenty-four-line terminal before the prompt comes back. The document is
+// what `--help` is for.
+
+describe('what one bad argument is told', () => {
+  function capture(): { read: () => { out: string; err: string }; stop: () => void } {
+    let out = '';
+    let err = '';
+    const o = process.stdout.write.bind(process.stdout);
+    const e = process.stderr.write.bind(process.stderr);
+    process.stdout.write = ((chunk: string) => {
+      out += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    process.stderr.write = ((chunk: string) => {
+      err += String(chunk);
+      return true;
+    }) as typeof process.stderr.write;
+    return {
+      read: () => ({ out, err }),
+      stop: () => {
+        process.stdout.write = o;
+        process.stderr.write = e;
+      },
+    };
+  }
+
+  it('says what was wrong and where the usage is, and not the usage', async () => {
+    const before = process.exitCode;
+    const cap = capture();
+    try {
+      await main(['--port', 'abc']);
+    } finally {
+      cap.stop();
+    }
+    const { out, err } = cap.read();
+    expect(process.exitCode).toBe(1);
+    process.exitCode = before;
+    const lines = err.trimEnd().split('\n');
+    // Three lines, in the shape every other halt in the package takes.
+    expect(lines).toEqual([
+      '--port wants 1-65535, got abc',
+      '',
+      'next: npx @mcptoolshop/vibe-typer --help',
+    ]);
+    expect(err).not.toContain('Environment');
+    expect(out).toBe('');
+  });
+
+  it('says the same for an argument it does not know', async () => {
+    const before = process.exitCode;
+    const cap = capture();
+    try {
+      await main(['--fullscreen']);
+    } finally {
+      cap.stop();
+    }
+    expect(process.exitCode).toBe(1);
+    process.exitCode = before;
+    expect(cap.read().err).toBe(
+      'unknown argument --fullscreen\n\nnext: npx @mcptoolshop/vibe-typer --help\n',
+    );
+    expect(badArgLines('x')).toEqual(['x', '', 'next: npx @mcptoolshop/vibe-typer --help']);
+  });
+});
+
+// ——— a version that is not a version ————————————————————————————————————————
+//
+// `--version` announced that it could not read the version and then left with
+// 0, so a script or a CI gate recorded a pass and captured a string that is
+// not a version. The line on stdout is unchanged: a caller that does not check
+// the status still gets something, and one that does gets the truth.
+
+describe('what --version leaves with', () => {
+  it('leaves with one when the string is the stand-in, and zero otherwise', () => {
+    expect(versionExit(NO_VERSION)).toBe(1);
+    expect(versionExit(DECLARED)).toBeUndefined();
+  });
+
+  it('still writes a string, and leaves with zero on a good read', async () => {
+    const before = process.exitCode;
+    const out = process.stdout.write.bind(process.stdout);
+    let stdout = '';
+    process.stdout.write = ((chunk: string) => {
+      stdout += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      await main(['--version']);
+    } finally {
+      process.stdout.write = out;
+    }
+    expect(stdout).toBe(`${DECLARED}\n`);
+    expect(process.exitCode).toBe(before);
   });
 });

@@ -18,9 +18,11 @@ import { fileURLToPath } from 'node:url';
 import {
   checkSeatUrl,
   createCabinetServer,
+  DARK,
   HOST,
   listenFrom,
   listenLines,
+  seatHaltLines,
   type ServeOpts,
 } from './serve';
 
@@ -54,38 +56,60 @@ export interface Args {
   bad?: string;
 }
 
+/**
+ * The whole help, for `--help` and for nothing else.
+ *
+ * One column the length of the page: every description starts at the same
+ * place, no line passes eighty columns unless it holds an address that must
+ * not be broken, and the `--mcp only` heading carries the qualifier once
+ * rather than every row repeating it. The six levers are in the order
+ * `levers.ts` names, which is the typing cabinet's order too.
+ */
 const USAGE = `ghost-on-the-menu — an arcade shooter where you are the agent
 
   npx @mcptoolshop/ghost-on-the-menu            play it in your browser
   npx @mcptoolshop/ghost-on-the-menu --mcp      run it as an MCP server
 
 Options
-  --mcp             speak MCP on stdio instead of opening the game
-  --port <n>        port to listen on (default ${DEFAULT_PORT}; takes the next
-                    free one when that is busy)
-  --no-open         start the server but do not open a browser
-  -h, --help        this
-  -v, --version     the version
+  --mcp              speak MCP on stdio instead of opening the game
+  --port <n>         port to listen on (default ${DEFAULT_PORT}; takes the next
+                     free one when that is busy)
+  --no-open          start the server but do not open a browser
+  -h, --help         this
+  -v, --version      the version
 
 Environment
-  OLLAMA_URL         the daemon the bosses sit at (default ${DEFAULT_OLLAMA})
-  VOICE_URL          the voice worker, when you run one (default ${DEFAULT_VOICE})
+  OLLAMA_URL         the daemon the bosses sit at
+                     (default ${DEFAULT_OLLAMA})
+  VOICE_URL          the voice worker, when you run one
+                     (default ${DEFAULT_VOICE})
   VOICE_TOKEN        the worker's bearer; added server-side, never in the page
   ANTHROPIC_API_KEY  sits the Claude tier of the say seat; never in the page
 
 Environment, --mcp only
   These are the cabinet server's own levers. They do nothing in play mode.
-  CABINET_TAPES      with --mcp: a directory of tapes instead of the bundled ones
-  CABINET_TAPES_USER with --mcp: more tapes, merged beside the bundled ones
-  CABINET_FIXTURE    with --mcp: the tape a fresh round starts on
-  CABINET_SEED       with --mcp: a whole number, so a round repeats
-  CABINET_TIER       with --mcp: 0-3, how hard the round is
-  CABINET_BOT        with --mcp: which pilot flies it; the typing cabinet reads
-                     this one, and this cabinet plays its own bot
+  CABINET_TAPES      a directory of tapes instead of the bundled ones
+  CABINET_SEED       a whole number, so a round repeats
+  CABINET_TIER       0-3, how hard the round is
+  CABINET_BOT        which pilot flies it; the typing cabinet reads this one,
+                     and this cabinet plays its own bot
+  CABINET_TAPES_USER more tapes, merged beside the bundled ones
+  CABINET_FIXTURE    the tape a fresh round starts on
 
 The server listens on ${HOST} only. Ollama and the voice worker are reached
 through a fixed allowlist: model list, chat and generate, worker health and
 stats, speak and its cached takes. Nothing else is proxied.`;
+
+/**
+ * What one mistyped argument is told. The whole usage used to go to stderr
+ * under the diagnostic — thirty-four lines, of which the one that says what
+ * went wrong has scrolled off a twenty-four-line terminal before the prompt
+ * comes back. The document is what `--help` is for; this is the halt shape
+ * every other failure in the package takes.
+ */
+export function badArgLines(bad: string): string[] {
+  return [bad, '', 'next: npx @mcptoolshop/ghost-on-the-menu --help'];
+}
 
 /** Read the arguments. Pure, so the table of cases is a test. */
 export function parseArgs(argv: readonly string[]): Args {
@@ -172,6 +196,16 @@ export function version(): string {
   const said = versionIn(here);
   if (said === NO_VERSION) sayTrouble("could not read this package's version");
   return said;
+}
+
+/**
+ * What `--version` leaves with. Undefined for a version; 1 for the word that
+ * stands in for one, so `npx ... --version` in a script or a CI gate stops
+ * recording a pass over a string that is not a version. Pure, so the two
+ * cases are a test.
+ */
+export function versionExit(said: string): number | undefined {
+  return said === NO_VERSION ? 1 : undefined;
 }
 
 /**
@@ -394,8 +428,10 @@ export function serveOpts(env: NodeJS.ProcessEnv = process.env): ServeOpts {
     // back to the say module and this package would publish a second
     // model-prompting route, handed the player's ANTHROPIC_API_KEY, that
     // nothing on its page will ever ask for. The typing cabinet passes
-    // `sayModule: null` for the mirror-image reason.
-    endlessModule: null,
+    // `sayModule: DARK` for the mirror-image reason. `DARK` rather than
+    // null: null means a bundle this package expected on disk and did not
+    // find, which is a broken download, and the two used to answer one 503.
+    endlessModule: DARK,
     ollamaUrl: env.OLLAMA_URL ?? DEFAULT_OLLAMA,
     voiceUrl: env.VOICE_URL ?? DEFAULT_VOICE,
     voiceToken: env.VOICE_TOKEN ?? null,
@@ -410,7 +446,7 @@ async function runPlay(args: Args): Promise<void> {
   // the player's to fix and a missing shell is ours.
   const bad = checkSeats();
   if (bad) {
-    process.stderr.write(`${bad}\n`);
+    sayAll(seatHaltLines(bad));
     process.exitCode = 1;
     return;
   }
@@ -454,12 +490,18 @@ async function runPlay(args: Args): Promise<void> {
 export async function main(argv: readonly string[]): Promise<void> {
   const args = parseArgs(argv);
   if (args.mode === 'version') {
-    process.stdout.write(`${version()}\n`);
+    const said = version();
+    // A caller that does not check the status still gets a string; one that
+    // does gets the truth. `npx ... --version` in a script or a CI gate used
+    // to record a pass while capturing something that is not a version.
+    const leaves = versionExit(said);
+    if (leaves !== undefined) process.exitCode = leaves;
+    process.stdout.write(`${said}\n`);
     return;
   }
   if (args.mode === 'help') {
     if (args.bad) {
-      process.stderr.write(`${args.bad}\n\n${USAGE}\n`);
+      sayAll(badArgLines(args.bad));
       process.exitCode = 1;
       return;
     }

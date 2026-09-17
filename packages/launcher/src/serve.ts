@@ -66,19 +66,42 @@ const COLUMNS = ['left', 'center', 'right'] as const;
 const STICKS = ['still', 'left', 'right'] as const;
 const WAVES = ['inspect', 'poison', 'rug', 'unlisted', 'breather'] as const;
 
+/**
+ * A seat's module, or why there is none.
+ *
+ * A path lights the seat. `DARK` is a cabinet that does not have this seat at
+ * all — the shooter has no endless seat, the typing cabinet has no say seat —
+ * and is answered 404, because nothing here is broken. `null` is a module the
+ * package expected on disk and did not find, which is a broken install and is
+ * answered 503. The two used to share `503 no cabinet server built`, so a
+ * player probing a seat that was never lit was told their download was bad.
+ */
+export const DARK = 'dark';
+
+/**
+ * A module path, `DARK`, or null. Spelled `string | null` because `DARK` is a
+ * string: the sentinel is the value, not a second type, and no real module
+ * path is ever the word `dark`.
+ */
+export type SeatModule = string | null;
+
 /** What the launcher needs to know to stand a cabinet up. */
 export interface ServeOpts {
   /** The built shell (`index.html`, `assets`, `sprites`, `tracks`). */
   playDir: string;
-  /** The bundled cabinet-server, for the say seat. Null disables `/cabinet/say`. */
-  sayModule: string | null;
+  /**
+   * The bundled cabinet-server, for the say seat. `DARK` is a cabinet with no
+   * say seat; null is one whose bundle is missing.
+   */
+  sayModule: SeatModule;
   /**
    * The bundled cabinet-server for the endless seat. The same file as
    * `sayModule` in the shipped package, and named separately only so a
    * caller can light one seat without the other. Absent means the say
-   * module, and null on both disables `/cabinet/endless`.
+   * module; `DARK` is a cabinet with no endless seat, and null is one whose
+   * bundle is missing.
    */
-  endlessModule?: string | null;
+  endlessModule?: SeatModule;
   /** The player's Ollama daemon. */
   ollamaUrl: string;
   /**
@@ -142,6 +165,28 @@ export function troubleLine(seat: TroubleSeat, url: string, err: unknown): strin
     return `${who} at ${url} is not running, or is not at that address`;
   }
   return `${who} at ${url} did not answer`;
+}
+
+/**
+ * What the last-resort catch says in the terminal, in the cabinet's one voice.
+ * The error object used to be dropped entirely; this reduces it to a cause
+ * word the way `troubleLine` does, and carries no stack and no path.
+ */
+export function faultLine(err: unknown): string {
+  const why = errCode(err) || errName(err);
+  const said = 'the cabinet could not answer that request';
+  return why ? `${said} (${why})` : said;
+}
+
+/**
+ * A bad `OLLAMA_URL` or `VOICE_URL`, in the shape every other halt takes:
+ * the headline, a blank line, and a `next:` naming the variable to set. The
+ * remedy used to be folded into the sentence as an example, which made this
+ * the one halt in the launcher with no `next:` line at all.
+ */
+export function seatHaltLines(bad: string): string[] {
+  const name = bad.split(' ')[0] ?? 'the address';
+  return [bad, '', `next: set ${name} to an http:// address, or unset it for the default`];
 }
 
 /**
@@ -312,6 +357,40 @@ function sendBusy(res: ServerResponse): void {
 }
 
 /**
+ * A seat this cabinet does not have. Not 503: nothing is missing and there is
+ * nothing to rebuild, so a 503 sent a player off to repair a download that was
+ * fine. Both routes are registered on both packages so the shape of the server
+ * is one shape; which of them answers is the cabinet's design.
+ */
+function sendNoSuchSeat(res: ServerResponse, seat: 'say' | 'endless'): void {
+  sendJson(res, 404, {
+    error: 'no such seat',
+    hint: `this cabinet does not light the ${seat} seat`,
+  });
+}
+
+/** A seat whose bundle was expected in this package and is not there. */
+function sendNoBundle(res: ServerResponse): void {
+  sendJson(res, 503, {
+    error: 'no cabinet server built',
+    hint: 'this package is missing dist/cabinet-server.js',
+  });
+}
+
+/**
+ * The two 400s the seat routes answer. They used to say `no answer`, which is
+ * what the seat says when it was asked and said nothing — so a client with a
+ * slightly wrong body went off to debug a daemon that had never been called.
+ */
+function sendBadJson(res: ServerResponse): void {
+  sendJson(res, 400, { error: 'bad json', hint: 'the body must be JSON' });
+}
+
+function sendBadView(res: ServerResponse): void {
+  sendJson(res, 400, { error: 'bad view', hint: 'view must be the seat view this route takes' });
+}
+
+/**
  * Whether each seat is answering, so a line is said on the change rather than
  * on every call.
  *
@@ -391,11 +470,28 @@ export function readBody(req: IncomingMessage, cap: number): Promise<BodyRead> {
   });
 }
 
-/** Serve one file out of the shell, or 404. */
-async function serveFile(res: ServerResponse, playDir: string, urlPath: string): Promise<void> {
+/**
+ * What a file path that is not in the shell is told. This is the refusal a
+ * person meets most often — a mistyped address bar, a bookmark from an older
+ * shell — and it is the one `sendText`'s rule was written for: nothing here is
+ * parsed by a script, because every path a script calls is a seat or a proxy
+ * prefix and is answered before this route is reached.
+ */
+export function notFoundLine(urlPath: string, port: number): string {
+  return `this cabinet has nothing at ${urlPath}; the game is at http://${HOST}:${port}/`;
+}
+
+/** Serve one file out of the shell, or say where the game is. */
+async function serveFile(
+  res: ServerResponse,
+  playDir: string,
+  urlPath: string,
+  port: number,
+): Promise<void> {
+  const miss = () => sendText(res, 404, notFoundLine(urlPath, port));
   const file = resolveUnder(playDir, urlPath);
   if (!file) {
-    sendJson(res, 404, { error: 'not found' });
+    miss();
     return;
   }
   let target = file;
@@ -404,14 +500,14 @@ async function serveFile(res: ServerResponse, playDir: string, urlPath: string):
     if (info.isDirectory()) {
       const index = resolveUnder(playDir, `${urlPath.replace(/\/+$/, '')}/index.html`);
       if (!index) {
-        sendJson(res, 404, { error: 'not found' });
+        miss();
         return;
       }
       target = index;
       await stat(target);
     }
   } catch {
-    sendJson(res, 404, { error: 'not found' });
+    miss();
     return;
   }
   res.statusCode = 200;
@@ -520,8 +616,12 @@ async function proxy(
     // who started the cabinet gets the cause in words — once, on the way
     // down, and once more on the way back up.
     watch.trouble(seat, base, err);
-    if (!res.headersSent) sendJson(res, 502, { error: 'no answer' });
-    else res.end();
+    if (!res.headersSent) {
+      sendJson(res, 502, {
+        error: 'upstream quiet',
+        hint: 'the daemon or the worker did not answer',
+      });
+    } else res.end();
   } finally {
     clearTimeout(timer);
     clearTimeout(slow);
@@ -553,8 +653,13 @@ function sayRoute(opts: ServeOpts) {
       req.resume();
       return;
     }
+    if (opts.sayModule === DARK) {
+      sendNoSuchSeat(res, 'say');
+      req.resume();
+      return;
+    }
     if (!opts.sayModule) {
-      sendJson(res, 503, { error: 'no cabinet server built' });
+      sendNoBundle(res);
       req.resume();
       return;
     }
@@ -591,13 +696,13 @@ function sayRoute(opts: ServeOpts) {
       try {
         parsed = JSON.parse(read.ok.toString('utf8') || '{}');
       } catch {
-        sendJson(res, 400, { error: 'no answer' });
+        sendBadJson(res);
         return;
       }
       const body = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
       const view = parseSeatView(body.view);
       if (!view) {
-        sendJson(res, 400, { error: 'no answer' });
+        sendBadView(res);
         return;
       }
       const cs = (await import(pathToFileURL(opts.sayModule).href)) as {
@@ -665,8 +770,13 @@ function endlessRoute(opts: ServeOpts) {
       req.resume();
       return;
     }
+    if (module === DARK) {
+      sendNoSuchSeat(res, 'endless');
+      req.resume();
+      return;
+    }
     if (!module) {
-      sendJson(res, 503, { error: 'no cabinet server built' });
+      sendNoBundle(res);
       req.resume();
       return;
     }
@@ -703,13 +813,13 @@ function endlessRoute(opts: ServeOpts) {
       try {
         parsed = JSON.parse(read.ok.toString('utf8') || '{}');
       } catch {
-        sendJson(res, 400, { error: 'no answer' });
+        sendBadJson(res);
         return;
       }
       const body = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
       const view = parseEndlessView(body.view);
       if (!view) {
-        sendJson(res, 400, { error: 'no answer' });
+        sendBadView(res);
         return;
       }
       const cs = (await import(pathToFileURL(module).href)) as {
@@ -909,13 +1019,19 @@ export function createCabinetServer(opts: ServeOpts): Server {
         return;
       }
       if (req.method !== 'GET' && req.method !== 'HEAD') {
-        sendJson(res, 405, { error: 'get only' });
+        // Only a browser form or a stray fetch ever reaches this: every path
+        // a script calls was answered above. So it is written for a reader.
+        sendText(res, 405, 'this cabinet only serves the game here, and only to a GET');
         req.resume();
         return;
       }
-      await serveFile(res, opts.playDir, p);
-    })().catch(() => {
-      if (!res.headersSent) sendJson(res, 500, { error: 'no answer' });
+      await serveFile(res, opts.playDir, p, port);
+    })().catch((err: unknown) => {
+      // The one failure the operator could not see: every other failure in
+      // this file reaches `onTrouble`, and this one wrote nothing anywhere
+      // while the page quietly fell back.
+      opts.onTrouble?.(faultLine(err));
+      if (!res.headersSent) sendJson(res, 500, { error: 'cabinet fault' });
       else res.end();
     });
   });
@@ -952,7 +1068,7 @@ export class ListenTrouble extends Error {
 export function listenLines(err: unknown, from: number): string[] {
   if (!(err instanceof ListenTrouble)) {
     const msg = err instanceof Error ? err.message : String(err);
-    return [`could not listen on ${from}: ${msg}`];
+    return [`could not listen on ${from}: ${msg}`, '', 'next: pass --port <n>'];
   }
   if (err.code === 'EADDRINUSE') {
     return [
@@ -968,7 +1084,7 @@ export function listenLines(err: unknown, from: number): string[] {
       'next: pass --port with something above 1024',
     ];
   }
-  return [`could not listen on ${err.port}: ${err.message}`];
+  return [`could not listen on ${err.port}: ${err.message}`, '', 'next: pass --port <n>'];
 }
 
 /**

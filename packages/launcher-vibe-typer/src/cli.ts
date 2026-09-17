@@ -23,9 +23,11 @@ import { fileURLToPath } from 'node:url';
 import {
   checkSeatUrl,
   createCabinetServer,
+  DARK,
   HOST,
   listenFrom,
   listenLines,
+  seatHaltLines,
 } from '../../launcher/src/serve';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -49,39 +51,56 @@ export interface Args {
   bad?: string;
 }
 
+/**
+ * The whole help, for `--help` and for nothing else. The same sections in the
+ * same order as the shooter's, one description column the length of the page,
+ * no line past eighty columns unless it holds an address, and the six levers
+ * in the order `levers.ts` names.
+ */
 const USAGE = `vibe-typer — a typing arcade game where you are the coding agent
 
   npx @mcptoolshop/vibe-typer            play it in your browser
   npx @mcptoolshop/vibe-typer --mcp      run it as an MCP server
 
 Options
-  --mcp             speak MCP on stdio instead of opening the game
-  --port <n>        port to listen on (default ${DEFAULT_PORT}; takes the next
-                    free one when that is busy)
-  --no-open         start the server but do not open a browser
-  -h, --help        this
-  -v, --version     the version
+  --mcp              speak MCP on stdio instead of opening the game
+  --port <n>         port to listen on (default ${DEFAULT_PORT}; takes the next
+                     free one when that is busy)
+  --no-open          start the server but do not open a browser
+  -h, --help         this
+  -v, --version      the version
 
 Environment
-  OLLAMA_URL         the daemon the endless user sits at (default ${DEFAULT_OLLAMA})
-  VOICE_URL          the voice worker, when you run one (default ${DEFAULT_VOICE})
+  OLLAMA_URL         the daemon the endless user sits at
+                     (default ${DEFAULT_OLLAMA})
+  VOICE_URL          the voice worker, when you run one
+                     (default ${DEFAULT_VOICE})
   VOICE_TOKEN        the worker's bearer; added server-side, never in the page
 
 Environment, --mcp only
   These are the cabinet server's own levers. They do nothing in play mode.
-  CABINET_TAPES      with --mcp: a directory of tapes to season the wires stack
-                     with, instead of the bundled ones
-  CABINET_SEED       with --mcp: a whole number, so a stack repeats
-  CABINET_TIER       with --mcp: 0-3, how hard the stack is
-  CABINET_BOT        with --mcp: which agent types it
-  CABINET_TAPES_USER with --mcp: the shooter reads this one; this cabinet plays
-                     the tapes it was given
-  CABINET_FIXTURE    with --mcp: the shooter reads this one; this cabinet has no
-                     tape menu
+  CABINET_TAPES      a directory of tapes to season the wires stack with,
+                     instead of the bundled ones
+  CABINET_SEED       a whole number, so a stack repeats
+  CABINET_TIER       0-3, how hard the stack is
+  CABINET_BOT        which agent types it
+  CABINET_TAPES_USER the shooter reads this one; this cabinet plays the tapes
+                     it was given
+  CABINET_FIXTURE    the shooter reads this one; this cabinet has no tape menu
 
 The server listens on ${HOST} only. The daemon and the voice worker are
 reached through a fixed allowlist: the model list, chat and generate, worker
 health and stats, speak and its cached takes. Nothing else is proxied.`;
+
+/**
+ * What one mistyped argument is told. The whole usage used to go to stderr
+ * under the diagnostic, so on a twenty-four-line terminal the one line that
+ * says what went wrong had scrolled off before the prompt came back. The
+ * shooter's launcher carries the same shape and they change together.
+ */
+export function badArgLines(bad: string): string[] {
+  return [bad, '', 'next: npx @mcptoolshop/vibe-typer --help'];
+}
 
 /**
  * Trouble, in the cabinet's own words, on stderr. Never stdout: under `--mcp`
@@ -175,6 +194,16 @@ export function version(): string {
   const said = versionIn(here);
   if (said === NO_VERSION) sayTrouble("could not read this package's version");
   return said;
+}
+
+/**
+ * What `--version` leaves with. Undefined for a version; 1 for the word that
+ * stands in for one, so `npx ... --version` in a script or a CI gate stops
+ * recording a pass over a string that is not a version. Pure, so the two
+ * cases are a test.
+ */
+export function versionExit(said: string): number | undefined {
+  return said === NO_VERSION ? 1 : undefined;
 }
 
 /**
@@ -389,7 +418,7 @@ async function runPlay(args: Args): Promise<void> {
   // the player's to fix and a missing shell is ours.
   const bad = checkSeats();
   if (bad) {
-    process.stderr.write(`${bad}\n`);
+    sayAll(seatHaltLines(bad));
     process.exitCode = 1;
     return;
   }
@@ -405,7 +434,10 @@ async function runPlay(args: Args): Promise<void> {
     // The say seat is the shooter's grammar — the boss's line over a wave —
     // and this cabinet has no bosses, so `/cabinet/say` is not lit. The
     // endless seat is named separately and points at the same bundle.
-    sayModule: null,
+    // `DARK` rather than null: null means a bundle this package expected on
+    // disk and did not find, and a seat that is dark by design is not a
+    // broken download. The two used to answer the same 503.
+    sayModule: DARK,
     endlessModule: existsSync(ENDLESS_MODULE) ? ENDLESS_MODULE : null,
     ollamaUrl: process.env.OLLAMA_URL ?? DEFAULT_OLLAMA,
     // The voice worker, lit since slice 4C: the user says their own asks,
@@ -455,12 +487,18 @@ async function runPlay(args: Args): Promise<void> {
 export async function main(argv: readonly string[]): Promise<void> {
   const args = parseArgs(argv);
   if (args.mode === 'version') {
-    process.stdout.write(`${version()}\n`);
+    const said = version();
+    // A caller that does not check the status still gets a string; one that
+    // does gets the truth. `npx ... --version` in a script or a CI gate used
+    // to record a pass while capturing something that is not a version.
+    const leaves = versionExit(said);
+    if (leaves !== undefined) process.exitCode = leaves;
+    process.stdout.write(`${said}\n`);
     return;
   }
   if (args.mode === 'help') {
     if (args.bad) {
-      process.stderr.write(`${args.bad}\n\n${USAGE}\n`);
+      sayAll(badArgLines(args.bad));
       process.exitCode = 1;
       return;
     }
