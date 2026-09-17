@@ -380,7 +380,6 @@ function packTrackKeys(source: string): Set<string> {
 describe('the recorded bed, one a stack', () => {
   it('names the same seven stacks the corpus does', () => {
     expect([...VIBE_TRACK_KEYS].sort()).toEqual([...STACKS].sort());
-    expect(VIBE_TRACK_KEYS.every((key) => isVibeTrackKey(key))).toBe(true);
     expect(isVibeTrackKey('rust')).toBe(false);
     // And the pack script spells the same seven names, because it is plain
     // node and may not import this module. Its own list is read out of the

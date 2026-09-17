@@ -875,6 +875,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     const plan = planOf(state);
     if (plan === shownPlan) return;
     shownPlan = plan;
+    // A level boundary closes any meeting still marked open, so the next
+    // level's first lines are never painted as the last level's meeting.
+    syncOpen = false;
     chatWho.textContent = plan.product;
     canvas.setAttribute('aria-label', previewLabel(plan.product));
   };
