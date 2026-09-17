@@ -8,6 +8,7 @@ import {
   bar,
   barSeconds,
   BED_LEVEL,
+  BED_MAX_S,
   BED_MIN_S,
   BED_POOL,
   BURST_RATE,
@@ -334,13 +335,36 @@ describe('recorded beds', () => {
     expect(menu.playbackRate).toBe(1);
   });
 
-  it('plays a named TRACK_KEYS bed as itself, not a rotated pool bed', () => {
+  it('opens on the pool bed the seed draws, whatever the wave kind, so two seeds open on two pieces', () => {
     const beds: Record<string, ReturnType<typeof bed>> = {};
     for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60, seed: 0 });
-    out.tick(0, 'poison');
+    // Every tape's first wave is inspect; the opening must not be inspect.mp3 every time.
+    const a = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60, seed: 2 });
+    a.tick(0, 'inspect');
     expect(beds.poison!.playing).toBe(true);
     expect(beds.inspect!.playing).toBe(false);
+    const more: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of [...BED_POOL, 'whisperer']) more[k] = bed();
+    const b = attach(silentCtx(), undefined, (k) => more[k], { minBedSeconds: 60, seed: 3 });
+    b.tick(0, 'inspect');
+    expect(more.rug!.playing).toBe(true);
+    expect(more.inspect!.playing).toBe(false);
+  });
+
+  it('plays a named TRACK_KEYS bed as itself at a wave change after the hold, and a boss bed at the opening', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0, seed: 0 });
+    out.tick(0, 'inspect');
+    expect(beds.inspect!.playing).toBe(true);
+    out.tick(1, 'poison');
+    expect(beds.poison!.playing).toBe(true);
+    const boss: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of [...BED_POOL, 'whisperer']) boss[k] = bed();
+    const open = attach(silentCtx(), undefined, (k) => boss[k], { minBedSeconds: 60, seed: 2 });
+    open.tick(0, 'whisperer');
+    expect(boss.whisperer!.playing).toBe(true);
+    expect(boss.poison!.playing).toBe(false);
   });
 
   it('skips a bed with no file and opens on the next pool bed the seed picks', () => {
@@ -455,6 +479,51 @@ describe('recorded beds', () => {
     out.tick(0, 'menu', true);
     expect(started.length).toBeGreaterThan(0);
   });
+
+  // The Director heard beds that do not start at all. Autoplay policy does not
+  // throw: `play()` REJECTS, and a rejection nobody caught left an element
+  // that is not playing sitting in `currentBed` — so the round kept silencing
+  // the chiptune for it, for the whole hold, and the only other sign was an
+  // unhandled rejection in the console.
+  it('hands the round back to the chiptune when the browser refuses to play a bed', async () => {
+    const started: number[] = [];
+    const ctx = silentCtx() as unknown as { createOscillator: () => OscillatorNode };
+    ctx.createOscillator = () =>
+      ({
+        type: 'sine',
+        frequency: { value: 0 },
+        connect() {},
+        start(t: number) {
+          started.push(t);
+        },
+        stop() {},
+      }) as unknown as OscillatorNode;
+    const refused = {
+      ...bed(),
+      play(): Promise<void> {
+        this.plays += 1;
+        return Promise.reject(new Error('NotAllowedError'));
+      },
+    };
+    const told: unknown[] = [];
+    const out = attach(ctx as unknown as Parameters<typeof attach>[0], undefined, () => refused, {
+      minBedSeconds: 60,
+      onBedFail: (b) => told.push(b),
+    });
+    out.tick(0, 'inspect');
+    expect(started.length, 'the chiptune was silenced for the bed').toBe(0);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(told, 'the shell was never told, so its status word stays wrong').toEqual([refused]);
+    expect(refused.playing).toBe(false);
+    expect(refused.volume).toBe(0);
+    // And the very next frame, well inside the hold, plays the bar.
+    out.tick(0.05, 'inspect');
+    expect(
+      started.length,
+      'the cabinet stayed silent behind a bed that is not playing',
+    ).toBeGreaterThan(0);
+  });
 });
 
 // The Director's read, 2026-09-16: the beds cut off too soon. Measured
@@ -531,6 +600,23 @@ describe('a bed holds for its own length', () => {
     expect(whisperer.playing).toBe(false);
     out.tick(32.1, 'whisperer');
     expect(whisperer.playing, 'a 32 s loop was held to 36').toBe(true);
+  });
+
+  // The hold follows the file, and the file is the one telling it how long it
+  // is: a mis-encoded or mis-tagged mp3 can report minutes or hours, and an
+  // uncapped hold would keep one bed under the whole round.
+  it('caps the hold at BED_MAX_S when a file reports an impossible length', () => {
+    const inspect = bed(36000);
+    const whisperer = bed(36000);
+    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
+    const out = attach(ctx(), undefined, (k) => beds[k]);
+    out.tick(0, 'inspect');
+    out.tick(BED_MAX_S - 1, 'whisperer');
+    expect(whisperer.playing).toBe(false);
+    out.tick(BED_MAX_S + 0.1, 'whisperer');
+    expect(whisperer.playing, 'a ten-hour header held the round').toBe(true);
+    // And the cap is long enough for the beds the cabinet actually ships.
+    expect(BED_MAX_S).toBeGreaterThan(130);
   });
 
   it('falls back to BED_MIN_S when a bed has no duration', () => {

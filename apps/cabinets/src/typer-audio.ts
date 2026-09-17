@@ -502,8 +502,17 @@ export function createTyperAudio(
   /** A recorded bed's level: its own, or held down by the same DUCK. */
   const trackLevel = () => (muted ? 0 : BED_TRACK_LEVEL * (held() ? DUCK : 1));
 
-  /** Ask for one stack's bed, once. A file that never arrives is never asked
-   *  for again and never waited on: the procedural bed is already playing. */
+  /**
+   * Ask for one stack's bed, once. A file that never arrives is never asked
+   * for again and never waited on: the procedural bed is already playing.
+   *
+   * The ready event is `canplay` — the element can begin — and not
+   * `canplaythrough`, which is the whole file buffered. The beds are 115-125 s
+   * pieces of about 1.9 MB since the music pass, so `canplaythrough` meant a
+   * stack could be typed through before its bed was ever offered. Nothing
+   * times a bed out: one that is still arriving is still arriving, and it
+   * takes the level whenever it gets here.
+   */
   const askTrack = (key: VibeTrackKey) => {
     if (asked.has(key)) return;
     asked.add(key);
@@ -513,7 +522,7 @@ export function createTyperAudio(
     el.volume = 0;
     el.preservesPitch = true;
     el.addEventListener(
-      'canplaythrough',
+      'canplay',
       () => {
         tracks.set(key, el);
         pickTrack();

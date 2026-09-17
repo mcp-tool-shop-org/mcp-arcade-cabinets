@@ -44,21 +44,26 @@ function mp3Seconds(file: string): { seconds: number; frames: number } {
   // Skip an ID3v2 tag if the encoder wrote one.
   if (buf.length > 10 && buf.toString('latin1', 0, 3) === 'ID3') {
     const size =
-      ((buf[6] & 0x7f) << 21) | ((buf[7] & 0x7f) << 14) | ((buf[8] & 0x7f) << 7) | (buf[9] & 0x7f);
+      ((buf[6]! & 0x7f) << 21) |
+      ((buf[7]! & 0x7f) << 14) |
+      ((buf[8]! & 0x7f) << 7) |
+      (buf[9]! & 0x7f);
     at = 10 + size;
   }
   let frames = 0;
   let seconds = 0;
   while (at + 4 <= buf.length) {
-    if (buf[at] !== 0xff || (buf[at + 1] & 0xe0) !== 0xe0) {
+    // The loop's own bound keeps `at` through `at + 3` inside the buffer, so
+    // the reads below are checked by construction rather than by the compiler.
+    if (buf[at] !== 0xff || (buf[at + 1]! & 0xe0) !== 0xe0) {
       at += 1;
       continue;
     }
-    const versionBits = (buf[at + 1] >> 3) & 0x03;
-    const layerBits = (buf[at + 1] >> 1) & 0x03;
-    const bitrateIndex = (buf[at + 2] >> 4) & 0x0f;
-    const rateIndex = (buf[at + 2] >> 2) & 0x03;
-    const padding = (buf[at + 2] >> 1) & 0x01;
+    const versionBits = (buf[at + 1]! >> 3) & 0x03;
+    const layerBits = (buf[at + 1]! >> 1) & 0x03;
+    const bitrateIndex = (buf[at + 2]! >> 4) & 0x0f;
+    const rateIndex = (buf[at + 2]! >> 2) & 0x03;
+    const padding = (buf[at + 2]! >> 1) & 0x01;
     // MPEG-1 (3), Layer III (1), and a bitrate and sample rate that exist.
     if (
       versionBits !== 3 ||
@@ -70,8 +75,8 @@ function mp3Seconds(file: string): { seconds: number; frames: number } {
       at += 1;
       continue;
     }
-    const kbps = BITRATES_V1_L3[bitrateIndex];
-    const rate = RATES_V1[rateIndex];
+    const kbps = BITRATES_V1_L3[bitrateIndex]!;
+    const rate = RATES_V1[rateIndex]!;
     const length = Math.floor((144 * kbps * 1000) / rate) + padding;
     if (length <= 0) {
       at += 1;
@@ -121,13 +126,13 @@ describe('the recorded beds are two-minute pieces', () => {
 
   it('carries the beds the code names and no stray file', () => {
     for (const { cabinet, dir, keys } of CABINETS) {
-      const found = readdirSync(dir)
-        .filter((name) => name.endsWith('.mp3'))
-        .sort();
-      // `parallelism.mp3` was a bed until v0.7.0, when a burst became the
-      // playing bed faster; it is not in the tree and must not come back as
-      // one. Anything here that the code does not name is weight in the
-      // tarball that nothing ever plays.
+      // Every entry, not only the `.mp3`s: the claim is that the folder holds
+      // the beds the code names and nothing else, and a `.wav` master or a
+      // `.json` left beside them ships in the tarball exactly as heavily as a
+      // stray bed would. `parallelism.mp3` was a bed until v0.7.0, when a
+      // burst became the playing bed faster; it is not in the tree and must
+      // not come back as one.
+      const found = readdirSync(dir).sort();
       expect(found, cabinet).toEqual([...keys].sort().map((key) => `${key}.mp3`));
     }
   });

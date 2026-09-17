@@ -59,6 +59,7 @@ import {
   type CueSnapshot,
   type DrawContext,
   type Intensity,
+  type MediaBed,
   type Round,
   type RoundInput,
   type RoundState,
@@ -268,39 +269,75 @@ const FIRE_LINE: Record<string, string> = {
 // and a bed never restarts from zero. Beds load once; the context is built
 // on the first gesture, as browsers require.
 const BEDS = new Map<string, HTMLAudioElement>();
+/** Beds whose file answered with an `error`. Only these make the status word. */
 const bedMissing = new Set<string>();
 let bedsRequested = false;
 let bedsSettled = false;
 const bedWatchers = new Set<() => void>();
+/**
+ * How long the chrome waits on the beds before it draws what it knows.
+ *
+ * This is sized for METADATA, not for a whole file. The beds are 110-128 s
+ * pieces of about 1.8 MB each; the deadline that shipped was a bare 4000 ms
+ * waited on `canplaythrough`, which is the whole file buffered, so on any
+ * ordinary connection every bed was still downloading when it expired and all
+ * eight were written down as missing. A bed settles on `loadedmetadata` or
+ * `canplay` now — the moment the element knows its own length and can start —
+ * and this deadline only decides when the chrome stops holding its breath.
+ */
+const BED_SETTLE_MS = 8000;
 const loadBeds = () => {
   if (bedsRequested) return;
   bedsRequested = true;
   const pending = new Set<string>(TRACK_KEYS);
+  const notify = () => {
+    for (const fn of bedWatchers) fn();
+  };
   const one = (key: string, ok: boolean) => {
     pending.delete(key);
     if (ok || BEDS.has(key)) bedMissing.delete(key);
     else bedMissing.add(key);
     if (pending.size === 0) bedsSettled = true;
-    for (const fn of bedWatchers) fn();
+    notify();
   };
+  // The deadline settles the CHROME, not the beds. A bed that has not
+  // answered by now is still on its way: it keeps its listeners and clears
+  // its mark the moment it arrives. `music: chiptune` therefore means a bed
+  // that failed to load, never one that is merely slow.
   window.setTimeout(() => {
-    for (const key of [...pending]) one(key, false);
-  }, 4000);
+    if (pending.size === 0) return;
+    bedsSettled = true;
+    notify();
+  }, BED_SETTLE_MS);
+  // The order stands as TRACK_KEYS has it: the five pool beds a round can
+  // open on come first and the three boss beds after, which is already the
+  // order a round wants them in.
   for (const key of TRACK_KEYS) {
     const el = new Audio();
     el.preload = 'auto';
     el.loop = true;
-    el.addEventListener(
-      'canplaythrough',
-      () => {
-        BEDS.set(key, el);
-        one(key, true);
-      },
-      { once: true },
-    );
+    const arrived = () => {
+      BEDS.set(key, el);
+      one(key, true);
+    };
+    // Either event is enough: the element knows its length (which is what the
+    // hold follows) and can begin. Both are registered because a browser that
+    // stalls after the headers still fires the first of them.
+    el.addEventListener('loadedmetadata', arrived, { once: true });
+    el.addEventListener('canplay', arrived, { once: true });
     el.addEventListener('error', () => one(key, false), { once: true });
     el.src = `${import.meta.env.BASE_URL}tracks/${key}.mp3`;
   }
+};
+/** A bed the browser refused to play: the shell says chiptune and stops asking. */
+const bedFailed = (el: MediaBed) => {
+  for (const [key, have] of BEDS) {
+    if (have !== (el as unknown as HTMLAudioElement)) continue;
+    BEDS.delete(key);
+    bedMissing.add(key);
+    break;
+  }
+  for (const fn of bedWatchers) fn();
 };
 const music: { audio: AudioOut | null; muted: boolean } = { audio: null, muted: false };
 
@@ -668,7 +705,10 @@ export function mountGhost(
   const takeIsPlaying = () => !takeEl.paused && !takeEl.ended && Boolean(takeEl.src);
   const ensureAudio = () => {
     if (audio || typeof AudioContext === 'undefined') return;
-    audio = attach(new AudioContext(), undefined, (k) => BEDS.get(k), { seed: round.seed });
+    audio = attach(new AudioContext(), undefined, (k) => BEDS.get(k), {
+      seed: round.seed,
+      onBedFail: bedFailed,
+    });
     audio.setMuted(muted);
     music.audio = audio;
     if (takeIsPlaying() && !muted) audio.setBedDuck(true);

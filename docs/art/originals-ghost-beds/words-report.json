@@ -5,104 +5,329 @@
  "beam_size": 1,
  "vad_filter": false,
  "language": "en",
- "read_from": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks",
- "beds": [
-  {
-   "key": "inspect",
-   "characters": 149,
-   "text": "music music music music music music music music music music music music music music music music music music music music music music music music music",
-   "segments": 25,
-   "min_no_speech_prob": 0.0006,
-   "mean_no_speech_prob": 0.124,
-   "max_avg_logprob": -0.036,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "poison",
-   "characters": 15,
-   "text": "you you you you",
-   "segments": 4,
-   "min_no_speech_prob": 0.2007,
-   "mean_no_speech_prob": 0.3973,
-   "max_avg_logprob": -0.373,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "rug",
-   "characters": 14,
-   "text": "You Thank you.",
-   "segments": 2,
-   "min_no_speech_prob": 0.5995,
-   "mean_no_speech_prob": 0.618,
-   "max_avg_logprob": -0.963,
-   "no_speech_everywhere": true
-  },
-  {
-   "key": "unlisted",
-   "characters": 0,
-   "text": "",
-   "segments": 0,
-   "min_no_speech_prob": null,
-   "mean_no_speech_prob": null,
-   "max_avg_logprob": null,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "breather",
-   "characters": 61,
-   "text": "This is the end of the video, thank you so much for watching!",
-   "segments": 1,
-   "min_no_speech_prob": 0.4493,
-   "mean_no_speech_prob": 0.4493,
-   "max_avg_logprob": -1.376,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "whisperer",
-   "characters": 15,
-   "text": "You You You You",
-   "segments": 4,
-   "min_no_speech_prob": 0.1833,
-   "mean_no_speech_prob": 0.4737,
-   "max_avg_logprob": -0.309,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "menu",
-   "characters": 22,
-   "text": "So, let's get started.",
-   "segments": 1,
-   "min_no_speech_prob": 0.5786,
-   "mean_no_speech_prob": 0.5786,
-   "max_avg_logprob": -1.383,
-   "no_speech_everywhere": true
-  },
-  {
-   "key": "doorman",
-   "characters": 19,
-   "text": "You You You You You",
-   "segments": 5,
-   "min_no_speech_prob": 0.3647,
-   "mean_no_speech_prob": 0.4829,
-   "max_avg_logprob": -0.351,
-   "no_speech_everywhere": false
-  }
+ "rule": "the transcript with known caption hallucinations removed as whole phrases and tokens, plus a token that is only ever repeated, must carry no remaining word; route M1 passes by construction and this gate is for generative pieces",
+ "caption_phrases": [
+  "this is the end of the video",
+  "thanks for watching",
+  "thank you",
+  "subtitles by",
+  "music",
+  "you",
+  "the",
+  "bye"
+ ],
+ "caption_tokens": [
+  "bye",
+  "music",
+  "thank",
+  "thanks",
+  "the",
+  "you"
  ],
  "no_speech_floor": 0.5,
- "misses": [
-  "inspect",
-  "poison",
-  "rug",
-  "breather",
-  "whisperer",
-  "menu",
-  "doorman"
- ],
- "misses_with_speech": [
-  "inspect",
-  "poison",
-  "breather",
-  "whisperer",
-  "doorman"
- ]
+ "installed": {
+  "beds": [
+   {
+    "key": "inspect",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/inspect.mp3",
+    "seconds": 122.823,
+    "transcript": "music music music music music music music music music music music music music music music music music music music music music music music music music",
+    "characters": 149,
+    "remainder": "",
+    "removed": [
+     "music"
+    ],
+    "verdict": "caption only",
+    "segments": 25,
+    "min_no_speech_prob": 0.0006,
+    "mean_no_speech_prob": 0.124,
+    "max_avg_logprob": -0.036,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "poison",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/poison.mp3",
+    "seconds": 117.473,
+    "transcript": "you you you you",
+    "characters": 15,
+    "remainder": "",
+    "removed": [
+     "you"
+    ],
+    "verdict": "caption only",
+    "segments": 4,
+    "min_no_speech_prob": 0.2007,
+    "mean_no_speech_prob": 0.3973,
+    "max_avg_logprob": -0.373,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "rug",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/rug.mp3",
+    "seconds": 110.4,
+    "transcript": "You Thank you.",
+    "characters": 14,
+    "remainder": "",
+    "removed": [
+     "thank you",
+     "you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.5995,
+    "mean_no_speech_prob": 0.618,
+    "max_avg_logprob": -0.963,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "unlisted",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/unlisted.mp3",
+    "seconds": 115.2,
+    "transcript": "",
+    "characters": 0,
+    "remainder": "",
+    "removed": [],
+    "verdict": "clean",
+    "segments": 0,
+    "min_no_speech_prob": null,
+    "mean_no_speech_prob": null,
+    "max_avg_logprob": null,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "breather",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/breather.mp3",
+    "seconds": 128.0,
+    "transcript": "\ud83c\udfb5",
+    "characters": 1,
+    "remainder": "",
+    "removed": [],
+    "verdict": "caption only",
+    "segments": 1,
+    "min_no_speech_prob": 0.4493,
+    "mean_no_speech_prob": 0.4493,
+    "max_avg_logprob": -1.507,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "whisperer",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/whisperer.mp3",
+    "seconds": 112.0,
+    "transcript": "You You You You",
+    "characters": 15,
+    "remainder": "",
+    "removed": [
+     "you"
+    ],
+    "verdict": "caption only",
+    "segments": 4,
+    "min_no_speech_prob": 0.1833,
+    "mean_no_speech_prob": 0.4737,
+    "max_avg_logprob": -0.309,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "menu",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/menu.mp3",
+    "seconds": 120.0,
+    "transcript": "I hope you enjoyed this video, and don't forget to like, comment and subscribe!",
+    "characters": 79,
+    "remainder": "i hope enjoyed this video and don't forget to like comment and subscribe",
+    "removed": [
+     "you"
+    ],
+    "verdict": "word",
+    "segments": 1,
+    "min_no_speech_prob": 0.5786,
+    "mean_no_speech_prob": 0.5786,
+    "max_avg_logprob": -1.236,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "doorman",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/tracks/doorman.mp3",
+    "seconds": 123.637,
+    "transcript": "you Thank you.",
+    "characters": 14,
+    "remainder": "",
+    "removed": [
+     "thank you",
+     "you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.5852,
+    "mean_no_speech_prob": 0.59,
+    "max_avg_logprob": -1.126,
+    "no_speech_everywhere": true
+   }
+  ],
+  "misses": [
+   "menu"
+  ],
+  "caption_only": [
+   "inspect",
+   "poison",
+   "rug",
+   "breather",
+   "whisperer",
+   "doorman"
+  ],
+  "clean": [
+   "unlisted"
+  ]
+ },
+ "fresh": {
+  "beds": [
+   {
+    "key": "inspect-8301",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/inspect-8301.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9417,
+    "mean_no_speech_prob": 0.9503,
+    "max_avg_logprob": -0.396,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "poison-8302",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/poison-8302.flac",
+    "seconds": 120.0,
+    "transcript": "Sigh... Thank you. Thank you.",
+    "characters": 29,
+    "remainder": "sigh",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "word",
+    "segments": 3,
+    "min_no_speech_prob": 0.435,
+    "mean_no_speech_prob": 0.7803,
+    "max_avg_logprob": -0.421,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "rug-8303",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/rug-8303.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you.",
+    "characters": 10,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 1,
+    "min_no_speech_prob": 0.9578,
+    "mean_no_speech_prob": 0.9578,
+    "max_avg_logprob": -0.893,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "unlisted-8304",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/unlisted-8304.flac",
+    "seconds": 120.0,
+    "transcript": "Thanks for watching!",
+    "characters": 20,
+    "remainder": "",
+    "removed": [
+     "thanks for watching"
+    ],
+    "verdict": "caption only",
+    "segments": 1,
+    "min_no_speech_prob": 0.9572,
+    "mean_no_speech_prob": 0.9572,
+    "max_avg_logprob": -0.752,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "breather-8305",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/breather-8305.flac",
+    "seconds": 120.0,
+    "transcript": "you you",
+    "characters": 7,
+    "remainder": "",
+    "removed": [
+     "you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.8618,
+    "mean_no_speech_prob": 0.9088,
+    "max_avg_logprob": -0.557,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "whisperer-8306",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/whisperer-8306.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.941,
+    "mean_no_speech_prob": 0.9495,
+    "max_avg_logprob": -0.411,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "menu-8307",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/menu-8307.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9411,
+    "mean_no_speech_prob": 0.9498,
+    "max_avg_logprob": -0.41,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "doorman-8308",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-ghost-beds/fresh/doorman-8308.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9448,
+    "mean_no_speech_prob": 0.951,
+    "max_avg_logprob": -0.398,
+    "no_speech_everywhere": true
+   }
+  ],
+  "misses": [
+   "poison-8302"
+  ],
+  "caption_only": [
+   "inspect-8301",
+   "rug-8303",
+   "unlisted-8304",
+   "breather-8305",
+   "whisperer-8306",
+   "menu-8307",
+   "doorman-8308"
+  ],
+  "clean": []
+ }
 }

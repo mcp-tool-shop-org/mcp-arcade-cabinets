@@ -160,7 +160,9 @@ def limit(x: np.ndarray, sr: int, ceiling_db: float) -> tuple[np.ndarray, float]
 
 def loop_fade(x: np.ndarray, sr: int) -> np.ndarray:
     n = max(1, int(sr * LOOP_FADE_MS / 1000.0))
-    n = min(n, x.shape[0] // 4)
+    # Never zero: on a clip under four samples `x[-0:]` is the whole array
+    # against an empty ramp, a broadcast error (Kimi's music review, point six).
+    n = max(1, min(n, x.shape[0] // 4))
     ramp = np.linspace(0.0, 1.0, n)[:, None]
     x[:n] *= ramp
     x[-n:] *= ramp[::-1]

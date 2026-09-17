@@ -149,6 +149,117 @@ describe('a restart, and what belongs to the round', () => {
   });
 });
 
+// The Director played the two-minute beds and heard beds that do not start at
+// all. The beds are 110-128 s files of about 1.8 MB each; the shell asked for
+// all eight, waited on `canplaythrough` — the WHOLE file buffered — and a bare
+// 4000 ms deadline wrote down every bed that had not answered as missing. On
+// any ordinary connection that is all eight, so the cabinet said `music:
+// chiptune` and played the chiptune over beds that were still downloading.
+//
+// The module holds its beds at module scope and asks for them once, so each
+// case here takes a fresh copy of it.
+describe('the beds, while they are still arriving', () => {
+  /** Every bed element the module asks for, by the file it asked for. */
+  function catchBeds(): Map<string, HTMLAudioElement> {
+    const made = new Map<string, HTMLAudioElement>();
+    const Real = globalThis.Audio;
+    class Watched extends Real {
+      constructor() {
+        super();
+        // jsdom loads no media, which is exactly the state under test: an
+        // element that has been asked for and has not answered yet.
+        const set = (src: string) => {
+          const key = /tracks\/(.+)\.mp3$/.exec(src)?.[1];
+          if (key) made.set(key, this as unknown as HTMLAudioElement);
+        };
+        Object.defineProperty(this, 'src', {
+          get: () => '',
+          set: (v: string) => set(String(v)),
+          configurable: true,
+        });
+      }
+    }
+    vi.stubGlobal('Audio', Watched);
+    return made;
+  }
+
+  /** The cabinet's status word, as a player reads it. */
+  function chromeWord(): string {
+    return root.querySelector('[aria-label="cabinet"]')?.textContent ?? '';
+  }
+
+  /** A fresh copy of the module, mounted, with the beds caught. */
+  async function mountFresh(): Promise<{
+    beds: Map<string, HTMLAudioElement>;
+    game: { unmount: () => void };
+  }> {
+    const beds = catchBeds();
+    vi.resetModules();
+    const fresh = (await import('../src/ghost')) as typeof import('../src/ghost');
+    const entry = TAPES[0]!;
+    const game = fresh.mountGhost(root, entry.name, entry.tape, () => undefined);
+    return { beds, game };
+  }
+
+  it('asks for every bed and says nothing about the music while they load', async () => {
+    vi.useFakeTimers();
+    try {
+      const { beds, game } = await mountFresh();
+      expect(beds.size, 'the shell asked for fewer beds than the game has').toBe(8);
+      // Well past any deadline, with not one bed answered: they are still on
+      // their way, and a bed on its way is not a missing bed.
+      vi.advanceTimersByTime(60_000);
+      expect(chromeWord()).not.toContain('music: chiptune');
+      // A file that answers with an error IS missing, and that is what the
+      // word is for.
+      beds.get('poison')!.dispatchEvent(new Event('error'));
+      expect(chromeWord()).toContain('music: chiptune');
+      game.unmount();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('settles a bed on its metadata, not on the whole file being buffered', async () => {
+    vi.useFakeTimers();
+    try {
+      const { beds, game } = await mountFresh();
+      // Every bed knows its own length and can begin. None of them has
+      // finished downloading, and none of them ever will here.
+      for (const el of beds.values()) el.dispatchEvent(new Event('loadedmetadata'));
+      vi.advanceTimersByTime(60_000);
+      // A late error on a bed the shell already has changes nothing: it is
+      // held, so the cabinet keeps its music.
+      beds.get('doorman')!.dispatchEvent(new Event('error'));
+      expect(chromeWord()).not.toContain('music: chiptune');
+      game.unmount();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('takes a bed back the moment it arrives, however late that is', async () => {
+    vi.useFakeTimers();
+    try {
+      const { beds, game } = await mountFresh();
+      vi.advanceTimersByTime(60_000);
+      beds.get('rug')!.dispatchEvent(new Event('error'));
+      expect(chromeWord()).toContain('music: chiptune');
+      // The deadline settles the chrome and nothing else: the listeners are
+      // still on every element, and a bed that answers after it clears its
+      // own mark.
+      beds.get('rug')!.dispatchEvent(new Event('canplay'));
+      expect(chromeWord()).not.toContain('music: chiptune');
+      game.unmount();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe('the boss-intent prefetch, on its own', () => {
   it('asks when verbs are short, none is in flight and the wait has passed', () => {
     const clock = newQueueClock();

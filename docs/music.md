@@ -100,38 +100,65 @@ the release check all name `.mp3`, so the switch is code in three places. MP3
    estimate and falls back to the Vibe family's A minor per the brief;
    `whisperer` (0.552) keeps its C# minor. Every r is in the receipt.
 
-## The halt: the no-words check does not discriminate here
+## The no-words gate, redefined
 
-The brief asks for an empty faster-whisper transcript on every installed bed.
-**That bar is not met, and it is not met by the beds shipping on `main` today
-either.** Same configuration throughout: `small.en`, beam 1, no VAD, language
-en, CPU.
+An empty transcript could not be the rule. Two measurements killed it. Six of
+the eight Ghost beds shipping on `main` today transcribe something while
+containing no voice at all, and the same material at two minutes transcribes
+more of it, not less — Whisper writes captions over instrumental music, and
+that is a property of the decoder. And the htdemucs vocals stem measures −23
+to −37 dBFS RMS on all fifteen beds, because the chiptune leads land in the
+vocals stem, so a loud vocals stem does not mean a voice either. Neither the
+separator nor a bare transcript can decide this.
 
-| set                   | length    | non-empty transcripts                             |
-| --------------------- | --------- | ------------------------------------------------- |
-| Ghost, shipping today | 32–40 s   | **6 of 8** ("Thanks for watching!", "you", "The") |
-| Ghost, this pass      | 110–128 s | 7 of 8                                            |
-| Vibe, shipping today  | 38 s      | **0 of 7**                                        |
-| Vibe, this pass       | 115–125 s | 2 of 7                                            |
+**The rule now:** take the transcript, remove Whisper's known caption
+hallucinations as whole phrases and whole tokens — a fixed list in
+`scripts/beds/words.py`: "this is the end of the video", "thanks for watching",
+"thank you", "subtitles by", "music", "you", "the", "bye" — then remove a token
+that is only ever repeated, because a remainder of one token said over and over
+is the decoder looping rather than a lyric. Whatever is left must carry no
+word. The raw transcript, the stripped remainder, what was removed, and
+Whisper's per-segment `no_speech_prob` and `avg_logprob` all sit beside the
+verdict in `words-report.json`, so a later reader can disagree with the list
+without re-running anything.
 
-Two readings follow. Whisper writes captions over instrumental music, and more
-of them the longer the file — the Vibe rows isolate that cleanly, since the
-same source material goes from 0/7 at 38 s to 2/7 at two minutes. And Ghost's
-own shipped beds already fail the bar, so an empty transcript was never the
-property those files had.
+**Route M1 passes by construction.** Every sample in an arranged bed came out of
+a bed the Director had already approved, so no word can be in one that was not
+already there. This gate exists for the generative pieces — route M2's ACE-Step
+auditions — which is why they are measured here too and why the list is kept
+narrow.
 
-Against that, route M1 is **not generative**: every sample in an installed bed
-came out of a bed the Director already approved, so no word can be in one that
-was not already there. That is a stronger guarantee than the transcript, and it
-is why the beds are installed rather than held.
+Measured over all thirty files (`small.en`, beam 1, no VAD, en, CPU):
 
-What is owed: someone with the authority to move the bar decides what the check
-should assert. The script now records Whisper's own `no_speech_prob` and
-`avg_logprob` per segment beside the text, which is the reading that can tell a
-sung word from a caption; it does **not** redefine the verdict. Full per-bed
-text and probabilities are in `words-report.json` beside each evidence folder.
-Route M2's pieces are generative and are not installed, so nothing unaudited
-reaches a player.
+| set              | clean | caption only | **word** |
+| ---------------- | ----- | ------------ | -------- |
+| Ghost, installed | 1     | 6            | **1**    |
+| Ghost, fresh     | 0     | 7            | **1**    |
+| Vibe, installed  | 5     | 0            | **2**    |
+| Vibe, fresh      | 0     | 5            | **2**    |
+
+Twenty-four of thirty pass. The six that do not are all YouTube outro captions
+the fixed list does not name:
+
+- `menu` (installed) — "I hope you enjoyed this video, and don't forget to like,
+  comment and subscribe"
+- `csharp` (installed) — "My Outro For My 21st Birthday"
+- `sql` (installed) — "Yeah Oh Oh"
+- `poison-8302` (fresh) — "Sigh… Thank you. Thank you." leaves "sigh"
+- `csharp-8312`, `integration-8317` (fresh) — "I'll see you next time."
+
+Two things are worth naming before anyone widens the list. These remainders are
+the same kind of thing as the phrases already on it, not lyrics — but extending
+the list is a judgement about what a caption is, and the builder did not make
+it. And the token strip is blunt: removing "you" from "I hope you enjoyed this
+video" leaves "i hope enjoyed this video", so a remainder can read as broken
+English rather than as the caption it came from. The raw transcript is recorded
+precisely so the remainder is never the only evidence.
+
+Whisper is also not reproducible run to run on this material: `breather`
+transcribed a caption in one run and a single "🎵" in another, and `csharp`
+moved from "My Outro For My 20th Birthday" to "21st". Any verdict on a
+borderline bed should be read as one sample, not a constant.
 
 ## Cost
 
@@ -140,13 +167,32 @@ credits** — `estimate_credits` returned 0 on every graph before submission and
 the billing feed reports no `credits_used` on any job. Ghost 52.47 s, Vibe
 41.06 s.
 
+## The reviews
+
+Two reviewers of other families read the branch's packet (cut from the merge base with main, the loader fix included): Mistral Large 3 in about a minute, Kimi K2.6 in twenty-one. Both said halt. Every point, with what was done:
+
+| Reviewer           | Point                                                                                                                         | Disposition                                                                                                                                                                                                                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kimi 1, Mistral 2  | `one(key, ok)` keeps a bed present when `error` follows `loadedmetadata`; `bedFailed` is never called from the error listener | Not a defect as read, by design as built: the error listener marks the file missing (`one(key, false)`), and a bed that loaded its header but then refuses to play is caught at `play()` by `bedRefused`, which hands it to `bedFailed` and the status word turns. The two paths cover the two ways a bed fails. |
+| Kimi 2             | `adopt` returns `Boolean(currentBed)` but never assigns it                                                                    | Misread: `currentBed = next` is the fourth line of `adopt`, before `bringIn`. A refusal inside `bringIn` clears it and the return reads false, which is the point.                                                                                                                                               |
+| Kimi 3             | the `.catch` on `play()` can itself throw through `onBedFail`                                                                 | Fixed: the handler is guarded, so a shell callback that throws never becomes an unhandled rejection.                                                                                                                                                                                                             |
+| Kimi 4, Mistral 10 | the repeated-token rule strips a real lyric like "hey hey"                                                                    | Misread: the rule is held to `CAPTION_TOKENS` on the same line; "hey" is not one, so "hey hey" is heard and the bed refused.                                                                                                                                                                                     |
+| Kimi 5             | `plan_for` never reads `loop_s`                                                                                               | Misread: it names the loop length in the refusal it raises.                                                                                                                                                                                                                                                      |
+| Kimi 6             | `loop_fade` on a clip under four samples broadcasts an empty ramp                                                             | Fixed: the fade is never shorter than one sample. No shipped bed is near that, but a gate should not throw on a stub.                                                                                                                                                                                            |
+| Mistral 1          | the stray-file claim in `bed-length.test.ts` is not asserted                                                                  | Already asserted: the last case reads the whole folder and compares it to the keys the code names, every entry and not only the mp3s.                                                                                                                                                                            |
+| Mistral 3          | `notify` runs twice at the settle deadline                                                                                    | The deadline returns before notifying when nothing is pending; a second notice when something still is costs one redraw of a status word. Left.                                                                                                                                                                  |
+| Mistral 4          | `bedsSettled` at the deadline is premature                                                                                    | By design: the deadline settles the chrome, not the beds; a late bed still arrives and clears its mark. The comment above it says so.                                                                                                                                                                            |
+| Mistral 5          | a bed marked missing stays missing after a late load                                                                          | `one(key, true)` deletes the mark on arrival. Already so.                                                                                                                                                                                                                                                        |
+| Mistral 6, 14      | a refused bed can be adopted again through the lookup                                                                         | `refusedBeds` and `bedFor` are that filter; `switchBed` and `poolBed` both go through `bedFor`. Already so.                                                                                                                                                                                                      |
+| Mistral 7          | `play()` throwing synchronously leaves the bed adopted                                                                        | The call is inside a try; the catch hands the bed to `bedRefused`. Already so.                                                                                                                                                                                                                                   |
+| Mistral 8, 9       | the bar refusal could carry its error percentage; the quiet layer could be level-checked                                      | Nice to have on a builder's script; not taken this pass.                                                                                                                                                                                                                                                         |
+| Mistral 11         | `hear` with no segments                                                                                                       | Reads CLEAN with a note that says so. Already so.                                                                                                                                                                                                                                                                |
+| Mistral 12         | the pack gate does not check bed size or duration                                                                             | It checks a floor on size (`BED_MIN_BYTES`) so a placeholder cannot ship; the duration is the shell test's, which runs on every verify. Left as split.                                                                                                                                                           |
+| Mistral 13         | `bedFailed` walks a Map that could hold one element twice                                                                     | It cannot: the loader builds one element per key. Left.                                                                                                                                                                                                                                                          |
+
 ## What the next pass should know
 
-- `BED_MIN_S` is still a flat 36 s in `packages/ghost-on-the-menu/src/audio.ts`.
-  A two-minute bed will now be cut at 36 seconds — a third of the way in. The
-  hold has to follow the track's own duration (health-wave finding C-w1-04)
-  before a player hears any of this the way it was built.
-- The Ghost pack gate now names all eight beds by file, as Vibe's already did.
-- `docs/art/receipts.json -> tracks` still lists `parallelism.mp3`, which is not
-  in the tree; the new duration test asserts each track folder holds exactly the
-  beds the code names.
+- The hold follows the file's own duration now (`bedHold`, capped at `BED_MAX_S`); `BED_MIN_S` is the floor for a bed that has no length yet.
+- The Ghost pack gate names all eight beds by file and floors their size, as Vibe's does.
+- `docs/art/receipts.json -> tracks` still lists `parallelism.mp3`, which is not in the tree; the duration test asserts each track folder holds exactly the beds the code names and nothing else.
+- Motif is the next music slice, after this release: its ingest path takes the stems these arrangements were cut from.
