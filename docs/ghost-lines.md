@@ -16,6 +16,10 @@ Two things, both his word:
 - The shell (`apps/cabinets/src/ghost.ts`) reads the store at mount, hands it to every round including a restart, and writes it back at the end scene and on leaving the field. `readLineBags` accepts only its own shape, so a stale or edited store falls back to fresh bags.
 - The loader holds every line to the voice gate: no digit, no fact word, no line over fifty glyphs, no repeat within a pool, at least four and at most sixty-four lines in a pool (the boss pools at most twenty-six, the letter seat's alphabet).
 
+## The pace
+
+The lines are the agent's inner monologue and read at that pace (the Director, 2026-09-17): an aside holds on the field for `ASIDE_HOLD_S` and the silence after it, `ASIDE_GAP_S`, is longer than the aside; the first aside waits `ASIDE_FIRST_S` into the round; a wave card holds `WAVE_CAPTION_T` and a catch word `CAPTION_T`. All five are Director constants at the top of `sim.ts`. The boss takes the field on its own beat, `WAVE_HOLD_S`, which the card may outlast.
+
 ## The voice, for whoever writes the next batch
 
 Short declaratives; the agent is earnest, literal and a little proud of being thorough. It names the bosses as characters (the Whisperer, the Menu, the Doorman, the Archivist) and speaks of the menu, the list, the catalog, the handshake, the hallway, the door, the plate, the footnote. It never says a digit, never names a tool or a model, never uses a fact word. A catch line is a short lower-case phrase that parks a trophy ("the fine print stays", "that knock is ours"). An end line closes an evening. American English.

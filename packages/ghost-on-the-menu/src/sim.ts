@@ -42,10 +42,21 @@ const SHOT_H = 10;
 const HITSTOP = 0.12;
 const SHAKE_DECAY = 0.3;
 const DIE_POP = 0.15;
-const CAPTION_T = 1.5;
+// Director (2026-09-17): the agent's lines are its inner monologue and read
+// at that pace — a card or a catch word holds a beat longer, an aside holds
+// longer still, and the silence between asides is longer than the aside.
+const CAPTION_T = 2.2;
 const CAUGHT_RISE = 220;
 const EXIT_SPEED = 220;
-const WAVE_CAPTION_T = 1.5;
+const WAVE_CAPTION_T = 2.4;
+/** The field's beat between a wave card going up and its boss taking the field; the card may outlast it. */
+const WAVE_HOLD_S = 1.5;
+/** Director: how long an aside stays on the field. */
+const ASIDE_HOLD_S = 3.6;
+/** Director: the silence after an aside before the next may land. */
+const ASIDE_GAP_S = 8;
+/** Director: the quiet before the round's first aside. */
+const ASIDE_FIRST_S = 6;
 /** Seconds a seat's line stays on the field. */
 const SAY_CAPTION_T = 2.4;
 const PATH_RATE = 0.35;
@@ -590,7 +601,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     captionedWave: -1,
     waveHold: 0,
     emittedGridForWave: false,
-    asideAt: 6,
+    asideAt: ASIDE_FIRST_S,
     bags: opts.bags ?? {},
     bossHoldUntil: 0,
     bossLean: 0,
@@ -651,7 +662,7 @@ function openWave(state: RoundState, meta: Meta, wave: number): void {
       17 + wave,
     ),
   };
-  meta.waveHold = WAVE_CAPTION_T;
+  meta.waveHold = WAVE_HOLD_S;
   meta.emittedGridForWave = false;
   meta.captionedWave = wave;
 }
@@ -828,10 +839,10 @@ function maybeAside(state: RoundState, meta: Meta): void {
       meta.round.seed,
       kind.charCodeAt(0),
     ),
-    t: 2.2,
+    t: ASIDE_HOLD_S,
     kind: 'aside',
   };
-  meta.asideAt = state.t + 7;
+  meta.asideAt = state.t + ASIDE_HOLD_S + ASIDE_GAP_S;
 }
 
 /** Which fire drop a formation lets fall: a seeded draw over the kinds' weights. */
