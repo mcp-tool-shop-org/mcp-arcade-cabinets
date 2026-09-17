@@ -1,0 +1,244 @@
+{
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-041119373",
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 6,
+  "chunk": 25,
+  "revoice": false,
+  "spare": null,
+  "pool": null,
+  "editor": "ollama:glm-5.3-flash:cloud",
+  "writerFamily": "mistral",
+  "editorFamily": "zhipu",
+  "voice": {
+    "user": "bf53d85000012670370aae03d68e77d3806a6e18f3db2f681478c781a8092d36",
+    "agent": "fa7dae9182cdb3bf92d8b525855269681741cd16aa8119969e757f598cc4a1d4"
+  },
+  "applied": true,
+  "calls": 9,
+  "wallMs": 1996253,
+  "slots": {
+    "snippet-reactions": {
+      "model": "ollama:mistral-large-3:675b-cloud",
+      "temperature": 0.9,
+      "chunk": 25,
+      "concurrency": 6,
+      "prompts": [
+        "2b9643b420b7860aa4a881a8e3737c62619687eebd9653c0cd3a1b958ec1da28",
+        "4ed1c04a8f545fe3b5793c6489d365c99f5d2cb7649d5d0aa71c687401428bdb",
+        "6b3685b86078d14ea2c7ef51d2fd838ec6db42bc225568dce116442f3de19a50",
+        "163a834a6dca6daaef8849383448d862231b8ecb6b3e328f35ad6b853f5ddbd8",
+        "4fb210a51c55f6e925e1b5ff9b8163a621edb3b607eee13800ae08760782bfa0",
+        "eaa69014a95e0f6343c06df3b2117850d3402a4bb9f634afa7de2b2ca1ac834d",
+        "30ade2004b921dfe422745fab22274129494c7b194a00e904d44aabf975a1add",
+        "95b4708919ac9541c269932410b3f0a6dd008703681901e198787d099ddb7412",
+        "3ac97ef1a0b8cea73f69a6786902b58ffaa0b54a97456ffff88ea55d4fa1d50f",
+        "616fced524602a75ddc585466ea618f8f60603b206e9e073f54165965067f38c",
+        "ebc778f6759de5585dcf0e66fa4f1bf4dfbf8725d1ff0a77047b562fcd6977e5",
+        "db7a4913c81f84a9a2c37d1d93fb0e171788bade2a077e8ce293544de20c172f",
+        "b801235c08be370ca5f8ed91cc07f457f4f48aeda1247d602336f1f5dcdb3a83",
+        "d9c04ea066c6636740b241cbca4a03b0af3fec453cb4f18c729872eaa229b49b",
+        "63f1dded7835f5c065f683ee33831a23151d6ef304255ebc974365c8e5ada774",
+        "734daeaff38b08c993303d160bd56c9b44cc9e352c1370ccdc2576bdeca4ca42",
+        "596eeaf805c537b1318a529e99284af5c51dc9004fc3cc14f52719183b446be3",
+        "dda2eedbe39bb8f3160bb477876b6e0870bc4ce62e126f2b47aece589d7955ab",
+        "90fb8c89cf1e97676805358fd8765e2065fc873656a3b5cb2846229650d9066b"
+      ],
+      "calls": 9,
+      "requested": 462,
+      "kept": 134,
+      "missing": 20,
+      "waits": 0,
+      "dropped": {
+        "names list, which the request never asked for": 4,
+        "names badge, which the request never asked for": 2,
+        "names fridge, which the request never asked for": 7,
+        "names yogurt, which the request never asked for": 7,
+        "forbidden word or digit": 3,
+        "names map, which the request never asked for": 2,
+        "names clock, which the request never asked for": 3,
+        "leans on a story with no level to hold it up": 2,
+        "names row, which the request never asked for": 2,
+        "not ascii": 5,
+        "names menu, which the request never asked for": 1,
+        "names table, which the request never asked for": 2,
+        "names picture, which the request never asked for": 2,
+        "names chart, which the request never asked for": 1
+      },
+      "ms": 106474,
+      "tokens": {
+        "in": 75090,
+        "out": 7291
+      },
+      "cost": null,
+      "errors": [],
+      "heldFromBefore": 136,
+      "rounds": [
+        {
+          "round": 1,
+          "asked": 113,
+          "held": 230
+        },
+        {
+          "round": 2,
+          "asked": 19,
+          "held": 248
+        },
+        {
+          "round": 3,
+          "asked": 1,
+          "held": 249
+        }
+      ],
+      "editor": {
+        "spec": "ollama:glm-5.3-flash:cloud",
+        "family": "zhipu",
+        "writer": "mistral",
+        "calls": 10,
+        "ms": 4377839,
+        "tokens": {
+          "in": 25192,
+          "out": 154466
+        },
+        "read": 249,
+        "dropped": [
+          {
+            "id": "sh-if-else",
+            "ask": "check if {product} has the file it needs",
+            "line": "{product} checks the file it needs.",
+            "why": "the line says the product checks the file, not that the check confirmed it has the file the request asked about"
+          },
+          {
+            "id": "cal-sh-d7-004",
+            "ask": "check if {product} pieces work as expected",
+            "line": "{product} checks itself before it ships.",
+            "why": "the line describes a self-check habit before shipping instead of saying whether the pieces work as the request asked"
+          },
+          {
+            "id": "cal-cs-d7-003",
+            "ask": "run a brain model forward and check error for {product}",
+            "line": "it knows the answer before i ask",
+            "why": "answers a different request entirely, claiming the model knows the answer before i ask when the request was to run a brain model forward and check error"
+          },
+          {
+            "id": "cal-cs-d7-004",
+            "ask": "find the shortest route between two points in {product}",
+            "line": "the path arrives before i finish asking",
+            "why": "names something the request never asked for, a path that arrives before i finish asking, when the request was only to find the shortest route between two points"
+          },
+          {
+            "id": "cal-py-d1-003",
+            "ask": "give every duck driver a first and last name",
+            "line": "every duck now has a first and last.",
+            "why": "the line says every duck got a name when the request only asked for the duck drivers to be named"
+          },
+          {
+            "id": "cal-py-d4-003",
+            "ask": "make {product} only fight on prime minutes",
+            "line": "the prime ones now have a home.",
+            "why": "the line names something the request never asked for"
+          },
+          {
+            "id": "cal-sh-d5-005",
+            "ask": "clean up the old versions of {product} safely",
+            "line": "the branches now know when to rest.",
+            "why": "names branches, something the request about old versions never asked for"
+          },
+          {
+            "id": "cal-sh-d6-005",
+            "ask": "watch {product} breathe and yell if it wheezes",
+            "line": "it shouts when the room gets too warm.",
+            "why": "names the room getting too warm, a condition the request about wheezing never asked for"
+          },
+          {
+            "id": "cal-cs-d1-003",
+            "ask": "flip the active switch inside {product}",
+            "line": "the room knows when to wake and rest.",
+            "why": "names something the request never asked for — the room waking and resting, not a flipped switch"
+          },
+          {
+            "id": "cs-string-interpolation",
+            "ask": "show alice owes money in {product}",
+            "line": "the words now hold hands just right.",
+            "why": "not true of the request — it never mentions alice or the money she owes"
+          },
+          {
+            "id": "cal-cs-d3-003",
+            "ask": "handle a bad number in {product}",
+            "line": "the room catches the bad one and smiles.",
+            "why": "names something the request never asked for — the room"
+          },
+          {
+            "id": "cs-interface",
+            "ask": "define what a logger must do for {product}",
+            "line": "the warnings now whisper just right",
+            "why": "not true of the request — the ask was a definition of what a logger must do, not warnings whispering"
+          },
+          {
+            "id": "cal-cs-d4-004",
+            "ask": "add a profile for each member",
+            "line": "the ages line up without a single nudge",
+            "why": "names something the request never asked for — ages"
+          },
+          {
+            "id": "cs-switch-expr",
+            "ask": "turn a number into a letter grade for {product}",
+            "line": "the grades march in perfect order",
+            "why": "answers a different request entirely — grades marching in order, not one number turned into a grade"
+          },
+          {
+            "id": "cal-jv-d5-003",
+            "ask": "make {product} count words in a file",
+            "line": "it reads the file and tells me who spoke",
+            "why": "the line names something the request never asked for, since counting words in a file never says who spoke"
+          },
+          {
+            "id": "cal-jv-d6-002",
+            "ask": "make {product} remember things safely for many users",
+            "line": "the cache now keeps my secrets safe",
+            "why": "the line does not sound like that character, since cache is coder talk and he names pieces in the plainest words"
+          },
+          {
+            "id": "cal-py-d5-001",
+            "ask": "{product} gives each app three chances to work",
+            "line": "it keeps trying until the job gets done",
+            "why": "the line is not true of the request — it describes trying until the job gets done, not three chances"
+          },
+          {
+            "id": "cal-py-d5-004",
+            "ask": "check that every rating is a positive number",
+            "line": "the rating sits there and waits to be judged",
+            "why": "the line is not true of the request — a rating waiting to be judged is not a check that ran"
+          },
+          {
+            "id": "cal-sq-d2-002",
+            "ask": "group my sandwiches by filling and skip the small groups",
+            "line": "the fillings now line up by their own size",
+            "why": "not true of the request — it says the fillings line up by size, but the request groups by filling"
+          },
+          {
+            "id": "cal-sq-d2-005",
+            "ask": "enter all the sandwiches from last week",
+            "line": "my cousin asked for this exact summary",
+            "why": "names something the request never asked for — a summary, when the request was entering last week's sandwiches"
+          },
+          {
+            "id": "sql-update",
+            "ask": "make {product} give the engineering team a raise",
+            "line": "i finally see the whole year at once",
+            "why": "answers a different request entirely — seeing the whole year at once, not giving the engineering team a raise"
+          }
+        ],
+        "reasked": 21,
+        "refilled": 21,
+        "empty": [],
+        "errors": []
+      },
+      "wrote": 249,
+      "withoutOne": 0,
+      "wallMs": 1996252
+    }
+  }
+}

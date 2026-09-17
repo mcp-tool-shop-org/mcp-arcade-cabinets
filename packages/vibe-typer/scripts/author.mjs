@@ -3,6 +3,7 @@
 //                                 [--out docs/vibe-typer.author-sample]`
 // `node scripts/author.mjs run --model <spec> [--only asks|stories|nags|reactions|reviews|pools]
 //                              [--chunk 40] [--concurrency 2] [--revoice] [--apply]`
+// `node scripts/author.mjs run --model <spec> --only snippet-reactions --editor <spec>`
 // `node scripts/author.mjs edit --model <spec> [--concurrency 2] [--apply]`
 //                              [--same-family "<reason>"]
 //
@@ -88,7 +89,8 @@ const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] 
                                    [--same-family <reason>]
 
   <spec>      openrouter:<model-id> | ollama:<tag>
-  <slot>      premises | stories | asks | nags | reactions | reviews | pools
+  <slot>      premises | stories | asks | nags | reactions | reviews | pools |
+              snippet-reactions
   --pool      dotted pool names, comma separated; a head matches its whole branch
   --chunk     items one call writes for; the default is forty
   --spare     lines over the floor a pool is written to; four when re-voicing, none otherwise
@@ -96,6 +98,7 @@ const USAGE = `usage: node scripts/author.mjs sample --model <spec>[,<spec>...] 
   --revoice   write each pool fresh at its floor instead of topping it up
   --same-family  the reason for seating the editor in the family that wrote the pool
   --skip      pools this run leaves alone, named the way --pool names them
+  --editor    the second family that reads the snippet reactions back, and drops
   edit        read each whole pool back and drop the lines that break the voice`;
 
 /** Flags that take a value. */
@@ -113,6 +116,7 @@ const FLAGS = new Set([
   'chunk',
   'same-family',
   'skip',
+  'editor',
 ]);
 /** Flags that are their own answer. */
 const BARE_FLAGS = new Set(['apply', 'revoice']);
@@ -124,7 +128,7 @@ const DEFAULT_SLOTS = ['stories', 'asks', 'nags', 'reactions', 'reviews', 'pools
  * same line written again over pins that are staying. Asking for both in one
  * run would write the story twice.
  */
-const RUN_SLOTS = ['premises', ...DEFAULT_SLOTS];
+const RUN_SLOTS = ['premises', ...DEFAULT_SLOTS, 'snippet-reactions'];
 const DEFAULT_TEMPERATURE = 0.9;
 /**
  * The editor runs cooler than the writer, and that is its own number.
@@ -419,6 +423,10 @@ async function callOllama(model, system, user, opts) {
       body: JSON.stringify({
         model,
         stream: true,
+        // A cloud tag holds nothing here, and a local tag the size of the
+        // writing models this script seats holds the whole GPU. The run is a
+        // burst of calls and then nothing, so it gives the card back.
+        keep_alive: 0,
         options: { temperature: opts.temperature },
         messages: [
           { role: 'system', content: system },
@@ -1125,7 +1133,14 @@ async function askSlot(target, system, user, keys, gate, opts) {
   for (const key of keys) {
     const list = groups.get(key) ?? [];
     if (list.length === 0) base.missing += 1;
-    const { kept, dropped, alternates } = keepFirstPassing(list, gate);
+    // One gate for every key, or a gate the key chooses. The snippet reactions
+    // are the second shape — each line is held to the request it was written
+    // for, so the allowance differs per key — and `{ forKey }` is how a caller
+    // says so. Every other slot passes the plain function it always passed.
+    const { kept, dropped, alternates } = keepFirstPassing(
+      list,
+      typeof gate === 'function' ? gate : gate.forKey(key),
+    );
     mergeDropped(base.dropped, dropped);
     base.lines[key] = kept;
     base.alternates[key] = alternates;
@@ -1553,7 +1568,11 @@ async function commandRun(args, gates) {
   const revoice = args.flags.revoice === true;
   mkdirSync(AUTHORING, { recursive: true });
 
-  const ctx = makeCtx(target, opts, gates, { apply, revoice });
+  const ctx = makeCtx(target, opts, gates, {
+    apply,
+    revoice,
+    editor: args.flags.editor ?? null,
+  });
   // A snippet pinned into a level story keeps the story's ask; the ask slot
   // skips it so the two never write the same key twice.
   for (const level of ctx.levels.levels) {
@@ -1568,6 +1587,7 @@ async function commandRun(args, gates) {
     reactions: slotReactions,
     reviews: slotReviews,
     pools: slotPools,
+    'snippet-reactions': slotSnippetReactions,
   };
   // One stamp for every file this invocation writes, so a second run on the
   // same day sits beside the first instead of on top of it.
@@ -1585,6 +1605,12 @@ async function commandRun(args, gates) {
     // a long way over its floor replays as that run and not as the full pass.
     spare: opts.spare,
     pool: args.flags.pool ?? null,
+    // The two families, when this run seats a second one. `snippet-reactions`
+    // is the slot that reads its own lines back; every other slot leaves this
+    // null and is read by `edit` in its own pass.
+    editor: args.flags.editor ?? null,
+    writerFamily: modelFamily(target.spec),
+    editorFamily: args.flags.editor ? modelFamily(String(args.flags.editor)) : null,
     voice: ctx.voiceHashes,
     applied: apply,
     calls: 0,
@@ -1627,6 +1653,14 @@ async function commandRun(args, gates) {
     saveLevers(ctx);
     prettier([...ctx.touched]);
   }
+  // The receipts too, applied or not. `authoring/` is committed and it is not
+  // prettier-ignored, so a run that leaves its own evidence unformatted leaves
+  // the repo failing `pnpm lint` — which the reactions run found the hard way,
+  // a candidates file at a time.
+  prettier([
+    path.join(AUTHORING, `${stamp}-run.json`),
+    ...only.map((name) => path.join(AUTHORING, `${stamp}-${name}.json`)),
+  ]);
   console.log(
     apply
       ? `applied ${only.join(', ')} into the levers in ${receipt.calls} calls; run pnpm test before committing`
@@ -1639,7 +1673,7 @@ async function commandRun(args, gates) {
  * two system prompts built from them, and the gates with the level-id rule
  * added.
  */
-function makeCtx(target, opts, gates, { apply = false, revoice = false } = {}) {
+function makeCtx(target, opts, gates, { apply = false, revoice = false, editor = null } = {}) {
   const levels = readJson(path.join(PATTERNS, 'levels.json'));
   const voices = loadVoices();
   const slugs = levels.levels.map((l) => l.id).filter((id) => id.includes('-'));
@@ -1648,11 +1682,17 @@ function makeCtx(target, opts, gates, { apply = false, revoice = false } = {}) {
     opts,
     apply,
     revoice,
+    // The second family that reads the snippet reactions back, when this run
+    // seats one. Nothing else reads it.
+    editor,
     gates: {
       line: slugGate(gates.line, slugs),
       ask: slugGate(gates.ask, slugs),
       sync: slugGate(gates.sync, slugs),
       premise: premiseGate(slugGate(gates.line, slugs)),
+      // The bundled package itself, for the rules that are a list rather than
+      // a gate: the piece words and whether a line leans on a story premise.
+      pkg: gates.pkg,
     },
     voices,
     // `plain` is the persona and the rules with no sheet at all. One slot uses
@@ -2081,6 +2121,506 @@ async function slotAsks(ctx) {
       for (const w of writes) setSnippetAsk(ctx, w.id, w.ask);
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// The per-snippet reactions
+// ---------------------------------------------------------------------------
+
+/**
+ * A reaction is written for ONE request, which is the whole difference between
+ * it and the tier pools behind `user.reactionsByTopicEnabled`. Those were
+ * written for "the user names the thing that just shipped" with no request in
+ * front of the writer, so seventy of a hundred and eight named a piece the
+ * request never asked for. Here the request is printed above every line and
+ * the gate holds the line to it: a piece word may appear in the reaction only
+ * when the ask already says it, a story noun only when the snippet says which
+ * level it belongs to, and `{product}` is the one hole either may carry.
+ */
+
+/** Under this many words a reaction is a grunt, not a line. The ceiling is the gate's. */
+const REACTION_MIN_WORDS = 4;
+
+/** Every authored line already in the user's lever, flat, so no reaction repeats one. */
+function userPoolLines(user) {
+  const out = [];
+  const walk = (value) => {
+    if (typeof value === 'string') out.push(value);
+    else if (Array.isArray(value)) for (const v of value) walk(v);
+    else if (value && typeof value === 'object') for (const v of Object.values(value)) walk(v);
+  };
+  walk(user);
+  return out;
+}
+
+/** The piece words a line names, plural-aware, in the list's own order. */
+function piecesIn(pieces, line) {
+  const text = String(line ?? '');
+  const out = [];
+  for (const word of pieces) {
+    if (new RegExp(`\\b${word}(?:s|es)?\\b`, 'i').test(text)) out.push(word);
+  }
+  return out;
+}
+
+/**
+ * The gate one snippet's reaction is held to: the line gate, plus the request
+ * itself. The allowance is the ask's own words and nothing wider — a player
+ * who read the ask and then the line has to find the line true of the ask,
+ * and a piece the ask never mentions is exactly the class of nonsense the
+ * Director read on the published 0.11.0.
+ */
+function reactionGateFor(ctx, snippet) {
+  const pkg = ctx.gates.pkg;
+  const base = ctx.gates.line;
+  const allowed = new Set(piecesIn(pkg.PIECES, snippet.ask ?? ''));
+  const bound = typeof snippet.for === 'string' && snippet.for !== '';
+  return (line) => {
+    const reason = base(line);
+    if (reason !== null) return reason;
+    const text = String(line);
+    if (text.split(/\s+/).length < REACTION_MIN_WORDS) return 'too few words';
+    const holes = text.match(/\{[^}]*\}/g) ?? [];
+    if (holes.some((h) => h !== '{product}')) return 'a hole that is not the product';
+    if (holes.length > 1) return 'the product twice';
+    const named = piecesIn(pkg.PIECES, text).filter((w) => !allowed.has(w));
+    if (named.length > 0) return `names ${named[0]}, which the request never asked for`;
+    if (!bound && pkg.askIsBound(text)) return 'leans on a story with no level to hold it up';
+    return null;
+  };
+}
+
+const REACTION_RULES = [
+  'Each piece of code below has just been finished by the agent and is live in the',
+  'product. Printed with it is the request the user made for exactly that piece.',
+  'Write the one line the user says back when it ships.',
+  '',
+  'The line is a reaction to THAT request. A person who reads the request and then',
+  'your line has to find your line true of the request. This is the whole job: a',
+  'line that would fit any piece whatever is a line this game already has.',
+  '',
+  'Rules for every line:',
+  '- five to ten words, and twelve is the ceiling',
+  '- lower case throughout, including the first word, and present tense',
+  '- it may end with a period, and with nothing else',
+  '- the token {product} may appear once, standing in for the product name; it is',
+  '  the only token, and a line is just as good with no token at all',
+  '- it may name the thing the request itself named, and it may name nothing else',
+  '  that was built: if the request does not say the word, you do not say it',
+  '- plain keyboard characters only: a straight apostrophe, never a curly one,',
+  '  and no dash that is not on a keyboard',
+  '- delighted, never disappointed, never sly, never a joke at the agent',
+  '',
+  'Most of these lines carry no comparison at all. The user is a founder, not a',
+  'poet: he says what the thing now does and how pleased he is about it, and he is',
+  'pleased in ordinary words. A small concrete image - a cousin, a fridge, a fern,',
+  'a yogurt - is worth having in about one line in six, and a line that says "like',
+  'a ..." twice in a row is a tic, not a voice. Vary the shape: some lines name the',
+  'thing, some name what he can do with it, some are just him being delighted.',
+  '',
+  'Four tics to keep off the page, because each one ate a fifth of an earlier pass',
+  'and a pool where the same frame carries every line reads as one sentence with the',
+  'nouns swapped:',
+  '- do not end the line on the word "now", and do not lean on it',
+  '- do not write "without a fight", "without a fuss", "without a whisper", or any',
+  '  other "without a ..."',
+  '- do not call anything "little"',
+  '- do not write "knows its own ..."',
+  '',
+  'What to write instead: say what it does, or what he can do with it, or what he',
+  'thinks of it, or who else is about to see it, or what he was afraid of that did',
+  'not happen. Every line in the pool should be a different sentence, not the same',
+  'sentence about a different thing.',
+].join('\n');
+
+/**
+ * The two shapes the writer reaches for when it is on rails. Neither is a gate
+ * — a good line may carry either — but where more than one candidate passes,
+ * the plain one is taken.
+ *
+ * `COMPARISON` is the poet: the first two passes came back with "like a
+ * firefly", "like a polaroid", "like a bedtime story" and "like a cereal box"
+ * inside twenty lines of each other. `CLOSER` is the opposite failure, the
+ * word so natural for "the thing is done" that the third pass ended on it in
+ * fifty-four lines of two hundred and forty-nine — a level of four requests
+ * would say it twice and the pool would read as one sentence with the nouns
+ * swapped.
+ */
+const COMPARISON = /\b(like|as .+ as)\b/i;
+const CLOSER = /\bnow\s*\.?$/i;
+const FRAMES = /\bwithout a\b|\blittle\b|\bknows its own\b/i;
+const TICS = [COMPARISON, CLOSER, FRAMES];
+
+/**
+ * One snippet as the writer reads it: the request, the code that answers it,
+ * and — only when the snippet says which level it belongs to — that level's
+ * product and the situation the user is in. A snippet with no `for` is drawn
+ * into any level of its stack, so naming a product there would be writing a
+ * line for a product the piece will usually not be in.
+ */
+function reactionBlock(ctx, group, levelsById) {
+  const pkg = ctx.gates.pkg;
+  return group
+    .map((s, i) => {
+      const level = typeof s.for === 'string' ? levelsById.get(s.for) : undefined;
+      const words = piecesIn(pkg.PIECES, s.ask ?? '');
+      const rows = [`piece ${i + 1}, id ${s.id}`];
+      if (level) {
+        rows.push(`the product: ${levelProduct(level)}`);
+        if (typeof level.story === 'string' && level.story !== '') {
+          rows.push(`what is going on: ${level.story}`);
+        }
+      } else {
+        rows.push(
+          'the product: unknown - this piece is built into many different products, so',
+          '  the line has to be true whichever one it is',
+        );
+      }
+      rows.push(`the request: ${s.ask}`);
+      rows.push(
+        words.length === 0
+          ? 'the request names no thing you may name: say what it does, not what it is'
+          : `things the request names, and the only ones you may name: ${words.join(', ')}`,
+      );
+      rows.push('code:', s.code);
+      return rows.join('\n');
+    })
+    .join('\n\n');
+}
+
+function snippetReactionPrompt(ctx, group, per, levelsById) {
+  return [
+    REACTION_RULES,
+    '',
+    `Give ${per} different candidates for each of the ${group.length} pieces below.`,
+    '',
+    reactionBlock(ctx, group, levelsById),
+    '',
+    'Answer with a JSON object whose keys are the ids above and whose values are',
+    `arrays of ${per} strings. No prose before it, none after it, no code fence.`,
+    // The first pass answered for about two thirds of a chunk of thirty-six and
+    // stopped, with no truncation and no parse error — it simply decided it was
+    // finished. Saying the count twice and naming the last id is what closed it.
+    `The object has exactly ${group.length} keys, one for every id above, in that`,
+    `order, ending with ${group[group.length - 1].id}. Do not stop early and do not`,
+    'summarize: every id gets its own key.',
+  ].join('\n');
+}
+
+/**
+ * The second ask for the lines the editor dropped. It carries the editor's own
+ * clause, so the writer is answering the read rather than rolling the dice
+ * again. One re-ask and no more: a line that falls twice is left empty, and
+ * the generic reviews — written to be true of any piece — answer that ship.
+ */
+function reactionRetryPrompt(ctx, group, per, levelsById, why) {
+  return [
+    REACTION_RULES,
+    '',
+    'Each of these pieces already had a line written for it and a second reader',
+    'dropped it. The line and the reason are printed with the piece. Write a new',
+    'line that does not have that fault.',
+    '',
+    `Give ${per} different candidates for each piece.`,
+    '',
+    group
+      .map((s, i) => {
+        const head = reactionBlock(ctx, [s], levelsById).replace(/^piece 1,/, `piece ${i + 1},`);
+        const note = why.get(s.id);
+        return note === undefined
+          ? head
+          : `${head}\nthe line that was dropped: ${note.line}\nwhy it was dropped: ${note.why}`;
+      })
+      .join('\n\n'),
+    '',
+    'Answer with a JSON object whose keys are the ids above and whose values are',
+    `arrays of ${per} strings. No prose before it, none after it, no code fence.`,
+  ].join('\n');
+}
+
+const REACTION_EDITOR_RULES = [
+  'Today you are not writing lines. You are reading lines that were already',
+  'written for the character above, and naming the ones that should be dropped.',
+  '',
+  'Each numbered row is a request the user made and the line the user said back',
+  'when that request shipped. Drop a row only when one of these is true:',
+  '- the line does not sound like that character',
+  '- the line is not true of the request printed beside it, or answers a different',
+  '  request entirely',
+  '- the line names something the request never asked for',
+  '',
+  'The voice sheet above ends with a table of lines that are the voice. A line',
+  'that matches one of them is the reference, never a copy; never name one.',
+  '',
+  'Two rows are different requests that a player never sees together, so two lines',
+  'that say similar things are not repeats of each other. Only a line that is wrong',
+  'for its own request is wrong.',
+  '',
+  'Never rewrite a line, never suggest a replacement, never reorder anything. You',
+  'name the numbers of the rows to drop and nothing else. Be sparing: a line that',
+  'is merely not your favorite stays.',
+  '',
+  'Answer with JSON and nothing else. No prose before it, none after it, no code fence.',
+].join('\n');
+
+function reactionEditPrompt(rows) {
+  return [
+    ...rows.map((r, i) => `${i + 1}) request: ${r.ask}\n   line: ${r.reaction}`),
+    '',
+    'Answer with a JSON array of objects, one for each row to drop, of this shape:',
+    '{ "line": <the number of the row>, "why": "<one clause saying which of the three>" }',
+    'An empty array means every line holds.',
+  ].join('\n');
+}
+
+/**
+ * A reaction for every snippet that carries an ask, written by one writer with
+ * a memory of what it has already kept, then read back by a second family.
+ *
+ * Serial by construction. These two hundred and forty-nine lines are one pool
+ * for the purpose of not repeating itself, and two calls in flight are two
+ * writers who cannot hear each other — the shape the nag slot learned the hard
+ * way. `--concurrency` is honored for the editor's read, which has no memory
+ * to share.
+ */
+async function slotSnippetReactions(ctx) {
+  const report = emptyReport(ctx.target, ctx.opts);
+  const candidates = {};
+  const levelsById = new Map(ctx.levels.levels.map((l) => [l.id, l]));
+  // Every line already in the user's lever is spoken for: a reaction that
+  // repeats a generic review would say on the ship what the deploy says again.
+  const taken = new Set(userPoolLines(ctx.user).map(lineKey));
+  const kept = new Map();
+  const gates = new Map();
+  const byId = new Map();
+  const jobs = [];
+  for (const [, list] of ctx.corpus.byStack) {
+    for (const s of list) {
+      if (typeof s.ask !== 'string' || s.ask === '') continue;
+      byId.set(s.id, s);
+      gates.set(s.id, reactionGateFor(ctx, s));
+      jobs.push(s);
+    }
+  }
+  // Topping up, the way every other slot tops up: a request that already has a
+  // line keeps it and is not written again, and only the holes go to the
+  // writer. `--revoice` writes all of them fresh. This is what makes the pass
+  // resumable, and resumable is not a nicety here — a cloud tag answering a
+  // trivial prompt in fifty-three seconds turns one invocation of writer,
+  // reader and re-ask into an hour with nothing on disk until the end of it.
+  // Written first, read second, each its own invocation and its own receipt.
+  const held = ctx.revoice
+    ? []
+    : jobs.filter((s) => typeof s.reaction === 'string' && s.reaction !== '');
+  for (const s of held) {
+    kept.set(s.id, s.reaction);
+    taken.add(lineKey(s.reaction));
+  }
+  const groups = chunkEven(
+    jobs.filter((s) => !kept.has(s.id)),
+    ctx.opts.chunk,
+  );
+  const mem = makeMemory(held.map((s) => s.reaction));
+
+  // The fold the first pass and the re-ask share: take the first candidate the
+  // key's own gate let through that nothing has said yet.
+  const fold = (slot, group) => {
+    foldSlot(report, slot);
+    for (const s of group) {
+      const list = [slot.lines[s.id], ...(slot.alternates[s.id] ?? [])].filter(
+        (x) => typeof x === 'string' && x !== '',
+      );
+      const prior = candidates[s.id]?.alternates ?? [];
+      const fresh = list.filter((x) => !taken.has(lineKey(x)));
+      // Plain before poetic, and the writer's own order inside each. Choosing
+      // among lines that all passed is not editing one into passing.
+      const line =
+        fresh.find((x) => TICS.every((tic) => !tic.test(x))) ??
+        fresh.find((x) => !COMPARISON.test(x)) ??
+        fresh[0] ??
+        null;
+      candidates[s.id] = {
+        ...(candidates[s.id] ?? {}),
+        kept: line,
+        alternates: [...prior, ...list],
+      };
+      if (line === null) {
+        if (list.length > 0) {
+          report.dropped.duplicate = (report.dropped.duplicate ?? 0) + list.length;
+        }
+        continue;
+      }
+      taken.add(lineKey(line));
+      kept.set(s.id, line);
+      mem.add(line);
+    }
+  };
+
+  const write = async (group) => {
+    // One line a call, because a slot of thirty-odd cloud calls with a single
+    // line of output at the end of it is a run nobody can tell from a stall.
+    process.stderr.write(`  write ${group.length} (${kept.size}/${jobs.length} held)\n`);
+    const slot = await askSlot(
+      ctx.target,
+      ctx.system.user,
+      memoryBlock(mem.tail()) + snippetReactionPrompt(ctx, group, CANDIDATES_PER_SLOT, levelsById),
+      group.map((s) => s.id),
+      { forKey: (id) => gates.get(id) },
+      ctx.opts,
+    );
+    // Folded inside the walk and not after it, because the memory this slot
+    // hands the next call is the lines the last one kept. `mapLimit` at a
+    // width of one is a sequential walk, so this is in key order either way.
+    fold(slot, group);
+  };
+
+  await mapLimit(groups, 1, async (group) => {
+    await write(group);
+    return null;
+  });
+
+  /**
+   * The holes, asked again.
+   *
+   * A chunk of thirty-six came back with keys for about two thirds of it: no
+   * truncation, no parse error, the writer simply decided it had written
+   * enough. Saying the count and naming the last id closed most of that gap
+   * and a smaller chunk closed more, but neither closes it every time, and a
+   * run that quietly leaves forty-five requests without a line is a run whose
+   * receipt is a lie. Two more rounds over what is left, each one a smaller
+   * chunk than the last, and then the receipt says what never landed.
+   */
+  report.heldFromBefore = held.length;
+  report.rounds = [{ round: 1, asked: jobs.length - held.length, held: kept.size }];
+  for (const round of [2, 3]) {
+    const holes = jobs.filter((s) => !kept.has(s.id));
+    if (holes.length === 0) break;
+    const size = Math.max(6, Math.floor(ctx.opts.chunk / round));
+    for (const group of chunkEven(holes, size)) await write(group);
+    report.rounds.push({ round, asked: holes.length, held: kept.size });
+  }
+
+  // ---- the editor, on a different family ---------------------------------
+  const editorSpec = ctx.editor;
+  const editor = {
+    spec: editorSpec ?? null,
+    family: null,
+    writer: modelFamily(ctx.target.spec),
+    calls: 0,
+    ms: 0,
+    tokens: { in: 0, out: 0 },
+    read: 0,
+    dropped: [],
+    reasked: 0,
+    refilled: 0,
+    empty: [],
+    errors: [],
+  };
+  if (typeof editorSpec === 'string' && editorSpec !== '') {
+    const target = parseSpec(editorSpec);
+    editor.family = modelFamily(target.spec);
+    // EXTERNAL_VERIFIER, the same rule `edit` enforces over the pools: a model
+    // reading its own writing is a second read, not an independent one.
+    if (editor.family !== 'unknown' && editor.family === editor.writer) {
+      throw new Fail(
+        'same family',
+        `the editor (${target.spec}, ${editor.family}) is the family that wrote these lines; seat a different one`,
+      );
+    }
+    const opts = { ...ctx.opts, temperature: EDIT_TEMPERATURE };
+    const rows = [...kept.entries()].map(([id, reaction]) => ({
+      id,
+      ask: byId.get(id).ask,
+      reaction,
+    }));
+    editor.read = rows.length;
+    const system = [PERSONA, voiceBlock(ctx.voices.user), REACTION_EDITOR_RULES].join('\n');
+    const reads = await mapLimit(
+      chunkEven(rows, ctx.opts.chunk),
+      ctx.opts.concurrency,
+      async (batch) => {
+        process.stderr.write(`  ${target.spec}: reads ${batch.length}\n`);
+        const user = reactionEditPrompt(batch);
+        try {
+          const answer = await callModel(target, system, user, opts);
+          return { batch, hash: promptHash(system, user), answer, error: null };
+        } catch (err) {
+          return { batch, hash: promptHash(system, user), answer: null, error: err.message };
+        }
+      },
+    );
+    for (const { batch, hash, answer, error } of reads) {
+      editor.calls += 1;
+      report.prompts.push(hash);
+      editor.ms += answer?.ms ?? 0;
+      editor.tokens.in += answer?.tokens?.in ?? 0;
+      editor.tokens.out += answer?.tokens?.out ?? 0;
+      if (error !== null || answer === null) {
+        editor.errors.push(error ?? 'the editor answered nothing');
+        continue;
+      }
+      let parsed;
+      try {
+        parsed = parseCandidates(answer.text);
+      } catch (err) {
+        editor.errors.push(err.message);
+        continue;
+      }
+      for (const call of readDrops(parsed, batch.length)) {
+        const row = batch[call.index];
+        editor.dropped.push({ id: row.id, ask: row.ask, line: row.reaction, why: call.why });
+      }
+    }
+    // A dropped line goes back to the writer once, with the reason. The line it
+    // dropped stays spoken for either way, so the writer cannot hand it back.
+    const why = new Map(editor.dropped.map((d) => [d.id, { line: d.line, why: d.why }]));
+    for (const d of editor.dropped) {
+      kept.delete(d.id);
+      candidates[d.id] = { ...(candidates[d.id] ?? {}), kept: null, editorDropped: d.why };
+    }
+    editor.reasked = editor.dropped.length;
+    const retry = editor.dropped.map((d) => byId.get(d.id)).filter((s) => s !== undefined);
+    for (const group of chunkEven(retry, ctx.opts.chunk)) {
+      const slot = await askSlot(
+        ctx.target,
+        ctx.system.user,
+        memoryBlock(mem.tail()) +
+          reactionRetryPrompt(ctx, group, CANDIDATES_PER_SLOT, levelsById, why),
+        group.map((s) => s.id),
+        { forKey: (id) => gates.get(id) },
+        ctx.opts,
+      );
+      fold(slot, group);
+    }
+    editor.refilled = editor.dropped.filter((d) => kept.has(d.id)).length;
+    editor.empty = editor.dropped.filter((d) => !kept.has(d.id)).map((d) => d.id);
+  }
+
+  report.editor = editor;
+  report.wrote = kept.size;
+  report.withoutOne = jobs.length - kept.size;
+  for (const s of jobs) {
+    if (!kept.has(s.id)) report.errors.push(`${s.id}: no reaction came back clean`);
+  }
+
+  return {
+    report,
+    candidates,
+    apply() {
+      for (const [id, line] of kept) setSnippetReaction(ctx, id, line);
+    },
+  };
+}
+
+function setSnippetReaction(ctx, id, reaction) {
+  for (const [stack, list] of ctx.corpus.byStack) {
+    const s = list.find((x) => x.id === id);
+    if (s) {
+      s.reaction = reaction;
+      ctx.touched.add(path.join(CORPUS_DIR, `${stack}.json`));
+      return;
+    }
+  }
 }
 
 /** Fifty check-ins and the agent's reply to each. */
@@ -3059,6 +3599,7 @@ async function main() {
     line: makeGate(pkg.lineFault, pkg.britishHit),
     ask: makeGate(pkg.lineFault, pkg.britishHit, { maxWords: ASK_WORDS }),
     sync: makeGate(pkg.lineFault, pkg.britishHit, { maxWords: SYNC_WORDS }),
+    pkg,
   };
   if (command === 'sample') await commandSample(args, gates);
   else if (command === 'edit') await commandEdit(args, gates);

@@ -1,0 +1,657 @@
+{
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-035803113",
+  "applied": true,
+  "report": {
+    "model": "ollama:mistral-large-3:675b-cloud",
+    "temperature": 0.9,
+    "chunk": 25,
+    "concurrency": 4,
+    "prompts": [
+      "30404cb1ff3063b806fd568b9c95b1ff006a0bb85fbd48c513b64912466098c7",
+      "f18c8c2adfa93d4f67f64feb674e1ce085dd8641a87336e03940e6ad22c6f2f5",
+      "bd80e2b82e95c7d3b9fc415fd9cfa5fbef7c817e3c74de0e7b82dd0244edf288",
+      "6b3e1bfc5de81254bfe04567c89c730056b4a1c67394b8aa8d0f6ae387b56af9",
+      "378a6fedcbb1373ca3c35afab5683ef87d1e1e55b403bbb3711a09874c500d86",
+      "07c979947bc9d08fb7cb3768b8984af2adfd6cb69ff7e2224dc56bdb10dc051b",
+      "422de74f6ffd9fdc9056648858771dd1bfa77b672de121e7959a3373875ae235",
+      "e2caeac446cca59a073fbd9be55d41cea520b32258f53707eeb8ff5b44ae4199",
+      "198c0f1e098adcd1de1ef552b985deecf7f82871a7154f73cef3941f17f68835",
+      "a106480cf802e84a4ad9eb17134b86e1fa8b47fd09df553347003d59fc1f783b",
+      "92b874abf377d182bd50965d968029d8beac9192307cb9f034ca6a0e04a8191c",
+      "9c3be7cbf06b1920832813fe7541ac7f4cfee0f0539acddd8428df3b592779e3",
+      "7cd988244f989d1edcfd9b567ea5a086ca29e5bdebf956d68e073ec854366082",
+      "6efe67750930725694ff17abd9697a73fd78d0b09889ddbb4b22269783b55498"
+    ],
+    "calls": 4,
+    "requested": 210,
+    "kept": 70,
+    "missing": 0,
+    "waits": 0,
+    "dropped": {
+      "names fridge, which the request never asked for": 8,
+      "names yogurt, which the request never asked for": 6,
+      "leans on a story with no level to hold it up": 1,
+      "not ascii": 1,
+      "names greeting, which the request never asked for": 1,
+      "names list, which the request never asked for": 4,
+      "names countdown, which the request never asked for": 1,
+      "names chart, which the request never asked for": 1,
+      "names card, which the request never asked for": 1
+    },
+    "ms": 45226,
+    "tokens": {
+      "in": 30913,
+      "out": 3147
+    },
+    "cost": null,
+    "errors": [],
+    "heldFromBefore": 195,
+    "rounds": [
+      {
+        "round": 1,
+        "asked": 54,
+        "held": 249
+      }
+    ],
+    "editor": {
+      "spec": "ollama:glm-5.3-flash:cloud",
+      "family": "zhipu",
+      "writer": "mistral",
+      "calls": 10,
+      "ms": 2679500,
+      "tokens": {
+        "in": 25124,
+        "out": 98485
+      },
+      "read": 249,
+      "dropped": [
+        {
+          "id": "cal-sh-d6-003",
+          "ask": "back up {product} data and erase the ancient ones",
+          "line": "{product} saves the old ones and forgets the rest.",
+          "why": "not true of the request: it says the old ones are saved and the rest forgotten, the reverse of backing up the data and erasing the ancient ones"
+        },
+        {
+          "id": "cal-cs-d2-004",
+          "ask": "count down from five until {product} is live",
+          "line": "five seconds never felt so dramatic.",
+          "why": "the line does not sound like that character"
+        },
+        {
+          "id": "cal-jv-d1-004",
+          "ask": "ask {product} if two things are both true",
+          "line": "it asks the question without a fuss",
+          "why": "not true of the request — the request has the user asking the product, while the line has the product doing the asking"
+        },
+        {
+          "id": "java-optional",
+          "ask": "use unknown if the sock has no owner",
+          "line": "the sock now knows its own little owner",
+          "why": "names something the request never asked for — the sock having an owner, when the request is the no-owner fallback"
+        },
+        {
+          "id": "cal-jv-d5-003",
+          "ask": "make {product} count words in a file",
+          "line": "every word has its own little number.",
+          "why": "it describes giving every word its own number, which the request to count the words never asked for"
+        },
+        {
+          "id": "cal-js-d6-005",
+          "ask": "make {product} build the logger only when someone needs it",
+          "line": "it builds the thing only when i need it.",
+          "why": "the line is not true of the request — it says it builds only when i need it, but the request was only when someone needs it"
+        },
+        {
+          "id": "cal-py-d5-005",
+          "ask": "keep the last ten apps i judged",
+          "line": "the last ten now wait their turn",
+          "why": "the line is not true of the request: the last ten apps were already judged and kept, not waiting their turn"
+        },
+        {
+          "id": "cal-sq-d3-001",
+          "ask": "show months where i spend more than my average.",
+          "line": "the months now know their own little race.",
+          "why": "the line names a race the request never asked for"
+        },
+        {
+          "id": "cal-sh-d4-003",
+          "ask": "shrink {product} logs that are older than thirty days",
+          "line": "the old logs are gone without a trace.",
+          "why": "the line is not true of the request"
+        },
+        {
+          "id": "cal-sh-d4-004",
+          "ask": "see if every door is open for us",
+          "line": "every door now says hello back.",
+          "why": "names something the request never asked for, doors saying hello instead of being open"
+        },
+        {
+          "id": "cal-sh-d6-004",
+          "ask": "let me add and remove tasks for {product}",
+          "line": "the tasks now wait for their perfect turn.",
+          "why": "answers a different request entirely, tasks waiting their turn instead of being added and removed"
+        },
+        {
+          "id": "cal-cs-d4-004",
+          "ask": "add a profile for each member",
+          "line": "every profile now knows its own little group.",
+          "why": "names something the request never asked for, a group instead of a profile for each member"
+        },
+        {
+          "id": "java-stream",
+          "ask": "make {product} filter a list and change it",
+          "line": "the list now bends without breaking.",
+          "why": "the line does not sound like that character"
+        },
+        {
+          "id": "js-map-filter",
+          "ask": "keep only the neat strokes and make them big",
+          "line": "the swirls now shout without a whisper.",
+          "why": "the line names something the request never asked for"
+        },
+        {
+          "id": "py-class-def",
+          "ask": "help {product} measure a circle.",
+          "line": "every inch gets its own little hello.",
+          "why": "the line names something the request never asked for"
+        },
+        {
+          "id": "cal-sq-d3-005",
+          "ask": "spot the plants that got water or new soil",
+          "line": "every plant gets its own little hello.",
+          "why": "the line is not true of the request printed beside it"
+        }
+      ],
+      "reasked": 16,
+      "refilled": 16,
+      "empty": [],
+      "errors": []
+    },
+    "wrote": 249,
+    "withoutOne": 0,
+    "wallMs": 738738
+  },
+  "candidates": {
+    "cal-sh-d1-002": {
+      "kept": "the greeting knows her without a whisper.",
+      "alternates": [
+        "the greeting knows her without a whisper.",
+        "my cousin will finally stop asking.",
+        "her name is in the hello like a secret."
+      ]
+    },
+    "cal-sh-d2-003": {
+      "kept": "the backup waits without a sound.",
+      "alternates": ["the backup waits without a sound.", "it picks itself up without a fuss."]
+    },
+    "cal-sh-d3-005": {
+      "kept": "every piece now has its own little home.",
+      "alternates": [
+        "every piece now has its own little home.",
+        "the parts stand up without a fight.",
+        "my fern has a spot just like these."
+      ]
+    },
+    "sh-safe": {
+      "kept": "the cleanup walks on perfect tiptoes.",
+      "alternates": ["the cleanup walks on perfect tiptoes.", "nothing breaks without a warning."]
+    },
+    "cal-sh-d4-003": {
+      "kept": "the old logs shrink without a sound",
+      "alternates": [
+        "the old logs are gone without a trace.",
+        "thirty days never felt so tidy.",
+        "the old logs shrink without a sound",
+        "it keeps today and forgets the rest",
+        "my fern has never looked so tidy"
+      ],
+      "editorDropped": "the line is not true of the request"
+    },
+    "cal-sh-d4-004": {
+      "kept": "every door lets us in without a fight",
+      "alternates": [
+        "every door now says hello back.",
+        "the doors line up without a whisper.",
+        "my cousin asked for this exact check.",
+        "every door lets us in without a fight",
+        "the doors line up just how i wanted",
+        "my cousin asked for this exact check"
+      ],
+      "editorDropped": "names something the request never asked for, doors saying hello instead of being open"
+    },
+    "cal-sh-d5-002": {
+      "kept": "the tasks run together without a fight.",
+      "alternates": [
+        "the tasks run together without a fight.",
+        "they wait their turn like polite rabbits.",
+        "not too many, not too few, perfect."
+      ]
+    },
+    "cal-sh-d5-004": {
+      "kept": "the big ones now shout their own names.",
+      "alternates": [
+        "the big ones now shout their own names.",
+        "it finds them like my cousin finds snacks.",
+        "every folder knows its own little size."
+      ]
+    },
+    "cal-sh-d5-005": {
+      "kept": "the old ones are gone without a fuss.",
+      "alternates": [
+        "the old ones are gone without a fuss.",
+        "it keeps the safe ones like my best fern.",
+        "nothing breaks without a warning."
+      ]
+    },
+    "cal-sh-d6-002": {
+      "kept": "the warnings and errors now have a home.",
+      "alternates": [
+        "the warnings and errors now have a home.",
+        "it counts them like my cousin counts stars.",
+        "every little mistake knows its own name."
+      ]
+    },
+    "cal-sh-d6-004": {
+      "kept": "the tasks come and go without a fuss",
+      "alternates": [
+        "the tasks now wait for their perfect turn.",
+        "i can add them like my cousin adds toppings.",
+        "every little job knows its own little spot.",
+        "the tasks come and go without a fuss",
+        "every task now has its own little spot"
+      ],
+      "editorDropped": "answers a different request entirely, tasks waiting their turn instead of being added and removed"
+    },
+    "cal-sh-d6-005": {
+      "kept": "the wheezes now have their own little alarm.",
+      "alternates": [
+        "it yells only when it has to, like me.",
+        "the wheezes now have their own little alarm.",
+        "my fern has never been so watched."
+      ]
+    },
+    "cal-sh-d7-001": {
+      "kept": "the plugins now know their own little cousins.",
+      "alternates": [
+        "the plugins now know their own little cousins.",
+        "every little piece waits its perfect turn."
+      ]
+    },
+    "cal-sh-d7-002": {
+      "kept": "the pieces build in perfect little steps.",
+      "alternates": [
+        "the pieces build in perfect little steps.",
+        "every part knows its own little place.",
+        "nothing starts until its friends are ready."
+      ]
+    },
+    "cal-sh-d7-003": {
+      "kept": "every door now answers with perfect manners.",
+      "alternates": [
+        "every door now answers with perfect manners.",
+        "the polite ones get the best hello.",
+        "my cousin would love this little chat."
+      ]
+    },
+    "cal-cs-d1-001": {
+      "kept": "it remembers the number without a whisper.",
+      "alternates": [
+        "forty-two now lives in the code like magic.",
+        "it remembers the number without a whisper.",
+        "my cousin asked for this exact count."
+      ]
+    },
+    "cal-cs-d1-002": {
+      "kept": "alice now shouts her name without a fuss.",
+      "alternates": [
+        "alice now shouts her name without a fuss.",
+        "the hello knows her like my cousin does.",
+        "her name is in the light like a star."
+      ]
+    },
+    "cal-cs-d1-004": {
+      "kept": "the circle now knows its own little size.",
+      "alternates": [
+        "the circle now knows its own little size.",
+        "it calculates the space without a whisper.",
+        "my fern has a shape just like this."
+      ]
+    },
+    "cal-cs-d1-005": {
+      "kept": "hello and world now hold hands.",
+      "alternates": ["hello and world now hold hands.", "the words line up just how i wanted"]
+    },
+    "cs-foreach": {
+      "kept": "every name gets its own hello.",
+      "alternates": [
+        "every name gets its own hello.",
+        "the room now knows every single one",
+        "alice bob and carol all heard back"
+      ]
+    },
+    "cs-string-interpolation": {
+      "kept": "alice owes money in perfect little letters.",
+      "alternates": [
+        "alice owes money in perfect little letters.",
+        "the number now sits next to her name",
+        "my cousin asked for this exact bill"
+      ]
+    },
+    "cal-cs-d2-003": {
+      "kept": "the first and last now have a home.",
+      "alternates": [
+        "the first and last now have a home.",
+        "it saves the nice ones without a fuss",
+        "the ends know their own little place"
+      ]
+    },
+    "cal-cs-d3-001": {
+      "kept": "the warmer greeting now stands out.",
+      "alternates": [
+        "the warmer greeting now stands out.",
+        "it picks the one i like without asking",
+        "the bigger one now shouts hello back"
+      ]
+    },
+    "cs-interface": {
+      "kept": "the logger now knows its own little rules.",
+      "alternates": [
+        "the logger now knows its own little rules.",
+        "it waits and says what it must without a fight",
+        "every message now has a perfect little home"
+      ]
+    },
+    "cal-cs-d4-004": {
+      "kept": "the profiles line up without a fight",
+      "alternates": [
+        "every profile now knows its own little group.",
+        "the members line up just how i wanted",
+        "child teen and senior all have a spot",
+        "the profiles line up without a fight"
+      ],
+      "editorDropped": "names something the request never asked for, a group instead of a profile for each member"
+    },
+    "cs-switch-expr": {
+      "kept": "the grade now knows its own little letter.",
+      "alternates": [
+        "the grade now knows its own little letter.",
+        "a number turns into the right word without a fuss",
+        "my cousin asked for this exact scale"
+      ]
+    },
+    "cal-cs-d5-004": {
+      "kept": "the tables now hum with perfect little primes.",
+      "alternates": [
+        "the tables now hum with perfect little primes.",
+        "every number now knows its own little truth",
+        "the primes line up just how i wanted"
+      ]
+    },
+    "cal-cs-d6-005": {
+      "kept": "the equations now know their own little answer.",
+      "alternates": [
+        "the equations now know their own little answer.",
+        "it solves them without a whisper",
+        "the numbers add up without a fight"
+      ]
+    },
+    "java-enhanced-for": {
+      "kept": "the list now shouts every color back.",
+      "alternates": [
+        "the list now shouts every color back.",
+        "red green and blue all stand out neat",
+        "every one now has its own little voice"
+      ]
+    },
+    "cal-jv-d3-001": {
+      "kept": "the lonely socks now have their own little spot.",
+      "alternates": [
+        "the lonely socks now have their own little spot.",
+        "every single one now stands out",
+        "my cousin asked for this exact pile"
+      ]
+    },
+    "cal-jv-d4-002": {
+      "kept": "every member now knows its own little order.",
+      "alternates": [
+        "every member now knows its own little order.",
+        "the pairs line up just how i wanted",
+        "the usual ones now have a perfect home"
+      ]
+    },
+    "java-stream": {
+      "kept": "the list bends without a whisper",
+      "alternates": [
+        "the list now bends without breaking.",
+        "it picks and changes without a fuss",
+        "every even one now has its own little square",
+        "the list bends without a whisper",
+        "every piece now knows its own little change"
+      ],
+      "editorDropped": "the line does not sound like that character"
+    },
+    "cal-jv-d5-001": {
+      "kept": "the words now know their own little size.",
+      "alternates": [
+        "the words now know their own little size.",
+        "short medium and long all have a home",
+        "every group now stands out neat"
+      ]
+    },
+    "cal-jv-d5-004": {
+      "kept": "the events now visit every listener.",
+      "alternates": [
+        "the events now visit every listener.",
+        "it shouts and the whole room answers",
+        "every ear now gets its own little hello"
+      ]
+    },
+    "cal-jv-d5-005": {
+      "kept": "the errors now know their own little code.",
+      "alternates": [
+        "the errors now know their own little code.",
+        "every complaint now has a perfect little name",
+        "my cousin asked for this exact shout"
+      ]
+    },
+    "java-record": {
+      "kept": "the point now knows its own little shape.",
+      "alternates": [
+        "the point now knows its own little shape.",
+        "every x and y now sit together neat",
+        "it formats itself without a whisper"
+      ]
+    },
+    "js-map-filter": {
+      "kept": "the neat ones stand out big",
+      "alternates": [
+        "the swirls now shout without a whisper.",
+        "every stroke gets its own little stage.",
+        "my cousin wants this exact size.",
+        "the neat ones stand out big",
+        "every stroke now has its own little shout",
+        "my cousin asked for this exact size"
+      ],
+      "editorDropped": "the line names something the request never asked for"
+    },
+    "cal-js-d3-001": {
+      "kept": "the good ones now stand out neat.",
+      "alternates": ["the good ones now stand out neat.", "every price knows its own little spot."]
+    },
+    "cal-js-d5-003": {
+      "kept": "the fresh ones now have a home.",
+      "alternates": [
+        "the fresh ones now have a home.",
+        "every opinion gets its own little voice.",
+        "the stale ones are gone without a fight."
+      ]
+    },
+    "cal-js-d5-005": {
+      "kept": "the trades now wait their perfect turn.",
+      "alternates": [
+        "the trades now wait their perfect turn.",
+        "every batch knows its own little pace.",
+        "my cousin asked for this exact queue."
+      ]
+    },
+    "cal-js-d6-002": {
+      "kept": "the email now knows its own little rules.",
+      "alternates": [
+        "the email now knows its own little rules.",
+        "every letter gets its own little hello.",
+        "my fern finally trusts the new address."
+      ]
+    },
+    "cal-js-d6-003": {
+      "kept": "the map now knows every little twist.",
+      "alternates": [
+        "the map now knows every little twist.",
+        "every number gets its own little path."
+      ]
+    },
+    "cal-js-d7-002": {
+      "kept": "the urgent ones now shout first.",
+      "alternates": [
+        "the urgent ones now shout first.",
+        "every job knows its own little spot.",
+        "the boring ones wait without a fuss."
+      ]
+    },
+    "cal-py-d2-002": {
+      "kept": "the duck now hears her name back.",
+      "alternates": ["the duck now hears her name back.", "every quack gets its own little hello."]
+    },
+    "py-guard-clause": {
+      "kept": "the number now stays between friends.",
+      "alternates": [
+        "the number now stays between friends.",
+        "every fence knows its own little job."
+      ]
+    },
+    "cal-py-d3-001": {
+      "kept": "the even ones now stand out neat.",
+      "alternates": [
+        "the even ones now stand out neat.",
+        "every crowd gets its own little split.",
+        "my cousin asked for this exact pile."
+      ]
+    },
+    "py-class-def": {
+      "kept": "the circle knows its own little size",
+      "alternates": [
+        "the circle now knows its own little size.",
+        "every inch gets its own little hello.",
+        "my fern finally sees the shape.",
+        "the circle knows its own little size",
+        "every shape now has its own little math",
+        "my fern has never been so measured"
+      ],
+      "editorDropped": "the line names something the request never asked for"
+    },
+    "py-list-comp": {
+      "kept": "the even ones now line up neat.",
+      "alternates": ["the even ones now line up neat.", "every pile gets its own little split."]
+    },
+    "cal-py-d4-003": {
+      "kept": "the prime ones now have a home.",
+      "alternates": [
+        "the prime ones now have a home.",
+        "every minute knows its own little fight.",
+        "my cousin wants this exact schedule."
+      ]
+    },
+    "cal-py-d6-004": {
+      "kept": "the form now knows its own little rules.",
+      "alternates": [
+        "the form now knows its own little rules.",
+        "every field gets its own little hello."
+      ]
+    },
+    "cal-sq-d3-004": {
+      "kept": "the table now knows every little plant.",
+      "alternates": [
+        "the table now knows every little plant.",
+        "every spot gets its own little hello.",
+        "my fern finally has a home."
+      ]
+    },
+    "cal-sq-d3-005": {
+      "kept": "every plant now has its own little flag",
+      "alternates": [
+        "the thirsty ones now stand out.",
+        "every plant gets its own little hello.",
+        "the thirsty ones now stand out",
+        "every plant now has its own little flag"
+      ],
+      "editorDropped": "the line is not true of the request printed beside it"
+    },
+    "sql-subquery": {
+      "kept": "the big spenders now shout their names.",
+      "alternates": [
+        "the big spenders now shout their names.",
+        "every user gets its own little spot."
+      ]
+    },
+    "cal-sq-d5-001": {
+      "kept": "the label now knows every little day.",
+      "alternates": [
+        "the label now knows every little day.",
+        "every trend gets its own little hello."
+      ]
+    },
+    "cal-sh-d6-003": {
+      "kept": "the old ones leave without a sound",
+      "editorDropped": "not true of the request: it says the old ones are saved and the rest forgotten, the reverse of backing up the data and erasing the ancient ones",
+      "alternates": [
+        "the old ones leave without a sound",
+        "it saves today and forgets the rest",
+        "my cousin asked for this exact backup"
+      ]
+    },
+    "cal-cs-d2-004": {
+      "kept": "five seconds until the whole room cheers",
+      "editorDropped": "the line does not sound like that character",
+      "alternates": ["five seconds until the whole room cheers", "my fern is holding its breath"]
+    },
+    "cal-jv-d1-004": {
+      "kept": "it says yes only when both are true",
+      "editorDropped": "not true of the request — the request has the user asking the product, while the line has the product doing the asking",
+      "alternates": ["it says yes only when both are true", "the answer waits without a whisper"]
+    },
+    "java-optional": {
+      "kept": "the sock knows when it is alone",
+      "editorDropped": "names something the request never asked for — the sock having an owner, when the request is the no-owner fallback",
+      "alternates": [
+        "the sock knows when it is alone",
+        "alice now has her name back",
+        "every sock gets its own little hello"
+      ]
+    },
+    "cal-jv-d5-003": {
+      "kept": "the words line up without a fight",
+      "editorDropped": "it describes giving every word its own number, which the request to count the words never asked for",
+      "alternates": [
+        "the words line up without a fight",
+        "every file now has its own little count",
+        "my cousin is counting every word"
+      ]
+    },
+    "cal-js-d6-005": {
+      "kept": "it waits until i ask for the thing",
+      "editorDropped": "the line is not true of the request — it says it builds only when i need it, but the request was only when someone needs it",
+      "alternates": ["it waits until i ask for the thing", "the logger stays quiet until i need it"]
+    },
+    "cal-py-d5-005": {
+      "kept": "the last ten stay without a fight",
+      "editorDropped": "the line is not true of the request: the last ten apps were already judged and kept, not waiting their turn",
+      "alternates": ["the last ten stay without a fight", "every app now has its own little spot"]
+    },
+    "cal-sq-d3-001": {
+      "kept": "the big months stand out neat",
+      "editorDropped": "the line names a race the request never asked for",
+      "alternates": ["the big months stand out neat", "every month now has its own little flag"]
+    }
+  }
+}

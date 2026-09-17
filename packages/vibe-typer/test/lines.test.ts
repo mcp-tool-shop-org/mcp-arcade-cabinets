@@ -11,10 +11,17 @@ function bash(id: string): Snippet {
   return found;
 }
 
-/** The same snippet with its own ask taken off, so the template pool answers. */
-function withoutAsk(snippet: Snippet): Snippet {
+/**
+ * The same snippet with the two lines it carries taken off, so the pools
+ * answer for it: the template pool for the request, the generic reviews for
+ * the reaction. Both are the fallback path, and after the reactions authoring
+ * run of 2026-09-17 every corpus snippet carries both lines, so the fallback
+ * has to be built rather than found.
+ */
+function withoutLines(snippet: Snippet): Snippet {
   const copy = { ...snippet };
   delete copy.ask;
+  delete copy.reaction;
   return copy;
 }
 
@@ -25,7 +32,7 @@ function withoutAsk(snippet: Snippet): Snippet {
  * round, the same way `NO_TOPIC_POOL` below is: the fallback is for a piece the
  * writing has not reached yet, and the rule under test is unchanged.
  */
-const SNIPPET = withoutAsk(bash('cal-sh-d2-002'));
+const SNIPPET = withoutLines(bash('cal-sh-d2-002'));
 /** A snippet that carries its own ask. */
 const OWN_ASK = bash('cal-sh-d1-001');
 /**
@@ -34,7 +41,10 @@ const OWN_ASK = bash('cal-sh-d1-001');
  * has to be built rather than found — which is the right way round: the
  * fallback is for a topic the writing has not reached yet.
  */
-const NO_TOPIC_POOL = { ...OWN_ASK, topics: ['a-topic-nobody-has-written-for'] };
+const NO_TOPIC_POOL = {
+  ...withoutLines(OWN_ASK),
+  topics: ['a-topic-nobody-has-written-for'],
+};
 
 /** The level's product, which is the one hole a reaction may carry. */
 const PRODUCT = 'a website for my cat';

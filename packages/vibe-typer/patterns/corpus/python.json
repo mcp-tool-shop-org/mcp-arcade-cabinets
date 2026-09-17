@@ -7,7 +7,8 @@
     "ask": "let {product} announce it is here.",
     "code": "print(\"Hello, World!\")",
     "notes": ["Prints the string Hello, World! to standard output."],
-    "topics": ["print", "strings"]
+    "topics": ["print", "strings"],
+    "reaction": "the room now shouts hello before i open my mouth"
   },
   {
     "id": "cal-py-d1-002",
@@ -17,7 +18,8 @@
     "code": "x = 10\ny = 20\ntotal = x + y\nprint(total)",
     "notes": ["Assigns two integers, computes their sum, and prints the result."],
     "topics": ["variables", "arithmetic", "print"],
-    "ask": "add two numbers and show the answer."
+    "ask": "add two numbers and show the answer.",
+    "reaction": "the numbers hold hands and show their answer"
   },
   {
     "id": "cal-py-d1-003",
@@ -28,7 +30,8 @@
     "ask": "give every duck driver a first and last name",
     "code": "first = \"Alice\"\nlast = \"Smith\"\nfull = first + \" \" + last\nprint(full)",
     "notes": ["Concatenates a first and last name with a space and prints the full name."],
-    "topics": ["strings", "concatenation", "variables"]
+    "topics": ["strings", "concatenation", "variables"],
+    "reaction": "every driver sits there with a name"
   },
   {
     "id": "cal-py-d1-004",
@@ -39,7 +42,8 @@
     "notes": ["Computes the integer quotient and remainder of 17 divided by 5."],
     "topics": ["arithmetic", "integer division", "modulo"],
     "for": "duck-rides",
-    "ask": "split one bill among five ducks"
+    "ask": "split one bill among five ducks",
+    "reaction": "five ducks now share the bill without squabbling"
   },
   {
     "id": "cal-py-d1-005",
@@ -49,7 +53,8 @@
     "code": "age = 25\nis_adult = age >= 18\nprint(is_adult)",
     "notes": ["Checks whether an age value is at least 18 and prints the boolean result."],
     "topics": ["booleans", "comparison", "variables"],
-    "ask": "see if an age crosses eighteen."
+    "ask": "see if an age crosses eighteen.",
+    "reaction": "it knows when the age crosses eighteen."
   },
   {
     "id": "py-for-loop",
@@ -59,7 +64,8 @@
     "code": "for i in range(5):\n    print(f\"Step {i + 1} of 5\")",
     "notes": ["range(n) produces 0 through n-1.", "Practice colons, indentation, and parentheses."],
     "topics": ["for-loop", "range", "print"],
-    "ask": "count up five steps and label each."
+    "ask": "count up five steps and label each.",
+    "reaction": "each step knows its name and shouts it back"
   },
   {
     "id": "py-fstring",
@@ -72,7 +78,8 @@
       ":.1f formats a float to one decimal place."
     ],
     "topics": ["f-string", "formatting", "variables"],
-    "ask": "show a name and a tidy number."
+    "ask": "show a name and a tidy number.",
+    "reaction": "the name and number know their place."
   },
   {
     "id": "cal-py-d2-001",
@@ -83,7 +90,8 @@
     "notes": ["Iterates over a list of integers to compute and print the sum and average."],
     "topics": ["for loop", "lists", "f-strings", "arithmetic"],
     "for": "duck-rides",
-    "ask": "find the total and the average duck fare"
+    "ask": "find the total and the average duck fare",
+    "reaction": "the duck fares know their own total."
   },
   {
     "id": "cal-py-d2-002",
@@ -96,7 +104,8 @@
     ],
     "topics": ["functions", "default arguments", "f-strings"],
     "for": "duck-rides",
-    "ask": "make {product} greet every duck by name"
+    "ask": "make {product} greet every duck by name",
+    "reaction": "the duck now hears her name back."
   },
   {
     "id": "cal-py-d2-003",
@@ -106,7 +115,8 @@
     "code": "count = 10\nwhile count > 0:\n    print(count)\n    count -= 1\nprint(\"Liftoff!\")",
     "notes": ["Counts down from 10 to 1 using a while loop and then prints Liftoff."],
     "topics": ["while loop", "decrement", "print"],
-    "ask": "tick backward from ten and shout liftoff."
+    "ask": "tick backward from ten and shout liftoff.",
+    "reaction": "ten seconds never felt so loud"
   },
   {
     "id": "cal-py-d2-004",
@@ -117,7 +127,8 @@
     "notes": ["Demonstrates list slicing to extract sublists and reverse the original list."],
     "topics": ["lists", "slicing", "reversal"],
     "for": "duck-rides",
-    "ask": "reverse the line of waiting ducks"
+    "ask": "reverse the line of waiting ducks",
+    "reaction": "the last duck is first and takes it well."
   },
   {
     "id": "cal-py-d2-005",
@@ -130,7 +141,8 @@
     ],
     "topics": ["dictionaries", "for loop", "f-strings", "arithmetic"],
     "for": "duck-rides",
-    "ask": "show each duck rating and the overall average"
+    "ask": "show each duck rating and the overall average",
+    "reaction": "the average knows exactly who showed up"
   },
   {
     "id": "py-guard-clause",
@@ -140,7 +152,8 @@
     "code": "def clamp(x: int, lo: int, hi: int) -> int:\n    if x < lo:\n        return lo\n    if x > hi:\n        return hi\n    return x",
     "notes": ["Guard clauses keep control-flow flat.", "Note colon, indentation, and comparisons."],
     "topics": ["functions", "guards", "comparison", "return"],
-    "ask": "keep a number between two friendly fences."
+    "ask": "keep a number between two friendly fences.",
+    "reaction": "the number now stays between friends."
   },
   {
     "id": "py-try-except",
@@ -153,7 +166,8 @@
       "Catch specific exceptions, not bare except."
     ],
     "topics": ["exceptions", "error-handling", "try-except"],
-    "ask": "catch broken input without getting angry."
+    "ask": "catch broken input without getting angry.",
+    "reaction": "the input now bends without breaking"
   },
   {
     "id": "cal-py-d3-001",
@@ -163,7 +177,8 @@
     "code": "def get_evens(numbers):\n    return [n for n in numbers if n % 2 == 0]\n\ndata = list(range(1, 21))\nevens = get_evens(data)\nprint(f\"Even numbers: {evens}\")\nprint(f\"Count: {len(evens)}\")\nprint(f\"Sum: {sum(evens)}\")",
     "notes": ["Uses a list comprehension inside a function to filter even numbers from a range."],
     "topics": ["list comprehension", "functions", "filtering", "modulo"],
-    "ask": "pluck the even ones from a crowd."
+    "ask": "pluck the even ones from a crowd.",
+    "reaction": "the even ones now stand out neat."
   },
   {
     "id": "cal-py-d3-002",
@@ -173,7 +188,8 @@
     "code": "import os\n\ndef read_config(path):\n    if not os.path.exists(path):\n        print(f\"File not found: {path}\")\n        return None\n    try:\n        with open(path, \"r\") as f:\n            content = f.read()\n        return content\n    except PermissionError:\n        print(f\"Permission denied: {path}\")\n        return None",
     "notes": ["Reads a config file with existence checking and permission error handling."],
     "topics": ["exception handling", "file I/O", "os module", "functions"],
-    "ask": "load the house rules from a file"
+    "ask": "load the house rules from a file",
+    "reaction": "the house rules come in from the file and stick."
   },
   {
     "id": "cal-py-d3-003",
@@ -183,7 +199,8 @@
     "code": "class Rectangle:\n    def __init__(self, width, height):\n        self.width = width\n        self.height = height\n\n    def area(self):\n        return self.width * self.height\n\n    def perimeter(self):\n        return 2 * (self.width + self.height)\n\n    def __repr__(self):\n        return f\"Rectangle({self.width}, {self.height})\"",
     "notes": ["Defines a Rectangle class with area, perimeter, and string representation methods."],
     "topics": ["classes", "constructor", "methods", "dunder methods"],
-    "ask": "make {product} track the size of every room"
+    "ask": "make {product} track the size of every room",
+    "reaction": "every room now knows how much space it takes"
   },
   {
     "id": "cal-py-d3-004",
@@ -195,7 +212,8 @@
       "Classifies a temperature value into a category and returns a dictionary with a warning flag."
     ],
     "topics": ["conditionals", "functions", "dictionaries"],
-    "ask": "sort every degree into a mood"
+    "ask": "sort every degree into a mood",
+    "reaction": "every degree now has a mood"
   },
   {
     "id": "cal-py-d3-005",
@@ -205,7 +223,8 @@
     "code": "names = [\"Alice\", \"Bob\", \"Carol\", \"Dave\"]\nscores = [88, 95, 72, 91]\n\nresults = []\nfor i, (name, score) in enumerate(zip(names, scores), start=1):\n    passed = \"PASS\" if score >= 75 else \"FAIL\"\n    results.append(f\"{i}. {name}: {score} ({passed})\")\n\nfor line in results:\n    print(line)",
     "notes": ["Pairs names with scores using zip and enumerate to build formatted result strings."],
     "topics": ["enumerate", "zip", "tuples", "conditional expression"],
-    "ask": "match each name to its mark."
+    "ask": "match each name to its mark.",
+    "reaction": "the names and marks know their place"
   },
   {
     "id": "py-class-def",
@@ -218,7 +237,8 @@
       "Practice colons, type hints, and ** for exponentiation."
     ],
     "topics": ["classes", "init", "self", "methods"],
-    "ask": "help {product} measure a circle."
+    "ask": "help {product} measure a circle.",
+    "reaction": "the circle now knows its own size and shape"
   },
   {
     "id": "py-list-comp",
@@ -228,7 +248,8 @@
     "code": "evens = [n for n in range(1, 101) if n % 2 == 0]",
     "notes": ["Comprehensions combine mapping + filtering.", "Watch brackets, % operator, and ==."],
     "topics": ["list-comprehension", "modulo", "filtering"],
-    "ask": "grab even numbers from a big pile."
+    "ask": "grab even numbers from a big pile.",
+    "reaction": "the even ones now line up neat."
   },
   {
     "id": "cal-py-d4-001",
@@ -240,7 +261,8 @@
       "Computes Fibonacci numbers using recursion with lru_cache memoization for efficiency."
     ],
     "topics": ["recursion", "memoization", "decorators", "functools"],
-    "ask": "let {product} breed rabbits with memory."
+    "ask": "let {product} breed rabbits with memory.",
+    "reaction": "the rabbits remember every step"
   },
   {
     "id": "cal-py-d4-002",
@@ -252,7 +274,8 @@
       "Implements shape inheritance with a base class that enforces an area method contract."
     ],
     "topics": ["inheritance", "polymorphism", "abstract methods", "super"],
-    "ask": "{product} puts every app in a shape family"
+    "ask": "{product} puts every app in a shape family",
+    "reaction": "every app now has a shape family"
   },
   {
     "id": "cal-py-d4-003",
@@ -264,7 +287,8 @@
       "Uses a generator function to lazily produce prime numbers up to a given limit using trial division."
     ],
     "topics": ["generators", "yield", "prime numbers", "algorithms"],
-    "ask": "make {product} only fight on prime minutes"
+    "ask": "make {product} only fight on prime minutes",
+    "reaction": "the fights wait for the right minute"
   },
   {
     "id": "cal-py-d4-004",
@@ -276,7 +300,8 @@
       "Implements a context manager class that measures and reports execution time of a code block."
     ],
     "topics": ["context managers", "dunder methods", "timing", "with statement"],
-    "ask": "time how long each argument lasts"
+    "ask": "time how long each argument lasts",
+    "reaction": "each argument now knows how long it lasted"
   },
   {
     "id": "cal-py-d4-005",
@@ -288,7 +313,8 @@
       "Defines a dataclass with post-init validation, default factory for mutable fields, and helper methods."
     ],
     "topics": ["dataclasses", "validation", "post_init", "field"],
-    "ask": "make a worker card that checks itself."
+    "ask": "make a worker card that checks itself.",
+    "reaction": "the card checks itself before it ships"
   },
   {
     "id": "py-decorator",
@@ -301,7 +327,8 @@
       "Practice *args, **kwargs, and dunder attributes."
     ],
     "topics": ["decorators", "functions", "closures"],
-    "ask": "log every fight so we can review"
+    "ask": "log every fight so we can review",
+    "reaction": "every fight now leaves a trail"
   },
   {
     "id": "py-dict",
@@ -314,7 +341,8 @@
       "Quotes, types, and indexing build full-keyboard muscle memory."
     ],
     "topics": ["dict", "typing", "for-loop"],
-    "ask": "tally every letter in a phrase."
+    "ask": "tally every letter in a phrase.",
+    "reaction": "every letter now knows how many friends it has"
   },
   {
     "id": "cal-py-d5-001",
@@ -326,7 +354,8 @@
       "Implements a parameterized retry decorator with exponential backoff and configurable exception filtering."
     ],
     "topics": ["decorators", "closures", "retry pattern", "exponential backoff"],
-    "ask": "{product} gives each app three chances to work"
+    "ask": "{product} gives each app three chances to work",
+    "reaction": "every app gets its chances and most take the first."
   },
   {
     "id": "cal-py-d5-002",
@@ -338,7 +367,8 @@
       "Implements a binary search tree with recursive insertion and inorder traversal methods."
     ],
     "topics": ["binary search tree", "recursion", "data structures", "tree traversal"],
-    "ask": "sort every app by its star rating"
+    "ask": "sort every app by its star rating",
+    "reaction": "the best apps float to the top."
   },
   {
     "id": "cal-py-d5-003",
@@ -350,7 +380,8 @@
       "Fetches multiple URLs concurrently using asyncio with a semaphore to limit simultaneous connections."
     ],
     "topics": ["asyncio", "semaphore", "concurrency", "aiohttp", "error handling"],
-    "ask": "grab every app page at once"
+    "ask": "grab every app page at once",
+    "reaction": "every page now arrives before i finish my thought"
   },
   {
     "id": "cal-py-d5-004",
@@ -362,7 +393,8 @@
       "Uses descriptor protocol with __set_name__, __get__, and __set__ to create reusable validated attributes."
     ],
     "topics": ["descriptors", "properties", "validation", "dunder methods", "metaprogramming"],
-    "ask": "check that every rating is a positive number"
+    "ask": "check that every rating is a positive number",
+    "reaction": "a rating below zero cannot get in anymore."
   },
   {
     "id": "cal-py-d5-005",
@@ -374,7 +406,8 @@
       "Implements an LRU cache using a hash map and doubly linked list for O(1) get and put operations."
     ],
     "topics": ["linked list", "cache", "hash map", "data structures", "algorithms"],
-    "ask": "keep the last ten apps i judged"
+    "ask": "keep the last ten apps i judged",
+    "reaction": "the last ten now wait their turn in perfect order"
   },
   {
     "id": "cal-py-d6-001",
@@ -386,7 +419,8 @@
       "Implements a plugin registry using class decorators and abstract base classes for extensible architecture."
     ],
     "topics": ["abc", "registry pattern", "decorators", "typing", "design patterns"],
-    "ask": "let {product} welcome new plugins politely."
+    "ask": "let {product} welcome new plugins politely.",
+    "reaction": "every plugin now gets a warm hello"
   },
   {
     "id": "cal-py-d6-002",
@@ -398,7 +432,8 @@
       "Implements a thread-safe batch processor using ThreadPoolExecutor with result collection and error tracking."
     ],
     "topics": ["threading", "thread pool", "futures", "concurrency", "error handling"],
-    "ask": "do many jobs at once and tally."
+    "ask": "do many jobs at once and tally.",
+    "reaction": "the jobs now finish while i stretch my legs"
   },
   {
     "id": "cal-py-d6-003",
@@ -410,7 +445,8 @@
       "Builds an event emitter supporting on, once, emit, and off with argument introspection for handler safety."
     ],
     "topics": ["event emitter", "observer pattern", "inspect", "typing", "callbacks"],
-    "ask": "let {product} shout and get answers."
+    "ask": "let {product} shout and get answers.",
+    "reaction": "it shouts and the whole room answers."
   },
   {
     "id": "cal-py-d6-004",
@@ -422,7 +458,8 @@
       "Recursively validates nested data structures against a JSON schema definition with path-aware error reporting."
     ],
     "topics": ["validation", "schema", "recursion", "typing", "error handling"],
-    "ask": "check a form against its rules deeply."
+    "ask": "check a form against its rules deeply.",
+    "reaction": "every rule gets a warm hello and a handshake"
   },
   {
     "id": "cal-py-d6-005",
@@ -434,7 +471,8 @@
       "Implements a generic pipeline builder with named steps, error handlers, dry run capability, and execution logging."
     ],
     "topics": ["pipeline pattern", "generics", "dataclasses", "error handling", "builder pattern"],
-    "ask": "string steps together and watch them flow."
+    "ask": "string steps together and watch them flow.",
+    "reaction": "every piece now talks to the next one."
   },
   {
     "id": "cal-py-d7-001",
@@ -446,7 +484,8 @@
       "Defines a metaclass that tracks attribute changes with a log and applies validation decorators to class attributes."
     ],
     "topics": ["metaclasses", "descriptors", "decorators", "validation", "metaprogramming"],
-    "ask": "observe {product} change and guard its mood."
+    "ask": "observe {product} change and guard its mood.",
+    "reaction": "it watches itself and stays polite."
   },
   {
     "id": "cal-py-d7-002",
@@ -458,7 +497,8 @@
       "Implements an async task scheduler with priority ordering using heapq and bounded concurrency via semaphore."
     ],
     "topics": ["asyncio", "priority queue", "heapq", "dataclasses", "concurrency", "scheduling"],
-    "ask": "line up jobs by their urgency."
+    "ask": "line up jobs by their urgency.",
+    "reaction": "my cousin asked for this exact queue."
   },
   {
     "id": "cal-py-d7-003",
@@ -470,7 +510,8 @@
       "Implements a complete recursive descent parser with lexer for arithmetic expressions supporting operator precedence and parentheses."
     ],
     "topics": ["parsing", "recursive descent", "lexer", "tokenizer", "enums", "dataclasses"],
-    "ask": "help {product} read simple math."
+    "ask": "help {product} read simple math.",
+    "reaction": "the numbers now hold hands and do the math"
   },
   {
     "id": "cal-py-d7-004",
@@ -489,7 +530,8 @@
       "chain of responsibility",
       "timing"
     ],
-    "ask": "let {product} move a note through helpers."
+    "ask": "let {product} move a note through helpers.",
+    "reaction": "the note now visits every helper."
   },
   {
     "id": "cal-py-d7-005",
@@ -508,6 +550,7 @@
       "deep copy",
       "middleware"
     ],
-    "ask": "let {product} watch itself and tell friends."
+    "ask": "let {product} watch itself and tell friends.",
+    "reaction": "it watches itself and tells the room."
   }
 ]

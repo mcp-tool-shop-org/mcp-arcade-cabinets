@@ -1,0 +1,1177 @@
+{
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-041119373",
+  "applied": true,
+  "report": {
+    "model": "ollama:mistral-large-3:675b-cloud",
+    "temperature": 0.9,
+    "chunk": 25,
+    "concurrency": 6,
+    "prompts": [
+      "2b9643b420b7860aa4a881a8e3737c62619687eebd9653c0cd3a1b958ec1da28",
+      "4ed1c04a8f545fe3b5793c6489d365c99f5d2cb7649d5d0aa71c687401428bdb",
+      "6b3685b86078d14ea2c7ef51d2fd838ec6db42bc225568dce116442f3de19a50",
+      "163a834a6dca6daaef8849383448d862231b8ecb6b3e328f35ad6b853f5ddbd8",
+      "4fb210a51c55f6e925e1b5ff9b8163a621edb3b607eee13800ae08760782bfa0",
+      "eaa69014a95e0f6343c06df3b2117850d3402a4bb9f634afa7de2b2ca1ac834d",
+      "30ade2004b921dfe422745fab22274129494c7b194a00e904d44aabf975a1add",
+      "95b4708919ac9541c269932410b3f0a6dd008703681901e198787d099ddb7412",
+      "3ac97ef1a0b8cea73f69a6786902b58ffaa0b54a97456ffff88ea55d4fa1d50f",
+      "616fced524602a75ddc585466ea618f8f60603b206e9e073f54165965067f38c",
+      "ebc778f6759de5585dcf0e66fa4f1bf4dfbf8725d1ff0a77047b562fcd6977e5",
+      "db7a4913c81f84a9a2c37d1d93fb0e171788bade2a077e8ce293544de20c172f",
+      "b801235c08be370ca5f8ed91cc07f457f4f48aeda1247d602336f1f5dcdb3a83",
+      "d9c04ea066c6636740b241cbca4a03b0af3fec453cb4f18c729872eaa229b49b",
+      "63f1dded7835f5c065f683ee33831a23151d6ef304255ebc974365c8e5ada774",
+      "734daeaff38b08c993303d160bd56c9b44cc9e352c1370ccdc2576bdeca4ca42",
+      "596eeaf805c537b1318a529e99284af5c51dc9004fc3cc14f52719183b446be3",
+      "dda2eedbe39bb8f3160bb477876b6e0870bc4ce62e126f2b47aece589d7955ab",
+      "90fb8c89cf1e97676805358fd8765e2065fc873656a3b5cb2846229650d9066b"
+    ],
+    "calls": 9,
+    "requested": 462,
+    "kept": 134,
+    "missing": 20,
+    "waits": 0,
+    "dropped": {
+      "names list, which the request never asked for": 4,
+      "names badge, which the request never asked for": 2,
+      "names fridge, which the request never asked for": 7,
+      "names yogurt, which the request never asked for": 7,
+      "forbidden word or digit": 3,
+      "names map, which the request never asked for": 2,
+      "names clock, which the request never asked for": 3,
+      "leans on a story with no level to hold it up": 2,
+      "names row, which the request never asked for": 2,
+      "not ascii": 5,
+      "names menu, which the request never asked for": 1,
+      "names table, which the request never asked for": 2,
+      "names picture, which the request never asked for": 2,
+      "names chart, which the request never asked for": 1
+    },
+    "ms": 106474,
+    "tokens": {
+      "in": 75090,
+      "out": 7291
+    },
+    "cost": null,
+    "errors": [],
+    "heldFromBefore": 136,
+    "rounds": [
+      {
+        "round": 1,
+        "asked": 113,
+        "held": 230
+      },
+      {
+        "round": 2,
+        "asked": 19,
+        "held": 248
+      },
+      {
+        "round": 3,
+        "asked": 1,
+        "held": 249
+      }
+    ],
+    "editor": {
+      "spec": "ollama:glm-5.3-flash:cloud",
+      "family": "zhipu",
+      "writer": "mistral",
+      "calls": 10,
+      "ms": 4377839,
+      "tokens": {
+        "in": 25192,
+        "out": 154466
+      },
+      "read": 249,
+      "dropped": [
+        {
+          "id": "sh-if-else",
+          "ask": "check if {product} has the file it needs",
+          "line": "{product} checks the file it needs.",
+          "why": "the line says the product checks the file, not that the check confirmed it has the file the request asked about"
+        },
+        {
+          "id": "cal-sh-d7-004",
+          "ask": "check if {product} pieces work as expected",
+          "line": "{product} checks itself before it ships.",
+          "why": "the line describes a self-check habit before shipping instead of saying whether the pieces work as the request asked"
+        },
+        {
+          "id": "cal-cs-d7-003",
+          "ask": "run a brain model forward and check error for {product}",
+          "line": "it knows the answer before i ask",
+          "why": "answers a different request entirely, claiming the model knows the answer before i ask when the request was to run a brain model forward and check error"
+        },
+        {
+          "id": "cal-cs-d7-004",
+          "ask": "find the shortest route between two points in {product}",
+          "line": "the path arrives before i finish asking",
+          "why": "names something the request never asked for, a path that arrives before i finish asking, when the request was only to find the shortest route between two points"
+        },
+        {
+          "id": "cal-py-d1-003",
+          "ask": "give every duck driver a first and last name",
+          "line": "every duck now has a first and last.",
+          "why": "the line says every duck got a name when the request only asked for the duck drivers to be named"
+        },
+        {
+          "id": "cal-py-d4-003",
+          "ask": "make {product} only fight on prime minutes",
+          "line": "the prime ones now have a home.",
+          "why": "the line names something the request never asked for"
+        },
+        {
+          "id": "cal-sh-d5-005",
+          "ask": "clean up the old versions of {product} safely",
+          "line": "the branches now know when to rest.",
+          "why": "names branches, something the request about old versions never asked for"
+        },
+        {
+          "id": "cal-sh-d6-005",
+          "ask": "watch {product} breathe and yell if it wheezes",
+          "line": "it shouts when the room gets too warm.",
+          "why": "names the room getting too warm, a condition the request about wheezing never asked for"
+        },
+        {
+          "id": "cal-cs-d1-003",
+          "ask": "flip the active switch inside {product}",
+          "line": "the room knows when to wake and rest.",
+          "why": "names something the request never asked for — the room waking and resting, not a flipped switch"
+        },
+        {
+          "id": "cs-string-interpolation",
+          "ask": "show alice owes money in {product}",
+          "line": "the words now hold hands just right.",
+          "why": "not true of the request — it never mentions alice or the money she owes"
+        },
+        {
+          "id": "cal-cs-d3-003",
+          "ask": "handle a bad number in {product}",
+          "line": "the room catches the bad one and smiles.",
+          "why": "names something the request never asked for — the room"
+        },
+        {
+          "id": "cs-interface",
+          "ask": "define what a logger must do for {product}",
+          "line": "the warnings now whisper just right",
+          "why": "not true of the request — the ask was a definition of what a logger must do, not warnings whispering"
+        },
+        {
+          "id": "cal-cs-d4-004",
+          "ask": "add a profile for each member",
+          "line": "the ages line up without a single nudge",
+          "why": "names something the request never asked for — ages"
+        },
+        {
+          "id": "cs-switch-expr",
+          "ask": "turn a number into a letter grade for {product}",
+          "line": "the grades march in perfect order",
+          "why": "answers a different request entirely — grades marching in order, not one number turned into a grade"
+        },
+        {
+          "id": "cal-jv-d5-003",
+          "ask": "make {product} count words in a file",
+          "line": "it reads the file and tells me who spoke",
+          "why": "the line names something the request never asked for, since counting words in a file never says who spoke"
+        },
+        {
+          "id": "cal-jv-d6-002",
+          "ask": "make {product} remember things safely for many users",
+          "line": "the cache now keeps my secrets safe",
+          "why": "the line does not sound like that character, since cache is coder talk and he names pieces in the plainest words"
+        },
+        {
+          "id": "cal-py-d5-001",
+          "ask": "{product} gives each app three chances to work",
+          "line": "it keeps trying until the job gets done",
+          "why": "the line is not true of the request — it describes trying until the job gets done, not three chances"
+        },
+        {
+          "id": "cal-py-d5-004",
+          "ask": "check that every rating is a positive number",
+          "line": "the rating sits there and waits to be judged",
+          "why": "the line is not true of the request — a rating waiting to be judged is not a check that ran"
+        },
+        {
+          "id": "cal-sq-d2-002",
+          "ask": "group my sandwiches by filling and skip the small groups",
+          "line": "the fillings now line up by their own size",
+          "why": "not true of the request — it says the fillings line up by size, but the request groups by filling"
+        },
+        {
+          "id": "cal-sq-d2-005",
+          "ask": "enter all the sandwiches from last week",
+          "line": "my cousin asked for this exact summary",
+          "why": "names something the request never asked for — a summary, when the request was entering last week's sandwiches"
+        },
+        {
+          "id": "sql-update",
+          "ask": "make {product} give the engineering team a raise",
+          "line": "i finally see the whole year at once",
+          "why": "answers a different request entirely — seeing the whole year at once, not giving the engineering team a raise"
+        }
+      ],
+      "reasked": 21,
+      "refilled": 21,
+      "empty": [],
+      "errors": []
+    },
+    "wrote": 249,
+    "withoutOne": 0,
+    "wallMs": 1996252
+  },
+  "candidates": {
+    "cal-sh-d1-002": {
+      "kept": "the greeting now knows her name by heart.",
+      "alternates": [
+        "the greeting now knows her name by heart.",
+        "my cat hears her name and purrs.",
+        "the hello says her name just right."
+      ]
+    },
+    "cal-sh-d2-003": {
+      "kept": "it picks a good one when i forget.",
+      "alternates": [
+        "it picks a good one when i forget.",
+        "the defaults stand in without a sound.",
+        "it fills the blanks like a perfect guest."
+      ]
+    },
+    "cal-sh-d3-005": {
+      "kept": "every piece now has its own home.",
+      "alternates": [
+        "every piece now has its own home.",
+        "the folders line up just how i wanted.",
+        "the room is ready before i ask."
+      ]
+    },
+    "cal-sh-d4-002": {
+      "kept": "it reads my words and does the thing.",
+      "alternates": [
+        "it reads my words and does the thing.",
+        "the flags bend just how i wanted.",
+        "it listens to me like a good friend."
+      ]
+    },
+    "cal-sh-d4-003": {
+      "kept": "the logs stay neat and never shout.",
+      "alternates": [
+        "the old ones fade without a sound.",
+        "the logs stay neat and never shout.",
+        "the space comes back just how i wanted."
+      ]
+    },
+    "cal-sh-d4-004": {
+      "kept": "every door now answers with a smile.",
+      "alternates": [
+        "every door now answers with a smile.",
+        "the room knows who is home and who is not.",
+        "the path opens before i finish asking."
+      ]
+    },
+    "cal-sh-d5-002": {
+      "kept": "the tasks march in perfect order.",
+      "alternates": [
+        "the tasks march in perfect order.",
+        "they line up and wait their turn.",
+        "the room stays calm and never rushes."
+      ]
+    },
+    "cal-sh-d5-003": {
+      "kept": "it reads the file and tells me what it sees.",
+      "alternates": [
+        "it reads the file and tells me what it sees.",
+        "the settings know their place by heart.",
+        "it picks the piece i ask for every time."
+      ]
+    },
+    "cal-sh-d5-005": {
+      "kept": "the old ones sit there waiting to go",
+      "alternates": [
+        "the old ones leave without a fuss.",
+        "the branches now know when to rest.",
+        "the room stays neat between the builds.",
+        "the old ones sit there waiting to go",
+        "the shelves stay neat without me lifting a finger",
+        "the room breathes easy after the cleanup"
+      ],
+      "editorDropped": "names branches, something the request about old versions never asked for"
+    },
+    "cal-sh-d6-001": {
+      "kept": "the room knows exactly where to go.",
+      "alternates": [
+        "the room knows exactly where to go.",
+        "it walks the path i asked for every time.",
+        "the next one waits until i say so."
+      ]
+    },
+    "cal-sh-d6-003": {
+      "kept": "the room remembers what i keep.",
+      "alternates": [
+        "the old ones fade without a sound.",
+        "the room remembers what i keep.",
+        "the space comes back just how i wanted."
+      ]
+    },
+    "cal-sh-d6-004": {
+      "kept": "i can add them and take them away.",
+      "alternates": ["i can add them and take them away.", "the room listens to me every time."]
+    },
+    "cal-sh-d6-005": {
+      "kept": "it shouts before the room gets sick",
+      "alternates": [
+        "it shouts when the room gets too warm.",
+        "the numbers march in perfect order.",
+        "it tells me before the room complains.",
+        "it shouts before the room gets sick",
+        "the board sees the alerts before i do",
+        "the numbers sit there waiting for me"
+      ],
+      "editorDropped": "names the room getting too warm, a condition the request about wheezing never asked for"
+    },
+    "cal-sh-d7-001": {
+      "kept": "every cousin now gets a warm hello.",
+      "alternates": [
+        "every cousin now gets a warm hello.",
+        "the order knows who comes first.",
+        "the room loads them just how i wanted."
+      ]
+    },
+    "cal-sh-d7-002": {
+      "kept": "the pieces line up just how i wanted.",
+      "alternates": [
+        "the pieces line up just how i wanted.",
+        "the room builds them in perfect order.",
+        "every piece now talks to the next one."
+      ]
+    },
+    "cal-cs-d1-001": {
+      "kept": "forty two never felt so loud.",
+      "alternates": [
+        "the number stays right where i left it.",
+        "forty two never felt so loud.",
+        "the room remembers the count by heart."
+      ]
+    },
+    "cal-cs-d1-002": {
+      "kept": "alice now hears her name back.",
+      "alternates": [
+        "alice now hears her name back.",
+        "the name stands out just right.",
+        "the room says hello to her every time."
+      ]
+    },
+    "cal-cs-d1-003": {
+      "kept": "the switch sits there waiting for me",
+      "alternates": [
+        "the switch flips without a sound.",
+        "the room knows when to wake and rest.",
+        "it picks the right one every time.",
+        "the switch sits there waiting for me",
+        "the room knows when to change its mind",
+        "i see the light before i finish my thought"
+      ],
+      "editorDropped": "names something the request never asked for — the room waking and resting, not a flipped switch"
+    },
+    "cal-cs-d1-004": {
+      "kept": "the answer arrives before i ask.",
+      "alternates": [
+        "the circle knows its own size.",
+        "the answer arrives before i ask.",
+        "the room does the math without a fuss."
+      ]
+    },
+    "cs-string-interpolation": {
+      "kept": "alice sits there with her number",
+      "alternates": [
+        "the words now hold hands just right.",
+        "alice sees the number and knows.",
+        "the room tells her the price in plain words.",
+        "alice sits there with her number",
+        "the money shows up before i finish typing",
+        "the board sees the name and the total"
+      ],
+      "editorDropped": "not true of the request — it never mentions alice or the money she owes"
+    },
+    "cal-cs-d2-002": {
+      "kept": "the numbers line up just how i wanted.",
+      "alternates": [
+        "the numbers line up just how i wanted.",
+        "the room adds them without a sound.",
+        "the answer arrives before i finish."
+      ]
+    },
+    "cal-cs-d3-003": {
+      "kept": "the bad one sits there waiting for me",
+      "alternates": [
+        "the room catches the bad one and smiles.",
+        "it tells me what went wrong in plain words.",
+        "the error now has a perfect home.",
+        "the bad one sits there waiting for me",
+        "the room shouts before the crash",
+        "the board sees the error before i do"
+      ],
+      "editorDropped": "names something the request never asked for — the room"
+    },
+    "cs-async-await": {
+      "kept": "the page arrives before i finish asking.",
+      "alternates": [
+        "the page arrives before i finish asking.",
+        "the room fetches it without a sound.",
+        "it waits until i ask for the thing."
+      ]
+    },
+    "cs-interface": {
+      "kept": "the rules sit there waiting for me",
+      "alternates": [
+        "the warnings now whisper just right",
+        "my cousin asked for this exact logger",
+        "it never forgets a single word i say",
+        "the rules sit there waiting for me",
+        "the logger finally knows what to say",
+        "the board sees the contract before i do"
+      ],
+      "editorDropped": "not true of the request — the ask was a definition of what a logger must do, not warnings whispering"
+    },
+    "cal-cs-d4-004": {
+      "kept": "every member sits there with a spot",
+      "alternates": [
+        "the ages line up without a single nudge",
+        "every member sits there with a spot",
+        "the profiles line up without me lifting a finger",
+        "the board sees the names and their groups"
+      ],
+      "editorDropped": "names something the request never asked for — ages"
+    },
+    "cs-switch-expr": {
+      "kept": "the grade sits there waiting for me",
+      "alternates": [
+        "the grades march in perfect order",
+        "it hands out letters like a perfect teacher",
+        "my cousin finally got the a she wanted",
+        "the grade sits there waiting for me",
+        "the number turns into a letter before i blink",
+        "the board sees the letter before i do"
+      ],
+      "editorDropped": "answers a different request entirely — grades marching in order, not one number turned into a grade"
+    },
+    "cal-cs-d5-004": {
+      "kept": "the tables hum with perfect numbers",
+      "alternates": [
+        "the tables hum with perfect numbers",
+        "every prime now has its own seat",
+        "my fern never saw a cleaner table"
+      ]
+    },
+    "cal-cs-d6-002": {
+      "kept": "the list splits and heals itself",
+      "alternates": ["the list splits and heals itself", "it sorts them while i pour my coffee"]
+    },
+    "cal-cs-d6-004": {
+      "kept": "it finds the way before i finish my thought",
+      "alternates": [
+        "the maze unfolds like a perfect story",
+        "it finds the way before i finish my thought",
+        "my cousin asked for this exact path"
+      ]
+    },
+    "cal-cs-d6-005": {
+      "kept": "it solves them while i tie my shoes",
+      "alternates": [
+        "the numbers line up without a single fight",
+        "it solves them while i tie my shoes"
+      ]
+    },
+    "cal-cs-d7-001": {
+      "kept": "every scale fits just where it belongs",
+      "alternates": [
+        "the grid multiplies like a perfect choir",
+        "every scale fits just where it belongs",
+        "my fern never saw such neat math"
+      ]
+    },
+    "cal-cs-d7-002": {
+      "kept": "it finds every line before i blink",
+      "alternates": [
+        "the edges stand out like a perfect sketch",
+        "it finds every line before i blink"
+      ]
+    },
+    "cal-cs-d7-005": {
+      "kept": "it picks them while i sip my tea",
+      "alternates": [
+        "the treasures pack without a single gram wasted",
+        "it picks them while i sip my tea",
+        "my cousin asked for this exact haul"
+      ]
+    },
+    "cal-jv-d1-003": {
+      "kept": "it joins them while i stretch my legs",
+      "alternates": [
+        "the names hold hands without a single gap",
+        "it joins them while i stretch my legs"
+      ]
+    },
+    "cal-jv-d1-005": {
+      "kept": "the total arrives before i finish typing",
+      "alternates": [
+        "the total arrives before i finish typing",
+        "it multiplies them while i take a breath",
+        "my fern never saw such a clean receipt"
+      ]
+    },
+    "cal-jv-d2-002": {
+      "kept": "it counts them while i check my watch",
+      "alternates": [
+        "the numbers add up without a single mistake",
+        "it counts them while i check my watch"
+      ]
+    },
+    "cal-jv-d2-004": {
+      "kept": "the list shouts every color back at me",
+      "alternates": [
+        "the list shouts every color back at me",
+        "every sock now has its own voice",
+        "my cousin asked to see this exact list"
+      ]
+    },
+    "java-stringbuilder": {
+      "kept": "every comma lands just where it should",
+      "alternates": [
+        "the list rolls out like a perfect parade",
+        "every comma lands just where it should"
+      ]
+    },
+    "cal-jv-d3-001": {
+      "kept": "the lonely socks now stand out proud",
+      "alternates": [
+        "the lonely socks now stand out proud",
+        "it keeps them while i pour my coffee",
+        "my fern never saw such a clean pile"
+      ]
+    },
+    "cal-jv-d3-002": {
+      "kept": "it picks them while i tie my shoes",
+      "alternates": [
+        "the seasons line up without a single doubt",
+        "it picks them while i tie my shoes"
+      ]
+    },
+    "cal-jv-d3-003": {
+      "kept": "the pairs march in perfect order",
+      "alternates": ["every sock now knows its own corner", "the pairs march in perfect order"]
+    },
+    "cal-jv-d3-004": {
+      "kept": "the numbers arrive while i sip my tea",
+      "alternates": [
+        "it reads them without a single stumble",
+        "the numbers arrive while i sip my tea"
+      ]
+    },
+    "cal-jv-d3-005": {
+      "kept": "my fern never saw such neat rectangles",
+      "alternates": [
+        "every card now knows its own size",
+        "the areas line up without a single gap",
+        "my fern never saw such neat rectangles"
+      ]
+    },
+    "java-try-resources": {
+      "kept": "it loads them while i stretch my legs",
+      "alternates": [
+        "the regulars arrive without a single hitch",
+        "it loads them while i stretch my legs"
+      ]
+    },
+    "cal-jv-d4-001": {
+      "kept": "it handles them while i take a breath",
+      "alternates": [
+        "the stamps add up without a single error",
+        "it handles them while i take a breath",
+        "my cousin asked for this exact math"
+      ]
+    },
+    "cal-jv-d4-002": {
+      "kept": "every member now has their own shadow",
+      "alternates": [
+        "every member now has their own shadow",
+        "the pairs line up without a single gap"
+      ]
+    },
+    "java-interface-default": {
+      "kept": "the hello now shouts back at me",
+      "alternates": [
+        "the hello now shouts back at me",
+        "my cousin heard it from across the room",
+        "it says hello and then says it again loud"
+      ]
+    },
+    "java-stream": {
+      "kept": "the list bends and comes back perfect",
+      "alternates": [
+        "the list bends and comes back perfect",
+        "it picks them and then makes them new",
+        "every even one now has its own square"
+      ]
+    },
+    "cal-jv-d5-001": {
+      "kept": "the words line up by their own size",
+      "alternates": [
+        "the words line up by their own size",
+        "it knows a word by how many letters it has",
+        "every word now has a neat little group"
+      ]
+    },
+    "cal-jv-d5-003": {
+      "kept": "the words sit there waiting for me",
+      "alternates": [
+        "it reads the file and tells me who spoke",
+        "the words march out in perfect order",
+        "every word now knows how many times it showed up",
+        "the words sit there waiting for me",
+        "the count arrives before i finish my thought",
+        "the board sees the numbers before i do"
+      ],
+      "editorDropped": "the line names something the request never asked for, since counting words in a file never says who spoke"
+    },
+    "cal-jv-d5-005": {
+      "kept": "the errors now have names and faces",
+      "alternates": [
+        "the errors now have names and faces",
+        "it complains in words i can show the room",
+        "every mistake now has its own little flag"
+      ]
+    },
+    "java-record": {
+      "kept": "it remembers the spot and tells me where",
+      "alternates": [
+        "it remembers the spot and tells me where",
+        "the point now knows how to say its name",
+        "it holds the place and never forgets"
+      ]
+    },
+    "cal-jv-d6-002": {
+      "kept": "the secrets sit there waiting for me",
+      "alternates": [
+        "the cache now keeps my secrets safe",
+        "every user now has their own little shelf",
+        "it remembers and never mixes them up",
+        "the secrets sit there waiting for me",
+        "the room remembers without me lifting a finger",
+        "the board sees the cache before i do"
+      ],
+      "editorDropped": "the line does not sound like that character, since cache is coder talk and he names pieces in the plainest words"
+    },
+    "cal-jv-d6-005": {
+      "kept": "it takes the marks and makes them talk",
+      "alternates": [
+        "the fields now turn into neat little sentences",
+        "it takes the marks and makes them talk",
+        "every piece now knows how to say its name"
+      ]
+    },
+    "cal-jv-d7-003": {
+      "kept": "the boxes now add and multiply on their own",
+      "alternates": [
+        "the boxes now add and multiply on their own",
+        "it reads the sums and does the math",
+        "every little box now knows its own answer"
+      ]
+    },
+    "cal-js-d1-003": {
+      "kept": "the numbers now hold hands and show their sum",
+      "alternates": [
+        "the numbers now hold hands and show their sum",
+        "it adds them and tells me before i ask",
+        "the answer sits there waiting for me"
+      ]
+    },
+    "cal-js-d3-002": {
+      "kept": "the office now knows who can take it",
+      "alternates": [
+        "the office now knows who can take it",
+        "it asks around and finds the right one",
+        "every helper now gets a warm hello"
+      ]
+    },
+    "cal-js-d3-004": {
+      "kept": "the items now line up by their own kind",
+      "alternates": [
+        "the items now line up by their own kind",
+        "every type now has its own little group",
+        "it sorts them without me lifting a finger"
+      ]
+    },
+    "js-reduce": {
+      "kept": "every thing now knows how many friends it has",
+      "alternates": [
+        "every thing now knows how many friends it has",
+        "the counts march out in perfect order",
+        "it sees them all and tells me who showed up most"
+      ]
+    },
+    "cal-js-d4-001": {
+      "kept": "the wall now gives me three chances to listen",
+      "alternates": [
+        "the wall now gives me three chances to listen",
+        "it tries again and again until it hears",
+        "every opinion now gets a fair shot"
+      ]
+    },
+    "cal-js-d4-003": {
+      "kept": "the trades now know their own number",
+      "alternates": [
+        "the trades now know their own number",
+        "every opinion now counts its own steps",
+        "it watches and tells me who moved the most"
+      ]
+    },
+    "js-class": {
+      "kept": "the seconds now march out in perfect order",
+      "alternates": [
+        "the seconds now march out in perfect order",
+        "it tells me how long without me asking"
+      ]
+    },
+    "cal-js-d5-002": {
+      "kept": "the opinions now hold hands and become one",
+      "alternates": [
+        "the opinions now hold hands and become one",
+        "it takes two and makes them talk as one",
+        "every piece now knows how to fit together"
+      ]
+    },
+    "cal-js-d5-004": {
+      "kept": "the steps now know how long they took",
+      "alternates": [
+        "the steps now know how long they took",
+        "it times the whole trip and tells me",
+        "every piece now waits its perfect turn"
+      ]
+    },
+    "cal-js-d6-002": {
+      "kept": "the email now knows when it is wrong",
+      "alternates": [
+        "the email now knows when it is wrong",
+        "it checks the name and never lets a bad one through",
+        "every piece now has its own little guard"
+      ]
+    },
+    "cal-js-d6-003": {
+      "kept": "the map now knows every plus and times",
+      "alternates": [
+        "the map now knows every plus and times",
+        "it reads the math and draws the whole thing",
+        "every piece now knows where it belongs"
+      ]
+    },
+    "cal-js-d7-001": {
+      "kept": "the pages now know when they change",
+      "alternates": [
+        "the pages now know when they change",
+        "it spots the difference before i blink",
+        "every little piece now has its own flag"
+      ]
+    },
+    "cal-js-d7-004": {
+      "kept": "the room now knows when to wait and when to go",
+      "alternates": [
+        "the room now knows when to wait and when to go",
+        "it counts the tries and never gives up too soon",
+        "every step now has its own little rule"
+      ]
+    },
+    "cal-js-d7-005": {
+      "kept": "the addons now plug in and change the words",
+      "alternates": [
+        "the addons now plug in and change the words",
+        "it lets them in and never says no",
+        "every piece now gets to say its own hello"
+      ]
+    },
+    "cal-py-d1-001": {
+      "kept": "the room now shouts hello before i open my mouth",
+      "alternates": [
+        "the room now shouts hello before i open my mouth",
+        "it announces itself like my cousin at a party"
+      ]
+    },
+    "cal-py-d1-002": {
+      "kept": "the numbers hold hands and show their answer",
+      "alternates": [
+        "the numbers hold hands and show their answer",
+        "i can add them without lifting a finger"
+      ]
+    },
+    "cal-py-d1-004": {
+      "kept": "five ducks now share the bill without squabbling",
+      "alternates": [
+        "five ducks now share the bill without squabbling",
+        "the ducks divide it like my cousin divides pizza",
+        "every duck gets its fair piece of the ride"
+      ]
+    },
+    "py-for-loop": {
+      "kept": "each step knows its name and shouts it back",
+      "alternates": [
+        "the labels march up like soldiers in a parade",
+        "each step knows its name and shouts it back",
+        "five steps line up just how i pictured them"
+      ]
+    },
+    "cal-py-d3-002": {
+      "kept": "the rules sit there waiting for me to read",
+      "alternates": [
+        "the rules sit there waiting for me to read",
+        "the house rules know exactly where to look"
+      ]
+    },
+    "cal-py-d3-003": {
+      "kept": "every room now knows how much space it takes",
+      "alternates": [
+        "every room now knows how much space it takes",
+        "the walls measure themselves while i sip my tea",
+        "the floor plan tells me its size without asking"
+      ]
+    },
+    "py-class-def": {
+      "kept": "the circle now knows its own size and shape",
+      "alternates": [
+        "the circle now knows its own size and shape",
+        "it measures itself like my cousin measures ferns",
+        "the tape measure wraps around without a fuss"
+      ]
+    },
+    "cal-py-d4-004": {
+      "kept": "each argument now knows how long it lasted",
+      "alternates": ["each argument now knows how long it lasted"]
+    },
+    "py-dict": {
+      "kept": "every letter now knows how many friends it has",
+      "alternates": [
+        "every letter now knows how many friends it has",
+        "the phrase counts itself while i tie my shoes",
+        "the words spill their secrets without a fight"
+      ]
+    },
+    "cal-py-d5-001": {
+      "kept": "the app sits there waiting for its turn",
+      "alternates": [
+        "the app gets three tries like my cousin at darts",
+        "it keeps trying until the job gets done",
+        "the third chance feels like a warm hello",
+        "the app sits there waiting for its turn",
+        "the room tries again before i finish my thought",
+        "the board sees the three chances before i do"
+      ],
+      "editorDropped": "the line is not true of the request — it describes trying until the job gets done, not three chances"
+    },
+    "cal-py-d5-003": {
+      "kept": "every page now arrives before i finish my thought",
+      "alternates": [
+        "every page now arrives before i finish my thought",
+        "they all shout their news at the same time"
+      ]
+    },
+    "cal-py-d5-004": {
+      "kept": "the rating sits there waiting for me",
+      "alternates": [
+        "it checks them like my cousin checks his fern",
+        "the rating sits there and waits to be judged",
+        "the rating sits there waiting for me",
+        "the room shouts if the number is bad",
+        "the board sees the green light before i do"
+      ],
+      "editorDropped": "the line is not true of the request — a rating waiting to be judged is not a check that ran"
+    },
+    "cal-py-d5-005": {
+      "kept": "the last ten now wait their turn in perfect order",
+      "alternates": [
+        "the last ten now wait their turn in perfect order",
+        "my cousin would love how neat the line is"
+      ]
+    },
+    "cal-py-d6-002": {
+      "kept": "the jobs now finish while i stretch my legs",
+      "alternates": [
+        "the jobs now finish while i stretch my legs",
+        "they all talk at once and still make sense"
+      ]
+    },
+    "cal-py-d6-004": {
+      "kept": "every rule gets a warm hello and a handshake",
+      "alternates": [
+        "it checks itself like my cousin checks his watch",
+        "every rule gets a warm hello and a handshake"
+      ]
+    },
+    "cal-py-d7-003": {
+      "kept": "the numbers now hold hands and do the math",
+      "alternates": [
+        "the numbers now hold hands and do the math",
+        "the answer sits there waiting for me to look"
+      ]
+    },
+    "cal-sq-d1-003": {
+      "kept": "the ones that were just okay now have a home",
+      "alternates": [
+        "the ones that were just okay now have a home",
+        "it sweeps them away like my cousin sweeps crumbs"
+      ]
+    },
+    "cal-sq-d1-004": {
+      "kept": "the shipped ones now shout their number back",
+      "alternates": [
+        "the shipped ones now shout their number back",
+        "the orders line up without a single nudge"
+      ]
+    },
+    "cal-sq-d1-005": {
+      "kept": "the new number sits there waiting for me",
+      "alternates": [
+        "it updates itself like my cousin updates his fern",
+        "the new number sits there waiting for me"
+      ]
+    },
+    "sql-insert": {
+      "kept": "the new one now has a spot in the family",
+      "alternates": ["the new one now has a spot in the family"]
+    },
+    "cal-sq-d2-002": {
+      "kept": "the fillings sit there waiting for me",
+      "alternates": [
+        "the fillings now line up by their own size",
+        "my cousin would love how neat the groups are",
+        "the big ones stand out like my favorite fern",
+        "the fillings sit there waiting for me",
+        "the big ones stand out without me lifting a finger",
+        "the garden club sees the groups before i do"
+      ],
+      "editorDropped": "not true of the request — it says the fillings line up by size, but the request groups by filling"
+    },
+    "cal-sq-d2-003": {
+      "kept": "the photos line up without a single empty spot",
+      "alternates": ["the photos line up without a single empty spot"]
+    },
+    "cal-sq-d2-004": {
+      "kept": "the months now tell their own story",
+      "alternates": ["the months now tell their own story"]
+    },
+    "cal-sq-d2-005": {
+      "kept": "the sandwiches sit there waiting for me",
+      "alternates": [
+        "my cousin asked for this exact summary",
+        "the sandwiches sit there waiting for me",
+        "the ledger finally knows last week"
+      ],
+      "editorDropped": "names something the request never asked for — a summary, when the request was entering last week's sandwiches"
+    },
+    "sql-update": {
+      "kept": "the team sits there with their raise",
+      "alternates": [
+        "i finally see the whole year at once",
+        "the team sits there with their raise",
+        "the numbers line up before i finish my thought",
+        "the board sees the new salary before i do"
+      ],
+      "editorDropped": "answers a different request entirely — seeing the whole year at once, not giving the engineering team a raise"
+    },
+    "cal-sq-d3-003": {
+      "kept": "the labels sit there waiting for the garden club",
+      "alternates": [
+        "every plant now wears its size like a name tag",
+        "the labels sit there waiting for the garden club",
+        "my cousin asked for this exact kind of sticker"
+      ]
+    },
+    "cal-sq-d3-004": {
+      "kept": "the table holds every plant and its favorite spot",
+      "alternates": [
+        "the table holds every plant and its favorite spot",
+        "i finally see who lives where without asking",
+        "the spots line up neat and never argue"
+      ]
+    },
+    "cal-sq-d3-005": {
+      "kept": "it finds the thirsty ones before i even check",
+      "alternates": [
+        "it finds the thirsty ones before i even check",
+        "the plants that got water stand out proud",
+        "i know who to thank without opening my mouth"
+      ]
+    },
+    "cal-sq-d4-003": {
+      "kept": "the shelves stay honest without me lifting a finger",
+      "alternates": [
+        "the shelves stay honest without me lifting a finger",
+        "it does the math while i pour my coffee",
+        "the numbers subtract themselves and stay happy"
+      ]
+    },
+    "cal-sq-d4-005": {
+      "kept": "the views march in and find their own home",
+      "alternates": [
+        "the views march in and find their own home",
+        "it counts them while i tie my shoes",
+        "the stats sit there waiting for the morning meeting"
+      ]
+    },
+    "cal-sq-d5-001": {
+      "kept": "growth and decline sit there side by side",
+      "alternates": [
+        "growth and decline sit there side by side",
+        "i finally see which days to celebrate"
+      ]
+    },
+    "cal-sq-d5-002": {
+      "kept": "the month sits there waiting for the board",
+      "alternates": [
+        "the month sits there waiting for the board",
+        "every day gets its own spot and its own number"
+      ]
+    },
+    "cal-sq-d5-004": {
+      "kept": "the new stock arrives and the old counts breathe easy",
+      "alternates": [
+        "the new stock arrives and the old counts breathe easy",
+        "it adds them while i stretch my legs",
+        "the shelves stay full without me doing a thing"
+      ]
+    },
+    "cal-sq-d5-005": {
+      "kept": "every region and category gets its own voice",
+      "alternates": [
+        "every region and category gets its own voice",
+        "i finally see the whole forest and every tree"
+      ]
+    },
+    "cal-sq-d6-001": {
+      "kept": "every name finds its spot and its own line",
+      "alternates": [
+        "the family tree draws itself without a single nudge",
+        "every name finds its spot and its own line",
+        "i finally see who answers to whom without asking"
+      ]
+    },
+    "cal-sq-d6-002": {
+      "kept": "the board finally sees the whole year at once",
+      "alternates": [
+        "the board finally sees the whole year at once",
+        "every month now shouts its top five"
+      ]
+    },
+    "cal-sq-d6-003": {
+      "kept": "the weeks line up without me lifting a finger",
+      "alternates": [
+        "the weeks line up without me lifting a finger",
+        "the days now hold hands just right",
+        "i finally see the whole month in one glance"
+      ]
+    },
+    "cal-sq-d6-004": {
+      "kept": "every customer now sits there waiting for me",
+      "alternates": [
+        "every customer now sits there waiting for me",
+        "the whole story arrives before i finish my thought",
+        "my fern has never looked so understood"
+      ]
+    },
+    "cal-sq-d6-005": {
+      "kept": "every department now sees its whole family at once",
+      "alternates": [
+        "the list holds every skill without a single empty spot",
+        "every department now sees its whole family at once",
+        "my cousin asked for this exact list last week"
+      ]
+    },
+    "cal-sq-d7-001": {
+      "kept": "every department stands there with its own voice",
+      "alternates": [
+        "every department stands there with its own voice",
+        "my cousin asked for this exact family tree"
+      ]
+    },
+    "cal-sq-d7-002": {
+      "kept": "the path from hello to sold sits there waiting",
+      "alternates": [
+        "the path from hello to sold sits there waiting",
+        "every step now knows its own name",
+        "the investors finally see the whole story"
+      ]
+    },
+    "cal-sq-d7-003": {
+      "kept": "the months now hold hands and show their answer",
+      "alternates": [
+        "the months now hold hands and show their answer",
+        "every category sits there with its own line"
+      ]
+    },
+    "cal-sq-d7-004": {
+      "kept": "the changes now whisper just how i wanted",
+      "alternates": [
+        "the changes now whisper just how i wanted",
+        "every before and after sits there side by side",
+        "the room remembers what i keep"
+      ]
+    },
+    "cal-sq-d7-005": {
+      "kept": "the pieces now line up by their own size",
+      "alternates": [
+        "the pieces now line up by their own size",
+        "every part sits there with its own number"
+      ]
+    },
+    "sh-if-else": {
+      "kept": "it tells me if the file is ready",
+      "editorDropped": "the line says the product checks the file, not that the check confirmed it has the file the request asked about",
+      "alternates": [
+        "it tells me if the file is ready",
+        "the answer sits there waiting for me",
+        "i know before i try to open it"
+      ]
+    },
+    "cal-sh-d7-004": {
+      "kept": "every piece sits there saying yes",
+      "editorDropped": "the line describes a self-check habit before shipping instead of saying whether the pieces work as the request asked",
+      "alternates": [
+        "every piece sits there saying yes",
+        "it shouts back before i finish my thought",
+        "the board sees the green lights"
+      ]
+    },
+    "cal-cs-d7-003": {
+      "kept": "the error sits there waiting for me",
+      "editorDropped": "answers a different request entirely, claiming the model knows the answer before i ask when the request was to run a brain model forward and check error",
+      "alternates": [
+        "the error sits there waiting for me",
+        "i see the number before i ask",
+        "the answer arrives while i sip my tea"
+      ]
+    },
+    "cal-cs-d7-004": {
+      "kept": "the route sits there waiting for me",
+      "editorDropped": "names something the request never asked for, a path that arrives before i finish asking, when the request was only to find the shortest route between two points",
+      "alternates": [
+        "the route sits there waiting for me",
+        "i see the steps before i finish my thought"
+      ]
+    },
+    "cal-py-d1-003": {
+      "kept": "every driver sits there with a name",
+      "editorDropped": "the line says every duck got a name when the request only asked for the duck drivers to be named",
+      "alternates": [
+        "every driver sits there with a name",
+        "the ducks finally have their own names",
+        "my cousin sees the names and smiles"
+      ]
+    },
+    "cal-py-d4-003": {
+      "kept": "the fights wait for the right minute",
+      "editorDropped": "the line names something the request never asked for",
+      "alternates": ["the fights wait for the right minute", "the board sees the minutes line up"]
+    }
+  }
+}

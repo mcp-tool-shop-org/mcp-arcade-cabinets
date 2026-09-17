@@ -7,7 +7,8 @@
     "code": "System.out.println(\"Hello, World!\");",
     "notes": ["Prints the string Hello, World! to standard output."],
     "topics": ["output", "println"],
-    "ask": "make {product} say hello to the user"
+    "ask": "make {product} say hello to the user",
+    "reaction": "my fern never heard a nicer hello"
   },
   {
     "id": "cal-jv-d1-002",
@@ -17,7 +18,8 @@
     "code": "int count = 42;\nSystem.out.println(count);",
     "notes": ["Declares an integer variable and prints its value."],
     "topics": ["variables", "int", "println"],
-    "ask": "make {product} remember a number and show it"
+    "ask": "make {product} remember a number and show it",
+    "reaction": "the number stays right where i left it"
   },
   {
     "id": "cal-jv-d1-003",
@@ -27,7 +29,8 @@
     "code": "String first = \"Jane\";\nString last = \"Doe\";\nString full = first + \" \" + last;",
     "notes": ["Concatenates two strings with a space separator into a full name."],
     "topics": ["string", "concatenation", "variables"],
-    "ask": "make {product} join a first and last name"
+    "ask": "make {product} join a first and last name",
+    "reaction": "it joins them while i stretch my legs"
   },
   {
     "id": "cal-jv-d1-004",
@@ -37,7 +40,8 @@
     "code": "boolean isReady = true;\nboolean isComplete = false;\nboolean result = isReady && isComplete;",
     "notes": ["Declares two boolean flags and combines them with a logical AND."],
     "topics": ["boolean", "logical-operators", "variables"],
-    "ask": "ask {product} if two things are both true"
+    "ask": "ask {product} if two things are both true",
+    "reaction": "it says yes only when both are true"
   },
   {
     "id": "cal-jv-d1-005",
@@ -47,7 +51,8 @@
     "code": "double price = 19.99;\nint quantity = 3;\ndouble total = price * quantity;",
     "notes": ["Multiplies a price by a quantity to compute a total cost."],
     "topics": ["arithmetic", "double", "variables"],
-    "ask": "make {product} multiply price by quantity"
+    "ask": "make {product} multiply price by quantity",
+    "reaction": "the total arrives before i finish typing"
   },
   {
     "id": "java-enhanced-for",
@@ -60,7 +65,8 @@
       "List.of() creates an immutable list in modern Java."
     ],
     "topics": ["for-each", "loop", "collections"],
-    "ask": "make {product} list every color in uppercase"
+    "ask": "make {product} list every color in uppercase",
+    "reaction": "the list now shouts every color back."
   },
   {
     "id": "cal-jv-d2-001",
@@ -70,7 +76,8 @@
     "code": "int temp = 35;\nString label;\nif (temp > 30) {\n    label = \"hot\";\n} else {\n    label = \"cool\";\n}\nSystem.out.println(label);",
     "notes": ["Uses an if-else block to classify a temperature value as hot or cool."],
     "topics": ["if-else", "conditionals", "variables"],
-    "ask": "make {product} say hot or cool"
+    "ask": "make {product} say hot or cool",
+    "reaction": "it knows the difference without asking"
   },
   {
     "id": "cal-jv-d2-002",
@@ -80,7 +87,8 @@
     "code": "int sum = 0;\nfor (int i = 1; i <= 10; i++) {\n    sum += i;\n}\nSystem.out.println(\"Sum: \" + sum);",
     "notes": ["Sums the integers from 1 to 10 using a for loop and prints the result."],
     "topics": ["for-loop", "accumulator", "arithmetic"],
-    "ask": "make {product} add up numbers from one to ten"
+    "ask": "make {product} add up numbers from one to ten",
+    "reaction": "it counts them while i check my watch"
   },
   {
     "id": "cal-jv-d2-003",
@@ -90,7 +98,8 @@
     "code": "int n = 5;\nwhile (n > 0) {\n    System.out.println(n);\n    n--;\n}\nSystem.out.println(\"Go!\");",
     "notes": ["Counts down from 5 to 1 using a while loop then prints Go."],
     "topics": ["while-loop", "decrement", "println"],
-    "ask": "count down until {product} goes live"
+    "ask": "count down until {product} goes live",
+    "reaction": "it builds the drama just right"
   },
   {
     "id": "cal-jv-d2-004",
@@ -101,7 +110,8 @@
     "notes": ["Iterates over a string array with an enhanced for loop and prints each element."],
     "topics": ["arrays", "enhanced-for", "iteration"],
     "for": "lost-sock-platform",
-    "ask": "list every lost sock by color"
+    "ask": "list every lost sock by color",
+    "reaction": "the list shouts every color back at me"
   },
   {
     "id": "cal-jv-d2-005",
@@ -111,7 +121,8 @@
     "code": "public static int square(int x) {\n    return x * x;\n}\n\npublic static void main(String[] args) {\n    int result = square(7);\n    System.out.println(result);\n}",
     "notes": ["Defines a static method that squares an integer and calls it from main."],
     "topics": ["methods", "return-value", "static"],
-    "ask": "teach {product} how to square a number"
+    "ask": "teach {product} how to square a number",
+    "reaction": "the square arrives before i ask"
   },
   {
     "id": "java-stringbuilder",
@@ -124,7 +135,8 @@
       "append() returns this, enabling method chaining."
     ],
     "topics": ["StringBuilder", "loops", "string-building"],
-    "ask": "make {product} build a comma list of numbers"
+    "ask": "make {product} build a comma list of numbers",
+    "reaction": "every comma lands just where it should"
   },
   {
     "id": "cal-jv-d3-001",
@@ -135,7 +147,8 @@
     "notes": ["Filters a list of names to keep only those with four or fewer characters."],
     "topics": ["list", "filtering", "enhanced-for", "conditionals"],
     "for": "lost-sock-platform",
-    "ask": "keep only the socks with no partner"
+    "ask": "keep only the socks with no partner",
+    "reaction": "the lonely socks now stand out proud"
   },
   {
     "id": "cal-jv-d3-002",
@@ -145,7 +158,8 @@
     "code": "public static String getSeason(int month) {\n    return switch (month) {\n        case 12, 1, 2 -> \"winter\";\n        case 3, 4, 5 -> \"spring\";\n        case 6, 7, 8 -> \"summer\";\n        case 9, 10, 11 -> \"autumn\";\n        default -> \"unknown\";\n    };\n}",
     "notes": ["Uses a switch expression with arrow syntax to map a month number to a season name."],
     "topics": ["switch-expression", "pattern-matching", "methods"],
-    "ask": "make {product} know the season from the month"
+    "ask": "make {product} know the season from the month",
+    "reaction": "it picks them while i tie my shoes"
   },
   {
     "id": "cal-jv-d3-003",
@@ -156,7 +170,8 @@
     "notes": ["Populates a HashMap and iterates its entry set to print each key-value pair."],
     "topics": ["map", "hashmap", "entry-set", "generics"],
     "for": "lost-sock-platform",
-    "ask": "pair every sock with its current location"
+    "ask": "pair every sock with its current location",
+    "reaction": "the pairs march in perfect order"
   },
   {
     "id": "cal-jv-d3-004",
@@ -166,7 +181,8 @@
     "code": "public static int parseOrDefault(String input, int fallback) {\n    try {\n        return Integer.parseInt(input);\n    } catch (NumberFormatException e) {\n        System.err.println(\"Invalid: \" + input);\n        return fallback;\n    }\n}",
     "notes": ["Attempts to parse a string as an integer and returns a fallback value on failure."],
     "topics": ["try-catch", "exception-handling", "parsing"],
-    "ask": "make {product} read a number safely"
+    "ask": "make {product} read a number safely",
+    "reaction": "the numbers arrive while i sip my tea"
   },
   {
     "id": "cal-jv-d3-005",
@@ -176,7 +192,8 @@
     "code": "public record Rectangle(double width, double height) {\n    public double area() {\n        return width * height;\n    }\n\n    public double perimeter() {\n        return 2 * (width + height);\n    }\n\n    public String describe() {\n        return String.format(\"%.1f x %.1f\", width, height);\n    }\n}",
     "notes": ["Defines a record with area, perimeter, and describe methods for a rectangle."],
     "topics": ["records", "methods", "string-format"],
-    "ask": "size each loyalty card and show its area"
+    "ask": "size each loyalty card and show its area",
+    "reaction": "my fern never saw such neat rectangles"
   },
   {
     "id": "java-optional",
@@ -190,7 +207,8 @@
     ],
     "topics": ["Optional", "null-safety", "functional"],
     "for": "lost-sock-platform",
-    "ask": "use unknown if the sock has no owner"
+    "ask": "use unknown if the sock has no owner",
+    "reaction": "the sock knows when it is alone"
   },
   {
     "id": "java-try-resources",
@@ -203,7 +221,8 @@
       "Practice nested constructors, parentheses, and != null checks."
     ],
     "topics": ["try-with-resources", "io", "auto-close"],
-    "ask": "load the regulars from the member file"
+    "ask": "load the regulars from the member file",
+    "reaction": "it loads them while i stretch my legs"
   },
   {
     "id": "cal-jv-d4-001",
@@ -215,7 +234,8 @@
       "Defines an enum where each constant implements an abstract apply method for arithmetic."
     ],
     "topics": ["enum", "abstract-method", "polymorphism"],
-    "ask": "add subtract or multiply the stamps they earn"
+    "ask": "add subtract or multiply the stamps they earn",
+    "reaction": "it handles them while i take a breath"
   },
   {
     "id": "cal-jv-d4-002",
@@ -227,7 +247,8 @@
       "Implements a generic Pair class with type parameters for two values and a toString override."
     ],
     "topics": ["generics", "class", "encapsulation", "toString"],
-    "ask": "pair each member with their usual order"
+    "ask": "pair each member with their usual order",
+    "reaction": "every member now has their own shadow"
   },
   {
     "id": "cal-jv-d4-003",
@@ -237,7 +258,8 @@
     "code": "public class Range implements Iterable<Integer> {\n    private final int start;\n    private final int end;\n\n    public Range(int start, int end) {\n        this.start = start;\n        this.end = end;\n    }\n\n    @Override\n    public Iterator<Integer> iterator() {\n        return new Iterator<>() {\n            private int current = start;\n\n            public boolean hasNext() {\n                return current < end;\n            }\n\n            public Integer next() {\n                return current++;\n            }\n        };\n    }\n}",
     "notes": ["Implements Iterable with an anonymous Iterator to yield integers in a range."],
     "topics": ["iterator", "iterable", "anonymous-class", "generics"],
-    "ask": "make {product} count through a range of numbers"
+    "ask": "make {product} count through a range of numbers",
+    "reaction": "the numbers march in perfect order."
   },
   {
     "id": "cal-jv-d4-004",
@@ -249,7 +271,8 @@
       "Sorts a list of employees by department, then last name, then first name using chained comparators."
     ],
     "topics": ["comparator", "method-reference", "sorting", "printf"],
-    "ask": "sort them by visits then last name"
+    "ask": "sort them by visits then last name",
+    "reaction": "most visits first, then the names settle it."
   },
   {
     "id": "cal-jv-d4-005",
@@ -259,7 +282,8 @@
     "code": "public sealed interface Shape\n        permits Circle, Square, Triangle {\n    double area();\n}\n\npublic record Circle(double radius) implements Shape {\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\npublic record Square(double side) implements Shape {\n    public double area() {\n        return side * side;\n    }\n}\n\npublic record Triangle(double base, double height) implements Shape {\n    public double area() {\n        return 0.5 * base * height;\n    }\n}",
     "notes": ["Defines a sealed Shape interface with three permitted record implementations."],
     "topics": ["sealed-interface", "records", "polymorphism", "permits"],
-    "ask": "make {product} handle shapes like circles and squares"
+    "ask": "make {product} handle shapes like circles and squares",
+    "reaction": "circles and squares both get a fair shake."
   },
   {
     "id": "java-interface-default",
@@ -272,7 +296,8 @@
       "Practice braces, parentheses, and method chaining."
     ],
     "topics": ["interface", "default-method", "abstraction"],
-    "ask": "make {product} greet them and shout it"
+    "ask": "make {product} greet them and shout it",
+    "reaction": "the hello now shouts back at me"
   },
   {
     "id": "java-stream",
@@ -282,7 +307,8 @@
     "code": "var result = list.stream()\n    .filter(x -> x % 2 == 0)\n    .map(x -> x * x)\n    .collect(java.util.stream.Collectors.toList());",
     "notes": ["Pipeline uses lambdas and method chaining.", "Mind arrows, dots, and semicolons."],
     "topics": ["streams", "lambda", "collect"],
-    "ask": "make {product} filter a list and change it"
+    "ask": "make {product} filter a list and change it",
+    "reaction": "the list bends and comes back perfect"
   },
   {
     "id": "cal-jv-d5-001",
@@ -294,7 +320,8 @@
       "Groups a list of words into short, medium, and long categories using a stream pipeline with groupingBy collector."
     ],
     "topics": ["streams", "collectors", "groupingBy", "lambda", "generics"],
-    "ask": "make {product} group words by how big they are"
+    "ask": "make {product} group words by how big they are",
+    "reaction": "the words line up by their own size"
   },
   {
     "id": "cal-jv-d5-002",
@@ -306,7 +333,8 @@
       "Provides generic clamp and filterRange utilities using bounded type parameters with Comparable."
     ],
     "topics": ["generics", "bounded-types", "comparable", "utility-class"],
-    "ask": "make {product} keep values inside a safe range"
+    "ask": "make {product} keep values inside a safe range",
+    "reaction": "it keeps them safe between the lines."
   },
   {
     "id": "cal-jv-d5-003",
@@ -318,7 +346,8 @@
       "Reads a file, computes word frequencies with streams, and prints the top 10 most common words."
     ],
     "topics": ["try-with-resources", "streams", "collectors", "file-io", "generics"],
-    "ask": "make {product} count words in a file"
+    "ask": "make {product} count words in a file",
+    "reaction": "it counts every word and misses none."
   },
   {
     "id": "cal-jv-d5-004",
@@ -330,7 +359,8 @@
       "Implements a generic event bus with subscribe, unsubscribe, and publish using a functional interface."
     ],
     "topics": ["functional-interface", "generics", "observer-pattern", "exception-handling"],
-    "ask": "make {product} send events to listeners"
+    "ask": "make {product} send events to listeners",
+    "reaction": "the events now visit every listener."
   },
   {
     "id": "cal-jv-d5-005",
@@ -342,7 +372,8 @@
       "Defines a custom exception hierarchy with error codes and nested subclasses for not-found and validation errors."
     ],
     "topics": ["exceptions", "inheritance", "nested-class", "constructors"],
-    "ask": "make {product} complain with specific error types"
+    "ask": "make {product} complain with specific error types",
+    "reaction": "the errors now have names and faces"
   },
   {
     "id": "java-record",
@@ -355,7 +386,8 @@
       "Practice parentheses, commas, braces, and format strings."
     ],
     "topics": ["records", "methods", "string-format"],
-    "ask": "make {product} store a point and format it"
+    "ask": "make {product} store a point and format it",
+    "reaction": "it remembers the spot and tells me where"
   },
   {
     "id": "cal-jv-d6-001",
@@ -367,7 +399,8 @@
       "Implements the builder pattern for an HttpRequest with fluent setters, validation, and an unmodifiable header map."
     ],
     "topics": ["builder-pattern", "nested-class", "validation", "immutability"],
-    "ask": "make {product} build requests piece by piece"
+    "ask": "make {product} build requests piece by piece",
+    "reaction": "it builds them piece by perfect piece."
   },
   {
     "id": "cal-jv-d6-002",
@@ -379,7 +412,8 @@
       "Implements a thread-safe LRU cache using ReadWriteLock with eviction when capacity is exceeded."
     ],
     "topics": ["concurrency", "read-write-lock", "generics", "cache", "eviction"],
-    "ask": "make {product} remember things safely for many users"
+    "ask": "make {product} remember things safely for many users",
+    "reaction": "everyone keeps their own things behind their own key."
   },
   {
     "id": "cal-jv-d6-003",
@@ -391,7 +425,8 @@
       "Defines a Statistics class with a custom Collector that computes count, sum, min, and max in a single stream pass."
     ],
     "topics": ["collector", "streams", "reduce", "lambda", "statistics"],
-    "ask": "{product} should average and track min and max"
+    "ask": "{product} should average and track min and max",
+    "reaction": "it knows the smallest and the biggest."
   },
   {
     "id": "cal-jv-d6-004",
@@ -403,7 +438,8 @@
       "Implements the decorator pattern with a DataSource interface, a file-based implementation, and a logging wrapper."
     ],
     "topics": ["decorator-pattern", "interface", "delegation", "file-io"],
-    "ask": "make {product} add notes to file reading"
+    "ask": "make {product} add notes to file reading",
+    "reaction": "it reads them and tells us what it sees."
   },
   {
     "id": "cal-jv-d6-005",
@@ -415,7 +451,8 @@
       "Defines a custom JsonField annotation and a serializer that uses reflection to build a JSON string from annotated fields."
     ],
     "topics": ["annotations", "reflection", "serialization", "custom-annotation"],
-    "ask": "make {product} turn marked fields into strings"
+    "ask": "make {product} turn marked fields into strings",
+    "reaction": "it takes the marks and makes them talk"
   },
   {
     "id": "cal-jv-d7-001",
@@ -427,7 +464,8 @@
       "Fetches multiple URLs concurrently using CompletableFuture with an HttpClient, then aggregates results with error handling."
     ],
     "topics": ["completable-future", "async", "http-client", "streams", "error-handling"],
-    "ask": "make {product} fetch many pages at once"
+    "ask": "make {product} fetch many pages at once",
+    "reaction": "the pages arrive all at the same time."
   },
   {
     "id": "cal-jv-d7-002",
@@ -439,7 +477,8 @@
       "Implements the specification pattern with composable predicates and a generic in-memory repository with filtered queries."
     ],
     "topics": ["specification-pattern", "generics", "repository", "streams", "default-methods"],
-    "ask": "make {product} find things by custom rules"
+    "ask": "make {product} find things by custom rules",
+    "reaction": "it finds them by any rule we want."
   },
   {
     "id": "cal-jv-d7-003",
@@ -457,7 +496,8 @@
       "recursion",
       "switch-expression"
     ],
-    "ask": "make {product} do sums written as little boxes"
+    "ask": "make {product} do sums written as little boxes",
+    "reaction": "the boxes now add and multiply on their own"
   },
   {
     "id": "cal-jv-d7-004",
@@ -469,7 +509,8 @@
       "Implements a type-safe event bus that walks the class hierarchy and interfaces to dispatch events to matching consumer handlers."
     ],
     "topics": ["generics", "wildcards", "concurrency", "type-erasure", "reflection"],
-    "ask": "make {product} send news to the right places"
+    "ask": "make {product} send news to the right places",
+    "reaction": "the news goes exactly where it belongs."
   },
   {
     "id": "cal-jv-d7-005",
@@ -481,6 +522,7 @@
       "Implements a LINQ-style query builder with composable where, orderBy, skip, take, and select operations over a generic list."
     ],
     "topics": ["builder-pattern", "generics", "streams", "method-chaining", "predicate"],
-    "ask": "make {product} search a list with linked steps"
+    "ask": "make {product} search a list with linked steps",
+    "reaction": "the search knows every step to take."
   }
 ]

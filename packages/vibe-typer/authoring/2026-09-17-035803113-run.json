@@ -1,0 +1,194 @@
+{
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-035803113",
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 25,
+  "revoice": false,
+  "spare": null,
+  "pool": null,
+  "editor": "ollama:glm-5.3-flash:cloud",
+  "writerFamily": "mistral",
+  "editorFamily": "zhipu",
+  "voice": {
+    "user": "bf53d85000012670370aae03d68e77d3806a6e18f3db2f681478c781a8092d36",
+    "agent": "fa7dae9182cdb3bf92d8b525855269681741cd16aa8119969e757f598cc4a1d4"
+  },
+  "applied": true,
+  "calls": 4,
+  "wallMs": 738738,
+  "slots": {
+    "snippet-reactions": {
+      "model": "ollama:mistral-large-3:675b-cloud",
+      "temperature": 0.9,
+      "chunk": 25,
+      "concurrency": 4,
+      "prompts": [
+        "30404cb1ff3063b806fd568b9c95b1ff006a0bb85fbd48c513b64912466098c7",
+        "f18c8c2adfa93d4f67f64feb674e1ce085dd8641a87336e03940e6ad22c6f2f5",
+        "bd80e2b82e95c7d3b9fc415fd9cfa5fbef7c817e3c74de0e7b82dd0244edf288",
+        "6b3e1bfc5de81254bfe04567c89c730056b4a1c67394b8aa8d0f6ae387b56af9",
+        "378a6fedcbb1373ca3c35afab5683ef87d1e1e55b403bbb3711a09874c500d86",
+        "07c979947bc9d08fb7cb3768b8984af2adfd6cb69ff7e2224dc56bdb10dc051b",
+        "422de74f6ffd9fdc9056648858771dd1bfa77b672de121e7959a3373875ae235",
+        "e2caeac446cca59a073fbd9be55d41cea520b32258f53707eeb8ff5b44ae4199",
+        "198c0f1e098adcd1de1ef552b985deecf7f82871a7154f73cef3941f17f68835",
+        "a106480cf802e84a4ad9eb17134b86e1fa8b47fd09df553347003d59fc1f783b",
+        "92b874abf377d182bd50965d968029d8beac9192307cb9f034ca6a0e04a8191c",
+        "9c3be7cbf06b1920832813fe7541ac7f4cfee0f0539acddd8428df3b592779e3",
+        "7cd988244f989d1edcfd9b567ea5a086ca29e5bdebf956d68e073ec854366082",
+        "6efe67750930725694ff17abd9697a73fd78d0b09889ddbb4b22269783b55498"
+      ],
+      "calls": 4,
+      "requested": 210,
+      "kept": 70,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {
+        "names fridge, which the request never asked for": 8,
+        "names yogurt, which the request never asked for": 6,
+        "leans on a story with no level to hold it up": 1,
+        "not ascii": 1,
+        "names greeting, which the request never asked for": 1,
+        "names list, which the request never asked for": 4,
+        "names countdown, which the request never asked for": 1,
+        "names chart, which the request never asked for": 1,
+        "names card, which the request never asked for": 1
+      },
+      "ms": 45226,
+      "tokens": {
+        "in": 30913,
+        "out": 3147
+      },
+      "cost": null,
+      "errors": [],
+      "heldFromBefore": 195,
+      "rounds": [
+        {
+          "round": 1,
+          "asked": 54,
+          "held": 249
+        }
+      ],
+      "editor": {
+        "spec": "ollama:glm-5.3-flash:cloud",
+        "family": "zhipu",
+        "writer": "mistral",
+        "calls": 10,
+        "ms": 2679500,
+        "tokens": {
+          "in": 25124,
+          "out": 98485
+        },
+        "read": 249,
+        "dropped": [
+          {
+            "id": "cal-sh-d6-003",
+            "ask": "back up {product} data and erase the ancient ones",
+            "line": "{product} saves the old ones and forgets the rest.",
+            "why": "not true of the request: it says the old ones are saved and the rest forgotten, the reverse of backing up the data and erasing the ancient ones"
+          },
+          {
+            "id": "cal-cs-d2-004",
+            "ask": "count down from five until {product} is live",
+            "line": "five seconds never felt so dramatic.",
+            "why": "the line does not sound like that character"
+          },
+          {
+            "id": "cal-jv-d1-004",
+            "ask": "ask {product} if two things are both true",
+            "line": "it asks the question without a fuss",
+            "why": "not true of the request — the request has the user asking the product, while the line has the product doing the asking"
+          },
+          {
+            "id": "java-optional",
+            "ask": "use unknown if the sock has no owner",
+            "line": "the sock now knows its own little owner",
+            "why": "names something the request never asked for — the sock having an owner, when the request is the no-owner fallback"
+          },
+          {
+            "id": "cal-jv-d5-003",
+            "ask": "make {product} count words in a file",
+            "line": "every word has its own little number.",
+            "why": "it describes giving every word its own number, which the request to count the words never asked for"
+          },
+          {
+            "id": "cal-js-d6-005",
+            "ask": "make {product} build the logger only when someone needs it",
+            "line": "it builds the thing only when i need it.",
+            "why": "the line is not true of the request — it says it builds only when i need it, but the request was only when someone needs it"
+          },
+          {
+            "id": "cal-py-d5-005",
+            "ask": "keep the last ten apps i judged",
+            "line": "the last ten now wait their turn",
+            "why": "the line is not true of the request: the last ten apps were already judged and kept, not waiting their turn"
+          },
+          {
+            "id": "cal-sq-d3-001",
+            "ask": "show months where i spend more than my average.",
+            "line": "the months now know their own little race.",
+            "why": "the line names a race the request never asked for"
+          },
+          {
+            "id": "cal-sh-d4-003",
+            "ask": "shrink {product} logs that are older than thirty days",
+            "line": "the old logs are gone without a trace.",
+            "why": "the line is not true of the request"
+          },
+          {
+            "id": "cal-sh-d4-004",
+            "ask": "see if every door is open for us",
+            "line": "every door now says hello back.",
+            "why": "names something the request never asked for, doors saying hello instead of being open"
+          },
+          {
+            "id": "cal-sh-d6-004",
+            "ask": "let me add and remove tasks for {product}",
+            "line": "the tasks now wait for their perfect turn.",
+            "why": "answers a different request entirely, tasks waiting their turn instead of being added and removed"
+          },
+          {
+            "id": "cal-cs-d4-004",
+            "ask": "add a profile for each member",
+            "line": "every profile now knows its own little group.",
+            "why": "names something the request never asked for, a group instead of a profile for each member"
+          },
+          {
+            "id": "java-stream",
+            "ask": "make {product} filter a list and change it",
+            "line": "the list now bends without breaking.",
+            "why": "the line does not sound like that character"
+          },
+          {
+            "id": "js-map-filter",
+            "ask": "keep only the neat strokes and make them big",
+            "line": "the swirls now shout without a whisper.",
+            "why": "the line names something the request never asked for"
+          },
+          {
+            "id": "py-class-def",
+            "ask": "help {product} measure a circle.",
+            "line": "every inch gets its own little hello.",
+            "why": "the line names something the request never asked for"
+          },
+          {
+            "id": "cal-sq-d3-005",
+            "ask": "spot the plants that got water or new soil",
+            "line": "every plant gets its own little hello.",
+            "why": "the line is not true of the request printed beside it"
+          }
+        ],
+        "reasked": 16,
+        "refilled": 16,
+        "empty": [],
+        "errors": []
+      },
+      "wrote": 249,
+      "withoutOne": 0,
+      "wallMs": 738738
+    }
+  }
+}

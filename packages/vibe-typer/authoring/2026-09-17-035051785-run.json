@@ -1,0 +1,172 @@
+{
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-035051785",
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 4,
+  "chunk": 25,
+  "revoice": false,
+  "spare": null,
+  "pool": null,
+  "editor": "ollama:glm-5.3-flash:cloud",
+  "writerFamily": "mistral",
+  "editorFamily": "zhipu",
+  "voice": {
+    "user": "bf53d85000012670370aae03d68e77d3806a6e18f3db2f681478c781a8092d36",
+    "agent": "fa7dae9182cdb3bf92d8b525855269681741cd16aa8119969e757f598cc4a1d4"
+  },
+  "applied": true,
+  "calls": 1,
+  "wallMs": 351681,
+  "slots": {
+    "snippet-reactions": {
+      "model": "ollama:mistral-large-3:675b-cloud",
+      "temperature": 0.9,
+      "chunk": 25,
+      "concurrency": 4,
+      "prompts": [
+        "e9997746a78ddca6dd33a845151bc74986fbacaa86ed43c00dbcd405aca269f3",
+        "d837cc22bb5a8d706312baab62cdd3c14515bca218153e7acff0d393bb44cc0c",
+        "d8f8c3895a375912dd79848cfb43ebeff00a7d5de869a7d15137b32f3725e855",
+        "0a5a07cec7c89eee07a3b97a2e6295bbe746487ea3a09c02b98a997a94f7fddf",
+        "a3d2e2bba4a96fd6f41b3ef39c6c73c7ad6e25a7b9cefc31de04b64134f05001",
+        "4d61743eb8bc1c4860461e96979289b91da08d1933333c65260f5400f4c856d6",
+        "454120337c8529a66bf0f26c7821ff138329ca6e8993c19ed32fe9ea54429d46",
+        "9ed42b30b3925a76d6b3b04b2706bc0b193918ed1a03aad5a2f5463418f5c81a",
+        "ef642ba229ee0e3736b8489f67d9f9ce33810907c8f31706103cf3b3486261f9",
+        "0702f2a133012b0a086280a044b43944a4d8f85b6e5598986bd1b908bfe1ed99",
+        "624a47188c2ac00ae1e5c8fb77f90b7a169f935242b51013c84ed64cb37895fb"
+      ],
+      "calls": 1,
+      "requested": 42,
+      "kept": 14,
+      "missing": 0,
+      "waits": 0,
+      "dropped": {
+        "names greeting, which the request never asked for": 1,
+        "names clock, which the request never asked for": 1
+      },
+      "ms": 8592,
+      "tokens": {
+        "in": 6687,
+        "out": 594
+      },
+      "cost": null,
+      "errors": [],
+      "heldFromBefore": 249,
+      "rounds": [
+        {
+          "round": 1,
+          "asked": 0,
+          "held": 249
+        }
+      ],
+      "editor": {
+        "spec": "ollama:glm-5.3-flash:cloud",
+        "family": "zhipu",
+        "writer": "mistral",
+        "calls": 10,
+        "ms": 1269432,
+        "tokens": {
+          "in": 25141,
+          "out": 99301
+        },
+        "read": 249,
+        "dropped": [
+          {
+            "id": "cal-sh-d1-001",
+            "ask": "have {product} say hello to visitors",
+            "line": "{product} now greets every visitor by name.",
+            "why": "the line names something the request never asked for"
+          },
+          {
+            "id": "cal-sh-d5-001",
+            "ask": "release the new {product} and undo if it breaks",
+            "line": "{product} knows when to let go.",
+            "why": "it does not sound like the character — an abstract figure of speech where a plain piece from the request should be"
+          },
+          {
+            "id": "cal-cs-d1-002",
+            "ask": "make {product} print the name alice",
+            "line": "the name is printed just for me.",
+            "why": "it names something the request never asked for, a printing just for him instead of the name alice"
+          },
+          {
+            "id": "cal-cs-d1-003",
+            "ask": "flip the active switch inside {product}",
+            "line": "{product} flips the switch without asking.",
+            "why": "it answers a different request, the product flipping the switch unprompted rather than the flip that was asked"
+          },
+          {
+            "id": "cal-cs-d2-001",
+            "ask": "only say the nice thing if i earned it",
+            "line": "{product} only says nice things now.",
+            "why": "it is not true of the request, since the earned-it condition is gone and only saying nice things is a different feature"
+          },
+          {
+            "id": "cal-cs-d6-005",
+            "ask": "solve a system of equations for {product}",
+            "line": "i trust the path now, every turn is perfect",
+            "why": "answers a different request entirely"
+          },
+          {
+            "id": "cal-cs-d7-001",
+            "ask": "multiply two sparse grids and scale results for {product}",
+            "line": "my cousin asked for this exact maze solver",
+            "why": "names something the request never asked for"
+          },
+          {
+            "id": "cal-jv-d4-002",
+            "ask": "pair each member with their usual order",
+            "line": "every member has their usual spot now.",
+            "why": "the line is not true of the request, which pairs each member with their usual order, not a usual spot"
+          },
+          {
+            "id": "cal-jv-d4-005",
+            "ask": "make {product} handle shapes like circles and squares",
+            "line": "the shapes know their own size now.",
+            "why": "the line names the shapes knowing their own size, something the request never asked for"
+          },
+          {
+            "id": "java-record",
+            "ask": "make {product} store a point and format it",
+            "line": "the point knows its own name now.",
+            "why": "the line names the point knowing its own name, something the request never asked for"
+          },
+          {
+            "id": "cal-js-d4-003",
+            "ask": "count how many trades each opinion has",
+            "line": "every trade has its own little count",
+            "why": "it is not true of the request, which counts the trades each opinion has, not a count for every trade"
+          },
+          {
+            "id": "js-class",
+            "ask": "make {product} track how long something takes",
+            "line": "the trip now knows how long it took.",
+            "why": "answers the trip-timing request, not this one"
+          },
+          {
+            "id": "cal-js-d5-002",
+            "ask": "merge two worn opinions into one slightly used opinion",
+            "line": "my fern has never looked more merged.",
+            "why": "names the fern, which this request never asked for"
+          },
+          {
+            "id": "cal-sq-d3-005",
+            "ask": "spot the plants that got water or new soil",
+            "line": "every plant now has its own little home.",
+            "why": "the line answers a different request entirely, claiming every plant has a home instead of spotting which got water or new soil"
+          }
+        ],
+        "reasked": 14,
+        "refilled": 14,
+        "empty": [],
+        "errors": []
+      },
+      "wrote": 249,
+      "withoutOne": 0,
+      "wallMs": 351681
+    }
+  }
+}

@@ -1,0 +1,1833 @@
+{
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-034719015",
+  "applied": true,
+  "report": {
+    "model": "ollama:mistral-large-3:675b-cloud",
+    "temperature": 0.9,
+    "chunk": 25,
+    "concurrency": 1,
+    "prompts": [
+      "acf95a4ace7a34634af969827695240a0028176d67e5df6bc167371a43210e6b",
+      "0e47662b3166b97b7e1c01d3a2998df425119d2dc27a7b48c33deaaf170f3d77",
+      "b619db5418e065ccab292e7ce29b47b1cdb457bf5764010db2740da233108d15",
+      "4c282c59569b641437ed1ffe2660216bfadafb73440e4723ce9dea8f21513aa4",
+      "874dd2c1ffb706bb245e4b1ed79b051770b98a7c30d496d1a286a7a65b6c9ccc",
+      "dc9220d63095e7dbea9f324b5812f84089a13fb0d6d63944aa03b13b7359c104",
+      "bf95ee0f8505f19586d1b1a47084e87d77f772d10ab406ef2bacc7a30b1ae7cf",
+      "e9e052bba3e50c85e2cdce40d7cb5cb48f599cb3ce7c0986410a08e2c771a268",
+      "b59d32f892503e325f5dc0a45431a1dc524a18c93ada03203abe49736438e613",
+      "0f229768ec6a59d8efe3d5b08ad7be7b4ed9340e2b72423306361fc1f1e2bfdf",
+      "95159a7c5314c1a543d822dfd29f632bc4323b31575d4fe890e4e640b6205305",
+      "d5732ce8eb2499727772f667ce4311eac53459da583f9e2c7590831c7f643287",
+      "35402061fd534e39037da93a01b338c92c4ca2a3cf7c15455bf20aa32ad02e14",
+      "b9374fa179ef00d793756ce1ffe9b3c46721ecc981c15bc7bf024c2c1b66a958"
+    ],
+    "calls": 14,
+    "requested": 879,
+    "kept": 249,
+    "missing": 43,
+    "waits": 0,
+    "dropped": {
+      "names fridge, which the request never asked for": 35,
+      "names screen, which the request never asked for": 1,
+      "names yogurt, which the request never asked for": 13,
+      "names list, which the request never asked for": 15,
+      "names badge, which the request never asked for": 1,
+      "not ascii": 11,
+      "forbidden word or digit": 4,
+      "names countdown, which the request never asked for": 3,
+      "names duck, which the request never asked for": 1,
+      "names sock, which the request never asked for": 1,
+      "names page, which the request never asked for": 4,
+      "leans on a story with no level to hold it up": 1,
+      "names greeting, which the request never asked for": 5,
+      "names label, which the request never asked for": 4,
+      "names row, which the request never asked for": 3,
+      "names link, which the request never asked for": 1,
+      "names timer, which the request never asked for": 1,
+      "names clock, which the request never asked for": 1,
+      "names menu, which the request never asked for": 1,
+      "names card, which the request never asked for": 1,
+      "names chart, which the request never asked for": 1,
+      "names door, which the request never asked for": 1,
+      "names picture, which the request never asked for": 1
+    },
+    "ms": 198679,
+    "tokens": {
+      "in": 115013,
+      "out": 13483
+    },
+    "cost": null,
+    "errors": [],
+    "heldFromBefore": 0,
+    "rounds": [
+      {
+        "round": 1,
+        "asked": 249,
+        "held": 205
+      },
+      {
+        "round": 2,
+        "asked": 44,
+        "held": 249
+      }
+    ],
+    "editor": {
+      "spec": null,
+      "family": null,
+      "writer": "mistral",
+      "calls": 0,
+      "ms": 0,
+      "tokens": {
+        "in": 0,
+        "out": 0
+      },
+      "read": 0,
+      "dropped": [],
+      "reasked": 0,
+      "refilled": 0,
+      "empty": [],
+      "errors": []
+    },
+    "wrote": 249,
+    "withoutOne": 0,
+    "wallMs": 198721
+  },
+  "candidates": {
+    "cal-sh-d1-001": {
+      "kept": "{product} now greets every visitor by name.",
+      "alternates": [
+        "{product} now greets every visitor by name.",
+        "the hello is loud and clear.",
+        "my cousin walked in and heard it."
+      ]
+    },
+    "cal-sh-d1-002": {
+      "kept": "the greeting knows her name now.",
+      "alternates": [
+        "the greeting knows her name now.",
+        "she heard it and purred.",
+        "my cousin is going to love this."
+      ]
+    },
+    "cal-sh-d1-003": {
+      "kept": "{product} is ready for the big show.",
+      "alternates": [
+        "{product} is ready for the big show.",
+        "it knows exactly where it is.",
+        "production mode feels like home."
+      ]
+    },
+    "cal-sh-d1-004": {
+      "kept": "{product} is peeking inside the temp folder.",
+      "alternates": [
+        "{product} is peeking inside the temp folder.",
+        "it found what it was looking for.",
+        "the temp folder never felt so useful."
+      ]
+    },
+    "cal-sh-d1-005": {
+      "kept": "{product} made a folder and let it go.",
+      "alternates": ["{product} made a folder and let it go.", "it lives and dies in seconds."]
+    },
+    "sh-for-loop": {
+      "kept": "she can see them all at once.",
+      "alternates": ["she can see them all at once.", "my cousin is going to ask for this daily."]
+    },
+    "cal-sh-d2-001": {
+      "kept": "{product} knows exactly where to connect.",
+      "alternates": [
+        "{product} knows exactly where to connect.",
+        "the address is ready and waiting.",
+        "it feels like a handshake."
+      ]
+    },
+    "cal-sh-d2-002": {
+      "kept": "{product} saved the moment it went live.",
+      "alternates": [
+        "{product} saved the moment it went live.",
+        "the stamp is perfect.",
+        "my fern has never been so timestamped."
+      ]
+    },
+    "cal-sh-d2-003": {
+      "kept": "{product} has a backup plan now.",
+      "alternates": ["{product} has a backup plan now.", "it knows what to do when nothing is set."]
+    },
+    "cal-sh-d2-004": {
+      "kept": "the settings file is written in one go.",
+      "alternates": [
+        "the settings file is written in one go.",
+        "it feels like a single breath.",
+        "my cousin would call this elegant."
+      ]
+    },
+    "cal-sh-d2-005": {
+      "kept": "{product} found the most common errors.",
+      "alternates": [
+        "{product} found the most common errors.",
+        "the logs are talking to us now.",
+        "it feels like a confession."
+      ]
+    },
+    "sh-array": {
+      "kept": "{product} greets every friend she has.",
+      "alternates": [
+        "{product} greets every friend she has.",
+        "my cousin is going to send this to everyone."
+      ]
+    },
+    "sh-if-else": {
+      "kept": "{product} checks the file it needs.",
+      "alternates": ["{product} checks the file it needs.", "it knows if it is there or not."]
+    },
+    "cal-sh-d3-001": {
+      "kept": "{product} found the biggest stories in the logs.",
+      "alternates": [
+        "{product} found the biggest stories in the logs.",
+        "they were hiding in plain sight.",
+        "it feels like a treasure hunt."
+      ]
+    },
+    "cal-sh-d3-002": {
+      "kept": "the list of who gets the news is ready.",
+      "alternates": [
+        "the list of who gets the news is ready.",
+        "every name is where it should be.",
+        "my cousin would call this organized."
+      ]
+    },
+    "cal-sh-d3-003": {
+      "kept": "{product} can reach its cousin today.",
+      "alternates": [
+        "{product} can reach its cousin today.",
+        "the connection is strong.",
+        "it feels like a family reunion."
+      ]
+    },
+    "cal-sh-d3-004": {
+      "kept": "{product} knows which helpers it has.",
+      "alternates": ["{product} knows which helpers it has.", "the missing ones are easy to spot."]
+    },
+    "cal-sh-d3-005": {
+      "kept": "every issue part has a home now.",
+      "alternates": [
+        "every issue part has a home now.",
+        "the scaffold is perfect.",
+        "my cousin would call this cozy."
+      ]
+    },
+    "sh-function": {
+      "kept": "the label knows exactly what it is doing.",
+      "alternates": ["the label knows exactly what it is doing.", "every line has its name now."]
+    },
+    "sh-safe": {
+      "kept": "{product} cleans up with care now.",
+      "alternates": ["{product} cleans up with care now.", "it does not rush."]
+    },
+    "cal-sh-d4-001": {
+      "kept": "the list knows who is who and what they do.",
+      "alternates": [
+        "the list knows who is who and what they do.",
+        "every role is checked and clear.",
+        "my cousin would call this thorough."
+      ]
+    },
+    "cal-sh-d4-002": {
+      "kept": "{product} understands my little instructions.",
+      "alternates": [
+        "{product} understands my little instructions.",
+        "it follows them like a dream."
+      ]
+    },
+    "cal-sh-d4-003": {
+      "kept": "{product} shrinks the old logs now.",
+      "alternates": [
+        "{product} shrinks the old logs now.",
+        "they are neat and tidy.",
+        "my fern has never been so compressed."
+      ]
+    },
+    "cal-sh-d4-004": {
+      "kept": "every door is open for us now.",
+      "alternates": [
+        "every door is open for us now.",
+        "the path is clear.",
+        "it feels like an invitation."
+      ]
+    },
+    "cal-sh-d4-005": {
+      "kept": "{product} found every note that needs work.",
+      "alternates": [
+        "{product} found every note that needs work.",
+        "the letters are cleaner now.",
+        "my cousin would call this helpful."
+      ]
+    },
+    "cal-sh-d5-001": {
+      "kept": "{product} knows when to let go.",
+      "alternates": [
+        "{product} knows when to let go.",
+        "it undoes itself without a fuss now.",
+        "the rollback is quieter than my cousin."
+      ]
+    },
+    "cal-sh-d5-002": {
+      "kept": "{product} does many things at once now.",
+      "alternates": [
+        "{product} does many things at once now.",
+        "it never gets tired of waiting.",
+        "the tasks all finish before they nap."
+      ]
+    },
+    "cal-sh-d5-003": {
+      "kept": "every setting has its own little home.",
+      "alternates": [
+        "{product} reads the file like a book now.",
+        "every setting has its own little home.",
+        "the keys know exactly where they live."
+      ]
+    },
+    "cal-sh-d5-004": {
+      "kept": "{product} points at the heavy ones now.",
+      "alternates": [
+        "{product} points at the heavy ones now.",
+        "it shows them all in a neat little tree."
+      ]
+    },
+    "cal-sh-d5-005": {
+      "kept": "{product} sweeps the old ones away now.",
+      "alternates": [
+        "{product} sweeps the old ones away now.",
+        "the branches know when to say goodbye.",
+        "it keeps the safe ones close to us."
+      ]
+    },
+    "cal-sh-d6-001": {
+      "kept": "{product} goes to staging without a fight.",
+      "alternates": [
+        "{product} goes to staging without a fight.",
+        "it moves from one place to the next now."
+      ]
+    },
+    "cal-sh-d6-002": {
+      "kept": "{product} counts the bad moments now.",
+      "alternates": [
+        "{product} counts the bad moments now.",
+        "the warnings and errors have names now."
+      ]
+    },
+    "cal-sh-d6-003": {
+      "kept": "{product} saves the old ones and forgets the rest.",
+      "alternates": [
+        "{product} saves the old ones and forgets the rest.",
+        "the ancient backups know when to leave.",
+        "it keeps the fresh ones like a good fern."
+      ]
+    },
+    "cal-sh-d6-004": {
+      "kept": "{product} lets me add and remove them now.",
+      "alternates": [
+        "{product} lets me add and remove them now.",
+        "it knows which ones are still needed."
+      ]
+    },
+    "cal-sh-d6-005": {
+      "kept": "{product} yells when it needs to now.",
+      "alternates": [
+        "{product} yells when it needs to now.",
+        "it breathes and we can hear it.",
+        "the wheezing stops before it starts."
+      ]
+    },
+    "cal-sh-d7-001": {
+      "kept": "{product} loads them in the right order now.",
+      "alternates": [
+        "{product} loads them in the right order now.",
+        "every plugin knows its cousins now.",
+        "the chain is stronger than my last idea."
+      ]
+    },
+    "cal-sh-d7-002": {
+      "kept": "{product} builds them in the right order now.",
+      "alternates": [
+        "{product} builds them in the right order now.",
+        "the pieces know who comes first.",
+        "it never forgets what it needs."
+      ]
+    },
+    "cal-sh-d7-003": {
+      "kept": "{product} answers every door now.",
+      "alternates": [
+        "{product} answers every door now.",
+        "the doors all get a polite hello.",
+        "it never slams one in my face."
+      ]
+    },
+    "cal-sh-d7-004": {
+      "kept": "{product} checks itself before it ships.",
+      "alternates": [
+        "{product} checks itself before it ships.",
+        "the pieces all know what they should do.",
+        "it tells me when something is off."
+      ]
+    },
+    "cal-sh-d7-005": {
+      "kept": "{product} wakes them up when they nap.",
+      "alternates": [
+        "{product} wakes them up when they nap.",
+        "the workers know we are watching now."
+      ]
+    },
+    "cal-cs-d1-001": {
+      "kept": "{product} remembers forty-two now.",
+      "alternates": [
+        "{product} remembers forty-two now.",
+        "the count is always there when i need it.",
+        "it never forgets the number i love."
+      ]
+    },
+    "cal-cs-d1-002": {
+      "kept": "the name is printed just for me.",
+      "alternates": [
+        "{product} says alice like a friend now.",
+        "the name is printed just for me.",
+        "it knows who i was thinking of."
+      ]
+    },
+    "cal-cs-d1-003": {
+      "kept": "{product} flips the switch without asking.",
+      "alternates": [
+        "{product} flips the switch without asking.",
+        "it knows when to turn itself around.",
+        "the active one is always the right one."
+      ]
+    },
+    "cal-cs-d1-004": {
+      "kept": "{product} knows how big the circle is now.",
+      "alternates": [
+        "{product} knows how big the circle is now.",
+        "the area is ready before i ask.",
+        "it does the math like a tiny little helper."
+      ]
+    },
+    "cal-cs-d1-005": {
+      "kept": "{product} puts hello and world together now.",
+      "alternates": [
+        "{product} puts hello and world together now.",
+        "it never leaves a space out again."
+      ]
+    },
+    "cs-foreach": {
+      "kept": "{product} says hello to every name now.",
+      "alternates": [
+        "{product} says hello to every name now.",
+        "the names all get their own little wave.",
+        "it never forgets who it already greeted."
+      ]
+    },
+    "cs-string-interpolation": {
+      "kept": "{product} shows alice owes money now.",
+      "alternates": [
+        "{product} shows alice owes money now.",
+        "the numbers look nicer than my bank statement.",
+        "it puts the dollar sign right where it belongs."
+      ]
+    },
+    "cal-cs-d2-001": {
+      "kept": "{product} only says nice things now.",
+      "alternates": [
+        "{product} only says nice things now.",
+        "it knows when i earned the kind words."
+      ]
+    },
+    "cal-cs-d2-002": {
+      "kept": "{product} adds them up without a mistake.",
+      "alternates": [
+        "{product} adds them up without a mistake.",
+        "it never forgets one on the way to ten."
+      ]
+    },
+    "cal-cs-d2-003": {
+      "kept": "{product} saves the first and last one now.",
+      "alternates": [
+        "{product} saves the first and last one now.",
+        "the ends know they are special.",
+        "it never loses the one i want most."
+      ]
+    },
+    "cal-cs-d2-004": {
+      "kept": "five seconds never felt so dramatic.",
+      "alternates": ["five seconds never felt so dramatic."]
+    },
+    "cal-cs-d2-005": {
+      "kept": "three nice things and it counts them too.",
+      "alternates": [
+        "three nice things and it counts them too.",
+        "now it knows how many nice things it has.",
+        "i can see all three and they are nice."
+      ]
+    },
+    "cal-cs-d3-001": {
+      "kept": "the greeting picks the warmer one now.",
+      "alternates": [
+        "the greeting picks the warmer one now.",
+        "it knows which greeting feels cozier.",
+        "warmer greetings for everyone."
+      ]
+    },
+    "cal-cs-d3-002": {
+      "kept": "every hour has its place in line.",
+      "alternates": ["every hour has its place in line.", "i can see who is first and who is last."]
+    },
+    "cal-cs-d3-003": {
+      "kept": "it handles a bad number without a fuss.",
+      "alternates": [
+        "it handles a bad number without a fuss.",
+        "no more bad numbers breaking things.",
+        "a bad number just gets a quiet hello."
+      ]
+    },
+    "cal-cs-d3-004": {
+      "kept": "it checks for bob before it shows him.",
+      "alternates": [
+        "it checks for bob before it shows him.",
+        "bob is safe now.",
+        "no bob, no problem."
+      ]
+    },
+    "cal-cs-d3-005": {
+      "kept": "the point knows exactly where it is.",
+      "alternates": ["the point knows exactly where it is.", "every point has its own little spot."]
+    },
+    "cs-async-await": {
+      "kept": "the page arrives without a wait.",
+      "alternates": [
+        "the page arrives without a wait.",
+        "it fetches the page like a polite guest.",
+        "a page from the web, just like that."
+      ]
+    },
+    "cs-interface": {
+      "kept": "it knows what a logger must do now.",
+      "alternates": [
+        "it knows what a logger must do now.",
+        "the logger has its rules.",
+        "a logger that does its job."
+      ]
+    },
+    "cal-cs-d4-001": {
+      "kept": "the label knows exactly what it holds.",
+      "alternates": ["the label knows exactly what it holds.", "every member gets a label now."]
+    },
+    "cal-cs-d4-002": {
+      "kept": "it ranks them by the books they read.",
+      "alternates": ["it ranks them by the books they read.", "every book counts now."]
+    },
+    "cal-cs-d4-003": {
+      "kept": "the room is a perfect circle.",
+      "alternates": [
+        "the room is a perfect circle.",
+        "it shapes the room like a pie.",
+        "a circle that fits just right."
+      ]
+    },
+    "cal-cs-d4-004": {
+      "kept": "each member has a profile now.",
+      "alternates": ["each member has a profile now.", "the profile knows who they are."]
+    },
+    "cal-cs-d4-005": {
+      "kept": "the page can be stopped if it lingers.",
+      "alternates": [
+        "the page can be stopped if it lingers.",
+        "it fetches the page and lets me pause.",
+        "no more waiting for a slow page."
+      ]
+    },
+    "cs-linq": {
+      "kept": "it picks the even ones and squares them.",
+      "alternates": [
+        "it picks the even ones and squares them.",
+        "the numbers are even and happy now.",
+        "even numbers get a little extra love."
+      ]
+    },
+    "cs-switch-expr": {
+      "kept": "a number turns into a letter now.",
+      "alternates": ["a number turns into a letter now.", "it grades them like a teacher."]
+    },
+    "cal-cs-d5-001": {
+      "kept": "the list keeps every member who joins.",
+      "alternates": [
+        "the list keeps every member who joins.",
+        "it remembers them like a guestbook.",
+        "every new member gets a spot."
+      ]
+    },
+    "cal-cs-d5-002": {
+      "kept": "they can shout and the room hears.",
+      "alternates": [
+        "they can shout and the room hears.",
+        "every shout gets its own little echo.",
+        "the room listens when they talk."
+      ]
+    },
+    "cal-cs-d5-003": {
+      "kept": "it builds the query one piece at a time.",
+      "alternates": ["it builds the query one piece at a time.", "every piece fits just right."]
+    },
+    "cal-cs-d5-004": {
+      "kept": "the table only uses primes now.",
+      "alternates": [
+        "the table only uses primes now.",
+        "primes for the table, just like that.",
+        "it picks the numbers like a treasure hunt."
+      ]
+    },
+    "cal-cs-d5-005": {
+      "kept": "it strips the blanks and numbers the rest.",
+      "alternates": [
+        "it strips the blanks and numbers the rest.",
+        "no more empty spots, just neat lines."
+      ]
+    },
+    "cs-record": {
+      "kept": "it copies a user and changes the age.",
+      "alternates": [
+        "it copies a user and changes the age.",
+        "a new age for the same person.",
+        "the user is copied but older."
+      ]
+    },
+    "cal-cs-d6-001": {
+      "kept": "it sorts them into groups and tweaks.",
+      "alternates": [
+        "it sorts them into groups and tweaks.",
+        "every group gets its own little touch.",
+        "the values are grouped and adjusted."
+      ]
+    },
+    "cal-cs-d6-002": {
+      "kept": "it sorts the list without a fuss.",
+      "alternates": [
+        "the list splits and merges like magic.",
+        "it sorts the list without a fuss.",
+        "the list is neat and tidy now."
+      ]
+    },
+    "cal-cs-d6-003": {
+      "kept": "the grid multiplies and caps the answers.",
+      "alternates": [
+        "the grid multiplies and caps the answers.",
+        "it does the math and keeps it neat.",
+        "the grid knows when to stop."
+      ]
+    },
+    "cal-cs-d6-004": {
+      "kept": "the maze finally lets us through without a fight",
+      "alternates": ["the maze finally lets us through without a fight"]
+    },
+    "cal-cs-d6-005": {
+      "kept": "i trust the path now, every turn is perfect",
+      "alternates": ["i trust the path now, every turn is perfect"]
+    },
+    "cal-cs-d7-001": {
+      "kept": "my cousin asked for this exact maze solver",
+      "alternates": ["my cousin asked for this exact maze solver"]
+    },
+    "cal-cs-d7-002": {
+      "kept": "the picture now shows every little edge",
+      "alternates": [
+        "the picture now shows every little edge",
+        "my cousin asked for this exact outline",
+        "every line in the picture knows its place"
+      ]
+    },
+    "cal-cs-d7-003": {
+      "kept": "it knows the answer before i ask",
+      "alternates": [
+        "it knows the answer before i ask",
+        "the numbers add up without a whisper",
+        "it checks itself without a fuss"
+      ]
+    },
+    "cal-cs-d7-004": {
+      "kept": "the path arrives before i finish asking",
+      "alternates": [
+        "the path arrives before i finish asking",
+        "it finds the way without a single wrong turn",
+        "every step knows its own little route"
+      ]
+    },
+    "cal-cs-d7-005": {
+      "kept": "the best ones line up without a fight",
+      "alternates": [
+        "the best ones line up without a fight",
+        "it picks them all without a whisper",
+        "the valuable ones now have a perfect home"
+      ]
+    },
+    "cal-jv-d1-001": {
+      "kept": "my fern never heard a nicer hello",
+      "alternates": ["my fern never heard a nicer hello"]
+    },
+    "cal-jv-d1-002": {
+      "kept": "the number stays right where i left it",
+      "alternates": [
+        "the number stays right where i left it",
+        "it remembers without a single mistake",
+        "my cousin asked for this exact count"
+      ]
+    },
+    "cal-jv-d1-003": {
+      "kept": "it joins them without a single extra space",
+      "alternates": [
+        "the names fit together like a handshake",
+        "it joins them without a single extra space",
+        "every first now knows its own last"
+      ]
+    },
+    "cal-jv-d1-004": {
+      "kept": "it asks the question without a fuss",
+      "alternates": [
+        "it asks the question without a fuss",
+        "the answer knows its own little rules",
+        "both things wait for their perfect moment"
+      ]
+    },
+    "cal-jv-d1-005": {
+      "kept": "the total arrives without a whisper",
+      "alternates": [
+        "the total arrives without a whisper",
+        "it multiplies them like a neat little dance",
+        "every price now knows its own quantity"
+      ]
+    },
+    "java-enhanced-for": {
+      "kept": "the list shouts every color now",
+      "alternates": [
+        "the list shouts every color now",
+        "every color stands up and says hello",
+        "the colors line up in perfect caps"
+      ]
+    },
+    "cal-jv-d2-001": {
+      "kept": "it knows the difference without asking",
+      "alternates": [
+        "it knows the difference without asking",
+        "hot or cool arrives without a fight",
+        "the room now knows its own little mood"
+      ]
+    },
+    "cal-jv-d2-002": {
+      "kept": "the sum arrives without a whisper",
+      "alternates": [
+        "the sum arrives without a whisper",
+        "it counts them all in one breath",
+        "my cousin asked for this exact total"
+      ]
+    },
+    "cal-jv-d2-003": {
+      "kept": "it builds the drama just right",
+      "alternates": [
+        "ten seconds never felt so loud",
+        "it builds the drama just right",
+        "the numbers march down like soldiers"
+      ]
+    },
+    "cal-jv-d2-004": {
+      "kept": "every sock now knows its own color",
+      "alternates": [
+        "every sock now knows its own color",
+        "the list shouts every hue now",
+        "my fern never saw a neater sock line"
+      ]
+    },
+    "cal-jv-d2-005": {
+      "kept": "the square arrives before i ask",
+      "alternates": [
+        "the square arrives before i ask",
+        "it multiplies them without a fuss",
+        "the answer lands like a perfect little block"
+      ]
+    },
+    "java-stringbuilder": {
+      "kept": "the list builds itself without a hiccup",
+      "alternates": [
+        "the list builds itself without a hiccup",
+        "every number now has its own comma",
+        "the commas line up just how i wanted"
+      ]
+    },
+    "cal-jv-d3-001": {
+      "kept": "the lonely socks stand out now",
+      "alternates": [
+        "the lonely socks stand out now",
+        "every sock now knows its own fate",
+        "the unpaired ones have their moment"
+      ]
+    },
+    "cal-jv-d3-002": {
+      "kept": "the month now knows its own little season",
+      "alternates": [
+        "the month now knows its own little season",
+        "it picks the right word every time",
+        "the season arrives without a fight"
+      ]
+    },
+    "cal-jv-d3-003": {
+      "kept": "every sock now knows its own spot",
+      "alternates": ["every sock now knows its own spot", "the pairs line up without a whisper"]
+    },
+    "cal-jv-d3-004": {
+      "kept": "it reads the number without a fuss",
+      "alternates": [
+        "it reads the number without a fuss",
+        "the safe ones stand out now",
+        "it tries again without a fight"
+      ]
+    },
+    "cal-jv-d3-005": {
+      "kept": "every card now knows its own size",
+      "alternates": [
+        "every card now knows its own size",
+        "the area arrives in perfect little blocks",
+        "the numbers line up just how i wanted"
+      ]
+    },
+    "java-optional": {
+      "kept": "the sock now knows its own little owner",
+      "alternates": [
+        "the sock now knows its own little owner",
+        "every unknown one gets a warm hello",
+        "the lonely ones stand out without a fight"
+      ]
+    },
+    "java-try-resources": {
+      "kept": "the regulars are here without a fight.",
+      "alternates": [
+        "the regulars are here without a fight.",
+        "it loads them like my cousin asked."
+      ]
+    },
+    "cal-jv-d4-001": {
+      "kept": "it adds and takes away without a fuss.",
+      "alternates": [
+        "it adds and takes away without a fuss.",
+        "the stamps never get the math wrong.",
+        "my cousin wanted this exact calculator."
+      ]
+    },
+    "cal-jv-d4-002": {
+      "kept": "every member has their usual spot now.",
+      "alternates": [
+        "every member has their usual spot now.",
+        "the pairs know exactly who belongs.",
+        "it remembers what they always order."
+      ]
+    },
+    "cal-jv-d4-003": {
+      "kept": "the numbers march in perfect order.",
+      "alternates": [
+        "the numbers march in perfect order.",
+        "it counts like my fern counts leaves.",
+        "every step is right where it should be."
+      ]
+    },
+    "cal-jv-d4-004": {
+      "kept": "they line up just how we wanted.",
+      "alternates": ["they line up just how we wanted.", "it sorts them like a perfect shelf."]
+    },
+    "cal-jv-d4-005": {
+      "kept": "the shapes know their own size now.",
+      "alternates": ["the shapes know their own size now.", "circles and squares fit just right."]
+    },
+    "java-interface-default": {
+      "kept": "it shouts hello without a whisper.",
+      "alternates": [
+        "it shouts hello without a whisper.",
+        "it says it twice, once soft and once bold."
+      ]
+    },
+    "java-stream": {
+      "kept": "the list is clean and changed now.",
+      "alternates": [
+        "the list is clean and changed now.",
+        "it filters them like a perfect sieve.",
+        "every piece is just where it belongs."
+      ]
+    },
+    "cal-jv-d5-001": {
+      "kept": "the words know their own size now.",
+      "alternates": ["the words know their own size now.", "short and long have their own homes."]
+    },
+    "cal-jv-d5-002": {
+      "kept": "it keeps them safe between the lines.",
+      "alternates": ["it keeps them safe between the lines.", "the numbers never go too far now."]
+    },
+    "cal-jv-d5-003": {
+      "kept": "every word has its own little number.",
+      "alternates": [
+        "it counts them like my cousin counts sheep.",
+        "every word has its own little number.",
+        "the file knows exactly what it holds."
+      ]
+    },
+    "cal-jv-d5-004": {
+      "kept": "it tells everyone the news now.",
+      "alternates": [
+        "it tells everyone the news now.",
+        "the listeners hear it right away.",
+        "it shouts without missing a beat."
+      ]
+    },
+    "cal-jv-d5-005": {
+      "kept": "it complains with perfect words now.",
+      "alternates": [
+        "it complains with perfect words now.",
+        "the errors know exactly what they are.",
+        "it tells us just what went wrong."
+      ]
+    },
+    "java-record": {
+      "kept": "the point knows its own name now.",
+      "alternates": ["the point knows its own name now.", "every spot has its own little tag."]
+    },
+    "cal-jv-d6-001": {
+      "kept": "it builds them piece by perfect piece.",
+      "alternates": [
+        "it builds them piece by perfect piece.",
+        "every part knows exactly where it goes."
+      ]
+    },
+    "cal-jv-d6-002": {
+      "kept": "it remembers them without a mix-up.",
+      "alternates": [
+        "it remembers them without a mix-up.",
+        "the cache keeps them safe and sound.",
+        "every user has their own little space."
+      ]
+    },
+    "cal-jv-d6-003": {
+      "kept": "it knows the smallest and the biggest.",
+      "alternates": [
+        "it knows the smallest and the biggest.",
+        "the numbers line up with perfect math."
+      ]
+    },
+    "cal-jv-d6-004": {
+      "kept": "it reads them and tells us what it sees.",
+      "alternates": [
+        "it reads them and tells us what it sees.",
+        "the notes know exactly where they go.",
+        "it talks to the file like a friend."
+      ]
+    },
+    "cal-jv-d6-005": {
+      "kept": "it turns them into neat little words.",
+      "alternates": [
+        "it turns them into neat little words.",
+        "the fields know their own names now."
+      ]
+    },
+    "cal-jv-d7-001": {
+      "kept": "the pages arrive all at the same time.",
+      "alternates": [
+        "the pages arrive all at the same time.",
+        "it fetches them like my cousin fetches snacks.",
+        "every one is here without a wait."
+      ]
+    },
+    "cal-jv-d7-002": {
+      "kept": "it finds them by any rule we want.",
+      "alternates": [
+        "it finds them by any rule we want.",
+        "the rules know exactly what to look for.",
+        "it hunts them like my fern hunts sunlight."
+      ]
+    },
+    "cal-jv-d7-003": {
+      "kept": "the boxes add up without a mistake.",
+      "alternates": ["the boxes add up without a mistake.", "every sum is just where it should be."]
+    },
+    "cal-jv-d7-004": {
+      "kept": "the news goes exactly where it belongs.",
+      "alternates": [
+        "the news goes exactly where it belongs.",
+        "it sends them like a perfect messenger.",
+        "every place gets its own little note."
+      ]
+    },
+    "cal-jv-d7-005": {
+      "kept": "the search knows every step to take.",
+      "alternates": [
+        "the search knows every step to take.",
+        "it walks the list like a perfect path.",
+        "every piece is found without a fight."
+      ]
+    },
+    "cal-js-d1-001": {
+      "kept": "it says hello before we even ask.",
+      "alternates": ["it says hello before we even ask."]
+    },
+    "cal-js-d1-002": {
+      "kept": "now it remembers names and ages together",
+      "alternates": [
+        "now it remembers names and ages together",
+        "my cousin asked for exactly this",
+        "it keeps them safe in one place now"
+      ]
+    },
+    "cal-js-d1-003": {
+      "kept": "it adds them up without a whisper",
+      "alternates": [
+        "it adds them up without a whisper",
+        "the numbers know their sum now",
+        "two numbers become one answer"
+      ]
+    },
+    "cal-js-d1-004": {
+      "kept": "it tells me the price in plain words",
+      "alternates": [
+        "it tells me the price in plain words",
+        "the sentence knows what it costs now",
+        "a book and nine dollars sound right"
+      ]
+    },
+    "cal-js-d1-005": {
+      "kept": "it picks the right word when i forget",
+      "alternates": [
+        "it picks the right word when i forget",
+        "the blank fills itself without a fuss"
+      ]
+    },
+    "js-map-filter": {
+      "kept": "the neat ones stand out now",
+      "alternates": [
+        "the neat ones stand out now",
+        "every stroke is big and proud",
+        "my fern would approve these loops"
+      ]
+    },
+    "js-ternary": {
+      "kept": "it picks the right word every time",
+      "alternates": ["it picks the right word every time", "one item or many, it knows the word"]
+    },
+    "cal-js-d2-001": {
+      "kept": "the grade arrives in perfect caps",
+      "alternates": [
+        "the grade arrives in perfect caps",
+        "it shouts without a single whisper",
+        "my cousin heard it from across the room"
+      ]
+    },
+    "cal-js-d2-002": {
+      "kept": "the list knows yesterday and today",
+      "alternates": [
+        "the list knows yesterday and today",
+        "every item has its place in line",
+        "they chain together without a fight"
+      ]
+    },
+    "cal-js-d2-003": {
+      "kept": "every item has a name and a home",
+      "alternates": [
+        "every item has a name and a home",
+        "they belong to someone now",
+        "the owner is printed right beside it"
+      ]
+    },
+    "cal-js-d2-004": {
+      "kept": "the list knows every letter by heart",
+      "alternates": [
+        "the list knows every letter by heart",
+        "each one has its own little number",
+        "they line up in perfect order"
+      ]
+    },
+    "cal-js-d2-005": {
+      "kept": "it fills the blanks without asking",
+      "alternates": ["it fills the blanks without asking", "the gaps are gone before i notice"]
+    },
+    "js-destructuring": {
+      "kept": "the loops and swirls come right out",
+      "alternates": [
+        "the loops and swirls come right out",
+        "they stand alone without a fight",
+        "every piece knows its own name now"
+      ]
+    },
+    "cal-js-d3-001": {
+      "kept": "the good ones show their price now",
+      "alternates": ["the good ones show their price now", "every cost is printed beside it"]
+    },
+    "cal-js-d3-002": {
+      "kept": "it asks the office without a fuss",
+      "alternates": [
+        "it asks the office without a fuss",
+        "the question goes out on its own",
+        "my cousin would trust this query"
+      ]
+    },
+    "cal-js-d3-003": {
+      "kept": "it knows the shape and its size",
+      "alternates": [
+        "it knows the shape and its size",
+        "the rectangle tells me its area",
+        "my fern would fit inside it"
+      ]
+    },
+    "cal-js-d3-004": {
+      "kept": "every item knows its own group",
+      "alternates": ["every item knows its own group", "they sort themselves without a word"]
+    },
+    "cal-js-d3-005": {
+      "kept": "the fridge now knows every unique one",
+      "alternates": ["the fridge now knows every unique one", "they line up without a duplicate"]
+    },
+    "js-promise-chain": {
+      "kept": "it gets the data and counts them all",
+      "alternates": [
+        "it gets the data and counts them all",
+        "the numbers arrive without a whisper",
+        "my cousin would call this magic"
+      ]
+    },
+    "js-reduce": {
+      "kept": "it counts each one without a mistake",
+      "alternates": ["it counts each one without a mistake", "every thing knows how many times"]
+    },
+    "cal-js-d4-001": {
+      "kept": "it tries three times without a fuss",
+      "alternates": ["it tries three times without a fuss", "the opinion comes back or it gives up"]
+    },
+    "cal-js-d4-002": {
+      "kept": "it listens and shouts hello back",
+      "alternates": [
+        "it listens and shouts hello back",
+        "the signal arrives without a fight",
+        "my cousin would hear it across the room"
+      ]
+    },
+    "cal-js-d4-003": {
+      "kept": "every trade has its own little count",
+      "alternates": [
+        "every trade has its own little count",
+        "the numbers add up without a word",
+        "they line up in perfect order now"
+      ]
+    },
+    "cal-js-d4-004": {
+      "kept": "the opinions know their own chain",
+      "alternates": ["the opinions know their own chain", "each one points to the next in line"]
+    },
+    "cal-js-d4-005": {
+      "kept": "it waits until my fingers stop",
+      "alternates": [
+        "it waits until my fingers stop",
+        "the words arrive without a rush",
+        "my fern would approve this patience"
+      ]
+    },
+    "js-async-await": {
+      "kept": "it goes and gets the user or complains",
+      "alternates": [
+        "it goes and gets the user or complains",
+        "the name arrives or it tells me why"
+      ]
+    },
+    "js-class": {
+      "kept": "the trip now knows how long it took.",
+      "alternates": [
+        "the trip now knows how long it took.",
+        "it counts the seconds without a fuss."
+      ]
+    },
+    "cal-js-d5-001": {
+      "kept": "they line up just how i wanted.",
+      "alternates": [
+        "they line up just how i wanted.",
+        "the trades march in perfect order.",
+        "it keeps the line without a fight."
+      ]
+    },
+    "cal-js-d5-002": {
+      "kept": "my fern has never looked more merged.",
+      "alternates": [
+        "two opinions now feel like one.",
+        "my fern has never looked more merged.",
+        "it blends them without a whisper."
+      ]
+    },
+    "cal-js-d5-003": {
+      "kept": "the stale ones are gone now.",
+      "alternates": ["the stale ones are gone now.", "it picks the fresh ones every time."]
+    },
+    "cal-js-d5-004": {
+      "kept": "the whole trip knows its own time.",
+      "alternates": [
+        "the whole trip knows its own time.",
+        "it counts the steps without a fuss.",
+        "every piece knows how long it took."
+      ]
+    },
+    "cal-js-d5-005": {
+      "kept": "the trades wait their turn now.",
+      "alternates": [
+        "three at a time, just like i asked.",
+        "the trades wait their turn now.",
+        "it keeps the line without a fight."
+      ]
+    },
+    "cal-js-d6-001": {
+      "kept": "every change now tells the right ones.",
+      "alternates": [
+        "every change now tells the right ones.",
+        "it shouts hello without a whisper.",
+        "the listeners hear every word."
+      ]
+    },
+    "cal-js-d6-002": {
+      "kept": "the email knows its own rules now.",
+      "alternates": [
+        "the email knows its own rules now.",
+        "it checks the name before it lets go.",
+        "my cousin asked for this exact check."
+      ]
+    },
+    "cal-js-d6-003": {
+      "kept": "the map knows every turn now.",
+      "alternates": [
+        "the map knows every turn now.",
+        "it draws the path without a fuss.",
+        "every step has its own little home."
+      ]
+    },
+    "cal-js-d6-004": {
+      "kept": "the page waits until i ask for more.",
+      "alternates": [
+        "the page waits until i ask for more.",
+        "it knows when to stop and when to go."
+      ]
+    },
+    "cal-js-d6-005": {
+      "kept": "it builds the thing only when i need it.",
+      "alternates": [
+        "it builds the thing only when i need it.",
+        "the logger waits until i call.",
+        "my fern has never looked so lazy."
+      ]
+    },
+    "cal-js-d7-001": {
+      "kept": "the page now knows every little change.",
+      "alternates": [
+        "the page now knows every little change.",
+        "it spots the difference without a fuss.",
+        "every sketch has its own little mark."
+      ]
+    },
+    "cal-js-d7-002": {
+      "kept": "the urgent ones jump the line now.",
+      "alternates": [
+        "the urgent ones jump the line now.",
+        "it picks the loud ones first every time.",
+        "my cousin asked for this exact order."
+      ]
+    },
+    "cal-js-d7-003": {
+      "kept": "the total knows when the price moves.",
+      "alternates": [
+        "the total knows when the price moves.",
+        "it adds them up without a whisper.",
+        "every number now knows its own home."
+      ]
+    },
+    "cal-js-d7-004": {
+      "kept": "it waits and tries again without a fight.",
+      "alternates": [
+        "it waits and tries again without a fight.",
+        "the retries know their own little count."
+      ]
+    },
+    "cal-js-d7-005": {
+      "kept": "the text now knows every little tweak.",
+      "alternates": [
+        "the text now knows every little tweak.",
+        "it lets them change without a fuss.",
+        "every word has its own little plug."
+      ]
+    },
+    "cal-py-d1-001": {
+      "kept": "it says hello without a whisper.",
+      "alternates": [
+        "it says hello without a whisper.",
+        "the room now hears it loud and clear.",
+        "my cousin asked for this exact shout."
+      ]
+    },
+    "cal-py-d1-002": {
+      "kept": "the numbers add up without a fuss.",
+      "alternates": ["the numbers add up without a fuss.", "it shows the answer in plain words."]
+    },
+    "cal-py-d1-003": {
+      "kept": "every duck now has a first and last.",
+      "alternates": [
+        "every duck now has a first and last.",
+        "the names know their own little home.",
+        "it prints them without a whisper."
+      ]
+    },
+    "cal-py-d1-004": {
+      "kept": "the bill knows its own little split.",
+      "alternates": [
+        "the bill knows its own little split.",
+        "every duck gets the same now.",
+        "it divides them without a fuss."
+      ]
+    },
+    "cal-py-d1-005": {
+      "kept": "it knows when the age crosses eighteen.",
+      "alternates": [
+        "it knows when the age crosses eighteen.",
+        "the check is done without a whisper.",
+        "my cousin asked for this exact rule."
+      ]
+    },
+    "py-for-loop": {
+      "kept": "every label knows its own little step.",
+      "alternates": [
+        "every label knows its own little step.",
+        "the steps count up without a fuss.",
+        "it prints them in perfect order."
+      ]
+    },
+    "py-fstring": {
+      "kept": "the name and number know their place.",
+      "alternates": ["the name and number know their place.", "it shows them without a whisper."]
+    },
+    "cal-py-d2-001": {
+      "kept": "the duck fares know their own total.",
+      "alternates": [
+        "the duck fares know their own total.",
+        "it adds them up without a mistake.",
+        "every number has its own little home."
+      ]
+    },
+    "cal-py-d2-002": {
+      "kept": "every duck hears its own hello now.",
+      "alternates": ["every duck hears its own hello now.", "it says hello without a whisper."]
+    },
+    "cal-py-d2-003": {
+      "kept": "ten seconds never felt so loud",
+      "alternates": ["ten seconds never felt so loud", "liftoff arrives right on time every time"]
+    },
+    "cal-py-d2-004": {
+      "kept": "the ducks line up just how i wanted",
+      "alternates": [
+        "the ducks line up just how i wanted",
+        "my cousin asked for this exact reversal",
+        "the last duck now leads without a fight"
+      ]
+    },
+    "cal-py-d2-005": {
+      "kept": "the average knows exactly who showed up",
+      "alternates": ["the average knows exactly who showed up"]
+    },
+    "py-guard-clause": {
+      "kept": "the number stays between the fences now",
+      "alternates": [
+        "the number stays between the fences now",
+        "it keeps them safe without a fuss",
+        "two friendly walls and it obeys"
+      ]
+    },
+    "py-try-except": {
+      "kept": "the input now bends without breaking",
+      "alternates": [
+        "the input now bends without breaking",
+        "it catches the bad ones without a shout",
+        "my fern never looked more forgiving"
+      ]
+    },
+    "cal-py-d3-001": {
+      "kept": "the even ones stand out now",
+      "alternates": ["the even ones stand out now", "it plucks them without a whisper"]
+    },
+    "cal-py-d3-002": {
+      "kept": "the rules arrive without a fight",
+      "alternates": [
+        "the rules arrive without a fight",
+        "it loads them piece by perfect piece",
+        "my cousin asked for this exact file"
+      ]
+    },
+    "cal-py-d3-003": {
+      "kept": "every room now knows its own size",
+      "alternates": ["every room now knows its own size", "the shapes measure themselves now"]
+    },
+    "cal-py-d3-004": {
+      "kept": "every degree now has a mood",
+      "alternates": [
+        "every degree now has a mood",
+        "the heat knows exactly how it feels",
+        "my thermostat never sounded so polite"
+      ]
+    },
+    "cal-py-d3-005": {
+      "kept": "the names and marks know their place",
+      "alternates": [
+        "the names and marks know their place",
+        "my cousin asked for this exact pairing"
+      ]
+    },
+    "py-class-def": {
+      "kept": "the circle measures itself now",
+      "alternates": ["the circle measures itself now", "it knows its own size without asking"]
+    },
+    "py-list-comp": {
+      "kept": "the even ones line up neat now",
+      "alternates": ["the even ones line up neat now", "it grabs them without a fuss"]
+    },
+    "cal-py-d4-001": {
+      "kept": "the rabbits remember every step",
+      "alternates": [
+        "the rabbits remember every step",
+        "it breeds them without a mix-up",
+        "my cousin asked for this exact memory"
+      ]
+    },
+    "cal-py-d4-002": {
+      "kept": "every app now has a shape family",
+      "alternates": [
+        "every app now has a shape family",
+        "the circles and triangles know their place"
+      ]
+    },
+    "cal-py-d4-003": {
+      "kept": "it fights only on prime minutes now",
+      "alternates": ["it fights only on prime minutes now", "my cousin asked for this exact timing"]
+    },
+    "cal-py-d4-004": {
+      "kept": "every argument now knows its own time",
+      "alternates": ["every argument now knows its own time", "it measures them without a whisper"]
+    },
+    "cal-py-d4-005": {
+      "kept": "the card checks itself before it ships",
+      "alternates": [
+        "the card checks itself before it ships",
+        "every worker now has a perfect little card"
+      ]
+    },
+    "py-decorator": {
+      "kept": "every fight now leaves a trail",
+      "alternates": [
+        "every fight now leaves a trail",
+        "it logs them without a fuss",
+        "my cousin asked for this exact record"
+      ]
+    },
+    "py-dict": {
+      "kept": "every letter now has its own little count",
+      "alternates": [
+        "every letter now has its own little count",
+        "the phrase knows exactly what it holds"
+      ]
+    },
+    "cal-py-d5-001": {
+      "kept": "it tries three times without a fight",
+      "alternates": ["it tries three times without a fight", "every app now gets three chances"]
+    },
+    "cal-py-d5-002": {
+      "kept": "the stars line up just how i wanted",
+      "alternates": ["the stars line up just how i wanted", "every app now knows its own place"]
+    },
+    "cal-py-d5-003": {
+      "kept": "it grabs them without a whisper",
+      "alternates": [
+        "the pages arrive all at the same time",
+        "it grabs them without a whisper",
+        "my cousin asked for this exact speed"
+      ]
+    },
+    "cal-py-d5-004": {
+      "kept": "every rating now knows its own rules",
+      "alternates": ["every rating now knows its own rules", "it checks them without a fuss"]
+    },
+    "cal-py-d5-005": {
+      "kept": "the last ten now wait their turn",
+      "alternates": ["the last ten now wait their turn", "it keeps them safe between the lines"]
+    },
+    "cal-py-d6-001": {
+      "kept": "every plugin now gets a warm hello",
+      "alternates": ["every plugin now gets a warm hello", "it welcomes them without a whisper"]
+    },
+    "cal-py-d6-002": {
+      "kept": "jobs now run together without a whisper.",
+      "alternates": [
+        "jobs now run together without a whisper.",
+        "my cousin asked for this exact tally.",
+        "the work gets done and counted at once.",
+        "it does them all and tells me how many."
+      ]
+    },
+    "cal-py-d6-003": {
+      "kept": "it shouts and the whole room answers.",
+      "alternates": [
+        "it shouts and the whole room answers.",
+        "every shout now finds its friends.",
+        "the answers come back without a fuss.",
+        "it talks and the office listens now."
+      ]
+    },
+    "cal-py-d6-004": {
+      "kept": "the form knows every little rule now.",
+      "alternates": [
+        "the form knows every little rule now.",
+        "every field now checks itself twice.",
+        "it guards the form like a careful cousin."
+      ]
+    },
+    "cal-py-d6-005": {
+      "kept": "every piece now talks to the next one.",
+      "alternates": [
+        "the steps flow like a perfect river.",
+        "every piece now talks to the next one.",
+        "it strings them together without a knot.",
+        "the words march in perfect little steps."
+      ]
+    },
+    "cal-py-d7-001": {
+      "kept": "it watches itself and stays polite.",
+      "alternates": [
+        "it watches itself and stays polite.",
+        "the mood now has a perfect little guard.",
+        "every change now tells its friends.",
+        "it keeps itself happy without a fight."
+      ]
+    },
+    "cal-py-d7-002": {
+      "kept": "my cousin asked for this exact queue.",
+      "alternates": [
+        "the urgent ones jump the line now.",
+        "my cousin asked for this exact queue.",
+        "the jobs line up just how i wanted.",
+        "it knows which one needs me first."
+      ]
+    },
+    "cal-py-d7-003": {
+      "kept": "every little sum now knows its place.",
+      "alternates": [
+        "it reads the math like a quiet book.",
+        "every little sum now knows its place.",
+        "the numbers add up without a whisper."
+      ]
+    },
+    "cal-py-d7-004": {
+      "kept": "the note now visits every helper.",
+      "alternates": [
+        "the note now visits every helper.",
+        "it moves through them without a fuss.",
+        "every step now gets its own hello.",
+        "the helpers line up just how i wanted."
+      ]
+    },
+    "cal-py-d7-005": {
+      "kept": "it watches itself and tells the room.",
+      "alternates": [
+        "it watches itself and tells the room.",
+        "every change now has a perfect little story.",
+        "the friends now hear every little tweak.",
+        "it keeps its own diary without a fight."
+      ]
+    },
+    "cal-sq-d1-001": {
+      "kept": "the list knows every sandwich by heart.",
+      "alternates": [
+        "the list knows every sandwich by heart.",
+        "the sandwiches line up just how i wanted."
+      ]
+    },
+    "cal-sq-d1-002": {
+      "kept": "the first one now has a perfect home.",
+      "alternates": [
+        "the first one now has a perfect home.",
+        "it remembers the sandwich without a fuss.",
+        "the ledger finally has its first bite."
+      ]
+    },
+    "cal-sq-d1-003": {
+      "kept": "the okay ones are gone without a fight.",
+      "alternates": [
+        "the okay ones are gone without a fight.",
+        "it keeps only the ones that matter now.",
+        "my cousin asked for this exact trim."
+      ]
+    },
+    "cal-sq-d1-004": {
+      "kept": "it counts them without a whisper.",
+      "alternates": [
+        "it counts them without a whisper.",
+        "the shipped ones now have a perfect tally.",
+        "every order now knows its own little count.",
+        "my cousin asked for this exact number."
+      ]
+    },
+    "cal-sq-d1-005": {
+      "kept": "the price now knows its own little tweak.",
+      "alternates": [
+        "the price now knows its own little tweak.",
+        "it changes the number without a fuss.",
+        "every tag now has its perfect little cost."
+      ]
+    },
+    "sql-insert": {
+      "kept": "the new one now has a perfect little home.",
+      "alternates": [
+        "the new one now has a perfect little home.",
+        "it adds them without a whisper."
+      ]
+    },
+    "cal-sq-d2-001": {
+      "kept": "the big ones now know their own friends.",
+      "alternates": [
+        "the big ones now know their own friends.",
+        "it pairs them without a fuss.",
+        "every order now has a perfect little name.",
+        "my cousin asked for this exact match."
+      ]
+    },
+    "cal-sq-d2-002": {
+      "kept": "the small groups are gone without a fight.",
+      "alternates": [
+        "the small groups are gone without a fight.",
+        "it knows which filling wins the race.",
+        "every sandwich now has its own little group."
+      ]
+    },
+    "cal-sq-d2-003": {
+      "kept": "the ferns now have their perfect little faces.",
+      "alternates": [
+        "the ferns now have their perfect little faces.",
+        "it gives them a photo without a fuss.",
+        "every one now knows its own little look.",
+        "my cousin asked for this exact album."
+      ]
+    },
+    "cal-sq-d2-004": {
+      "kept": "the month now knows its own little story.",
+      "alternates": [
+        "the month now knows its own little story.",
+        "it builds the summary without a whisper."
+      ]
+    },
+    "cal-sq-d2-005": {
+      "kept": "it remembers them without a fuss.",
+      "alternates": [
+        "it remembers them without a fuss.",
+        "every bite now knows its own little date."
+      ]
+    },
+    "sql-join": {
+      "kept": "the list now knows every big one by name.",
+      "alternates": [
+        "the list now knows every big one by name.",
+        "it pairs them without a whisper.",
+        "every order now has a perfect little friend.",
+        "my cousin asked for this exact match."
+      ]
+    },
+    "sql-update": {
+      "kept": "the team now knows its own little raise.",
+      "alternates": [
+        "the team now knows its own little raise.",
+        "it gives them more without a fuss.",
+        "every engineer now has a perfect little bump."
+      ]
+    },
+    "cal-sq-d3-001": {
+      "kept": "the months now know their own little race.",
+      "alternates": [
+        "the months now know their own little race.",
+        "it picks the big ones without a fight.",
+        "every week now has its perfect little flag."
+      ]
+    },
+    "cal-sq-d3-002": {
+      "kept": "the thirsty ones now stand out.",
+      "alternates": [
+        "the thirsty ones now stand out.",
+        "it knows which plant needs the most.",
+        "every fern now has its own little alert."
+      ]
+    },
+    "cal-sq-d3-003": {
+      "kept": "the label now knows every little size.",
+      "alternates": [
+        "the label now knows every little size.",
+        "it sorts them without a whisper.",
+        "every plant now has its perfect little tag.",
+        "my cousin asked for this exact guide."
+      ]
+    },
+    "cal-sq-d3-004": {
+      "kept": "the table knows every plant and its spot now.",
+      "alternates": ["the table knows every plant and its spot now."]
+    },
+    "cal-sq-d3-005": {
+      "kept": "every plant now has its own little home.",
+      "alternates": ["every plant now has its own little home."]
+    },
+    "sql-subquery": {
+      "kept": "the big spenders stand out now",
+      "alternates": ["the big spenders stand out now", "it knows who to watch without a fuss"]
+    },
+    "cal-sq-d4-001": {
+      "kept": "every department now knows its stars",
+      "alternates": ["every department now knows its stars", "the ranks line up just how i wanted"]
+    },
+    "cal-sq-d4-002": {
+      "kept": "the active ones now have their orders",
+      "alternates": [
+        "the active ones now have their orders",
+        "it knows who came and what they bought",
+        "every recent one has its own little count"
+      ]
+    },
+    "cal-sq-d4-003": {
+      "kept": "the stock now knows every little sale",
+      "alternates": ["the stock now knows every little sale", "it subtracts them without a whisper"]
+    },
+    "cal-sq-d4-004": {
+      "kept": "the happy ones now have their own spot",
+      "alternates": [
+        "the happy ones now have their own spot",
+        "it finds them without a single complaint"
+      ]
+    },
+    "cal-sq-d4-005": {
+      "kept": "the views now know their own little day",
+      "alternates": [
+        "the views now know their own little day",
+        "it adds them without a single hiccup",
+        "the stats stay fresh without a fight"
+      ]
+    },
+    "sql-cte": {
+      "kept": "the top ten now shout their own names",
+      "alternates": [
+        "the top ten now shout their own names",
+        "it counts them without a single mistake"
+      ]
+    },
+    "cal-sq-d5-001": {
+      "kept": "the label knows every little change now",
+      "alternates": [
+        "the label knows every little change now",
+        "each day now tells its own little story",
+        "it calls them growth without a fuss"
+      ]
+    },
+    "cal-sq-d5-002": {
+      "kept": "every day now has its own little sales",
+      "alternates": [
+        "every day now has its own little sales",
+        "the month knows every little transaction",
+        "it shows them without a single gap"
+      ]
+    },
+    "cal-sq-d5-003": {
+      "kept": "the top earners now stand out neat",
+      "alternates": [
+        "the top earners now stand out neat",
+        "every department knows its own stars",
+        "it finds them without a single fight"
+      ]
+    },
+    "cal-sq-d5-004": {
+      "kept": "the stock now knows every little arrival",
+      "alternates": [
+        "the stock now knows every little arrival",
+        "it adds them without a single whisper"
+      ]
+    },
+    "cal-sq-d5-005": {
+      "kept": "the totals now know every little group",
+      "alternates": [
+        "the totals now know every little group",
+        "every region and category has its own little count"
+      ]
+    },
+    "cal-sq-d6-001": {
+      "kept": "the whole family now knows its own little chain",
+      "alternates": [
+        "the whole family now knows its own little chain",
+        "every boss and helper lines up just right",
+        "my cousin asked for this exact tree"
+      ]
+    },
+    "cal-sq-d6-002": {
+      "kept": "the top five now shout their own little trend",
+      "alternates": [
+        "the top five now shout their own little trend",
+        "every month now has its own little stars",
+        "the best ones stand out without a fight"
+      ]
+    },
+    "cal-sq-d6-003": {
+      "kept": "the orders now know their own little week",
+      "alternates": [
+        "the orders now know their own little week",
+        "every day and week lines up neat now",
+        "my fern never saw time split so clean"
+      ]
+    },
+    "cal-sq-d6-004": {
+      "kept": "every customer now has its own little story",
+      "alternates": ["every customer now has its own little story"]
+    },
+    "cal-sq-d6-005": {
+      "kept": "the list now knows every little skill",
+      "alternates": [
+        "the list now knows every little skill",
+        "every department has its own little chain",
+        "my cousin asked for this exact list"
+      ]
+    },
+    "cal-sq-d7-001": {
+      "kept": "the map now knows every little loop",
+      "alternates": [
+        "the map now knows every little loop",
+        "every service knows its own little path"
+      ]
+    },
+    "cal-sq-d7-002": {
+      "kept": "the whole trip now knows its own little steps",
+      "alternates": [
+        "the whole trip now knows its own little steps",
+        "every click and buy lines up just right",
+        "my fern never tracked a path so neat"
+      ]
+    },
+    "cal-sq-d7-003": {
+      "kept": "the sales now know their own little month",
+      "alternates": ["the sales now know their own little month"]
+    },
+    "cal-sq-d7-004": {
+      "kept": "the changes now know their own little before",
+      "alternates": [
+        "the changes now know their own little before",
+        "every tweak has its own little story"
+      ]
+    },
+    "cal-sq-d7-005": {
+      "kept": "the parts now know their own little cost",
+      "alternates": [
+        "the parts now know their own little cost",
+        "every piece has its own little share",
+        "my cousin asked for this exact breakdown"
+      ]
+    }
+  }
+}

@@ -1,0 +1,1809 @@
+{
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-032547964",
+  "applied": false,
+  "report": {
+    "model": "ollama:mistral-large-3:675b-cloud",
+    "temperature": 0.9,
+    "chunk": 25,
+    "concurrency": 1,
+    "prompts": [
+      "76e79cdd496fc814b9642230490ec2c744ab7cb3d8e8c6bd1fbabf21e7fba6e9",
+      "86c0485648a6b004457004ecafaf4a56fed039dbd389b66d5693bdef4b2def35",
+      "a5e45f3a5d6ed9a2b6bfa7840d63ede01c55da29d50e84aded771530cf26fcd8",
+      "edeac683ad8e67ce171fb9fa03c05ce30c59bb97b5f882b184708987db6f3ab9",
+      "910ca1ec727bcfaf1568e79289cbd5f990bea2e2570ad5352c11642d461480f9",
+      "c52dff9d59603e0d11b1bb178c90160fb7dec64c563f341be2a87504ddcfe0e6",
+      "8a5c76a6712b261de9c49043b5e64decc44fd602f408fc7a9a21caec2cc50847",
+      "99a420a828491434b7d95cb6cb1b27d7762ad7bb86ba081fbb7cad96fe5cdb5b",
+      "4bf86492fb50c96489ca517925a47c842a644c6f6d47a744f6fd5d7d91c6a592",
+      "188d2650d0f543b4c757b1a1ff9be99aef777e12073f34016eab558ad950615a"
+    ],
+    "calls": 10,
+    "requested": 747,
+    "kept": 204,
+    "missing": 45,
+    "waits": 0,
+    "dropped": {
+      "names fridge, which the request never asked for": 4,
+      "names menu, which the request never asked for": 3,
+      "not ascii": 8,
+      "names greeting, which the request never asked for": 4,
+      "names invoice, which the request never asked for": 1,
+      "names countdown, which the request never asked for": 2,
+      "names list, which the request never asked for": 7,
+      "names badge, which the request never asked for": 3,
+      "names card, which the request never asked for": 2,
+      "forbidden word or digit": 4,
+      "leans on a story with no level to hold it up": 2,
+      "names search, which the request never asked for": 1,
+      "names link, which the request never asked for": 1,
+      "names screen, which the request never asked for": 2,
+      "names form, which the request never asked for": 2,
+      "names hat, which the request never asked for": 2,
+      "names row, which the request never asked for": 4,
+      "names drawer, which the request never asked for": 1,
+      "names sock, which the request never asked for": 3,
+      "names timer, which the request never asked for": 2,
+      "names clock, which the request never asked for": 1,
+      "names door, which the request never asked for": 3,
+      "names playlist, which the request never asked for": 1,
+      "names map, which the request never asked for": 1
+    },
+    "ms": 158258,
+    "tokens": {
+      "in": 89240,
+      "out": 11635
+    },
+    "cost": null,
+    "errors": [
+      "cal-sh-d1-004: no reaction came back clean",
+      "cal-sh-d1-005: no reaction came back clean",
+      "sh-for-loop: no reaction came back clean",
+      "cal-sh-d2-001: no reaction came back clean",
+      "cal-sh-d2-002: no reaction came back clean",
+      "cal-sh-d2-003: no reaction came back clean",
+      "cal-sh-d2-004: no reaction came back clean",
+      "cal-sh-d2-005: no reaction came back clean",
+      "sh-array: no reaction came back clean",
+      "sh-if-else: no reaction came back clean",
+      "cal-sh-d3-001: no reaction came back clean",
+      "cal-sh-d3-002: no reaction came back clean",
+      "cal-sh-d3-003: no reaction came back clean",
+      "cal-sh-d3-004: no reaction came back clean",
+      "cal-sh-d3-005: no reaction came back clean",
+      "sh-function: no reaction came back clean",
+      "sh-safe: no reaction came back clean",
+      "cal-sh-d4-001: no reaction came back clean",
+      "cal-sh-d4-002: no reaction came back clean",
+      "cal-sh-d4-003: no reaction came back clean",
+      "cal-sh-d4-004: no reaction came back clean",
+      "cal-sh-d4-005: no reaction came back clean",
+      "cal-cs-d7-002: no reaction came back clean",
+      "cal-cs-d7-003: no reaction came back clean",
+      "cal-cs-d7-004: no reaction came back clean",
+      "cal-cs-d7-005: no reaction came back clean",
+      "cal-jv-d1-001: no reaction came back clean",
+      "cal-jv-d1-002: no reaction came back clean",
+      "cal-jv-d1-003: no reaction came back clean",
+      "cal-jv-d1-004: no reaction came back clean",
+      "cal-jv-d1-005: no reaction came back clean",
+      "java-enhanced-for: no reaction came back clean",
+      "cal-jv-d2-001: no reaction came back clean",
+      "cal-jv-d2-002: no reaction came back clean",
+      "cal-jv-d2-003: no reaction came back clean",
+      "cal-jv-d2-004: no reaction came back clean",
+      "cal-jv-d2-005: no reaction came back clean",
+      "java-stringbuilder: no reaction came back clean",
+      "cal-jv-d3-001: no reaction came back clean",
+      "cal-jv-d3-002: no reaction came back clean",
+      "cal-jv-d3-003: no reaction came back clean",
+      "cal-jv-d3-004: no reaction came back clean",
+      "cal-jv-d3-005: no reaction came back clean",
+      "java-optional: no reaction came back clean",
+      "cal-py-d6-005: no reaction came back clean"
+    ],
+    "editor": {
+      "spec": null,
+      "family": null,
+      "writer": "mistral",
+      "calls": 0,
+      "ms": 0,
+      "tokens": {
+        "in": 0,
+        "out": 0
+      },
+      "read": 0,
+      "dropped": [],
+      "reasked": 0,
+      "refilled": 0,
+      "empty": [],
+      "errors": []
+    },
+    "wrote": 204,
+    "withoutOne": 45,
+    "wallMs": 158296
+  },
+  "candidates": {
+    "cal-sh-d1-001": {
+      "kept": "the hello is polite and on time.",
+      "alternates": ["the hello is polite and on time."]
+    },
+    "cal-sh-d1-002": {
+      "kept": "my cousin just waved back.",
+      "alternates": ["my cousin just waved back."]
+    },
+    "cal-sh-d1-003": {
+      "kept": "{product} now knows how to say hello.",
+      "alternates": ["{product} now knows how to say hello."]
+    },
+    "cal-sh-d1-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d1-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "sh-for-loop": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d2-001": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d2-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d2-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d2-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d2-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "sh-array": {
+      "kept": null,
+      "alternates": []
+    },
+    "sh-if-else": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d3-001": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d3-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d3-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d3-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d3-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "sh-function": {
+      "kept": null,
+      "alternates": []
+    },
+    "sh-safe": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d4-001": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d4-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d4-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d4-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d4-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-sh-d5-001": {
+      "kept": "the rollback is gentle and quick.",
+      "alternates": [
+        "the rollback is gentle and quick.",
+        "it knows when to walk away.",
+        "now it tries and then it apologizes."
+      ]
+    },
+    "cal-sh-d5-002": {
+      "kept": "the tasks run like my cousins at a picnic.",
+      "alternates": [
+        "the tasks run like my cousins at a picnic.",
+        "it juggles without dropping a plate.",
+        "i can hear them all humming at once."
+      ]
+    },
+    "cal-sh-d5-003": {
+      "kept": "the settings file now speaks in sections.",
+      "alternates": [
+        "the settings file now speaks in sections.",
+        "every key has its own little room."
+      ]
+    },
+    "cal-sh-d5-004": {
+      "kept": "the heavy folders stand out like elephants.",
+      "alternates": [
+        "the heavy folders stand out like elephants.",
+        "i can spot the space hogs from across the room.",
+        "it points at the big ones with a finger."
+      ]
+    },
+    "cal-sh-d5-005": {
+      "kept": "it keeps the yard tidy without a fuss.",
+      "alternates": [
+        "it keeps the yard tidy without a fuss.",
+        "the cleanup is polite and thorough."
+      ]
+    },
+    "cal-sh-d6-001": {
+      "kept": "staging and production now hold hands.",
+      "alternates": [
+        "staging and production now hold hands.",
+        "it marches from one room to the next.",
+        "the path is smooth and well lit."
+      ]
+    },
+    "cal-sh-d6-002": {
+      "kept": "the logs now have numbers and faces.",
+      "alternates": [
+        "the logs now have numbers and faces.",
+        "i can see the mistakes without squinting.",
+        "it counts like a teacher taking roll."
+      ]
+    },
+    "cal-sh-d6-003": {
+      "kept": "the ancient backups fade like old photos.",
+      "alternates": [
+        "the ancient backups fade like old photos.",
+        "it keeps the fresh ones close and warm.",
+        "my data now has a cozy attic."
+      ]
+    },
+    "cal-sh-d6-004": {
+      "kept": "the tasks now come and go like guests.",
+      "alternates": [
+        "the tasks now come and go like guests.",
+        "i can add them and wave goodbye.",
+        "it feels like a tiny party."
+      ]
+    },
+    "cal-sh-d6-005": {
+      "kept": "it yells when the room gets too hot.",
+      "alternates": [
+        "it yells when the room gets too hot.",
+        "the alerts are loud and clear.",
+        "my server now has a smoke alarm."
+      ]
+    },
+    "cal-sh-d7-001": {
+      "kept": "the plugins load like a family reunion.",
+      "alternates": [
+        "the plugins load like a family reunion.",
+        "they check on each other before sitting down.",
+        "the order feels right and neighborly."
+      ]
+    },
+    "cal-sh-d7-002": {
+      "kept": "the pieces build in a tidy line.",
+      "alternates": [
+        "the pieces build in a tidy line.",
+        "each one waits its turn like a patient cousin.",
+        "it feels like watching dominoes fall."
+      ]
+    },
+    "cal-sh-d7-003": {
+      "kept": "the door now answers with perfect manners.",
+      "alternates": [
+        "the door now answers with perfect manners.",
+        "it knows who to let in and who to ignore.",
+        "my cousin would approve."
+      ]
+    },
+    "cal-sh-d7-004": {
+      "kept": "the checks run like a health inspector.",
+      "alternates": [
+        "the checks run like a health inspector.",
+        "it finds the wobbles before they fall.",
+        "i can trust the results without looking."
+      ]
+    },
+    "cal-sh-d7-005": {
+      "kept": "the workers nap but never oversleep.",
+      "alternates": [
+        "the workers nap but never oversleep.",
+        "it wakes them with a gentle nudge.",
+        "my team now has a kind babysitter."
+      ]
+    },
+    "cal-cs-d1-001": {
+      "kept": "forty-two lives inside it like a secret.",
+      "alternates": [
+        "forty-two lives inside it like a secret.",
+        "the number is cozy and familiar.",
+        "it remembers like my favorite mug."
+      ]
+    },
+    "cal-cs-d1-002": {
+      "kept": "alice now has a name tag.",
+      "alternates": [
+        "alice now has a name tag.",
+        "it says her name like a proud parent.",
+        "my cousin would recognize her."
+      ]
+    },
+    "cal-cs-d1-003": {
+      "kept": "the switch flips like a light in the dark.",
+      "alternates": [
+        "the switch flips like a light in the dark.",
+        "it knows when to turn on and off.",
+        "my fern would envy its discipline."
+      ]
+    },
+    "cal-cs-d1-004": {
+      "kept": "the circle now knows its own size.",
+      "alternates": [
+        "the circle now knows its own size.",
+        "it calculates like a tailor measuring cloth.",
+        "the answer fits just right."
+      ]
+    },
+    "cal-cs-d1-005": {
+      "kept": "hello and world now hold hands.",
+      "alternates": ["hello and world now hold hands.", "the space between them feels friendly."]
+    },
+    "cs-foreach": {
+      "kept": "every name gets a hello and a smile.",
+      "alternates": [
+        "every name gets a hello and a smile.",
+        "it feels like a room full of handshakes.",
+        "my cousin would want to be next."
+      ]
+    },
+    "cs-string-interpolation": {
+      "kept": "alice now owes money with style.",
+      "alternates": ["alice now owes money with style.", "the numbers look like they belong."]
+    },
+    "cal-cs-d2-001": {
+      "kept": "the nice thing appears only when earned.",
+      "alternates": [
+        "the nice thing appears only when earned.",
+        "it judges like a teacher with a red pen.",
+        "the result feels fair and square."
+      ]
+    },
+    "cal-cs-d2-002": {
+      "kept": "the numbers add up like a grocery bill.",
+      "alternates": [
+        "the numbers add up like a grocery bill.",
+        "it counts like my fingers at the market.",
+        "the total feels right and tidy."
+      ]
+    },
+    "cal-cs-d2-003": {
+      "kept": "the first and last now stand like bookends.",
+      "alternates": [
+        "the first and last now stand like bookends.",
+        "it saves them like treasured photos.",
+        "my cousin would call them the anchors."
+      ]
+    },
+    "cal-cs-d2-004": {
+      "kept": "five seconds never looked so dramatic.",
+      "alternates": ["five seconds never looked so dramatic."]
+    },
+    "cal-cs-d2-005": {
+      "kept": "three nice things and they all count.",
+      "alternates": ["three nice things and they all count.", "it tallies them like a grocery run."]
+    },
+    "cal-cs-d3-001": {
+      "kept": "the warmer greeting always wins.",
+      "alternates": [
+        "the warmer greeting always wins.",
+        "it picks the coziest one every time.",
+        "two greetings and it knows which to hug."
+      ]
+    },
+    "cal-cs-d3-002": {
+      "kept": "each praise has its place in line.",
+      "alternates": [
+        "each praise has its place in line.",
+        "the line moves like a polite queue.",
+        "they stand in order like my cousins."
+      ]
+    },
+    "cal-cs-d3-003": {
+      "kept": "the bad number gets a gentle no.",
+      "alternates": [
+        "the bad number gets a gentle no.",
+        "it handles the mess like a pro.",
+        "no number can break it now."
+      ]
+    },
+    "cal-cs-d3-004": {
+      "kept": "bob gets checked before he shines.",
+      "alternates": [
+        "bob gets checked before he shines.",
+        "it asks about bob first, always.",
+        "no bob, no number, no problem."
+      ]
+    },
+    "cal-cs-d3-005": {
+      "kept": "the point knows exactly where it is.",
+      "alternates": [
+        "the point knows exactly where it is.",
+        "it stands proud with its coordinates.",
+        "a point that never gets lost."
+      ]
+    },
+    "cs-async-await": {
+      "kept": "the page arrives like a letter.",
+      "alternates": [
+        "the page arrives like a letter.",
+        "it fetches the page without a fuss.",
+        "the web feels closer now."
+      ]
+    },
+    "cs-interface": {
+      "kept": "the logger knows just what to do.",
+      "alternates": [
+        "the logger knows just what to do.",
+        "it writes things down like a diary.",
+        "a logger that never forgets."
+      ]
+    },
+    "cal-cs-d4-001": {
+      "kept": "every label fits like a name tag.",
+      "alternates": ["every label fits like a name tag.", "the members now wear their labels."]
+    },
+    "cal-cs-d4-002": {
+      "kept": "the books stack up in perfect order.",
+      "alternates": [
+        "the books stack up in perfect order.",
+        "it ranks them like a leaderboard.",
+        "the finishers get their crowns."
+      ]
+    },
+    "cal-cs-d4-003": {
+      "kept": "the room now holds a perfect circle.",
+      "alternates": [
+        "the room now holds a perfect circle.",
+        "it bends into shape like a hula hoop.",
+        "a circle that never wobbles."
+      ]
+    },
+    "cal-cs-d4-004": {
+      "kept": "each profile fits like a glove.",
+      "alternates": ["each profile fits like a glove."]
+    },
+    "cal-cs-d4-005": {
+      "kept": "the page stops when i say so.",
+      "alternates": [
+        "the page stops when i say so.",
+        "it fetches but listens to me.",
+        "a page that waits like a patient dog."
+      ]
+    },
+    "cs-linq": {
+      "kept": "the evens get squared in a flash.",
+      "alternates": [
+        "the evens get squared in a flash.",
+        "it picks them like ripe fruit.",
+        "the numbers line up just right."
+      ]
+    },
+    "cs-switch-expr": {
+      "kept": "it turns numbers into letters neatly.",
+      "alternates": ["it turns numbers into letters neatly."]
+    },
+    "cal-cs-d5-001": {
+      "kept": "the list remembers every member.",
+      "alternates": ["the list remembers every member.", "every joiner gets a spot."]
+    },
+    "cal-cs-d5-002": {
+      "kept": "the rooms now hear every shout.",
+      "alternates": [
+        "the rooms now hear every shout.",
+        "it carries voices like a megaphone.",
+        "a shout that never gets lost."
+      ]
+    },
+    "cal-cs-d5-003": {
+      "kept": "the query builds itself piece by piece.",
+      "alternates": ["the query builds itself piece by piece."]
+    },
+    "cal-cs-d5-004": {
+      "kept": "the tables now hum with primes.",
+      "alternates": [
+        "the tables now hum with primes.",
+        "it picks them like lucky numbers.",
+        "every table is a perfect prime."
+      ]
+    },
+    "cal-cs-d5-005": {
+      "kept": "the blanks vanish and the rest get numbers.",
+      "alternates": ["the blanks vanish and the rest get numbers.", "it cleans up like a broom."]
+    },
+    "cs-record": {
+      "kept": "the copy gets a new age and a smile.",
+      "alternates": ["the copy gets a new age and a smile.", "a user that ages but never changes."]
+    },
+    "cal-cs-d6-001": {
+      "kept": "the groups sort and the values tweak.",
+      "alternates": [
+        "the groups sort and the values tweak.",
+        "it rearranges like a puzzle.",
+        "every item finds its perfect spot."
+      ]
+    },
+    "cal-cs-d6-002": {
+      "kept": "the list splits and merges like magic.",
+      "alternates": ["the list splits and merges like magic.", "a list that never stays messy."]
+    },
+    "cal-cs-d6-003": {
+      "kept": "the grids multiply and cap like pros.",
+      "alternates": [
+        "the grids multiply and cap like pros.",
+        "it crunches them like my calculator.",
+        "every answer fits just right."
+      ]
+    },
+    "cal-cs-d6-004": {
+      "kept": "the maze now knows the shortest way out.",
+      "alternates": ["the maze now knows the shortest way out."]
+    },
+    "cal-cs-d6-005": {
+      "kept": "it finds the path like my cousin through a sale.",
+      "alternates": ["it finds the path like my cousin through a sale."]
+    },
+    "cal-cs-d7-001": {
+      "kept": "every turn is perfect and fast.",
+      "alternates": ["every turn is perfect and fast."]
+    },
+    "cal-cs-d7-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-cs-d7-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-cs-d7-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-cs-d7-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d1-001": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d1-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d1-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d1-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d1-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "java-enhanced-for": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d2-001": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d2-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d2-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d2-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d2-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "java-stringbuilder": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d3-001": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d3-002": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d3-003": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d3-004": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-jv-d3-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "java-optional": {
+      "kept": null,
+      "alternates": []
+    },
+    "java-try-resources": {
+      "kept": "the regulars arrive like my cousins at breakfast.",
+      "alternates": [
+        "the regulars arrive like my cousins at breakfast.",
+        "it knows every member without asking twice."
+      ]
+    },
+    "cal-jv-d4-001": {
+      "kept": "the stamps add up like pocket change.",
+      "alternates": [
+        "the stamps add up like pocket change.",
+        "it does the math before i finish my coffee.",
+        "multiply feels like magic again."
+      ]
+    },
+    "cal-jv-d4-002": {
+      "kept": "each member now has their usual right beside them.",
+      "alternates": [
+        "each member now has their usual right beside them.",
+        "the pairs sit together like old friends.",
+        "it remembers who orders what every time."
+      ]
+    },
+    "cal-jv-d4-003": {
+      "kept": "the numbers march in perfect order.",
+      "alternates": [
+        "the numbers march in perfect order.",
+        "it counts like my cousin counting steps.",
+        "every number gets its turn without rushing."
+      ]
+    },
+    "cal-jv-d4-004": {
+      "kept": "visits and names now line up just right.",
+      "alternates": [
+        "visits and names now line up just right.",
+        "it remembers who came first and last."
+      ]
+    },
+    "cal-jv-d4-005": {
+      "kept": "the shapes fit together like puzzle pieces.",
+      "alternates": [
+        "the shapes fit together like puzzle pieces.",
+        "it knows circles and squares by heart.",
+        "every shape gets its own perfect space."
+      ]
+    },
+    "java-interface-default": {
+      "kept": "it shouts like my cousin at a game.",
+      "alternates": ["it shouts like my cousin at a game.", "hello now comes in two flavors."]
+    },
+    "java-stream": {
+      "kept": "the list changes like a chameleon.",
+      "alternates": [
+        "the list changes like a chameleon.",
+        "it filters and tweaks without a fuss.",
+        "every item gets a fresh new look."
+      ]
+    },
+    "cal-jv-d5-001": {
+      "kept": "the words stack up by size like blocks.",
+      "alternates": [
+        "the words stack up by size like blocks.",
+        "it sorts them like my cousin sorts laundry.",
+        "every word finds its perfect group."
+      ]
+    },
+    "cal-jv-d5-002": {
+      "kept": "the values stay safe like eggs in a carton.",
+      "alternates": [
+        "the values stay safe like eggs in a carton.",
+        "it keeps them from wandering too far.",
+        "nothing slips past the guardrails."
+      ]
+    },
+    "cal-jv-d5-003": {
+      "kept": "the words count up like sheep in a field.",
+      "alternates": [
+        "the words count up like sheep in a field.",
+        "it knows every word by heart now.",
+        "the file speaks in numbers i can read."
+      ]
+    },
+    "cal-jv-d5-004": {
+      "kept": "the news travels fast and light.",
+      "alternates": [
+        "the news travels fast and light.",
+        "it tells everyone who needs to know.",
+        "every listener gets their own copy."
+      ]
+    },
+    "cal-jv-d5-005": {
+      "kept": "the errors now have names and faces.",
+      "alternates": [
+        "the errors now have names and faces.",
+        "it complains like my cousin when hungry.",
+        "every mistake gets a polite explanation."
+      ]
+    },
+    "java-record": {
+      "kept": "the point knows exactly where it stands.",
+      "alternates": [
+        "the point knows exactly where it stands.",
+        "it formats like a postcard from vacation.",
+        "every coordinate fits just right."
+      ]
+    },
+    "cal-jv-d6-001": {
+      "kept": "the requests build like lego towers.",
+      "alternates": [
+        "the requests build like lego towers.",
+        "each piece clicks into place perfectly.",
+        "it remembers what i asked for every time."
+      ]
+    },
+    "cal-jv-d6-002": {
+      "kept": "the memories stay safe like treasures in a box.",
+      "alternates": [
+        "the memories stay safe like treasures in a box.",
+        "it remembers for everyone without mixing up.",
+        "nothing gets lost in the crowd."
+      ]
+    },
+    "cal-jv-d6-003": {
+      "kept": "the numbers average like a smooth ride.",
+      "alternates": [
+        "the numbers average like a smooth ride.",
+        "it tracks the highs and lows without missing.",
+        "every number gets its moment in the sun."
+      ]
+    },
+    "cal-jv-d6-004": {
+      "kept": "it reads the file and tells me what it found.",
+      "alternates": [
+        "it reads the file and tells me what it found.",
+        "every read gets a little story."
+      ]
+    },
+    "cal-jv-d6-005": {
+      "kept": "the fields turn into words like magic.",
+      "alternates": [
+        "the fields turn into words like magic.",
+        "it speaks in strings i can understand.",
+        "every mark gets its own voice."
+      ]
+    },
+    "cal-jv-d7-001": {
+      "kept": "the pages arrive like letters in the mail.",
+      "alternates": [
+        "the pages arrive like letters in the mail.",
+        "it fetches them all at once without waiting.",
+        "every page gets its own stamp."
+      ]
+    },
+    "cal-jv-d7-002": {
+      "kept": "it finds things like my cousin finds bargains.",
+      "alternates": [
+        "it finds things like my cousin finds bargains.",
+        "the rules work like a charm every time."
+      ]
+    },
+    "cal-jv-d7-003": {
+      "kept": "the boxes add up like a grocery bill.",
+      "alternates": [
+        "the boxes add up like a grocery bill.",
+        "it does the math without me lifting a finger.",
+        "every sum gets its own little box."
+      ]
+    },
+    "cal-jv-d7-004": {
+      "kept": "the news goes straight to the right people.",
+      "alternates": [
+        "the news goes straight to the right people.",
+        "it tells them like my cousin tells secrets.",
+        "every message finds its perfect home."
+      ]
+    },
+    "cal-jv-d7-005": {
+      "kept": "the search builds like a train of thought.",
+      "alternates": [
+        "the search builds like a train of thought.",
+        "every list gets a perfect answer."
+      ]
+    },
+    "cal-js-d1-001": {
+      "kept": "it says hello before i even wake up.",
+      "alternates": ["it says hello before i even wake up.", "hello now comes without me asking."]
+    },
+    "cal-js-d1-002": {
+      "kept": "names and ages now live together like roommates.",
+      "alternates": [
+        "names and ages now live together like roommates.",
+        "every name gets its own number right beside it.",
+        "my cousin finally knows how old his dog is."
+      ]
+    },
+    "cal-js-d1-003": {
+      "kept": "two numbers now hold hands and make a third.",
+      "alternates": [
+        "two numbers now hold hands and make a third.",
+        "it adds like my cousin adds up his receipts."
+      ]
+    },
+    "cal-js-d1-004": {
+      "kept": "the price now sits inside a perfect sentence.",
+      "alternates": [
+        "the price now sits inside a perfect sentence.",
+        "it tells me what things cost like a polite clerk.",
+        "every item now has its price in a neat line."
+      ]
+    },
+    "cal-js-d1-005": {
+      "kept": "the blanks vanish and the default stands tall.",
+      "alternates": [
+        "the blanks vanish and the default stands tall.",
+        "nothing is ever missing now."
+      ]
+    },
+    "js-map-filter": {
+      "kept": "the neat strokes stand out big and proud.",
+      "alternates": [
+        "the neat strokes stand out big and proud.",
+        "every swirl now has its moment in the light.",
+        "my fern would be proud of this handwriting."
+      ]
+    },
+    "js-ternary": {
+      "kept": "it knows when to say item and when to say items.",
+      "alternates": [
+        "it knows when to say item and when to say items.",
+        "one thing or many, it always gets it right."
+      ]
+    },
+    "cal-js-d2-001": {
+      "kept": "the grade now shouts like my cousin at a game.",
+      "alternates": [
+        "the grade now shouts like my cousin at a game.",
+        "every letter stands tall and proud.",
+        "it yells like a town crier with good news."
+      ]
+    },
+    "cal-js-d2-002": {
+      "kept": "the lists now hold hands like old friends.",
+      "alternates": [
+        "the lists now hold hands like old friends.",
+        "every item has its place in the line."
+      ]
+    },
+    "cal-js-d2-003": {
+      "kept": "each thing now has a name and a home.",
+      "alternates": [
+        "each thing now has a name and a home.",
+        "owners and names stand side by side.",
+        "my cousin would call this organized."
+      ]
+    },
+    "cal-js-d2-004": {
+      "kept": "every letter now knows exactly where it lives.",
+      "alternates": [
+        "every letter now knows exactly where it lives.",
+        "the list shows each one with its number.",
+        "they line up like soldiers on parade."
+      ]
+    },
+    "cal-js-d2-005": {
+      "kept": "nothing is ever missing now.",
+      "alternates": ["nothing is ever missing now.", "it remembers what i forget every time."]
+    },
+    "js-destructuring": {
+      "kept": "the loops swirls and tails now stand alone.",
+      "alternates": [
+        "the loops swirls and tails now stand alone.",
+        "my cousin would call this neat."
+      ]
+    },
+    "cal-js-d3-001": {
+      "kept": "the good things now show their prices proudly.",
+      "alternates": [
+        "the good things now show their prices proudly.",
+        "every item has its cost right beside it."
+      ]
+    },
+    "cal-js-d3-002": {
+      "kept": "the office now knows who can take this.",
+      "alternates": [
+        "the office now knows who can take this.",
+        "it asks like my cousin asks for help.",
+        "every hand goes up in the right order."
+      ]
+    },
+    "cal-js-d3-003": {
+      "kept": "the rectangle now knows its own size.",
+      "alternates": [
+        "the rectangle now knows its own size.",
+        "length and width make a perfect pair.",
+        "my cousin would call this math done right."
+      ]
+    },
+    "cal-js-d3-004": {
+      "kept": "every type now holds its own little group.",
+      "alternates": [
+        "every type now holds its own little group.",
+        "nothing is ever in the wrong place."
+      ]
+    },
+    "cal-js-d3-005": {
+      "kept": "the fridge now knows every unique thing inside.",
+      "alternates": [
+        "the fridge now knows every unique thing inside.",
+        "nothing is ever hidden or forgotten.",
+        "my cousin would call this a tidy fridge."
+      ]
+    },
+    "js-promise-chain": {
+      "kept": "it gets the data and counts it like a pro.",
+      "alternates": [
+        "it gets the data and counts it like a pro.",
+        "every piece arrives and lines up just right.",
+        "my cousin would call this efficient."
+      ]
+    },
+    "js-reduce": {
+      "kept": "it counts like my cousin counts his change.",
+      "alternates": [
+        "it counts like my cousin counts his change.",
+        "every thing now has its own little number.",
+        "nothing is ever missed or forgotten."
+      ]
+    },
+    "cal-js-d4-001": {
+      "kept": "it tries again like my cousin tries again.",
+      "alternates": [
+        "it tries again like my cousin tries again.",
+        "three times and it never gives up.",
+        "the wall now gives up its opinions."
+      ]
+    },
+    "cal-js-d4-002": {
+      "kept": "it listens like my cousin listens for the doorbell.",
+      "alternates": [
+        "it listens like my cousin listens for the doorbell.",
+        "the signal arrives and it shouts hello.",
+        "nothing is ever missed or ignored."
+      ]
+    },
+    "cal-js-d4-003": {
+      "kept": "every trade now has its own little number.",
+      "alternates": [
+        "every trade now has its own little number.",
+        "nothing is ever lost or forgotten."
+      ]
+    },
+    "cal-js-d4-004": {
+      "kept": "the opinions now hold hands in a perfect line.",
+      "alternates": [
+        "the opinions now hold hands in a perfect line.",
+        "each one leads to the next like a train.",
+        "my cousin would call this a neat chain."
+      ]
+    },
+    "cal-js-d4-005": {
+      "kept": "it waits like my cousin waits for the kettle.",
+      "alternates": [
+        "it waits like my cousin waits for the kettle.",
+        "nothing happens until i stop typing.",
+        "the perfect pause every time."
+      ]
+    },
+    "js-async-await": {
+      "kept": "it goes and gets the user like a polite messenger.",
+      "alternates": [
+        "it goes and gets the user like a polite messenger.",
+        "nothing is ever left behind."
+      ]
+    },
+    "js-class": {
+      "kept": "it counts the seconds like my cousin counts change.",
+      "alternates": [
+        "it counts the seconds like my cousin counts change.",
+        "i can see how long it lasts without a watch."
+      ]
+    },
+    "cal-js-d5-001": {
+      "kept": "the trades line up like my cousins at breakfast.",
+      "alternates": [
+        "the trades line up like my cousins at breakfast.",
+        "it keeps them moving but never lets them crowd.",
+        "ten things wait and three work like a charm."
+      ]
+    },
+    "cal-js-d5-002": {
+      "kept": "two opinions now live together like roommates.",
+      "alternates": [
+        "two opinions now live together like roommates.",
+        "the merge feels like a handshake between friends.",
+        "it blends them without losing a single thought."
+      ]
+    },
+    "cal-js-d5-003": {
+      "kept": "the stale ones vanish like old bread.",
+      "alternates": [
+        "the stale ones vanish like old bread.",
+        "it keeps only the opinions that still spark.",
+        "fresh thoughts stay and the rest fade away."
+      ]
+    },
+    "cal-js-d5-004": {
+      "kept": "the steps chain like a train of thought.",
+      "alternates": [
+        "the steps chain like a train of thought.",
+        "it times the whole trip like a perfect drive."
+      ]
+    },
+    "cal-js-d5-005": {
+      "kept": "three work and seven wait like a polite line.",
+      "alternates": [
+        "three work and seven wait like a polite line.",
+        "it juggles ten but never drops a single one.",
+        "the trades move like my cousins at a picnic."
+      ]
+    },
+    "cal-js-d6-001": {
+      "kept": "it remembers everything and tells the right people.",
+      "alternates": [
+        "it remembers everything and tells the right people.",
+        "the state stays safe like eggs in a carton.",
+        "it knows who needs to hear and when to speak."
+      ]
+    },
+    "cal-js-d6-002": {
+      "kept": "the email now stands tall like a proper guest.",
+      "alternates": [
+        "the email now stands tall like a proper guest.",
+        "it checks the name and the email like a bouncer."
+      ]
+    },
+    "cal-js-d6-003": {
+      "kept": "the map now knows every turn and every sign.",
+      "alternates": [
+        "the map now knows every turn and every sign.",
+        "the numbers line up like a perfect parade."
+      ]
+    },
+    "cal-js-d6-004": {
+      "kept": "the page arrives only when i ask for more.",
+      "alternates": [
+        "the page arrives only when i ask for more.",
+        "it waits like my cousin waits for the kettle.",
+        "no page comes until i say the word."
+      ]
+    },
+    "cal-js-d6-005": {
+      "kept": "it builds the thing only when someone needs it.",
+      "alternates": [
+        "it builds the thing only when someone needs it.",
+        "the logger appears like a polite messenger.",
+        "nothing wakes up until it has a job to do."
+      ]
+    },
+    "cal-js-d7-001": {
+      "kept": "the page now knows exactly what changed.",
+      "alternates": [
+        "the page now knows exactly what changed.",
+        "it spots the difference like a hawk in the sky.",
+        "every little tweak stands out like a sore thumb."
+      ]
+    },
+    "cal-js-d7-002": {
+      "kept": "the urgent jobs jump ahead like a fire drill.",
+      "alternates": [
+        "the urgent jobs jump ahead like a fire drill.",
+        "it knows what to do first and what to save."
+      ]
+    },
+    "cal-js-d7-003": {
+      "kept": "the total updates like a grocery bill.",
+      "alternates": [
+        "the total updates like a grocery bill.",
+        "it recalculates when the price moves a penny.",
+        "every change ripples through like a wave."
+      ]
+    },
+    "cal-js-d7-004": {
+      "kept": "it moves between idle and loading like a pro.",
+      "alternates": [
+        "it moves between idle and loading like a pro.",
+        "the retries count up like my cousin counting sheep.",
+        "it knows when to wait and when to try again."
+      ]
+    },
+    "cal-js-d7-005": {
+      "kept": "the text now bends like a chameleon.",
+      "alternates": [
+        "the text now bends like a chameleon.",
+        "it lets the addons change it like a game of telephone.",
+        "every plugin gets a turn to whisper."
+      ]
+    },
+    "cal-py-d1-001": {
+      "kept": "the announcement stands tall and proud.",
+      "alternates": [
+        "the announcement stands tall and proud.",
+        "it speaks up without waiting to be asked."
+      ]
+    },
+    "cal-py-d1-002": {
+      "kept": "it adds them up like my cousin adds his change.",
+      "alternates": [
+        "two numbers now hold hands and make a third.",
+        "it adds them up like my cousin adds his change."
+      ]
+    },
+    "cal-py-d1-003": {
+      "kept": "every duck now has a name like a proper guest.",
+      "alternates": [
+        "every duck now has a name like a proper guest.",
+        "the first and last stand together like bookends."
+      ]
+    },
+    "cal-py-d1-004": {
+      "kept": "the bill splits like a loaf of bread.",
+      "alternates": [
+        "the bill splits like a loaf of bread.",
+        "five ducks now know exactly what they owe.",
+        "it divides it neat like my cousin divides dessert."
+      ]
+    },
+    "cal-py-d1-005": {
+      "kept": "it knows when the age crosses the line.",
+      "alternates": [
+        "it knows when the age crosses the line.",
+        "the check stands like a gate at eighteen.",
+        "it says yes or no like a polite bouncer."
+      ]
+    },
+    "py-for-loop": {
+      "kept": "every label now knows its place in line.",
+      "alternates": [
+        "every label now knows its place in line.",
+        "the steps count up like my cousin counts his steps.",
+        "five little labels march in perfect order."
+      ]
+    },
+    "py-fstring": {
+      "kept": "the name and number now sit side by side.",
+      "alternates": [
+        "the name and number now sit side by side.",
+        "it shows them neat like a grocery receipt."
+      ]
+    },
+    "cal-py-d2-001": {
+      "kept": "the total and average now stand like twins.",
+      "alternates": [
+        "the total and average now stand like twins.",
+        "it counts the fares like my cousin counts his tips."
+      ]
+    },
+    "cal-py-d2-002": {
+      "kept": "every duck now hears its name like a hello.",
+      "alternates": [
+        "every duck now hears its name like a hello.",
+        "it says hello like my cousin greets his friends."
+      ]
+    },
+    "cal-py-d2-003": {
+      "kept": "ten seconds never felt so loud",
+      "alternates": ["ten seconds never felt so loud", "liftoff sounds like it should"]
+    },
+    "cal-py-d2-004": {
+      "kept": "the ducks now line up like my cousins at breakfast",
+      "alternates": [
+        "the ducks now line up like my cousins at breakfast",
+        "every duck knows its new place in line",
+        "the line reverses like a perfect magic trick"
+      ]
+    },
+    "cal-py-d2-005": {
+      "kept": "the average sits there like a proud parent",
+      "alternates": [
+        "the average sits there like a proud parent",
+        "duck ratings now stand tall and clear"
+      ]
+    },
+    "py-guard-clause": {
+      "kept": "the number now stays between the fences like a good guest",
+      "alternates": [
+        "the number now stays between the fences like a good guest",
+        "it keeps things neat without raising its voice",
+        "the fences hold like a polite handshake"
+      ]
+    },
+    "py-try-except": {
+      "kept": "the input now bends like a chameleon",
+      "alternates": [
+        "the input now bends like a chameleon",
+        "broken things get a gentle no",
+        "it catches mistakes like a soft net"
+      ]
+    },
+    "cal-py-d3-001": {
+      "kept": "it plucks them like my cousin plucks ripe fruit",
+      "alternates": [
+        "it plucks them like my cousin plucks ripe fruit",
+        "the crowd parts and the even ones stay"
+      ]
+    },
+    "cal-py-d3-002": {
+      "kept": "the rules now load like a family recipe",
+      "alternates": [
+        "the rules now load like a family recipe",
+        "it reads the file like a letter from home",
+        "the house rules arrive safe and sound"
+      ]
+    },
+    "cal-py-d3-003": {
+      "kept": "every room now knows its own size like a name tag",
+      "alternates": [
+        "every room now knows its own size like a name tag",
+        "the sizes stand tall and proud",
+        "{product} tracks them like a careful librarian"
+      ]
+    },
+    "cal-py-d3-004": {
+      "kept": "the moods line up like a perfect parade",
+      "alternates": [
+        "the moods line up like a perfect parade",
+        "it sorts them like my cousin sorts his tools"
+      ]
+    },
+    "cal-py-d3-005": {
+      "kept": "every name now holds hands with its mark",
+      "alternates": [
+        "every name now holds hands with its mark",
+        "the marks stand beside their names like twins",
+        "it matches them like a perfect dance"
+      ]
+    },
+    "py-class-def": {
+      "kept": "the circle now knows its own size like a secret",
+      "alternates": [
+        "the circle now knows its own size like a secret",
+        "it measures itself like a proud tailor",
+        "{product} handles circles like a pro"
+      ]
+    },
+    "py-list-comp": {
+      "kept": "it grabs them like my cousin grabs the last cookie",
+      "alternates": [
+        "it grabs them like my cousin grabs the last cookie",
+        "the pile parts and the even ones stay"
+      ]
+    },
+    "cal-py-d4-001": {
+      "kept": "the rabbits now remember like my cousin remembers names",
+      "alternates": [
+        "the rabbits now remember like my cousin remembers names",
+        "{product} breeds them like a careful gardener",
+        "they multiply like a perfect train of thought"
+      ]
+    },
+    "cal-py-d4-002": {
+      "kept": "every app now sits in its shape like a glove",
+      "alternates": [
+        "every app now sits in its shape like a glove",
+        "the shapes hold hands like old friends"
+      ]
+    },
+    "cal-py-d4-003": {
+      "kept": "the fights now wait like my cousin waits for the bus",
+      "alternates": [
+        "the fights now wait like my cousin waits for the bus",
+        "it picks the minutes like a careful chef picks spices",
+        "{product} only fights when it should"
+      ]
+    },
+    "cal-py-d4-004": {
+      "kept": "every argument now knows its own time like a stopwatch",
+      "alternates": [
+        "every argument now knows its own time like a stopwatch",
+        "it measures them like my cousin measures his steps"
+      ]
+    },
+    "cal-py-d4-005": {
+      "kept": "the card now checks itself like a polite guest",
+      "alternates": [
+        "the card now checks itself like a polite guest",
+        "every detail stands tall and proud",
+        "it knows its own rules like a family recipe"
+      ]
+    },
+    "py-decorator": {
+      "kept": "every fight now leaves a neat little note",
+      "alternates": [
+        "every fight now leaves a neat little note",
+        "the logs build like a perfect train of thought",
+        "it remembers like my cousin remembers birthdays"
+      ]
+    },
+    "py-dict": {
+      "kept": "every letter now counts like pocket change",
+      "alternates": [
+        "every letter now counts like pocket change",
+        "the tally stands like a neat little stack",
+        "it sorts them like my cousin sorts his coins"
+      ]
+    },
+    "cal-py-d5-001": {
+      "kept": "{product} now tries like my cousin tries again",
+      "alternates": [
+        "{product} now tries like my cousin tries again",
+        "every app gets three chances like a polite game",
+        "it keeps going like a perfect little engine"
+      ]
+    },
+    "cal-py-d5-002": {
+      "kept": "the apps now line up by stars like a perfect parade",
+      "alternates": [
+        "the apps now line up by stars like a perfect parade",
+        "every rating stands tall and proud",
+        "it sorts them like my cousin sorts his records"
+      ]
+    },
+    "cal-py-d5-003": {
+      "kept": "every page now arrives like a letter in the mail",
+      "alternates": [
+        "every page now arrives like a letter in the mail",
+        "the pages stack up like a neat little tower",
+        "it grabs them like my cousin grabs the last slice"
+      ]
+    },
+    "cal-py-d5-004": {
+      "kept": "every rating now stands like a proud little soldier",
+      "alternates": [
+        "every rating now stands like a proud little soldier",
+        "the numbers stay positive like a perfect smile",
+        "it checks them like my cousin checks his change"
+      ]
+    },
+    "cal-py-d5-005": {
+      "kept": "the last ten now stay like treasures in a box",
+      "alternates": [
+        "the last ten now stay like treasures in a box",
+        "it remembers them like my cousin remembers jokes",
+        "every app sits safe and sound"
+      ]
+    },
+    "cal-py-d6-001": {
+      "kept": "{product} now greets plugins like a perfect host",
+      "alternates": [
+        "{product} now greets plugins like a perfect host",
+        "every new one gets a hello and a smile",
+        "they arrive like guests at a family reunion"
+      ]
+    },
+    "cal-py-d6-002": {
+      "kept": "jobs now run like my cousins at a sale.",
+      "alternates": [
+        "jobs now run like my cousins at a sale.",
+        "the tally stays neat like pocket change.",
+        "it does them all at once like a pro."
+      ]
+    },
+    "cal-py-d6-003": {
+      "kept": "it shouts and gets answers like a game show.",
+      "alternates": [
+        "it shouts and gets answers like a game show.",
+        "the answers come back like my cousin at breakfast.",
+        "every shout now finds a friend."
+      ]
+    },
+    "cal-py-d6-004": {
+      "kept": "the form now knows every rule like a teacher.",
+      "alternates": [
+        "the form now knows every rule like a teacher.",
+        "every rule sits there like a name tag.",
+        "it checks the form like my cousin checks receipts."
+      ]
+    },
+    "cal-py-d6-005": {
+      "kept": null,
+      "alternates": []
+    },
+    "cal-py-d7-001": {
+      "kept": "the steps now flow like a smooth river.",
+      "alternates": [
+        "the steps now flow like a smooth river.",
+        "it strings them together like a perfect necklace.",
+        "every step waits its turn like a polite guest."
+      ]
+    },
+    "cal-py-d7-002": {
+      "kept": "it watches itself like my cousin watches his fern.",
+      "alternates": [
+        "it watches itself like my cousin watches his fern.",
+        "the mood stays safe like a treasure in a box.",
+        "every change now gets a little note."
+      ]
+    },
+    "cal-py-d7-003": {
+      "kept": "the jobs line up like a perfect parade.",
+      "alternates": [
+        "the jobs line up like a perfect parade.",
+        "urgent ones jump ahead like a fire drill.",
+        "it knows who goes first like a polite host."
+      ]
+    },
+    "cal-py-d7-004": {
+      "kept": "every number now sits in its place like a guest.",
+      "alternates": [
+        "every number now sits in its place like a guest.",
+        "the answer pops out like a ripe fruit."
+      ]
+    },
+    "cal-py-d7-005": {
+      "kept": "the note now visits every helper like a tour.",
+      "alternates": [
+        "the note now visits every helper like a tour.",
+        "every helper gets a turn like a polite line.",
+        "it moves through them like a smooth train."
+      ]
+    },
+    "cal-sq-d1-001": {
+      "kept": "the list now shows every sandwich like a parade.",
+      "alternates": [
+        "the list now shows every sandwich like a parade.",
+        "every sandwich stands tall like a proud guest.",
+        "it holds them all like a perfect album."
+      ]
+    },
+    "cal-sq-d1-002": {
+      "kept": "my first sandwich now sits there like a trophy.",
+      "alternates": [
+        "my first sandwich now sits there like a trophy.",
+        "it adds it like my cousin adds a stamp.",
+        "the sandwich now lives in the ledger."
+      ]
+    },
+    "cal-sq-d1-003": {
+      "kept": "the okay ones vanish like old bread.",
+      "alternates": [
+        "the okay ones vanish like old bread.",
+        "it keeps only the good ones like a treasure.",
+        "they leave like my cousin leaves a bad movie."
+      ]
+    },
+    "cal-sq-d1-004": {
+      "kept": "it counts them up like pocket change.",
+      "alternates": [
+        "it counts them up like pocket change.",
+        "every shipped order now gets a number.",
+        "the tally grows like a perfect stack."
+      ]
+    },
+    "cal-sq-d1-005": {
+      "kept": "the price now sits there like a name tag.",
+      "alternates": [
+        "the price now sits there like a name tag.",
+        "it changes like my cousin changes his mind.",
+        "one thing now costs what it should."
+      ]
+    },
+    "sql-insert": {
+      "kept": "it adds it like my cousin adds a bookmark.",
+      "alternates": [
+        "it adds it like my cousin adds a bookmark.",
+        "the product now sits there like a guest."
+      ]
+    },
+    "cal-sq-d2-001": {
+      "kept": "orders and customers now hold hands like friends.",
+      "alternates": [
+        "orders and customers now hold hands like friends.",
+        "the big ones stand out like a perfect parade."
+      ]
+    },
+    "cal-sq-d2-002": {
+      "kept": "the sandwiches now group like my cousins at breakfast.",
+      "alternates": [
+        "the sandwiches now group like my cousins at breakfast.",
+        "every filling gets its own little pile.",
+        "it skips the small ones like my cousin skips ads."
+      ]
+    },
+    "cal-sq-d2-003": {
+      "kept": "my ferns now show their photos like proud parents.",
+      "alternates": [
+        "my ferns now show their photos like proud parents.",
+        "every one gets a default like a polite guest.",
+        "the photos stand tall like a perfect album."
+      ]
+    },
+    "cal-sq-d2-004": {
+      "kept": "the summary builds like a perfect tower.",
+      "alternates": [
+        "the summary builds like a perfect tower.",
+        "every month now gets its own little box.",
+        "it adds them up like my cousin adds change."
+      ]
+    },
+    "cal-sq-d2-005": {
+      "kept": "every one gets a home like a perfect guest.",
+      "alternates": ["every one gets a home like a perfect guest."]
+    },
+    "sql-join": {
+      "kept": "the list now pairs them like old friends.",
+      "alternates": [
+        "the list now pairs them like old friends.",
+        "big orders stand out like a perfect parade.",
+        "every customer now holds hands with their order."
+      ]
+    },
+    "sql-update": {
+      "kept": "the engineering team now gets a little more.",
+      "alternates": [
+        "the engineering team now gets a little more.",
+        "it gives them a raise like my cousin gives advice.",
+        "every salary now sits a little taller."
+      ]
+    },
+    "cal-sq-d3-001": {
+      "kept": "the months now shout when they spend too much.",
+      "alternates": [
+        "the months now shout when they spend too much.",
+        "it shows them like my cousin shows his trophies.",
+        "every one sits there like a proud little flag."
+      ]
+    },
+    "cal-sq-d3-002": {
+      "kept": "the plants now stand out like a perfect parade.",
+      "alternates": [
+        "the plants now stand out like a perfect parade.",
+        "every thirsty one gets a little note.",
+        "it finds them like my cousin finds bargains."
+      ]
+    },
+    "cal-sq-d3-003": {
+      "kept": "every label now knows its size like a name tag.",
+      "alternates": [
+        "every label now knows its size like a name tag.",
+        "the plants stand tall with their types like friends.",
+        "it sorts them like my cousin sorts his tools."
+      ]
+    },
+    "cal-sq-d3-004": {
+      "kept": "the table now knows every plant like a name tag.",
+      "alternates": [
+        "the table now knows every plant like a name tag.",
+        "every plant and its spot sit together like old friends.",
+        "the table fits them all like a perfect puzzle."
+      ]
+    },
+    "cal-sq-d3-005": {
+      "kept": "it spots them like my cousin spots bargains.",
+      "alternates": [
+        "it spots them like my cousin spots bargains.",
+        "now it knows which plants got love today.",
+        "the thirsty ones stand out like a neon sign."
+      ]
+    },
+    "sql-subquery": {
+      "kept": "the big spenders now wave like proud flags.",
+      "alternates": [
+        "the big spenders now wave like proud flags.",
+        "it finds them like my cousin finds the last cookie.",
+        "now the heavy hitters shine like stars."
+      ]
+    },
+    "cal-sq-d4-001": {
+      "kept": "every department now knows its stars like a trophy case.",
+      "alternates": [
+        "every department now knows its stars like a trophy case.",
+        "the ranks line up like my cousins at breakfast.",
+        "now the paychecks stack up like perfect blocks."
+      ]
+    },
+    "cal-sq-d4-002": {
+      "kept": "the active ones now show their moves like a parade.",
+      "alternates": [
+        "the active ones now show their moves like a parade.",
+        "it pairs them up like old friends at a reunion.",
+        "now the recent orders stand tall like proud parents."
+      ]
+    },
+    "cal-sq-d4-003": {
+      "kept": "it subtracts them like my cousin subtracts change.",
+      "alternates": [
+        "it subtracts them like my cousin subtracts change.",
+        "now the shelves stay honest like a perfect guest."
+      ]
+    },
+    "cal-sq-d4-004": {
+      "kept": "the happy big spenders now sit like treasures in a box.",
+      "alternates": [
+        "the happy big spenders now sit like treasures in a box.",
+        "it finds them like my cousin finds the best seat.",
+        "now the quiet giants stand out like a spotlight."
+      ]
+    },
+    "cal-sq-d4-005": {
+      "kept": "the views now count up like sheep in a field.",
+      "alternates": [
+        "the views now count up like sheep in a field.",
+        "it adds them like my cousin adds a bookmark.",
+        "now the numbers stay fresh like morning bread."
+      ]
+    },
+    "sql-cte": {
+      "kept": "the top ten now line up like a perfect parade.",
+      "alternates": [
+        "the top ten now line up like a perfect parade.",
+        "it finds them like my cousin finds the last slice."
+      ]
+    },
+    "cal-sq-d5-001": {
+      "kept": "every day now knows its mood like a name tag.",
+      "alternates": [
+        "every day now knows its mood like a name tag.",
+        "it calls them like my cousin calls the shots."
+      ]
+    },
+    "cal-sq-d5-002": {
+      "kept": "the sales now march in like a perfect line.",
+      "alternates": [
+        "the sales now march in like a perfect line.",
+        "every day now shows up like a polite guest.",
+        "it counts them like my cousin counts his change."
+      ]
+    },
+    "cal-sq-d5-003": {
+      "kept": "the top earners now stand out like a trophy case.",
+      "alternates": [
+        "the top earners now stand out like a trophy case.",
+        "it finds them like my cousin finds the last cookie.",
+        "now the paychecks stack up like perfect blocks."
+      ]
+    },
+    "cal-sq-d5-004": {
+      "kept": "the stock now stays fresh like morning bread.",
+      "alternates": [
+        "the stock now stays fresh like morning bread.",
+        "it adds them like my cousin adds a bookmark.",
+        "now the shelves know their numbers like a name tag."
+      ]
+    },
+    "cal-sq-d5-005": {
+      "kept": "the totals now sit there like a perfect puzzle.",
+      "alternates": [
+        "the totals now sit there like a perfect puzzle.",
+        "every group now lines up like a polite parade.",
+        "it adds them up like my cousin adds his change."
+      ]
+    },
+    "cal-sq-d6-001": {
+      "kept": "the tree now grows like a perfect family photo.",
+      "alternates": [
+        "the tree now grows like a perfect family photo.",
+        "every branch now knows its place like a name tag."
+      ]
+    },
+    "cal-sq-d6-002": {
+      "kept": "the top five now stand out like proud little soldiers.",
+      "alternates": [
+        "the top five now stand out like proud little soldiers.",
+        "every month now knows its stars like a trophy case.",
+        "it finds them like my cousin finds the last cookie."
+      ]
+    },
+    "cal-sq-d6-003": {
+      "kept": "the orders now group like my cousins at breakfast.",
+      "alternates": [
+        "the orders now group like my cousins at breakfast.",
+        "it sorts them like my cousin sorts his change.",
+        "now the weeks and days line up like a perfect parade."
+      ]
+    },
+    "cal-sq-d6-004": {
+      "kept": "the snapshot now holds everything like a treasure box.",
+      "alternates": [
+        "the snapshot now holds everything like a treasure box.",
+        "every customer now knows their story like a name tag."
+      ]
+    },
+    "cal-sq-d6-005": {
+      "kept": "the list now nests like a perfect set of dolls.",
+      "alternates": [
+        "the list now nests like a perfect set of dolls.",
+        "every skill now sits inside like a perfect guest.",
+        "it groups them like my cousin groups his tools."
+      ]
+    },
+    "cal-sq-d7-001": {
+      "kept": "the map now knows every turn like a perfect road.",
+      "alternates": [
+        "the map now knows every turn like a perfect road.",
+        "every loop now stands out like a bright little flag.",
+        "it draws them like my cousin draws a treasure hunt."
+      ]
+    },
+    "cal-sq-d7-002": {
+      "kept": "the path now flows like a perfect little river.",
+      "alternates": [
+        "the path now flows like a perfect little river.",
+        "every step now sits there like a proud little sign.",
+        "it tracks them like my cousin tracks his change."
+      ]
+    },
+    "cal-sq-d7-003": {
+      "kept": "the sales now pivot like a perfect little dance.",
+      "alternates": [
+        "the sales now pivot like a perfect little dance.",
+        "every category now knows its months like a name tag.",
+        "it sorts them like my cousin sorts his photos."
+      ]
+    },
+    "cal-sq-d7-004": {
+      "kept": "the changes now stay safe like eggs in a carton.",
+      "alternates": [
+        "the changes now stay safe like eggs in a carton.",
+        "every before and after now sits side by side.",
+        "it logs them like my cousin logs his receipts."
+      ]
+    },
+    "cal-sq-d7-005": {
+      "kept": "the parts now break down like a perfect little story.",
+      "alternates": [
+        "the parts now break down like a perfect little story.",
+        "every cost now knows its place like a name tag.",
+        "it adds them up like my cousin adds his grocery bill."
+      ]
+    }
+  }
+}

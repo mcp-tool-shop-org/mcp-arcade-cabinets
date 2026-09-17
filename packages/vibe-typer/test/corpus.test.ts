@@ -12,7 +12,7 @@ import {
   weakWeight,
   withIntegration,
 } from '../src/corpus';
-import { CORPUS_STACKS } from '../src/patterns';
+import { CORPUS_STACKS, namesAPiece, PIECES } from '../src/patterns';
 
 describe('the ported corpus', () => {
   it('carries every stack and every band', () => {
@@ -132,6 +132,55 @@ describe('the ported corpus', () => {
     expect(askIsBound('use unknown if the sock has no owner')).toBe(true);
     expect(askIsBound('add two numbers and show the answer.')).toBe(false);
     expect(askIsBound('let {product} announce it is here.')).toBe(false);
+  });
+
+  // The authoring run of 2026-09-17 (`docs/vibe-typer.reactions.md`): a line
+  // per request, written against that request and read back by a second
+  // family. These three are the shape of it on disk, and they are what a
+  // later run may not quietly undo.
+  //
+  // The second one is the rule that makes a reaction worth having. The pools
+  // behind `user.reactionsByTopicEnabled` were written with no request in
+  // front of the writer, so seventy of a hundred and eight named a piece the
+  // request never asked for — "the logo blinks when you open the fridge."
+  // after a request about duck fares. A reaction written for one ask may name
+  // what that ask names and nothing else, so the ask's own words are the
+  // allowance and `namesAPiece` is the scanner.
+  it('carries a reaction for every ask, held to that ask', () => {
+    const asked = DEFAULT_CORPUS.snippets.filter((s) => typeof s.ask === 'string' && s.ask !== '');
+    expect(asked.length).toBeGreaterThanOrEqual(240);
+
+    const without = asked.filter((s) => typeof s.reaction !== 'string' || s.reaction === '');
+    expect(without.map((s) => s.id)).toEqual([]);
+
+    const strays: string[] = [];
+    for (const snippet of asked) {
+      const reaction = snippet.reaction!;
+      if (!namesAPiece(reaction)) continue;
+      for (const piece of PIECES) {
+        const rule = new RegExp(`\\b${piece}(?:s|es)?\\b`, 'i');
+        if (rule.test(reaction) && !rule.test(snippet.ask!)) {
+          strays.push(`${snippet.id}: "${reaction}" names ${piece}, its ask does not`);
+        }
+      }
+    }
+    expect(strays).toEqual([]);
+  });
+
+  // A level draws four requests and says four lines back. Two identical ones
+  // in a run reads as the user not looking, and the whole point of a line per
+  // request is that the player never hears the same line twice for two
+  // different things.
+  it('says no reaction twice', () => {
+    const seen = new Map<string, string>();
+    const twins: string[] = [];
+    for (const snippet of DEFAULT_CORPUS.snippets) {
+      if (typeof snippet.reaction !== 'string' || snippet.reaction === '') continue;
+      const first = seen.get(snippet.reaction);
+      if (first !== undefined) twins.push(`${first} and ${snippet.id}: "${snippet.reaction}"`);
+      else seen.set(snippet.reaction, snippet.id);
+    }
+    expect(twins).toEqual([]);
   });
 
   it('keeps the ask a snippet carries, and leaves the rest without one', () => {

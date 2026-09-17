@@ -1,0 +1,116 @@
+{
+  "date": "2026-09-17",
+  "stamp": "2026-09-17-034719015",
+  "model": "ollama:mistral-large-3:675b-cloud",
+  "route": "ollama",
+  "temperature": 0.9,
+  "concurrency": 1,
+  "chunk": 25,
+  "revoice": false,
+  "spare": null,
+  "pool": null,
+  "editor": null,
+  "writerFamily": "mistral",
+  "editorFamily": null,
+  "voice": {
+    "user": "bf53d85000012670370aae03d68e77d3806a6e18f3db2f681478c781a8092d36",
+    "agent": "fa7dae9182cdb3bf92d8b525855269681741cd16aa8119969e757f598cc4a1d4"
+  },
+  "applied": true,
+  "calls": 14,
+  "wallMs": 198722,
+  "slots": {
+    "snippet-reactions": {
+      "model": "ollama:mistral-large-3:675b-cloud",
+      "temperature": 0.9,
+      "chunk": 25,
+      "concurrency": 1,
+      "prompts": [
+        "acf95a4ace7a34634af969827695240a0028176d67e5df6bc167371a43210e6b",
+        "0e47662b3166b97b7e1c01d3a2998df425119d2dc27a7b48c33deaaf170f3d77",
+        "b619db5418e065ccab292e7ce29b47b1cdb457bf5764010db2740da233108d15",
+        "4c282c59569b641437ed1ffe2660216bfadafb73440e4723ce9dea8f21513aa4",
+        "874dd2c1ffb706bb245e4b1ed79b051770b98a7c30d496d1a286a7a65b6c9ccc",
+        "dc9220d63095e7dbea9f324b5812f84089a13fb0d6d63944aa03b13b7359c104",
+        "bf95ee0f8505f19586d1b1a47084e87d77f772d10ab406ef2bacc7a30b1ae7cf",
+        "e9e052bba3e50c85e2cdce40d7cb5cb48f599cb3ce7c0986410a08e2c771a268",
+        "b59d32f892503e325f5dc0a45431a1dc524a18c93ada03203abe49736438e613",
+        "0f229768ec6a59d8efe3d5b08ad7be7b4ed9340e2b72423306361fc1f1e2bfdf",
+        "95159a7c5314c1a543d822dfd29f632bc4323b31575d4fe890e4e640b6205305",
+        "d5732ce8eb2499727772f667ce4311eac53459da583f9e2c7590831c7f643287",
+        "35402061fd534e39037da93a01b338c92c4ca2a3cf7c15455bf20aa32ad02e14",
+        "b9374fa179ef00d793756ce1ffe9b3c46721ecc981c15bc7bf024c2c1b66a958"
+      ],
+      "calls": 14,
+      "requested": 879,
+      "kept": 249,
+      "missing": 43,
+      "waits": 0,
+      "dropped": {
+        "names fridge, which the request never asked for": 35,
+        "names screen, which the request never asked for": 1,
+        "names yogurt, which the request never asked for": 13,
+        "names list, which the request never asked for": 15,
+        "names badge, which the request never asked for": 1,
+        "not ascii": 11,
+        "forbidden word or digit": 4,
+        "names countdown, which the request never asked for": 3,
+        "names duck, which the request never asked for": 1,
+        "names sock, which the request never asked for": 1,
+        "names page, which the request never asked for": 4,
+        "leans on a story with no level to hold it up": 1,
+        "names greeting, which the request never asked for": 5,
+        "names label, which the request never asked for": 4,
+        "names row, which the request never asked for": 3,
+        "names link, which the request never asked for": 1,
+        "names timer, which the request never asked for": 1,
+        "names clock, which the request never asked for": 1,
+        "names menu, which the request never asked for": 1,
+        "names card, which the request never asked for": 1,
+        "names chart, which the request never asked for": 1,
+        "names door, which the request never asked for": 1,
+        "names picture, which the request never asked for": 1
+      },
+      "ms": 198679,
+      "tokens": {
+        "in": 115013,
+        "out": 13483
+      },
+      "cost": null,
+      "errors": [],
+      "heldFromBefore": 0,
+      "rounds": [
+        {
+          "round": 1,
+          "asked": 249,
+          "held": 205
+        },
+        {
+          "round": 2,
+          "asked": 44,
+          "held": 249
+        }
+      ],
+      "editor": {
+        "spec": null,
+        "family": null,
+        "writer": "mistral",
+        "calls": 0,
+        "ms": 0,
+        "tokens": {
+          "in": 0,
+          "out": 0
+        },
+        "read": 0,
+        "dropped": [],
+        "reasked": 0,
+        "refilled": 0,
+        "empty": [],
+        "errors": []
+      },
+      "wrote": 249,
+      "withoutOne": 0,
+      "wallMs": 198721
+    }
+  }
+}

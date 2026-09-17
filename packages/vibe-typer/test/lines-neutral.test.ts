@@ -688,7 +688,13 @@ describe('the reactions', () => {
       const picker = new LinePicker(DEFAULT_PATTERNS, { seed: 3, tier });
       picker.startLevel(0);
       for (const snippet of DEFAULT_CORPUS.snippets.slice(0, 60)) {
-        const said = picker.reaction(snippet, PRODUCT);
+        // With its own reaction taken off. The rule under test is the blind
+        // pool's — the line that answers a ship nobody wrote a line for — and
+        // after the authoring run of 2026-09-17 every corpus snippet carries
+        // one of its own, so the blind path has to be asked for.
+        const blind = { ...snippet };
+        delete blind.reaction;
+        const said = picker.reaction(blind, PRODUCT);
         expect(DEFAULT_PATTERNS.user.reviews, `tier ${tier}: ${said}`).toContain(said);
         expect(PIECE.test(said), `tier ${tier} reacted with a piece: ${said}`).toBe(false);
         const strays = wordsOf(said).filter((w) => !VOCABULARY.has(w));
@@ -700,7 +706,13 @@ describe('the reactions', () => {
   it('never says the deploy verdict twice in a level', () => {
     for (const tier of TIERS) {
       const picker = new LinePicker(DEFAULT_PATTERNS, { seed: 8, tier });
-      const snippet = DEFAULT_CORPUS.snippets[0]!;
+      // Without its own reaction, so the draw is the blind one: the bag this
+      // test is about is the one the generic reviews and the deploy verdict
+      // share, and a snippet that carries a line of its own spends no draw
+      // from it. Every corpus snippet carries one after the authoring run of
+      // 2026-09-17, so the blind path has to be asked for.
+      const snippet = { ...DEFAULT_CORPUS.snippets[0]! };
+      delete snippet.reaction;
       for (let level = 0; level < 4; level++) {
         picker.startLevel(level);
         const said = [
