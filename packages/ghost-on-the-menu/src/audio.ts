@@ -271,7 +271,7 @@ export function sfx(name: SfxName): Note[] {
     case 'fog':
       return [{ at: 0, freq: 55, dur: 1.2, wave: 'sawtooth', gain: 0.05 }];
     case 'veil':
-      // The bank's own note, an octave down and shorter: the same weather
+      // The bank's own note, lower and shorter: the same weather
       // arriving rather than a new thing. The blind used to be silent.
       return [
         { at: 0, freq: 41, dur: 0.5, wave: 'sawtooth', gain: 0.06 },
