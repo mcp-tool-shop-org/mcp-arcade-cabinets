@@ -15,6 +15,7 @@ export type SfxName =
   | 'drop-rapid'
   | 'drop-pierce'
   | 'fog'
+  | 'veil'
   | 'lamp'
   | 'lampback'
   | 'lampfull'
@@ -22,9 +23,11 @@ export type SfxName =
   | 'end'
   | 'wave'
   | 'bosshit'
+  | 'hullhit'
   | 'bossdown'
   | 'dive'
-  | 'burst';
+  | 'burst'
+  | 'capped';
 
 /** One synthesized note: a simple oscillator with an envelope. */
 export interface Note {
@@ -267,6 +270,13 @@ export function sfx(name: SfxName): Note[] {
       ];
     case 'fog':
       return [{ at: 0, freq: 55, dur: 1.2, wave: 'sawtooth', gain: 0.05 }];
+    case 'veil':
+      // The bank's own note, an octave down and shorter: the same weather
+      // arriving rather than a new thing. The blind used to be silent.
+      return [
+        { at: 0, freq: 41, dur: 0.5, wave: 'sawtooth', gain: 0.06 },
+        { at: 0.06, freq: 33, dur: 0.6, wave: 'sine', gain: 0.05 },
+      ];
     case 'lamp':
       return [
         { at: 0, freq: 196, dur: 0.12, wave: 'square', gain: 0.14 },
@@ -287,6 +297,15 @@ export function sfx(name: SfxName): Note[] {
     case 'bosshit':
       // A dull thud: the boss is a wall, not a bell.
       return [{ at: 0, freq: 98, dur: 0.07, wave: 'square', gain: 0.1 }];
+    case 'hullhit':
+      // A hull that held: the boss's thud, thinner and quieter, and well
+      // under the pop. What died and what held must not sound alike.
+      return [{ at: 0, freq: 165, dur: 0.05, wave: 'square', gain: 0.06 }];
+    case 'capped':
+      // The column is full: one short dry tick, quieter than the shot it is
+      // standing in for. It says the button was read and the field was not
+      // ready, which is the whole of what the cap means.
+      return [{ at: 0, freq: 330, dur: 0.03, wave: 'square', gain: 0.05 }];
     case 'bossdown':
       // Falling thirds, longer than a pop, shorter than the catch; a boss is the atom, not a lie.
       return [

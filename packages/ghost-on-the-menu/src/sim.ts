@@ -86,6 +86,16 @@ const LEAN_SPEED = 90;
  */
 export const MAX_DT = 0.05;
 
+/**
+ * Hits a hull of this class takes. One when the class has no entry in
+ * formations.json. The ledger's three used to be a bare literal written
+ * twice, in a package where every other feel number is a lever.
+ */
+function hullHp(patterns: PatternSet, sprite: SpriteClass): number {
+  const hulls: Partial<Record<string, number>> = patterns.formations.hulls;
+  return hulls[sprite] ?? 1;
+}
+
 const diveIndex = new WeakMap<Enemy, number>();
 const nextDive = new WeakMap<Enemy, number>();
 const dives = new WeakMap<
@@ -585,6 +595,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     if (last) last.x = wrapX(last.x + hoverShift(k, round.seed, beat.source.index), box.w);
     const start = path[0] ?? { x: beat.x, y: 0 };
     const hover = path[path.length - 1] ?? { x: beat.x, y: 80 };
+    const hp = hullHp(patterns, beat.sprite);
     const enemy: Enemy = {
       id: beat.id,
       x: start.x - box.w / 2,
@@ -611,7 +622,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
       caughtY: PARKING_Y,
       fireAt: Number.POSITIVE_INFINITY,
       dieAt: 0,
-      ...(beat.sprite === 'ledger' ? { hp: 3 } : {}),
+      ...(hp > 1 ? { hp } : {}),
     };
     diveIndex.set(enemy, i);
     enemies.push(enemy);
@@ -652,6 +663,9 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     pierceT: 0,
     dropCatches: 0,
     dropCatchesByKind: { lamp: 0, spread: 0, rapid: 0, pierce: 0 },
+    columnFull: false,
+    refusals: 0,
+    hullHits: 0,
     hazards: [],
     bossIntent: null,
     bossQueue: [],
@@ -1032,6 +1046,7 @@ function spawnFlavorEnemy(
   salt: number,
 ): void {
   const box = spriteBox(sprite, meta.patterns);
+  const hp = hullHp(meta.patterns, sprite);
   const def = pickPath(meta.patterns, meta.round.tier, sprite, meta.round.seed, salt);
   const path = scalePath(def);
   const start = path[0] ?? { x: FIELD.width / 2, y: 0 };
@@ -1057,7 +1072,7 @@ function spawnFlavorEnemy(
     caughtY: PARKING_Y,
     fireAt: Number.POSITIVE_INFINITY,
     dieAt: 0,
-    ...(sprite === 'ledger' ? { hp: 3 } : {}),
+    ...(hp > 1 ? { hp } : {}),
   };
   diveIndex.set(enemy, salt);
   state.enemies.push(enemy);
@@ -1490,7 +1505,27 @@ function stepFogBeats(state: RoundState, meta: Meta): void {
   }
 }
 
-function stepFog(state: RoundState, dt: number): void {
+/**
+ * The word for the veil, in the lamp's register and from its own pool. The
+ * blind costs the player the bottom of the field for its window, and it said
+ * nothing in any channel: the only fog cue fires on the bank appearing, and
+ * of every event that costs something this was the last one with no word.
+ * It is also the event that most looks like the renderer breaking. The lines
+ * themselves are the lead's standing task.
+ */
+function sayBlind(state: RoundState, meta: Meta | undefined): void {
+  if (!meta) return;
+  const lines = meta.patterns.voice.blind;
+  if (lines.length === 0) return;
+  const picked = nextBagLine(lines, bagFor(meta.bags, 'blind'), meta.round.seed, 71 + state.wave);
+  const text = sanitizeCaption(picked);
+  if (!text) return;
+  // A wave card is not cut short for it, the way the lamp's word is not.
+  if (state.caption && state.caption.kind === 'wave') return;
+  state.caption = { text, t: CAPTION_T, kind: 'blind' };
+}
+
+function stepFog(state: RoundState, meta: Meta | undefined, dt: number): void {
   const fog = state.fog;
   if (!fog || !fog.alive) return;
   fog.y += fog.vy * dt;
@@ -1498,6 +1533,7 @@ function stepFog(state: RoundState, dt: number): void {
     state.blind = BLIND_BEAT;
     fog.alive = false;
     state.fog = null;
+    sayBlind(state, meta);
   }
   if (fog.y > FIELD.height) {
     fog.alive = false;
@@ -1819,8 +1855,20 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
     return state;
   }
 
-  if (input.left && !input.right) state.player.x -= player.speed * dt;
-  if (input.right && !input.left) state.player.x += player.speed * dt;
+  // A steering target is honored ahead of the buttons and spends the same
+  // per-frame budget they spend, so a pointer or a thumb flies the same ship
+  // at the same speed a keyboard does and gains nothing by it. Inside the
+  // deadband the ship holds still rather than chattering around a finger.
+  const toX = input.toX;
+  if (toX !== undefined && Number.isFinite(toX)) {
+    const gap = toX - (state.player.x + state.player.w / 2);
+    if (Math.abs(gap) > player.follow) {
+      state.player.x += Math.sign(gap) * Math.min(Math.abs(gap), player.speed * dt);
+    }
+  } else {
+    if (input.left && !input.right) state.player.x -= player.speed * dt;
+    if (input.right && !input.left) state.player.x += player.speed * dt;
+  }
   state.player.x = Math.max(0, Math.min(FIELD.width - state.player.w, state.player.x));
 
   state.fireCooldown = Math.max(0, state.fireCooldown - dt);
@@ -1833,7 +1881,16 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   const cap = rapid?.shotsInFlight ?? meta?.rung.shotsInFlight ?? Number.POSITIVE_INFINITY;
   const inFlight = state.shots.length;
   const mayFire = inFlight < cap;
-  if (input.fire && state.fireCooldown <= 0 && mayFire) {
+  // A held control is the same press as a tapped one: it goes through the
+  // cooldown and the cap unchanged and buys no rate.
+  const pressed = input.fire || input.autoFire === true;
+  // A press the column swallowed is an event now. It made no sound, drew
+  // nothing and was recorded nowhere, so the cap — a load-bearing feel lever,
+  // and the reason a rapid drop is worth catching — read as a dropped button.
+  const refused = pressed && state.fireCooldown <= 0 && !mayFire;
+  if (refused) state.refusals += 1;
+  state.columnFull = refused;
+  if (pressed && state.fireCooldown <= 0 && mayFire) {
     const cx = state.player.x + state.player.w / 2;
     const y = state.player.y - SHOT_H;
     const before = state.shots.length;
@@ -1871,6 +1928,10 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   const speed = meta?.rung.speed ?? 1;
   const room = formationRoom(state);
   for (const enemy of state.enemies) {
+    // The hull's flash clock, stepped the way the boss's is and before the
+    // mode gates below, so a hull that was hit and then caught or downed
+    // does not hold a stale flash.
+    if (enemy.hitT !== undefined) enemy.hitT += dt;
     if (!enemy.alive || state.t < enemy.tEnter) continue;
     if (enemy.mode === 'caught') {
       if (enemy.y > enemy.caughtY) {
@@ -1927,7 +1988,7 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
     stepFogBeats(state, meta);
     stepBoss(state, meta, dt);
   }
-  stepFog(state, dt);
+  stepFog(state, meta, dt);
   stepDrops(state, meta, dt);
 
   for (const enemy of state.enemies) {
@@ -1979,6 +2040,12 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
       const hp = enemy.hp ?? 1;
       if (hp > 1) {
         enemy.hp = hp - 1;
+        // A hull that took a shot and lived now flashes and sounds. It used
+        // to be invisible and silent, so the one multi-hit hull in the game
+        // read exactly like a shot fired into empty space until the shot
+        // that finally killed it.
+        enemy.hitT = 0;
+        state.hullHits += 1;
         if (shot.pierce) continue;
         break;
       }

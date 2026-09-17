@@ -2664,3 +2664,153 @@ describe('what the round says, and the step it is asked to take', () => {
     expect(state.caption?.text).not.toBe('Now, while the plate is open.');
   });
 });
+
+// A phone had no way to fly the ship: RoundInput was two booleans, and a
+// synthetic pulse train aimed at a finger oscillates around the target rather
+// than settling on it. Both new fields are absent by default, so a caller
+// written before them is unchanged.
+describe('a steering target and a held control', () => {
+  const NONE = { left: false, right: false, fire: false };
+  const touchRound = () => roundOf({ tapeId: 'bout_touch', duration: 20 });
+
+  it('honors toX ahead of the buttons and spends the same budget they do', () => {
+    const button = createRoundState(touchRound());
+    const target = createRoundState(touchRound());
+    const start = button.player.x;
+    stepRound(button, { ...NONE, right: true }, MAX_DT);
+    // The button says left, the target says right: the target wins.
+    stepRound(target, { ...NONE, left: true, toX: FIELD.width }, MAX_DT);
+    expect(target.player.x).toBeGreaterThan(start);
+    expect(target.player.x - start).toBeCloseTo(button.player.x - start, 6);
+    expect(button.player.x - start).toBeCloseTo(DEFAULT_PATTERNS.player.speed * MAX_DT, 6);
+  });
+
+  it('settles on the target inside the deadband instead of circling it', () => {
+    const state = createRoundState(touchRound());
+    const to = 100;
+    for (let i = 0; i < 200; i++) stepRound(state, { ...NONE, toX: to }, MAX_DT);
+    const center = state.player.x + state.player.w / 2;
+    expect(Math.abs(center - to)).toBeLessThanOrEqual(DEFAULT_PATTERNS.player.follow);
+    // And the lever is a lever, not a literal.
+    expect(DEFAULT_PATTERNS.player.follow).toBeGreaterThan(0);
+  });
+
+  it('leaves a caller that never steers by target exactly where it was', () => {
+    const plain = createRoundState(touchRound());
+    const explicit = createRoundState(touchRound());
+    advance(plain, { ...NONE, right: true, fire: true }, 1);
+    advance(explicit, { ...NONE, right: true, fire: true, autoFire: false }, 1);
+    expect(explicit.player.x).toBe(plain.player.x);
+    expect(explicit.shots.length).toBe(plain.shots.length);
+    expect(explicit.refusals).toBe(plain.refusals);
+    // And a target the ship is already sitting on moves nothing at all.
+    const held = createRoundState(touchRound());
+    const at = held.player.x;
+    stepRound(held, { ...NONE, toX: at + held.player.w / 2 }, MAX_DT);
+    expect(held.player.x).toBe(at);
+  });
+
+  it('fires a held control through the same cooldown and the same cap', () => {
+    const held = createRoundState(touchRound());
+    const tapped = createRoundState(touchRound());
+    advance(held, { ...NONE, autoFire: true }, 1);
+    advance(tapped, { ...NONE, fire: true }, 1);
+    expect(held.shots.length).toBe(tapped.shots.length);
+    expect(held.refusals).toBe(tapped.refusals);
+  });
+});
+
+// Nothing told a player the column was full, so the Director's own cap read
+// as a dropped button: no sound, no picture, and no record of the press.
+describe('a press the column swallowed', () => {
+  const NONE = { left: false, right: false, fire: false };
+
+  it('records the refusal and holds the flag while the button stays down', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_cap', duration: 20, tier: 1 }));
+    const cap = DEFAULT_PATTERNS.ladder.rungs.find((r) => r.tier === 1)!.shotsInFlight;
+    expect(cap).toBeGreaterThan(0);
+    // A caught spread puts three shots up a press, which is when the cap
+    // bites — and the fan is exactly the moment the player most needs to know
+    // the column is full rather than the button broken.
+    state.spreadT = 5;
+    let guard = 0;
+    while (state.refusals === 0 && guard++ < 80) {
+      stepRound(state, { ...NONE, fire: true }, MAX_DT);
+    }
+    expect(state.refusals).toBeGreaterThan(0);
+    expect(state.columnFull).toBe(true);
+    expect(state.shots.length).toBeGreaterThanOrEqual(cap as number);
+    // The flag is the press, not the field: lift the button and it clears.
+    stepRound(state, NONE, MAX_DT);
+    expect(state.columnFull).toBe(false);
+  });
+
+  it('never refuses a press on the rung with no cap', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_free', duration: 20 }));
+    expect(DEFAULT_PATTERNS.ladder.rungs.find((r) => r.tier === 0)!.shotsInFlight).toBeNull();
+    state.spreadT = 5;
+    advance(state, { ...NONE, fire: true }, 3);
+    expect(state.refusals).toBe(0);
+    expect(state.columnFull).toBe(false);
+  });
+});
+
+// A hit that did not kill was invisible and silent, so the one multi-hit hull
+// in the game read exactly like a shot fired into empty space.
+describe('a hull that took a hit and lived', () => {
+  it('reads its hit points from the lever and flashes on a hit it survived', () => {
+    const state = hullRound('ledger');
+    const target = state.enemies[0]!;
+    expect(hpOf(target)).toBe(DEFAULT_PATTERNS.formations.hulls.ledger);
+    park(state, target);
+    expect(target.hitT).toBeUndefined();
+    expect(state.hullHits).toBe(0);
+
+    let guard = 0;
+    const hp0 = hpOf(target);
+    while (hpOf(target) === hp0 && target.alive && guard++ < 400) {
+      stepRound(state, { left: false, right: false, fire: true }, MAX_DT);
+    }
+    expect(hpOf(target)).toBe(hp0 - 1);
+    expect(state.hullHits).toBe(1);
+    // The boss's own flash clock: zero on the frame of the hit, running after.
+    expect(target.hitT).toBe(0);
+    stepRound(state, { left: false, right: false, fire: false }, MAX_DT);
+    expect(target.hitT).toBeGreaterThan(0);
+  });
+
+  it('leaves a one-shot hull with no flash clock at all', () => {
+    const state = hullRound('grid');
+    const target = state.enemies[0]!;
+    expect(hpOf(target)).toBe(1);
+    expect(target.hitT).toBeUndefined();
+  });
+});
+
+// The blind costs the player the bottom of the field and said nothing in any
+// channel: of every event that costs something it was the last with no word,
+// and the one that most looks like the renderer breaking.
+describe('the veil that lands', () => {
+  const NONE = { left: false, right: false, fire: false };
+
+  it('says a word from its own pool on the frame the veil lands', () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_veil', duration: 20 }));
+    state.fog = { x: 100, y: state.player.y - 20, w: 60, h: 20, vy: 60, alive: true };
+    stepRound(state, NONE, MAX_DT);
+    expect(state.blind).toBeGreaterThan(0);
+    expect(state.fog).toBeNull();
+    expect(state.caption).not.toBeNull();
+    expect(state.caption!.kind).toBe('blind');
+    expect(DEFAULT_PATTERNS.voice.blind).toContain(state.caption!.text);
+    expect(state.caption!.text).not.toMatch(FORBIDDEN_CAPTION);
+  });
+
+  it('draws the pool the lead widens, in the register the lamp uses', () => {
+    for (const line of DEFAULT_PATTERNS.voice.blind) {
+      expect(line).toMatch(/^[ -~]+$/);
+      expect(line.length).toBeLessThan(50);
+      expect(line).not.toMatch(FORBIDDEN_CAPTION);
+    }
+    expect(DEFAULT_PATTERNS.voice.blind.length).toBeGreaterThanOrEqual(4);
+  });
+});

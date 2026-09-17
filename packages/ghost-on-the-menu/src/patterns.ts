@@ -322,6 +322,13 @@ export interface VoiceSet {
    * all, and said it the same way for four different classes of threat.
    */
   lamp: Record<LampCause, string[]>;
+  /**
+   * The veil landing. The blind costs the player the bottom of the field and
+   * said nothing in any channel: of every event that costs something it was
+   * the last one with no word, and the one that most looks like the renderer
+   * breaking. One pool, in the lamp's register.
+   */
+  blind: string[];
   /** A word on picking a drop up, and a word when a timed one runs out. */
   drops: {
     catch: Record<DropKind, string[]>;
@@ -341,6 +348,13 @@ export interface PatternSet {
   formations: {
     layouts: Record<'1' | '2' | '3' | '4', Offset[]>;
     sprites: Record<(typeof SPAWN_CLASSES)[number], SpriteBox>;
+    /**
+     * Hits a hull of that class takes before it goes down, beside its box. A
+     * class with no entry takes one. The ledger's three used to be a bare
+     * literal written twice in a package where every other feel number is a
+     * lever, so the two reads could drift apart.
+     */
+    hulls: Partial<Record<(typeof SPAWN_CLASSES)[number], number>>;
   };
   fire: { tiers: Record<'0' | '1' | '2' | '3', FireTier> };
   bosses: Record<(typeof BOSS_KINDS)[number], BossDef>;
@@ -352,6 +366,12 @@ export interface PatternSet {
     hitbox: { w: number; h: number };
     y: number;
     grace: number;
+    /**
+     * Pixels between the ship's center and a steering target inside which the
+     * ship holds still. A target is a finger or a pointer and never settles
+     * exactly; without a deadband the ship chatters around it.
+     */
+    follow: number;
   };
   drops: Record<DropKind, DropSpec>;
   voice: VoiceSet;
@@ -654,7 +674,15 @@ function loadFormations(raw: unknown): PatternSet['formations'] {
     if (other && (cls === 'probe' || cls === 'shelf' || cls === 'ledger')) fail(file, cls);
     boxes.set(key, cls);
   }
-  return { layouts, sprites };
+  const hullsRaw = asRecord(req(obj, file, 'hulls'), file, 'hulls');
+  const hulls: PatternSet['formations']['hulls'] = {};
+  for (const key of Object.keys(hullsRaw)) {
+    if (!(SPAWN_CLASSES as readonly string[]).includes(key)) fail(file, 'hulls');
+    const n = asNumber(hullsRaw[key], file, key);
+    if (!Number.isInteger(n) || n < 1) fail(file, key);
+    hulls[key as (typeof SPAWN_CLASSES)[number]] = n;
+  }
+  return { layouts, sprites, hulls };
 }
 
 function loadFire(raw: unknown): PatternSet['fire'] {
@@ -879,6 +907,7 @@ function loadPlayer(raw: unknown): PatternSet['player'] {
     },
     y: asNumber(req(obj, file, 'y'), file, 'y'),
     grace: asNumber(req(obj, file, 'grace'), file, 'grace'),
+    follow: asNumber(req(obj, file, 'follow'), file, 'follow'),
   };
 }
 
@@ -1382,6 +1411,7 @@ function loadVoice(raw: unknown): VoiceSet {
   for (const key of LAMP_CAUSES) {
     lamp[key] = loadLines(req(lampRaw, file, key), file, key, VOICE_POOL_MAX);
   }
+  const blind = loadLines(req(obj, file, 'blind'), file, 'blind', VOICE_POOL_MAX);
   const dropsRaw = asRecord(req(obj, file, 'drops'), file, 'drops');
   const dropCatchRaw = asRecord(req(dropsRaw, file, 'catch'), file, 'catch');
   const dropCatch = {} as VoiceSet['drops']['catch'];
@@ -1404,6 +1434,7 @@ function loadVoice(raw: unknown): VoiceSet {
     aside,
     catch: catchLines,
     lamp,
+    blind,
     drops: { catch: dropCatch, ends: dropEnds },
     end: loadLines(req(obj, file, 'end'), file, 'end', VOICE_POOL_MAX),
     ending,

@@ -23,7 +23,13 @@ export interface CueSnapshot {
   ended: boolean;
   phase: number | null;
   fog: boolean;
+  /** True while the veil is over the lower field, so the blind can be heard. */
+  blind: boolean;
   cooldown: number;
+  /** True on a frame the cap on shots in the air swallowed a press. */
+  columnFull: boolean;
+  /** Hits hulls took and lived through, so an absorbed shot can be heard. */
+  hullHits: number;
   /** True while a wave card is on screen. */
   waveCard: boolean;
   /** Seconds since the boss was last hit, or null with no boss. */
@@ -55,7 +61,10 @@ export function snapshot(state: RoundState): CueSnapshot {
     ended: state.scene !== null,
     phase: state.boss && state.boss.alive ? state.boss.phase : null,
     fog: state.fog !== null && state.fog.alive,
+    blind: state.blind > 0,
     cooldown: state.fireCooldown,
+    columnFull: state.columnFull,
+    hullHits: state.hullHits,
     waveCard: state.caption !== null && state.caption.kind === 'wave',
     bossHitT: state.boss && state.boss.alive ? state.boss.hitT : null,
     bossKills: state.bossKills,
@@ -104,7 +113,19 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
   if (next.parallelism && !prev.parallelism) out.push('burst');
   if (next.phase !== null && prev.phase !== null && next.phase !== prev.phase) out.push('phase');
   if (next.fog && !prev.fog) out.push('fog');
+  // The frame the veil lands, not every blind frame. The bank appearing has
+  // had a cue since the start; the blind it drops — the one event that costs
+  // the player the bottom of the field — had none in any channel, and it is
+  // the event that most looks like the renderer breaking.
+  if (next.blind && !prev.blind) out.push('veil');
   if (next.dying > prev.dying) out.push('pop');
+  // A hull that took a shot and lived. Distinct from 'pop' and quieter: what
+  // died is a different event from what held.
+  if (next.hullHits > prev.hullHits) out.push('hullhit');
   if (next.cooldown > prev.cooldown) out.push('fire');
+  // The way INTO a full column, not every refused frame: a held button at the
+  // cap would otherwise tick once a frame. Quietest thing in the list, and
+  // last, because it is the absence of a shot rather than a shot.
+  if (next.columnFull && !prev.columnFull) out.push('capped');
   return out;
 }

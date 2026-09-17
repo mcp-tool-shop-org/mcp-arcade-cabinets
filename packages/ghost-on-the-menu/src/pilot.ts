@@ -217,6 +217,67 @@ function forgetThinker(url: string, model: string): void {
 }
 
 /**
+ * Seats a named failure rested. `thinkers` remembers only slowness: with a
+ * wrong url or a stopped daemon every fire beat paid a fresh connect and the
+ * whole SHORT budget, and a seat that answered slowly before failing paid
+ * LOW's, for the round and for every round after it — while the operator got
+ * the same reason once a beat with nothing saying it was one fault
+ * repeating. Keyed on the endpoint AND the tag, the way slowness is, because
+ * the same name served by a local daemon and by a proxy is two seats; and
+ * aged the same way, because a daemon that was started again is not a fault.
+ * A retired tag never comes back through here: SKIP_MODEL keeps it out of
+ * the roster, so the memory can only rest a seat, never seat one.
+ */
+const resting = new Map<string, Map<string, { at: number; why: string }>>();
+
+/** How long a named failure rests a seat before it is tried again. */
+export const SEAT_REST_MS = 60_000;
+
+/** The remembered reason, or undefined. Stale entries are dropped on the read. */
+function restedAt(url: string, model: string): string | undefined {
+  const byUrl = resting.get(model);
+  const seen = byUrl?.get(url);
+  if (byUrl === undefined || seen === undefined) return undefined;
+  if (Date.now() - seen.at >= SEAT_REST_MS) {
+    byUrl.delete(url);
+    if (byUrl.size === 0) resting.delete(model);
+    return undefined;
+  }
+  return seen.why;
+}
+
+function rememberFailure(url: string, model: string, why: string): void {
+  const byUrl = resting.get(model) ?? new Map<string, { at: number; why: string }>();
+  byUrl.set(url, { at: Date.now(), why });
+  resting.set(model, byUrl);
+}
+
+function forgetFailure(url: string, model: string): void {
+  const byUrl = resting.get(model);
+  if (byUrl === undefined) return;
+  byUrl.delete(url);
+  if (byUrl.size === 0) resting.delete(model);
+}
+
+/**
+ * For tests and the shell: why a seat is resting, or null. The shape
+ * `needsLowThink` has — with a url it answers for that one endpoint, without
+ * one for the tag wherever it is served — except that it answers with the
+ * reason, so a status row can say the seat is resting AND why rather than
+ * leaving an operator to infer one fault from its repetitions.
+ */
+export function restingWhy(model: string, url?: string): string | null {
+  if (url !== undefined) return restedAt(url, model) ?? null;
+  const byUrl = resting.get(model);
+  if (byUrl === undefined) return null;
+  for (const seat of [...byUrl.keys()]) {
+    const why = restedAt(seat, model);
+    if (why !== undefined) return why;
+  }
+  return null;
+}
+
+/**
  * For tests and the shell: whether a seat has been seen to need `think: 'low'`.
  * With a url it answers for that one endpoint; without one it answers for the
  * tag wherever it is served, which is what a status line wants to report.
@@ -232,20 +293,24 @@ export function needsLowThink(model: string, url?: string): boolean {
 }
 
 /**
- * Forget what was learned about a seat. No arguments forgets every seat (the
- * shell calls this when the seat changes, and a test calls it so a retry it
+ * Forget what was learned about a seat: both the budget it needed and the
+ * failure that rested it. No arguments forgets every seat (the shell calls
+ * this when the seat changes, and a test calls it so a retry or a fault it
  * exercised does not leak into the next test in the file).
  */
 export function resetLowThink(model?: string, url?: string): void {
   if (model === undefined) {
     thinkers.clear();
+    resting.clear();
     return;
   }
   if (url !== undefined) {
     forgetThinker(url, model);
+    forgetFailure(url, model);
     return;
   }
   thinkers.delete(model);
+  resting.delete(model);
 }
 
 /**
@@ -411,17 +476,40 @@ async function generate(
   return { response: cappedField(body.response), thinking: cappedField(body.thinking) };
 }
 
+/**
+ * The named reason a failure gives, so one fault does not read as many. The
+ * message is `generate`'s own taxonomy; anything else is the plain word.
+ */
+function whyOf(err: unknown): string {
+  return err instanceof Error && err.message ? err.message : 'ollama error';
+}
+
 async function ask(opts: OllamaOpts, prompt: string): Promise<string> {
-  if (!liveThinker(opts.url, opts.model)) {
-    const first = await generate(opts, prompt, SHORT);
-    if (first.response.trim() !== '' || first.thinking === '') {
-      // A short answer landed: whatever we remembered about this seat is over.
-      forgetThinker(opts.url, opts.model);
-      return first.response;
+  // A seat that just failed by name is resting: the fault is repeated back
+  // without paying the connect and the timeout again. It throws the same
+  // reason it threw, so every caller behaves as it did on the live fault.
+  const rested = restedAt(opts.url, opts.model);
+  if (rested !== undefined) throw new Error(rested);
+  let answer: string;
+  try {
+    if (!liveThinker(opts.url, opts.model)) {
+      const first = await generate(opts, prompt, SHORT);
+      if (first.response.trim() !== '' || first.thinking === '') {
+        // A short answer landed: whatever we remembered about this seat is over.
+        forgetThinker(opts.url, opts.model);
+        forgetFailure(opts.url, opts.model);
+        return first.response;
+      }
+      rememberThinker(opts.url, opts.model);
     }
-    rememberThinker(opts.url, opts.model);
+    answer = (await generate(opts, prompt, LOW)).response;
+  } catch (err) {
+    rememberFailure(opts.url, opts.model, whyOf(err));
+    throw err;
   }
-  return (await generate(opts, prompt, LOW)).response;
+  // One good answer clears the memory, the same way it clears the budget.
+  forgetFailure(opts.url, opts.model);
+  return answer;
 }
 
 export async function askOllama(view: BossView, opts: OllamaOpts): Promise<PilotIntent> {
@@ -509,7 +597,7 @@ export async function askNextIntents(
     return parseIntents(await ask(opts, prompt), want);
   } catch (err) {
     if (onFail) {
-      const why = err instanceof Error && err.message ? err.message : 'ollama error';
+      const why = whyOf(err);
       try {
         onFail(why);
       } catch {
@@ -520,11 +608,31 @@ export async function askNextIntents(
   }
 }
 
-/** The voice seat: which of the kind's own lines the boss says at spawn, or null. */
+/**
+ * The voice seat: which of the kind's own lines the boss says at spawn, or
+ * null. `onFail` is the parameter `askNextIntents` has, so both seats report
+ * a fault through one shape: the boss seat could name its reason on a status
+ * row while the voice seat could only be seen to have produced nothing. The
+ * callback is called at most once per ask, before the error is re-thrown —
+ * this seat still throws, as every caller of it already expects, and a
+ * callback that throws does not change what is thrown.
+ */
 export async function askOllamaLine(
   kind: BossView['kind'],
   lines: readonly string[],
   opts: OllamaOpts,
+  onFail?: (why: string) => void,
 ): Promise<number | null> {
-  return parseLetter(await ask(opts, voicePrompt(kind, lines)), lines.length);
+  try {
+    return parseLetter(await ask(opts, voicePrompt(kind, lines)), lines.length);
+  } catch (err) {
+    if (onFail) {
+      try {
+        onFail(whyOf(err));
+      } catch {
+        /* a caller's own reporting must not change what this seat throws */
+      }
+    }
+    throw err;
+  }
 }

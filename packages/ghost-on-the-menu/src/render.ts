@@ -477,6 +477,15 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     // A revealed lie is always in `caught` and drawn above; this path is pre-hit.
     ctx.fillStyle = fillFor(enemy.sprite, false);
     drawFormation(rect, sprite, enemy);
+    // A hull that took a shot and lived flashes white for the window the
+    // boss flash uses. The one multi-hit hull in the game used to look
+    // exactly like a shot fired into empty space; `fillFor` reads only
+    // `revealed`, so its color never changed either. The flash keeps the
+    // formation's own segments, and says nothing about `lie`.
+    if (enemy.hitT !== undefined && enemy.hitT < BOSS_FLASH) {
+      ctx.fillStyle = BOSS_FLASH_FILL;
+      drawFormation(rect, () => false, enemy);
+    }
   }
 
   ctx.fillStyle = ENEMY_SHOT_FILL;

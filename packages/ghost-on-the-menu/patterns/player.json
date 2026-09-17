@@ -3,5 +3,6 @@
   "cooldown": 0.12,
   "hitbox": { "w": 24, "h": 16 },
   "y": 328,
-  "grace": 0.55
+  "grace": 0.55,
+  "follow": 2
 }

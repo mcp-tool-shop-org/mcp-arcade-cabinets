@@ -82,6 +82,51 @@ describe('boss and dive cues', () => {
   });
 });
 
+// Three events that cost the player, or cost them a shot, and made no sound:
+// the veil landing (the bank's arrival had a cue since the start, the blind it
+// drops had none), a hull that took a shot and lived (silent and invisible, so
+// the one multi-hit hull read like a shot into empty space), and a press the
+// column swallowed (the cap is a feel lever the player could only infer from
+// silence).
+describe('the quiet events', () => {
+  const state = createRoundState(round);
+  const a = snapshot(state);
+
+  it('starts a round with none of them', () => {
+    expect(a.blind).toBe(false);
+    expect(a.columnFull).toBe(false);
+    expect(a.hullHits).toBe(0);
+  });
+
+  it('names the frame the veil lands, and not the frames after it', () => {
+    const veiled = { ...a, blind: true };
+    expect(cues(a, veiled)).toEqual(['veil']);
+    expect(cues(veiled, veiled)).toEqual([]);
+    expect(cues(veiled, a)).toEqual([]);
+    // The bank appearing is still its own, earlier event.
+    expect(cues(a, { ...a, fog: true })).toEqual(['fog']);
+  });
+
+  it('tells a hull that held from one that died', () => {
+    expect(cues(a, { ...a, hullHits: a.hullHits + 1 })).toEqual(['hullhit']);
+    expect(cues(a, { ...a, dying: a.dying + 1 })).toEqual(['pop']);
+    // A piercing shot can do both in one frame: what died reads first.
+    expect(cues(a, { ...a, dying: a.dying + 1, hullHits: a.hullHits + 1 })).toEqual([
+      'pop',
+      'hullhit',
+    ]);
+  });
+
+  it('names the way into a full column once, however long the button is held', () => {
+    const full = { ...a, columnFull: true };
+    expect(cues(a, full)).toEqual(['capped']);
+    expect(cues(full, full)).toEqual([]);
+    expect(cues(full, a)).toEqual([]);
+    // The shot that frees the column is the shot's own sound, not this one.
+    expect(cues({ ...full, cooldown: 0 }, { ...a, cooldown: 0.12 })).toEqual(['fire']);
+  });
+});
+
 // The branch used to key on the lamp POOL rising, not on the kind caught, so
 // a lamp taken at a full pool sounded exactly like a spread — the one pickup
 // that was given its own sound on purpose — and the three timed powers shared

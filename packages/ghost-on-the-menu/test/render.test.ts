@@ -334,6 +334,33 @@ describe('hit feedback paint', () => {
     expect(b.calls.some((c) => c.startsWith('rect rgba(255, 255, 255, 0.75)'))).toBe(false);
   });
 
+  // A hit that did not kill was invisible: Enemy carried no flash clock, and
+  // fillFor reads only `revealed`, so a hull that absorbed a shot painted
+  // exactly as it had the frame before.
+  it('flashes a hull that took a hit and lived, for the window the boss uses', () => {
+    const state = createRoundState(roundOf([beat({ id: 'a', lie: false })]));
+    const hull = state.enemies[0]!;
+    hull.mode = 'hover';
+    hull.pathT = 1;
+    hull.path = [];
+    hull.y = 80;
+    hull.hitT = 0.02;
+    const a = recordingCtx();
+    renderRound(a, state);
+    expect(a.calls.some((c) => c.startsWith('rect rgba(255, 255, 255, 0.75)'))).toBe(true);
+
+    hull.hitT = 1;
+    const b = recordingCtx();
+    renderRound(b, state);
+    expect(b.calls.some((c) => c.startsWith('rect rgba(255, 255, 255, 0.75)'))).toBe(false);
+
+    // A hull that was never hit carries no clock and never flashes.
+    delete hull.hitT;
+    const c = recordingCtx();
+    renderRound(c, state);
+    expect(c.calls.some((x) => x.startsWith('rect rgba(255, 255, 255, 0.75)'))).toBe(false);
+  });
+
   it('blinks the ship during grace and draws it steadily otherwise', () => {
     const state = createRoundState(roundOf([]));
     const drawn = (s: typeof state) => {

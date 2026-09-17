@@ -164,8 +164,15 @@ export interface Enemy {
   caughtY: number;
   fireAt: number;
   dieAt: number;
-  /** Hits left. Absent on one-shot popcorn (default 1). Ledger ships at 3. */
+  /** Hits left. Absent on one-shot popcorn (default 1). The lever is formations.json. */
   hp?: number;
+  /**
+   * Seconds since a player shot struck this hull and it lived, stepped the
+   * way Boss.hitT is. Absent until the first such hit. A hull that absorbed
+   * a shot used to look and sound exactly like a shot fired into empty
+   * space, which is the worst thing a multi-hit hull can read as.
+   */
+  hitT?: number;
 }
 
 export interface FogBank {
@@ -243,12 +250,12 @@ export interface Caption {
   text: string;
   t: number;
   /**
-   * Wave card vs catch vs aside vs the lamp that was just lost. Optional so
-   * older callers still typecheck. `lamp` paints where a catch does, in the
-   * catch's own register: it is the one event that costs the player and it
-   * used to have no word at all.
+   * Wave card vs catch vs aside vs the lamp that was just lost vs the veil
+   * that just landed. Optional so older callers still typecheck. `lamp` and
+   * `blind` paint where a catch does, in the catch's own register: they are
+   * the events that cost the player and they used to have no word at all.
    */
-  kind?: 'wave' | 'catch' | 'aside' | 'lamp';
+  kind?: 'wave' | 'catch' | 'aside' | 'lamp' | 'blind';
   /** Furniture line under the wave word. Never a fact. */
   line?: string;
 }
@@ -321,6 +328,18 @@ export interface RoundState {
    * bezel glyph. For cues; never drawn as a digit.
    */
   dropCatchesByKind: Record<DropKind, number>;
+  /**
+   * True on a frame the rung's cap on shots in the air swallowed a press.
+   * The cap is a feel lever — it is why a rapid drop is worth catching — and
+   * a player had no way to learn it exists: a swallowed press made no sound,
+   * drew nothing and was recorded nowhere, so the cap read as a dropped
+   * button. The cue layer reads the way in, not every refused frame.
+   */
+  columnFull: boolean;
+  /** Presses the cap swallowed this round. For cues and tests; never drawn as a digit. */
+  refusals: number;
+  /** Hits hulls took and lived through this round. For cues and tests; never drawn as a digit. */
+  hullHits: number;
   /** Boss-emitted hazards. Class motion, never fact motion. */
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
@@ -361,10 +380,30 @@ export interface Hazard {
   alive: boolean;
 }
 
+/** The three buttons a key binding writes. A steering target is not one of them. */
+export type RoundButton = 'left' | 'right' | 'fire';
+
 export interface RoundInput {
   left: boolean;
   right: boolean;
   fire: boolean;
+  /**
+   * A target center in field pixels, honored ahead of left and right and
+   * moved toward under the same per-frame speed budget the buttons spend, so
+   * a pointer or a thumb flies the same ship at the same speed a keyboard
+   * does. Absent by default: a caller that does not set it is byte-identical
+   * to one written before this existed. A synthetic pulse train aimed at a
+   * finger oscillates around the target instead of settling on it, which is
+   * all a touch shell could hand the sim before.
+   */
+  toX?: number;
+  /**
+   * The fire control held. Goes through the same cooldown and the same cap
+   * on shots in the air as a pressed button; it buys no rate. Absent by
+   * default. A phone player otherwise needs a second permanent thumb on a
+   * fire control at the same time as steering.
+   */
+  autoFire?: boolean;
 }
 
 export interface DrawContext {

@@ -16,6 +16,8 @@ import {
   parseLetter,
   pilotPrompt,
   resetLowThink,
+  restingWhy,
+  SEAT_REST_MS,
   stickWord,
   voicePrompt,
   type BossView,
@@ -366,6 +368,10 @@ describe('askOllama over a daemon', () => {
       },
     ];
     for (const c of cases) {
+      // Seven faults on ONE seat back to back is a thing only a test does: a
+      // named failure now rests the seat, so each case is asked for fresh
+      // rather than told the first fault six more times.
+      resetLowThink();
       vi.stubGlobal('fetch', c.fetch);
       const seen: string[] = [];
       const out = await askNextIntents({ url: '/x', model: 'm' }, view, 2, (w) => seen.push(w));
@@ -405,6 +411,9 @@ describe('askOllama over a daemon', () => {
       /ollama down/,
     );
 
+    // The seat is rested by the fault above; a test that wants a second,
+    // different fault out of the same seat asks for it fresh.
+    resetLowThink();
     vi.stubGlobal('fetch', async () => {
       throw new TypeError('fetch failed');
     });
@@ -412,6 +421,7 @@ describe('askOllama over a daemon', () => {
       /ollama down/,
     );
 
+    resetLowThink();
     vi.stubGlobal('fetch', async () => ({
       ok: true,
       json: async () => {
@@ -486,6 +496,75 @@ describe('askOllama over a daemon', () => {
     expect(think[2]).toBe(false);
     expect(think).toHaveLength(3);
     expect(needsLowThink(seat.model, seat.url)).toBe(false);
+  });
+
+  // A seat that is down used to be paid for again on every fire beat: with a
+  // wrong url or a stopped daemon each beat bought a fresh connect and the
+  // whole SHORT budget, and the operator got the same reason once a beat with
+  // nothing saying it was one fault repeating.
+  it('rests a seat that failed by name and pays that fault once, not per beat', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', async () => {
+      calls += 1;
+      const err = new Error('connect ECONNREFUSED');
+      (err as Error & { code: string }).code = 'ECONNREFUSED';
+      throw err;
+    });
+    const seat = { url: '/rest', model: 'rest-test:cloud' };
+    const seen: string[] = [];
+    expect(await askNextIntents(seat, view, 2, (w) => seen.push(w))).toEqual(['script', 'script']);
+    expect(calls).toBe(1);
+    expect(restingWhy(seat.model, seat.url)).toMatch(/ollama down/);
+    // For the tag wherever it is served, which is what a status row wants.
+    expect(restingWhy(seat.model)).toMatch(/ollama down/);
+    for (let i = 0; i < 4; i++) {
+      expect(await askNextIntents(seat, view, 1, (w) => seen.push(w))).toEqual(['script']);
+    }
+    // Four more beats, no more connects, and the same reason every time.
+    expect(calls).toBe(1);
+    expect(seen).toHaveLength(5);
+    expect(new Set(seen).size).toBe(1);
+    // Another seat is another seat: one fault does not rest the room.
+    expect(restingWhy('rest-test:cloud', '/elsewhere')).toBeNull();
+  });
+
+  it('asks a rested seat again after the window, and one good answer clears it', async () => {
+    let down = true;
+    vi.stubGlobal('fetch', async () => {
+      if (down) {
+        const err = new Error('connect ECONNREFUSED');
+        (err as Error & { code: string }).code = 'ECONNREFUSED';
+        throw err;
+      }
+      return { ok: true, json: async () => ({ response: 'hold' }) };
+    });
+    const seat = { url: '/rest-stale', model: 'rest-stale-test:cloud' };
+    await askNextIntents(seat, view, 1);
+    expect(restingWhy(seat.model, seat.url)).not.toBeNull();
+
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + SEAT_REST_MS + 1);
+    expect(restingWhy(seat.model, seat.url)).toBeNull();
+    down = false;
+    expect(await askNextIntents(seat, view, 1)).toEqual(['hold']);
+    expect(restingWhy(seat.model, seat.url)).toBeNull();
+  });
+
+  // The asymmetry ran the other way too: the boss seat could name its reason
+  // on a status row while the voice seat could only be seen to have produced
+  // nothing. Both seats report through one shape now.
+  it('names a fault to the voice seat through the shape the boss seat uses', async () => {
+    vi.stubGlobal('fetch', async () => ({ ok: false, status: 404 }));
+    const seen: string[] = [];
+    await expect(
+      askOllamaLine(
+        'menu',
+        DEFAULT_PATTERNS.voice.boss.menu,
+        { url: '/voice', model: 'voice-test:cloud' },
+        (w) => seen.push(w),
+      ),
+    ).rejects.toThrow(/ollama missing/);
+    expect(seen).toEqual(['ollama missing']);
+    expect(restingWhy('voice-test:cloud', '/voice')).toMatch(/ollama missing/);
   });
 
   it('forgets every seat on reset, and one seat when named', async () => {
