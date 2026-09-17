@@ -429,7 +429,7 @@ describe('the recorded bed, one a stack', () => {
     expect(audio.track()).toBeNull();
     expect(el.plays).toBe(0);
 
-    el.fire('canplay');
+    el.fire('canplaythrough');
     expect(audio.track()).toBe('python');
     expect(el.plays).toBe(1);
     audio.tick(WHOLE_CROSS, 1, false);
@@ -441,7 +441,7 @@ describe('the recorded bed, one a stack', () => {
     const { ctx, audio } = build(shop.make);
     audio.setMusic('on');
     audio.setStack('sql');
-    shop.made.get('sql')!.fire('canplay');
+    shop.made.get('sql')!.fire('canplaythrough');
     for (let i = 0; i < 30; i++) audio.tick(1 / 60, 5, false);
     // No kick, no hat: the two sources are one bed and never play together.
     expect(ctx.started).toEqual([]);
@@ -454,7 +454,7 @@ describe('the recorded bed, one a stack', () => {
       const { audio } = build(shop.make);
       audio.setMusic(mode);
       audio.setStack('java');
-      shop.made.get('java')?.fire('canplay');
+      shop.made.get('java')?.fire('canplaythrough');
       for (let i = 0; i < 10; i++) audio.tick(1 / 60, 3, false);
       expect(audio.track()).toBeNull();
       expect(shop.made.get('java')!.plays).toBe(0);
@@ -464,7 +464,7 @@ describe('the recorded bed, one a stack', () => {
     const { ctx, audio } = build(shop.make);
     audio.setMusic('soft');
     audio.setStack('java');
-    shop.made.get('java')!.fire('canplay');
+    shop.made.get('java')!.fire('canplaythrough');
     audio.tick(1 / 60, 1, false);
     expect(ctx.started.some((s) => s.kind === 'buffer')).toBe(true);
   });
@@ -493,7 +493,7 @@ describe('the recorded bed, one a stack', () => {
     audio.setMusic('on');
     audio.setStack('javascript');
     const el = shop.made.get('javascript')!;
-    el.fire('canplay');
+    el.fire('canplaythrough');
 
     audio.tick(1 / 60, 1, false);
     expect(el.playbackRate).toBeCloseTo(1, 6);
@@ -517,13 +517,13 @@ describe('the recorded bed, one a stack', () => {
     audio.setMusic('on');
     audio.setStack('bash');
     const first = shop.made.get('bash')!;
-    first.fire('canplay');
+    first.fire('canplaythrough');
     audio.tick(WHOLE_CROSS, 1, false);
     expect(first.volume).toBeCloseTo(BED_TRACK_LEVEL, 6);
 
     audio.setStack('csharp');
     const second = shop.made.get('csharp')!;
-    second.fire('canplay');
+    second.fire('canplaythrough');
     expect(audio.track()).toBe('csharp');
     // Half a cross in, one is on its way down and the other on its way up,
     // and neither has been cut off.
@@ -545,7 +545,7 @@ describe('the recorded bed, one a stack', () => {
     audio.setMusic('on');
     audio.setStack('integration');
     const el = shop.made.get('integration')!;
-    el.fire('canplay');
+    el.fire('canplaythrough');
     audio.tick(WHOLE_CROSS, 1, false);
 
     audio.setBedDuck(true);
@@ -575,7 +575,7 @@ describe('the recorded bed, one a stack', () => {
     audio.setMusic('on');
     audio.setStack('python');
     const el = shop.made.get('python')!;
-    el.fire('canplay');
+    el.fire('canplaythrough');
     audio.tick(WHOLE_CROSS, 1, false);
 
     // The graph's mute cannot reach a media element, so this is by hand and
@@ -599,7 +599,7 @@ describe('the recorded bed, one a stack', () => {
     audio.setStack('python');
     const el = shop.made.get('python')!;
     el.refusePlay = true;
-    el.fire('canplay');
+    el.fire('canplaythrough');
     // The bed takes the level for as long as it takes the promise to reject,
     // which is the window in which the procedural bed is already fading out.
     expect(audio.track()).toBe('python');
@@ -633,7 +633,7 @@ describe('the recorded bed, one a stack', () => {
     el.play = () => {
       throw new Error('no media on this device');
     };
-    el.fire('canplay');
+    el.fire('canplaythrough');
     // A synchronous throw is caught inside the same call, so the level never
     // leaves the bar at all.
     expect(audio.track()).toBeNull();

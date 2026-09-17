@@ -13,6 +13,7 @@ import {
   revealOnHit,
   stepRound,
 } from '../src/index';
+import { isHittable } from '../src/sim';
 import {
   attachPatterns,
   burstActive,
@@ -1813,9 +1814,16 @@ describe('formation fire levers', () => {
     });
     let quietOnEntry = 0;
     let loudOnEntry = 0;
+    // A shot counts as fired on the way in only when the sprite is still on
+    // its path after the step: the clock is armed from the entry now, so a
+    // sprite may fire on the very step it settles into the hover.
     for (let i = 0; i < 240; i++) {
-      if (quiet.target.mode === 'enter' && fired(quiet.state)) quietOnEntry += 1;
-      if (loud.target.mode === 'enter' && fired(loud.state)) loudOnEntry += 1;
+      if (quiet.target.mode === 'enter' && fired(quiet.state) && quiet.target.mode === 'enter') {
+        quietOnEntry += 1;
+      }
+      if (loud.target.mode === 'enter' && fired(loud.state) && loud.target.mode === 'enter') {
+        loudOnEntry += 1;
+      }
     }
     expect(quiet.target.mode).toBe('hover');
     expect(loud.target.mode).toBe('hover');
@@ -1862,5 +1870,85 @@ describe('formation fire levers', () => {
     expect(most(2)).toBe(2);
     expect(most(4)).toBe(4);
     expect(most(null)).toBeGreaterThan(4);
+  });
+});
+
+// Grok's consult (docs/ghost-attack.grok-consult.md), the three line defects.
+describe('the three defects behind the silent formation', () => {
+  const still = { left: false, right: false, fire: false };
+  /** A tier-1 round with one sprite of the class asked, on its entry path. */
+  function roundWith(sprite: 'menu' | 'grid'): RoundState {
+    const round = roundOf({
+      tapeId: 'bout_defects',
+      duration: 30,
+      tier: 1,
+      beats: [
+        {
+          id: `inspect.tools_list:${sprite}:0`,
+          t: 0,
+          x: 240,
+          sprite,
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/list',
+            note: 'tools/list',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, DEFAULT_PATTERNS);
+    const state = createRoundState(round);
+    state.player.x = 20;
+    return state;
+  }
+
+  it('a sprite above the field cannot be hit', () => {
+    const state = roundWith('menu');
+    const target = state.enemies[0]!;
+    // Spawned half above the top edge, as a path that starts at the edge does.
+    expect(target.y).toBeLessThan(0);
+    expect(isHittable(state, target)).toBe(false);
+    target.y = 0;
+    expect(isHittable(state, target)).toBe(true);
+  });
+
+  it("arms a shooter's clock at its entry, so the first shot comes as it settles rather than a period later", () => {
+    const state = roundWith('menu');
+    const target = state.enemies[0]!;
+    let hoverAt = Number.POSITIVE_INFINITY;
+    let firstShotAt = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < 600 && firstShotAt === Number.POSITIVE_INFINITY; i++) {
+      const before = state.enemyShots.length;
+      stepRound(state, still, 1 / 60);
+      if (target.mode === 'hover' && hoverAt === Number.POSITIVE_INFINITY) hoverAt = state.t;
+      if (state.enemyShots.length > before) firstShotAt = state.t;
+    }
+    const period = DEFAULT_PATTERNS.fire.tiers['1'].formation!.period;
+    const firstShot = DEFAULT_PATTERNS.fire.tiers['1'].formation!.firstShot;
+    // The entry is longer than firstShot × period, so the clock has run out by
+    // the time the sprite settles: it fires on its first hover ticks.
+    expect(hoverAt).toBeGreaterThan(period * firstShot);
+    expect(firstShotAt).toBeLessThan(hoverAt + 0.2);
+  });
+
+  it('a diving grid keeps its gun', () => {
+    const state = roundWith('grid');
+    const target = state.enemies[0]!;
+    let dived = false;
+    let shotWhileDiving = 0;
+    for (let i = 0; i < 1200; i++) {
+      const before = state.enemyShots.length;
+      stepRound(state, still, 1 / 60);
+      if (target.mode === 'dive') {
+        dived = true;
+        if (state.enemyShots.length > before) shotWhileDiving += 1;
+      }
+      if (!target.alive) break;
+    }
+    expect(dived).toBe(true);
+    expect(shotWhileDiving).toBeGreaterThan(0);
   });
 });

@@ -161,10 +161,10 @@ describe('fairness band', () => {
     }
   });
 
-  it('the reader reveals every lie on tier 0', () => {
+  it('the reader reveals every lie on tiers 0 and 1', () => {
     let measured = 0;
     for (const c of CASES) {
-      if (c.tier > 0) continue;
+      if (c.tier > 1) continue;
       const out = run(c, 'reader');
       // "every lie" is vacuous on a tape with none, so the count is pinned
       // per case and the roster is required to carry lies overall.
@@ -174,36 +174,24 @@ describe('fairness band', () => {
       expect(missed, `${c.name}: reader missed ${missed.join(', ')} (ended ${out.ended})`).toEqual(
         [],
       );
-      expect(out.ok).toBe(true);
+      expect(out.leaked, `${c.name}: leaked`).toBe(false);
     }
-    expect(measured, 'no lies on any tier 0 tape: the bar measured nothing').toBeGreaterThan(0);
+    expect(measured, 'no lies on any tier 0/1 tape: the bar measured nothing').toBeGreaterThan(0);
   });
 
-  // Re-based 2026-09-17. Seat's formation fires now (every class, on the way
-  // in, the first shot early, three shots in the ship's air), on the
-  // Director's word after he played the quiet game and then a gentler tune
-  // and called both too thin. The tells-only reader stands under its target
-  // and does not shoot back, so under a formation that fires it no longer
-  // lives out every seated tape; what it must still do is find the lies
-  // while it lives. Measured when set: every lie on thirteen of twenty
-  // seated tapes, twelve of twenty-one lies overall, no tape without a
-  // pinned count.
-  it('the reader, under fire at seat, still reveals every lie on most seated tapes and half the lies overall', () => {
+  // Split from the bar above on 2026-09-17 (Grok's consult, question two):
+  // "every lie, without dying" was a no-rain bar, right when the only
+  // incoming fire was the boss. Coverage is the tell and stays exact;
+  // survival is the rain and is measured on its own. The reader keeps its
+  // gun through a dodge and does not walk back onto a crossing, which is a
+  // person's ceiling under fire, not a turret under its target. Measured
+  // when set: ended by time on thirteen of twenty seated tapes.
+  it('the reader, under fire at seat, ends by time on half the seated tapes', () => {
     const cases = CASES.filter((c) => c.tier === 1);
-    let lies = 0;
-    let revealed = 0;
-    let whole = 0;
-    for (const c of cases) {
-      const out = run(c, 'reader');
-      expect(out.lies.length, `${c.name}: lie count`).toBe(pinnedLies(c));
-      expect(out.leaked, `${c.name}: leaked`).toBe(false);
-      lies += out.lies.length;
-      revealed += out.revealed.length;
-      if (out.lies.every((id) => out.revealed.includes(id))) whole += 1;
-    }
-    expect(lies, 'no lies on any seated tape: the bar measured nothing').toBeGreaterThan(0);
-    expect(whole).toBeGreaterThanOrEqual(Math.ceil(cases.length * 0.55));
-    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+    const outs = cases.map((c) => run(c, 'reader'));
+    expect(outs.filter((o) => o.ended === 'time').length).toBeGreaterThanOrEqual(
+      Math.ceil(cases.length / 2),
+    );
   });
 
   it('no bot ever puts a forbidden word on screen', () => {
@@ -259,11 +247,16 @@ describe('the difficulty curve', () => {
     expect(meanLamps(byTier(1).map((c) => run(c, 'reader')))).toBeGreaterThanOrEqual(1.0);
   });
 
-  it('live is survivable by the mover on most tapes, with half the lies found', () => {
+  // Lowered from three quarters on 2026-09-17 with the seat tune (Grok's
+  // consult, question three): the ship holds two shots in the air at live
+  // now, and the mover, which never dodges and parks under the nearest
+  // grid or menu, finishes half the roster where it finished most. The
+  // remainder is the bot's missing dodge, which is not taught to it so the
+  // bar keeps measuring the levers. Measured when set: ten of twenty.
+  it('live is survivable by the mover on half the tapes, with half the lies found', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => run(c, 'sweeper'));
-    // Three quarters of the roster.
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.75));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.45));
     const h = namedHalf(cases, outs);
     expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 2));
     expect(h.perTape, h.short).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
@@ -300,10 +293,12 @@ describe('the shift climb', () => {
     expect(lost(climbed)).toBeGreaterThan(lost(alone));
   });
 
-  it('live, last call: the mover survives half the roster with half the lies found', () => {
+  // Lowered from half on 2026-09-17 for the same reason as the tape-alone
+  // bar above. Measured when set: eight of twenty.
+  it('live, last call: the mover survives a third of the roster with half the lies found', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => last(c, 'sweeper'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.35));
     const short: string[] = [];
     let lies = 0;
     let revealed = 0;
@@ -326,15 +321,9 @@ describe('the shift climb', () => {
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
   });
 
-  // Re-based 2026-09-17 with the seat tune (see the reader bar above): at the
-  // top of the climb the tells-only reader does not live out a seated tape
-  // any more, so the bar is that it still finds a lie on a third of the
-  // roster before it goes. Measured when set: nine of twenty.
-  it('seat, last call: the reader still finds a lie on a third of the roster', () => {
+  it('seat, last call: the reader still clears a quarter of the roster', () => {
     const outs = byTier(1).map((c) => last(c, 'reader'));
-    expect(outs.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(
-      Math.ceil(ROSTER / 3),
-    );
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.25));
   });
 
   it('no bot leaks a word at the top of the climb', () => {

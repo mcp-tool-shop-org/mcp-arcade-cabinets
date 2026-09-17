@@ -24,9 +24,9 @@
         "burst": 1,
         "spread": 0.08,
         "speed": 180,
-        "onEntry": true,
+        "onEntry": false,
         "firstShot": 0.4,
-        "shooters": ["init", "ready", "menu", "grid", "answer"]
+        "shooters": ["grid", "menu"]
       },
       "boss": {
         "period": 5.75,
