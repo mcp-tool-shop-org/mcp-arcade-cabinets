@@ -43,6 +43,14 @@ const LAMP_LIT = '#e8c060';
 const LAMP_RIM = '#3a3a4a';
 const DROP_LAMP_FILL = '#f0d878';
 const DROP_SPREAD_FILL = '#7ec8c8';
+const DROP_RAPID_FILL = '#f0a04a';
+const DROP_PIERCE_FILL = '#c8a0f0';
+const DROP_FILL: Record<string, string> = {
+  lamp: DROP_LAMP_FILL,
+  spread: DROP_SPREAD_FILL,
+  rapid: DROP_RAPID_FILL,
+  pierce: DROP_PIERCE_FILL,
+};
 const BEZEL = '#181822';
 const FIELD_FILL = '#101018';
 const FURNITURE = '#c8d0dc';
@@ -459,10 +467,12 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
 
   for (const drop of state.drops) {
     if (!drop.alive) continue;
-    const key = drop.kind === 'lamp' ? 'drop-lamp' : 'drop-spread';
-    const dest = nativeDest(drop, SPRITE_NATIVE[key]);
-    if (!sprite(key, dest.x, dest.y, dest.w, dest.h)) {
-      ctx.fillStyle = drop.kind === 'lamp' ? DROP_LAMP_FILL : DROP_SPREAD_FILL;
+    // The lamp and the spread have drawn sprites; the rapid and the pierce
+    // drops are a block in their own color until the art pass draws them.
+    const key = drop.kind === 'lamp' ? 'drop-lamp' : drop.kind === 'spread' ? 'drop-spread' : null;
+    const dest = key ? nativeDest(drop, SPRITE_NATIVE[key]) : null;
+    if (!key || !dest || !sprite(key, dest.x, dest.y, dest.w, dest.h)) {
+      ctx.fillStyle = DROP_FILL[drop.kind] ?? DROP_SPREAD_FILL;
       rect(drop.x, drop.y, drop.w, drop.h);
     }
   }

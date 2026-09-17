@@ -51,7 +51,9 @@ const PHASE_FORBIDDEN = new Set(['lie', 'fact', 'revealed', 'followed']);
 const BOSS_KINDS = ['whisperer', 'menu', 'doorman', 'archivist'] as const;
 const TIER_KEYS = ['0', '1', '2', '3'] as const;
 const WAVE_VOICE_KEYS = ['inspect', 'poison', 'rug', 'unlisted'] as const;
-const DROP_KINDS = ['lamp', 'spread'] as const;
+const DROP_KINDS = ['lamp', 'spread', 'rapid', 'pierce'] as const;
+/** The kinds a formation lets fall; the draw among them is by `weight`. */
+export const FORMATION_DROP_KINDS = ['spread', 'rapid', 'pierce'] as const;
 const VOICE_FORBIDDEN =
   /\d|\b(lie|fact|revealed|followed|held|score|pass|fail|nrp|integrity|utility|cleared|ghost)\b/i;
 const MIN_VOICE_LINES = 4;
@@ -198,6 +200,14 @@ export interface LadderRung {
    * hover, fire and dive.
    */
   shotsInFlight: number | null;
+  /**
+   * How far a hovering formation sweeps across the field, as a fraction of
+   * the width; zero is the old wobble about its home. A formation that never
+   * reached the edges left the edges safe.
+   */
+  sweep: number;
+  /** Seconds for one full pass of the sweep, edge to edge and back. */
+  sweepPeriod: number;
 }
 
 export interface WaveTier {
@@ -249,8 +259,13 @@ export interface DropSpec {
   fall: number;
   drift: number;
   box: SpriteBox;
-  /** Seconds of spread fire; only on the spread kind. */
+  /** Seconds the drop's fire lasts; zero on the lamp. */
   duration: number;
+  /** The draw weight among a formation's drops; zero never falls. One when absent. */
+  weight: number;
+  /** Rapid only: the ship's shots in the air while it runs, and the cooldown between them. */
+  shotsInFlight: number | null;
+  cooldown: number | null;
 }
 
 export type VoiceWaveKey = (typeof WAVE_VOICE_KEYS)[number];
@@ -618,6 +633,16 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
       shotsInFlight = asNumber(rec.shotsInFlight, file, 'shotsInFlight');
       if (!Number.isInteger(shotsInFlight) || shotsInFlight < 1) fail(file, 'shotsInFlight');
     }
+    let sweep = 0;
+    if (Object.prototype.hasOwnProperty.call(rec, 'sweep')) {
+      sweep = asNumber(rec.sweep, file, 'sweep');
+      if (sweep < 0 || sweep > 1) fail(file, 'sweep');
+    }
+    let sweepPeriod = 8;
+    if (Object.prototype.hasOwnProperty.call(rec, 'sweepPeriod')) {
+      sweepPeriod = asNumber(rec.sweepPeriod, file, 'sweepPeriod');
+      if (!(sweepPeriod > 0)) fail(file, 'sweepPeriod');
+    }
     return {
       tier: asTier(req(rec, file, 'tier'), file, 'tier'),
       pools: asArray(req(rec, file, 'pools'), file, 'pools').map((p) => asString(p, file, 'pools')),
@@ -630,6 +655,8 @@ function loadLadder(raw: unknown, pathIds: Set<string>): PatternSet['ladder'] {
       hazards: asBoolean(req(rec, file, 'hazards'), file, 'hazards'),
       rageStart: asBoolean(req(rec, file, 'rageStart'), file, 'rageStart'),
       shotsInFlight,
+      sweep,
+      sweepPeriod,
     };
   });
   const seen = new Set(rungs.map((r) => r.tier));
@@ -691,7 +718,7 @@ function loadDropSpec(raw: unknown, file: string, kind: DropKind): DropSpec {
   }
   const from = asString(req(rec, file, 'from'), file, 'from');
   if (kind === 'lamp' && from !== 'boss') fail(file, 'from');
-  if (kind === 'spread' && from !== 'formation') fail(file, 'from');
+  if (kind !== 'lamp' && from !== 'formation') fail(file, 'from');
   const box = asRecord(req(rec, file, 'box'), file, 'box');
   const w = asNumber(req(box, file, 'w'), file, 'w');
   const h = asNumber(req(box, file, 'h'), file, 'h');
@@ -704,12 +731,40 @@ function loadDropSpec(raw: unknown, file: string, kind: DropKind): DropSpec {
   if (Object.prototype.hasOwnProperty.call(rec, 'duration')) {
     duration = asNumber(rec.duration, file, 'duration');
   }
-  if (kind === 'spread') {
+  if (kind !== 'lamp') {
     if (!(duration > 0)) fail(file, 'duration');
   } else if (duration !== 0) {
     fail(file, 'duration');
   }
-  return { from: from as DropFrom, fall, drift, box: { w, h }, duration };
+  let weight = 1;
+  if (Object.prototype.hasOwnProperty.call(rec, 'weight')) {
+    weight = asNumber(rec.weight, file, 'weight');
+    if (!(weight >= 0)) fail(file, 'weight');
+  }
+  let shotsInFlight: number | null = null;
+  let cooldown: number | null = null;
+  if (kind === 'rapid') {
+    shotsInFlight = asNumber(req(rec, file, 'shotsInFlight'), file, 'shotsInFlight');
+    if (!Number.isInteger(shotsInFlight) || shotsInFlight < 1) fail(file, 'shotsInFlight');
+    cooldown = asNumber(req(rec, file, 'cooldown'), file, 'cooldown');
+    if (!(cooldown > 0)) fail(file, 'cooldown');
+  } else if (
+    (rec.shotsInFlight !== undefined && rec.shotsInFlight !== null) ||
+    (rec.cooldown !== undefined && rec.cooldown !== null)
+  ) {
+    // Null survives a JSON round trip of the loaded set and means the same as absent.
+    fail(file, kind);
+  }
+  return {
+    from: from as DropFrom,
+    fall,
+    drift,
+    box: { w, h },
+    duration,
+    weight,
+    shotsInFlight,
+    cooldown,
+  };
 }
 
 function loadDrops(raw: unknown): PatternSet['drops'] {

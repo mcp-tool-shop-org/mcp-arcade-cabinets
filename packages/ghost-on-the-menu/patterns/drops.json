@@ -3,13 +3,44 @@
     "from": "boss",
     "fall": 130,
     "drift": 0,
-    "box": { "w": 14, "h": 14 }
+    "box": {
+      "w": 14,
+      "h": 14
+    }
   },
   "spread": {
     "from": "formation",
     "fall": 120,
     "drift": 0,
-    "box": { "w": 14, "h": 14 },
-    "duration": 6
+    "box": {
+      "w": 14,
+      "h": 14
+    },
+    "duration": 6,
+    "weight": 1
+  },
+  "rapid": {
+    "from": "formation",
+    "fall": 120,
+    "drift": 0,
+    "box": {
+      "w": 14,
+      "h": 14
+    },
+    "duration": 8,
+    "weight": 1,
+    "shotsInFlight": 8,
+    "cooldown": 0.06
+  },
+  "pierce": {
+    "from": "formation",
+    "fall": 120,
+    "drift": 0,
+    "box": {
+      "w": 14,
+      "h": 14
+    },
+    "duration": 8,
+    "weight": 1
   }
 }

@@ -1,4 +1,5 @@
 import {
+  FORMATION_DROP_KINDS,
   attachedPatterns,
   attachPatterns,
   burstActive,
@@ -199,6 +200,29 @@ function formationSize(
 
 const HOVER_STRIDE = 40;
 const hoverHome = new WeakMap<Enemy, number>();
+
+/**
+ * Where a hovering sprite is this frame. With the rung's `sweep` the hover
+ * is a march across the field that comes back in on the far side, the whole
+ * formation moving as one so its spacing holds; `sweep` is how much of the
+ * field it crosses in `sweepPeriod` seconds, and the direction turns with
+ * the wave. A player parked at an edge is under the formation as often as
+ * a player in the middle. With no sweep it is the old six-pixel wobble
+ * about the home. The Director's ask, 2026-09-17: the formation never
+ * reached the edges, so the edges were safe.
+ */
+function hoverX(state: RoundState, meta: Meta | undefined, enemy: Enemy, home: number): number {
+  const sweep = meta?.rung.sweep ?? 0;
+  if (sweep <= 0) return wrapX(home + Math.sin(state.t * 1.6 + home * 0.02) * 6, enemy.w);
+  const period = meta?.rung.sweepPeriod ?? 8;
+  const lo = 8;
+  const span = FIELD.width - enemy.w - 16;
+  if (span <= 0) return lo;
+  const dir = state.wave % 2 === 0 ? 1 : -1;
+  const travel = ((state.t / period) * span * sweep * dir) % span;
+  const x = (((home - lo + travel) % span) + span) % span;
+  return lo + x;
+}
 
 function wrapX(x: number, w: number): number {
   const lo = 8;
@@ -489,6 +513,8 @@ export function createRoundState(round: Round): RoundState {
     bossDownT: Number.NEGATIVE_INFINITY,
     drops: [],
     spreadT: 0,
+    rapidT: 0,
+    pierceT: 0,
     dropCatches: 0,
     hazards: [],
     bossIntent: null,
@@ -751,11 +777,27 @@ function maybeAside(state: RoundState, meta: Meta): void {
   meta.asideAt = state.t + 7;
 }
 
+/** Which fire drop a formation lets fall: a seeded draw over the kinds' weights. */
+function formationDropKind(meta: Meta, enemy: Enemy): DropKind | null {
+  const kinds = FORMATION_DROP_KINDS.filter((k) => meta.patterns.drops[k].weight > 0);
+  if (kinds.length === 0) return null;
+  const total = kinds.reduce((sum, k) => sum + meta.patterns.drops[k].weight, 0);
+  const u = (pickIndex(meta.round.seed, 5000 + (diveIndex.get(enemy) ?? 0), 1000) / 1000) * total;
+  let acc = 0;
+  for (const k of kinds) {
+    acc += meta.patterns.drops[k].weight;
+    if (u < acc) return k;
+  }
+  return kinds[kinds.length - 1]!;
+}
+
 function spawnFormationDrop(state: RoundState, meta: Meta | undefined, enemy: Enemy): void {
   if (!meta) return;
   if (enemy.sprite !== 'grid') return;
   if (isDecoy(enemy)) return;
-  spawnDrop(state, meta, 'spread', enemy.x + enemy.w / 2, enemy.y + enemy.h / 2);
+  const kind = formationDropKind(meta, enemy);
+  if (!kind) return;
+  spawnDrop(state, meta, kind, enemy.x + enemy.w / 2, enemy.y + enemy.h / 2);
 }
 
 function spawnDecoys(state: RoundState, meta: Meta, spec: ParallelismTier): void {
@@ -930,8 +972,12 @@ function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void 
     state.dropCatches += 1;
     if (drop.kind === 'lamp') {
       state.lives = Math.min(meta.rung.lamps, state.lives + 1);
-    } else {
+    } else if (drop.kind === 'spread') {
       state.spreadT = spec.duration;
+    } else if (drop.kind === 'rapid') {
+      state.rapidT = spec.duration;
+    } else {
+      state.pierceT = spec.duration;
     }
   }
   state.drops = state.drops.filter((d) => d.alive);
@@ -1360,6 +1406,8 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   if (state.playerHitT !== Number.POSITIVE_INFINITY) state.playerHitT += dt;
   if (state.blind > 0) state.blind = Math.max(0, state.blind - dt);
   state.spreadT = Math.max(0, state.spreadT - dt);
+  state.rapidT = Math.max(0, state.rapidT - dt);
+  state.pierceT = Math.max(0, state.pierceT - dt);
   if (state.caption) {
     state.caption.t -= dt;
     if (state.caption.t <= 0) state.caption = null;
@@ -1393,11 +1441,16 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   // The rung's cap on shots in the air: a held button is a column, not a
   // wall, so a formation can come onto the field and be shot at rather than
   // shot on the frame it appears.
+  // A rapid drop opens the column for its duration: the drop's own cap and
+  // cooldown stand in for the rung's and the player's.
+  const rapid = meta && state.rapidT > 0 ? meta.patterns.drops.rapid : null;
+  const cap = rapid?.shotsInFlight ?? meta?.rung.shotsInFlight ?? Number.POSITIVE_INFINITY;
   const inFlight = state.shots.length;
-  const mayFire = inFlight < (meta?.rung.shotsInFlight ?? Number.POSITIVE_INFINITY);
+  const mayFire = inFlight < cap;
   if (input.fire && state.fireCooldown <= 0 && mayFire) {
     const cx = state.player.x + state.player.w / 2;
     const y = state.player.y - SHOT_H;
+    const before = state.shots.length;
     if (state.spreadT > 0) {
       spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED, -12, -90);
       spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED);
@@ -1405,7 +1458,10 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     } else {
       spawnShot(state.shots, cx, y, -PLAYER_SHOT_SPEED);
     }
-    state.fireCooldown = player.cooldown;
+    if (state.pierceT > 0) {
+      for (let i = before; i < state.shots.length; i++) state.shots[i]!.pierce = true;
+    }
+    state.fireCooldown = rapid?.cooldown ?? player.cooldown;
   }
 
   for (const shot of state.shots) {
@@ -1473,7 +1529,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         hoverHome.set(enemy, home);
       }
       if (enemy.sprite !== 'shelf') {
-        enemy.x = wrapX(home + Math.sin(state.t * 1.6 + home * 0.02) * 6, enemy.w);
+        enemy.x = hoverX(state, meta, enemy, home);
       }
       maybeStartDive(state, meta, enemy);
     }
@@ -1522,10 +1578,12 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     for (const enemy of state.enemies) {
       if (!hittable(state, enemy)) continue;
       if (!overlaps(shot, enemy)) continue;
-      shot.dead = true;
+      // A piercing shot keeps going; anything else is spent on what it hit.
+      if (!shot.pierce) shot.dead = true;
       const hp = enemy.hp ?? 1;
       if (hp > 1) {
         enemy.hp = hp - 1;
+        if (shot.pierce) continue;
         break;
       }
       revealOnHit(enemy);
@@ -1540,6 +1598,7 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
         enemy.dieAt = state.t + DIE_POP;
       }
       spawnFormationDrop(state, meta, enemy);
+      if (shot.pierce) continue;
       break;
     }
   }
