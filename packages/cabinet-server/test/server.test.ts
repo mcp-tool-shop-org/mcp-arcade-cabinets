@@ -228,7 +228,7 @@ describe("the shooter's environment overrides", () => {
       const read = ghostEnv({ CABINET_TIER: bad });
       expect(read.opts.tier, bad).toBeUndefined();
       expect(read.notes, bad).toEqual([
-        `CABINET_TIER was not understood; the cabinet plays at tier ${DEFAULT_TIER}\n`,
+        'CABINET_TIER was not understood; the cabinet plays at tier one\n',
       ]);
     }
     const seed = ghostEnv({ CABINET_SEED: 'later' });

@@ -190,9 +190,13 @@ Two reviewers of other families read the branch's packet (cut from the merge bas
 | Mistral 12         | the pack gate does not check bed size or duration                                                                             | It checks a floor on size (`BED_MIN_BYTES`) so a placeholder cannot ship; the duration is the shell test's, which runs on every verify. Left as split.                                                                                                                                                           |
 | Mistral 13         | `bedFailed` walks a Map that could hold one element twice                                                                     | It cannot: the loader builds one element per key. Left.                                                                                                                                                                                                                                                          |
 
+## The Director's second listen, and the cut on meaning
+
+Playing the served bundle the Director heard the same piece open every round and nothing change inside one. Two causes, both in `audio.ts`: every tape's first wave is inspect and the named bed for the wave was taken at the opening, so every round opened on `inspect.mp3`; and the hold before any change was the playing file's own length, longer than every round, so no wave bed and no boss bed was ever heard. Grok's consult (`docs/ghost-attack.grok-consult.md`, question four) named the rule that replaces it: the file's length is how long it loops, not how long the game waits. The opening is a seeded draw from the five wave beds, whatever the wave kind. A wave change takes its named bed after `BED_MIN_S` (thirty-six seconds, a verse) when the playing piece is long; a piece no longer than `BED_SHORT_S` (forty-eight seconds) still plays out whole, which keeps the 2026-09-11 note about a forty-second bed cut at thirty-six. A boss is a scene change and takes its bed at once. `BED_MAX_S` stays as the cap on a mis-tagged file's loop.
+
 ## What the next pass should know
 
-- The hold follows the file's own duration now (`bedHold`, capped at `BED_MAX_S`); `BED_MIN_S` is the floor for a bed that has no length yet.
+- The change hold is `BED_MIN_S` for a long piece and the whole piece when it is short (`changeHold`); a boss bed comes at once; the opening is a seeded pool draw.
 - The Ghost pack gate names all eight beds by file and floors their size, as Vibe's does.
 - `docs/art/receipts.json -> tracks` still lists `parallelism.mp3`, which is not in the tree; the duration test asserts each track folder holds exactly the beds the code names and nothing else.
 - Motif is the next music slice, after this release: its ingest path takes the stems these arrangements were cut from.

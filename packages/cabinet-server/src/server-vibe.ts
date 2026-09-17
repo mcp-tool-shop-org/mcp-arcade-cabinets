@@ -204,7 +204,7 @@ export function vibeEnv(
   if (opts.tier === undefined) {
     if (tier !== null && tier >= 0 && tier <= 3) out.tier = tier as Tier;
     else if (set(env.CABINET_TIER)) {
-      notes.push('CABINET_TIER was not understood; the cabinet plays at tier 0\n');
+      notes.push('CABINET_TIER is read by the shooter cabinet only; this cabinet has no tiers\n');
     }
   }
 

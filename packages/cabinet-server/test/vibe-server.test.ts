@@ -82,7 +82,7 @@ describe('the environment overrides', () => {
       const read = vibeEnv({ CABINET_TIER: bad });
       expect(read.opts.tier, bad).toBeUndefined();
       expect(read.notes, bad).toEqual([
-        'CABINET_TIER was not understood; the cabinet plays at tier 0\n',
+        'CABINET_TIER is read by the shooter cabinet only; this cabinet has no tiers\n',
       ]);
     }
 

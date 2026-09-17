@@ -42,6 +42,8 @@ export const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
 
 /** The tier a round plays at when the operator names none. */
 export const DEFAULT_TIER = 1;
+/** The tier as a word: a note to the operator carries no digit, like every other surface (Kimi, wave 5). */
+const TIER_WORDS = ['zero', 'one', 'two', 'three'] as const;
 
 /** The fixture a round plays when the operator names none. */
 export const DEFAULT_FIXTURE = 'naive-ndjson';
@@ -338,7 +340,9 @@ export function ghostEnv(
   if (opts.tier === undefined) {
     if (tier !== null && tier >= 0 && tier <= 3) out.tier = tier as 0 | 1 | 2 | 3;
     else if (setEnv(env.CABINET_TIER)) {
-      notes.push(`CABINET_TIER was not understood; the cabinet plays at tier ${DEFAULT_TIER}\n`);
+      notes.push(
+        `CABINET_TIER was not understood; the cabinet plays at tier ${TIER_WORDS[DEFAULT_TIER]}\n`,
+      );
     }
   }
 

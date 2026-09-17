@@ -216,6 +216,17 @@ function bedHold(bed: MediaBed | undefined, floor: number): number {
   if (typeof d !== 'number' || !Number.isFinite(d) || d <= 0) return floor;
   return Math.min(d, BED_MAX_S);
 }
+/**
+ * A piece no longer than this plays out whole before a change; a longer one
+ * holds `floor` (BED_MIN_S) and loops on its own. Sized so a forty-second
+ * bed is never cut and a two-minute bed gives way after a verse.
+ */
+export const BED_SHORT_S = 48;
+/** The hold before a wave change may move the bed. */
+function changeHold(bed: MediaBed | undefined, floor: number): number {
+  const whole = bedHold(bed, floor);
+  return whole <= BED_SHORT_S ? whole : floor;
+}
 /** Recorded beds sit here, not at 1, so shots and the catch still read. */
 export const BED_LEVEL = 0.32;
 
@@ -697,9 +708,17 @@ export function attach(
       waveKind === 'menu' ||
       waveKind === 'doorman' ||
       waveKind === 'archivist';
-    // One WHOLE loop before a playing bed gives way, named or not: the bed's
-    // own length when the element knows it, minBed as the floor when it does not.
-    if (currentBed && t - bedSince < bedHold(currentBed, minBed)) return true;
+    // A boss is a scene change: its bed comes at once, hold or no hold.
+    // Held behind the playing file's length, no boss bed was ever heard in a
+    // round shorter than the file (Grok's consult, question four).
+    if (isBoss && named && named !== currentBed) return adopt(named, t);
+    // Otherwise a playing bed holds before it gives way to a wave's named bed
+    // or the next pool bed: a short piece plays out whole (the Director's
+    // note of 2026-09-11, a forty-second bed cut at thirty-six), a long one
+    // holds a verse, BED_MIN_S, long enough to get into and short enough
+    // that a round can change its mind. The file's own length is how long
+    // it loops, not how long the game waits.
+    if (currentBed && t - bedSince < changeHold(currentBed, minBed)) return true;
     // The opening is a seeded draw from the pool, whatever the wave kind:
     // every tape's first wave is inspect, so taking the named bed here
     // opened every round on the same piece (the Director, 2026-09-17). A
