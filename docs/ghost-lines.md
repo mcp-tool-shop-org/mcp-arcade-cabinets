@@ -35,3 +35,5 @@ Short declaratives; the agent is earnest, literal and a little proud of being th
 | end                       | 31    | 15                              |
 
 Two hundred and twenty-two lines written by the lead over seven landings on 2026-09-17 (the bags, the reactions, the beds playing through, the boss's later entry, the playlist, the menu's return, the menu's exit), the rest from before. The next pass adds more.
+
+**Stage C added four kinds of pool** (2026-09-17, wave 7): a word when a lamp is lost, by its cause (`lamp.hazard`, `lamp.dive`, `lamp.shelf`, `lamp.shot`); a word when a drop is caught (`drops.catch.<kind>`) and when it ends (`drops.ends.<kind>`); and an ending that says how the round ended (`ending.time`, `ending.lamps`), which the closing scene says beside the `end` pool. The builder drafted four lines per pool; the lead rewrote them and widened each to six before the merge, seventy-eight lines in all, in the catch register (lower case) for the lamp and drop words and sentence case for the endings. They are bags like the rest.
