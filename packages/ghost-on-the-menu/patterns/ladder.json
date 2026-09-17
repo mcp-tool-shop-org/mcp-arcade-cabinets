@@ -49,7 +49,9 @@
       "lamps": 3,
       "grace": 0.55,
       "hazards": false,
-      "rageStart": false
+      "rageStart": false,
+      "sweep": 0,
+      "sweepPeriod": 12
     },
     {
       "tier": 1,
@@ -76,7 +78,9 @@
       "grace": 0.55,
       "hazards": false,
       "rageStart": false,
-      "shotsInFlight": 3
+      "shotsInFlight": 4,
+      "sweep": 0.9,
+      "sweepPeriod": 9
     },
     {
       "tier": 2,
@@ -104,7 +108,9 @@
       "grace": 0.45,
       "hazards": false,
       "rageStart": false,
-      "shotsInFlight": 3
+      "shotsInFlight": 4,
+      "sweep": 1,
+      "sweepPeriod": 7
     },
     {
       "tier": 3,
@@ -132,7 +138,9 @@
       "grace": 0.4,
       "hazards": true,
       "rageStart": true,
-      "shotsInFlight": 2
+      "shotsInFlight": 3,
+      "sweep": 1,
+      "sweepPeriod": 5
     }
   ]
 }

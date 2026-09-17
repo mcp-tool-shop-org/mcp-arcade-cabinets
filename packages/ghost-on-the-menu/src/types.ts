@@ -137,6 +137,8 @@ export interface Shot {
   vx: number;
   vy: number;
   dead: boolean;
+  /** A ship's shot fired under a pierce drop: it keeps going through a sprite it hits. */
+  pierce?: boolean;
 }
 
 export interface Enemy {
@@ -229,7 +231,14 @@ export interface Caption {
   line?: string;
 }
 
-export type DropKind = 'lamp' | 'spread';
+/**
+ * What a downed sprite or boss lets fall. A lamp comes off a boss; the three
+ * fire drops come off a formation: spread (three shots a press), rapid (the
+ * column opens up: more shots in the air and a shorter cooldown) and pierce
+ * (a shot keeps going through what it hits). The Director's ask,
+ * 2026-09-17: a capped column needs something to catch.
+ */
+export type DropKind = 'lamp' | 'spread' | 'rapid' | 'pierce';
 
 export interface Drop {
   kind: DropKind;
@@ -275,6 +284,10 @@ export interface RoundState {
   drops: Drop[];
   /** Seconds of spread fire remaining. */
   spreadT: number;
+  /** Seconds of rapid fire left from a rapid drop. */
+  rapidT: number;
+  /** Seconds of piercing shots left from a pierce drop. */
+  pierceT: number;
   /** Drops caught this round. For cues; never drawn as a digit. */
   dropCatches: number;
   /** Boss-emitted hazards. Class motion, never fact motion. */

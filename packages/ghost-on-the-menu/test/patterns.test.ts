@@ -640,8 +640,8 @@ describe('the formation fire levers', () => {
     // the recorded rung and hardcore say nothing.
     const set = loadPatterns(raw);
     for (const r of set.ladder.rungs) {
-      if (r.tier === 1 || r.tier === 2) expect(r.shotsInFlight).toBe(3);
-      else if (r.tier === 3) expect(r.shotsInFlight).toBe(2);
+      if (r.tier === 1 || r.tier === 2) expect(r.shotsInFlight).toBe(4);
+      else if (r.tier === 3) expect(r.shotsInFlight).toBe(3);
       else expect(r.shotsInFlight).toBeNull();
     }
     rungs[1]!.shotsInFlight = 2;
@@ -652,5 +652,54 @@ describe('the formation fire levers', () => {
       rungs[1]!.shotsInFlight = bad;
       expect(() => loadPatterns(raw), String(bad)).toThrow('patterns/ladder.json: shotsInFlight');
     }
+  });
+});
+
+// The Director's ask (2026-09-17): a capped column needs something to catch.
+describe('the fire drops', () => {
+  type DropsRaw = Record<string, Record<string, unknown>>;
+  it('ships a lamp off the boss and three fire drops off a formation, each with a duration', () => {
+    const d = DEFAULT_PATTERNS.drops;
+    expect(d.lamp.from).toBe('boss');
+    for (const k of ['spread', 'rapid', 'pierce'] as const) {
+      expect(d[k].from).toBe('formation');
+      expect(d[k].duration).toBeGreaterThan(0);
+      expect(d[k].weight).toBeGreaterThan(0);
+    }
+    expect(d.rapid.shotsInFlight).toBeGreaterThan(4);
+    expect(d.rapid.cooldown).toBeLessThan(DEFAULT_PATTERNS.player.cooldown);
+    expect(d.pierce.shotsInFlight).toBeNull();
+  });
+
+  it('refuses a rapid drop without its cap and cooldown, a cap on any other kind, and a negative weight', () => {
+    const raw = clone();
+    delete (raw.drops as DropsRaw).rapid!.shotsInFlight;
+    expect(() => loadPatterns(raw)).toThrow('patterns/drops.json: shotsInFlight');
+    const raw2 = clone();
+    (raw2.drops as DropsRaw).pierce!.shotsInFlight = 4;
+    expect(() => loadPatterns(raw2)).toThrow('patterns/drops.json: pierce');
+    const raw3 = clone();
+    (raw3.drops as DropsRaw).spread!.weight = -1;
+    expect(() => loadPatterns(raw3)).toThrow('patterns/drops.json: weight');
+    const raw4 = clone();
+    delete (raw4.drops as DropsRaw).spread!.weight;
+    expect(loadPatterns(raw4).drops.spread.weight).toBe(1);
+  });
+});
+
+describe('the hover sweep levers', () => {
+  it('reads sweep and its period per rung, refusing a sweep outside zero to one', () => {
+    const raw = clone();
+    const rungs = (raw.ladder as { rungs: Record<string, unknown>[] }).rungs;
+    delete rungs[1]!.sweep;
+    delete rungs[1]!.sweepPeriod;
+    const set = loadPatterns(raw);
+    expect(set.ladder.rungs[1]!.sweep).toBe(0);
+    expect(set.ladder.rungs[1]!.sweepPeriod).toBe(8);
+    rungs[1]!.sweep = 1.5;
+    expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: sweep');
+    rungs[1]!.sweep = 0.5;
+    rungs[1]!.sweepPeriod = 0;
+    expect(() => loadPatterns(raw)).toThrow('patterns/ladder.json: sweepPeriod');
   });
 });

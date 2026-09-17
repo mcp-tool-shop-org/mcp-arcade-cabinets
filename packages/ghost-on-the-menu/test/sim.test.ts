@@ -985,8 +985,9 @@ describe('drops', () => {
     const b = pop(make(false));
     expect(a.drops).toHaveLength(1);
     expect(b.drops).toHaveLength(1);
-    expect(a.drops[0]!.kind).toBe('spread');
-    expect(b.drops[0]!.kind).toBe('spread');
+    // One of the three fire drops, drawn by seed, the same draw whether or not the formation was a lie.
+    expect(['spread', 'rapid', 'pierce']).toContain(a.drops[0]!.kind);
+    expect(b.drops[0]!.kind).toBe(a.drops[0]!.kind);
   });
 
   it('catching a lamp restores a life and catching a spread fans the next shots', () => {
@@ -1950,5 +1951,186 @@ describe('the three defects behind the silent formation', () => {
     }
     expect(dived).toBe(true);
     expect(shotWhileDiving).toBeGreaterThan(0);
+  });
+});
+
+// The Director's ask (2026-09-17): a capped column needs something to catch.
+describe('the fire drops', () => {
+  const still = { left: false, right: false, fire: false };
+  const firing = { left: false, right: false, fire: true };
+  /** A tier-1 round with one grid sprite parked in the hover under the ship, patched as asked. */
+  function parked(patch?: (set: PatternSet) => void): {
+    state: RoundState;
+    target: Enemy;
+    set: PatternSet;
+  } {
+    const set = JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as PatternSet;
+    // No sweep here: the ship is parked under the sprite and must stay under it.
+    set.ladder.rungs.find((r) => r.tier === 1)!.sweep = 0;
+    patch?.(set);
+    const round = roundOf({
+      tapeId: 'bout_drops',
+      duration: 60,
+      tier: 1,
+      beats: [
+        {
+          id: 'inspect.tools_list:grid:0',
+          t: 0,
+          x: 240,
+          sprite: 'grid',
+          lie: false,
+          members: 1,
+          source: { atom: 'inspect.tools_list', method: 'tools/call', note: 'echo', index: 0 },
+        },
+      ],
+    });
+    attachPatterns(round, set);
+    const state = createRoundState(round);
+    return { state, target: state.enemies[0]!, set };
+  }
+
+  it("a rapid drop opens the column: the cap and the cooldown are the drop's while it runs", () => {
+    const { state, set } = parked();
+    state.player.x = 20;
+    const rung = set.ladder.rungs.find((r) => r.tier === 1)!;
+    let peak = 0;
+    for (let i = 0; i < 60; i++) {
+      stepRound(state, firing, 1 / 60);
+      peak = Math.max(peak, state.shots.length);
+    }
+    expect(peak).toBe(rung.shotsInFlight);
+    state.rapidT = set.drops.rapid.duration;
+    state.shots = [];
+    let rapidPeak = 0;
+    for (let i = 0; i < 60; i++) {
+      stepRound(state, firing, 1 / 60);
+      rapidPeak = Math.max(rapidPeak, state.shots.length);
+    }
+    expect(rapidPeak).toBe(set.drops.rapid.shotsInFlight);
+    expect(rapidPeak).toBeGreaterThan(peak);
+    // It runs out.
+    for (let i = 0; i < 60 * 9; i++) stepRound(state, still, 1 / 60);
+    expect(state.rapidT).toBe(0);
+  });
+
+  it('a pierce drop lets a shot keep going through the sprite it hits', () => {
+    const { state, target } = parked();
+    park(state, target);
+    state.pierceT = 8;
+    let hit = false;
+    for (let i = 0; i < 90 && !hit; i++) {
+      stepRound(state, firing, 1 / 60);
+      if (target.mode === 'dying') hit = true;
+    }
+    expect(hit).toBe(true);
+    // The shot that killed it is still in the air.
+    expect(state.shots.some((s) => s.pierce && !s.dead)).toBe(true);
+  });
+
+  it('a downed grid lets a fire drop fall, drawn by seed over the weights', () => {
+    const { state, target, set } = parked();
+    park(state, target);
+    let guard = 0;
+    while (state.drops.length === 0 && guard++ < 120) stepRound(state, firing, 1 / 60);
+    expect(state.drops.length).toBe(1);
+    expect(['spread', 'rapid', 'pierce']).toContain(state.drops[0]!.kind);
+    // The same seed draws the same kind; a weight of zero never falls.
+    const again = parked();
+    park(again.state, again.target);
+    guard = 0;
+    while (again.state.drops.length === 0 && guard++ < 120) stepRound(again.state, firing, 1 / 60);
+    expect(again.state.drops[0]!.kind).toBe(state.drops[0]!.kind);
+    const only = parked((s) => {
+      s.drops.spread.weight = 0;
+      s.drops.rapid.weight = 0;
+    });
+    park(only.state, only.target);
+    guard = 0;
+    while (only.state.drops.length === 0 && guard++ < 120) stepRound(only.state, firing, 1 / 60);
+    expect(only.state.drops[0]!.kind).toBe('pierce');
+    expect(set.drops.pierce.duration).toBeGreaterThan(0);
+  });
+
+  it('catching a rapid or a pierce drop starts its clock', () => {
+    const { state, set } = parked((s) => {
+      s.drops.spread.weight = 0;
+      s.drops.pierce.weight = 0;
+    });
+    const target = state.enemies[0]!;
+    park(state, target);
+    let guard = 0;
+    while (state.drops.length === 0 && guard++ < 120) stepRound(state, firing, 1 / 60);
+    const drop = state.drops[0]!;
+    expect(drop.kind).toBe('rapid');
+    // Put the ship under it and let it fall in.
+    state.player.x = drop.x + drop.w / 2 - state.player.w / 2;
+    guard = 0;
+    while (state.rapidT === 0 && guard++ < 600) stepRound(state, still, 1 / 60);
+    expect(state.rapidT).toBeGreaterThan(set.drops.rapid.duration - 0.2);
+  });
+});
+
+// The Director's ask (2026-09-17): the formation never reached the edges.
+describe('the hover sweeps the field', () => {
+  const still = { left: false, right: false, fire: false };
+  function hovering(sweep: number, period = 4): { state: RoundState; target: Enemy } {
+    const set = JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as PatternSet;
+    const rung = set.ladder.rungs.find((r) => r.tier === 1)!;
+    rung.sweep = sweep;
+    rung.sweepPeriod = period;
+    const round = roundOf({
+      tapeId: 'bout_sweep',
+      duration: 60,
+      tier: 1,
+      beats: [
+        {
+          id: 'inspect.tools_list:menu:0',
+          t: 0,
+          x: 240,
+          sprite: 'menu',
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/list',
+            note: 'tools/list',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, set);
+    const state = createRoundState(round);
+    const target = state.enemies[0]!;
+    park(state, target);
+    state.player.x = 20;
+    return { state, target };
+  }
+
+  it('crosses most of the field over a period with the sweep on, and stays home with it off', () => {
+    const on = hovering(1, 4);
+    let lo = Number.POSITIVE_INFINITY;
+    let hi = Number.NEGATIVE_INFINITY;
+    for (let i = 0; i < 60 * 4; i++) {
+      stepRound(on.state, still, 1 / 60);
+      lo = Math.min(lo, on.target.x);
+      hi = Math.max(hi, on.target.x + on.target.w);
+    }
+    expect(lo).toBeLessThan(FIELD.width * 0.1);
+    expect(hi).toBeGreaterThan(FIELD.width * 0.9);
+    const off = hovering(0);
+    const home = off.target.x;
+    for (let i = 0; i < 60 * 4; i++) {
+      stepRound(off.state, still, 1 / 60);
+      expect(Math.abs(off.target.x - home)).toBeLessThanOrEqual(7);
+    }
+  });
+
+  it('is a lever per rung, on at every rung that fires', () => {
+    for (const r of DEFAULT_PATTERNS.ladder.rungs) {
+      if (r.tier === 0) continue;
+      expect(r.sweep, `tier ${r.tier}`).toBeGreaterThanOrEqual(0.9);
+      expect(r.sweepPeriod).toBeGreaterThan(0);
+    }
   });
 });

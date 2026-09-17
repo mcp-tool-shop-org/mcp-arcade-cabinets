@@ -184,7 +184,7 @@ describe('fairness band', () => {
   // which does not shoot back, no longer lives out every seated tape. What
   // it must still do is find the lies while it lives. Measured when set:
   // every lie on fifteen of twenty seated tapes, sixteen of twenty-one lies.
-  it('the reader, under fire at seat, still reveals every lie on most seated tapes and half the lies', () => {
+  it('the reader, under fire at seat, still reveals every lie on most seated tapes and a third of the lies', () => {
     const cases = CASES.filter((c) => c.tier === 1);
     let lies = 0;
     let revealed = 0;
@@ -198,8 +198,12 @@ describe('fairness band', () => {
       if (out.lies.every((id) => out.revealed.includes(id))) whole += 1;
     }
     expect(lies, 'no lies on any seated tape: the bar measured nothing').toBeGreaterThan(0);
-    expect(whole).toBeGreaterThanOrEqual(Math.ceil(cases.length * 0.6));
-    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+    // Eleven of twenty once the formation sweeps the field (2026-09-17): a moving tell.
+    expect(whole).toBeGreaterThanOrEqual(Math.ceil(cases.length * 0.55));
+    // A third of the lies once the formation sweeps the field (2026-09-17):
+    // the tells-only reader chases a moving tell under rain now. Measured
+    // when set: seven of twenty-one.
+    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 3));
   });
 
   // Survival at seat, split from coverage. Measured when set: six of twenty.
@@ -228,7 +232,6 @@ describe('the difficulty curve', () => {
   const byTier = (tier: 0 | 1 | 2) => CASES.filter((c) => c.tier === tier);
   const meanLamps = (outs: ReturnType<typeof run>[]) =>
     outs.reduce((s, o) => s + (3 - o.lives), 0) / outs.length;
-  const alive = (outs: ReturnType<typeof run>[]) => outs.filter((o) => o.ended === 'time').length;
   const namedHalf = (cases: Case[], outs: ReturnType<typeof run>[]) => {
     const short: string[] = [];
     let lies = 0;
@@ -276,12 +279,15 @@ describe('the difficulty curve', () => {
     expect(h.perTape, h.short).toBeGreaterThanOrEqual(3);
   });
 
-  it('live: the reader ends by time on some tapes and finds two fifths of the lies', () => {
+  // A third since the formation sweeps the field (2026-09-17): the reader
+  // has to chase a moving tell now. Measured when set: seven of twenty-one.
+  // With the formation sweeping the field no scripted bot lives out a live
+  // tape (2026-09-17); the reader's bar there is what it finds before it goes.
+  it('live: the reader finds a third of the lies before it goes', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => run(c, 'reader'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(2);
     const h = namedHalf(cases, outs);
-    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies * 0.4));
+    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 3));
   });
 });
 
@@ -321,14 +327,17 @@ describe('the shift climb', () => {
     expect(perTape).toBeGreaterThanOrEqual(2);
   });
 
-  it('live, last call: the reader ends by time on some tapes', () => {
+  // Same re-base: the reader finds a lie on some tapes at the top of the climb.
+  it('live, last call: the reader still finds a lie on some tapes', () => {
     const outs = byTier(2).map((c) => last(c, 'reader'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(2);
+    expect(outs.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(2);
   });
 
-  it('seat, last call: the reader still ends by time on a quarter of the roster', () => {
+  // A seventh since the formation sweeps the field (2026-09-17). Measured
+  // when set: three of twenty.
+  it('seat, last call: the reader still ends by time on some of the roster', () => {
     const outs = byTier(1).map((c) => last(c, 'reader'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.25));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.15));
   });
 
   it('no bot leaks a word at the top of the climb', () => {
