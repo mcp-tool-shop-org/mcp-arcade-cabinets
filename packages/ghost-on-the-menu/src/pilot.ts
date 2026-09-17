@@ -83,7 +83,8 @@ export const VOICE_SYSTEM =
   'You are a boss in an arcade cabinet. You do not know which sprites are honest. ' +
   'These are the lines you may say when you arrive. Reply with one letter.';
 
-const LETTERS = 'abcdefghijklmnop';
+// The whole alphabet since 2026-09-17: the boss pools grow with every update (docs/ghost-lines.md).
+const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 
 /** The letters a voice prompt may label, so a file with more lines than letters halts. */
 export const VOICE_MAX_LINES = LETTERS.length;

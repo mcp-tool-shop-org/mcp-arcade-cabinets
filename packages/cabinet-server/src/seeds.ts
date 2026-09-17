@@ -6,11 +6,17 @@
 // two-sentence drafts stay in the file and stay the fallback floor.
 // Browser-safe.
 
-import { isOneSentence } from './gate';
+import { gateLine, isOneSentence } from './gate';
 
-/** The kind's lines that fit the gate's sentence bound. */
+/**
+ * The kind's lines that would pass the gate whole: one sentence, and none
+ * of the words the gate refuses (a tool name, a vendor, a fact word). The
+ * lead writes the pools for the field, where "list" and "menu" are the
+ * agent's vocabulary; the say seat may only seed from the lines the gate
+ * itself would let through, or it teaches the model to fail it.
+ */
 export function seedPool(own: readonly string[]): string[] {
-  return own.filter(isOneSentence);
+  return own.filter((line) => isOneSentence(line) && gateLine(line).ok);
 }
 
 /** Three register seeds from the kind's one-sentence lines, rotated by the say count. */

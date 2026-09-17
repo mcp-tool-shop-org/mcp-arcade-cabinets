@@ -5,10 +5,9 @@ import {
   burstActive,
   copiesAt,
   intensityAt,
-  emptyLineBag,
+  bagFor,
   nextBagLine,
-  pickLine,
-  type LineBag,
+  type LineBags,
   voiceWaveKey,
   type BossDef,
   type DropKind,
@@ -78,8 +77,8 @@ interface Meta {
   waveHold: number;
   emittedGridForWave: boolean;
   asideAt: number;
-  asideBag: LineBag;
-  asideKind: string;
+  /** Every voice pool's bag; the shell's own object when it hands one in, so the walk carries across rounds. */
+  bags: LineBags;
   /** Round time until which a pilot `hold` keeps the boss still. */
   bossHoldUntil: number;
   /** Pixels the boss has slid toward the ship for a pending pilot `column`. */
@@ -395,7 +394,9 @@ function seatedFire(intent: PilotIntent | null): Exclude<PilotIntent, 'script'> 
 
 function endRound(state: RoundState, why: 'time' | 'lamps', meta?: Meta): void {
   state.ended = why;
-  const line = meta ? pickLine(meta.patterns.voice.end, meta.round.seed, 99) : undefined;
+  const line = meta
+    ? nextBagLine(meta.patterns.voice.end, bagFor(meta.bags, 'end'), meta.round.seed, 99)
+    : undefined;
   state.scene = line
     ? { tapeId: state.tapeId, cleared: [...state.cleared], line }
     : { tapeId: state.tapeId, cleared: [...state.cleared] };
@@ -471,6 +472,12 @@ export function revealOnHit(enemy: Enemy): void {
 export interface RoundStateOpts {
   /** Lamps the round starts with, and the bezel's length. Default is the rung's. */
   lives?: number;
+  /**
+   * The voice pools' bags, kept by the caller across rounds so no line is
+   * heard again until its pool is spent. Absent, the round walks fresh bags
+   * from its seed, which is what the runners and the band want.
+   */
+  bags?: LineBags;
 }
 
 export function createRoundState(round: Round, opts: RoundStateOpts = {}): RoundState {
@@ -584,8 +591,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     waveHold: 0,
     emittedGridForWave: false,
     asideAt: 6,
-    asideBag: emptyLineBag(),
-    asideKind: '',
+    bags: opts.bags ?? {},
     bossHoldUntil: 0,
     bossLean: 0,
     midboss: false,
@@ -638,7 +644,12 @@ function openWave(state: RoundState, meta: Meta, wave: number): void {
     text: waveCaption(bound.atom),
     t: WAVE_CAPTION_T,
     kind: 'wave',
-    line: pickLine(meta.patterns.voice.wave[kind], meta.round.seed, 17 + wave),
+    line: nextBagLine(
+      meta.patterns.voice.wave[kind],
+      bagFor(meta.bags, `wave/${kind}`),
+      meta.round.seed,
+      17 + wave,
+    ),
   };
   meta.waveHold = WAVE_CAPTION_T;
   meta.emittedGridForWave = false;
@@ -720,7 +731,7 @@ function spawnBoss(state: RoundState, meta: Meta, kind: Boss['kind'], def: BossD
     text: word,
     t: WAVE_CAPTION_T,
     kind: 'wave',
-    line: seated ?? pickLine(lines, meta.round.seed, salt),
+    line: seated ?? nextBagLine(lines, bagFor(meta.bags, `boss/${kind}`), meta.round.seed, salt),
   };
 }
 
@@ -810,12 +821,13 @@ function maybeAside(state: RoundState, meta: Meta): void {
   const kind = bound ? voiceWaveKey(kindOfAtom(bound.atom)) : 'inspect';
   const lines = meta.patterns.voice.aside[kind];
   if (!lines || lines.length === 0) return;
-  if (meta.asideKind !== kind) {
-    meta.asideBag = emptyLineBag();
-    meta.asideKind = kind;
-  }
   state.caption = {
-    text: nextBagLine(lines, meta.asideBag, meta.round.seed, kind.charCodeAt(0)),
+    text: nextBagLine(
+      lines,
+      bagFor(meta.bags, `aside/${kind}`),
+      meta.round.seed,
+      kind.charCodeAt(0),
+    ),
     t: 2.2,
     kind: 'aside',
   };
@@ -1056,7 +1068,12 @@ function catchCaption(state: RoundState, meta: Meta | undefined, enemy: Enemy): 
   const lines = meta.patterns.voice.catch[kind];
   const picked =
     lines.length > 0
-      ? pickLine(lines, meta.round.seed, (diveIndex.get(enemy) ?? 0) + 71 + state.wave * 5)
+      ? nextBagLine(
+          lines,
+          bagFor(meta.bags, `catch/${kind}`),
+          meta.round.seed,
+          (diveIndex.get(enemy) ?? 0) + 71 + state.wave * 5,
+        )
       : word;
   return sanitizeCaption(picked, word);
 }

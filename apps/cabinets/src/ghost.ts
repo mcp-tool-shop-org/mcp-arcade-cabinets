@@ -54,11 +54,13 @@ import {
   SPRITE_KEYS,
   stepRound,
   TRACK_KEYS,
+  readLineBags,
   waveKindAt,
   type AudioOut,
   type CueSnapshot,
   type DrawContext,
   type Intensity,
+  type LineBags,
   type MediaBed,
   type Round,
   type RoundInput,
@@ -138,6 +140,26 @@ export type Prefs = {
 
 const DIFF_VALUES = new Set<string>(DIFFICULTIES.map((d) => d.value));
 const FEEL_VALUES = new Set<string>(INTENSITIES);
+
+/** Sibling of `ghost.prefs`: where each voice pool's bag is in its walk. Words only, no fact. */
+const BAGS_KEY = 'ghost.lines';
+
+export function readStoredBags(): LineBags {
+  try {
+    const raw = localStorage.getItem(BAGS_KEY);
+    return readLineBags(raw ? (JSON.parse(raw) as unknown) : null);
+  } catch {
+    return {};
+  }
+}
+
+export function writeStoredBags(bags: LineBags): void {
+  try {
+    localStorage.setItem(BAGS_KEY, JSON.stringify(bags));
+  } catch {
+    /* a private window or blocked storage: the walk starts over next time */
+  }
+}
 
 export function readPrefs(): Prefs {
   try {
@@ -944,7 +966,10 @@ export function mountGhost(
     return prepassRound(tape, opts);
   };
   let round: Round = newRound();
-  let state: RoundState = createRoundState(round);
+  // The voice pools' bags, this browser's: a line is not heard again until
+  // its whole pool has been heard, across tapes and restarts alike.
+  const bags = readStoredBags();
+  let state: RoundState = createRoundState(round, { bags });
   // The opening bed follows the round's seed; a bed already playing keeps its run.
   audio?.seed(round.seed);
   // Seeded from the fresh state, not null, so the first wave card's cue fires.
@@ -1162,7 +1187,7 @@ export function mountGhost(
     bumpFire();
     stopTake();
     round = newRound();
-    state = createRoundState(round);
+    state = createRoundState(round, { bags });
     audio?.seed(round.seed);
     prev = snapshot(state);
     live.round = round;
@@ -1390,8 +1415,12 @@ export function mountGhost(
       nextBtn.disabled = false;
       // The scene holds NEXT_TAPE_S, then the play flows into the next tape
       // on its own, the same path the Next button takes.
-      if (sceneAt === null) sceneAt = now;
-      else if (onNext && now - sceneAt >= NEXT_TAPE_S * 1000) {
+      if (sceneAt === null) {
+        sceneAt = now;
+        // The round's lines are spent: the bags go to storage here, so the
+        // next tape and the next visit carry on the walk.
+        writeStoredBags(bags);
+      } else if (onNext && now - sceneAt >= NEXT_TAPE_S * 1000) {
         leave();
         onNext();
         return;
@@ -1410,6 +1439,7 @@ export function mountGhost(
   });
   const leave = () => {
     left = true;
+    writeStoredBags(bags);
     cancelAnimationFrame(raf);
     window.clearTimeout(voiceProbe);
     window.clearTimeout(tagsProbe);

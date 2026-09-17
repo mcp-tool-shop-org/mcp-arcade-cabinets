@@ -19,6 +19,8 @@ import {
   burstActive,
   copiesAt,
   DEFAULT_PATTERNS,
+  readLineBags,
+  type LineBags,
   type PatternSet,
 } from '../src/patterns';
 import { flavorAt } from '../src/shift';
@@ -1068,7 +1070,7 @@ describe('voice', () => {
     expect(a.boss).not.toBeNull();
     expect(a.caption!.line).toBe(b.caption!.line);
     expect(a.caption!.line).not.toBe('poison');
-    expect(a.caption!.line).toMatch(/Whisperer/);
+    expect(DEFAULT_PATTERNS.voice.boss.whisperer).toContain(a.caption!.line);
     while (!a.scene) stepRound(a, { left: false, right: false, fire: false }, 0.5);
     expect(a.scene!.line).toBeTruthy();
     expect(a.scene!.line).not.toMatch(FORBIDDEN_CAPTION);
@@ -2193,5 +2195,100 @@ describe('aimed formation fire', () => {
     expect(straightHit).toBe(false);
     for (const k of ['1', '2', '3'] as const)
       expect(DEFAULT_PATTERNS.fire.tiers[k].formation!.aim).toBe(true);
+  });
+});
+
+// The Director's rule (2026-09-17): the agent's lines are drawn at random
+// and not drawn again until all have been used, and the pools grow with
+// every update of the repo until they feel diverse.
+describe('the voice pools are bags, and they grow', () => {
+  const still = { left: false, right: false, fire: false };
+  /** A one-beat round at seat with the atom asked, sharing the caller's bags. */
+  function roundWith(atom: string, bags: LineBags, seed = 1): RoundState {
+    const round = roundOf({
+      tapeId: 'bout_bags',
+      duration: 6,
+      seed,
+      tier: 1,
+      waveBounds: [{ atom, t0: 0, t1: 5 }],
+      beats: [
+        {
+          id: `${atom}:menu:0`,
+          t: 0,
+          x: 240,
+          sprite: 'menu',
+          lie: false,
+          members: 1,
+          source: { atom, method: 'tools/list', note: 'tools/list', index: 0 },
+        },
+      ],
+    });
+    attachPatterns(round, DEFAULT_PATTERNS);
+    return createRoundState(round, { bags });
+  }
+
+  it('a wave line is not heard again until its whole pool has been heard, across rounds that share the bags', () => {
+    const pool = DEFAULT_PATTERNS.voice.wave.poison;
+    const bags: LineBags = {};
+    const heard: string[] = [];
+    for (let i = 0; i < pool.length; i++) {
+      const state = roundWith('poison.follow_through', bags, 7 + i);
+      stepRound(state, still, 1 / 60);
+      heard.push(state.caption!.line!);
+    }
+    expect(new Set(heard).size).toBe(pool.length);
+    expect([...heard].sort()).toEqual([...pool].sort());
+    // The next round begins a new walk through the same pool.
+    const again = roundWith('poison.follow_through', bags, 99);
+    stepRound(again, still, 1 / 60);
+    expect(pool).toContain(again.caption!.line!);
+  });
+
+  it('a round with no bags of its own walks the same lines for the same seed', () => {
+    const a = roundWith('temporal.rug_pull', {}, 3);
+    const b = roundWith('temporal.rug_pull', {}, 3);
+    stepRound(a, still, 1 / 60);
+    stepRound(b, still, 1 / 60);
+    expect(a.caption!.line).toBe(b.caption!.line);
+  });
+
+  it('an end line and a catch line come from their own bags', () => {
+    const bags: LineBags = {};
+    const ends = new Set<string>();
+    for (let i = 0; i < DEFAULT_PATTERNS.voice.end.length; i++) {
+      const state = roundWith('inspect.tools_list', bags, 11 + i);
+      state.t = 5.99;
+      stepRound(state, still, 0.05);
+      expect(state.scene).not.toBeNull();
+      ends.add(state.scene!.line!);
+    }
+    expect(ends.size).toBe(DEFAULT_PATTERNS.voice.end.length);
+    expect(bags['end']).toBeDefined();
+  });
+
+  it('every pool is at least a dozen lines with no line repeated in it, and the boss pools fit the letter seat', () => {
+    const v = DEFAULT_PATTERNS.voice;
+    for (const [name, lines] of [
+      ...Object.entries(v.wave).map(([k, l]) => [`wave/${k}`, l] as const),
+      ...Object.entries(v.boss).map(([k, l]) => [`boss/${k}`, l] as const),
+      ...Object.entries(v.aside).map(([k, l]) => [`aside/${k}`, l] as const),
+      ...Object.entries(v.catch).map(([k, l]) => [`catch/${k}`, l] as const),
+      ['end', v.end] as const,
+    ]) {
+      expect(lines.length, name).toBeGreaterThanOrEqual(12);
+      expect(new Set(lines).size, name).toBe(lines.length);
+    }
+    for (const lines of Object.values(v.boss)) expect(lines.length).toBeLessThanOrEqual(26);
+  });
+
+  it('reads a bag store back only in its own shape', () => {
+    expect(readLineBags(null)).toEqual({});
+    expect(
+      readLineBags({ 'wave/inspect': { order: [2, 0, 1], at: 1, cycle: 0 }, junk: 3 }),
+    ).toEqual({
+      'wave/inspect': { order: [2, 0, 1], at: 1, cycle: 0 },
+    });
+    expect(readLineBags({ end: { order: 'no', at: 0, cycle: 0 } })).toEqual({});
+    expect(readLineBags({ end: { order: [], at: -1, cycle: 0 } })).toEqual({});
   });
 });

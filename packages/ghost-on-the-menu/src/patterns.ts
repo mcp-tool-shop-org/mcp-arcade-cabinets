@@ -1283,6 +1283,40 @@ export function emptyLineBag(): LineBag {
   return { order: [], at: 0, cycle: 0 };
 }
 
+/**
+ * Every pool's bag, keyed by the pool's path (`wave/inspect`, `boss/menu`,
+ * `catch/rug`, `aside/poison`, `end`). The shell keeps one across rounds so
+ * a line is not heard again until its whole pool has been heard; a runner
+ * or a test starts a fresh one and gets the same walk for the same seed.
+ * The Director's rule (2026-09-17): the agent's lines are drawn at random
+ * and not drawn again until all have been used.
+ */
+export type LineBags = Record<string, LineBag>;
+
+export function bagFor(bags: LineBags, key: string): LineBag {
+  let bag = bags[key];
+  if (!bag) {
+    bag = emptyLineBag();
+    bags[key] = bag;
+  }
+  return bag;
+}
+
+/** A bag store read back from storage: only the shape `LineBags` has, or nothing. */
+export function readLineBags(raw: unknown): LineBags {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const out: LineBags = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+    const v = value as Record<string, unknown>;
+    const order = Array.isArray(v.order) ? v.order.filter((n) => Number.isInteger(n)) : null;
+    if (!order || !Number.isInteger(v.at) || !Number.isInteger(v.cycle)) continue;
+    if ((v.at as number) < 0 || (v.cycle as number) < 0) continue;
+    out[key] = { order: order as number[], at: v.at as number, cycle: v.cycle as number };
+  }
+  return out;
+}
+
 export function shuffleOrder(n: number, seed: number, cycle: number): number[] {
   const order = Array.from({ length: n }, (_, i) => i);
   let a = (Math.imul(seed, 747796405) ^ Math.imul(cycle + 1, 2891336453)) >>> 0;

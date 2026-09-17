@@ -38,11 +38,13 @@ export {
   emptyLineBag,
   nextBagLine,
   pickLine,
+  readLineBags,
   shuffleOrder,
   voiceWaveKey,
 } from './patterns';
 export type {
   EndlessCeiling,
+  LineBags,
   EndlessClimb,
   EndlessRank,
   EndlessScore,
