@@ -1664,8 +1664,9 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       if (!hittable(state, enemy)) continue;
       if (!overlaps(shot, enemy)) continue;
       // A piercing shot keeps going; anything else is spent on what it hit.
-      // What a piercing shot has already struck it does not strike again
-      // while it is still inside the hull (Kimi's review of the drops).
+      // A piercing shot strikes a hull once, ever: the set is never cleared,
+      // and without it a shot crossing a hull would strike it on every frame
+      // it was inside (Kimi's reviews of the drops and of the lines).
       if (shot.pierce) {
         const struck = (shot.struck ??= new Set<Enemy>());
         if (struck.has(enemy)) continue;

@@ -26,12 +26,12 @@ Short declaratives; the agent is earnest, literal and a little proud of being th
 
 ## The pools as of 2026-09-17
 
-| pool                      | lines | added this pass |
-| ------------------------- | ----- | --------------- |
-| wave, each of four kinds  | 24    | 8               |
-| boss, each of four kinds  | 18    | 6               |
-| aside, each of four kinds | 32    | 8               |
-| catch, each of four kinds | 24    | 8               |
-| end                       | 24    | 8               |
+| pool                      | lines | first pass | second pass |
+| ------------------------- | ----- | ---------- | ----------- |
+| wave, each of four kinds  | 26    | 8          | 2           |
+| boss, each of four kinds  | 20    | 6          | 2           |
+| aside, each of four kinds | 34    | 8          | 2           |
+| catch, each of four kinds | 26    | 8          | 2           |
+| end                       | 26    | 8          | 2           |
 
-A hundred and twenty lines written by the lead in this pass. The next pass adds more.
+A hundred and twenty lines written by the lead in the first pass (the bags landing) and thirty-four in the second (the reactions landing, the same day). The next pass adds more.

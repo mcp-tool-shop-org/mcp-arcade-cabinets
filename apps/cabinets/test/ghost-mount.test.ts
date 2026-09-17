@@ -107,8 +107,8 @@ function mount() {
 describe('the mount, taken down', () => {
   it('gives back every window listener it took', () => {
     const game = mount();
-    const took = added.filter((h) => ['keydown', 'keyup', 'resize'].includes(h.type));
-    expect(took.map((h) => h.type).sort()).toEqual(['keydown', 'keyup', 'resize']);
+    const took = added.filter((h) => ['keydown', 'keyup', 'resize', 'pagehide'].includes(h.type));
+    expect(took.map((h) => h.type).sort()).toEqual(['keydown', 'keyup', 'pagehide', 'resize']);
     game.unmount();
     for (const h of took) {
       expect(
@@ -116,6 +116,19 @@ describe('the mount, taken down', () => {
         `${h.type} was taken and never given back`,
       ).toBe(true);
     }
+  });
+
+  // The bags went to storage at the scene and on leaving the field, so a
+  // reload mid-round heard that round's lines again (Kimi's review of the
+  // lines commit). The page's last event on the way out writes them too.
+  it('writes the bags on pagehide, so a reload mid-round keeps the walk', () => {
+    const game = mount();
+    expect(localStorage.getItem('ghost.lines')).toBeNull();
+    window.dispatchEvent(new Event('pagehide'));
+    const raw = localStorage.getItem('ghost.lines');
+    expect(raw).not.toBeNull();
+    expect(typeof JSON.parse(raw!)).toBe('object');
+    game.unmount();
   });
 
   it('aborts what it has in flight', () => {

@@ -1,6 +1,6 @@
 # Vibe Typer — the reactions, one line per request
 
-**Date:** 2026-09-17. **Builder:** Opus, in a worktree, nothing committed.
+**Date:** 2026-09-17. **Builder:** Opus, in a worktree. **Record:** the lead's, from the builder's report, with the lead's read and rewrite at the end.
 **Brief:** the reactions authoring run owed at the top of `HANDOFF.md` since wave 5 of Stage B.
 **Shape it fills:** `reaction` beside `ask` on a corpus snippet — `src/corpus.ts` (`loadStack`),
 `src/lines.ts` (`LinePicker.reaction`), `src/types.ts`, `test/corpus.test.ts`.
@@ -137,7 +137,7 @@ next pass should take: **"sits there waiting" and its forms, 19 of 249**, and **
 (seven of those are "just how i wanted"). They were left because a fourth strip costs another full
 editor read — half an hour at the morning's cloud speed — for a frame that holds one line in
 thirteen rather than one in five, and because a pool with no recurring turn of phrase at all is not
-a voice either. That is a judgment, not a measurement, and the lead may reverse it. The opener is
+a voice either. That was the builder's judgment, and the lead reversed half of it (below). The opener is
 the other shape a reader will notice: 136 of 249 lines begin with "the", which is what the plainest
 English does when it names the thing the request named.
 
@@ -194,7 +194,24 @@ one came back clean. None was left empty, so the generic-review fallback — whi
 is still right for the integration stack, whose snippets are minted at play time and proofread by
 nobody — was never needed here.
 
-## What the lead should read for
+## The lead's read, and what it changed
+
+Three levels as a player through `pnpm transcript vibe-typer`: duck rides at tier zero, the sandwich
+ledger at hardcore, the lost socks at tier one. Every line answered the request two lines above it.
+The level's last ship says the product's review, not a reaction, which is the sim's design and reads
+right: the review closes the product. What did not read right was the frame the builder counted
+and left. "Sits there waiting for me" is true of anything, which is the blind pool's defect in a new
+coat, and "just how i wanted" says nothing about the piece. Twenty-nine lines were rewritten by hand
+in the user's voice, each held to its own ask by the same gate (the lead's patch ports `lineFault`,
+the piece rule, the story binding and the twin rule, and refused one line for naming a drawer its
+ask had not), and the corpus tests and the transcripts were read again. The lines that name the
+thing ("every driver sits there with a name", "the team sits there with their raise") stayed.
+
+After the rewrite: "sits there" four, "line up" six, "just how i wanted" none. The rule
+this run confirms is the one 0.11.0 taught: the lead reads content as a player before it ships, and
+a count over the whole pool is part of that read.
+
+## What to read for, next run
 
 The transcript, as a player, per the rule 0.11.0 taught. Three things worth watching:
 

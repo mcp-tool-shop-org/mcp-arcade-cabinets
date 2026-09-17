@@ -967,8 +967,13 @@ export function mountGhost(
   };
   let round: Round = newRound();
   // The voice pools' bags, this browser's: a line is not heard again until
-  // its whole pool has been heard, across tapes and restarts alike.
+  // its whole pool has been heard, across tapes and restarts alike. The
+  // store is written at the scene and on leaving the field, and on pagehide
+  // as well, so a reload or a closed tab mid-round keeps the round's draws
+  // rather than hearing them again (Kimi's review of the lines commit).
   const bags = readStoredBags();
+  const onPageHide = () => writeStoredBags(bags);
+  window.addEventListener('pagehide', onPageHide);
   let state: RoundState = createRoundState(round, { bags });
   // The opening bed follows the round's seed; a bed already playing keeps its run.
   audio?.seed(round.seed);
@@ -1446,6 +1451,7 @@ export function mountGhost(
     window.removeEventListener('keydown', keyDown);
     window.removeEventListener('keyup', keyUp);
     window.removeEventListener('resize', layoutField);
+    window.removeEventListener('pagehide', onPageHide);
     onFullChange(syncFullLabel, false);
     onFullChange(layoutField, false);
     tagsCtl.abort();
