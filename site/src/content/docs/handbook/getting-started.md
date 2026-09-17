@@ -47,7 +47,7 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | Shift                        | Four calls drawn from the roster, back to back, with a card between them; the lamps refill at every call and the bursts climb call by call. Its own difficulty select beside it. |
 | (shift code)                 | Four words the closing scene spells, like `frost robin chalk garden`. Type them in the box and press **Replay** to take the same shift again, or hand them to someone. A code from another menu of tapes says so. |
 | Next call / End the shift    | On a call's end scene, the next card, or the closing scene after the last call |
-| Sound on / off               | Mute; sound starts on the first key or click               |
+| `sound: on` / `sound: off`               | Mute; sound starts on the first key or click               |
 | feel: calm / medium / loud   | How much the field shakes and how big the pops are         |
 | shake                        | Turn the shake off entirely; hitstop and the trophy stay   |
 | difficulty                   | As recorded, seat, live, or hardcore                       |

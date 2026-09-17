@@ -65,7 +65,7 @@ export interface VibeHost {
   /** The closed view, already rendered as `key value` lines. Never a digit. */
   view(): string;
   /** Name the thing the next level builds. The first name offered wins. */
-  product(name: string): 'set' | 'already set';
+  product(name: string): 'set' | 'already set' | 'empty';
   /** Offer one request for the next level. */
   ask(request: VibeAsk): AskAnswer;
   /**
@@ -288,7 +288,13 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
     }
     const r = host.product(name);
     log.push({ name: 'product', ok: r === 'set', gate: 'ok' });
-    return text(r === 'set' ? 'the next level will build that' : 'the product is set');
+    return text(
+      r === 'set'
+        ? 'the next level will build that'
+        : r === 'empty'
+          ? 'the name was empty; send a word or two'
+          : 'the product is set',
+    );
   }
 
   function ask(args: unknown): VibeToolResult {

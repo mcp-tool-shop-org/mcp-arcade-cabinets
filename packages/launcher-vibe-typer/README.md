@@ -80,6 +80,9 @@ The gate accepts or refuses; it never fixes. Nothing waits on the client: a late
 | --------------- | ---------------------------------------------------------------------------------------------- |
 | `OLLAMA_URL`    | the daemon the endless user sits at (default `http://127.0.0.1:11434`)                         |
 | `CABINET_TAPES` | with `--mcp`: a directory of tapes to season the wires stack with, instead of the bundled ones |
+| `CABINET_SEED`  | with `--mcp`: a whole number, so a stack repeats                                               |
+| `CABINET_TIER`  | with `--mcp`: how hard the stack is, zero to three                                             |
+| `CABINET_BOT`   | with `--mcp`: which agent types it                                                             |
 | `VOICE_URL`     | the voice worker, when you run one (default `http://127.0.0.1:7788`)                           |
 | `VOICE_TOKEN`   | the worker's bearer when it binds beyond loopback; added server-side, never in the page        |
 

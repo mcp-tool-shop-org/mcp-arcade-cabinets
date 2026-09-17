@@ -480,6 +480,8 @@ interface ChatItem {
   el: HTMLLIElement;
   full: string;
   shown: number;
+  /** The run clock at which the sim lets this line be read; hidden until then. */
+  dueAt: number;
 }
 
 interface Piece {
@@ -1380,8 +1382,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
             ? 'vibe-agent vibe-sync'
             : 'vibe-agent';
       const node = el('li', cls, '');
+      // The sim paces the reveal (`dueAt`, a gap after the line before, so
+      // four lines said on one frame are read one at a time): a line lands
+      // in the list in its order now, and shows when it is due.
+      node.hidden = line.dueAt > state.clock;
       chatList.append(node);
-      chat.push({ el: node, full: line.line, shown: 0 });
+      chat.push({ el: node, full: line.line, shown: 0, dueAt: line.dueAt });
     }
     // A meeting that opened or closed after the last line of the step still
     // gets its row, in the order it happened.
@@ -1395,6 +1401,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     let scrolled = false;
     for (const item of chat) {
       if (item.shown >= item.full.length) continue;
+      if (item.dueAt > state.clock) continue;
+      if (item.el.hidden) item.el.hidden = false;
       item.shown = Math.min(item.full.length, item.shown + CHAT_CPS * dt);
       item.el.textContent = item.full.slice(0, Math.floor(item.shown));
       // The line has just finished typing itself: this is the moment it is
@@ -2163,8 +2171,16 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     queue.push(read.input);
   };
   const onKeyUp = (e: KeyboardEvent) => {
-    // Escape is the one key whose release matters: a tap must do nothing.
-    if (e.key === 'Escape') escSince = 0;
+    // Escape is the one key whose release matters: a hold leaves the field
+    // (LEAVE_HOLD_MS); a tap throws the line away and starts it again, the
+    // sim's courtesy (`RunInput.clear`), never a penalty.
+    if (e.key !== 'Escape') return;
+    const held =
+      escSince > 0
+        ? (typeof performance !== 'undefined' ? performance.now() : Date.now()) - escSince
+        : 0;
+    escSince = 0;
+    if (held > 0 && held < LEAVE_HOLD_MS && !over) queue.push({ clear: true });
   };
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);

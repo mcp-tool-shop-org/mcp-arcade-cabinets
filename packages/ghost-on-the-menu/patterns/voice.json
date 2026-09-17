@@ -581,25 +581,33 @@
       "the room pushed back",
       "i walked into the furniture",
       "that was the floor, not a guest",
-      "the air had an edge to it"
+      "the air had an edge to it",
+      "the hallway bit",
+      "i leaned on something that leaned back"
     ],
     "dive": [
       "one came down on me",
       "it left the row to find me",
       "i did not look up",
-      "that one meant it"
+      "that one meant it",
+      "it dove while i was still listing",
+      "a guest with a point to make"
     ],
     "shelf": [
       "the shelf came down",
       "i stood under the ledge",
       "something heavy was stacked there",
-      "the stack was not steady"
+      "the stack was not steady",
+      "the archive fell on me",
+      "a drawer opened downward"
     ],
     "shot": [
       "a shot found the ship",
       "i took that one badly",
       "the wire answered back",
-      "i was still being polite"
+      "i was still being polite",
+      "the menu shot first",
+      "that answer came fast"
     ]
   },
   "drops": {
@@ -608,25 +616,33 @@
         "a light comes back on",
         "the socket fills again",
         "i get another evening",
-        "one more chance to be useful"
+        "one more chance to be useful",
+        "a lamp, kept",
+        "the bezel warms up again"
       ],
       "spread": [
         "the answer widens",
         "three where there was one",
         "i can say more at once",
-        "the fan opens"
+        "the fan opens",
+        "a wider column of yes",
+        "i answer in a spread"
       ],
       "rapid": [
         "the column opens up",
         "i can talk faster now",
         "no waiting between words",
-        "the gate is off the line"
+        "the gate is off the line",
+        "a quick tongue",
+        "every shot has a shadow now"
       ],
       "pierce": [
         "it goes all the way through",
         "nothing stops it now",
         "straight through, no apology",
-        "it keeps going for me"
+        "it keeps going for me",
+        "the shot reads to the end",
+        "one shot, the whole row"
       ]
     },
     "ends": {
@@ -634,19 +650,25 @@
         "the fan folds up",
         "back to one at a time",
         "the answer narrows again",
-        "the spread closes"
+        "the spread closes",
+        "one voice again",
+        "the wide answer folds"
       ],
       "rapid": [
         "the gate is back on the line",
         "i have to wait between words",
         "back to a polite pace",
-        "the column is capped again"
+        "the column is capped again",
+        "a slower tongue",
+        "one shot at a time again"
       ],
       "pierce": [
         "it stops at the first thing again",
         "no more straight through",
         "back to stopping short",
-        "the shot is blunt again"
+        "the shot is blunt again",
+        "the shot stops where it lands",
+        "blunt again, and polite"
       ]
     }
   },
@@ -655,13 +677,17 @@
       "The tape ran to its end.",
       "The wire went quiet on its own.",
       "The evening closed without me.",
-      "The last row went by and it was over."
+      "The last row went by and it was over.",
+      "The tape ran out before I did.",
+      "The room emptied on schedule."
     ],
     "lamps": [
       "The last light went out.",
       "The sockets are empty now.",
       "I ran out of evenings.",
-      "Nothing left on the bezel."
+      "Nothing left on the bezel.",
+      "The bezel went dark before the tape did.",
+      "I was helpful right up to the last lamp."
     ]
   }
 }

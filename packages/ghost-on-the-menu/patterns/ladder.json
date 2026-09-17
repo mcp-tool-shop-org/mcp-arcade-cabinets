@@ -32,8 +32,8 @@
   "rungs": [
     {
       "tier": 0,
-      "name": "gentle",
-      "why": "Three lamps, a slow field, and the formation keeps its guns down.",
+      "name": "recorded",
+      "why": "The tape plays as it was recorded: nothing fires, three lamps, a slow field.",
       "pools": [
         "grid-swoop-slow",
         "menu-drop",
