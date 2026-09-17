@@ -2332,7 +2332,7 @@ describe('formation fire comes from above', () => {
     state.player.x = 8;
     return state;
   }
-  it('a sprite beside the ship is silent under the lever; the same sprite high above fires; with the lever at zero the low one fires too', () => {
+  it('a sprite level with the ship is silent under the lever; the same sprite high above fires; with the lever at zero the low one fires too', () => {
     const shotsIn = (state: RoundState) => {
       for (let i = 0; i < 120; i++) stepRound(state, still, 1 / 60);
       return state.enemyShots.length;
