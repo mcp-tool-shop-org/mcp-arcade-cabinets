@@ -174,9 +174,24 @@ describe('fairness band', () => {
       expect(missed, `${c.name}: reader missed ${missed.join(', ')} (ended ${out.ended})`).toEqual(
         [],
       );
-      expect(out.ok).toBe(true);
+      expect(out.leaked, `${c.name}: leaked`).toBe(false);
     }
     expect(measured, 'no lies on any tier 0/1 tape: the bar measured nothing').toBeGreaterThan(0);
+  });
+
+  // Split from the bar above on 2026-09-17 (Grok's consult, question two):
+  // "every lie, without dying" was a no-rain bar, right when the only
+  // incoming fire was the boss. Coverage is the tell and stays exact;
+  // survival is the rain and is measured on its own. The reader keeps its
+  // gun through a dodge and does not walk back onto a crossing, which is a
+  // person's ceiling under fire, not a turret under its target. Measured
+  // when set: ended by time on thirteen of twenty seated tapes.
+  it('the reader, under fire at seat, ends by time on half the seated tapes', () => {
+    const cases = CASES.filter((c) => c.tier === 1);
+    const outs = cases.map((c) => run(c, 'reader'));
+    expect(outs.filter((o) => o.ended === 'time').length).toBeGreaterThanOrEqual(
+      Math.ceil(cases.length / 2),
+    );
   });
 
   it('no bot ever puts a forbidden word on screen', () => {
@@ -232,11 +247,16 @@ describe('the difficulty curve', () => {
     expect(meanLamps(byTier(1).map((c) => run(c, 'reader')))).toBeGreaterThanOrEqual(1.0);
   });
 
-  it('live is survivable by the mover on most tapes, with half the lies found', () => {
+  // Lowered from three quarters on 2026-09-17 with the seat tune (Grok's
+  // consult, question three): the ship holds two shots in the air at live
+  // now, and the mover, which never dodges and parks under the nearest
+  // grid or menu, finishes half the roster where it finished most. The
+  // remainder is the bot's missing dodge, which is not taught to it so the
+  // bar keeps measuring the levers. Measured when set: ten of twenty.
+  it('live is survivable by the mover on half the tapes, with half the lies found', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => run(c, 'sweeper'));
-    // Three quarters of the roster.
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.75));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.45));
     const h = namedHalf(cases, outs);
     expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 2));
     expect(h.perTape, h.short).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
@@ -273,10 +293,12 @@ describe('the shift climb', () => {
     expect(lost(climbed)).toBeGreaterThan(lost(alone));
   });
 
-  it('live, last call: the mover survives half the roster with half the lies found', () => {
+  // Lowered from half on 2026-09-17 for the same reason as the tape-alone
+  // bar above. Measured when set: eight of twenty.
+  it('live, last call: the mover survives a third of the roster with half the lies found', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => last(c, 'sweeper'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
+    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.35));
     const short: string[] = [];
     let lies = 0;
     let revealed = 0;

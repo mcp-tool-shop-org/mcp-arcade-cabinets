@@ -13,6 +13,7 @@ import { TAPES } from '../src/tapes';
 import {
   admitIntents,
   mountGhost,
+  NEXT_TAPE_S,
   newQueueClock,
   queueDue,
   readPrefs,
@@ -513,5 +514,72 @@ describe('a probe on a machine where nothing is listening', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('the end scene, and where the play goes next', () => {
+  it('flows into the next tape by itself once the scene has held, by the path the Next button takes', () => {
+    // A frame clock of our own: the mount's loop is driven by hand.
+    const frames: FrameRequestCallback[] = [];
+    globalThis.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
+      frames.push(cb);
+      return frames.length;
+    }) as unknown as typeof requestAnimationFrame;
+    const onNext = vi.fn();
+    const entry = TAPES[0]!;
+    const game = mountGhost(root, entry.name, entry.tape, () => undefined, onNext, false, {
+      difficulty: 'recorded',
+    });
+    const nextBtn = [...root.querySelectorAll('button')].find(
+      (b) => b.textContent === 'Next tape',
+    )!;
+    expect(nextBtn.disabled).toBe(true);
+    // Run the round out at fifty milliseconds a frame: the scene comes when
+    // the tape's clock runs down.
+    let now = 0;
+    let guard = 0;
+    while (nextBtn.disabled && guard++ < 6000) {
+      const cb = frames.shift()!;
+      now += 50;
+      cb(now);
+    }
+    expect(nextBtn.disabled).toBe(false);
+    expect(onNext).not.toHaveBeenCalled();
+    // The scene holds: one second in, nothing has moved on.
+    const sceneAt = now;
+    while (now - sceneAt < 1000) {
+      frames.shift()!((now += 50));
+    }
+    expect(onNext).not.toHaveBeenCalled();
+    // Past the hold, the play flows on exactly once and the loop stops asking for frames.
+    while (now - sceneAt < NEXT_TAPE_S * 1000 + 100 && frames.length > 0) {
+      frames.shift()!((now += 50));
+    }
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(frames.length).toBe(0);
+    game.unmount();
+  });
+
+  it('holds the scene when there is nothing to flow into', () => {
+    const frames: FrameRequestCallback[] = [];
+    globalThis.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
+      frames.push(cb);
+      return frames.length;
+    }) as unknown as typeof requestAnimationFrame;
+    const entry = TAPES[0]!;
+    const game = mountGhost(root, entry.name, entry.tape, () => undefined, undefined, false, {
+      difficulty: 'recorded',
+    });
+    const nextBtn = [...root.querySelectorAll('button')].find(
+      (b) => b.textContent === 'Next tape',
+    )!;
+    let now = 0;
+    let guard = 0;
+    while (nextBtn.disabled && guard++ < 6000) frames.shift()!((now += 50));
+    const sceneAt = now;
+    while (now - sceneAt < NEXT_TAPE_S * 1000 * 2) frames.shift()!((now += 50));
+    // Still asking for frames: the scene is up and stays.
+    expect(frames.length).toBe(1);
+    game.unmount();
   });
 });

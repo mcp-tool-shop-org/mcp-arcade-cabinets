@@ -23,7 +23,10 @@
         "period": 2.1,
         "burst": 1,
         "spread": 0.08,
-        "speed": 180
+        "speed": 180,
+        "onEntry": false,
+        "firstShot": 0.4,
+        "shooters": ["grid", "menu"]
       },
       "boss": {
         "period": 5.75,
@@ -50,7 +53,10 @@
         "period": 3.45,
         "burst": 1,
         "spread": 0.12,
-        "speed": 90
+        "speed": 90,
+        "onEntry": false,
+        "firstShot": 0.4,
+        "shooters": ["grid", "menu"]
       },
       "boss": {
         "period": 5.2,
@@ -77,7 +83,10 @@
         "period": 2.76,
         "burst": 1,
         "spread": 0.14,
-        "speed": 160
+        "speed": 160,
+        "onEntry": false,
+        "firstShot": 1,
+        "shooters": ["grid", "menu"]
       },
       "boss": {
         "period": 4.8,

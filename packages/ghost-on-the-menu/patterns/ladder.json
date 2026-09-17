@@ -1,10 +1,29 @@
 {
   "derive": [
-    { "target_kind": "stdio", "tier": 2 },
-    { "target_kind": "docker", "image": true, "tier": 2 },
-    { "seat": true, "live": false, "tier": 1 },
-    { "target_kind": "fixture", "tier": 0 },
-    { "target_kind": "docker", "image": false, "seat": false, "tier": 0 }
+    {
+      "target_kind": "stdio",
+      "tier": 2
+    },
+    {
+      "target_kind": "docker",
+      "image": true,
+      "tier": 2
+    },
+    {
+      "seat": true,
+      "live": false,
+      "tier": 1
+    },
+    {
+      "target_kind": "fixture",
+      "tier": 0
+    },
+    {
+      "target_kind": "docker",
+      "image": false,
+      "seat": false,
+      "tier": 0
+    }
   ],
   "rungs": [
     {
@@ -56,7 +75,8 @@
       "lamps": 3,
       "grace": 0.55,
       "hazards": false,
-      "rageStart": false
+      "rageStart": false,
+      "shotsInFlight": 3
     },
     {
       "tier": 2,
@@ -83,7 +103,8 @@
       "lamps": 3,
       "grace": 0.45,
       "hazards": false,
-      "rageStart": false
+      "rageStart": false,
+      "shotsInFlight": 2
     },
     {
       "tier": 3,

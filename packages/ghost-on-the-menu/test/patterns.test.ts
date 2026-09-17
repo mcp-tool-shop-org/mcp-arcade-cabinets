@@ -589,3 +589,68 @@ describe('the sprite box map', () => {
     expect(Object.keys(sprites)).toHaveLength(11);
   });
 });
+
+// The formation's answer (2026-09-17, the Director: "only the boss attacks").
+// Measured with the levers as they shipped: a player holding fire killed
+// eighteen of twenty-seven sprites on their entry paths, six ever hovered,
+// and the formation fired zero to six shots in a seat round. These are the
+// levers that change it, each optional so a rhythm without them reads as it
+// always did.
+describe('the formation fire levers', () => {
+  type FireRaw = { tiers: Record<string, { formation: Record<string, unknown> }> };
+  type LadderRaw = { rungs: Record<string, unknown>[] };
+
+  it('reads onEntry, shooters and firstShot, with the shipped defaults when absent', () => {
+    const raw = clone();
+    const tiers = (raw.fire as FireRaw).tiers;
+    delete tiers['1']!.formation.onEntry;
+    delete tiers['1']!.formation.shooters;
+    delete tiers['1']!.formation.firstShot;
+    const set = loadPatterns(raw);
+    const f = set.fire.tiers['1'].formation!;
+    expect(f.onEntry).toBe(false);
+    expect(f.shooters).toEqual(['grid', 'menu']);
+    expect(f.firstShot).toBe(1);
+    tiers['2']!.formation.onEntry = true;
+    tiers['2']!.formation.shooters = ['ready', 'answer'];
+    tiers['2']!.formation.firstShot = 0.25;
+    const g = loadPatterns(raw).fire.tiers['2'].formation!;
+    expect(g.onEntry).toBe(true);
+    expect(g.shooters).toEqual(['ready', 'answer']);
+    expect(g.firstShot).toBe(0.25);
+  });
+
+  it('refuses a first shot outside (0, 1], a shooter that is not a spawn class, and an empty list', () => {
+    for (const firstShot of [0, 1.5, -1]) {
+      const raw = clone();
+      (raw.fire as FireRaw).tiers['1']!.formation.firstShot = firstShot;
+      expect(() => loadPatterns(raw), String(firstShot)).toThrow('patterns/fire.json: firstShot');
+    }
+    for (const shooters of [['fog'], ['grid', 'boss'], []]) {
+      const raw = clone();
+      (raw.fire as FireRaw).tiers['1']!.formation.shooters = shooters;
+      expect(() => loadPatterns(raw), shooters.join()).toThrow('patterns/fire.json: shooters');
+    }
+  });
+
+  it("reads a rung cap on the ship's shots in flight, null or absent for none", () => {
+    const raw = clone();
+    const rungs = (raw.ladder as LadderRaw).rungs;
+    // As shipped: seat holds three shots in the air, live two (Galaga's rule);
+    // the recorded rung and hardcore say nothing.
+    const set = loadPatterns(raw);
+    for (const r of set.ladder.rungs) {
+      if (r.tier === 1) expect(r.shotsInFlight).toBe(3);
+      else if (r.tier === 2) expect(r.shotsInFlight).toBe(2);
+      else expect(r.shotsInFlight).toBeNull();
+    }
+    rungs[1]!.shotsInFlight = 2;
+    expect(loadPatterns(raw).ladder.rungs[1]!.shotsInFlight).toBe(2);
+    delete rungs[1]!.shotsInFlight;
+    expect(loadPatterns(raw).ladder.rungs[1]!.shotsInFlight).toBeNull();
+    for (const bad of [0, 1.5, -2, 'two']) {
+      rungs[1]!.shotsInFlight = bad;
+      expect(() => loadPatterns(raw), String(bad)).toThrow('patterns/ladder.json: shotsInFlight');
+    }
+  });
+});
