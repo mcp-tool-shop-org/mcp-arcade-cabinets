@@ -125,9 +125,7 @@ describe('ollama boss pilot', () => {
     // The picker prefers cloud, so a retired cloud tag beside a live local
     // model used to win. It is not even listed now.
     expect(listPilotModels(skip)).toEqual([]);
-    expect(defaultPilotModel(['glm-4.6:cloud', 'qwen2.5:7b-instruct'])).toBe(
-      'qwen2.5:7b-instruct',
-    );
+    expect(defaultPilotModel(['glm-4.6:cloud', 'qwen2.5:7b-instruct'])).toBe('qwen2.5:7b-instruct');
     expect(skip).not.toContain(defaultPilotModel([...skip, 'qwen2.5:7b-instruct']));
     expect(defaultPilotModel([...skip, 'qwen2.5:7b-instruct'])).toBe('qwen2.5:7b-instruct');
     expect(defaultPilotModel([...skip, 'minimax-m3:cloud'])).toBe('minimax-m3:cloud');

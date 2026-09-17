@@ -224,7 +224,7 @@ async function vibe(flags, selfCheck) {
       for (const t of run.toasts) console.log(`  ${toastRow(t)}`);
     }
     console.log(
-      `end: ${run.state.ended ?? 'level shipped'} · valuation ${Math.round(run.state.valuation)} · pieces ${run.state.built.length}`,
+      `end: ${run.state.ended ?? 'level shipped'} · valuation ${Math.round(run.state.valuation)} ${m.DEFAULT_PATTERNS.cabinet.words.valuationUnit} · pieces ${run.state.built.length}`,
     );
     for (const leak of run.leaks) console.error(`leak: ${leak}`);
     printed += run.rows.length;

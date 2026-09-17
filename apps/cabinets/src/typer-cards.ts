@@ -18,7 +18,7 @@
 /** The card each milestone name is drawn with, keyed by the lever's own name. */
 export const CARD_SLUGS: ReadonlyMap<string, string> = new Map([
   ['seed', 'seed'],
-  ['series a', 'series-a'],
+  ['Series A', 'series-a'],
   ['unicorn', 'unicorn'],
 ]);
 

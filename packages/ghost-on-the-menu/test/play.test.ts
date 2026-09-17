@@ -238,7 +238,6 @@ describe('what a play-through hands back', () => {
     for (const id of out.revealed) expect(lies.has(id)).toBe(true);
     const marker = out.text.split('\n').find((l) => l.startsWith('revealed:'))!;
     expect(marker).toBe(`revealed: ${out.revealed.join(', ')}`);
- 
 
     // The printed rows carry no clock — they sit inside the region the screen
     // scan reads, and a digit there is a leak — so the clock is a field. Both

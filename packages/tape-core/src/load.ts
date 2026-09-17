@@ -86,9 +86,7 @@ function asStringOrNull(value: unknown, path: string): string | null {
 function asHeaderString(value: unknown, path: string): string {
   const s = asString(value, path);
   if (s.length > HEADER_MAX_CHARS) {
-    throw new TapeError(
-      `${path} must be at most ${HEADER_MAX_CHARS} characters, got ${s.length}`,
-    );
+    throw new TapeError(`${path} must be at most ${HEADER_MAX_CHARS} characters, got ${s.length}`);
   }
   for (let i = 0; i < s.length; i++) {
     const code = s.charCodeAt(i);

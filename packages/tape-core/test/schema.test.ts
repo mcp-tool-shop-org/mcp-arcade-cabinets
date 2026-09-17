@@ -259,7 +259,9 @@ describe('the size of a tape the loader will take', () => {
       raw[field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
       expect(() => loadTape(raw), field).toThrow(TapeError);
       expect(() => loadTape(raw), field).toThrow(
-        new RegExp(`${field} must be at most ${TEXT_MAX_CHARS} characters, got ${TEXT_MAX_CHARS + 1}`),
+        new RegExp(
+          `${field} must be at most ${TEXT_MAX_CHARS} characters, got ${TEXT_MAX_CHARS + 1}`,
+        ),
       );
     }
   });
