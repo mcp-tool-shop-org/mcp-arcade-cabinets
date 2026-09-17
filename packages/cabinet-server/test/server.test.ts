@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONTRACT } from '../src/contract';
 import { FORBIDDEN } from '../src/gate';
-import { DEFAULT_TIER, ghostEnv, headlessRound, type HeadlessOpts } from '../src/server';
+import { ghostEnv, headlessRound, type HeadlessOpts } from '../src/server';
 
 const PKG = path.resolve(__dirname, '..');
 const OUT = path.join(PKG, 'dist', 'server.test-build.js');
