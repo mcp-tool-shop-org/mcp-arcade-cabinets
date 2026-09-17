@@ -15,7 +15,15 @@ import { constants as osConstants } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// The closed tool list this cabinet's stdio server answers `tools/list` with.
+// Reached by path into the leaf both servers already import rather than
+// through the package barrel: the barrel is the whole MCP server, and a help
+// text does not need the Anthropic SDK, zod and two contract loaders bundled
+// into `dist/cli.js` to print six words.
+import { TOOL_NAMES } from '../../cabinet-server/src/tool-names';
+
 import {
+  CLAUDE_CALL_CEILING,
   checkSeatUrl,
   createCabinetServer,
   DARK,
@@ -47,6 +55,18 @@ const DEFAULT_PORT = 7777;
 const DEFAULT_OLLAMA = 'http://127.0.0.1:11434';
 const DEFAULT_VOICE = 'http://127.0.0.1:7788';
 
+/**
+ * The levers `--mcp` hands a client, in the contract's own order, written out
+ * once here and printed by both the help and the start line.
+ *
+ * An operator whose client shows no tools had nothing printed to tell them
+ * whether the right cabinet server even started: the help named the mode and
+ * stopped, and the start line named the seats and the tapes. Typing the six
+ * names into two pieces of prose would have made a seventh tool a three-place
+ * edit, so the list comes off the same constant the server dispatches on.
+ */
+export const MCP_TOOLS = TOOL_NAMES.join(', ');
+
 /** What the arguments asked for. */
 export interface Args {
   mode: 'play' | 'mcp' | 'help' | 'version';
@@ -72,6 +92,7 @@ const USAGE = `ghost-on-the-menu — an arcade shooter where you are the agent
 
 Options
   --mcp              speak MCP on stdio instead of opening the game
+                     its tools: ${MCP_TOOLS}
   --port <n>         port to listen on (default ${DEFAULT_PORT}; takes the next
                      free one when that is busy)
   --no-open          start the server but do not open a browser
@@ -84,7 +105,10 @@ Environment
   VOICE_URL          the voice worker, when you run one
                      (default ${DEFAULT_VOICE})
   VOICE_TOKEN        the worker's bearer; added server-side, never in the page
-  ANTHROPIC_API_KEY  sits the Claude tier of the say seat; never in the page
+  ANTHROPIC_API_KEY  the Claude tier's key; never in the page, and never spent
+                     unless CABINET_SAY_CLAUDE turns that tier on
+  CABINET_SAY_CLAUDE on hands the boss lines to Claude, on that key, which
+                     costs money; ${CLAUDE_CALL_CEILING} lines a run, then the local tier
 
 Environment, --mcp only
   These are the cabinet server's own levers. They do nothing in play mode.
@@ -147,10 +171,32 @@ export function checkSeats(env: NodeJS.ProcessEnv = process.env): string | null 
 }
 
 /**
+ * The word that turns the hosted tier on, and nothing else does.
+ *
+ * The audience for this package is people who run coding agents, which is
+ * exactly the population that has ANTHROPIC_API_KEY exported in every shell.
+ * A key that happens to be in the environment is not a request to spend it on
+ * an arcade game, so finding one is no longer the decision: the run has to
+ * say so. One word, because a variable that guesses at `1`, `yes` and `true`
+ * is a variable that will one day guess wrong about `off`.
+ */
+export function claudeAsked(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.CABINET_SAY_CLAUDE === 'on';
+}
+
+/**
  * What the cabinet resolved, said before the first call rather than after it
  * fails. A session that is pointed at the wrong daemon used to look exactly
  * like a session that is pointed at the right one, right up until a seat went
  * quiet. These go to stderr so `--no-open` piping stays clean.
+ *
+ * The hosted tier gets a sentence rather than a light. `the Claude tier of
+ * the say seat is lit` was true and told a player nothing they could act on:
+ * not that a paid model rather than the one named in their menu would write
+ * the boss lines, not that their own key would pay for it, and not that the
+ * run stops after a stated number of them. A key sitting in the environment
+ * with the tier off now says that too, because silence there reads like a
+ * key that was ignored by accident.
  */
 export function seatLines(env: NodeJS.ProcessEnv = process.env): string[] {
   const ollama = env.OLLAMA_URL ?? DEFAULT_OLLAMA;
@@ -161,9 +207,33 @@ export function seatLines(env: NodeJS.ProcessEnv = process.env): string[] {
     `the voice worker is at ${voice}${mine(env.VOICE_URL)}, ${
       env.VOICE_TOKEN ? 'bearer set' : 'no bearer set'
     }`,
-    env.ANTHROPIC_API_KEY
-      ? 'the Claude tier of the say seat is lit'
-      : 'the Claude tier of the say seat is dark: no ANTHROPIC_API_KEY',
+    ...claudeLines(env),
+  ];
+}
+
+/**
+ * The two-line sentence about the hosted tier, or the one line about why it
+ * is dark. Separate from `seatLines` so the four states are a table in the
+ * test rather than a nest of conditionals in a template.
+ */
+export function claudeLines(env: NodeJS.ProcessEnv = process.env): string[] {
+  if (!claudeAsked(env)) {
+    return env.ANTHROPIC_API_KEY
+      ? [
+          'the Claude tier of the say seat is dark: ANTHROPIC_API_KEY is set,',
+          'but the hosted tier is opt-in (CABINET_SAY_CLAUDE=on)',
+        ]
+      : ['the Claude tier of the say seat is dark: no ANTHROPIC_API_KEY'];
+  }
+  if (!env.ANTHROPIC_API_KEY) {
+    return [
+      'the Claude tier was asked for and there is no ANTHROPIC_API_KEY to',
+      'sit it, so the local tier writes the boss lines',
+    ];
+  }
+  return [
+    'the say seat is on the Claude tier: Claude writes the boss lines and it',
+    `costs money, on your ANTHROPIC_API_KEY, up to ${CLAUDE_CALL_CEILING} of them this run`,
   ];
 }
 
@@ -221,6 +291,62 @@ export function bugsIn(dir: string): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The Node major this package's own `engines` field asks for, or null when
+ * the manifest cannot be read — the same broken install `missingLines` is
+ * for. Taken as a directory for the reason `versionIn` is: both layouts this
+ * file runs in sit one directory under the package root.
+ */
+export function floorIn(dir: string): number | null {
+  try {
+    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
+    const parsed = JSON.parse(raw) as { engines?: { node?: unknown } };
+    const said = parsed.engines?.node;
+    const found = typeof said === 'string' ? /(\d+)/.exec(said) : null;
+    return found?.[1] ? Number(found[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The oldest Node this launcher runs on, read off the manifest so the guard
+ * and the published `engines` field cannot say two different things. The 22
+ * is only what a package whose manifest will not parse falls back to, and a
+ * test holds that literal to the field.
+ */
+export const NODE_FLOOR = floorIn(here) ?? 22;
+
+/** The major of a Node version string, or null when it is not one. */
+export function nodeMajor(said: string): number | null {
+  const found = /^v?(\d+)\./.exec(said);
+  return found?.[1] ? Number(found[1]) : null;
+}
+
+/**
+ * The halt for a Node older than the floor, or null when the one running is
+ * new enough. Pure, so the table of cases is a test rather than a subprocess
+ * on an interpreter this machine does not have.
+ *
+ * `npx` does not refuse on an engine mismatch: it warns and carries on, so
+ * the player reached a megabyte and a half of bundled `cli.js` and whatever
+ * it did in there. Every other way this launcher fails to start says a
+ * sentence and a `next:` line; the one failure that belongs to the player's
+ * machine rather than to the package arrived as a stack trace and was filed
+ * as a game bug. A version we cannot read is not a version we refuse on.
+ */
+export function nodeFloorHalt(said: string, floor: number): string[] | null {
+  const major = nodeMajor(said);
+  if (major === null || major >= floor) return null;
+  return [
+    'this cabinet needs a newer Node than the one running it',
+    `- expected: Node ${floor} or newer, and this is Node ${said}`,
+    '',
+    `next: install Node ${floor} or newer (https://nodejs.org), then run`,
+    '      npx @mcptoolshop/ghost-on-the-menu again',
+  ];
 }
 
 /**
@@ -355,6 +481,10 @@ export function mcpStartLines(
   const chosen = env.CABINET_TAPES;
   return [
     'the cabinet server is up on stdio',
+    // Named here as well as in the help because this is the line an operator
+    // whose client lists no tools actually has in front of them, and it used
+    // to name the seats and the tapes and stop.
+    `its tools: ${MCP_TOOLS}`,
     ...seatLines(env),
     chosen
       ? `tapes: ${chosen} (from the environment)`
@@ -435,7 +565,13 @@ export function serveOpts(env: NodeJS.ProcessEnv = process.env): ServeOpts {
     ollamaUrl: env.OLLAMA_URL ?? DEFAULT_OLLAMA,
     voiceUrl: env.VOICE_URL ?? DEFAULT_VOICE,
     voiceToken: env.VOICE_TOKEN ?? null,
-    anthropicKey: env.ANTHROPIC_API_KEY ?? null,
+    // The key leaves this launcher only when the run asked for it. It used to
+    // leave whenever it was in the environment, and the tier picker takes a
+    // key ahead of everything else, so a key exported for a coding agent won
+    // over the local model the player had just picked in the menu and every
+    // boss beat went to the paid tier. The typing cabinet already refuses to
+    // pass one at all; this is the same refusal with a way to say yes.
+    anthropicKey: claudeAsked(env) ? (env.ANTHROPIC_API_KEY ?? null) : null,
     onTrouble: sayTrouble,
   };
 }
@@ -488,6 +624,14 @@ async function runPlay(args: Args): Promise<void> {
 
 /** The entry. Exported so a test can drive it without a subprocess. */
 export async function main(argv: readonly string[]): Promise<void> {
+  // Before the arguments, because an interpreter too old to run this file is
+  // too old to run `--help` on it either.
+  const old = nodeFloorHalt(process.versions.node, NODE_FLOOR);
+  if (old) {
+    sayAll(old);
+    process.exitCode = 1;
+    return;
+  }
   const args = parseArgs(argv);
   if (args.mode === 'version') {
     const said = version();

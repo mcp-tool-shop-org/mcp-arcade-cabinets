@@ -3,18 +3,24 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { CABINET_VARS } from '../src/levers';
+import { TOOL_NAMES } from '../../cabinet-server/src/tool-names';
 import {
   badArgLines,
   bugsIn,
   checkSeats,
+  claudeAsked,
   exitAfter,
+  floorIn,
   forwardSignals,
   main,
   mcpIgnored,
   mcpStartLines,
+  MCP_TOOLS,
   missingLines,
   movedPortLine,
+  NODE_FLOOR,
+  nodeFloorHalt,
+  nodeMajor,
   NO_VERSION,
   parseArgs,
   sayTrouble,
@@ -24,14 +30,15 @@ import {
   versionExit,
   versionIn,
 } from '../src/cli';
-import { DARK } from '../src/serve';
+import { CABINET_VARS } from '../src/levers';
+import { ceilingLine, CLAUDE_CALL_CEILING, DARK } from '../src/serve';
 
 const PKG = path.resolve(__dirname, '..');
-const DECLARED = (
-  JSON.parse(readFileSync(path.join(PKG, 'package.json'), 'utf8')) as {
-    version: string;
-  }
-).version;
+const MANIFEST = JSON.parse(readFileSync(path.join(PKG, 'package.json'), 'utf8')) as {
+  version: string;
+  engines: { node: string };
+};
+const DECLARED = MANIFEST.version;
 
 describe('the launcher arguments', () => {
   it('plays in the browser when asked for nothing', () => {
@@ -113,6 +120,49 @@ describe('the launcher arguments', () => {
     // it hides the broken install instead of carrying it.
     expect(versionIn(path.join(PKG, 'dist', 'deeper'))).toBe('0.0.0-unknown');
     expect(NO_VERSION).toBe('0.0.0-unknown');
+  });
+});
+
+// ——— the Node the player happens to have ————————————————————————————————————
+//
+// The package states `>=22` in `engines`, in the README and in a section
+// headed as the whole requirement, and nothing checked it at run time. `npx`
+// does not refuse on an engine mismatch — it warns and carries on — so a
+// player on an older Node reached a megabyte and a half of bundled `cli.js`.
+// Every other way this launcher fails to start had been given a sentence and
+// a `next:` line, and the one that depends on the player's machine rather
+// than on the package arrived as a stack trace and was filed as a game bug.
+
+describe('a Node older than the one this package runs on', () => {
+  it('halts in the one shape, with what is running and what is needed', () => {
+    const lines = nodeFloorHalt('20.11.1', 22);
+    expect(lines).toEqual([
+      'this cabinet needs a newer Node than the one running it',
+      '- expected: Node 22 or newer, and this is Node 20.11.1',
+      '',
+      'next: install Node 22 or newer (https://nodejs.org), then run',
+      '      npx @mcptoolshop/ghost-on-the-menu again',
+    ]);
+    // At the floor and above it, nothing is said and nothing is stopped.
+    expect(nodeFloorHalt('22.0.0', 22)).toBeNull();
+    expect(nodeFloorHalt('24.4.0', 22)).toBeNull();
+    // A version we cannot read is not a version we refuse on: the launcher
+    // is not the place to guess about an interpreter that answers nothing.
+    expect(nodeMajor('20.11.1')).toBe(20);
+    expect(nodeMajor('v22.9.0')).toBe(22);
+    expect(nodeMajor('not-a-version')).toBeNull();
+    expect(nodeFloorHalt('not-a-version', 22)).toBeNull();
+  });
+
+  // The guard and the manifest cannot say two things: the floor is read off
+  // the package's own `engines` field, and the literal in `cli.ts` is only
+  // the fallback for a manifest that will not parse.
+  it('reads the floor from the engines field this package publishes', () => {
+    expect(MANIFEST.engines.node).toBe('>=22');
+    expect(NODE_FLOOR).toBe(22);
+    expect(floorIn(path.join(PKG, 'src'))).toBe(22);
+    expect(floorIn(path.join(PKG, 'dist'))).toBe(22);
+    expect(floorIn(path.join(PKG, 'dist', 'deeper'))).toBeNull();
   });
 });
 
@@ -216,11 +266,23 @@ describe('what --mcp says before the first tool call', () => {
   it('names the seats and where the tapes came from', () => {
     expect(mcpStartLines({}, 20)).toEqual([
       'the cabinet server is up on stdio',
+      'its tools: fire, say, speak, sfx, view, tapes',
       'the bosses sit at http://127.0.0.1:11434 (the default)',
       'the voice worker is at http://127.0.0.1:7788 (the default), no bearer set',
       'the Claude tier of the say seat is dark: no ANTHROPIC_API_KEY',
       'tapes: the 20 bundled ones (set CABINET_TAPES for your own)',
     ]);
+  });
+
+  // An operator whose client lists no tools could not tell from anything the
+  // launcher printed whether the right cabinet server had started. The names
+  // come off the constant the server dispatches on rather than out of prose,
+  // so a seventh tool is one edit there and this line follows it.
+  it('names its tools, off the contract rather than out of prose', () => {
+    expect(MCP_TOOLS).toBe(TOOL_NAMES.join(', '));
+    expect(mcpStartLines({}, 20)[1]).toBe(`its tools: ${TOOL_NAMES.join(', ')}`);
+    // The shooter's six, not the typing cabinet's four.
+    expect(TOOL_NAMES.length).toBe(6);
   });
 
   it('names the directory when the operator gave one', () => {
@@ -268,21 +330,94 @@ describe('the seats the shooter lights', () => {
     expect(serveOpts({}).endlessModule).toBe(DARK);
   });
 
-  it('takes the daemon, the worker and the key from the environment', () => {
+  it('takes the daemon and the worker from the environment', () => {
     const opts = serveOpts({
       OLLAMA_URL: 'http://127.0.0.1:1',
       VOICE_URL: 'http://127.0.0.1:2',
       VOICE_TOKEN: 'bearer',
-      ANTHROPIC_API_KEY: 'key',
     });
     expect(opts.ollamaUrl).toBe('http://127.0.0.1:1');
     expect(opts.voiceUrl).toBe('http://127.0.0.1:2');
     expect(opts.voiceToken).toBe('bearer');
-    expect(opts.anthropicKey).toBe('key');
     const bare = serveOpts({});
     expect(bare.ollamaUrl).toBe('http://127.0.0.1:11434');
     expect(bare.voiceToken).toBeNull();
     expect(bare.anthropicKey).toBeNull();
+  });
+});
+
+// ——— whose money the boss lines are written with ——————————————————————————————
+//
+// The launcher used to hand a hosted key straight through whenever it was in
+// the environment, and the tier picker takes a key ahead of everything else,
+// so a key exported for a coding agent beat the local model the player had
+// just picked in the menu and every boss beat went to the paid tier. The
+// audience for this package is people who run coding agents, which is exactly
+// the population that has that variable exported in every shell.
+
+describe('the hosted tier the run has to ask for', () => {
+  it('keeps the key in the launcher until the run says otherwise', () => {
+    // Exported, and not asked for: the tier stays dark and the key stays put.
+    expect(serveOpts({ ANTHROPIC_API_KEY: 'sk-ant-nobody-asked' }).anthropicKey).toBeNull();
+    // Asked for: this is the one shape that hands it over.
+    expect(
+      serveOpts({ ANTHROPIC_API_KEY: 'sk-ant-nobody-asked', CABINET_SAY_CLAUDE: 'on' })
+        .anthropicKey,
+    ).toBe('sk-ant-nobody-asked');
+    // Asked for with nothing to sit it with is not an error, and is not a
+    // key either.
+    expect(serveOpts({ CABINET_SAY_CLAUDE: 'on' }).anthropicKey).toBeNull();
+  });
+
+  // One word. A variable that guesses at `1`, `yes` and `true` is a variable
+  // that will one day guess wrong about `off`.
+  it('takes one word for yes and reads everything else as no', () => {
+    expect(claudeAsked({ CABINET_SAY_CLAUDE: 'on' })).toBe(true);
+    for (const said of ['', 'off', 'ON', '1', 'true', 'yes', 'on ']) {
+      expect(claudeAsked({ CABINET_SAY_CLAUDE: said }), said).toBe(false);
+    }
+    expect(claudeAsked({})).toBe(false);
+  });
+
+  it('tells the player which tier writes the lines, what it costs and when it stops', () => {
+    const on = seatLines({ ANTHROPIC_API_KEY: 'sk-ant-nobody-asked', CABINET_SAY_CLAUDE: 'on' });
+    const said = on.join(' ');
+    expect(said).toContain('Claude writes the boss lines');
+    expect(said).toContain('costs money');
+    expect(said).toContain(`up to ${CLAUDE_CALL_CEILING} of them this run`);
+    // A ceiling a player is told about is a number, not a word.
+    expect(CLAUDE_CALL_CEILING).toBeGreaterThan(0);
+    // And a key sitting in the environment with the tier off says so, rather
+    // than reading like a key that was ignored by accident.
+    expect(seatLines({ ANTHROPIC_API_KEY: 'sk-ant-nobody-asked' }).join(' ')).toContain(
+      'the hosted tier is opt-in (CABINET_SAY_CLAUDE=on)',
+    );
+    // Asked for with nothing to sit it: named, and the run carries on local.
+    expect(seatLines({ CABINET_SAY_CLAUDE: 'on' }).join(' ')).toContain(
+      'the local tier writes the boss lines',
+    );
+  });
+
+  // The ceiling is not a silent stop. When the run has spent it the key is
+  // simply no longer handed over — the seat keeps writing, on the local tier
+  // — and the run is told once rather than every call.
+  it('says so when the run has spent the ceiling, in one line under eighty', () => {
+    const line = ceilingLine(CLAUDE_CALL_CEILING);
+    expect(line).toContain(String(CLAUDE_CALL_CEILING));
+    expect(line).toContain('the local tier takes over');
+    expect(line.length).toBeLessThanOrEqual(80);
+  });
+
+  // Whatever the tier, the value itself is never printed.
+  it('never prints the key in any of the four states', () => {
+    for (const env of [
+      {},
+      { ANTHROPIC_API_KEY: 'sk-ant-nobody-asked' },
+      { CABINET_SAY_CLAUDE: 'on' },
+      { ANTHROPIC_API_KEY: 'sk-ant-nobody-asked', CABINET_SAY_CLAUDE: 'on' },
+    ]) {
+      for (const line of seatLines(env)) expect(line).not.toContain('sk-ant-nobody-asked');
+    }
   });
 });
 
@@ -400,11 +535,13 @@ describe('what npx says about the seats before the first call', () => {
         OLLAMA_URL: 'http://10.0.0.2:11434',
         VOICE_TOKEN: 'bearer',
         ANTHROPIC_API_KEY: 'key',
+        CABINET_SAY_CLAUDE: 'on',
       }),
     ).toEqual([
       'the bosses sit at http://10.0.0.2:11434',
       'the voice worker is at http://127.0.0.1:7788 (the default), bearer set',
-      'the Claude tier of the say seat is lit',
+      'the say seat is on the Claude tier: Claude writes the boss lines and it',
+      `costs money, on your ANTHROPIC_API_KEY, up to ${CLAUDE_CALL_CEILING} of them this run`,
     ]);
     // The bearer and the key are reported as set or not set. Neither value
     // is ever printed.
@@ -508,6 +645,30 @@ describe('the help both cabinets print', () => {
     // that clause is what pushed the first lever row past eighty columns.
     expect(stdout).toContain('Environment, --mcp only');
     expect(stdout).not.toContain('with --mcp:');
+  });
+
+  // The `--mcp` row named the mode and stopped, so the half of this package
+  // an operator gets the least help wiring was the half the help said least
+  // about. The names come off the contract, so a seventh tool is one edit in
+  // `tool-names.ts` and both help texts follow it.
+  it('names the tools under --mcp, off the contract rather than out of prose', async () => {
+    const stdout = await help();
+    expect(stdout).toContain(`its tools: ${TOOL_NAMES.join(', ')}`);
+    for (const name of TOOL_NAMES) expect(stdout, name).toContain(name);
+    // Under the `--mcp` row, not somewhere else on the page.
+    const lines = stdout.split('\n');
+    const at = lines.findIndex((l) => l.startsWith('  --mcp '));
+    expect(at).toBeGreaterThan(-1);
+    expect(lines[at + 1]).toBe(`${' '.repeat(21)}its tools: ${MCP_TOOLS}`);
+  });
+
+  // The hosted tier is opt-in, and the variable that turns it on is a row in
+  // the same environment block, in the same one column, as the rest.
+  it('names the variable that turns the Claude tier on, and what it costs', async () => {
+    const stdout = await help();
+    expect(stdout).toContain('CABINET_SAY_CLAUDE');
+    expect(stdout).toContain('costs money');
+    expect(stdout).toContain(String(CLAUDE_CALL_CEILING));
   });
 
   it('fits eighty columns, except a line that holds an address', async () => {

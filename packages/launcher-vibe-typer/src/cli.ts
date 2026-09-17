@@ -20,6 +20,12 @@ import { constants as osConstants } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// The closed tool list this cabinet's stdio server answers `tools/list` with.
+// Reached by path into the leaf both servers already import, the way this
+// file reaches the shooter's server module: the package barrel is the whole
+// MCP server, and a help text does not need it bundled in to print four
+// words.
+import { VIBE_TOOL_NAMES } from '../../cabinet-server/src/tool-names';
 import {
   checkSeatUrl,
   createCabinetServer,
@@ -41,6 +47,18 @@ const TAPES_DIR = path.resolve(here, 'tapes');
 const DEFAULT_PORT = 7778;
 const DEFAULT_OLLAMA = 'http://127.0.0.1:11434';
 const DEFAULT_VOICE = 'http://127.0.0.1:7788';
+
+/**
+ * The levers `--mcp` hands a client, in the contract's own order, written out
+ * once here and printed by both the help and the start line.
+ *
+ * This cabinet's server shipped a slice after the shooter's and was the one
+ * an operator got the least help wiring: an MCP client showing no tools left
+ * nothing printed anywhere to say whether the right cabinet server had even
+ * started. Four names off the same constant the server dispatches on, so a
+ * fifth tool is one edit in `tool-names.ts`.
+ */
+export const MCP_TOOLS = VIBE_TOOL_NAMES.join(', ');
 
 /** What the arguments asked for. */
 export interface Args {
@@ -64,6 +82,7 @@ const USAGE = `vibe-typer — a typing arcade game where you are the coding agen
 
 Options
   --mcp              speak MCP on stdio instead of opening the game
+                     its tools: ${MCP_TOOLS}
   --port <n>         port to listen on (default ${DEFAULT_PORT}; takes the next
                      free one when that is busy)
   --no-open          start the server but do not open a browser
@@ -222,6 +241,63 @@ export function bugsIn(dir: string): string | null {
 }
 
 /**
+ * The Node major this package's own `engines` field asks for, or null when
+ * the manifest cannot be read — the same broken install `missingLines` is
+ * for. Taken as a directory for the reason `versionIn` is: both layouts this
+ * file runs in sit one directory under the package root.
+ */
+export function floorIn(dir: string): number | null {
+  try {
+    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
+    const parsed = JSON.parse(raw) as { engines?: { node?: unknown } };
+    const said = parsed.engines?.node;
+    const found = typeof said === 'string' ? /(\d+)/.exec(said) : null;
+    return found?.[1] ? Number(found[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The oldest Node this launcher runs on, read off the manifest so the guard
+ * and the published `engines` field cannot say two different things. The 22
+ * is only what a package whose manifest will not parse falls back to, and a
+ * test holds that literal to the field.
+ */
+export const NODE_FLOOR = floorIn(here) ?? 22;
+
+/** The major of a Node version string, or null when it is not one. */
+export function nodeMajor(said: string): number | null {
+  const found = /^v?(\d+)\./.exec(said);
+  return found?.[1] ? Number(found[1]) : null;
+}
+
+/**
+ * The halt for a Node older than the floor, or null when the one running is
+ * new enough. The shooter's launcher carries the same guard and they change
+ * together. Pure, so the table of cases is a test rather than a subprocess on
+ * an interpreter this machine does not have.
+ *
+ * `npx` does not refuse on an engine mismatch: it warns and carries on, so
+ * the player reached a megabyte and a half of bundled `cli.js` and whatever
+ * it did in there. Every other way this launcher fails to start says a
+ * sentence and a `next:` line; the one failure that belongs to the player's
+ * machine rather than to the package arrived as a stack trace and was filed
+ * as a game bug. A version we cannot read is not a version we refuse on.
+ */
+export function nodeFloorHalt(said: string, floor: number): string[] | null {
+  const major = nodeMajor(said);
+  if (major === null || major >= floor) return null;
+  return [
+    'this cabinet needs a newer Node than the one running it',
+    `- expected: Node ${floor} or newer, and this is Node ${said}`,
+    '',
+    `next: install Node ${floor} or newer (https://nodejs.org), then run`,
+    '      npx @mcptoolshop/vibe-typer again',
+  ];
+}
+
+/**
  * What to say when a piece of the package is not in the package. The
  * shooter's launcher carries the same shape and they change together.
  *
@@ -288,6 +364,10 @@ export function mcpStartLines(
   const chosen = env.CABINET_TAPES;
   return [
     'the cabinet server is up on stdio',
+    // Named here as well as in the help because this is the line an operator
+    // whose client lists no tools actually has in front of them, and it used
+    // to name the seats and the tapes and stop.
+    `its tools: ${MCP_TOOLS}`,
     ...seatLines(env),
     chosen
       ? `tapes: ${chosen} (from the environment), seasoning the wires stack`
@@ -485,6 +565,14 @@ async function runPlay(args: Args): Promise<void> {
 
 /** The entry. Exported so a test can drive it without a subprocess. */
 export async function main(argv: readonly string[]): Promise<void> {
+  // Before the arguments, because an interpreter too old to run this file is
+  // too old to run `--help` on it either.
+  const old = nodeFloorHalt(process.versions.node, NODE_FLOOR);
+  if (old) {
+    sayAll(old);
+    process.exitCode = 1;
+    return;
+  }
   const args = parseArgs(argv);
   if (args.mode === 'version') {
     const said = version();

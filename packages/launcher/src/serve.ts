@@ -44,6 +44,24 @@ const SAY_MAX_BYTES = 32 * 1024;
 const PROXY_MAX_BYTES = 1024 * 1024;
 const SAY_MIN_INTERVAL_MS = 400;
 const SAY_TIMEOUT_MS = 12_000;
+
+/**
+ * How many boss lines one run will pay the hosted tier to write.
+ *
+ * Turning the tier on is a yes to spending money, and it should not also be a
+ * yes to spending an unstated amount of it: a cabinet left open is a browser
+ * tab asking for a line a boss beat, and the run had no count, no ceiling and
+ * no way to stop short of unsetting the variable and starting over. Forty
+ * covers a long sitting with room to spare. Past it the seat keeps writing —
+ * the key is simply no longer handed over, so the local tier takes the rest —
+ * and the run says so once rather than every call.
+ */
+export const CLAUDE_CALL_CEILING = 40;
+
+/** What the run is told, once, when the hosted tier has written its last. */
+export function ceilingLine(ceiling: number): string {
+  return `the Claude tier has spent its ${ceiling} lines for this run; the local tier takes over`;
+}
 const SAY_MAX_RECENT = 16;
 const SAY_MAX_MODELS = 32;
 const SAY_STR = 200;
@@ -642,6 +660,12 @@ async function proxy(
 function sayRoute(opts: ServeOpts) {
   let lastAt = 0;
   let busy = false;
+  // The hosted tier's budget for this run. Counted here rather than in the
+  // seat because this is the last place the key is ours to withhold, and
+  // withholding it is the whole mechanism: the tier order lives in
+  // cabinet-server and a null key simply falls to the local tier there.
+  let hostedCalls = 0;
+  let saidCeiling = false;
   return async function handleSay(req: IncomingMessage, res: ServerResponse): Promise<void> {
     if (req.method !== 'POST') {
       sendJson(res, 405, { error: 'post only' });
@@ -714,12 +738,22 @@ function sayRoute(opts: ServeOpts) {
         ) => Promise<unknown>;
       };
       const says = Number(body.says ?? 0);
+      let hostedKey: string | null = null;
+      if (opts.anthropicKey !== null) {
+        if (hostedCalls < CLAUDE_CALL_CEILING) {
+          hostedCalls += 1;
+          hostedKey = opts.anthropicKey;
+        } else if (!saidCeiling) {
+          saidCeiling = true;
+          opts.onTrouble?.(ceilingLine(CLAUDE_CALL_CEILING));
+        }
+      }
       const work = cs.askSayFor(
         view,
         parseStrings(body.recent, SAY_MAX_RECENT, SAY_STR),
         Number.isFinite(says) ? Math.max(0, Math.min(10_000, Math.floor(says))) : 0,
         {
-          anthropicKey: opts.anthropicKey,
+          anthropicKey: hostedKey,
           ollamaUrl: `${opts.ollamaUrl.replace(/\/$/, '')}/api/chat`,
           models: parseStrings(body.models, SAY_MAX_MODELS, 128),
         },

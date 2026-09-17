@@ -3,18 +3,24 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { VIBE_TOOL_NAMES } from '../../cabinet-server/src/tool-names';
 import { CABINET_VARS } from '../../launcher/src/levers';
 import {
   badArgLines,
   bugsIn,
   checkSeats,
   exitAfter,
+  floorIn,
   forwardSignals,
   main,
   mcpIgnored,
   mcpStartLines,
+  MCP_TOOLS,
   missingLines,
   movedPortLine,
+  NODE_FLOOR,
+  nodeFloorHalt,
+  nodeMajor,
   NO_VERSION,
   parseArgs,
   sayTrouble,
@@ -25,11 +31,11 @@ import {
 } from '../src/cli';
 
 const PKG = path.resolve(__dirname, '..');
-const DECLARED = (
-  JSON.parse(readFileSync(path.join(PKG, 'package.json'), 'utf8')) as {
-    version: string;
-  }
-).version;
+const MANIFEST = JSON.parse(readFileSync(path.join(PKG, 'package.json'), 'utf8')) as {
+  version: string;
+  engines: { node: string };
+};
+const DECLARED = MANIFEST.version;
 
 describe('the vibe-typer launcher arguments', () => {
   it('plays in the browser when asked for nothing, on its own port', () => {
@@ -127,6 +133,40 @@ describe('the vibe-typer launcher arguments', () => {
     expect(NO_VERSION).toBe('0.0.0-unknown');
   });
 
+  // ——— the Node the player happens to have —————————————————————————————————
+  //
+  // The package states `>=22` in `engines` and in its README, and nothing
+  // checked it at run time. `npx` does not refuse on an engine mismatch — it
+  // warns and carries on — so a player on an older Node reached a megabyte
+  // and a half of bundled `cli.js`. The shooter's launcher carries the same
+  // guard and they change together.
+  it('halts on a Node older than the floor, in the one shape', () => {
+    expect(nodeFloorHalt('20.11.1', 22)).toEqual([
+      'this cabinet needs a newer Node than the one running it',
+      '- expected: Node 22 or newer, and this is Node 20.11.1',
+      '',
+      'next: install Node 22 or newer (https://nodejs.org), then run',
+      '      npx @mcptoolshop/vibe-typer again',
+    ]);
+    expect(nodeFloorHalt('22.0.0', 22)).toBeNull();
+    expect(nodeFloorHalt('24.4.0', 22)).toBeNull();
+    // A version we cannot read is not a version we refuse on.
+    expect(nodeMajor('v22.9.0')).toBe(22);
+    expect(nodeMajor('not-a-version')).toBeNull();
+    expect(nodeFloorHalt('not-a-version', 22)).toBeNull();
+  });
+
+  // The guard and the manifest cannot say two things: the floor is read off
+  // the package's own `engines` field, and the literal in `cli.ts` is only
+  // the fallback for a manifest that will not parse.
+  it('reads the floor from the engines field this package publishes', () => {
+    expect(MANIFEST.engines.node).toBe('>=22');
+    expect(NODE_FLOOR).toBe(22);
+    expect(floorIn(path.join(PKG, 'src'))).toBe(22);
+    expect(floorIn(path.join(PKG, 'dist'))).toBe(22);
+    expect(floorIn(path.join(PKG, 'dist', 'deeper'))).toBeNull();
+  });
+
   it('names what the --mcp server actually reads, not one of the six', async () => {
     const out = process.stdout.write.bind(process.stdout);
     let stdout = '';
@@ -177,10 +217,24 @@ describe('what --mcp says before the first tool call', () => {
   it('names the seats and where the tapes came from', () => {
     expect(mcpStartLines({}, 20)).toEqual([
       'the cabinet server is up on stdio',
+      'its tools: view, product, ask, react',
       'the user sits at http://127.0.0.1:11434 (the default)',
       'the voice worker is at http://127.0.0.1:7788 (the default), no bearer set',
       'tapes: the 20 bundled ones season the wires stack (set CABINET_TAPES for your own)',
     ]);
+  });
+
+  // This cabinet's server shipped a slice after the shooter's and was the one
+  // an operator got the least help wiring: a client listing no tools left
+  // nothing printed to say whether the right cabinet server had started. The
+  // names come off the constant the server dispatches on rather than out of
+  // prose, so a fifth tool is one edit there and this line follows it.
+  it('names its tools, off the contract rather than out of prose', () => {
+    expect(MCP_TOOLS).toBe(VIBE_TOOL_NAMES.join(', '));
+    expect(mcpStartLines({}, 20)[1]).toBe(`its tools: ${VIBE_TOOL_NAMES.join(', ')}`);
+    // The typing cabinet's four, not the shooter's six.
+    expect(VIBE_TOOL_NAMES.length).toBe(4);
+    expect(MCP_TOOLS).not.toContain('fire');
   });
 
   it('names the directory when the operator gave one', () => {
@@ -409,6 +463,21 @@ describe('the help both cabinets print', () => {
     // that clause is what pushed the first lever row past eighty columns.
     expect(stdout).toContain('Environment, --mcp only');
     expect(stdout).not.toContain('with --mcp:');
+  });
+
+  // The `--mcp` row named the mode and stopped, so the half of this package
+  // an operator gets the least help wiring was the half the help said least
+  // about. The names come off the contract, so a fifth tool is one edit in
+  // `tool-names.ts` and both help texts follow it.
+  it('names the tools under --mcp, off the contract rather than out of prose', async () => {
+    const stdout = await help();
+    expect(stdout).toContain(`its tools: ${VIBE_TOOL_NAMES.join(', ')}`);
+    for (const name of VIBE_TOOL_NAMES) expect(stdout, name).toContain(name);
+    // Under the `--mcp` row, not somewhere else on the page.
+    const lines = stdout.split('\n');
+    const at = lines.findIndex((l) => l.startsWith('  --mcp '));
+    expect(at).toBeGreaterThan(-1);
+    expect(lines[at + 1]).toBe(`${' '.repeat(21)}its tools: ${MCP_TOOLS}`);
   });
 
   it('fits eighty columns, except a line that holds an address', async () => {
