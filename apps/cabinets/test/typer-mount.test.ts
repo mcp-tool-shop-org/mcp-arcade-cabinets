@@ -362,6 +362,50 @@ describe('the field, mounted', () => {
     expect(root.querySelector('.vibe-code .vibe-live')).not.toBeNull();
   });
 
+  // A keyboard-only player who touched any control could never type again:
+  // the keys are read off a window listener and dropped whenever a control
+  // has them, and the mount made no focusable element at all — so 'Sound on'
+  // swallowed every letter after it and the game read as frozen, with no word
+  // anywhere. A mouse player recovered by accident, clicking a pane.
+  describe('the field, and where the keys go', () => {
+    it('gives the letters back to the editor after a control is used', () => {
+      const expected = planOf(createRun({ seed: 1, tier: 0, endless: false, levelIndex: 0 }));
+      const reply = expected.requests[0]!.reply;
+      mount = mountLevel();
+      const editor = root.querySelector('.vibe-editor') as HTMLElement;
+      // The field is focusable, and has the keys from the first frame.
+      expect(editor.tabIndex).toBe(0);
+      expect(document.activeElement).toBe(editor);
+      run(mount, 1);
+
+      const sound = [...root.querySelectorAll('button')].find((b) =>
+        (b.textContent ?? '').startsWith('sound:'),
+      )!;
+      sound.focus();
+      sound.click();
+      expect(document.activeElement, 'the button is done with').toBe(editor);
+
+      // And the very next letter lands, which is the whole point.
+      const first = reply[0]!;
+      press(first);
+      run(mount, 1);
+      expect(liveTarget()).toBe(reply);
+      expect(root.querySelector('.vibe-live .ok')?.textContent).toBe(first);
+    });
+
+    it('says the state of the sound in the menu selects own words', () => {
+      mount = mountLevel();
+      const sound = [...root.querySelectorAll('button')].find((b) =>
+        (b.textContent ?? '').startsWith('sound:'),
+      )!;
+      // 'Sound on' beside 'Exit full screen' read as two different promises,
+      // and clicking the one that said 'Sound on' turned the sound off.
+      expect(sound.textContent).toBe('sound: on');
+      sound.click();
+      expect(sound.textContent).toBe('sound: off');
+    });
+  });
+
   it('keeps a digit off the chat pane', () => {
     mount = mountVibeTyper(root, {
       tier: 0,
@@ -388,6 +432,26 @@ describe('the field, mounted', () => {
     expect(/\d/.test(chat.textContent ?? '')).toBe(false);
     // The agent's name heads the editor, its own pane, and the header is words too.
     expect(root.querySelector('.vibe-editor .vibe-head')!.textContent).toContain('Sprocket');
+  });
+
+  // The chat is the cabinet's whole narrative and it was a plain list with no
+  // name and nothing announced: a reader was told the milestone word and
+  // never told what their user had asked for. The list itself cannot be live
+  // — the lines type themselves in character by character — so a finished
+  // line is announced once, whole.
+  it('announces a chat line when it has finished typing itself, and not before', () => {
+    mount = mountLevel();
+    const said = root.querySelector('[aria-label="the chat"]')!;
+    expect(said.getAttribute('aria-live')).toBe('polite');
+    expect(root.querySelector('.vibe-lines')!.getAttribute('aria-label')).not.toBeNull();
+    // The opening ask is in the list and is still being typed in.
+    const first = root.querySelector('.vibe-lines li')!;
+    mount.tick(STEP);
+    expect(said.textContent, 'nothing is said part-way through a line').toBe('');
+    run(mount, 240);
+    const full = first.textContent ?? '';
+    expect(full.length).toBeGreaterThan(0);
+    expect(said.textContent).toBe(full);
   });
 
   it('puts the user in the chat header and the agent on the editor, and leaves the words alone', () => {
@@ -1064,7 +1128,16 @@ describe('the voice on the user lines, mounted', () => {
     expect(box.disabled).toBe(true);
     await flush();
     expect(box.disabled).toBe(true);
-    expect(root.textContent).toContain('no worker');
+    // Said in the cabinet's own words: no player runs `pnpm`.
+    expect(root.textContent).toContain('the local voice is not running');
+    // And a greyed box says why it is grey, where a `title` on a disabled
+    // input says it to nobody.
+    const why = root.querySelector('#vibe-why-voice') as HTMLElement;
+    expect(why.hidden).toBe(false);
+    expect(box.getAttribute('aria-describedby')).toBe('vibe-why-voice');
+    // The reason is beside the label, never inside it: what is inside the
+    // label is the checkbox's own name.
+    expect((box.closest('label')?.textContent ?? '').trim()).toBe('Voice');
     // The mount mark the pack greps for.
     expect(root.querySelector('[data-vibe-voice]')).not.toBeNull();
   });
@@ -1203,6 +1276,50 @@ describe('the endless seat, mounted', () => {
     expect(controls.textContent).toContain('Model user');
     expect(root.querySelector('.vibe-chat')!.textContent).not.toContain('kimi');
     expect(root.querySelector('.vibe-board')!.textContent).not.toContain('kimi');
+  });
+
+  // Once the box was checked the tags probe stopped re-arming, and
+  // `markSeatDown` was reachable from nowhere else — so a daemon that died
+  // mid-run left the seat marked up forever, the row settled on the phrase it
+  // uses for the corpus, and the player had nothing to act on.
+  it('says the seat is gone when nothing answers, rather than naming the fallback', async () => {
+    let answering = true;
+    globalThis.fetch = vi.fn((url: string) => {
+      if (String(url).includes('/ollama/api/tags')) {
+        if (!answering) return Promise.reject(new Error('the daemon went away'));
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ models: [{ name: 'kimi-test:cloud' }] }),
+        } as Response);
+      }
+      if (String(url).includes('/cabinet/endless')) {
+        if (!answering) return Promise.reject(new Error('the daemon went away'));
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ request: null, model: 'kimi-test:cloud' }),
+        } as Response);
+      }
+      return Promise.reject(new Error('no samples in a test'));
+    }) as never;
+    mount = mountEndless();
+    await flush();
+    const seat = root.querySelector('[aria-label="the user"]')!;
+    const seatLabel = [...root.querySelectorAll('label')].find(
+      (l) => (l.textContent ?? '').trim() === 'Model user',
+    )!;
+    const box = seatLabel.querySelector('input') as HTMLInputElement;
+    expect(box.checked).toBe(true);
+
+    answering = false;
+    // Two asks with nothing at all behind them is a machine that has gone.
+    for (let i = 0; i < 8; i++) {
+      run(mount, 2);
+      await flush();
+    }
+    expect(seat.textContent).toBe('seat: no model on this machine');
+    expect(box.checked, 'and the box stops claiming a seat it does not have').toBe(false);
+    expect(box.disabled).toBe(true);
+    expect((root.querySelector('#vibe-why-seat') as HTMLElement).hidden).toBe(false);
   });
 
   it('drops a request the gate refuses and plays on', async () => {

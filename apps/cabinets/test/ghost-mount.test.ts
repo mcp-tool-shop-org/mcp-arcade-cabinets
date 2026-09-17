@@ -15,10 +15,12 @@ import {
   admitIntents,
   mountGhost,
   NEXT_TAPE_S,
+  NO_MODEL_WORD,
   newQueueClock,
   queueDue,
   readPrefs,
   withSignal,
+  wordsOnly,
   writePrefs,
 } from '../src/ghost';
 
@@ -283,6 +285,161 @@ describe('the beds, while they are still arriving', () => {
   });
 });
 
+// Entering full screen from the button left the game keyboard-dead: focus
+// stayed on the button, which is not inside the fullscreen element, so every
+// keydown had a control as its target, the key guard bailed before the arrows,
+// Space and F, and F could not get back out either. The only recovery was a
+// mouse click on the canvas — which at the end scene restarts the round.
+describe('full screen, and where the keys are afterwards', () => {
+  /** A browser that can go full screen, which jsdom is not. */
+  function fullScreenable(): () => void {
+    let element: Element | null = null;
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      get: () => element,
+    });
+    const proto = HTMLCanvasElement.prototype as unknown as Record<string, unknown>;
+    proto.requestFullscreen = function (this: HTMLCanvasElement): Promise<void> {
+      element = root.querySelector('canvas');
+      document.dispatchEvent(new Event('fullscreenchange'));
+      return Promise.resolve();
+    };
+    return () => {
+      element = null;
+      Reflect.deleteProperty(document, 'fullscreenElement');
+      Reflect.deleteProperty(proto, 'requestFullscreen');
+    };
+  }
+
+  it('follows the field in, so the arrows and F still reach the game', () => {
+    const undo = fullScreenable();
+    try {
+      const game = mount();
+      const canvas = root.querySelector('canvas')!;
+      const full = [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Full screen',
+      )!;
+      full.focus();
+      expect(document.activeElement).toBe(full);
+      full.click();
+      expect(document.activeElement, 'the field is what the browser is showing').toBe(canvas);
+      expect(full.textContent).toBe('Exit full screen');
+      game.unmount();
+    } finally {
+      undo();
+    }
+  });
+
+  it('leaves the keys on the field on the way back out', () => {
+    const undo = fullScreenable();
+    try {
+      const game = mount();
+      const canvas = root.querySelector('canvas')!;
+      const full = [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Full screen',
+      )!;
+      full.click();
+      // The browser drops out (Escape, or the F the player pressed on the
+      // field): the field keeps the keys, because it is still the game.
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => null,
+      });
+      document.dispatchEvent(new Event('fullscreenchange'));
+      expect(document.activeElement).toBe(canvas);
+      game.unmount();
+    } finally {
+      undo();
+    }
+  });
+});
+
+// The seat's model pick was field-local, so `fillPilot` fell back to the
+// default on every fresh mount: a player who picked a tag lost it at each of a
+// shift's four cards and again on every restart-by-remount.
+describe('the model the seat sits', () => {
+  /** A daemon with these tags and nothing else reachable. */
+  function stubTags(names: string[]): void {
+    globalThis.fetch = vi.fn((url: string, init?: RequestInit) => {
+      signals.push({ url: String(url), signal: init?.signal ?? undefined });
+      if (String(url).includes('/ollama/api/tags')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ models: names.map((name) => ({ name })) }),
+        } as Response);
+      }
+      return Promise.reject(new Error('nothing else answers in a test'));
+    }) as never;
+  }
+
+  it('keeps the pick across a mount, and rebuilds the picker only when the tags change', async () => {
+    vi.useFakeTimers();
+    try {
+      const tags = ['qwen2.5:7b-instruct', 'kimi-test:cloud'];
+      stubTags(tags);
+      const first = mount();
+      await vi.advanceTimersByTimeAsync(0);
+      const picker = root.querySelector('select[aria-label="model"]') as HTMLSelectElement;
+      picker.value = 'qwen2.5:7b-instruct';
+      picker.dispatchEvent(new Event('change'));
+      expect(readPrefs().model).toBe('qwen2.5:7b-instruct');
+
+      // The probe runs again with the same tags: a select the player may have
+      // open is not rebuilt under them.
+      const before = [...picker.options];
+      await vi.advanceTimersByTimeAsync(5000);
+      expect([...picker.options]).toEqual(before);
+      first.unmount();
+
+      // A fresh mount — the next card of a shift, or a restart — opens on the
+      // pick, before any tag list has come back and after.
+      const second = mount();
+      const again = root.querySelector('select[aria-label="model"]') as HTMLSelectElement;
+      expect(again.value).toBe('qwen2.5:7b-instruct');
+      await vi.advanceTimersByTimeAsync(0);
+      expect(again.value).toBe('qwen2.5:7b-instruct');
+      second.unmount();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('the words the field says out loud', () => {
+  it('strips a digit out of the furniture before it is drawn or spoken', () => {
+    // callCard has always done this to its own lines; the field's furniture
+    // and the shift's closing scene, built from the same tape header values,
+    // did not (G8, G10).
+    expect(wordsOnly('server gh-api-2')).toBe('server gh-api-');
+    expect(wordsOnly('policy allow-3')).toBe('policy allow-');
+  });
+
+  it('gives a reader the scene in words once the round is over', () => {
+    const frames: FrameRequestCallback[] = [];
+    globalThis.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
+      frames.push(cb);
+      return frames.length;
+    }) as unknown as typeof requestAnimationFrame;
+    const entry = TAPES[0]!;
+    const game = mountGhost(root, entry.name, entry.tape, () => undefined, undefined, false, {
+      difficulty: 'recorded',
+    });
+    const said = root.querySelector('[aria-label="the field"]')!;
+    expect(said.getAttribute('aria-live')).toBe('polite');
+    const nextBtn = [...root.querySelectorAll('button')].find(
+      (b) => b.textContent === 'Next tape',
+    )!;
+    let now = 0;
+    let guard = 0;
+    while (nextBtn.disabled && guard++ < 6000) frames.shift()!((now += 50));
+    const text = said.textContent ?? '';
+    expect(text).toContain('the round is over');
+    expect(text).toContain(entry.name);
+    expect(/\d/.test(text), 'no digit reaches the closing words').toBe(false);
+    game.unmount();
+  });
+});
+
 describe('the boss-intent prefetch, on its own', () => {
   it('asks when verbs are short, none is in flight and the wait has passed', () => {
     const clock = newQueueClock();
@@ -507,7 +664,10 @@ describe('a probe on a machine where nothing is listening', () => {
       // The word is already on the row; what is counted from here is only the
       // re-announcing of a word that has not changed.
       const seat = root.querySelector('span[aria-label="seat"]')!;
-      expect(seat.textContent).toBe('seat: no daemon');
+      // Said in the cabinet's own words: 'daemon' is a developer's word and
+      // the row under the field is a player's.
+      expect(seat.textContent).toBe(NO_MODEL_WORD);
+      expect(seat.getAttribute('aria-live'), 'the transient seat spans stay quiet').toBe('off');
       let rewrites = 0;
       const watch = new MutationObserver((records) => {
         rewrites += records.length;
@@ -559,6 +719,10 @@ describe('the end scene, and where the play goes next', () => {
     }
     expect(nextBtn.disabled).toBe(false);
     expect(onNext).not.toHaveBeenCalled();
+    // And it says so. The scene used to start a whole new tape with no
+    // warning over a player who was reading the trophies.
+    const chrome = root.querySelector('[aria-label="cabinet"]')!;
+    expect(chrome.textContent).toContain('the next tape follows on its own');
     // The scene holds: one second in, nothing has moved on.
     const sceneAt = now;
     while (now - sceneAt < 1000) {
@@ -571,6 +735,39 @@ describe('the end scene, and where the play goes next', () => {
     }
     expect(onNext).toHaveBeenCalledTimes(1);
     expect(frames.length).toBe(0);
+    game.unmount();
+  });
+
+  it('stops the clock when the player says they are still there', () => {
+    const frames: FrameRequestCallback[] = [];
+    globalThis.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
+      frames.push(cb);
+      return frames.length;
+    }) as unknown as typeof requestAnimationFrame;
+    const onNext = vi.fn();
+    const entry = TAPES[0]!;
+    const game = mountGhost(root, entry.name, entry.tape, () => undefined, onNext, false, {
+      difficulty: 'recorded',
+    });
+    const nextBtn = [...root.querySelectorAll('button')].find(
+      (b) => b.textContent === 'Next tape',
+    )!;
+    let now = 0;
+    let guard = 0;
+    while (nextBtn.disabled && guard++ < 6000) frames.shift()!((now += 50));
+    const sceneAt = now;
+    // A key on the field: a reader is still reading. Clicking the field is
+    // NOT this — that restarts the same tape.
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    const chrome = root.querySelector('[aria-label="cabinet"]')!;
+    expect(chrome.textContent).toContain('it waits for you now');
+    while (now - sceneAt < NEXT_TAPE_S * 1000 * 2 && frames.length > 0) {
+      frames.shift()!((now += 50));
+    }
+    expect(onNext, 'the timer the player stopped stays stopped').not.toHaveBeenCalled();
+    // The way on is still there, as a button.
+    nextBtn.click();
+    expect(onNext).toHaveBeenCalledTimes(1);
     game.unmount();
   });
 

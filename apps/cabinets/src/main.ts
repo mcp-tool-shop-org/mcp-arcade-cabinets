@@ -38,7 +38,15 @@ import {
   type Tier,
 } from '@mcp-arcade-cabinets/vibe-typer';
 
-import { DIFFICULTIES, mountGhost, readPrefs, writePrefs, type Difficulty } from './ghost';
+import {
+  DIFFICULTIES,
+  difficultyWord,
+  mountGhost,
+  readPrefs,
+  wordsOnly,
+  writePrefs,
+  type Difficulty,
+} from './ghost';
 import { TAPES } from './tapes';
 import {
   DEFAULT_MUSIC,
@@ -125,9 +133,9 @@ function introCopy(tier: Difficulty): string {
   return `Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made. Hit one and it is yours for the rest of the round. ${lamps}`;
 }
 
-function difficultySelect(value: Difficulty, locked: boolean): HTMLSelectElement {
+function difficultySelect(value: Difficulty): HTMLSelectElement {
   const el = document.createElement('select');
-  el.setAttribute('aria-label', locked ? 'shift difficulty' : 'difficulty');
+  el.setAttribute('aria-label', 'difficulty');
   for (const d of DIFFICULTIES) {
     const o = document.createElement('option');
     o.value = d.value;
@@ -135,11 +143,25 @@ function difficultySelect(value: Difficulty, locked: boolean): HTMLSelectElement
     el.append(o);
   }
   el.value = value;
-  if (locked) {
-    el.disabled = true;
-    el.title = 'Same as the Play row.';
-  }
   return el;
+}
+
+/**
+ * What the shift plays at, as a line of text. It used to be a second select
+ * with `disabled` set and the reason in a `title`: a dead control that Tab
+ * skips, that a reader's software passes over, and whose one explanation is
+ * delivered to nobody. A shift plays at the rung the Play row chose, so the
+ * row says that in words and the only control stays the one that means
+ * something.
+ */
+function shiftTierWords(value: Difficulty): string {
+  return `this shift plays at ${difficultyWord(value)}, the same as the Play row`;
+}
+
+function shiftTierLine(value: Difficulty): HTMLParagraphElement {
+  const p = muted(shiftTierWords(value));
+  p.id = 'shift-tier';
+  return p;
 }
 
 type CabinetId = 'ghost' | 'vibe';
@@ -174,23 +196,47 @@ function cabinetCards(): { id: CabinetId; name: string; line: string }[] {
   ];
 }
 
-/** Both cabinets: the switch, and the picked one's menu under it. */
+/**
+ * Both cabinets: the switch, and the picked one's menu under it.
+ *
+ * The two cards are a tab list. Activating one replaces everything below the
+ * switch and moved no focus and said nothing, so a reader's software was
+ * told nothing at all about a whole new page; as tabs, the selection itself
+ * is what is announced, and focus stays on the card the player pressed.
+ * Left and Right move between them, which is what a tab list promises.
+ */
 function switchMenu(body: HTMLElement) {
   const CABINETS = cabinetCards();
   let picked: CabinetId = readVibePrefs().cabinet ?? 'ghost';
   const cards = document.createElement('ul');
   cards.className = 'tape-list cabinet-cards';
+  cards.setAttribute('role', 'tablist');
+  cards.setAttribute('aria-label', 'the cabinets');
+  body.id = 'cabinet-body';
+  body.setAttribute('role', 'tabpanel');
   const rows: HTMLLIElement[] = [];
+  const tabs: HTMLButtonElement[] = [];
   const paint = () => {
-    rows.forEach((row, i) => row.classList.toggle('picked', CABINETS[i]!.id === picked));
+    // The menu that is being replaced owns a look for a model; it is dropped
+    // before the page under the switch is rebuilt.
+    dropSeatLook();
+    rows.forEach((row, i) => {
+      const on = CABINETS[i]!.id === picked;
+      row.classList.toggle('picked', on);
+      tabs[i]?.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
     body.replaceChildren();
     if (picked === 'ghost') ghostMenu(body);
     else vibeMenu(body);
   };
-  CABINETS.forEach((cabinet) => {
+  CABINETS.forEach((cabinet, i) => {
     const li = document.createElement('li');
     li.className = 'tape-row cabinet-card';
+    li.setAttribute('role', 'presentation');
     const name = button(cabinet.name, 'tape-name');
+    name.setAttribute('role', 'tab');
+    name.setAttribute('aria-controls', body.id);
+    name.setAttribute('aria-selected', 'false');
     const line = document.createElement('span');
     line.className = 'tape-diff cabinet-line';
     line.textContent = cabinet.line;
@@ -200,7 +246,18 @@ function switchMenu(body: HTMLElement) {
       writeVibePrefs({ cabinet: picked });
       paint();
     });
+    name.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const step = e.key === 'ArrowRight' ? 1 : -1;
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      if (!next) return;
+      e.preventDefault();
+      // Focus follows the arrow to the card it lands on, and that card opens.
+      next.focus();
+      next.click();
+    });
     rows.push(li);
+    tabs.push(name);
     cards.append(li);
   });
   app.append(cards, body);
@@ -213,7 +270,11 @@ function switchMenu(body: HTMLElement) {
 // standing. The stored `cabinet` pref is read only inside `switchMenu`, so
 // a browser that last played the other cabinet cannot bring the switch back
 // in a build that carries one.
+/** False until the page has painted once, so the first paint moves no focus. */
+let returned = false;
+
 function menu() {
+  dropSeatLook();
   app.replaceChildren();
   const body = document.createElement('section');
   body.className = 'column';
@@ -225,6 +286,21 @@ function menu() {
   } else {
     app.append(body);
     vibeMenu(body);
+  }
+  // Coming back from a round, the element the player activated has just been
+  // destroyed and focus falls to the document: a keyboard player had to Tab
+  // from the top of the page again and a reader's software was told nothing
+  // about where it now was. The menu's own heading takes focus and is read.
+  // Landing on the page for the first time is not a scene change, so it
+  // moves nothing.
+  if (!returned) {
+    returned = true;
+    return;
+  }
+  const head = app.querySelector('h1');
+  if (head) {
+    head.tabIndex = -1;
+    head.focus();
   }
 }
 
@@ -242,10 +318,16 @@ function ghostMenu(wrap: HTMLElement) {
     intro,
   );
 
-  let picked = Math.max(
-    0,
-    TAPES.findIndex((x) => x.name === 'naive-ndjson'),
-  );
+  // Where the player was. Everything else about them survived a visit — the
+  // rung, the feel, the shake, the seat, the voice, the last shift code — and
+  // the tape did not, so a player who worked their way down the roster came
+  // back to the top of it. The stored name is the pick when the roster still
+  // has it; the tape this cabinet opens on is the fallback.
+  const indexOf = (name: string | undefined): number =>
+    name === undefined ? -1 : TAPES.findIndex((x) => x.name === name);
+  const opening = indexOf('naive-ndjson');
+  const stored = indexOf(prefs.tape);
+  let picked = Math.max(0, stored >= 0 ? stored : opening);
   const list = document.createElement('ul');
   list.className = 'tape-list';
   const rows: HTMLLIElement[] = [];
@@ -260,32 +342,45 @@ function ghostMenu(wrap: HTMLElement) {
     const diff = document.createElement('span');
     diff.className = 'tape-diff';
     diff.textContent = tagged.label;
-    const info = document.createElement('span');
-    info.className = 'tape-info';
-    info.tabIndex = 0;
-    info.textContent = 'i';
-    info.setAttribute('aria-label', 'why this tape');
-    info.setAttribute('role', 'button');
+    // A real button, and the text it opens is its sibling rather than its
+    // child. It called itself a button before with no click and no keydown on
+    // it: the text was revealed by `:hover` and `:focus` alone, so a reader's
+    // software announced a button that did nothing when pressed and a touch
+    // player, who has neither hover nor focus, could not reach the text at
+    // all. As a child, the text was also the button's own accessible name.
+    const infoWrap = document.createElement('span');
+    infoWrap.className = 'tape-info-wrap';
+    const info = button('i', 'tape-info');
+    info.setAttribute('aria-label', `why this tape: ${t.name}`);
+    info.setAttribute('aria-expanded', 'false');
     const why = document.createElement('span');
     why.className = 'tape-why';
     why.id = `tape-why-${i}`;
+    why.hidden = true;
     why.textContent = tagged.why;
-    info.setAttribute('aria-describedby', why.id);
-    info.append(why);
-    li.append(name, diff, info);
+    info.setAttribute('aria-controls', why.id);
+    infoWrap.append(info, why);
+    li.append(name, diff, infoWrap);
+    info.addEventListener('click', () => {
+      const open = info.getAttribute('aria-expanded') === 'true';
+      info.setAttribute('aria-expanded', open ? 'false' : 'true');
+      why.hidden = open;
+    });
     name.addEventListener('click', () => {
       picked = i;
+      writePrefs({ tape: t.name });
       mark();
     });
     rows.push(li);
     list.append(li);
   });
   mark();
-  const playTier = difficultySelect(playDiff, false);
+  const playTier = difficultySelect(playDiff);
   playTier.addEventListener('change', () => {
-    writePrefs({ difficulty: playTier.value as Difficulty });
-    shiftTier.value = playTier.value;
-    intro.textContent = introCopy(playTier.value as Difficulty);
+    const chosen = playTier.value as Difficulty;
+    writePrefs({ difficulty: chosen });
+    shiftTier.textContent = shiftTierWords(chosen);
+    intro.textContent = introCopy(chosen);
   });
   const row = document.createElement('div');
   row.className = 'row';
@@ -299,7 +394,7 @@ function ghostMenu(wrap: HTMLElement) {
   // The shift: the rig hands you calls. A draw off the clock, never a fact.
   const shiftRow = document.createElement('div');
   shiftRow.className = 'row block';
-  const shiftTier = difficultySelect(playDiff, true);
+  const shiftTier = shiftTierLine(playDiff);
   const shift = button('Shift', 'commit');
   shift.title = `${lengthWord(4)} calls drawn from the roster, back to back, the bursts climbing call by call. The lamps refill at every call.`;
   const code = document.createElement('input');
@@ -361,6 +456,10 @@ function ghostMenu(wrap: HTMLElement) {
 /** Mount the tape at index i; the end scene's Next tape walks the list in order. */
 function playAt(i: number, fromClick = false) {
   const t = TAPES[i % TAPES.length]!;
+  // The end scene walks the roster on its own, so this is also where the walk
+  // is written down: a player who let it carry them along comes back where it
+  // left them, not at the top of the list.
+  writePrefs({ tape: t.name });
   const difficulty = readPrefs().difficulty;
   mountGhost(
     app,
@@ -460,7 +559,7 @@ function callCard(shift: Shift, i: number) {
   for (const line of cardLines) {
     const li = document.createElement('li');
     li.className = 'tape-row';
-    li.textContent = line.replace(/\d/g, '');
+    li.textContent = wordsOnly(line);
     card.append(li);
   }
   const level = DIFFICULTIES[shift.draw.difficulty]!;
@@ -489,6 +588,7 @@ function callCard(shift: Shift, i: number) {
         lockDifficulty: true,
         furniture: [`shift ${shift.code}`, `the ${ordinalWord(i, names.length)} call`],
         nextLabel: last ? 'End the shift' : 'Next call',
+        flowWord: last ? 'the shift closes on its own' : 'the next call follows on its own',
         holdMusic: !last,
         hint: 'Left, right, space. F toggles full screen. Click the field to retake this call.',
       },
@@ -513,9 +613,15 @@ function shiftEnd(shift: Shift) {
     const entry = TAPES.find((t) => t.name === name);
     const li = document.createElement('li');
     li.className = 'tape-row';
-    li.textContent = entry
-      ? `${name}, server ${entry.tape.server_name ?? entry.tape.target_kind}, policy ${entry.tape.agent_policy}`
-      : name;
+    // The same strip the call card takes. No shipped tape carries a digit in
+    // a server name, a target kind or a policy today — but the closing scene
+    // is exactly where the lock says no digit may appear, and the next tape
+    // added would have decided it (G8, G10).
+    li.textContent = wordsOnly(
+      entry
+        ? `${name}, server ${entry.tape.server_name ?? entry.tape.target_kind}, policy ${entry.tape.agent_policy}`
+        : name,
+    );
     list.append(li);
   }
   const codeLine = document.createElement('p');
@@ -532,6 +638,11 @@ function shiftEnd(shift: Shift) {
   row.append(again, fresh, back);
   wrap.append(row);
   app.append(wrap);
+  // The scene that has just replaced the round takes focus, the way the call
+  // card does: its first control, so a keyboard player carries on from here
+  // instead of Tabbing from the top of the document again, and a reader's
+  // software is told where it is.
+  again.focus();
   again.addEventListener('click', () => callCard(shift, 0));
   fresh.addEventListener('click', () => {
     const seed = hashWords(`${Date.now()}|${performance.now()}`);
@@ -580,10 +691,27 @@ function seedFrom(raw: string, last: number, runs: number): number {
   return hashString(text) >>> 0;
 }
 
-/** What the endless row says while the menu is still looking for a daemon. */
-const SEAT_LOOKING = 'looking for a daemon';
-/** What it says when nothing will sit: Pages, no daemon, or the seat turned off. */
-const SEAT_AUTHORED = 'the authored user';
+/**
+ * What the endless row says while the menu is still looking for a model.
+ * 'a daemon' was a developer's word: nothing in this cabinet's fiction
+ * teaches it, and Pages never shows this row at all, so the only people who
+ * ever read it are running the local game for the first time.
+ */
+const SEAT_LOOKING = 'looking for a model on this machine';
+/** What it says when nothing will sit: Pages, no model, or the seat turned off. */
+const SEAT_AUTHORED = 'a written user';
+
+/**
+ * The menu's one look for a model, so whoever replaces the menu can drop it.
+ * It was owned by a closure and abandoned rather than aborted: switching
+ * cabinets or repainting left a live fetch belonging to a menu that no longer
+ * existed.
+ */
+let seatLook: AbortController | null = null;
+function dropSeatLook(): void {
+  seatLook?.abort();
+  seatLook = null;
+}
 
 export function vibeMenu(wrap: HTMLElement) {
   const prefs = readVibePrefs();
@@ -672,7 +800,12 @@ export function vibeMenu(wrap: HTMLElement) {
   const seatCell = document.createElement('span');
   seatCell.className = 'tape-diff';
   seatCell.setAttribute('aria-live', 'polite');
-  seatCell.textContent = LOCAL_SEATS ? SEAT_LOOKING : SEAT_AUTHORED;
+  // A player who turned the model user off is not kept waiting on a look
+  // whose answer is thrown away: the pref was only consulted after the answer
+  // came back, so they paid a request and five seconds of 'looking' on every
+  // paint of this menu to be told what they had already chosen.
+  const willLook = LOCAL_SEATS && prefs.seat !== 'off';
+  seatCell.textContent = willLook ? SEAT_LOOKING : SEAT_AUTHORED;
   addRow(groupList('every stack'), 'endless', 'Endless', 'climbing', seatCell);
   mark();
   wrap.append(groups);
@@ -680,11 +813,13 @@ export function vibeMenu(wrap: HTMLElement) {
   // One look for a daemon, not a loop: the menu is a still page, and the
   // field does its own looking. Play abandons it, five seconds ends it, and
   // a menu that has been replaced is never written to.
-  const seatLook = new AbortController();
-  if (LOCAL_SEATS) {
-    void probeSeatName(seatLook.signal).then((tag) => {
-      if (!seatCell.isConnected) return;
-      seatCell.textContent = tag && prefs.seat !== 'off' ? `the user is ${tag}` : SEAT_AUTHORED;
+  dropSeatLook();
+  if (willLook) {
+    const look = new AbortController();
+    seatLook = look;
+    void probeSeatName(look.signal).then((tag) => {
+      if (!seatCell.isConnected || look.signal.aborted) return;
+      seatCell.textContent = tag ? `the user is ${tag}` : SEAT_AUTHORED;
     });
   }
 
@@ -717,6 +852,14 @@ export function vibeMenu(wrap: HTMLElement) {
     font.append(o);
   }
   font.value = isVibeFont(prefs.font) ? prefs.font : DEFAULT_FONT;
+  // One rule for the row: a setting is remembered the moment it is chosen.
+  // The sound was, and the type, the keyboard and the music were written only
+  // inside `start()` — so a player who set the type to huge and then switched
+  // cabinets, reloaded or left had lost it, while the setting beside it
+  // survived. Same row, two rules, and no sign of which was which.
+  font.addEventListener('change', () => {
+    writeVibePrefs({ font: isVibeFont(font.value) ? font.value : DEFAULT_FONT });
+  });
   const theme = document.createElement('select');
   theme.setAttribute('aria-label', 'keyboard');
   for (const t of THEMES) {
@@ -726,6 +869,9 @@ export function vibeMenu(wrap: HTMLElement) {
     theme.append(o);
   }
   theme.value = prefs.theme ?? 'mechanical';
+  theme.addEventListener('change', () => {
+    writeVibePrefs({ theme: theme.value as Theme });
+  });
   const sound = document.createElement('select');
   sound.setAttribute('aria-label', 'sound');
   for (const state of ['on', 'off'] as const) {
@@ -747,6 +893,9 @@ export function vibeMenu(wrap: HTMLElement) {
     music.append(o);
   }
   music.value = isMusicMode(prefs.music) ? prefs.music : DEFAULT_MUSIC;
+  music.addEventListener('change', () => {
+    writeVibePrefs({ music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC });
+  });
   settings.append(font, theme, sound, music);
 
   const row2 = document.createElement('div');
@@ -772,7 +921,7 @@ export function vibeMenu(wrap: HTMLElement) {
   wrap.append(row, settings, row2);
 
   const start = () => {
-    seatLook.abort();
+    dropSeatLook();
     const runs = (prefs.runs ?? 0) + 1;
     // One truncation, before both uses. The box is played from the full text
     // and stored cut to twelve characters, so a longer seed phrase played one
@@ -784,16 +933,15 @@ export function vibeMenu(wrap: HTMLElement) {
     const seed = seedFrom(raw, prefs.last ?? 1, runs);
     const name = cleanName(agent.value) || VIBE.cabinet.agentName;
     const endless = picked === 'endless';
+    // The run's own fields, and nothing else: the settings row writes itself
+    // the moment it is chosen (see the handlers above), so this no longer
+    // decides whether a choice is kept.
     writeVibePrefs({
       cabinet: 'vibe',
       tier: Number(tier.value) as Tier,
       ...(endless ? {} : { level: picked as number }),
       endless: endless ? 'on' : 'off',
       agent: name,
-      theme: theme.value as Theme,
-      font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
-      music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC,
-      muted: sound.value === 'off' ? 'on' : 'off',
       seed: raw,
     });
     mountVibeTyper(app, {

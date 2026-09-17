@@ -514,6 +514,44 @@ function liveStatus(node: HTMLElement, name: string): void {
   node.setAttribute('aria-label', name);
 }
 
+/**
+ * Why a greyed control is grey, as a visible word tied to the control.
+ * Ghost's helper, for the same reason: a `title` on a disabled input reaches
+ * nobody — the element is not focusable, Tab skips it, and a mouse player
+ * only learns by hovering something that looks inert.
+ */
+function whyDisabled(
+  control: HTMLElement,
+  id: string,
+  text: string,
+): { why: HTMLSpanElement; set: (on: boolean) => void } {
+  const why = el('span', 'muted why', text);
+  why.id = id;
+  control.setAttribute('aria-describedby', id);
+  return {
+    why,
+    set: (on: boolean) => {
+      why.hidden = !on;
+    },
+  };
+}
+
+/** The local voice worker is not running. Plain words: no player runs `pnpm`. */
+const NO_VOICE_WORD = 'voice: the local voice is not running';
+/** Nothing on this machine will sit the user's chair. */
+const NO_MODEL_WORD = 'seat: no model on this machine';
+/** The shell is still looking for one. */
+const LOOKING_WORD = 'seat: looking for a model on this machine';
+/**
+ * The corpus wrote this ask. A decision the cabinet made, and deliberately
+ * NOT the same word as `NO_MODEL_WORD`: the two were one phrase, so a model
+ * that had died mid-run read as a choice rather than as a machine that had
+ * stopped answering.
+ */
+const WRITTEN_WORD = 'seat: a written ask';
+/** The player turned the model user off. Their choice, said as their choice. */
+const WRITTEN_USER = 'seat: a written user';
+
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   cls?: string,
@@ -658,11 +696,38 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const chatWho = el('span', 'vibe-who', planOf(state).product);
   chatHead.append(chatWho);
   const chatList = el('ul', 'vibe-lines');
+  chatList.setAttribute('aria-label', 'what your user is saying');
   const chatScroll = el('div', 'vibe-scroll');
   chatScroll.append(chatList);
-  chatPane.append(chatHead, chatScroll);
+  /**
+   * The chat is the cabinet's whole narrative — the asks, the check-ins, the
+   * reactions — and it was a plain list with no name and nothing announced,
+   * while every other changing surface in both cabinets has a live region. A
+   * reader's software was told the milestone word and never told what the
+   * user had asked for. The list itself cannot be the live region: the lines
+   * type themselves in character by character, so marking it live would read
+   * every keystroke. A line is announced once, whole, when it finishes.
+   */
+  const chatSaid = el('span', 'offscreen');
+  liveStatus(chatSaid, 'the chat');
+  chatPane.append(chatHead, chatScroll, chatSaid);
 
   const editorPane = el('section', 'vibe-pane vibe-editor');
+  /**
+   * The field, and the one thing on it that can hold focus.
+   *
+   * The keys are read off a window listener and dropped whenever a control
+   * has them, and the mount made no focusable element at all: the panes, the
+   * editor and the preview were all unfocusable. So a keyboard player who
+   * pressed 'Sound on' or 'Model user' had nowhere to put focus back, every
+   * letter after that was swallowed by the guard, the line never advanced and
+   * the game read as frozen with no word anywhere. A mouse player recovered
+   * by accident, clicking a pane. Ghost never had this because its field is a
+   * focusable canvas that its mount and its difficulty handler both focus.
+   */
+  editorPane.tabIndex = 0;
+  editorPane.setAttribute('role', 'group');
+  editorPane.setAttribute('aria-label', 'the editor: type here');
   const beatWord = el('div', 'vibe-head vibe-beat');
   if (agentFace) beatWord.append(agentFace);
   beatWord.append(el('span', 'vibe-who', agentNameOf(state)));
@@ -685,7 +750,11 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   panes.append(chatPane, editorPane, previewPane);
 
   const controls = el('div', 'row');
-  const mute = el('button', undefined, 'Sound on');
+  // One convention across both cabinets and the menu's own select: the button
+  // says the state in the select's words. 'Sound on' read as a promise and
+  // turned the sound off.
+  const soundWords = (off: boolean) => (off ? 'sound: off' : 'sound: on');
+  const mute = el('button', undefined, soundWords(false));
   mute.type = 'button';
   const back = el('button', undefined, 'Back to the cabinets');
   back.type = 'button';
@@ -701,13 +770,14 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   seatLabel.append(seatBox, document.createTextNode(' Model user'));
   seatLabel.title =
     'In endless, your user is played by a model on your own machine: it names the product, asks for the thing and writes the code you type, behind a gate that refuses anything that is not small, plain and in the right language. Needs the local game, not Pages.';
+  const seatWhy = whyDisabled(seatBox, 'vibe-why-seat', 'needs a model on this machine');
   const seatStat = el('span', 'muted seat', '');
   liveStatus(seatStat, 'the user');
   const seatOn = LOCAL_SEATS && opts.endless;
   if (seatOn) {
     // The unique mark the launcher's pack greps for: a Pages build has none.
     controls.setAttribute('data-vibe-seat', 'on');
-    controls.append(seatLabel, seatStat);
+    controls.append(seatLabel, seatWhy.why, seatStat);
   }
   // The voice (G15, slice 4C): the user speaks their own lines through the
   // host-side worker, and every take is heard back and receipted before it
@@ -723,6 +793,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   voiceLabel.append(voiceBox, document.createTextNode(' Voice'));
   voiceLabel.title =
     'Your user says their asks, their check-ins and their reactions out loud through the local voice worker (pnpm voice); every take is heard back and receipted before it plays, and you type the replies as always.';
+  const voiceWhy = whyDisabled(voiceBox, 'vibe-why-voice', 'needs the local voice running');
   const voiceStat = el('span', 'muted seat', '');
   liveStatus(voiceStat, 'voice');
   if (LOCAL_SEATS) {
@@ -730,7 +801,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     // a `/voice` proxy, and a shell built without this chrome would leave that
     // proxy with no caller. The gate greps for this and halts if it is gone.
     controls.setAttribute('data-vibe-voice', 'on');
-    controls.append(voiceLabel, voiceStat);
+    controls.append(voiceLabel, voiceWhy.why, voiceStat);
   }
 
   // ——— what the cabinet's own files are doing ——————————————————————————————
@@ -885,13 +956,32 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   let syncOpen = false;
   let acc = 0;
   let left = false;
+  /**
+   * A word for a live region, written only when it is not the word already
+   * there. Ghost's helper, for the same reason: a region rewritten with the
+   * text it already has announces itself again for nothing, and three writers
+   * here (the seat's word and the voice's two) set `textContent` directly and
+   * bypassed the only guard there was.
+   */
+  const writeWord = (node: HTMLElement, text: string) => {
+    if (left || node.textContent === text) return;
+    node.textContent = text;
+  };
+  /**
+   * Put the keys back on the field. A control has just been used, and every
+   * letter typed while it holds focus is dropped by the key guard — so the
+   * editor pane takes focus back the moment a control is done with.
+   */
+  const takeKeys = () => {
+    if (!left && !over) editorPane.focus();
+  };
   // Asked for here rather than where the Map is built, so the handlers' guard
   // reads a flag that already exists.
   askCards();
   let over = false;
   let audio: TyperAudio | null = null;
   let muted = prefs.muted === 'on';
-  mute.textContent = muted ? 'Sound off' : 'Sound on';
+  mute.textContent = soundWords(muted);
   let shake = 0;
   let flash = 0;
   let flashLeft = 0;
@@ -1115,8 +1205,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     workerUp = false;
     voiceBox.disabled = true;
     voiceBox.checked = false;
+    voiceWhy.set(true);
     if (wasOn) stopTake();
-    voiceStat.textContent = 'voice: no worker (pnpm voice)';
+    writeWord(voiceStat, NO_VOICE_WORD);
   };
   const askHealth = opts.voice?.health ?? (() => voiceHealth({ url: '/voice', timeoutMs: 2000 }));
   const probeVoice = () => {
@@ -1127,11 +1218,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
           const firstUp = !workerUp && !voiceSawDown;
           workerUp = true;
           voiceBox.disabled = false;
+          voiceWhy.set(false);
           if (firstUp && prefs.voice === 'on') {
             voiceBox.checked = true;
-            voiceStat.textContent = 'voice on';
+            writeWord(voiceStat, 'voice on');
           } else if (!voiceBox.checked) {
-            voiceStat.textContent = 'voice ready';
+            writeWord(voiceStat, 'voice ready');
           }
           return;
         }
@@ -1171,9 +1263,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
           finishTake();
         });
       }),
-    onStatus: (text) => {
-      if (!left) voiceStat.textContent = text;
-    },
+    onStatus: (text) => writeWord(voiceStat, text),
   });
 
   /**
@@ -1199,8 +1289,10 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   voiceBox.addEventListener('change', () => {
     writeVibePrefs({ voice: voiceBox.checked ? 'on' : 'off' });
-    voiceStat.textContent = voiceBox.checked ? 'voice on' : 'voice off';
+    writeWord(voiceStat, voiceBox.checked ? 'voice on' : 'voice off');
     if (!voiceBox.checked) stopTake();
+    // The control is done with; the letters go back to the field.
+    takeKeys();
   });
 
   /** One user line, handed to the worker if this is a line the user says. */
@@ -1305,6 +1397,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       if (item.shown >= item.full.length) continue;
       item.shown = Math.min(item.full.length, item.shown + CHAT_CPS * dt);
       item.el.textContent = item.full.slice(0, Math.floor(item.shown));
+      // The line has just finished typing itself: this is the moment it is
+      // worth saying, once, whole.
+      if (item.shown >= item.full.length) writeWord(chatSaid, item.full);
       scrolled = true;
     }
     if (scrolled) chatScroll.scrollTop = chatScroll.scrollHeight;
@@ -1692,6 +1787,17 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   let tagsTimer = 0;
   /** Refusals in a row for the slot in hand; the second one gives it up. */
   let slotTries = 0;
+  /**
+   * Asks that came back with nothing at all, in a row. A run of them is a
+   * machine that has gone, not a gate doing its job: `markSeatDown` used to
+   * be reachable only from the tag probe, and the tag probe stopped running
+   * the moment the box was checked, so a daemon that died mid-run left the
+   * seat marked up forever — twenty seconds of 'seat thinking' a level,
+   * followed by a word that read as a decision the cabinet had made.
+   */
+  let noAnswers = 0;
+  /** Asks with no answer at all before the seat is called gone. // Director */
+  const SEAT_GONE_AFTER = 2;
   /** Slots this level has already handed to the corpus, and which level. */
   let given = 0;
   let givenFor = -1;
@@ -1700,7 +1806,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const tagsCtl = new AbortController();
 
   const seatSay = (text: string) => {
-    if (!left) seatStat.textContent = text;
+    writeWord(seatStat, text);
   };
 
   const markSeatDown = () => {
@@ -1708,7 +1814,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     seatModels = [];
     seatBox.disabled = true;
     seatBox.checked = false;
-    seatSay('seat: the authored pool');
+    seatWhy.set(true);
+    seatSay(NO_MODEL_WORD);
   };
 
   /**
@@ -1765,10 +1872,22 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     const give = (reason: string) => {
       refusals[reason] = (refusals[reason] ?? 0) + 1;
       seatCounts.refused += 1;
+      // A refusal is the gate doing its job; nothing answering at all is the
+      // machine going away. Only the second kind is counted here, and a run
+      // of them says the seat is gone rather than naming the fallback.
+      if (reason === 'no answer') {
+        noAnswers += 1;
+        if (noAnswers >= SEAT_GONE_AFTER) {
+          markSeatDown();
+          return;
+        }
+      } else {
+        noAnswers = 0;
+      }
       if (slotTries + 1 >= ENDLESS_TRIES) {
         slotTries = 0;
         given += 1;
-        seatSay('seat: the authored pool');
+        seatSay(WRITTEN_WORD);
         return;
       }
       slotTries += 1;
@@ -1834,6 +1953,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
           return;
         }
         slotTries = 0;
+        noAnswers = 0;
         seatCounts.accepted += 1;
         feedRequests(state, [gated.snippet], gated.product);
         // The tag carries a version, which is a digit; the controls row is
@@ -1853,55 +1973,80 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       });
   };
 
+  /** One timer, armed from one place: two arms would double the probe's rate. */
+  const armTags = (wait: number) => {
+    if (left || !seatOn) return;
+    if (tagsTimer) window.clearTimeout(tagsTimer);
+    tagsTimer = window.setTimeout(probeTags, wait);
+  };
+  /**
+   * How long to wait for the next look. Ghost's backoff shape: five seconds
+   * for the first retry, doubling to a ceiling while nothing answers, back to
+   * five the moment something does. A local build where nothing is listening
+   * and nothing will be is the common case, and a flat five seconds there is
+   * a failed fetch every five seconds for the life of the run.
+   */
+  const TAGS_CAP_MS = 60_000;
+  let tagsFails = 0;
+  const tagsWait = () => Math.min(TAGS_CAP_MS, TAGS_EVERY_MS * 2 ** Math.max(0, tagsFails - 1));
   const probeTags = () => {
     void probeSeatModels({ signal: tagsCtl.signal, timeoutMs: TAGS_TIMEOUT_MS })
       .then((listed) => {
         if (left || tagsCtl.signal.aborted) return;
         if (listed.length === 0) {
+          tagsFails += 1;
           markSeatDown();
           return;
         }
         const was = daemon;
+        tagsFails = 0;
         seatModels = listed;
         daemon = 'up';
         seatBox.disabled = false;
+        seatWhy.set(false);
         if (was !== 'up') {
           if (prefs.seat !== 'off') {
             seatBox.checked = true;
-            seatSay('seat: looking for a daemon');
+            seatSay(LOOKING_WORD);
             askSeat();
           } else {
-            seatSay('seat: the authored pool');
+            seatSay(WRITTEN_USER);
           }
         }
       })
       .catch(() => {
         if (left || tagsCtl.signal.aborted) return;
+        tagsFails += 1;
         markSeatDown();
       })
       .finally(() => {
-        if (left || !seatOn || seatBox.checked) return;
-        tagsTimer = window.setTimeout(probeTags, TAGS_EVERY_MS);
+        // The look keeps running while the box is checked. It used to stop
+        // there, and `markSeatDown` was reachable from nowhere else — so a
+        // daemon that went away mid-run could never be noticed, the box
+        // stayed checked and enabled, and the player had nothing to act on.
+        armTags(tagsWait());
       });
   };
 
   seatBox.addEventListener('change', () => {
     writeVibePrefs({ seat: seatBox.checked ? 'on' : 'off' });
     if (seatBox.checked) {
-      seatSay('seat: looking for a daemon');
+      seatSay(LOOKING_WORD);
       askSeat();
-      return;
+    } else {
+      seatCtl?.abort();
+      seatCtl = null;
+      seatBusy = false;
+      noAnswers = 0;
+      seatSay(WRITTEN_USER);
+      armTags(TAGS_EVERY_MS);
     }
-    seatCtl?.abort();
-    seatCtl = null;
-    seatBusy = false;
-    seatSay('seat: the authored pool');
-    if (tagsTimer) window.clearTimeout(tagsTimer);
-    tagsTimer = window.setTimeout(probeTags, TAGS_EVERY_MS);
+    // The control is done with; the letters go back to the field.
+    takeKeys();
   });
 
   if (seatOn) {
-    seatSay('seat: looking for a daemon');
+    seatSay(LOOKING_WORD);
     probeTags();
   }
 
@@ -2031,10 +2176,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
 
   mute.addEventListener('click', () => {
     muted = !muted;
-    mute.textContent = muted ? 'Sound off' : 'Sound on';
+    mute.textContent = soundWords(muted);
     writeVibePrefs({ muted: muted ? 'on' : 'off' });
     ensureAudio();
     audio?.setMuted(muted);
+    // The button is done with; the letters go back to the field.
+    takeKeys();
   });
   wrap.addEventListener('click', () => {
     ensureAudio();
@@ -2155,11 +2302,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     // the model is a character here too and goes unnamed (G17).
     if (state.endless && seatOn) {
       scene.append(
-        el(
-          'p',
-          'muted',
-          seatCounts.accepted > 0 ? 'the user was a model' : 'the user was the authored pool',
-        ),
+        el('p', 'muted', seatCounts.accepted > 0 ? 'the user was a model' : 'the user was written'),
       );
     }
     if (state.milestones.length > 0) {
@@ -2229,6 +2372,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   drawBoard(0);
   drawPreview(0);
   if (opts.startAudio) ensureAudio();
+  // The field has the keys from the first frame, so the first letter typed
+  // lands whether or not the player has touched anything yet.
+  takeKeys();
 
   return {
     unmount: leave,

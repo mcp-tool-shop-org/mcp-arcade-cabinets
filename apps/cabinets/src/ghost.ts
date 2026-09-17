@@ -124,6 +124,13 @@ export interface MountExtra {
   /** Extra end-scene furniture lines: the shift code, the call's place. Words only. */
   furniture?: string[];
   nextLabel?: string;
+  /**
+   * What the chrome row says while the end scene is running down to whatever
+   * comes next. The scene starts the next thing by itself and said nothing
+   * about it, so a player reading the trophies was interrupted by a whole new
+   * tape with no warning. A shift names its own next thing here.
+   */
+  flowWord?: string;
   hint?: string;
   /** True on a shift call that is not the last: the music carries through the card. */
   holdMusic?: boolean;
@@ -139,7 +146,21 @@ export type Prefs = {
   shiftCode?: string;
   feel?: Intensity;
   shake?: 'on' | 'off';
+  /**
+   * The tape this browser last picked, by name. Everything else about a
+   * player survived a visit and the pick did not, so a player who worked
+   * their way down the roster came back to the top of it.
+   */
+  tape?: string;
+  /** The model the seat sits, so a pick survives a card, a restart and a visit. */
+  model?: string;
 };
+
+/** A difficulty's label without its leading word, for a plain line of text. */
+export function difficultyWord(value: Difficulty): string {
+  const found = DIFFICULTIES.find((d) => d.value === value);
+  return (found?.label ?? value).replace(/^difficulty:\s*/, '');
+}
 
 const DIFF_VALUES = new Set<string>(DIFFICULTIES.map((d) => d.value));
 const FEEL_VALUES = new Set<string>(INTENSITIES);
@@ -222,6 +243,16 @@ export function readPrefs(): Prefs {
     }
     if (typeof o.feel === 'string' && FEEL_VALUES.has(o.feel)) out.feel = o.feel as Intensity;
     if (o.shake === 'on' || o.shake === 'off') out.shake = o.shake;
+    // A tape name is a word on the menu and a word on the field's furniture,
+    // so it is held to the same rule the shift code is: no digit (G8).
+    if (typeof o.tape === 'string' && o.tape.trim() !== '' && !/\d/.test(o.tape)) {
+      out.tape = o.tape.slice(0, 64);
+    }
+    // A model tag is never drawn on the field (G17); it is a value for the
+    // picker beside the mute button, so the only rule is that it is a tag.
+    if (typeof o.model === 'string' && o.model.trim() !== '' && o.model.length <= 120) {
+      out.model = o.model;
+    }
     return out;
   } catch {
     return {};
@@ -262,8 +293,48 @@ function liveStatus(el: HTMLElement, name: string): void {
   el.setAttribute('aria-label', name);
 }
 
+/**
+ * A span that is read on screen and not announced. Four announced spans sat
+ * in one row over a real-time shooter — the seat rewritten every fire beat,
+ * the say seat every cadence, the voicer on every status — and a reader's
+ * software queued all of it, which buried the words that matter and made the
+ * row worse than no row. The transient three are quiet now; the one announced
+ * channel is the chrome span, which only changes when something changed, and
+ * the seat words a player can act on are routed through it.
+ */
+function quietStatus(el: HTMLElement, name: string): void {
+  el.setAttribute('aria-live', 'off');
+  el.setAttribute('aria-label', name);
+}
+
 function reduceMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * The room the chrome under the field takes, in CSS pixels.
+ *
+ * The stylesheet owns the value: `--field-chrome` on `:root`, one rem length,
+ * larger under the phone breakpoint, and the two `canvas.field` height rules
+ * subtract exactly it. This reads it back rather than hand-copying it, which
+ * is what `(innerWidth <= 640 ? 14 : 8) * 16` did — three constants duplicated
+ * out of the stylesheet with nothing holding them in step, and a `* 16` that
+ * assumed a sixteen-pixel root font, wrong for exactly the player most likely
+ * to be looking at a field that does not fit. The fallback is the desktop
+ * value in this browser's own rem, for a page (or a test) with no stylesheet.
+ */
+const CHROME_REM = 8;
+function chromeAllowance(): number {
+  const root = document.documentElement;
+  if (typeof getComputedStyle !== 'function') return CHROME_REM * 16;
+  const style = getComputedStyle(root);
+  const rootPx = Number.parseFloat(style.fontSize) || 16;
+  const raw = style.getPropertyValue('--field-chrome').trim();
+  const rem = /^(\d*\.?\d+)rem$/.exec(raw);
+  if (rem) return Number.parseFloat(rem[1]!) * rootPx;
+  const px = /^(\d*\.?\d+)px$/.exec(raw);
+  if (px) return Number.parseFloat(px[1]!);
+  return CHROME_REM * rootPx;
 }
 
 /**
@@ -321,6 +392,17 @@ function chromeTarget(t: EventTarget | null): boolean {
   return t instanceof Element && Boolean(t.closest('input, select, button, label, textarea'));
 }
 
+/**
+ * Words only. The lock says no digit appears on a card, on the field's
+ * furniture or in the closing scene (G8, G10), and the call card already did
+ * this to its own lines while the furniture and the shift's end scene — the
+ * two places built from the same tape header values — did not. One helper,
+ * so the next tape added cannot decide it.
+ */
+export function wordsOnly(line: string): string {
+  return line.replace(/\d/g, '');
+}
+
 function stripFieldNoise(s: string): string {
   return s
     .replace(/[0-9]/g, '')
@@ -348,26 +430,42 @@ function errorKind(
   return 'script';
 }
 
+/**
+ * What went wrong, in the cabinet's own words. The taxonomy above is
+ * unchanged — it is what a developer reads in a log — but the row under the
+ * field is a player's, and 'bad payload', 'script' and 'daemon' are not words
+ * this cabinet has taught anyone. Same precision, said plainly.
+ */
+const WHY_WORD: Record<ReturnType<typeof errorKind>, string> = {
+  retired: 'that model is gone',
+  timeout: 'no answer in time',
+  down: 'nothing answered',
+  missing: 'that model is not here',
+  'bad payload': 'the answer made no sense',
+  script: 'something went wrong on this page',
+};
+
+/** No model on this machine: the plainest way to say the local one is not there. */
+export const NO_MODEL_WORD = 'seat: no model on this machine';
+/** The same, while the shell is still looking. */
+const LOOKING_WORD = 'seat: looking for a model on this machine';
+/** The voice worker is not running. Said once, on the announced row. */
+const NO_VOICE_WORD = 'voice: the local voice is not running';
+
 function seatFailLine(err: unknown): string {
-  const k = errorKind(err);
-  if (k === 'retired') return 'seat: model retired';
-  if (k === 'script') return 'seat: no answer, script';
-  return `seat: no answer, ${k}`;
+  return `seat: ${WHY_WORD[errorKind(err)]}`;
 }
 
 function sayFailLine(err: unknown): string {
   const name = err instanceof Error ? err.name : '';
-  if (name === 'TimeoutError' || name === 'AbortError') return 'say seat: no answer, timeout';
+  if (name === 'TimeoutError' || name === 'AbortError') return `say seat: ${WHY_WORD.timeout}`;
   const cleaned = stripFieldNoise(err instanceof Error ? err.message : String(err));
-  if (/slow down/i.test(cleaned)) return 'say seat: slow down';
-  if (/no cabinet server built/i.test(cleaned)) return 'say seat: no cabinet server built';
+  if (/slow down/i.test(cleaned)) return 'say seat: too many asks at once';
+  if (/no cabinet server built/i.test(cleaned)) return 'say seat: the local game is not built';
   const k = errorKind(err);
-  if (k === 'timeout') return 'say seat: no answer, timeout';
-  if (k === 'down') return 'say seat: no answer, down';
-  if (k === 'missing') return 'say seat: no answer, missing';
-  if (k === 'bad payload') return 'say seat: no answer, bad payload';
+  if (k !== 'script') return `say seat: ${WHY_WORD[k]}`;
   if (cleaned && cleaned !== 'say') return `say seat: ${cleaned}`;
-  return 'say seat: no answer';
+  return `say seat: ${WHY_WORD.script}`;
 }
 
 /** Closed library line after fire succeeds. Beside the picker, never on the field (G17). */
@@ -487,8 +585,31 @@ export function mountGhost(
 
   const controls = document.createElement('div');
   controls.className = 'row';
+  /**
+   * Why a greyed control is grey, as a visible word tied to the control.
+   *
+   * A `title` on a disabled input is delivered to nobody: the element is not
+   * focusable, Tab skips it, and a mouse player only learns by hovering
+   * something that looks inert. The word is a span of its own in the row —
+   * beside the label, not inside it, because what is inside the label is the
+   * control's NAME — tied by `aria-describedby`, and it goes away when the
+   * control comes alive.
+   */
+  const whyDisabled = (control: HTMLElement, id: string, text: string) => {
+    const why = document.createElement('span');
+    why.className = 'muted why';
+    why.id = id;
+    why.textContent = text;
+    control.setAttribute('aria-describedby', id);
+    return { why, set: (on: boolean) => (why.hidden = !on) };
+  };
   const mute = document.createElement('button');
-  mute.textContent = 'Sound on';
+  // One convention across both cabinets and the menu's own select: the button
+  // says the state in the select's words. 'Sound on' beside 'Exit full
+  // screen' read as two different promises — one a state, one an action —
+  // and clicking the one that said 'Sound on' turned the sound off.
+  const soundWords = (off: boolean) => (off ? 'sound: off' : 'sound: on');
+  mute.textContent = soundWords(false);
   const intensity = document.createElement('select');
   intensity.setAttribute('aria-label', 'feel');
   for (const i of INTENSITIES) {
@@ -512,16 +633,18 @@ export function mountGhost(
   ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
   ollamaLabel.title =
     'Local daemon or Ollama Cloud. The boss calls its own shots through the cabinet tools and writes its own lines behind a gate; it never sees which sprites are lies. Needs the local game, not Pages.';
+  const ollamaWhy = whyDisabled(ollama, 'ghost-why-seat', 'needs a model on this machine');
   // What the seats are doing, outside the field: a closed library line after
   // fire, 'seat thinking' only while the ask is in flight. Never a fact,
-  // never a digit, never a model name (G17).
+  // never a digit, never a model name (G17). Read on screen, not announced:
+  // these three change several times a beat (see `quietStatus`).
   const seat = document.createElement('span');
   seat.className = 'muted seat';
-  liveStatus(seat, 'seat');
-  seat.textContent = LOCAL_SEATS ? 'seat: looking for a daemon' : '';
+  quietStatus(seat, 'seat');
+  seat.textContent = LOCAL_SEATS ? LOOKING_WORD : '';
   const sayStat = document.createElement('span');
   sayStat.className = 'muted seat';
-  liveStatus(sayStat, 'say seat');
+  quietStatus(sayStat, 'say seat');
   sayStat.textContent = '';
   // The voice (G15): the boss speaks its gated lines through the host-side
   // worker; every take is receipted before it plays. Off, and disabled,
@@ -534,9 +657,10 @@ export function mountGhost(
   voiceLabel.append(voice, document.createTextNode(' Voice'));
   voiceLabel.title =
     'The boss speaks its lines in its own voice through the local voice worker (pnpm voice). Every take is heard back and receipted before it plays; a failed receipt is never played.';
+  const voiceWhy = whyDisabled(voice, 'ghost-why-voice', 'needs the local voice running');
   const voiceStat = document.createElement('span');
   voiceStat.className = 'muted seat';
-  liveStatus(voiceStat, 'voice');
+  quietStatus(voiceStat, 'voice');
   voiceStat.textContent = '';
   const chrome = document.createElement('span');
   chrome.className = 'muted seat';
@@ -600,9 +724,13 @@ export function mountGhost(
     workerUp = false;
     voice.disabled = true;
     voice.checked = false;
+    voiceWhy.set(true);
     if (wasOn) stopTake();
     voiceFails += 1;
-    writeWord(voiceStat, 'voice: no worker (pnpm voice)');
+    writeWord(voiceStat, NO_VOICE_WORD);
+    // The one announced row carries it too: a worker that went away mid-round
+    // is something the player can act on, unlike 'voice ready'.
+    sayVoiceNote(NO_VOICE_WORD);
   };
   const probeVoice = () => {
     void voiceHealth({ url: '/voice', timeoutMs: 2000 })
@@ -613,6 +741,8 @@ export function mountGhost(
           const firstUp = !workerUp && !voiceSawDown;
           workerUp = true;
           voice.disabled = false;
+          voiceWhy.set(false);
+          sayVoiceNote('');
           if (firstUp && prefs.voice === 'on') {
             voice.checked = true;
             writeWord(voiceStat, 'voice on');
@@ -642,7 +772,15 @@ export function mountGhost(
   seedOpt.value = localDefault;
   seedOpt.textContent = localDefault;
   pilotModel.append(seedOpt);
-  pilotModel.value = localDefault;
+  // The stored pick, before any tag list has come back: a player who chose a
+  // model kept it for exactly one mount, and a shift remounts four times.
+  if (prefs.model !== undefined && prefs.model !== localDefault) {
+    const kept = document.createElement('option');
+    kept.value = prefs.model;
+    kept.textContent = isCloudModel(prefs.model) ? `${prefs.model} (cloud)` : prefs.model;
+    pilotModel.append(kept);
+  }
+  pilotModel.value = prefs.model ?? localDefault;
   pilotModel.title = 'Cloud tags first when the local daemon has signed in.';
   pilotModel.setAttribute('aria-label', 'model');
   const full = document.createElement('button');
@@ -657,19 +795,28 @@ export function mountGhost(
   }
   // Fixture tapes derive to tier 0, where formations neither fire nor dive; seat is the fun default.
   difficulty.value = extra.difficulty ?? prefs.difficulty ?? 'seat';
-  if (extra.lockDifficulty) {
-    difficulty.disabled = true;
-    difficulty.title = 'A shift plays at the difficulty its code names.';
-  }
+  // A locked select is a dead control: Tab skips it, its `title` reaches
+  // nobody, and all it tells a mouse player is that something is grey. A
+  // shift's rung is a line of plain text instead; the select stays off the
+  // page but keeps the value the round is played at.
+  const lockedTier = document.createElement('span');
+  lockedTier.className = 'muted';
+  lockedTier.textContent = `this call plays at ${difficultyWord(difficulty.value as Difficulty)}`;
   const nextBtn = document.createElement('button');
   nextBtn.textContent = extra.nextLabel ?? 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
-  controls.append(full, difficulty, mute, intensity, shakeLabel);
+  controls.append(
+    full,
+    extra.lockDifficulty ? lockedTier : difficulty,
+    mute,
+    intensity,
+    shakeLabel,
+  );
   if (LOCAL_SEATS) {
     // Unique string the launcher pack greps for: a Pages build DCE's this.
     controls.setAttribute('data-local-seats', 'on');
-    controls.append(ollamaLabel, voiceLabel, pilotModel);
+    controls.append(ollamaLabel, ollamaWhy.why, voiceLabel, voiceWhy.why, pilotModel);
   }
   controls.append(nextBtn);
   const statusRow = document.createElement('div');
@@ -682,26 +829,58 @@ export function mountGhost(
     extra.hint ??
     'Left, right, space. F toggles full screen. Click the field to restart the same tape.';
   canvas.setAttribute('aria-label', hint.textContent);
+  /**
+   * What the field is saying, for a player who cannot see it. The canvas had
+   * one label — the control hint — and nothing else, ever: the captions the
+   * round writes, the wave words, the boss arriving and the whole end scene
+   * were painted pixels. They are written here when they CHANGE, never per
+   * frame, and they are the words the round already wrote, so nothing new
+   * reaches a player surface.
+   */
+  const fieldWord = document.createElement('p');
+  fieldWord.className = 'offscreen';
+  liveStatus(fieldWord, 'the field');
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
-  wrap.append(canvas, controls, statusRow, hint, back);
+  wrap.append(canvas, controls, statusRow, hint, fieldWord, back);
   root.append(wrap);
   root.classList.add('playing');
 
   let artMissing = false;
+  /** True once the deadline passed with files still on their way. Not a failure. */
+  let artSlow = false;
   const missingArt = new Set<string>();
   let musicMissing = false;
   let fullWord = '';
   /** What the sound is doing when it is not simply playing. Words only. */
   let soundWord = '';
+  /** The one seat word a player can act on; the transient ones stay quiet. */
+  let seatNote = '';
+  let voiceNote = '';
+  /** What follows the end scene, and whether it is still on its own clock. */
+  let flowWord = '';
   const writeChrome = () => {
     if (left) return;
     const parts: string[] = [];
     if (artMissing) parts.push('art: using blocks');
+    if (artSlow) parts.push('art: still arriving');
     if (musicMissing) parts.push('music: chiptune');
     if (soundWord) parts.push(soundWord);
     if (fullWord) parts.push(fullWord);
+    if (seatNote) parts.push(seatNote);
+    if (voiceNote) parts.push(voiceNote);
+    if (flowWord) parts.push(flowWord);
     writeWord(chrome, parts.join(' · '));
+  };
+  const saySeatNote = (word: string) => {
+    if (seatNote === word) return;
+    seatNote = word;
+    writeChrome();
+  };
+  const sayVoiceNote = (word: string) => {
+    if (voiceNote === word) return;
+    voiceNote = word;
+    writeChrome();
   };
 
   type FullEl = HTMLCanvasElement & { webkitRequestFullscreen?: () => Promise<void> };
@@ -760,6 +939,34 @@ export function mountGhost(
     }
   };
   onFullChange(syncFullLabel, true);
+  /**
+   * Where focus goes when the browser enters or leaves full screen.
+   *
+   * The button that asked for full screen is not inside the fullscreen
+   * element, so focus stayed on a control: every keydown then had a button as
+   * its target, `chromeTarget` matched it, and `onKey` bailed before the
+   * arrows, Space or F — the ship stopped, the gun stopped, and F could not
+   * get back out either, because that branch is gated on being on the field.
+   * The only way back was a mouse click on the canvas, which at the end scene
+   * restarts the round.
+   *
+   * Entering: focus the field, which is the element the browser is showing;
+   * the Full screen button is one Tab away from it, as it is the rest of the
+   * time. Leaving: the field keeps the keys, because the arrows and F are the
+   * field's and a player who has just left full screen is still playing — but
+   * a player who left by clicking the button never lost focus, and nothing is
+   * taken from them.
+   */
+  const followFull = () => {
+    if (left) return;
+    const active = document.activeElement;
+    if (fullEl() === canvas) {
+      canvas.focus();
+      return;
+    }
+    if (active === null || active === canvas || active === document.body) canvas.focus();
+  };
+  onFullChange(followFull, true);
   const layoutField = () => {
     if (fullEl() === canvas) {
       canvas.style.removeProperty('width');
@@ -767,8 +974,7 @@ export function mountGhost(
       return;
     }
     const maxW = wrap.clientWidth || FIELD.width;
-    const chromeH = (window.innerWidth <= 640 ? 14 : 8) * 16;
-    const maxH = Math.max(FIELD.height, window.innerHeight - chromeH);
+    const maxH = Math.max(FIELD.height, window.innerHeight - chromeAllowance());
     const s = Math.min(Math.floor(maxW / FIELD.width), Math.floor(maxH / FIELD.height));
     if (s >= 2) {
       canvas.style.width = `${FIELD.width * s}px`;
@@ -794,12 +1000,27 @@ export function mountGhost(
     if (ok || atlas.has(key)) missingArt.delete(key);
     else missingArt.add(key);
     artMissing = missingArt.size > 0;
+    if (pendingArt.size === 0) artSlow = false;
     writeChrome();
   };
+  /**
+   * How long the chrome waits on the sprites before it draws what it knows.
+   *
+   * This settles the CHROME, not the keys — the bed loader's lesson
+   * (`BED_SETTLE_MS`), which this half never got. Roughly ninety files are
+   * asked for at once and the flat four seconds that shipped swept every key
+   * still pending into 'art: using blocks', so on any ordinary connection a
+   * first visit was told the cabinet was broken while the art was merely
+   * downloading. A key settles on `load` or `error` and on nothing else, so
+   * that word now means a file that failed; a file that is slow says so in
+   * its own words, the way the typing cabinet's `KEYS_SLOW` does.
+   */
+  const ART_SETTLE_MS = 8000;
   window.setTimeout(() => {
-    if (left) return;
-    for (const key of [...pendingArt]) artOne(key, false);
-  }, 4000);
+    if (left || pendingArt.size === 0) return;
+    artSlow = true;
+    writeChrome();
+  }, ART_SETTLE_MS);
   for (const key of SPRITE_KEYS) {
     const img = new Image();
     img.decoding = 'async';
@@ -840,7 +1061,7 @@ export function mountGhost(
     `server ${tape.server_name ?? tape.target_kind}`,
     `policy ${tape.agent_policy}`,
     ...(extra.furniture ?? []),
-  ];
+  ].map(wordsOnly);
 
   loadBeds();
   const watchBeds = () => {
@@ -852,7 +1073,7 @@ export function mountGhost(
   if (bedsSettled) watchBeds();
   let audio: AudioOut | null = music.audio;
   let muted = music.muted;
-  mute.textContent = muted ? 'Sound off' : 'Sound on';
+  mute.textContent = soundWords(muted);
   const takeIsPlaying = () => !takeEl.paused && !takeEl.ended && Boolean(takeEl.src);
   /** A construction that threw is tried once, not once a gesture. */
   let audioFailed = false;
@@ -940,7 +1161,7 @@ export function mountGhost(
   mute.addEventListener('click', () => {
     muted = !muted;
     music.muted = muted;
-    mute.textContent = muted ? 'Sound off' : 'Sound on';
+    mute.textContent = soundWords(muted);
     ensureAudio();
     audio?.setMuted(muted);
     takeEl.muted = muted;
@@ -973,6 +1194,9 @@ export function mountGhost(
   };
   const onKey = (down: boolean) => (e: KeyboardEvent) => {
     if (chromeTarget(e.target)) return;
+    // A key on the field holds the end scene where it is: a player reading
+    // the trophies is not fighting a clock nobody showed them.
+    if (down) holdScene();
     const onField = e.target === canvas;
     if (down && (e.key === 'f' || e.key === 'F')) {
       if (!onField) return;
@@ -1030,7 +1254,27 @@ export function mountGhost(
   let musicEnded = false;
   /** The frame clock at which the end scene first showed; null while a round is on. */
   let sceneAt: number | null = null;
+  /** True once the player asked to keep the scene up; what follows then waits. */
+  let sceneHeld = false;
+  /** What the chrome row says while the scene runs down, and once it is held. */
+  const FLOW_ON = extra.flowWord ?? 'the next tape follows on its own';
+  const FLOW_HELD = 'it waits for you now';
+  /**
+   * Stop the end scene's clock. Any key on the field does this, and so does
+   * the pointer reaching the controls row — the two ways a player says they
+   * are still here. Clicking the FIELD is not one of them: that restarts the
+   * same tape, which is the opposite of what a reader wants.
+   */
+  const holdScene = () => {
+    if (!onNext || sceneAt === null || sceneHeld || left) return;
+    sceneHeld = true;
+    flowWord = FLOW_HELD;
+    writeChrome();
+  };
+  controls.addEventListener('pointerenter', holdScene);
   let spokenSpawn = '';
+  /** The last caption written to the field's own live region. */
+  let spokenCaption = '';
   const seatSay = (text: string) => {
     writeWord(seat, text);
   };
@@ -1038,7 +1282,11 @@ export function mountGhost(
     writeWord(sayStat, text);
   };
   const seatFailed = (err: unknown) => {
-    seatSay(seatFailLine(err));
+    const line = seatFailLine(err);
+    seatSay(line);
+    // A model that has been retired is not a beat that went wrong: it will
+    // never answer again, so it goes on the one announced row as well.
+    if (errorKind(err) === 'retired') saySeatNote(line);
   };
 
   // The voicer: a take plays the moment its receipt is back if the line is
@@ -1059,10 +1307,10 @@ export function mountGhost(
       });
     },
     captionSeconds: 2.4,
-    onStatus: (s) => {
-      if (left) return;
-      voiceStat.textContent = s;
-    },
+    // Through the dedupe helper like every other writer of this span: writing
+    // the text that is already there is an announcement for nothing, and this
+    // one bypassed it.
+    onStatus: (s) => writeWord(voiceStat, s),
   });
   // The cabinet over this round: the host is the boundary (G12), the tools
   // are the levers, and the seat machine drives `fire` one beat ahead.
@@ -1255,16 +1503,18 @@ export function mountGhost(
   };
   ollama.addEventListener('change', () => {
     writePrefs({ ollama: ollama.checked ? 'on' : 'off' });
-    seatSay(ollama.checked ? (daemon === 'down' ? 'seat: no daemon' : 'seat waiting') : 'seat off');
+    seatSay(ollama.checked ? (daemon === 'down' ? NO_MODEL_WORD : 'seat waiting') : 'seat off');
     sayStatSay('');
     warm();
   });
   voice.addEventListener('change', () => {
     writePrefs({ voice: voice.checked ? 'on' : 'off' });
-    voiceStat.textContent = voice.checked ? 'voice on' : 'voice off';
+    writeWord(voiceStat, voice.checked ? 'voice on' : 'voice off');
     if (!voice.checked) stopTake();
   });
   pilotModel.addEventListener('change', () => {
+    // The pick survives the card, the restart and the visit now (`Prefs.model`).
+    writePrefs({ model: pilotModel.value });
     warm();
   });
   difficulty.addEventListener('change', () => {
@@ -1273,26 +1523,44 @@ export function mountGhost(
     canvas.focus();
   });
 
+  /** The names the picker is already showing, in the order it shows them. */
+  const sameOptions = (listed: readonly string[]) =>
+    listed.length === pilotModel.options.length &&
+    listed.every((name, i) => pilotModel.options[i]?.value === name);
   const fillPilot = (listed: string[]) => {
     listedModels = listed;
     const prev = pilotModel.value;
-    const pick = listed.includes(prev) ? prev : defaultPilotModel(listed);
-    pilotModel.replaceChildren();
-    for (const name of listed) {
-      const o = document.createElement('option');
-      o.value = name;
-      o.textContent = isCloudModel(name) ? `${name} (cloud)` : name;
-      pilotModel.append(o);
+    const stored = prefs.model;
+    const pick = listed.includes(prev)
+      ? prev
+      : stored !== undefined && listed.includes(stored)
+        ? stored
+        : defaultPilotModel(listed);
+    // The probe runs every few seconds and this rebuilt the whole select each
+    // time; a select the player has open flickers or closes under them on some
+    // browsers. The options are replaced only when the names have changed.
+    if (!sameOptions(listed)) {
+      pilotModel.replaceChildren();
+      for (const name of listed) {
+        const o = document.createElement('option');
+        o.value = name;
+        o.textContent = isCloudModel(name) ? `${name} (cloud)` : name;
+        pilotModel.append(o);
+      }
     }
-    pilotModel.value = pick;
+    if (pilotModel.value !== pick) pilotModel.value = pick;
   };
   const markDaemonDown = () => {
     const was = daemon;
     daemon = 'down';
     ollama.disabled = true;
     ollama.checked = false;
+    ollamaWhy.set(true);
     tagsFails += 1;
-    seatSay('seat: no daemon');
+    seatSay(NO_MODEL_WORD);
+    // The announced row says it once: a daemon that went away mid-round is
+    // something a player can act on.
+    saySeatNote(NO_MODEL_WORD);
     if (was === 'down') return;
     bumpFire();
     fireSeat = newSeat();
@@ -1320,6 +1588,8 @@ export function mountGhost(
         daemonWasUp = true;
         fillPilot(listed);
         ollama.disabled = false;
+        ollamaWhy.set(false);
+        saySeatNote('');
         if (was !== 'up') {
           if (!returning && prefs.ollama === 'on') {
             ollama.checked = true;
@@ -1460,25 +1730,44 @@ export function mountGhost(
       clock: now / 1000,
       bedKind,
     });
+    // The field's own words, for a player who cannot see it. Written on a
+    // change and never per frame: the caption while the round is on, and the
+    // scene's furniture once, when the round ends.
+    const caption = state.scene ? '' : (state.caption?.text ?? '');
+    if (caption !== spokenCaption) {
+      spokenCaption = caption;
+      if (caption) writeWord(fieldWord, caption);
+    }
     if (state.scene) {
       // A frame, so the end reads as a scene and not a pause.
       ctx.fillStyle = '#8a6a3a';
       ctx.fillRect(0, 0, FIELD.width, 4);
       nextBtn.disabled = false;
       // The scene holds NEXT_TAPE_S, then the play flows into the next tape
-      // on its own, the same path the Next button takes.
+      // on its own, the same path the Next button takes — and the chrome row
+      // says so, because it used to happen with no warning at all.
       if (sceneAt === null) {
         sceneAt = now;
+        writeWord(fieldWord, `the round is over. ${furniture.join(', ')}`);
+        if (onNext && !sceneHeld) {
+          flowWord = FLOW_ON;
+          writeChrome();
+        }
         // The round's lines are spent: the bags go to storage here, so the
         // next tape and the next visit carry on the walk.
         writeStoredBags(bags);
-      } else if (onNext && now - sceneAt >= NEXT_TAPE_S * 1000) {
+      } else if (onNext && !sceneHeld && now - sceneAt >= NEXT_TAPE_S * 1000) {
         leave();
         onNext();
         return;
       }
     } else {
       sceneAt = null;
+      sceneHeld = false;
+      if (flowWord !== '') {
+        flowWord = '';
+        writeChrome();
+      }
     }
     raf = requestAnimationFrame(frame);
   }
@@ -1500,6 +1789,7 @@ export function mountGhost(
     window.removeEventListener('resize', layoutField);
     window.removeEventListener('pagehide', onPageHide);
     onFullChange(syncFullLabel, false);
+    onFullChange(followFull, false);
     onFullChange(layoutField, false);
     tagsCtl.abort();
     bumpFire();

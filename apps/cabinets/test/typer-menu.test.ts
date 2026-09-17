@@ -3,7 +3,7 @@
 // The menu, painted. What is checked here is the shape of the level list —
 // one heading a stack in the corpus order, every level under its own stack
 // with a difficulty word and no digit — and the endless row's third column,
-// which names the seat that will sit or says the authored user. The mount is
+// which names the seat that will sit or says a written user. The mount is
 // stubbed: pressing Play is a pref write and a call, not a game.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -159,6 +159,41 @@ describe('the level list, by stack', () => {
   });
 });
 
+// One rule for the settings row: a setting is remembered the moment it is
+// chosen. The sound was written from a `change` handler and the type, the
+// keyboard and the music only inside `start()`, so a player who set the type
+// and then switched cabinets, reloaded or left had lost it — while the
+// setting beside it survived.
+describe('the settings row', () => {
+  it('remembers the type, the keyboard, the sound and the music without pressing Play', async () => {
+    await paint();
+    const pick = (label: string, value: string) => {
+      const el = wrap.querySelector(`select[aria-label="${label}"]`) as HTMLSelectElement;
+      el.value = value;
+      el.dispatchEvent(new Event('change'));
+    };
+    pick('type size', 'huge');
+    pick('keyboard', 'softtouch');
+    pick('sound', 'off');
+    pick('music', 'off');
+    expect(vi.mocked(mountVibeTyper)).not.toHaveBeenCalled();
+    const kept = readVibePrefs();
+    expect(kept.font).toBe('huge');
+    expect(kept.theme).toBe('softtouch');
+    expect(kept.muted).toBe('on');
+    expect(kept.music).toBe('off');
+
+    // And the row opens on them next time.
+    await paint();
+    expect((wrap.querySelector('select[aria-label="type size"]') as HTMLSelectElement).value).toBe(
+      'huge',
+    );
+    expect((wrap.querySelector('select[aria-label="music"]') as HTMLSelectElement).value).toBe(
+      'off',
+    );
+  });
+});
+
 describe('the seed box', () => {
   /** Press Play with this in the box, and report the seed the run was given. */
   async function playWith(seed: string): Promise<number> {
@@ -202,29 +237,34 @@ describe('the endless entry’s seat', () => {
     stubTags(['qwen2.5:7b-instruct', 'kimi-test:cloud']);
     await paint();
     const seat = () => painted().at(-1)!.rows[0]!.cells[1];
-    expect(seat()).toBe('looking for a daemon');
+    expect(seat()).toBe('looking for a model on this machine');
     await flush();
     expect(seat()).toBe('the user is kimi-test:cloud');
   });
 
-  it('says the authored user when no daemon answers', async () => {
+  it('says a written user when no daemon answers', async () => {
     await paint();
     await flush();
-    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('the authored user');
+    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('a written user');
   });
 
-  it('says the authored user when this browser turned the seat off', async () => {
+  it('says a written user when this browser turned the seat off, and never looks', async () => {
     writeVibePrefs({ seat: 'off' });
     stubTags(['kimi-test:cloud']);
     await paint();
+    // The pref used to be consulted only after the answer came back, so a
+    // player who had turned the model user off still paid a request and five
+    // seconds of 'looking' on every paint of this menu.
+    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('a written user');
+    expect(globalThis.fetch).not.toHaveBeenCalled();
     await flush();
-    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('the authored user');
+    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('a written user');
   });
 
   // Last in the file on purpose: it rebuilds the menu over a `vibe-typer`
   // whose `LOCAL_SEATS` is false — the Pages build — and what it leaves in
   // the module registry would be wrong for anything after it.
-  it('says the authored user where no seat can sit, and never looks', async () => {
+  it('says a written user where no seat can sit, and never looks', async () => {
     vi.doMock('../src/vibe-typer', async (importOriginal) => {
       const actual = await importOriginal<typeof import('../src/vibe-typer')>();
       return { ...actual, LOCAL_SEATS: false, mountVibeTyper: vi.fn() };
@@ -235,9 +275,9 @@ describe('the endless entry’s seat', () => {
     const endless = painted().at(-1)!;
     expect(endless.head).toBe('every stack');
     expect(endless.rows[0]!.name).toBe('Endless');
-    expect(endless.rows[0]!.cells).toEqual(['climbing', 'the authored user']);
+    expect(endless.rows[0]!.cells).toEqual(['climbing', 'a written user']);
     await flush();
-    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('the authored user');
+    expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('a written user');
     expect(globalThis.fetch).not.toHaveBeenCalled();
     vi.doUnmock('../src/vibe-typer');
     vi.resetModules();

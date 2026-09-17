@@ -45,11 +45,11 @@ function oneOf<T extends string>(v: unknown, allowed: readonly T[]): T | undefin
   return typeof v === 'string' && (allowed as readonly string[]).includes(v) ? (v as T) : undefined;
 }
 
-function pathOnly(url: string | undefined): string {
+export function pathOnly(url: string | undefined): string {
   return (url ?? '/').split('?')[0] ?? '/';
 }
 
-function restAfter(prefix: string, url: string | undefined): string {
+export function restAfter(prefix: string, url: string | undefined): string {
   const p = pathOnly(url);
   if (p === prefix) return '/';
   if (p.startsWith(`${prefix}/`)) {
@@ -68,7 +68,7 @@ function jsonType(header: string | string[] | undefined): boolean {
   return type === 'application/json';
 }
 
-function parseSeatView(raw: unknown): {
+export function parseSeatView(raw: unknown): {
   kind: (typeof BOSS_KINDS)[number];
   hp: (typeof HP_WORDS)[number];
   column: (typeof COLUMNS)[number];
@@ -108,7 +108,7 @@ function bandNumber(v: unknown): number | undefined {
  * null. Closed sets where there is one, a length everywhere else. Keep in
  * step with `parseEndlessView` in packages/launcher/src/serve.ts.
  */
-function parseEndlessView(raw: unknown): {
+export function parseEndlessView(raw: unknown): {
   product: string;
   stack: (typeof VIBE_STACKS)[number];
   bandMin: number;
@@ -142,59 +142,69 @@ function notFound(res: ServerResponse): void {
   res.end(JSON.stringify({ error: 'not found' }));
 }
 
+/** A proxied upstream, named by the prefix the browser sees. */
+export type Upstream = 'ollama' | 'voice';
+
+/** Prefixes this server proxies. Anything else is a file request. */
+export const DEV_PREFIXES: Record<Upstream, string> = {
+  ollama: '/ollama',
+  voice: '/voice',
+};
+
+/** Which upstream a path belongs to, or null when it is a file request. */
+export function devUpstreamFor(url: string | undefined): Upstream | null {
+  const p = pathOnly(url);
+  for (const [name, prefix] of Object.entries(DEV_PREFIXES) as [Upstream, string][]) {
+    if (p === prefix || p.startsWith(`${prefix}/`)) return name;
+  }
+  return null;
+}
+
+/** A cached take, named by the hash the worker gave it. */
+const AUDIO_RE = /^\/audio\/[a-f0-9]{8,64}\.wav$/i;
+
 /**
  * Dev-only reverse proxies stay on loopback, but the browser can still hit
  * the Vite port. Allow only the paths the shell uses; reject pull/delete/
  * create. POST /api/generate is the next-verb seat. GET /stats is the
  * authenticated liveness probe. Keep in step with packages/launcher/src/allow.ts.
+ *
+ * Pure, and lifted out of the middleware, so it can be tested: the launcher's
+ * copy has `test/allow.test.ts` behind every rule and this one — the half
+ * that stops a browser POSTing /ollama/api/pull or /api/delete through the
+ * dev proxy — had nothing reading it at all, so it could drift out of step
+ * with the launcher without anything failing. `test/dev-allowlists.test.ts`
+ * now asserts the same table, and that the two agree path for path.
  */
+export function devAllowed(up: Upstream, method: string, rest: string): boolean {
+  if (up === 'ollama') {
+    if (method === 'GET' && rest === '/api/tags') return true;
+    if (method === 'POST' && rest === '/api/chat') return true;
+    if (method === 'POST' && rest === '/api/generate') return true;
+    return false;
+  }
+  if (method === 'GET' && (rest === '/health' || rest === '/stats')) return true;
+  if (method === 'POST' && rest === '/speak') return true;
+  if (method === 'GET' && AUDIO_RE.test(rest)) return true;
+  return false;
+}
+
 function devAllowlists(): Plugin {
   return {
     name: 'dev-allowlists',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const p = pathOnly(req.url);
-        if (p === '/ollama' || p.startsWith('/ollama/')) {
-          const rest = restAfter('/ollama', req.url);
-          const method = req.method ?? 'GET';
-          if (rest === '/api/tags' && method === 'GET') {
-            next();
-            return;
-          }
-          if (rest === '/api/chat' && method === 'POST') {
-            next();
-            return;
-          }
-          if (rest === '/api/generate' && method === 'POST') {
-            next();
-            return;
-          }
-          notFound(res);
+        const up = devUpstreamFor(req.url);
+        if (up === null) {
+          next();
           return;
         }
-        if (p === '/voice' || p.startsWith('/voice/')) {
-          const rest = restAfter('/voice', req.url);
-          const method = req.method ?? 'GET';
-          if (rest === '/health' && method === 'GET') {
-            next();
-            return;
-          }
-          if (rest === '/stats' && method === 'GET') {
-            next();
-            return;
-          }
-          if (rest === '/speak' && method === 'POST') {
-            next();
-            return;
-          }
-          if (method === 'GET' && /^\/audio\/[a-f0-9]{8,64}\.wav$/i.test(rest)) {
-            next();
-            return;
-          }
-          notFound(res);
+        const rest = restAfter(DEV_PREFIXES[up], req.url);
+        if (devAllowed(up, req.method ?? 'GET', rest)) {
+          next();
           return;
         }
-        next();
+        notFound(res);
       });
     },
   };

@@ -52,7 +52,7 @@ describe('the rung a fresh browser plays at', () => {
     await paint();
     byText('button.tape-name', 'Ghost on the Menu').click();
     const play = app().querySelector('select[aria-label="difficulty"]') as HTMLSelectElement;
-    const shift = app().querySelector('select[aria-label="shift difficulty"]') as HTMLSelectElement;
+    const shift = app().querySelector('#shift-tier') as HTMLElement;
 
     // Nothing is stored yet, and every fixture tape's header derives to the
     // study rung, where the formations neither fire nor dive: opening there
@@ -60,7 +60,16 @@ describe('the rung a fresh browser plays at', () => {
     // seat and the Shift row opens with it.
     expect(readPrefs().difficulty).toBeUndefined();
     expect(play.value).toBe('seat');
-    expect(shift.value).toBe('seat');
+    // The shift's rung is a line of text, not a second select with `disabled`
+    // set: a dead control that Tab skips and whose `title` reached nobody.
+    expect(app().querySelector('select[aria-label="shift difficulty"]')).toBeNull();
+    expect(shift.textContent).toContain('seat');
+
+    // And it follows the Play row, which is the thing the dead select was
+    // trying to say.
+    play.value = 'hardcore';
+    play.dispatchEvent(new Event('change'));
+    expect(shift.textContent).toContain('hardcore');
 
     // The study rung is still a choice, and its label says what choosing it
     // means rather than leaving the player to find out by playing it.
@@ -75,9 +84,80 @@ describe('the rung a fresh browser plays at', () => {
     await paint();
     byText('button.tape-name', 'Ghost on the Menu').click();
     const play = app().querySelector('select[aria-label="difficulty"]') as HTMLSelectElement;
-    const shift = app().querySelector('select[aria-label="shift difficulty"]') as HTMLSelectElement;
+    const shift = app().querySelector('#shift-tier') as HTMLElement;
     expect(play.value).toBe('recorded');
-    expect(shift.value).toBe('recorded');
+    expect(shift.textContent).toContain('as recorded');
+  });
+});
+
+// A player who worked their way down the roster came back to the top of it,
+// while their rung, their feel, their shake, their seat, their voice and their
+// last shift code had all survived the visit.
+describe('where the player was on the roster', () => {
+  it('remembers the tape they picked and opens there next time', async () => {
+    await paint();
+    byText('button.tape-name', 'Ghost on the Menu').click();
+    const names = [...app().querySelectorAll('button.tape-name')] as HTMLButtonElement[];
+    const later = names[names.length - 1]!;
+    const chosen = later.textContent ?? '';
+    later.click();
+    expect(readPrefs().tape).toBe(chosen);
+
+    await paint();
+    byText('button.tape-name', 'Ghost on the Menu').click();
+    const picked = app().querySelector(
+      'ul.tape-list:not(.cabinet-cards) li.tape-row.picked .tape-name',
+    );
+    expect(picked?.textContent).toBe(chosen);
+  });
+
+  it('falls back to the tape the cabinet opens on when the name is not on the roster', async () => {
+    writePrefs({ tape: 'a tape that went away' });
+    await paint();
+    byText('button.tape-name', 'Ghost on the Menu').click();
+    const picked = app().querySelector(
+      'ul.tape-list:not(.cabinet-cards) li.tape-row.picked .tape-name',
+    );
+    expect(picked?.textContent).toBe('naive-ndjson');
+  });
+});
+
+describe('why this tape', () => {
+  it('is a button that opens the text, for a touch player as much as anyone', async () => {
+    await paint();
+    byText('button.tape-name', 'Ghost on the Menu').click();
+    const info = app().querySelector('button.tape-info') as HTMLButtonElement;
+    const why = app().querySelector('.tape-why') as HTMLElement;
+    // It called itself a button before with no handler on it at all: the text
+    // was revealed by :hover and :focus, which a touch player cannot perform.
+    expect(info.getAttribute('aria-expanded')).toBe('false');
+    expect(why.hidden).toBe(true);
+    // The text is its sibling, not its child: as a child it was the button's
+    // own accessible name.
+    expect(info.contains(why)).toBe(false);
+    expect(info.getAttribute('aria-controls')).toBe(why.id);
+    info.click();
+    expect(info.getAttribute('aria-expanded')).toBe('true');
+    expect(why.hidden).toBe(false);
+    expect((why.textContent ?? '').length).toBeGreaterThan(0);
+    info.click();
+    expect(why.hidden).toBe(true);
+  });
+});
+
+describe('the switch at the top', () => {
+  it('is a tab list, so the change of cabinet is announced without moving focus', async () => {
+    await paint();
+    const list = app().querySelector('[role="tablist"]')!;
+    const tabs = [...list.querySelectorAll('[role="tab"]')] as HTMLButtonElement[];
+    expect(tabs).toHaveLength(2);
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
+    expect(tabs[1]!.getAttribute('aria-selected')).toBe('false');
+    tabs[1]!.click();
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('false');
+    expect(tabs[1]!.getAttribute('aria-selected')).toBe('true');
+    // The panel the tabs control is the page under them.
+    expect(tabs[0]!.getAttribute('aria-controls')).toBe('cabinet-body');
   });
 });
 
