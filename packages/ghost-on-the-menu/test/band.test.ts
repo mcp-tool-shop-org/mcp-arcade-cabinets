@@ -232,7 +232,6 @@ describe('the difficulty curve', () => {
   const byTier = (tier: 0 | 1 | 2) => CASES.filter((c) => c.tier === tier);
   const meanLamps = (outs: ReturnType<typeof run>[]) =>
     outs.reduce((s, o) => s + (3 - o.lives), 0) / outs.length;
-  const alive = (outs: ReturnType<typeof run>[]) => outs.filter((o) => o.ended === 'time').length;
   const namedHalf = (cases: Case[], outs: ReturnType<typeof run>[]) => {
     const short: string[] = [];
     let lies = 0;
