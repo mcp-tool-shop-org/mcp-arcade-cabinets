@@ -11,11 +11,29 @@
 // it, because after `pnpm build:launcher` the built shell on disk belongs to
 // whichever cabinet was packed last. See the note on `checkDist`.
 
-import { checkDist, halt, pack } from '../../launcher/scripts/build.mjs';
+import { checkDist, halt, pack, parsePackArgs } from '../../launcher/scripts/build.mjs';
 
-const check = process.argv.slice(2).includes('--check');
+const USAGE = [
+  'usage: node scripts/build.mjs [--out <package dir>] [--check]',
+  '  --check  gate the dist that is already there; do not rebuild it',
+];
+
+// This used to be `process.argv.slice(2).includes('--check')`, which made any
+// argument that was not exactly `--check` a rebuild: a typo in this package's
+// own prepack script (`--chekc`, `-check`) ran `pack()` at `npm publish`
+// time, reassembling dist from whatever shell was on disk — and after
+// `pnpm build:launcher` that is whichever cabinet was packed last. That is
+// the trap the `--check` split exists to remove, and it was re-entered
+// silently. A flag this file does not understand must stop the publish.
+const given = process.argv.slice(2);
+if (given.includes('--cabinet')) {
+  halt(["launcher: --cabinet is not this package's to pass; it always packs vibe", '', ...USAGE]);
+}
+const args = parsePackArgs(['--cabinet', 'vibe', ...given]);
+if (args.bad) halt([`launcher: ${args.bad}`, '', ...USAGE]);
+const { check, ...where } = args;
 try {
-  const spec = await (check ? checkDist({ cabinet: 'vibe' }) : pack({ cabinet: 'vibe' }));
+  const spec = await (check ? checkDist(where) : pack(where));
   if (check) process.stderr.write(`launcher: ${spec.name} dist checks out\n`);
 } catch (err) {
   // The same route to `halt` the shared script's own entry point takes. This

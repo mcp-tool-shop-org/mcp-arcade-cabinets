@@ -4,10 +4,16 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  bugsIn,
   checkSeats,
   exitAfter,
   forwardSignals,
   main,
+  mcpIgnored,
+  mcpStartLines,
+  missingLines,
+  movedPortLine,
+  NO_VERSION,
   parseArgs,
   sayTrouble,
   seatLines,
@@ -99,7 +105,150 @@ describe('the launcher arguments', () => {
   it('resolves the same version from the packaged layout as from the source one', () => {
     expect(versionIn(path.join(PKG, 'src'))).toBe(DECLARED);
     expect(versionIn(path.join(PKG, 'dist'))).toBe(DECLARED);
-    expect(versionIn(path.join(PKG, 'dist', 'deeper'))).toBe('0.0.0');
+    // Not `0.0.0`, which is a plausible version: a bug report filed against
+    // it hides the broken install instead of carrying it.
+    expect(versionIn(path.join(PKG, 'dist', 'deeper'))).toBe('0.0.0-unknown');
+    expect(NO_VERSION).toBe('0.0.0-unknown');
+  });
+});
+
+// ——— the two dead ends a player cannot diagnose ——————————————————————————————
+//
+// `the shell is missing from this package` and `cabinet server missing from
+// this package` were four and six words with no verb in them. They mean an
+// interrupted npx download or a corrupt cache, and the pack gate in
+// scripts/build.mjs — every halt of which ends with a `next:` line — is the
+// shape they should have had all along.
+
+describe('what a broken install is told to do about it', () => {
+  it('names what it expected and the command that gets it', () => {
+    const lines = missingLines(
+      'the shell is missing from this package',
+      'dist/play/index.html',
+      'https://example.test/issues',
+    );
+    expect(lines[0]).toBe('the shell is missing from this package');
+    expect(lines[1]).toBe('- expected: dist/play/index.html');
+    expect(lines.join('\n')).toContain('next: npx --yes @mcptoolshop/ghost-on-the-menu@latest');
+    expect(lines.join('\n')).toContain('npx clear-npx-cache');
+    expect(lines.join('\n')).toContain('https://example.test/issues');
+  });
+
+  it('leaves the report clause out rather than inventing a URL', () => {
+    const lines = missingLines('cabinet server missing from this package', 'x', null);
+    expect(lines.join('\n')).not.toContain('if it happens again');
+  });
+
+  // Read off this package rather than spelled a second time in the message.
+  it('reads where to report from the package itself', () => {
+    expect(bugsIn(path.join(PKG, 'src'))).toBe(
+      'https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/issues',
+    );
+    expect(bugsIn(path.join(PKG, 'dist', 'deeper'))).toBeNull();
+  });
+
+  it('says it in the shell-missing run, with a next line and no stack', async () => {
+    const before = process.exitCode;
+    let said = '';
+    const err = process.stderr.write.bind(process.stderr);
+    process.stderr.write = ((chunk: string) => {
+      said += String(chunk);
+      return true;
+    }) as typeof process.stderr.write;
+    try {
+      // There is no `src/play` in the repo layout, which is the same shape a
+      // half-downloaded tarball has.
+      await main([]);
+    } finally {
+      process.stderr.write = err;
+    }
+    expect(process.exitCode).toBe(1);
+    process.exitCode = before;
+    expect(said).toContain('the shell is missing from this package');
+    expect(said).toContain('- expected: dist/play/index.html');
+    expect(said).toContain('next: npx --yes @mcptoolshop/ghost-on-the-menu@latest');
+    expect(said).not.toContain('at Object.');
+  });
+
+  it('says the same about --mcp, naming the server file', async () => {
+    const before = process.exitCode;
+    let said = '';
+    let stdout = '';
+    const err = process.stderr.write.bind(process.stderr);
+    const out = process.stdout.write.bind(process.stdout);
+    process.stderr.write = ((chunk: string) => {
+      said += String(chunk);
+      return true;
+    }) as typeof process.stderr.write;
+    process.stdout.write = ((chunk: string) => {
+      stdout += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      await main(['--mcp']);
+    } finally {
+      process.stderr.write = err;
+      process.stdout.write = out;
+    }
+    expect(process.exitCode).toBe(1);
+    process.exitCode = before;
+    expect(said).toContain('cabinet server missing from this package');
+    expect(said).toContain('- expected: dist/cabinet-stdio.js');
+    // Under --mcp stdout belongs to the transport.
+    expect(stdout).toBe('');
+  });
+});
+
+// ——— what --mcp says on a healthy start ——————————————————————————————————————
+//
+// `seatLines` was called only in play mode, so an operator wiring the cabinet
+// into an MCP client never learned which daemon the round would reach — the
+// very lines that exist because a session pointed at the wrong daemon used to
+// look exactly like one pointed at the right one. The tapes default was never
+// stated either, so an operator who mounted tapes and misspelled the variable
+// saw a server that started cleanly and played somebody else's.
+
+describe('what --mcp says before the first tool call', () => {
+  it('names the seats and where the tapes came from', () => {
+    expect(mcpStartLines({}, 20)).toEqual([
+      'the cabinet server is up on stdio',
+      'the bosses sit at http://127.0.0.1:11434 (the default)',
+      'the voice worker is at http://127.0.0.1:7788 (the default), no bearer set',
+      'the Claude tier of the say seat is dark: no ANTHROPIC_API_KEY',
+      'tapes: the 20 bundled ones (set CABINET_TAPES for your own)',
+    ]);
+  });
+
+  it('names the directory when the operator gave one', () => {
+    const lines = mcpStartLines({ CABINET_TAPES: '/tmp/mine' }, 20);
+    expect(lines[lines.length - 1]).toBe('tapes: /tmp/mine (from the environment)');
+  });
+
+  it('says so rather than claiming tapes it does not have', () => {
+    const lines = mcpStartLines({}, null);
+    expect(lines[lines.length - 1]).toBe(
+      'tapes: none in this package; set CABINET_TAPES to a directory of your own',
+    );
+  });
+
+  // `--port 7777` in an MCP client config used to read as the port having
+  // been honored. Refusing outright would break configs that carry one.
+  it('says which play-mode flags it is ignoring', () => {
+    expect(mcpIgnored(['--mcp'])).toEqual([]);
+    expect(mcpIgnored(['--mcp', '--port', '7777'])).toEqual([
+      '--port has no meaning with --mcp; nothing is listening',
+    ]);
+    expect(mcpIgnored(['--mcp', '--port', '9000', '--no-open'])).toEqual([
+      '--port has no meaning with --mcp; nothing is listening',
+      '--no-open has no meaning with --mcp; no browser is opened',
+    ]);
+  });
+});
+
+describe('a port the walk had to move off', () => {
+  it('puts both numbers in one sentence, and says nothing when it did not move', () => {
+    expect(movedPortLine(7777, 7782)).toBe('port 7777 was busy, so this one is on 7782');
+    expect(movedPortLine(7777, 7777)).toBeNull();
   });
 });
 
@@ -208,7 +357,7 @@ describe('what --help tells a player', () => {
     }
     // CABINET_TAPES is read in --mcp and does nothing in play mode; the
     // READMEs say so and the help used to list it as a plain variable.
-    expect(stdout).toContain('CABINET_TAPES     with --mcp:');
+    expect(stdout).toContain('CABINET_TAPES      with --mcp:');
     expect(stdout).toContain('model list, chat and generate');
   });
 });
@@ -267,7 +416,12 @@ describe('what npx says about the seats before the first call', () => {
     expect(checkSeats({ OLLAMA_URL: 'localhost:11434' })).toBe(
       'OLLAMA_URL wants an http:// or https:// address, got localhost:11434',
     );
-    expect(checkSeats({ VOICE_URL: 'voice' })).toBe('VOICE_URL is not an address, got voice');
+    // The likeliest typo is the one `new URL` throws on, and being shown the
+    // address you believe you typed is no help; the example is what an
+    // address is here.
+    expect(checkSeats({ VOICE_URL: 'voice' })).toBe(
+      'VOICE_URL is not an address, got voice; it wants a scheme, like http://127.0.0.1:11434',
+    );
   });
 
   it('sends the cabinet trouble to stderr, and hands the server that same way out', () => {

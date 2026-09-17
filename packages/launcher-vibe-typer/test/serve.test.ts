@@ -166,7 +166,10 @@ describe('the vibe-typer package as it is served', () => {
     expect(tags.status).toBe(200);
     for (const bad of ['/ollama/api/pull', '/ollama/api/delete', '/ollama/api/create']) {
       const res = await fetch(`${base}${bad}`, { method: 'POST' });
-      expect(res.status, bad).toBe(404);
+      // Not 404: a verb off the allowlist and a file that is not in the
+      // shell used to share one word, and they are two different fixes.
+      expect(res.status, bad).toBe(403);
+      expect(await res.json(), bad).toEqual({ error: 'not proxied' });
     }
     expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual(['GET /api/tags']);
   });
@@ -193,15 +196,21 @@ describe('the vibe-typer package as it is served', () => {
     expect(seen.every((s) => s.auth === 'Bearer a-bearer-the-page-never-sees')).toBe(true);
   });
 
-  it('404s everything on the worker that is off the allowlist', async () => {
+  it('refuses everything on the worker that is off the allowlist', async () => {
     seen.length = 0;
-    for (const bad of ['/voice/audio/../../secret.txt', '/voice/voices', '/voice/audio/x.wav']) {
+    // `fetch` resolves the climb against the origin before it opens a
+    // socket, so this one never reaches the `/voice` prefix at all: it
+    // arrives as `/secret.txt`, which is a file the shell does not have.
+    const climb = await fetch(`${base}/voice/audio/../../secret.txt`);
+    expect(climb.status).toBe(404);
+    for (const bad of ['/voice/voices', '/voice/audio/x.wav']) {
       const res = await fetch(`${base}${bad}`);
-      expect(res.status, bad).toBe(404);
+      expect(res.status, bad).toBe(403);
+      expect(await res.json(), bad).toEqual({ error: 'not proxied' });
     }
     for (const bad of ['/voice/health', '/voice/stats']) {
       const res = await fetch(`${base}${bad}`, { method: 'POST', body: '{}' });
-      expect(res.status, bad).toBe(404);
+      expect(res.status, bad).toBe(403);
     }
     expect(seen).toEqual([]);
   });

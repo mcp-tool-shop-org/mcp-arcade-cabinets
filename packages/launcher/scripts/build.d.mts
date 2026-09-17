@@ -15,6 +15,17 @@ export interface CabinetSpec {
 }
 
 /**
+ * A cabinet a package can be built for. The union lives here, beside the
+ * script that owns the table, rather than being re-typed by every caller: a
+ * third cabinet is one edit here and a compile error in every Record that
+ * has not grown a key for it.
+ */
+export type Cabinet = 'ghost' | 'vibe';
+
+/** The keys of the pack script's own CABINETS table, in its own order. */
+export const CABINET_NAMES: readonly Cabinet[];
+
+/**
  * The typing cabinet's recorded beds, one a corpus stack. Exported so the
  * pack gate's tests read the gate's own list instead of retyping it.
  */
@@ -34,8 +45,8 @@ export function halt(lines: string[]): never;
 
 /** The arguments, or `{ bad }` naming what was wrong with them. */
 export function parsePackArgs(
-  argv: string[],
-): { cabinet: string; check: boolean; out?: string } | { bad: string };
+  argv: readonly string[],
+): { cabinet: string; check: boolean; out?: string; bad?: undefined } | { bad: string };
 
 /**
  * The gate `prepack` runs over a `dist` that is already written. Halts by

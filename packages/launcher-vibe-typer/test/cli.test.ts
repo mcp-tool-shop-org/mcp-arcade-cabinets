@@ -4,10 +4,16 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  bugsIn,
   checkSeats,
   exitAfter,
   forwardSignals,
   main,
+  mcpIgnored,
+  mcpStartLines,
+  missingLines,
+  movedPortLine,
+  NO_VERSION,
   parseArgs,
   sayTrouble,
   seatLines,
@@ -92,7 +98,7 @@ describe('the vibe-typer launcher arguments', () => {
     expect(stdout).toContain('7788');
     // CABINET_TAPES is read in --mcp and does nothing in play mode; the
     // README says so and the help used to list it as a plain variable.
-    expect(stdout).toContain('CABINET_TAPES     with --mcp:');
+    expect(stdout).toContain('CABINET_TAPES      with --mcp:');
     // The allowlist is shared with the shooter and passes generate, which
     // this text used to leave out — and it is the one verb that writes a
     // completion on the player's daemon.
@@ -115,7 +121,95 @@ describe('the vibe-typer launcher arguments', () => {
   it('resolves the same version from the packaged layout as from the source one', () => {
     expect(versionIn(path.join(PKG, 'src'))).toBe(DECLARED);
     expect(versionIn(path.join(PKG, 'dist'))).toBe(DECLARED);
-    expect(versionIn(path.join(PKG, 'dist', 'deeper'))).toBe('0.0.0');
+    // Not `0.0.0`, which is a plausible version: a bug report filed against
+    // it hides the broken install instead of carrying it.
+    expect(versionIn(path.join(PKG, 'dist', 'deeper'))).toBe('0.0.0-unknown');
+    expect(NO_VERSION).toBe('0.0.0-unknown');
+  });
+
+  it('names what the --mcp server actually reads, not one of the six', async () => {
+    const out = process.stdout.write.bind(process.stdout);
+    let stdout = '';
+    process.stdout.write = ((chunk: string) => {
+      stdout += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      await main(['--help']);
+    } finally {
+      process.stdout.write = out;
+    }
+    for (const name of [
+      'CABINET_TAPES',
+      'CABINET_TAPES_USER',
+      'CABINET_FIXTURE',
+      'CABINET_SEED',
+      'CABINET_TIER',
+      'CABINET_BOT',
+    ]) {
+      expect(stdout, name).toContain(name);
+    }
+    // The two this cabinet's server answers with a note rather than a lever.
+    expect(stdout).toContain('CABINET_FIXTURE    with --mcp: the shooter reads this one');
+  });
+});
+
+// ——— the two dead ends a player cannot diagnose ——————————————————————————————
+
+describe('what a broken install is told to do about it', () => {
+  it('names what it expected and the command that gets it', () => {
+    const lines = missingLines(
+      'the shell is missing from this package',
+      'dist/play/index.html',
+      'https://example.test/issues',
+    );
+    expect(lines[0]).toBe('the shell is missing from this package');
+    expect(lines[1]).toBe('- expected: dist/play/index.html');
+    expect(lines.join('\n')).toContain('next: npx --yes @mcptoolshop/vibe-typer@latest');
+    expect(lines.join('\n')).toContain('npx clear-npx-cache');
+    expect(lines.join('\n')).toContain('https://example.test/issues');
+  });
+
+  it('reads where to report from the package itself', () => {
+    expect(bugsIn(path.join(PKG, 'src'))).toBe(
+      'https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/issues',
+    );
+    expect(bugsIn(path.join(PKG, 'dist', 'deeper'))).toBeNull();
+  });
+});
+
+// ——— what --mcp says on a healthy start ——————————————————————————————————————
+
+describe('what --mcp says before the first tool call', () => {
+  it('names the seats and where the tapes came from', () => {
+    expect(mcpStartLines({}, 20)).toEqual([
+      'the cabinet server is up on stdio',
+      'the user sits at http://127.0.0.1:11434 (the default)',
+      'the voice worker is at http://127.0.0.1:7788 (the default), no bearer set',
+      'tapes: the 20 bundled ones season the wires stack (set CABINET_TAPES for your own)',
+    ]);
+  });
+
+  it('names the directory when the operator gave one', () => {
+    const lines = mcpStartLines({ CABINET_TAPES: '/tmp/mine' }, 20);
+    expect(lines[lines.length - 1]).toBe(
+      'tapes: /tmp/mine (from the environment), seasoning the wires stack',
+    );
+  });
+
+  it('says which play-mode flags it is ignoring', () => {
+    expect(mcpIgnored(['--mcp'])).toEqual([]);
+    expect(mcpIgnored(['--mcp', '--port', '7778', '--no-open'])).toEqual([
+      '--port has no meaning with --mcp; nothing is listening',
+      '--no-open has no meaning with --mcp; no browser is opened',
+    ]);
+  });
+});
+
+describe('a port the walk had to move off', () => {
+  it('puts both numbers in one sentence, and says nothing when it did not move', () => {
+    expect(movedPortLine(7778, 7783)).toBe('port 7778 was busy, so this one is on 7783');
+    expect(movedPortLine(7778, 7778)).toBeNull();
   });
 });
 
@@ -194,6 +288,9 @@ describe('--mcp with no packed server beside it', () => {
     expect(process.exitCode).toBe(1);
     process.exitCode = before;
     expect(wrote.join('')).toContain('cabinet server missing from this package');
+    // And what to do about it, in the pack gate's shape.
+    expect(wrote.join('')).toContain('- expected: dist/cabinet-stdio.js');
+    expect(wrote.join('')).toContain('next: npx --yes @mcptoolshop/vibe-typer@latest');
     // Nothing on stdout: under --mcp it belongs to the MCP transport.
     expect(stdout).toBe('');
   });
@@ -229,7 +326,9 @@ describe('what npx says about the seats before the first call', () => {
     expect(checkSeats({ OLLAMA_URL: 'localhost:11434' })).toBe(
       'OLLAMA_URL wants an http:// or https:// address, got localhost:11434',
     );
-    expect(checkSeats({ VOICE_URL: 'voice' })).toBe('VOICE_URL is not an address, got voice');
+    expect(checkSeats({ VOICE_URL: 'voice' })).toBe(
+      'VOICE_URL is not an address, got voice; it wants a scheme, like http://127.0.0.1:11434',
+    );
   });
 
   it('sends the cabinet trouble to stderr', () => {

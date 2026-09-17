@@ -15,12 +15,18 @@
 // nothing else may be written there.
 
 import { spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { constants as osConstants } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { checkSeatUrl, createCabinetServer, HOST, listenFrom } from '../../launcher/src/serve';
+import {
+  checkSeatUrl,
+  createCabinetServer,
+  HOST,
+  listenFrom,
+  listenLines,
+} from '../../launcher/src/serve';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -57,11 +63,21 @@ Options
   -v, --version     the version
 
 Environment
-  OLLAMA_URL        the daemon the endless user sits at (default ${DEFAULT_OLLAMA})
-  VOICE_URL         the voice worker, when you run one (default ${DEFAULT_VOICE})
-  VOICE_TOKEN       the worker's bearer; added server-side, never in the page
-  CABINET_TAPES     with --mcp: a directory of tapes to season the wires
-                    stack with, instead of the bundled ones
+  OLLAMA_URL         the daemon the endless user sits at (default ${DEFAULT_OLLAMA})
+  VOICE_URL          the voice worker, when you run one (default ${DEFAULT_VOICE})
+  VOICE_TOKEN        the worker's bearer; added server-side, never in the page
+
+Environment, --mcp only
+  These are the cabinet server's own levers. They do nothing in play mode.
+  CABINET_TAPES      with --mcp: a directory of tapes to season the wires stack
+                     with, instead of the bundled ones
+  CABINET_SEED       with --mcp: a whole number, so a stack repeats
+  CABINET_TIER       with --mcp: 0-3, how hard the stack is
+  CABINET_BOT        with --mcp: which agent types it
+  CABINET_TAPES_USER with --mcp: the shooter reads this one; this cabinet plays
+                     the tapes it was given
+  CABINET_FIXTURE    with --mcp: the shooter reads this one; this cabinet has no
+                     tape menu
 
 The server listens on ${HOST} only. The daemon and the voice worker are
 reached through a fixed allowlist: the model list, chat and generate, worker
@@ -135,22 +151,136 @@ export function parseArgs(argv: readonly string[]): Args {
  * argument rather than read off `here` so both layouts this file runs in are
  * testable: under `src/` in the repo, and as the bundled `dist/cli.js` in the
  * tarball. Both sit one directory under the package root, and a test proves
- * it rather than the packaged path being taken on trust — the failure is
- * silent by construction, since every failure here answers `0.0.0`.
+ * it rather than the packaged path being taken on trust.
+ *
+ * Nothing crashes over a version string, so every failure still answers a
+ * string — but it answers `0.0.0-unknown` rather than `0.0.0`, because
+ * `0.0.0` is a plausible version and a bug report filed against it hides the
+ * fact that the install is broken instead of carrying it.
  */
+export const NO_VERSION = '0.0.0-unknown';
+
 export function versionIn(dir: string): string {
   try {
     const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
     const parsed = JSON.parse(raw) as { version?: unknown };
-    return typeof parsed.version === 'string' ? parsed.version : '0.0.0';
+    return typeof parsed.version === 'string' ? parsed.version : NO_VERSION;
   } catch {
-    return '0.0.0';
+    return NO_VERSION;
   }
 }
 
 /** The published version, for `--version`. */
 export function version(): string {
-  return versionIn(here);
+  const said = versionIn(here);
+  if (said === NO_VERSION) sayTrouble("could not read this package's version");
+  return said;
+}
+
+/**
+ * Where to report a launcher that is broken, read off the package rather than
+ * spelled a second time here. Null when even that cannot be read, in which
+ * case the messages below simply leave the clause out.
+ */
+export function bugsIn(dir: string): string | null {
+  try {
+    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
+    const parsed = JSON.parse(raw) as { bugs?: { url?: unknown } };
+    return typeof parsed.bugs?.url === 'string' ? parsed.bugs.url : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What to say when a piece of the package is not in the package. The
+ * shooter's launcher carries the same shape and they change together.
+ *
+ * This is the one failure a player cannot diagnose: it means an interrupted
+ * `npx` download or a corrupt cache, and the old messages were four and six
+ * words stating a fact with no verb in it. The pack gate in
+ * `packages/launcher/scripts/build.mjs` is the model — every halt there ends
+ * with a `next:` line naming the command that fixes it.
+ */
+export function missingLines(what: string, expected: string, bugs: string | null): string[] {
+  return [
+    what,
+    `- expected: ${expected}`,
+    '',
+    'next: npx --yes @mcptoolshop/vibe-typer@latest, or clear the npx',
+    '      cache (npx clear-npx-cache)',
+    ...(bugs ? [`      if it happens again: ${bugs}`] : []),
+  ];
+}
+
+/** Say a whole message, a line at a time, in the cabinet's one voice. */
+function sayAll(lines: readonly string[]): void {
+  for (const line of lines) sayTrouble(line);
+}
+
+/**
+ * What to say when the walk took a port the player did not ask for, or null
+ * when it took the one they did. `--help` documents the walk, but the run is
+ * where a player who scripted `--port 8080` or bookmarked 7778 finds out, and
+ * the two numbers were never in the same sentence.
+ */
+export function movedPortLine(asked: number, got: number): string | null {
+  return asked === got ? null : `port ${asked} was busy, so this one is on ${got}`;
+}
+
+/** How many tapes are bundled in this package, or null when there are none. */
+function bundledTapes(): number | null {
+  try {
+    const names = readdirSync(TAPES_DIR).filter((name) => name.endsWith('.tape.json'));
+    return names.length > 0 ? names.length : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What `--mcp` resolved, said before the first tool call.
+ *
+ * `seatLines` was called only in play mode, so an operator wiring this
+ * cabinet into an MCP client never learned which daemon or voice worker the
+ * session would reach, nor whether VOICE_TOKEN had been picked up. The tapes
+ * line is here for the same reason: the launcher quietly points the child at
+ * the bundled tapes when CABINET_TAPES is unset, which is the right default
+ * and was never stated, so an operator who mounted tapes and misspelled the
+ * variable saw a server that started cleanly and seasoned the wires stack
+ * with somebody else's.
+ *
+ * All of it on stderr: under `--mcp` stdout belongs to the transport.
+ */
+export function mcpStartLines(
+  env: NodeJS.ProcessEnv = process.env,
+  tapes = bundledTapes(),
+): string[] {
+  const chosen = env.CABINET_TAPES;
+  return [
+    'the cabinet server is up on stdio',
+    ...seatLines(env),
+    chosen
+      ? `tapes: ${chosen} (from the environment), seasoning the wires stack`
+      : tapes === null
+        ? 'tapes: none in this package; set CABINET_TAPES to a directory of your own'
+        : `tapes: the ${tapes} bundled ones season the wires stack (set CABINET_TAPES for your own)`,
+  ];
+}
+
+/**
+ * The play-mode flags `--mcp` accepts and then does nothing with. Refusing
+ * them outright would break MCP client configs that already carry one;
+ * silence about an argument that was ignored is the thing to end, because it
+ * reads exactly like the port having been honored.
+ */
+export function mcpIgnored(argv: readonly string[]): string[] {
+  const lines: string[] = [];
+  if (argv.includes('--port')) lines.push('--port has no meaning with --mcp; nothing is listening');
+  if (argv.includes('--no-open')) {
+    lines.push('--no-open has no meaning with --mcp; no browser is opened');
+  }
+  return lines;
 }
 
 /** Ask the desktop to open a url. Never blocks, never fails the run. */
@@ -219,9 +349,15 @@ export function exitAfter(code: number | null, signal: NodeJS.Signals | null): n
 }
 
 /** Hand stdio to the cabinet server and live exactly as long as it does. */
-function runMcp(): void {
+function runMcp(argv: readonly string[]): void {
   if (!existsSync(MCP_SERVER)) {
-    process.stderr.write('cabinet server missing from this package\n');
+    sayAll(
+      missingLines(
+        'cabinet server missing from this package',
+        'dist/cabinet-stdio.js',
+        bugsIn(here),
+      ),
+    );
     process.exitCode = 1;
     return;
   }
@@ -229,6 +365,8 @@ function runMcp(): void {
   // The bundled tapes live in the package; the repo layout the server
   // resolves by default is not there. An explicit CABINET_TAPES wins.
   if (!env.CABINET_TAPES && existsSync(TAPES_DIR)) env.CABINET_TAPES = TAPES_DIR;
+  sayAll(mcpIgnored(argv));
+  sayAll(mcpStartLines(process.env));
   const child = spawn(process.execPath, [MCP_SERVER], { stdio: 'inherit', env });
   const stopForwarding = forwardSignals(child);
   child.on('error', (err: Error) => {
@@ -256,7 +394,9 @@ async function runPlay(args: Args): Promise<void> {
     return;
   }
   if (!existsSync(PLAY_DIR)) {
-    process.stderr.write('the shell is missing from this package\n');
+    sayAll(
+      missingLines('the shell is missing from this package', 'dist/play/index.html', bugsIn(here)),
+    );
     process.exitCode = 1;
     return;
   }
@@ -287,11 +427,16 @@ async function runPlay(args: Args): Promise<void> {
   try {
     port = await listenFrom(server, args.port);
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    process.stderr.write(`could not listen on ${args.port}: ${msg}\n`);
+    sayAll(listenLines(err, args.port));
     process.exitCode = 1;
     return;
   }
+  // The walk is documented in --help, but the run is where a player who
+  // scripted --port 8080 or bookmarked 7778 finds out. Said on stderr, beside
+  // the seat lines and for their reason: stdout stays the two lines a pipe
+  // reads.
+  const moved = movedPortLine(args.port, port);
+  if (moved) sayTrouble(moved);
   const url = `http://${HOST}:${port}/`;
   process.stdout.write(`Vibe Typer is at ${url}\n`);
   process.stdout.write('Ctrl-C closes the cabinet.\n');
@@ -323,7 +468,7 @@ export async function main(argv: readonly string[]): Promise<void> {
     return;
   }
   if (args.mode === 'mcp') {
-    runMcp();
+    runMcp(argv);
     return;
   }
   await runPlay(args);

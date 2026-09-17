@@ -228,6 +228,29 @@ async function present(target) {
   }
 }
 
+/**
+ * Every cabinet a package can be built for, read off the table rather than
+ * spelled again beside it. `packages/launcher/test/pack-gate.test.ts` drives
+ * its loops off this, so a third cabinet package is a missing Record key the
+ * compiler names rather than a spec that silently goes untested.
+ */
+export const CABINET_NAMES = Object.keys(CABINETS);
+
+/**
+ * The value after a flag that takes one, or null when the flag was given
+ * nothing. `--out` with nothing after it used to mean the cabinet's own
+ * package directory — the branch took `undefined`, and the `out === undefined`
+ * check downstream read as "no --out was given" — so an operator who meant
+ * somewhere else got `packages/launcher/dist` rewritten, after the `rm -rf`
+ * of it. The same slot swallowed a following flag, so `--out --check` took
+ * '--check' for a directory name.
+ */
+function valueAfter(argv, i) {
+  const value = argv[i + 1];
+  if (value === undefined || value.startsWith('--')) return null;
+  return value;
+}
+
 /** The arguments, or a halt naming what was wrong with them. */
 export function parsePackArgs(argv) {
   let cabinet = 'ghost';
@@ -236,10 +259,14 @@ export function parsePackArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--cabinet') {
-      cabinet = argv[i + 1];
+      const value = valueAfter(argv, i);
+      if (value === null) return { bad: `--cabinet wants ${CABINET_NAMES.join(' or ')}` };
+      cabinet = value;
       i += 1;
     } else if (arg === '--out') {
-      out = argv[i + 1];
+      const value = valueAfter(argv, i);
+      if (value === null) return { bad: '--out wants a directory' };
+      out = value;
       i += 1;
     } else if (arg === '--check') {
       check = true;
@@ -248,9 +275,7 @@ export function parsePackArgs(argv) {
     }
   }
   if (!Object.prototype.hasOwnProperty.call(CABINETS, cabinet)) {
-    return {
-      bad: `--cabinet wants ${Object.keys(CABINETS).join(' or ')}, got ${cabinet ?? '(nothing)'}`,
-    };
+    return { bad: `--cabinet wants ${CABINET_NAMES.join(' or ')}, got ${cabinet}` };
   }
   return { cabinet, check, ...(out === undefined ? {} : { out }) };
 }

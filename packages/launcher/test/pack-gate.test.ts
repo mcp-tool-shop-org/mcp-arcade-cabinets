@@ -28,9 +28,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // test may call, so this import is typed rather than `any`.
 import {
   BED_MIN_BYTES,
+  type Cabinet,
+  CABINET_NAMES,
   checkDist,
   GHOST_TRACK_KEYS,
   halt,
+  parsePackArgs,
   VIBE_TRACK_KEYS,
 } from '../scripts/build.mjs';
 
@@ -59,7 +62,14 @@ const TRACK_DIR: Record<Cabinet, string[]> = {
 /** The beds each cabinet's package must carry, by key. */
 const CABINET_BEDS: Record<Cabinet, string[]> = { ghost: GHOST_BEDS, vibe: BEDS };
 
-type Cabinet = 'ghost' | 'vibe';
+// `Cabinet` and the list of cabinets are the pack script's, imported rather
+// than re-typed here. The set of cabinets a package can be built for was a
+// hand-kept union spelled independently in this file and in the CABINETS
+// table, with nothing tying the two together: a third cabinet package added
+// to the table without a matching edit here would have left the new
+// cabinet's spec untested rather than failing loudly. Now it is a missing
+// key in every Record below, which the compiler names, and one more turn of
+// every loop.
 
 /** The public directories each cabinet's package carries, as the gate splits them. */
 const PUBLIC: Record<Cabinet, string[]> = {
@@ -252,7 +262,7 @@ describe('the pack gate over the typing cabinet', () => {
 // from the other's. Neither half was ever watched fire.
 
 describe('the play bundle the gate will accept', () => {
-  for (const cabinet of ['ghost', 'vibe'] as const) {
+  for (const cabinet of CABINET_NAMES) {
     it(`halts naming the ${cabinet} mark that was stripped out`, async () => {
       const dropNeedle = NEEDLES[cabinet][0]!;
       const pkg = await fakePackage({ cabinet, dropNeedle });
@@ -281,8 +291,8 @@ describe('the play bundle the gate will accept', () => {
 // server under this name and pass every gate on the way.
 
 describe("the stdio server a package's --mcp hands stdio to", () => {
-  for (const cabinet of ['ghost', 'vibe'] as const) {
-    const other = cabinet === 'ghost' ? 'vibe' : 'ghost';
+  for (const cabinet of CABINET_NAMES) {
+    const other = CABINET_NAMES.find((name) => name !== cabinet)!;
 
     // A crossed STDIO_BUNDLES mapping puts the other cabinet's server here
     // whole, so what the gate sees is its own mark gone.
@@ -411,5 +421,61 @@ describe('the pack gate over the shooter', () => {
     expect(said).toContain('missing: dist/cli.js');
     expect(said).toContain(`missing: dist/${path.join('play', 'sprites')}`);
     expect(said).toContain(`missing: dist/${path.join('play', 'tracks')}`);
+  });
+});
+
+// ——— the arguments, at the one irreversible step ————————————————————————————
+//
+// `prepack` runs during `npm publish`. A flag this script does not understand
+// must stop the publish rather than pick the more dangerous of two behaviors,
+// and a flag that takes a value must be given one: `--out` with nothing after
+// it used to mean the cabinet's own package directory, which is the real
+// package, after the `rm -rf` of it.
+
+describe('the arguments the pack script will act on', () => {
+  it('reads the ordinary lines both packages run', () => {
+    expect(parsePackArgs(['--cabinet', 'ghost'])).toEqual({ cabinet: 'ghost', check: false });
+    expect(parsePackArgs(['--cabinet', 'vibe', '--check'])).toEqual({
+      cabinet: 'vibe',
+      check: true,
+    });
+    expect(parsePackArgs(['--cabinet', 'vibe', '--out', 'somewhere'])).toEqual({
+      cabinet: 'vibe',
+      check: false,
+      out: 'somewhere',
+    });
+  });
+
+  it('halts on a flag it was given nothing for, rather than taking the package', () => {
+    expect(parsePackArgs(['--cabinet', 'ghost', '--out'])).toEqual({
+      bad: '--out wants a directory',
+    });
+    // And does not swallow the next flag as a directory name.
+    expect(parsePackArgs(['--out', '--check'])).toEqual({ bad: '--out wants a directory' });
+    expect(parsePackArgs(['--cabinet'])).toEqual({
+      bad: `--cabinet wants ${CABINET_NAMES.join(' or ')}`,
+    });
+    expect(parsePackArgs(['--cabinet', '--check'])).toEqual({
+      bad: `--cabinet wants ${CABINET_NAMES.join(' or ')}`,
+    });
+  });
+
+  it('halts on a cabinet it does not have, naming the ones it does', () => {
+    const args = parsePackArgs(['--cabinet', 'house-call']);
+    expect(args.bad).toContain('house-call');
+    for (const name of CABINET_NAMES) expect(args.bad, name).toContain(name);
+  });
+
+  // The typing cabinet's wrapper routes through this, so a typo in its own
+  // prepack script (`--chekc`, `-check`) stops the publish instead of
+  // silently rebuilding dist from whichever cabinet's shell is on disk.
+  it('halts on a mistyped --check rather than rebuilding at publish time', () => {
+    for (const typo of ['--chekc', '-check', '--Check']) {
+      expect(parsePackArgs(['--cabinet', 'vibe', typo]), typo).toEqual({
+        bad: `unknown argument ${typo}`,
+      });
+    }
+    // The shape the wrapper hands over when it is given nothing.
+    expect(parsePackArgs(['--cabinet', 'vibe'])).toEqual({ cabinet: 'vibe', check: false });
   });
 });

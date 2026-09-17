@@ -11,6 +11,8 @@ import {
   checkSeatUrl,
   createCabinetServer,
   listenFrom,
+  listenLines,
+  ListenTrouble,
   ownHost,
   ownOrigin,
   parseEndlessView,
@@ -18,6 +20,7 @@ import {
   parseStrings,
   readBody,
   retiredLine,
+  seatWatch,
   troubleLine,
 } from '../src/serve';
 
@@ -172,11 +175,57 @@ describe('the launcher server', () => {
     seen.length = 0;
     for (const bad of ['/ollama/api/pull', '/ollama/api/delete', '/ollama/api/create']) {
       const res = await fetch(`${base}${bad}`, { method: 'POST' });
-      expect(res.status, bad).toBe(404);
+      expect(res.status, bad).toBe(403);
+      expect(await res.json(), bad).toEqual({ error: 'not proxied' });
     }
     const tagsByPost = await fetch(`${base}/ollama/api/tags`, { method: 'POST' });
-    expect(tagsByPost.status).toBe(404);
+    expect(tagsByPost.status).toBe(403);
     expect(seen).toEqual([]);
+  });
+
+  // Three different fixes used to share one word. A verb off the allowlist, a
+  // file that is not in the shell and an upstream this cabinet was never
+  // given all answered `404 not found`, so a developer who added a call to
+  // the page and forgot `allow.ts` got the same answer as a typo in an asset
+  // path — and the same answer the daemon itself would give for an unknown
+  // route.
+  it('tells the three refusals apart, and says the proxied one out loud', async () => {
+    const said: string[] = [];
+    const split = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      endlessModule: null,
+      ollamaUrl: upstreamBase,
+      // No worker configured: the `/voice` prefix is known and there is
+      // nothing behind it, which is not the same as a path nobody proxies.
+      voiceUrl: null,
+      voiceToken: null,
+      anthropicKey: null,
+      onTrouble: (line: string) => said.push(line),
+    });
+    const port = await listenFrom(split, 24_911);
+    const at = `http://127.0.0.1:${port}`;
+    try {
+      const missing = await fetch(`${at}/nope.png`);
+      expect(missing.status).toBe(404);
+      expect(await missing.json()).toEqual({ error: 'not found' });
+
+      const off = await fetch(`${at}/ollama/api/pull`, { method: 'POST' });
+      expect(off.status).toBe(403);
+      expect(await off.json()).toEqual({ error: 'not proxied' });
+
+      const noWorker = await fetch(`${at}/voice/health`);
+      expect(noWorker.status).toBe(503);
+      expect(await noWorker.json()).toEqual({ error: 'no upstream' });
+
+      // Only the one that is always either a bug in the shell or somebody
+      // probing reaches the terminal.
+      expect(said).toEqual([
+        'the page asked for POST /api/pull, which this cabinet does not proxy',
+      ]);
+    } finally {
+      await new Promise<void>((r) => split.close(() => r()));
+    }
   });
 
   it('adds the worker bearer on the node side and never to the daemon', async () => {
@@ -192,7 +241,7 @@ describe('the launcher server', () => {
     const take = await fetch(`${base}/voice/audio/0123abcd.wav`);
     expect(take.status).toBe(200);
     const nope = await fetch(`${base}/voice/audio/report.wav`);
-    expect(nope.status).toBe(404);
+    expect(nope.status).toBe(403);
     expect(seen).toHaveLength(1);
   });
 
@@ -386,9 +435,12 @@ describe('the endless route', () => {
     expect(await bad.json()).toEqual({ error: 'no answer' });
   });
 
-  it('refuses a body bigger than the cap', async () => {
+  it('refuses a body bigger than the cap, and names the cap it met', async () => {
     const res = await post({ view, filler: 'x'.repeat(40 * 1024) });
     expect(res.status).toBe(413);
+    // The two caps in this server differ by route — 1 MiB on the proxy, 32
+    // KiB here — and both used to answer the same two words.
+    expect(await res.json()).toEqual({ error: 'too large', hint: 'at most 32 KB' });
   });
 
   it('says so when the package has no cabinet server rather than hanging', async () => {
@@ -403,25 +455,31 @@ describe('the endless route', () => {
     await new Promise((r) => setTimeout(r, 450));
     const res = await post({ view, models: ['kimi-test:cloud'] });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { request: { ask: string }; model: string };
+    const body = (await res.json()) as { ok: boolean; request: { ask: string }; model: string };
     expect(body.request.ask).toBe('can you make it sing');
     expect(body.model).toBe('kimi-test:cloud');
+    // The 200 is the page's contract; the body is everyone else's.
+    expect(body.ok).toBe(true);
   });
 
-  it('slows a second ask down rather than running two seats at once', async () => {
+  it('says which of the two waits it wants, and how long', async () => {
     const res = await post({ view });
     expect(res.status).toBe(429);
-    expect(await res.json()).toEqual({ error: 'slow down' });
+    expect(res.headers.get('retry-after')).toBe('1');
+    expect(await res.json()).toEqual({
+      error: 'slow down',
+      hint: 'one call at a time, and at most one every 400 ms',
+    });
   });
 
-  it('answers in words when the seat throws', async () => {
+  it('answers in words when the seat throws, and does not read as a success', async () => {
     await new Promise((r) => setTimeout(r, 450));
     const down = await post({ view: { ...view, product: 'a boom for houseplants' } });
     expect(down.status).toBe(200);
-    expect(await down.json()).toEqual({ error: 'no answer' });
+    expect(await down.json()).toEqual({ ok: false, error: 'no answer' });
     await new Promise((r) => setTimeout(r, 450));
     const retired = await post({ view: { ...view, product: 'a gone for houseplants' } });
-    expect(await retired.json()).toEqual({ error: 'model retired' });
+    expect(await retired.json()).toEqual({ ok: false, error: 'model retired' });
   });
 });
 
@@ -487,7 +545,22 @@ describe('a request addressed to somebody else', () => {
       const raw = await rawGet(port, '/', [`Host: ${host}`]);
       expect(raw.split('\r\n')[0], host).toMatch(/^HTTP\/1\.1 403 /);
       expect(raw, host).not.toContain('<title>cabinet');
+      // The person who most often trips this is the player who typed their
+      // own machine's name or a VPN address into the bar, and what they used
+      // to get was two words of JSON rendered as source: correct and
+      // unhelpful at the same time.
+      expect(raw, host).toContain('text/plain');
+      expect(raw, host).toContain(`this cabinet answers to http://127.0.0.1:${port}/ only`);
+      expect(raw, host).toContain('open that address instead');
     }
+  });
+
+  it('keeps the JSON shape for the paths a script calls', async () => {
+    const port = (cabinet.address() as { port: number }).port;
+    const raw = await rawGet(port, '/ollama/api/tags', ['Host: cabinet.example.com']);
+    expect(raw.split('\r\n')[0]).toMatch(/^HTTP\/1\.1 403 /);
+    expect(raw).toContain('application/json');
+    expect(raw).toContain('"wrong host"');
   });
 
   it('refuses a cross-origin call and never opens a socket to the daemon', async () => {
@@ -604,7 +677,9 @@ describe('the cap on a proxied body', () => {
       body: JSON.stringify({ model: 'x', messages: [{ content: 'x'.repeat(1024 * 1024 + 64) }] }),
     });
     expect(res.status).toBe(413);
-    expect(await res.json()).toEqual({ error: 'too large' });
+    // The proxy's own cap, not the say seat's: the number in the body is the
+    // one the call actually met.
+    expect(await res.json()).toEqual({ error: 'too large', hint: 'at most 1024 KB' });
     expect(seen).toEqual([]);
   });
 });
@@ -710,7 +785,9 @@ describe('a Ghost-shaped cabinet', () => {
         }),
       });
       expect(say.status).toBe(200);
-      expect(await say.json()).toEqual({ line: 'hello' });
+      // `ok` beside the seat's own answer: the status line is the page's
+      // contract, and the body is what anything else on loopback reads.
+      expect(await say.json()).toEqual({ ok: true, line: 'hello' });
     } finally {
       await new Promise<void>((r) => shooter.close(() => r()));
       await rm(moduleDir, { recursive: true, force: true });
@@ -760,8 +837,11 @@ describe('what the cabinet says when a seat is not there', () => {
     expect(checkSeatUrl('OLLAMA_URL', 'localhost:11434')).toBe(
       'OLLAMA_URL wants an http:// or https:// address, got localhost:11434',
     );
+    // The likeliest typo of the lot, and the one that used to get the least
+    // useful of the three messages: the address the player believes they
+    // typed, handed back with no statement of what an address is here.
     expect(checkSeatUrl('OLLAMA_URL', '127.0.0.1:11434')).toBe(
-      'OLLAMA_URL is not an address, got 127.0.0.1:11434',
+      'OLLAMA_URL is not an address, got 127.0.0.1:11434; it wants a scheme, like http://127.0.0.1:11434',
     );
     for (const bad of ['', 'localhost', 'ollama', 'http//127.0.0.1', 'ftp://host', 'http://']) {
       const said = checkSeatUrl('OLLAMA_URL', bad);
@@ -815,6 +895,204 @@ describe('what the cabinet says when a seat is not there', () => {
       expect(said).toEqual([]);
     } finally {
       await new Promise((r) => fine.close(() => r(undefined)));
+    }
+  });
+});
+
+// ——— the same sentence, over and over, and then silence ——————————————————————
+//
+// `onTrouble` had no memory. A daemon that is not running repeated one
+// identical line for as long as the page kept probing — the shell re-probes
+// on the menu and on every model refresh — and the mirror-image case was
+// worse: when the daemon came back nothing was said at all, so the
+// operator's last word on the subject was a failure that was no longer true.
+
+describe('a seat that goes quiet and then comes back', () => {
+  it('says the trouble once, stays quiet, and says so when it answers again', async () => {
+    const said: string[] = [];
+    const watch = seatWatch((line) => said.push(line));
+    const refused = Object.assign(new Error('fetch failed'), {
+      cause: Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' }),
+    });
+    const url = 'http://127.0.0.1:11434';
+    for (let i = 0; i < 3; i += 1) watch.trouble('daemon', url, refused);
+    expect(said).toEqual([`the daemon at ${url} is not running, or is not at that address`]);
+    watch.answering('daemon', url);
+    expect(said).toHaveLength(2);
+    expect(said[1]).toBe(`the daemon at ${url} is answering again`);
+    // And it is not said again on every call after that.
+    watch.answering('daemon', url);
+    watch.answering('daemon', url);
+    expect(said).toHaveLength(2);
+    // The worker keeps its own state; one quiet seat does not speak for both.
+    watch.trouble('worker', 'http://127.0.0.1:7788', refused);
+    expect(said[2]).toBe(
+      'the voice worker at http://127.0.0.1:7788 is not running, or is not at that address',
+    );
+  });
+
+  it('says nothing about a seat that was answering all along', () => {
+    const said: string[] = [];
+    const watch = seatWatch((line) => said.push(line));
+    watch.answering('daemon', 'http://127.0.0.1:11434');
+    watch.answering('daemon', 'http://127.0.0.1:11434');
+    expect(said).toEqual([]);
+  });
+
+  it('repeats neither line down the wire when the page keeps probing', async () => {
+    const vacated = createServer(() => undefined);
+    const deadPort = await listenFrom(vacated, 25_011);
+    await new Promise((r) => vacated.close(() => r(undefined)));
+    const said: string[] = [];
+    const quiet = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      endlessModule: null,
+      ollamaUrl: `http://127.0.0.1:${deadPort}`,
+      voiceUrl: null,
+      voiceToken: null,
+      anthropicKey: null,
+      onTrouble: (line: string) => said.push(line),
+    });
+    const port = await listenFrom(quiet, 25_111);
+    try {
+      for (let i = 0; i < 3; i += 1) {
+        const res = await fetch(`http://127.0.0.1:${port}/ollama/api/tags`);
+        expect(res.status).toBe(502);
+      }
+      expect(said).toHaveLength(1);
+    } finally {
+      await new Promise((r) => quiet.close(() => r(undefined)));
+    }
+  });
+});
+
+// ——— a rebound page, said once in the terminal ——————————————————————————————
+
+describe('what the operator is told about a refused Host', () => {
+  it('says it happened once, however many times it happens', async () => {
+    const said: string[] = [];
+    const watched = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      endlessModule: null,
+      ollamaUrl: upstreamBase,
+      voiceUrl: null,
+      voiceToken: null,
+      anthropicKey: null,
+      onTrouble: (line: string) => said.push(line),
+    });
+    const port = await listenFrom(watched, 25_211);
+    try {
+      for (let i = 0; i < 3; i += 1) {
+        await rawGet(port, '/', ['Host: cabinet.example.com']);
+      }
+      expect(said).toEqual([
+        'something asked this cabinet for cabinet.example.com; it answers to 127.0.0.1 only',
+      ]);
+    } finally {
+      await new Promise<void>((r) => watched.close(() => r()));
+    }
+  });
+});
+
+// ——— the port walk, in the player's words ————————————————————————————————————
+//
+// The old failure printed two numbers that contradicted each other: the
+// prefix named the port the player asked for and the raw errno text named the
+// twenty-first port the walk reached, with nothing saying where the second
+// number came from. And after ten busy ports Node wrote its own
+// MaxListenersExceededWarning into the terminal, which is an internal
+// diagnostic naming a leak the player cannot act on.
+
+describe('what the cabinet says when it cannot take a port', () => {
+  it('names the range it walked, never a bare number the player did not type', () => {
+    const busy = new ListenTrouble(
+      Object.assign(new Error('listen EADDRINUSE: address already in use 127.0.0.1:7830'), {
+        code: 'EADDRINUSE',
+      }),
+      7810,
+      7830,
+    );
+    expect(listenLines(busy, 7810)).toEqual([
+      'ports 7810-7830 are all busy',
+      '',
+      'next: free one, or pass --port <n>',
+    ]);
+  });
+
+  it('names the privilege rather than the errno when the port is a low one', () => {
+    const denied = new ListenTrouble(
+      Object.assign(new Error('listen EACCES: permission denied 127.0.0.1:80'), { code: 'EACCES' }),
+      80,
+      80,
+    );
+    expect(listenLines(denied, 80)).toEqual([
+      'port 80 needs a privilege this cabinet does not want',
+      '',
+      'next: pass --port with something above 1024',
+    ]);
+  });
+
+  it('falls back to the cause for anything it has no words for', () => {
+    const other = new ListenTrouble(
+      Object.assign(new Error('listen EAFNOSUPPORT'), { code: 'EAFNOSUPPORT' }),
+      7777,
+      7777,
+    );
+    expect(listenLines(other, 7777)).toEqual(['could not listen on 7777: listen EAFNOSUPPORT']);
+    expect(listenLines(new Error('something else'), 7777)).toEqual([
+      'could not listen on 7777: something else',
+    ]);
+  });
+
+  it('walks past busy ports without leaving a listener behind on the server', async () => {
+    const first = createServer(() => undefined);
+    const start = await listenFrom(first, 25_311);
+    const second = createServer(() => undefined);
+    await listenFrom(second, start + 1, 0);
+    const third = createServer(() => undefined);
+    await listenFrom(third, start + 2, 0);
+    const walker = createServer(() => undefined);
+    // An http server carries one internal `listening` listener of its own
+    // from the moment it is made, so the question is whether the walk adds
+    // any — not whether the count is zero.
+    const before = {
+      listening: walker.listenerCount('listening'),
+      error: walker.listenerCount('error'),
+    };
+    try {
+      const landed = await listenFrom(walker, start);
+      expect(landed).toBe(start + 3);
+      // The warning a player used to see — `MaxListenersExceededWarning: 11
+      // listening listeners added to [Server]`, written into a startup that
+      // otherwise speaks in sentences — arrives because the old code added
+      // one per attempt and took off only the error handler.
+      expect(walker.listenerCount('listening')).toBe(before.listening);
+      expect(walker.listenerCount('error')).toBe(before.error);
+    } finally {
+      for (const server of [walker, third, second, first]) {
+        await new Promise<void>((r) => server.close(() => r()));
+      }
+    }
+  });
+
+  it('gives up with a typed failure rather than a raw errno', async () => {
+    const held = createServer(() => undefined);
+    const heldPort = await listenFrom(held, 25_411);
+    const walker = createServer(() => undefined);
+    const before = {
+      listening: walker.listenerCount('listening'),
+      error: walker.listenerCount('error'),
+    };
+    try {
+      // No room to walk into: one try, and the port it was given is taken.
+      await expect(listenFrom(walker, heldPort, 0)).rejects.toBeInstanceOf(ListenTrouble);
+      expect(walker.listenerCount('listening')).toBe(before.listening);
+      expect(walker.listenerCount('error')).toBe(before.error);
+    } finally {
+      await new Promise<void>((r) => walker.close(() => r()));
+      await new Promise<void>((r) => held.close(() => r()));
     }
   });
 });

@@ -83,10 +83,10 @@ export interface ServeOpts {
   ollamaUrl: string;
   /**
    * The host-side voice worker (`pnpm voice`), when they run one. Null does
-   * not proxy `/voice` at all: the path 404s before a socket is opened, the
-   * same as any other call the allowlist does not name. The typing cabinet
-   * has no voice, so its package passes null rather than standing a proxy
-   * up that nothing on the page will ever call.
+   * not proxy `/voice` at all: the path answers `503 no upstream` before a
+   * socket is opened. It used to answer 404, the same word as a path the
+   * allowlist does not name and as a file the shell does not have, which is
+   * three different fixes behind one word.
    */
   voiceUrl: string | null;
   /** The worker's bearer. Added here; the browser never holds it. */
@@ -156,9 +156,14 @@ export function checkSeatUrl(name: string, raw: string): string | null {
   try {
     parsed = new URL(raw);
   } catch {
-    return `${name} is not an address, got ${raw}`;
+    // The likeliest typo lands here — `OLLAMA_URL=127.0.0.1:11434`, which
+    // `new URL` refuses because a scheme may not start with a digit — and
+    // being shown the address you believe you typed is no help at all. The
+    // example says what an address is here.
+    return `${name} is not an address, got ${raw}; it wants a scheme, like http://127.0.0.1:11434`;
   }
-  // `new URL('127.0.0.1:11434')` parses, with the host as the scheme. Left
+  // `new URL('localhost:11434')` parses, with the host taken for the scheme,
+  // so a named host reaches this branch rather than the one above. Left
   // alone it is a request the cabinet can never send.
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
     return `${name} wants an http:// or https:// address, got ${raw}`;
@@ -267,6 +272,90 @@ function sendJson(res: ServerResponse, code: number, body: unknown): void {
 }
 
 /**
+ * A refusal a person is going to read in a browser window rather than a
+ * script is going to parse. Two words of JSON rendered as source is a correct
+ * answer and an unhelpful one; the paths a script calls keep their JSON.
+ */
+function sendText(res: ServerResponse, code: number, line: string): void {
+  res.statusCode = code;
+  res.setHeader('content-type', 'text/plain; charset=utf-8');
+  res.end(`${line}\n`);
+}
+
+/**
+ * The cap refusal, carrying the number it met. Every size refusal used to be
+ * the same two words while the cap behind it differed by route — 1 MiB on the
+ * proxy, 32 KiB on the say and endless seats — so a page collecting 413s had
+ * no way to tell which limit it had reached.
+ */
+function sendTooLarge(res: ServerResponse, cap: number): void {
+  sendJson(res, 413, { error: 'too large', hint: `at most ${Math.floor(cap / 1024)} KB` });
+}
+
+/**
+ * The two refusals that used to share `slow down`. One is an interval and one
+ * is a call already in flight, and a client with nothing but the word has to
+ * guess at both the cause and the wait. `retry-after` is in seconds, and one
+ * is the smallest it can say.
+ */
+function sendSlowDown(res: ServerResponse): void {
+  res.setHeader('retry-after', '1');
+  sendJson(res, 429, {
+    error: 'slow down',
+    hint: `one call at a time, and at most one every ${SAY_MIN_INTERVAL_MS} ms`,
+  });
+}
+
+function sendBusy(res: ServerResponse): void {
+  res.setHeader('retry-after', '1');
+  sendJson(res, 429, { error: 'busy', hint: 'a call is already in flight' });
+}
+
+/**
+ * Whether each seat is answering, so a line is said on the change rather than
+ * on every call.
+ *
+ * `onTrouble` had no memory: a daemon that is not running repeated one
+ * identical sentence for as long as the page kept probing — the shell
+ * re-probes on the menu and on every model refresh — and the mirror-image
+ * case was worse, because when the daemon came back nothing was said at all
+ * and the operator's last word on the subject was a failure that was no
+ * longer true.
+ */
+export function seatWatch(onTrouble?: (line: string) => void) {
+  const state = new Map<TroubleSeat, 'answering' | 'quiet'>();
+  return {
+    /** A call to this seat failed. Says the cause the first time only. */
+    trouble(seat: TroubleSeat, url: string, err: unknown): void {
+      if (state.get(seat) === 'quiet') return;
+      state.set(seat, 'quiet');
+      onTrouble?.(troubleLine(seat, url, err));
+    },
+    /** A call to this seat came back. Says so only when it had gone quiet. */
+    answering(seat: TroubleSeat, url: string): void {
+      if (state.get(seat) !== 'quiet') {
+        state.set(seat, 'answering');
+        return;
+      }
+      state.set(seat, 'answering');
+      onTrouble?.(`${SEAT_WORD[seat]} at ${url} is answering again`);
+    },
+  };
+}
+
+/** What `createCabinetServer` hands the proxy to keep the seats' state in. */
+export type SeatWatch = ReturnType<typeof seatWatch>;
+
+/**
+ * How long a proxied call may be silent before the cabinet says it is still
+ * waiting. `PROXY_TIMEOUT_MS` is two minutes, which is the right ceiling for
+ * a cold model load on a small GPU and far too long to say nothing for: a
+ * daemon that is merely slow and one that is wedged read exactly the same
+ * until the abort fires.
+ */
+const PROXY_SLOW_MS = 10_000;
+
+/**
  * How reading a request body ended. Three outcomes, not two: the body
  * arrived, the cap was passed, or the request went away under us. They used
  * to share a `null` and every caller turned that `null` into 413 `too large`,
@@ -346,6 +435,7 @@ async function proxy(
   rest: string,
   token: string | null,
   seat: TroubleSeat,
+  watch: SeatWatch,
   onTrouble?: (line: string) => void,
 ): Promise<void> {
   const raw = req.url ?? '';
@@ -364,13 +454,13 @@ async function proxy(
     // to the page as a dropped connection rather than as a size.
     const declared = Number(req.headers['content-length'] ?? NaN);
     if (Number.isFinite(declared) && declared > PROXY_MAX_BYTES) {
-      sendJson(res, 413, { error: 'too large' });
+      sendTooLarge(res, PROXY_MAX_BYTES);
       req.resume();
       return;
     }
     const read = await readBody(req, PROXY_MAX_BYTES);
     if ('tooLarge' in read) {
-      sendJson(res, 413, { error: 'too large' });
+      sendTooLarge(res, PROXY_MAX_BYTES);
       return;
     }
     // The request went away before it finished. There is nobody left to
@@ -381,6 +471,14 @@ async function proxy(
   }
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), PROXY_TIMEOUT_MS);
+  // Ten seconds of silence is a story; two minutes of it is not. The line
+  // costs nothing when the daemon is healthy, because the headers clear the
+  // timer long before it fires, and `unref` keeps it from holding the
+  // process open on its own.
+  const slow = setTimeout(() => {
+    onTrouble?.(`${SEAT_WORD[seat]} at ${base} is taking a while (still waiting)`);
+  }, PROXY_SLOW_MS);
+  slow.unref();
   try {
     const upstream = await fetch(target, {
       method,
@@ -388,6 +486,8 @@ async function proxy(
       signal: ctl.signal,
       ...(body ? { body: new Uint8Array(body) } : {}),
     });
+    clearTimeout(slow);
+    watch.answering(seat, base);
     res.statusCode = upstream.status;
     const type = upstream.headers.get('content-type');
     if (type) res.setHeader('content-type', type);
@@ -417,16 +517,28 @@ async function proxy(
   } catch (err: unknown) {
     // The daemon or the worker is not up, or took too long. The shell
     // already falls back to the scripted seat on a failed call; the person
-    // who started the cabinet gets the cause in words.
-    onTrouble?.(troubleLine(seat, base, err));
+    // who started the cabinet gets the cause in words — once, on the way
+    // down, and once more on the way back up.
+    watch.trouble(seat, base, err);
     if (!res.headersSent) sendJson(res, 502, { error: 'no answer' });
     else res.end();
   } finally {
     clearTimeout(timer);
+    clearTimeout(slow);
   }
 }
 
-/** The say seat's node side (G14), as the dev server runs it. */
+/**
+ * The say seat's node side (G14), as the dev server runs it.
+ *
+ * A failed ask answers 200 on purpose: the page wants the scripted fallback
+ * and not a thrown fetch. That leaves the status line saying success for a
+ * seat that answered nothing, which is fine for the page and wrong for
+ * everything else on loopback — a curl probe, a test, an operator checking
+ * whether the seat works. So the status line is the page's contract and the
+ * body is everyone else's: `ok` is true on the good path and false on the
+ * two failures, beside the `error` word the page already reads.
+ */
 function sayRoute(opts: ServeOpts) {
   let lastAt = 0;
   let busy = false;
@@ -448,13 +560,18 @@ function sayRoute(opts: ServeOpts) {
     }
     const declared = Number(req.headers['content-length'] ?? NaN);
     if (Number.isFinite(declared) && declared > SAY_MAX_BYTES) {
-      sendJson(res, 413, { error: 'too large' });
+      sendTooLarge(res, SAY_MAX_BYTES);
+      req.resume();
+      return;
+    }
+    if (busy) {
+      sendBusy(res);
       req.resume();
       return;
     }
     const now = Date.now();
-    if (busy || now - lastAt < SAY_MIN_INTERVAL_MS) {
-      sendJson(res, 429, { error: 'slow down' });
+    if (now - lastAt < SAY_MIN_INTERVAL_MS) {
+      sendSlowDown(res);
       req.resume();
       return;
     }
@@ -464,7 +581,7 @@ function sayRoute(opts: ServeOpts) {
     try {
       const read = await readBody(req, SAY_MAX_BYTES);
       if ('tooLarge' in read) {
-        sendJson(res, 413, { error: 'too large' });
+        sendTooLarge(res, SAY_MAX_BYTES);
         return;
       }
       // The request went away mid-upload; nobody is left to be told, and
@@ -508,7 +625,7 @@ function sayRoute(opts: ServeOpts) {
           timer = setTimeout(() => rej(new Error('no answer')), SAY_TIMEOUT_MS);
         }),
       ]);
-      sendJson(res, 200, answer);
+      sendJson(res, 200, { ok: true, ...(answer as Record<string, unknown>) });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       // A retired tag and a quiet seat read the same to the page, which wants
@@ -518,7 +635,7 @@ function sayRoute(opts: ServeOpts) {
       // may be the hosted tier rather than the local daemon.
       const gone = /retired/i.test(msg);
       opts.onTrouble?.(gone ? retiredLine('daemon') : 'the seat did not answer');
-      sendJson(res, 200, { error: gone ? 'model retired' : 'no answer' });
+      sendJson(res, 200, { ok: false, error: gone ? 'model retired' : 'no answer' });
     } finally {
       if (timer !== undefined) clearTimeout(timer);
       busy = false;
@@ -526,7 +643,13 @@ function sayRoute(opts: ServeOpts) {
   };
 }
 
-/** The endless seat's node side (G28 amended), as the dev server runs it. */
+/**
+ * The endless seat's node side (G28 amended), as the dev server runs it.
+ *
+ * The 200-with-an-error is the say seat's choice for the say seat's reason,
+ * and carries the same `ok` in the body: the status line is what the page
+ * reads, and the body is what anything else on loopback reads.
+ */
 function endlessRoute(opts: ServeOpts) {
   let lastAt = 0;
   let busy = false;
@@ -549,13 +672,18 @@ function endlessRoute(opts: ServeOpts) {
     }
     const declared = Number(req.headers['content-length'] ?? NaN);
     if (Number.isFinite(declared) && declared > SAY_MAX_BYTES) {
-      sendJson(res, 413, { error: 'too large' });
+      sendTooLarge(res, SAY_MAX_BYTES);
+      req.resume();
+      return;
+    }
+    if (busy) {
+      sendBusy(res);
       req.resume();
       return;
     }
     const now = Date.now();
-    if (busy || now - lastAt < SAY_MIN_INTERVAL_MS) {
-      sendJson(res, 429, { error: 'slow down' });
+    if (now - lastAt < SAY_MIN_INTERVAL_MS) {
+      sendSlowDown(res);
       req.resume();
       return;
     }
@@ -565,7 +693,7 @@ function endlessRoute(opts: ServeOpts) {
     try {
       const read = await readBody(req, SAY_MAX_BYTES);
       if ('tooLarge' in read) {
-        sendJson(res, 413, { error: 'too large' });
+        sendTooLarge(res, SAY_MAX_BYTES);
         return;
       }
       // The request went away mid-upload; nobody is left to be told, and
@@ -601,7 +729,7 @@ function endlessRoute(opts: ServeOpts) {
           timer = setTimeout(() => rej(new Error('no answer')), ENDLESS_TIMEOUT_MS);
         }),
       ]);
-      sendJson(res, 200, answer);
+      sendJson(res, 200, { ok: true, ...(answer as Record<string, unknown>) });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       // A retired tag and a quiet seat read the same to the page, which wants
@@ -611,7 +739,7 @@ function endlessRoute(opts: ServeOpts) {
       // may be the hosted tier rather than the local daemon.
       const gone = /retired/i.test(msg);
       opts.onTrouble?.(gone ? retiredLine('daemon') : 'the seat did not answer');
-      sendJson(res, 200, { error: gone ? 'model retired' : 'no answer' });
+      sendJson(res, 200, { ok: false, error: gone ? 'model retired' : 'no answer' });
     } finally {
       if (timer !== undefined) clearTimeout(timer);
       busy = false;
@@ -680,19 +808,55 @@ export function ownOrigin(raw: string | string[] | undefined, port: number): boo
 export function createCabinetServer(opts: ServeOpts): Server {
   const handleSay = sayRoute(opts);
   const handleEndless = endlessRoute(opts);
+  const watch = seatWatch(opts.onTrouble);
+  // The rebinding refusals are said in the terminal once and then not again:
+  // a page that is probing will trip them as fast as it can, and the
+  // operator needs to know it happened rather than to watch it happen.
+  let saidHost = false;
+  let saidOrigin = false;
   return createServer((req, res) => {
     void (async () => {
       // Before routing, and so before any socket is opened towards the
       // daemon or the worker: a request that is not addressed to this
       // cabinet by name is not answered at all.
       const port = req.socket.localPort ?? 0;
+      // Who the refusal is written for. A script calling the proxies or the
+      // seats parses JSON; a player who typed their machine's name or a VPN
+      // address into the bar is looking at a browser window, and two words
+      // of JSON rendered as source tells them nothing about what to type
+      // instead.
+      const forScript =
+        upstreamFor(req.url) !== null ||
+        pathOnly(req.url) === SAY_PATH ||
+        pathOnly(req.url) === ENDLESS_PATH;
       if (!ownHost(req.headers.host, port)) {
-        sendJson(res, 403, { error: 'wrong host' });
+        const name = typeof req.headers.host === 'string' ? req.headers.host : '(no Host header)';
+        if (!saidHost) {
+          saidHost = true;
+          opts.onTrouble?.(`something asked this cabinet for ${name}; it answers to ${HOST} only`);
+        }
+        if (forScript) sendJson(res, 403, { error: 'wrong host' });
+        else {
+          sendText(
+            res,
+            403,
+            `this cabinet answers to http://${HOST}:${port}/ only; open that address instead`,
+          );
+        }
         req.resume();
         return;
       }
       if (!ownOrigin(req.headers.origin, port)) {
-        sendJson(res, 403, { error: 'wrong origin' });
+        const from =
+          typeof req.headers.origin === 'string' ? req.headers.origin : '(no Origin header)';
+        if (!saidOrigin) {
+          saidOrigin = true;
+          opts.onTrouble?.(
+            `a page at ${from} asked this cabinet for something; it answers pages it served itself`,
+          );
+        }
+        if (forScript) sendJson(res, 403, { error: 'wrong origin' });
+        else sendText(res, 403, 'a page at another address may not read this cabinet');
         req.resume();
         return;
       }
@@ -709,10 +873,26 @@ export function createCabinetServer(opts: ServeOpts): Server {
       if (up) {
         const rest = restAfter(PREFIXES[up], req.url);
         const base = up === 'ollama' ? opts.ollamaUrl : opts.voiceUrl;
-        // No upstream configured is the same answer as a path off the
-        // allowlist: 404, and no socket opened towards anything.
-        if (!base || !allowed(up, req.method ?? 'GET', rest)) {
-          sendJson(res, 404, { error: 'not found' });
+        // Three different fixes used to share one word. A verb off the
+        // allowlist, a file that is not in the shell and an upstream this
+        // cabinet was never given all answered `404 not found`, so a
+        // developer who added a call to the page and forgot `allow.ts` got
+        // the same answer as a typo in an asset path — which is the drift
+        // the allowlist's own "keep the two in step" note is about, with no
+        // way to notice it. No socket is opened towards anything either way.
+        if (!base) {
+          sendJson(res, 503, { error: 'no upstream' });
+          req.resume();
+          return;
+        }
+        const method = req.method ?? 'GET';
+        if (!allowed(up, method, rest)) {
+          // Always either a bug in the shell or somebody probing, so it is
+          // worth a line in the terminal that started the cabinet.
+          opts.onTrouble?.(
+            `the page asked for ${method} ${rest}, which this cabinet does not proxy`,
+          );
+          sendJson(res, 403, { error: 'not proxied' });
           req.resume();
           return;
         }
@@ -723,6 +903,7 @@ export function createCabinetServer(opts: ServeOpts): Server {
           rest,
           up === 'voice' ? opts.voiceToken : null,
           up === 'voice' ? 'worker' : 'daemon',
+          watch,
           opts.onTrouble,
         );
         return;
@@ -740,27 +921,91 @@ export function createCabinetServer(opts: ServeOpts): Server {
   });
 }
 
-/** Listen on the first free port at or above `from`, on loopback. */
+/**
+ * Why the cabinet could not take a port, with enough on it for the caller to
+ * word the failure. The old failure was the raw errno, and it printed two
+ * numbers that contradicted each other: the prefix named the port the player
+ * asked for and the errno text named the twenty-first port the walk reached,
+ * with nothing saying where the second number came from.
+ */
+export class ListenTrouble extends Error {
+  readonly code: string;
+  /** The port the caller asked for. */
+  readonly from: number;
+  /** The port the walk was on when it gave up. */
+  readonly port: number;
+
+  constructor(cause: NodeJS.ErrnoException, from: number, port: number) {
+    super(cause.message);
+    this.name = 'ListenTrouble';
+    this.code = cause.code ?? '';
+    this.from = from;
+    this.port = port;
+  }
+}
+
+/**
+ * What to tell the player about a failed listen. Pure, so the table of cases
+ * is a test, and never a port the player did not name without saying where
+ * that number came from.
+ */
+export function listenLines(err: unknown, from: number): string[] {
+  if (!(err instanceof ListenTrouble)) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return [`could not listen on ${from}: ${msg}`];
+  }
+  if (err.code === 'EADDRINUSE') {
+    return [
+      err.port === err.from ? `port ${from} is busy` : `ports ${from}-${err.port} are all busy`,
+      '',
+      'next: free one, or pass --port <n>',
+    ];
+  }
+  if (err.code === 'EACCES') {
+    return [
+      `port ${err.port} needs a privilege this cabinet does not want`,
+      '',
+      'next: pass --port with something above 1024',
+    ];
+  }
+  return [`could not listen on ${err.port}: ${err.message}`];
+}
+
+/**
+ * Listen on the first free port at or above `from`, on loopback.
+ *
+ * Both handlers come off on every outcome. A fresh `listening` callback per
+ * attempt, which is what this used to do, put Node's own
+ * `MaxListenersExceededWarning` in the player's terminal after ten busy
+ * ports — an internal diagnostic naming a leak they cannot act on, in the
+ * middle of a startup that otherwise speaks in sentences.
+ */
 export function listenFrom(server: Server, from: number, tries = 20): Promise<number> {
   return new Promise((resolve, reject) => {
     let port = from;
     let left = tries;
     const attempt = () => {
-      const onError = (err: NodeJS.ErrnoException) => {
+      const at = port;
+      // Declarations, not `const` arrows: each one names the other, and a
+      // hoisted pair cannot be reached in its own dead zone.
+      function onError(err: NodeJS.ErrnoException): void {
         server.removeListener('error', onError);
+        server.removeListener('listening', onListen);
         if (err.code === 'EADDRINUSE' && left > 0) {
           left -= 1;
           port += 1;
           attempt();
           return;
         }
-        reject(err);
-      };
-      server.once('error', onError);
-      server.listen(port, HOST, () => {
+        reject(new ListenTrouble(err, from, at));
+      }
+      function onListen(): void {
         server.removeListener('error', onError);
-        resolve(port);
-      });
+        resolve(at);
+      }
+      server.once('error', onError);
+      server.once('listening', onListen);
+      server.listen(at, HOST);
     };
     attempt();
   });
