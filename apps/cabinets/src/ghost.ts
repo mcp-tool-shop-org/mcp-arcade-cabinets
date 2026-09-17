@@ -1198,9 +1198,12 @@ export function mountGhost(
   };
   const onKey = (down: boolean) => (e: KeyboardEvent) => {
     if (chromeTarget(e.target)) return;
-    // A key on the field holds the end scene where it is: a player reading
-    // the trophies is not fighting a clock nobody showed them.
-    if (down) holdScene();
+    // Escape on the field holds the end scene where it is: a player reading
+    // the trophies is not fighting a clock nobody showed them. The arrows and
+    // fire do NOT hold it: a player is still pressing those when the scene
+    // lands, and holding on them read as the tape simply stopping (the
+    // Director, 2026-09-17). The pointer on the controls row holds it too.
+    if (down && e.key === 'Escape') holdScene();
     const onField = e.target === canvas;
     if (down && (e.key === 'f' || e.key === 'F')) {
       if (!onField) return;
@@ -1264,10 +1267,12 @@ export function mountGhost(
   const FLOW_ON = extra.flowWord ?? 'the next tape follows on its own';
   const FLOW_HELD = 'it waits for you now';
   /**
-   * Stop the end scene's clock. Any key on the field does this, and so does
+   * Stop the end scene's clock. Escape on the field does this, and so does
    * the pointer reaching the controls row — the two ways a player says they
-   * are still here. Clicking the FIELD is not one of them: that restarts the
-   * same tape, which is the opposite of what a reader wants.
+   * are still here on purpose. The arrows and fire do not: they are what a
+   * player is pressing when the scene lands. Clicking the FIELD is not one
+   * either: that restarts the same tape, which is the opposite of what a
+   * reader wants.
    */
   const holdScene = () => {
     if (!onNext || sceneAt === null || sceneHeld || left) return;

@@ -781,10 +781,15 @@ describe('the end scene, and where the play goes next', () => {
     let guard = 0;
     while (nextBtn.disabled && guard++ < 6000) frames.shift()!((now += 50));
     const sceneAt = now;
-    // A key on the field: a reader is still reading. Clicking the field is
-    // NOT this — that restarts the same tape.
+    // The arrows and fire do not hold the scene: a player is still on them
+    // when it lands, and the tape must flow on regardless. Escape does hold
+    // it: a reader is still reading. Clicking the field is NOT this either:
+    // that restarts the same tape.
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
     const chrome = root.querySelector('[aria-label="cabinet"]')!;
+    expect(chrome.textContent).toContain('the next tape follows on its own');
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(chrome.textContent).toContain('it waits for you now');
     while (now - sceneAt < NEXT_TAPE_S * 1000 * 2 && frames.length > 0) {
       frames.shift()!((now += 50));
