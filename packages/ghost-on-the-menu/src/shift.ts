@@ -30,6 +30,15 @@ export interface ShiftDraw {
    * asked for, and a caller that finds them different can say so.
    */
   asked: number;
+  /**
+   * True when no name on the draw was in the recent history the draw was
+   * scored against. The freshness pass degenerates to a no-op once the recent
+   * shifts cover the roster — every candidate scores the same and the first
+   * one wins — and nothing said so, so a caller could not tell a fresh shift
+   * from 'everything is stale'. Absent on a decoded draw, which has no
+   * history to have been fresh against.
+   */
+  fresh?: boolean;
 }
 
 export type ShiftDecode =
@@ -150,6 +159,9 @@ export function flavorTelegraph(index: number, set: PatternSet = DEFAULT_PATTERN
   return flavorAt(index, set).telegraph;
 }
 
+/** Tool names the card spells out before it says the rest in a word. */
+const TOOLS_ON_CARD = 4;
+
 const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth'];
 
 /** The call's place in the shift, in words: "the second call", "the last call". */
@@ -182,7 +194,9 @@ export function shiftTitle(draw: ShiftDraw): string {
  * come off the seeded generator and the one that shares the fewest names
  * with the recent shifts is kept (Spotify's shuffle rework, 2025: uniform
  * draws read as rigged; score candidates for freshness instead). Ties keep
- * the first, so the draw is a function of seed and history alone.
+ * the first, so the draw is a function of seed and history alone. How many
+ * candidates are scored is `candidates` in `shift.json`, beside the other
+ * shift levers. The draw says whether it came up fresh.
  */
 export function drawShift(
   roster: readonly string[],
@@ -197,7 +211,7 @@ export function drawShift(
   const seen = new Set(recent.flat());
   let best: string[] | null = null;
   let bestScore = Number.POSITIVE_INFINITY;
-  for (let c = 0; c < 6; c++) {
+  for (let c = 0; c < set.shift.candidates; c++) {
     const pool = [...roster];
     const pick: string[] = [];
     for (let i = 0; i < length; i++) {
@@ -211,7 +225,7 @@ export function drawShift(
       bestScore = score;
     }
   }
-  return { names: best!, difficulty, asked: set.shift.length };
+  return { names: best!, difficulty, asked: set.shift.length, fresh: bestScore === 0 };
 }
 
 /** Rank of an ordered draw among all ordered draws of its length from the roster. */
@@ -250,7 +264,11 @@ export function encodeShift(
   set: PatternSet = DEFAULT_PATTERNS,
 ): string {
   if (!rosterFits(roster, set))
-    throw new Error('shift: the roster is too long for a four-word code');
+    throw new Error(
+      'shift: the roster is too long for a four-word code; a code names one ordered draw out of ' +
+        'every draw this roster allows, and past two dozen tapes that no longer fits four words. ' +
+        'Shorten the roster, or shorten the shift with `length` in shift.json.',
+    );
   const value =
     (rankOf(roster, draw.names) * DIFFICULTIES + draw.difficulty) * CHECK_SPACE +
     rosterCheck(roster);
@@ -263,6 +281,11 @@ export function decodeShift(
   code: string,
   set: PatternSet = DEFAULT_PATTERNS,
 ): ShiftDecode {
+  // The same ceiling encodeShift throws on, checked here too. Past it a code
+  // still decodes — into a plausible WRONG draw, because the roster check is
+  // four bits and so holds fifteen times in sixteen. A pasted code that
+  // cannot mean anything on this roster says so instead.
+  if (!rosterFits(roster, set)) return { ok: false, why: 'another menu' };
   const read = valueFromWords(codeWords(code), CODE_WORDS, set);
   if (read === null) return { ok: false, why: 'not a code' };
   let value = read;
@@ -307,7 +330,15 @@ export function shiftCard(
   if (server) lines.push(`server ${server}`);
   const policy = clean(tape.agent_policy);
   if (policy) lines.push(`policy ${policy}`);
-  if (tools.length) lines.push(`asked to run ${tools.slice(0, 4).join(', ')}`);
+  if (tools.length) {
+    // The cut is said in a word. A tape naming seven tools used to read
+    // exactly like one naming four, which told the player the agent was asked
+    // to run a set that is not the set — and this card's own standard, two
+    // lines up, is that a line says the whole thing or is dropped whole.
+    const named = tools.slice(0, TOOLS_ON_CARD);
+    const more = tools.length > named.length ? ' and more' : '';
+    lines.push(`asked to run ${named.join(', ')}${more}`);
+  }
   if (index !== undefined) {
     const telegraph = clean(flavorTelegraph(index, set));
     if (telegraph) lines.push(telegraph);

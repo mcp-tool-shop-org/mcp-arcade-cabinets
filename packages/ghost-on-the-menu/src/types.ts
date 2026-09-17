@@ -312,6 +312,15 @@ export interface RoundState {
   pierceT: number;
   /** Drops caught this round. For cues; never drawn as a digit. */
   dropCatches: number;
+  /**
+   * The same catches, by kind. The cue layer needs the kind and not the
+   * total: it used to key the lamp's own sound on the lamp POOL rising, so a
+   * lamp caught at a full pool — the ordinary case, where the pickup changes
+   * nothing — sounded exactly like a spread, and the three timed powers
+   * shared one ding although the field gives each its own fill and its own
+   * bezel glyph. For cues; never drawn as a digit.
+   */
+  dropCatchesByKind: Record<DropKind, number>;
   /** Boss-emitted hazards. Class motion, never fact motion. */
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
@@ -319,6 +328,13 @@ export interface RoundState {
   /**
    * Prefetched next-N verbs. Dequeued at the fire beat; leftover dropped on
    * spawn/kill/hold. Never a fact, never waited on inside stepRound.
+   *
+   * Bounded at BOSS_QUEUE_MAX, and every writer goes through
+   * `pushBossVerbs` in sim.ts so the bound is one guard rather than one per
+   * caller. The only cap used to live in the shell, so a second writer — the
+   * `call` tool the endless dispatch puts in the boss's chair — could grow it
+   * without bound, after which one stale verb was spent per fire beat with
+   * nothing recording that it had happened.
    */
   bossQueue: PilotIntent[];
   /** Optional Ollama (or test) pick of the boss's spawn line. Never derived from a fact. */

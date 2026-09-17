@@ -115,8 +115,19 @@ describe('ollama boss pilot', () => {
       'ai-jam-grader-7b:latest',
       'aya-expanse:latest',
       'qwen3.6:latest',
+      // The retired Cloud tags: they answer the call with a gone status, so a
+      // seat that picks one spends a round trip per fire beat to learn it.
+      'deepseek-v3.1:671b-cloud',
+      'qwen3-coder:480b-cloud',
+      'glm-4.6:cloud',
     ];
     expect(defaultPilotModel(skip)).toBe('');
+    // The picker prefers cloud, so a retired cloud tag beside a live local
+    // model used to win. It is not even listed now.
+    expect(listPilotModels(skip)).toEqual([]);
+    expect(defaultPilotModel(['glm-4.6:cloud', 'qwen2.5:7b-instruct'])).toBe(
+      'qwen2.5:7b-instruct',
+    );
     expect(skip).not.toContain(defaultPilotModel([...skip, 'qwen2.5:7b-instruct']));
     expect(defaultPilotModel([...skip, 'qwen2.5:7b-instruct'])).toBe('qwen2.5:7b-instruct');
     expect(defaultPilotModel([...skip, 'minimax-m3:cloud'])).toBe('minimax-m3:cloud');
@@ -288,6 +299,17 @@ describe('askOllama over a daemon', () => {
     expect(sawSignal).toBe(true);
   }, 10_000);
 
+  /** A one-chunk body stream, the way a real Response carries one. */
+  function streamOf(text: string): ReadableStream<Uint8Array> {
+    const bytes = new TextEncoder().encode(text);
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes);
+        controller.close();
+      },
+    });
+  }
+
   it('names WHY it fell back to script instead of hiding the whole taxonomy', async () => {
     // generate distinguishes a timeout from a daemon that is not running from
     // a retired tag from a refusal, each error chosen so the shell can say
@@ -314,6 +336,35 @@ describe('askOllama over a daemon', () => {
             json: () => Promise.resolve({ error: 'model has been retired' }),
           } as unknown as Response),
         why: /ollama model retired/,
+      },
+      // The measured answer from a retired Ollama Cloud tag on this rig. It
+      // used to fall off the end of the ladder into 'ollama error', the one
+      // message in the taxonomy that names no cause and suggests no action.
+      {
+        fetch: () => Promise.resolve({ ok: false, status: 410 } as Response),
+        why: /ollama model retired/,
+      },
+      // The same news in words under a different status.
+      {
+        fetch: () =>
+          Promise.resolve({
+            ok: false,
+            status: 402,
+            headers: new Headers(),
+            body: streamOf('{"error":"this model has been retired"}'),
+          } as unknown as Response),
+        why: /ollama model retired/,
+      },
+      // An answer bigger than the cap is refused unread rather than buffered
+      // whole inside a seat callback.
+      {
+        fetch: () =>
+          Promise.resolve({
+            ok: true,
+            headers: new Headers({ 'content-length': String(1024 * 1024) }),
+            body: streamOf('{"response":"spread"}'),
+          } as unknown as Response),
+        why: /ollama bad payload/,
       },
     ];
     for (const c of cases) {

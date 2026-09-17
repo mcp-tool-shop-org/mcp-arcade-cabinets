@@ -201,6 +201,53 @@ describe('what a play-through hands back', () => {
     expect(out.leaked).toBe(false);
   });
 
+  // The two transcript builders used to disagree about their own shapes: bare
+  // spaces in one header where the rest of the package uses ' · ', and
+  // `revealed:` meaning a list of ids in one footer and a pair of counts in
+  // the other, in two footers a reader compares side by side.
+  it('joins both headers the same way and keeps one meaning for revealed:', async () => {
+    const tape = await play({ fixture: 'naive-ndjson', bot: 'reader' });
+    const tapeHeader = tape.text.split('\n')[1]!;
+    expect(tapeHeader.split(' · ').length).toBe(5);
+    expect(tapeHeader).toMatch(/^tape \S+ · fixture /);
+
+    const endless = await play({ endless: true, bot: 'idle', seed: 4, calls: 2, tier: 2 });
+    const endlessHeader = endless.text.split('\n')[1]!;
+    expect(endlessHeader.split(' · ').length).toBe(5);
+    expect(endlessHeader.startsWith('endless · rung ')).toBe(true);
+
+    // `revealed:` is the id list on both, and the endless counts get their own
+    // line and their own words.
+    for (const t of [tape, endless]) {
+      const marker = t.text.split('\n').find((l) => l.startsWith('revealed:'))!;
+      expect(marker).toBeDefined();
+      expect(marker).not.toMatch(/caught|put down/);
+    }
+    expect(endless.text).toMatch(/^caught: \d+ · put down: \d+$/m);
+  });
+
+  // The structured fields used to be an empty array on every endless run,
+  // beside a footer that said how many were caught: a band test reading the
+  // machine-readable field — which is what the interface comment invites —
+  // got zero where the text said five.
+  it('fills the endless run structured revealed and lies for real', async () => {
+    const out = await play({ endless: true, bot: 'reader', seed: 9, calls: 3, tier: 2 });
+    expect(out.lies.length).toBeGreaterThan(0);
+    expect(out.revealed.length).toBeGreaterThan(0);
+    const lies = new Set(out.lies);
+    for (const id of out.revealed) expect(lies.has(id)).toBe(true);
+    const marker = out.text.split('\n').find((l) => l.startsWith('revealed:'))!;
+    expect(marker).toBe(`revealed: ${out.revealed.join(', ')}`);
+ 
+
+    // The printed rows carry no clock — they sit inside the region the screen
+    // scan reads, and a digit there is a leak — so the clock is a field. Both
+    // shipping transcripts hand it over.
+    expect(out.said.length).toBeGreaterThan(0);
+    for (const row of out.said) expect(Number.isFinite(row.at)).toBe(true);
+    expect(out.said.some((r) => r.at > 0)).toBe(true);
+  });
+
   it('names the reason in a field rather than only in prose', async () => {
     const good = await play({ fixture: 'naive-ndjson', bot: 'reader' });
     expect(good.ok).toBe(true);

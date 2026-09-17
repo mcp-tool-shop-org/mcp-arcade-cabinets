@@ -11,9 +11,13 @@ export type SfxName =
   | 'pop'
   | 'catch'
   | 'drop'
+  | 'drop-spread'
+  | 'drop-rapid'
+  | 'drop-pierce'
   | 'fog'
   | 'lamp'
   | 'lampback'
+  | 'lampfull'
   | 'phase'
   | 'end'
   | 'wave'
@@ -227,10 +231,39 @@ export function sfx(name: SfxName): Note[] {
         { at: 0.24, freq: 659, dur: 0.9, wave: 'sine', gain: 0.18 },
       ];
     case 'drop':
-      // A small pickup ding, not the lie-catch chord (W7).
+      // A small pickup ding, not the lie-catch chord (W7). Kept as the plain
+      // cue for a kind with no variation of its own.
       return [
         { at: 0, freq: 784, dur: 0.08, wave: 'square', gain: 0.1 },
         { at: 0.07, freq: 1046, dur: 0.12, wave: 'triangle', gain: 0.1 },
+      ];
+    // Three small variations on the ding, one per timed power, so the sound
+    // agrees with the color the player just saw. The field already gives
+    // each kind its own fill and its own bezel socket; the ear had one cue
+    // for all three.
+    case 'drop-spread':
+      // The widest of the three: two notes a fifth apart, opening outward.
+      return [
+        { at: 0, freq: 784, dur: 0.09, wave: 'square', gain: 0.1 },
+        { at: 0.07, freq: 1175, dur: 0.14, wave: 'triangle', gain: 0.1 },
+      ];
+    case 'drop-rapid':
+      // The quickest: three short taps rather than a rise.
+      return [
+        { at: 0, freq: 988, dur: 0.04, wave: 'square', gain: 0.09 },
+        { at: 0.05, freq: 988, dur: 0.04, wave: 'square', gain: 0.09 },
+        { at: 0.1, freq: 1318, dur: 0.08, wave: 'triangle', gain: 0.1 },
+      ];
+    case 'drop-pierce':
+      // The narrowest: one thin note held, a shot going through.
+      return [{ at: 0, freq: 1568, dur: 0.18, wave: 'sine', gain: 0.1 }];
+    case 'lampfull':
+      // A lamp caught with the pool already full: the lamp's own pitch, flat,
+      // because nothing came back. Not the rise of 'lampback', which would
+      // say a socket filled when none did.
+      return [
+        { at: 0, freq: 196, dur: 0.07, wave: 'square', gain: 0.09 },
+        { at: 0.08, freq: 196, dur: 0.1, wave: 'triangle', gain: 0.08 },
       ];
     case 'fog':
       return [{ at: 0, freq: 55, dur: 1.2, wave: 'sawtooth', gain: 0.05 }];

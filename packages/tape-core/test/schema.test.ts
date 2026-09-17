@@ -189,7 +189,9 @@ describe('the header fields a cabinet paints', () => {
       expect(() => loadTape(raw), `${field} newline`).toThrow(/printable/);
       const long = readRaw('naive-ndjson.tape.json') as Record<string, unknown>;
       long[field] = 'a'.repeat(HEADER_MAX_CHARS + 1);
-      expect(() => loadTape(long), `${field} length`).toThrow(/longer than a header field/);
+      expect(() => loadTape(long), `${field} length`).toThrow(
+        `${field} must be at most ${HEADER_MAX_CHARS} characters, got ${HEADER_MAX_CHARS + 1}`,
+      );
     }
   });
 
@@ -243,7 +245,10 @@ describe('the size of a tape the loader will take', () => {
       raw.rows[0]![field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
       expect(() => loadTape(raw), field).toThrow(TapeError);
       expect(() => loadTape(raw), field).toThrow(
-        `rows[0].${field} is longer than a tape field may be`,
+        // The message names the cap AND the actual length: its sibling at
+        // the list check always did, and a reader who is told only that a
+        // field is too long has to go find the constant in the source.
+        `rows[0].${field} must be at most ${TEXT_MAX_CHARS} characters, got ${TEXT_MAX_CHARS + 1}`,
       );
     }
   });
@@ -254,7 +259,7 @@ describe('the size of a tape the loader will take', () => {
       raw[field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
       expect(() => loadTape(raw), field).toThrow(TapeError);
       expect(() => loadTape(raw), field).toThrow(
-        new RegExp(`${field} is longer than a tape field may be`),
+        new RegExp(`${field} must be at most ${TEXT_MAX_CHARS} characters, got ${TEXT_MAX_CHARS + 1}`),
       );
     }
   });

@@ -1,5 +1,6 @@
 {
   "length": 4,
+  "candidates": 6,
   "climb": [0, 0.35, 0.7, 1],
   "flavors": [
     {

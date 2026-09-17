@@ -64,7 +64,9 @@ function req(obj: Record<string, unknown>, key: string, path: string): unknown {
 function asString(value: unknown, path: string): string {
   if (typeof value !== 'string') throw new TapeError(`${path} must be a string`);
   if (value.length > TEXT_MAX_CHARS) {
-    throw new TapeError(`${path} is longer than a tape field may be`);
+    throw new TapeError(
+      `${path} must be at most ${TEXT_MAX_CHARS} characters, got ${value.length}`,
+    );
   }
   return value;
 }
@@ -84,7 +86,9 @@ function asStringOrNull(value: unknown, path: string): string | null {
 function asHeaderString(value: unknown, path: string): string {
   const s = asString(value, path);
   if (s.length > HEADER_MAX_CHARS) {
-    throw new TapeError(`${path} is longer than a header field may be`);
+    throw new TapeError(
+      `${path} must be at most ${HEADER_MAX_CHARS} characters, got ${s.length}`,
+    );
   }
   for (let i = 0; i < s.length; i++) {
     const code = s.charCodeAt(i);

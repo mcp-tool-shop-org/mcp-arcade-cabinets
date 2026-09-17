@@ -123,7 +123,15 @@ export function parseLetter(raw: string, count: number): number | null {
   return null;
 }
 
-const SKIP_MODEL = /embed|nomic|translategemma|jam-ft|grader|aya-expanse|qwen3\.6:latest/i;
+/**
+ * Tags a boss never sits in: the embedders and the fine-tunes that cannot
+ * hold a conversation, plus the Ollama Cloud tags that have been retired and
+ * answer the call with a gone status. A retired tag is worse than no tag —
+ * the picker preferred cloud, so the default seat was a name that cannot
+ * answer, and every fire beat spent a round trip to learn it again.
+ */
+const SKIP_MODEL =
+  /embed|nomic|translategemma|jam-ft|grader|aya-expanse|qwen3\.6:latest|deepseek-v3\.1|qwen3-coder:480b|glm-4\.6/i;
 
 /** Ollama Cloud tags are `:cloud` or `:size-cloud`. */
 export function isCloudModel(name: string): boolean {
@@ -240,6 +248,16 @@ export function resetLowThink(model?: string, url?: string): void {
   thinkers.delete(model);
 }
 
+/**
+ * Most bytes a seat's answer may be before it is refused unread. The url is
+ * the operator's, `num_predict` bounds only a well-behaved server, and the
+ * read used to be `res.json()` on an unbounded body — buffered whole, inside
+ * a seat callback, once per fire beat.
+ */
+const MAX_BODY_BYTES = 64 * 1024;
+/** Most characters of an answer the intent and letter parsers will look at. */
+const MAX_ANSWER_CHARS = 4_096;
+
 const SHORT = { think: false as const, num_predict: 16, timeoutMs: 3_000 };
 const LOW = { think: 'low' as const, num_predict: 96, timeoutMs: 8_000 };
 
@@ -264,6 +282,51 @@ function errCode(err: unknown): string {
   return '';
 }
 
+/**
+ * The response body as text, refused over `max` bytes. Returns null when the
+ * response carries no readable stream — a test double, or a runtime without
+ * one — and the caller falls back to the response's own parser.
+ */
+async function readCapped(res: Response, max: number): Promise<string | null> {
+  const stated = Number(res.headers?.get?.('content-length') ?? Number.NaN);
+  if (Number.isFinite(stated) && stated > max) throw new Error('ollama bad payload');
+  const stream = (res as { body?: ReadableStream<Uint8Array> | null }).body;
+  if (!stream || typeof stream.getReader !== 'function') return null;
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      size += value.byteLength;
+      if (size > max) throw new Error('ollama bad payload');
+      chunks.push(value);
+    }
+  } finally {
+    try {
+      await reader.cancel();
+    } catch {
+      // The stream is already done or already gone; nothing to say about it.
+    }
+  }
+  const all = new Uint8Array(size);
+  let at = 0;
+  for (const c of chunks) {
+    all.set(c, at);
+    at += c.byteLength;
+  }
+  return new TextDecoder().decode(all);
+}
+
+/** A field off the answer, refused over the cap rather than handed to a regex. */
+function cappedField(value: unknown): string {
+  const s = String(value ?? '');
+  if (s.length > MAX_ANSWER_CHARS) throw new Error('ollama bad payload');
+  return s;
+}
+
 function isAbort(err: unknown): boolean {
   let cur: unknown = err;
   for (let i = 0; i < 4 && cur; i++) {
@@ -276,8 +339,11 @@ function isAbort(err: unknown): boolean {
 
 /**
  * One `/api/generate` call. Throws on transport or model errors (a retired
- * Cloud tag answers with an `error` body) so the shell can say so; the sim
- * keeps the scripted beat either way. Abort/timeout is a transport error.
+ * Cloud tag answers 410, or with an `error` body) so the shell can say so;
+ * the sim keeps the scripted beat either way. Abort/timeout is a transport
+ * error. The body is read under a byte cap and every field it hands back is
+ * under a character cap: the url is the operator's, and this runs inside a
+ * seat callback once per fire beat.
  */
 async function generate(
   opts: OllamaOpts,
@@ -307,13 +373,33 @@ async function generate(
     throw err;
   }
   if (!res.ok) {
+    // A retired Cloud tag answers 410 Gone, which used to fall off the end of
+    // this ladder into 'ollama error' — the one message in the taxonomy that
+    // names no cause and suggests no action — with the body never read. The
+    // status is read first, then the body, because a 402 or a 404 can carry
+    // the same news in words.
+    if (res.status === 410) throw new Error('ollama model retired');
+    let said = '';
+    try {
+      said = (await readCapped(res, MAX_BODY_BYTES)) ?? '';
+    } catch {
+      said = '';
+    }
+    if (/retired|no longer available|decommission/i.test(said)) {
+      throw new Error('ollama model retired');
+    }
     if (res.status === 404) throw new Error('ollama missing');
     if (res.status === 401 || res.status === 403) throw new Error('ollama refused');
     throw new Error('ollama error');
   }
   let body: { response?: unknown; thinking?: unknown; error?: unknown };
+  const raw = await readCapped(res, MAX_BODY_BYTES);
   try {
-    body = (await res.json()) as { response?: unknown; thinking?: unknown; error?: unknown };
+    body = (raw === null ? await res.json() : JSON.parse(raw)) as {
+      response?: unknown;
+      thinking?: unknown;
+      error?: unknown;
+    };
   } catch {
     throw new Error('ollama bad payload');
   }
@@ -322,7 +408,7 @@ async function generate(
     if (/retired/i.test(msg)) throw new Error('ollama model retired');
     throw new Error('ollama error');
   }
-  return { response: String(body.response ?? ''), thinking: String(body.thinking ?? '') };
+  return { response: cappedField(body.response), thinking: cappedField(body.thinking) };
 }
 
 async function ask(opts: OllamaOpts, prompt: string): Promise<string> {

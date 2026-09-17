@@ -394,6 +394,28 @@ function atomOf(enemy: Enemy): string {
   return i === -1 ? id : id.slice(0, i);
 }
 
+/**
+ * Most verbs the boss queue may hold. Four times the deepest look-ahead any
+ * rung asks for in `fire.json`, so a prefetch that lands late never trips it
+ * and a writer that does not read the lever cannot grow the queue without
+ * bound. One stale verb is spent per fire beat, so an unbounded queue is a
+ * boss playing a conversation that ended minutes ago.
+ */
+export const BOSS_QUEUE_MAX = 8;
+
+/**
+ * Put seat-written verbs on the queue under the bound every writer shares,
+ * and say how many were taken. The only cap used to live in the shell, so the
+ * `call` tool that the endless dispatch puts in the boss's chair was a second
+ * writer with no guard at all.
+ */
+export function pushBossVerbs(state: RoundState, verbs: readonly PilotIntent[]): number {
+  const room = Math.max(0, BOSS_QUEUE_MAX - state.bossQueue.length);
+  const taken = verbs.slice(0, room);
+  state.bossQueue.push(...taken);
+  return taken.length;
+}
+
 /** Drop leftover next-N verbs so they cannot arm the next spawn. */
 function dropBossVerbs(state: RoundState): void {
   state.bossIntent = null;
@@ -629,6 +651,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     rapidT: 0,
     pierceT: 0,
     dropCatches: 0,
+    dropCatchesByKind: { lamp: 0, spread: 0, rapid: 0, pierce: 0 },
     hazards: [],
     bossIntent: null,
     bossQueue: [],
@@ -1106,6 +1129,7 @@ function stepDrops(state: RoundState, meta: Meta | undefined, dt: number): void 
     if (!overlaps(drop, state.player)) continue;
     drop.alive = false;
     state.dropCatches += 1;
+    state.dropCatchesByKind[drop.kind] += 1;
     if (drop.kind === 'lamp') {
       // The pool the round was built with, not the rung's: a mode that owns
       // its own pool (endless) must not have a caught lamp clamped back to
@@ -1656,6 +1680,28 @@ export interface SaidRow {
 }
 
 /**
+ * The separator every surface in this package puts between two values on one
+ * line: the call header, the menu row, the score footer and both transcript
+ * headers. A bare space let a value that contains one — tape-core permits any
+ * printable line in `server_name` and `agent_policy` — run into the next
+ * label, so a server named with a space read as `server my fixture server bot
+ * reader` and nothing showed the reader where the value ended.
+ */
+export const FIELD_SEP = ' · ';
+
+/**
+ * One said row as both shipping transcripts print it. There were two copies
+ * of this line and a third in scripts/transcript.mjs; the two in this package
+ * are now one function, so the label convention and the separator cannot
+ * drift apart again. The clock in `at` is deliberately NOT printed: these
+ * rows sit inside the region the screen scan reads, and a digit there is a
+ * leak (G7). A caller that wants the clock reads `at` off the row.
+ */
+export function saidLine(row: SaidRow): string {
+  return `  ${row.kind}${FIELD_SEP}${row.text}`;
+}
+
+/**
  * A watcher over the caption channel and the live boss, kept across the
  * frames of one round. Three copies of this existed — the endless runner's,
  * the transcript script's, and nothing at all in playTape, which kept only
@@ -1668,6 +1714,14 @@ export function watchSaid(): { see(state: RoundState): void; rows(): SaidRow[] }
   const said: SaidRow[] = [];
   let lastCaption = '';
   let lastBoss = '';
+  // The scene gets its own flag rather than a sentinel written into the
+  // caption key. Overloading one variable for both printed every round's
+  // closing rows twice: stepRound returns the moment state.scene is set, so
+  // state.caption is never cleared, the next see() found a key that was not
+  // 'scene' any more, re-pushed the live caption, and the scene branch then
+  // re-pushed the ending and the closing line. Both runners call see() once
+  // after their loop, so both hit it exactly once, every round.
+  let sceneDone = false;
   return {
     see(state) {
       const boss = state.boss && state.boss.alive ? state.boss.kind : '';
@@ -1675,27 +1729,29 @@ export function watchSaid(): { see(state: RoundState): void; rows(): SaidRow[] }
         if (boss !== '') said.push({ at: state.t, kind: 'boss', text: `${boss} takes the field` });
         lastBoss = boss;
       }
-      const cap = state.caption;
-      const key = cap ? `${cap.kind ?? 'wave'}|${cap.text}|${cap.line ?? ''}` : '';
-      if (key !== lastCaption) {
-        if (cap) {
-          // One row a card: the word and its furniture line together, the way
-          // the shell paints them, so the transcript reads as the screen did.
-          said.push({
-            at: state.t,
-            kind: cap.kind ?? 'wave',
-            text: cap.line ? `${cap.text} — ${cap.line}` : cap.text,
-          });
+      // Once the scene has landed the round is over and the live caption is
+      // not on the screen any more — the renderer's own rule, one line over:
+      // `if (state.caption && !state.scene)`. The watcher now shares it.
+      if (!state.scene) {
+        const cap = state.caption;
+        const key = cap ? `${cap.kind ?? 'wave'}|${cap.text}|${cap.line ?? ''}` : '';
+        if (key !== lastCaption) {
+          if (cap) {
+            // One row a card: the word and its furniture line together, the way
+            // the shell paints them, so the transcript reads as the screen did.
+            said.push({
+              at: state.t,
+              kind: cap.kind ?? 'wave',
+              text: cap.line ? `${cap.text} — ${cap.line}` : cap.text,
+            });
+          }
+          lastCaption = key;
         }
-        lastCaption = key;
-      }
-      if (state.scene) {
+      } else if (!sceneDone) {
         const scene = state.scene;
-        if (lastCaption !== 'scene') {
-          if (scene.ending) said.push({ at: state.t, kind: 'ending', text: scene.ending });
-          if (scene.line) said.push({ at: state.t, kind: 'scene', text: scene.line });
-          lastCaption = 'scene';
-        }
+        if (scene.ending) said.push({ at: state.t, kind: 'ending', text: scene.ending });
+        if (scene.line) said.push({ at: state.t, kind: 'scene', text: scene.line });
+        sceneDone = true;
       }
     },
     rows() {

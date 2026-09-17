@@ -12,6 +12,7 @@ import {
   SPRITE_FILL,
   SPRITE_KEYS,
 } from '../src/index';
+import { PARKING_Y } from '../src/types';
 import type { Beat, Boss, DrawContext, Round, SpriteClass } from '../src/types';
 
 /** Records every fill call with the fill style in force, so two frames can be compared. */
@@ -237,14 +238,16 @@ describe('renderRound', () => {
 });
 
 describe('caption paint', () => {
-  it('paints a wave card in furniture colour at the top and a catch in amber low on the field', () => {
+  it('paints a wave card in furniture color at the top and a catch in amber low on the field', () => {
     const state = createRoundState(roundOf([]));
     state.caption = { text: 'poison', t: 1, kind: 'wave', line: 'Hush. The Whisperer is working.' };
     const a = recordingCtx();
     renderRound(a, state);
-    expect(a.calls.some((c) => c.startsWith('text #c8d0dc 16 40 poison'))).toBe(true);
+    // 62, not 40: the top band belongs to the parked trophies, and the card
+    // starts below the tallest one plus its halo.
+    expect(a.calls.some((c) => c.startsWith('text #c8d0dc 16 62 poison'))).toBe(true);
     expect(
-      a.calls.some((c) => c.startsWith('text #c8d0dc 16 58 Hush. The Whisperer is working.')),
+      a.calls.some((c) => c.startsWith('text #c8d0dc 16 80 Hush. The Whisperer is working.')),
     ).toBe(true);
     state.caption = { text: 'tools/call leak', t: 1, kind: 'catch' };
     const b = recordingCtx();
@@ -266,6 +269,31 @@ describe('caption paint', () => {
     expect(ctx.texts[0]).toBe('The cabinet thanks you for not counting.');
     expect(ctx.texts.join('\n')).toMatch(/policy naive/);
     for (const t of ctx.texts) expect(t).not.toMatch(FORBIDDEN);
+  });
+
+  // The cabinet's own words used to be painted straight through its own
+  // trophies: furniture gray on the reveal's amber is about 1.4:1. The better
+  // the player read the tape, the less of the reading they got.
+  it('starts a caption below the parked trophy row and its halo', () => {
+    const state = createRoundState(roundOf([beat({ id: 'b0', lie: true, sprite: 'grid' })]));
+    const enemy = state.enemies[0]!;
+    enemy.alive = true;
+    enemy.mode = 'caught';
+    enemy.y = PARKING_Y;
+    enemy.h = 22;
+    state.caption = { text: 'poison', t: 1, kind: 'wave', line: 'Hush.' };
+    const ctx = recordingCtx();
+    renderRound(ctx, state);
+
+    const halo = ctx.calls.find((c) => c.startsWith('rect #6a4418 '));
+    expect(halo).toBeDefined();
+    const [, , , hy, , hh] = halo!.split(' ');
+    const trophyFloor = Number(hy) + Number(hh);
+    const card = ctx.calls.find((c) => c.startsWith('text #c8d0dc ') && c.endsWith('poison'));
+    expect(card).toBeDefined();
+    const baseline = Number(card!.split(' ')[3]);
+    // A 16px baseline: the glyph body starts about 11 rows above it.
+    expect(baseline - 12).toBeGreaterThanOrEqual(trophyFloor);
   });
 
   it('draws a drop as a rectangle until art, same key for any fact', () => {
@@ -364,7 +392,10 @@ describe('the bezel says what is live, and the scene says how it ended', () => {
     state.pierceT = 4;
     const lit = recordingCtx();
     renderRound(lit, state, {});
-    expect(lit.calls.length).toBe(base + 3);
+    // A bar, a square, and a square with a notch punched back out of it: four
+    // paint calls for three glyphs, and three shapes a player can tell apart
+    // without reading the hue.
+    expect(lit.calls.length).toBe(base + 4);
 
     // The last second blinks: some frames of it paint the glyph and some do
     // not, so the expiry is telegraphed rather than discovered.
@@ -384,6 +415,33 @@ describe('the bezel says what is live, and the scene says how it ended', () => {
     const text = makeTextCtx();
     renderRound(text, state, {});
     for (const line of text.texts) expect(line).not.toMatch(/\d/);
+  });
+
+  // Hue alone is not a channel every player has, and a glyph that slid left
+  // when a neighbor expired made 'the middle one is rapid' unlearnable.
+  it('holds one socket per power kind whatever the other two are doing', () => {
+    const state = createRoundState(round());
+    const socketOf = (spread: number, rapid: number, pierce: number, fill: string) => {
+      state.spreadT = spread;
+      state.rapidT = rapid;
+      state.pierceT = pierce;
+      const ctx = recordingCtx();
+      renderRound(ctx, state, {});
+      const call = ctx.calls.find((c) => c.startsWith(`rect ${fill} `));
+      return call ? Number(call.split(' ')[2]) : null;
+    };
+
+    const spreadAlone = socketOf(8, 0, 0, '#7ec8c8');
+    const rapidAlone = socketOf(0, 8, 0, '#f0a04a');
+    const pierceAlone = socketOf(0, 0, 8, '#c8a0f0');
+    expect(spreadAlone).not.toBeNull();
+    expect(socketOf(8, 8, 8, '#7ec8c8')).toBe(spreadAlone);
+    expect(socketOf(8, 8, 8, '#f0a04a')).toBe(rapidAlone);
+    expect(socketOf(8, 8, 8, '#c8a0f0')).toBe(pierceAlone);
+    expect(socketOf(0, 8, 8, '#c8a0f0')).toBe(pierceAlone);
+    expect(socketOf(8, 0, 8, '#c8a0f0')).toBe(pierceAlone);
+    // Three distinct sockets, not one shared slot.
+    expect(new Set([spreadAlone, rapidAlone, pierceAlone]).size).toBe(3);
   });
 
   it('paints the ending line above the tape on the closing scene', () => {

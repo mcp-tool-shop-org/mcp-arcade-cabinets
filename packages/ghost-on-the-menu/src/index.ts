@@ -7,31 +7,48 @@
 
 export const CABINET = 'ghost-on-the-menu';
 
-export { DEFAULT_SECONDS, FIELD, VISIBLE_MAX, VISIBLE_MIN } from './types';
+// The barrel is the package's only entry point, so a name that is not here is
+// reachable only by deep-importing a path the package does not publish — and
+// it never reaches an editor tooltip. Every type named by a signature or a
+// field the barrel exports belongs here; test/scaffold.test.ts walks them.
+export { DEFAULT_SECONDS, FIELD, PARKING_Y, VISIBLE_MAX, VISIBLE_MIN } from './types';
 export type {
   Beat,
+  Boss,
   BossLinePick,
   BossSay,
+  Caption,
   DrawContext,
   Drop,
   DropKind,
   Enemy,
+  EnemyMode,
   Flavor,
   FlavorRole,
+  FogBank,
   Hazard,
+  HazardKind,
+  Player,
   Round,
   RoundInput,
   RoundState,
   Scene,
+  Shot,
   SpriteClass,
+  WaveBound,
 } from './types';
 export { prepassRound } from './prepass';
+export type { PrepassOpts } from './types';
 export {
+  BOSS_QUEUE_MAX,
   bossKindFor,
   createRoundState,
+  FIELD_SEP,
   isDecoy,
   MAX_DT,
+  pushBossVerbs,
   revealOnHit,
+  saidLine,
   stepRound,
   watchSaid,
 } from './sim';
@@ -137,17 +154,32 @@ export type { TapeLabel } from './label';
 export {
   BOSS_FILL,
   bossFrame,
+  COMBAT_FILL,
   fillFor,
   makeTextCtx,
   renderRound,
   REVEALED_FILL,
   SPRITE_FILL,
   SPRITE_KEYS,
+  WAVE_FIELD,
 } from './render';
-export type { Intensity, RenderOpts, SpriteKey } from './render';
+export type { CombatClass, FieldKind, Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
-export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
+export {
+  attach,
+  bar,
+  barSeconds,
+  BED_FADE_S,
+  BED_LEVEL,
+  BED_POOL,
+  BURST_RATE,
+  DEFAULT_MUSIC,
+  END_FADE_S,
+  TRACK_KEYS,
+  TRACKS,
+  sfx,
+} from './audio';
 export {
   askNextIntents,
   askOllama,

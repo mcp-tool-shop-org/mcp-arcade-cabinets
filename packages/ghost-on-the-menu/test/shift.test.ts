@@ -70,6 +70,35 @@ describe('the code', () => {
     expect(rosterFits(ROSTER)).toBe(true);
   });
 
+  // A roster past the ceiling used to decode a pasted code into a plausible
+  // WRONG draw: the check is four bits, so it holds fifteen times in sixteen,
+  // and encodeShift threw on the same roster the decoder happily answered.
+  it('refuses a code on a roster too long to name one, as encode does', () => {
+    const roster = Array.from({ length: 40 }, (_, i) => `tape-${'x'.repeat(i + 1)}`);
+    expect(rosterFits(roster)).toBe(false);
+    expect(decodeShift(roster, 'aaa bbb ccc ddd').ok).toBe(false);
+    for (let s = 0; s < 40; s++) {
+      const code = encodeShift(ROSTER, drawShift(ROSTER, s * 13 + 1, 1));
+      expect(decodeShift(roster, code)).toEqual({ ok: false, why: 'another menu' });
+    }
+  });
+
+  it('names the ceiling and the remedy when it cannot spell a draw', () => {
+    const roster = Array.from({ length: 40 }, (_, i) => `tape-${'x'.repeat(i + 1)}`);
+    expect(() => encodeShift(roster, drawShift(roster, 1, 1))).toThrow(/shift\.json/);
+  });
+});
+
+describe('freshness', () => {
+  // The pass degenerates to a no-op once the recent shifts cover the roster,
+  // and nothing said so: a caller could not tell a fresh shift from
+  // 'everything is stale'.
+  it('says whether the draw came up fresh, and reads its candidate count off shift.json', () => {
+    expect(DEFAULT_PATTERNS.shift.candidates).toBeGreaterThanOrEqual(1);
+    expect(drawShift(ROSTER, 4242, 1, []).fresh).toBe(true);
+    expect(drawShift(ROSTER, 4242, 1, [ROSTER]).fresh).toBe(false);
+  });
+
   it('round-trips every difficulty and many draws', () => {
     for (let s = 0; s < 50; s++) {
       const difficulty = (s % 4) as 0 | 1 | 2 | 3;
@@ -81,7 +110,13 @@ describe('the code', () => {
       expect(DEFAULT_PATTERNS.shift.words.even).toContain(words[0]);
       expect(DEFAULT_PATTERNS.shift.words.odd).toContain(words[1]);
       const back = decodeShift(ROSTER, code);
-      expect(back).toEqual({ ok: true, draw });
+      // Four words carry the order, the difficulty and a check of the roster.
+      // They do not carry whether the draw came up fresh, so a decoded draw
+      // does not claim it.
+      expect(back).toEqual({
+        ok: true,
+        draw: { names: draw.names, difficulty, asked: draw.asked },
+      });
     }
   });
 
@@ -89,8 +124,9 @@ describe('the code', () => {
     const draw = drawShift(ROSTER, 99, 2);
     const code = encodeShift(ROSTER, draw);
     const words = code.split(' ');
-    expect(decodeShift(ROSTER, words.join(', ').toUpperCase())).toEqual({ ok: true, draw });
-    expect(decodeShift(ROSTER, `  ${words.join('-')} `)).toEqual({ ok: true, draw });
+    const coded = { names: draw.names, difficulty: draw.difficulty, asked: draw.asked };
+    expect(decodeShift(ROSTER, words.join(', ').toUpperCase())).toEqual({ ok: true, draw: coded });
+    expect(decodeShift(ROSTER, `  ${words.join('-')} `)).toEqual({ ok: true, draw: coded });
   });
 
   it('refuses the wrong number of words, a word off the lists, and a transposition', () => {
@@ -316,6 +352,32 @@ describe('a hostile tape header never reaches the field', () => {
         `${needle}: empty policy line kept`,
       ).toBe(false);
     }
+  });
+
+  // A tape naming seven tools used to read exactly like one naming four, so
+  // the card told the player the agent was asked to run a set that is not the
+  // set. The cut is marked in a word, never a digit.
+  it('says in a word when the tool line is cut, and does not when it is whole', () => {
+    const toolsOf = (n: number) => ({
+      ...BASE,
+      atoms: Array.from({ length: n }, (_, i) => ({
+        id: `atom-${'a'.repeat(i + 1)}`,
+        task_tool: `tool-${'a'.repeat(i + 1)}`,
+        holdout: false,
+      })),
+    });
+
+    const cut = shiftCard(toolsOf(7)).find((l) => l.startsWith('asked to run'));
+    expect(cut).toBeDefined();
+    expect(cut!.endsWith(' and more')).toBe(true);
+    expect(cut).not.toMatch(/\d/);
+
+    const whole = shiftCard(toolsOf(3)).find((l) => l.startsWith('asked to run'));
+    expect(whole).toBeDefined();
+    expect(whole!.endsWith(' and more')).toBe(false);
+
+    const exact = shiftCard(toolsOf(4)).find((l) => l.startsWith('asked to run'));
+    expect(exact!.endsWith(' and more')).toBe(false);
   });
 
   it('keeps the end scene furniture clean on the field', () => {

@@ -23,6 +23,7 @@ import {
   beyondWord,
   BREATHER_REACH,
   chainWord,
+  ENDLESS_NAMELESS_TAPE,
   ENDLESS_NO_TIER_ZERO,
   decodeEndless,
   encodeEndless,
@@ -594,6 +595,30 @@ describe('what the run says', () => {
     expect(hits).toEqual(['the second call took 3 lamps']);
   });
 
+  // The strip's needle set includes a digit, so a tape named entirely of
+  // digits comes back as ''. The roster gate refuses one outright; below the
+  // gate, the display repair now treats an empty name as a collision and the
+  // menu row filters what it joins, so no path can print a blank item between
+  // two commas off a row the seat picks by name.
+  it('refuses a nameless tape by name and never prints a blank menu item', () => {
+    const nameless: EndlessTape[] = [{ name: '1234', tape: ROSTER[0]!.tape }, ...ROSTER.slice(1)];
+    expect(() =>
+      runEndless(nameless, { seed: 11, tier: 2, calls: 2, bot: (r) => botFor('idle', r) }),
+    ).toThrow(ENDLESS_NAMELESS_TAPE);
+
+    for (const call of out.calls) {
+      for (const c of call.candidates) {
+        expect(c.display.trim(), JSON.stringify(c.name)).not.toBe('');
+      }
+      const shown = call.candidates.map((c) => c.display);
+      expect(new Set(shown).size).toBe(shown.length);
+    }
+    for (const line of words) {
+      if (!line.includes('on the menu:')) continue;
+      expect(line).not.toMatch(/:\s*,|,\s*,|,\s*$/);
+    }
+  });
+
   it('names every call, its menu, its climb step and its tell', () => {
     for (const call of out.calls) {
       expect(words.some((l) => l.startsWith(call.place))).toBe(true);
@@ -655,7 +680,12 @@ describe('the code', () => {
     const draw = drawShift(names, 12345, 2);
     const code = encodeShift(names, draw);
     expect(code.split(' ').length).toBe(4);
-    expect(decodeShift(names, code)).toEqual({ ok: true, draw });
+    // Four words carry the order, the difficulty and a check of the roster,
+    // never whether the draw came up fresh.
+    expect(decodeShift(names, code)).toEqual({
+      ok: true,
+      draw: { names: draw.names, difficulty: draw.difficulty, asked: draw.asked },
+    });
     // A shift reader never mistakes an endless code for a draw, and the other
     // way about, because the count is the first thing either one reads.
     expect(decodeShift(names, encodeEndless(names, { seed: 5, difficulty: 1 }))).toEqual({

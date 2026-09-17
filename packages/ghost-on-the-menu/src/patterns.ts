@@ -367,6 +367,13 @@ export interface PatternSet {
  */
 export interface ShiftSet {
   length: number;
+  /**
+   * Candidate draws the freshness pass scores before it keeps one. A feel
+   * number, so it lives here beside the other shift levers rather than as a
+   * literal in the loop: raising it buys fresher shifts at the cost of that
+   * many more draws off the generator.
+   */
+  candidates: number;
   climb: number[];
   flavors: Flavor[];
   words: { even: string[]; odd: string[] };
@@ -1077,6 +1084,7 @@ function loadShift(raw: unknown): ShiftSet {
   const seen = new Set<string>();
   return {
     length,
+    candidates: asCount(req(obj, file, 'candidates'), file, 'candidates', 1),
     climb,
     flavors: loadFlavors(req(obj, file, 'flavors'), file, length),
     words: {

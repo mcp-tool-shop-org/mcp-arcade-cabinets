@@ -1,5 +1,12 @@
 import { TapeError, type Tape } from './types';
 
+// Rounding rule for this module: every score it returns is rounded to six
+// decimal places by `round` below, so the four scoring functions — brier,
+// brierMulti, meanBrier and reliability — all render the same way in a
+// caller's table and every worked value in the doc comments below is a value
+// the code actually returns. A caller that wants raw float error can square
+// the difference itself; a caller that prints a cell wants the rounded one.
+
 export const MIN_CONFIDENCE = 0.5;
 export const MAX_CONFIDENCE = 1;
 
@@ -85,8 +92,9 @@ export function meanBrier(scores: readonly number[]): number {
  * (p − o)² + ((1 − p) − (1 − o))² = 2(p − o)². Cabinets should use
  * `brierMulti` so 2- and 3-outcome turns share one scale.
  *
- * Worked values: p=0.8 right → 0.04; p=0.8 wrong → 0.64; p=1 right → 0;
- * p=1 wrong → 1; p=0.5 either way → 0.25.
+ * Returns the score rounded to six decimals, like its siblings, so these
+ * worked values are exact: p=0.8 right → 0.04; p=0.8 wrong → 0.64;
+ * p=1 right → 0; p=1 wrong → 1; p=0.5 either way → 0.25.
  *
  * This function does not accept or emit NRP, integrity, or utility.
  */
@@ -95,7 +103,7 @@ export function brier(p: number, outcome: boolean): number {
     throw new TapeError(`confidence p must be in [0.5, 1], got ${p}`);
   }
   const o = outcome ? 1 : 0;
-  return (p - o) ** 2;
+  return round((p - o) ** 2);
 }
 
 /** One binary call: stated confidence p on the chosen side, and whether it matched. */
@@ -114,6 +122,8 @@ export interface ReliabilityBin {
 /**
  * Reliability diagram: predicted vs observed rate per confidence bin.
  * `bins` is already grouped (one inner array per bin). Empty bins are omitted.
+ * Both rates are rounded to six decimals, like every other score here, so a
+ * printed table does not put a short cell beside a long one.
  * Does not accept or emit NRP, integrity, or utility.
  */
 export function reliability(bins: readonly (readonly BinaryCall[])[]): ReliabilityBin[] {
@@ -130,15 +140,23 @@ export function reliability(bins: readonly (readonly BinaryCall[])[]): Reliabili
       if (call.outcome) hits += 1;
     }
     out.push({
-      predicted: pSum / bin.length,
-      observed: hits / bin.length,
+      predicted: round(pSum / bin.length),
+      observed: round(hits / bin.length),
       n: bin.length,
     });
   }
   return out;
 }
 
-/** Coverage cell: distinct (server, atom, policy). Never summed into a score. */
+/**
+ * Coverage cell: distinct (server, atom, policy). Never summed into a score.
+ *
+ * The three parts are JSON-encoded before they are joined, because server_name
+ * and agent_policy are free one-line text and an atom id may carry the
+ * separator. A bare join let two different cells collapse onto one key, which
+ * is exactly the guarantee the caller counts this for.
+ */
 export function coverageKey(tape: Tape, atomId: string): string {
-  return `${tape.server_name ?? ''}|${atomId}|${tape.agent_policy}`;
+  const parts = [tape.server_name ?? '', atomId, tape.agent_policy];
+  return parts.map((part) => JSON.stringify(part)).join('|');
 }

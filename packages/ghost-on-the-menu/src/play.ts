@@ -22,7 +22,15 @@ import {
 } from './endless';
 import { rungWord } from './patterns';
 import { prepassRound } from './prepass';
-import { createRoundState, isHittable, stepRound, watchSaid } from './sim';
+import {
+  createRoundState,
+  FIELD_SEP,
+  isHittable,
+  saidLine,
+  stepRound,
+  watchSaid,
+  type SaidRow,
+} from './sim';
 import { makeTextCtx, renderRound } from './render';
 
 export type BotName = 'idle' | 'sweeper' | 'reader';
@@ -92,9 +100,22 @@ export interface Transcript {
   why: TranscriptWhy;
   /** Present when a seat was driven. */
   seat?: SeatReport;
-  /** Lie ids the bot revealed, in hit order. Never on screen; the CLI prints it. */
+  /**
+   * Every row the round or the run said, with the round clock it landed on.
+   * The printed rows carry no clock on purpose — they sit inside the region
+   * the screen scan reads and a digit there is a leak (G7) — so a reader that
+   * needs to know whether two rows were a beat apart or a minute apart takes
+   * `at` from here rather than from the text.
+   */
+  said: readonly SaidRow[];
+  /**
+   * Lie ids the bot revealed, in hit order. Never on screen; the CLI prints
+   * it. On an endless run these are every call's, in call order — they used
+   * to be an empty array beside a footer that said five were caught, which a
+   * band test reading the field could not tell from a run that caught none.
+   */
   revealed: string[];
-  /** Every lie id on the round, so a band test can compare without the fact. */
+  /** Every lie id on the round or the run, so a band test can compare without the fact. */
   lies: string[];
   /** How the round or the run ended: the clock, the last lamp, or an endless run's call cap. */
   ended: 'time' | 'lamps' | 'calls' | null;
@@ -318,6 +339,9 @@ function loadFail(fixture: string, reason: string): Transcript {
     ok: false,
     text,
     why: 'load',
+    // A round that never started said nothing; the empty list is a fact here
+    // and not an unfilled field.
+    said: [],
     revealed: [],
     lies: [],
     ended: null,
@@ -375,11 +399,29 @@ export function endlessTranscript(run: EndlessRun, bot: BotName): Transcript {
     'Ghost on the Menu',
     // The rung's own word, not a tier index: the difficulty is the one axis
     // this surface was otherwise word-only about, and the rank word the
-    // footer prints means a different scale on every rung.
-    `endless rung ${rungWord(run.difficulty)} bot ${bot} seed ${run.seed} calls ${run.calls.length}`,
+    // footer prints means a different scale on every rung. The fields are
+    // joined with the package's own separator, like every other row.
+    [
+      'endless',
+      `rung ${rungWord(run.difficulty)}`,
+      `bot ${bot}`,
+      `seed ${run.seed}`,
+      `calls ${run.calls.length}`,
+    ].join(FIELD_SEP),
     run.ended === 'lamps' ? 'run ended: lamps' : 'run ended: calls',
   ];
-  const footer = [`revealed: ${catches} caught, ${bosses} put down`, ...endlessScoreLines(run)];
+  const said = run.calls.flatMap((c) => c.said);
+  const revealed = run.calls.flatMap((c) => c.revealed);
+  const lies = run.calls.flatMap((c) => c.lies);
+  // `revealed:` means the id list here exactly as it does in playTape's
+  // footer; it used to mean a pair of counts in one of the two and a list in
+  // the other, one word for two things in two footers a reader compares. The
+  // counts keep their own line and their own words.
+  const footer = [
+    `revealed: ${revealed.join(', ') || 'none'}`,
+    `caught: ${catches}${FIELD_SEP}put down: ${bosses}`,
+    ...endlessScoreLines(run),
+  ];
   const leaked = words.some((t) => SCREEN_FORBIDDEN.test(t));
   const text = [...header, ...words, ...footer].join('\n');
   const dirty = leaked || FORBIDDEN.test(text);
@@ -393,8 +435,9 @@ export function endlessTranscript(run: EndlessRun, bot: BotName): Transcript {
         : run.ended === 'lamps'
           ? 'lamps'
           : 'complete',
-    revealed: [],
-    lies: [],
+    said,
+    revealed,
+    lies,
     ended: run.ended === 'lamps' ? 'lamps' : 'calls',
     lives: run.lamps,
     leaked,
@@ -565,7 +608,8 @@ export function playTape(
     if (ctx.texts.some((t) => SCREEN_FORBIDDEN.test(t))) leaked = true;
   }
   watcher.see(state);
-  const said = watcher.rows().map((r) => `  ${r.kind} · ${r.text}`);
+  const saidRows = watcher.rows();
+  const said = saidRows.map(saidLine);
   // The said rows sit between the header and the `revealed:` marker, where
   // the runner's screen scan already looks, exactly as endlessTranscript
   // places the run's words.
@@ -583,7 +627,17 @@ export function playTape(
         : 'round complete';
   const header = [
     'Ghost on the Menu',
-    `tape ${tape.bout_id} fixture ${fixture} policy ${tape.agent_policy} server ${tape.server_name ?? tape.target_kind} bot ${bot}`,
+    // Joined with the package's separator, not bare spaces: server_name and
+    // agent_policy are free one-line text, so a server named with a space
+    // used to read `server my fixture server bot reader` with nothing showing
+    // the reader where the value ended.
+    [
+      `tape ${tape.bout_id}`,
+      `fixture ${fixture}`,
+      `policy ${tape.agent_policy}`,
+      `server ${tape.server_name ?? tape.target_kind}`,
+      `bot ${bot}`,
+    ].join(FIELD_SEP),
     endName,
   ];
   let summary: string[] = [];
@@ -625,6 +679,7 @@ export function playTape(
     text,
     why,
     ...(seat ? { seat: { calls: seatCalls, throws: seatThrows, brokeAt: seatBrokeAt } } : {}),
+    said: saidRows,
     revealed,
     lies,
     ended: state.ended,

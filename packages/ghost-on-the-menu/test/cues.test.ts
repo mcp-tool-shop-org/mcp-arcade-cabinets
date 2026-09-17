@@ -81,3 +81,32 @@ describe('boss and dive cues', () => {
     expect(cues(a, { ...a, parallelism: true })).toEqual(['burst']);
   });
 });
+
+// The branch used to key on the lamp POOL rising, not on the kind caught, so
+// a lamp taken at a full pool sounded exactly like a spread — the one pickup
+// that was given its own sound on purpose — and the three timed powers shared
+// one ding although the field gives each its own fill and its own socket.
+describe('the drop cue names the kind that was caught', () => {
+  const state = createRoundState(round);
+  const a = snapshot(state);
+  const caught = (kind: 'lamp' | 'spread' | 'rapid' | 'pierce', lives = a.lives) => ({
+    ...a,
+    lives,
+    dropCatches: a.dropCatches + 1,
+    drops: { ...a.drops, [kind]: a.drops[kind] + 1 },
+  });
+
+  it('gives each timed power its own variation', () => {
+    expect(cues(a, caught('spread'))).toEqual(['drop-spread']);
+    expect(cues(a, caught('rapid'))).toEqual(['drop-rapid']);
+    expect(cues(a, caught('pierce'))).toEqual(['drop-pierce']);
+    expect(new Set(['drop-spread', 'drop-rapid', 'drop-pierce']).size).toBe(3);
+  });
+
+  it('tells a lamp that comes back from a lamp caught at a full pool', () => {
+    expect(cues(a, caught('lamp', a.lives + 1))).toEqual(['lampback']);
+    expect(cues(a, caught('lamp'))).toEqual(['lampfull']);
+    // Never the loss sound for a gain.
+    expect(cues(a, caught('lamp'))).not.toContain('lamp');
+  });
+});

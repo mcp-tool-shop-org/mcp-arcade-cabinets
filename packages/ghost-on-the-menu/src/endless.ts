@@ -30,7 +30,7 @@ import {
   type Tier,
 } from './patterns';
 import { prepassRound } from './prepass';
-import { createRoundState, stepRound, watchSaid } from './sim';
+import { createRoundState, saidLine, stepRound, watchSaid } from './sim';
 import {
   CHECK_SPACE,
   codeWords,
@@ -142,6 +142,14 @@ export interface EndlessCall extends EndlessPlanCall {
   intensityPeak: number;
   /** What the round said, in order: the cards, the catches, the asides, the scene. */
   said: { at: number; kind: string; text: string }[];
+  /**
+   * Lie ids this call revealed, in hit order, and every lie id the call put on
+   * the field. The run's transcript reports these; it used to report an empty
+   * array beside a footer saying five were caught, so a band test reading the
+   * machine-readable field got nothing where the text said five.
+   */
+  revealed: string[];
+  lies: string[];
 }
 
 /** The three lines the closing scene shows beside the run's word (G35). */
@@ -466,16 +474,24 @@ function distinctDisplays(candidates: EndlessCandidate[], set: PatternSet): Endl
   const taken = new Set<string>();
   return candidates.map((c, i) => {
     let display = c.display;
-    for (let n = 0; taken.has(display) && n <= nouns.length; n++) {
+    // An empty display is treated as a collision with itself. The strip's
+    // needle set includes a digit, so a tape named entirely of digits comes
+    // back as '', and only a SECOND empty name used to be repaired — the
+    // first survived and the menu row printed a blank item between two
+    // commas, off a row the seat is meant to pick by name.
+    for (let n = 0; (display === '' || taken.has(display)) && n <= nouns.length; n++) {
       const noun = nouns[(hashWords(c.name) + i + n) % nouns.length]!;
-      display = `${c.display} ${noun}`;
+      display = `${c.display} ${noun}`.trim();
     }
     taken.add(display);
     if (display === c.display) return c;
     // The header's first word IS the name, so it carries the same fix: a
     // header row and a menu row must not disagree about which tape this is.
+    // headerWords drops an empty name outright, so a repaired empty display
+    // has no first word to replace and is put in front of the rest.
     const header = [...c.header];
-    if (header[0] === c.display) header[0] = display;
+    if (c.display === '') header.unshift(display);
+    else if (header[0] === c.display) header[0] = display;
     return { ...c, display, header };
   });
 }
@@ -619,6 +635,8 @@ interface CallResult {
   copiesPeak: number;
   intensityPeak: number;
   said: { at: number; kind: string; text: string }[];
+  revealed: string[];
+  lies: string[];
 }
 
 /**
@@ -732,6 +750,8 @@ function playCall(
     intensityPeak = Math.max(intensityPeak, intensityAt(spec, w, waves, round.climb ?? 0));
   }
   return {
+    revealed: [...(state.scene?.cleared ?? state.cleared)],
+    lies: round.beats.filter((b) => b.lie).map((b) => b.id),
     catches,
     drops,
     bosses,
@@ -826,6 +846,8 @@ export function runEndless(roster: readonly EndlessTape[], opts: EndlessRunOpts)
       copiesPeak: out.copiesPeak,
       intensityPeak: out.intensityPeak,
       said: out.said,
+      revealed: out.revealed,
+      lies: out.lies,
     });
     if (lamps <= 0) {
       ended = 'lamps';
@@ -914,14 +936,17 @@ export function endlessWords(run: EndlessRun, set: PatternSet = DEFAULT_PATTERNS
       ),
     ];
     out.push(head.join(' · '));
-    out.push(`  on the menu: ${call.candidates.map((c) => c.display).join(', ')}`);
+    // Filtered: an item that is empty would print as a blank between two
+    // commas, and the row is what the seat picks by name.
+    const menu = call.candidates.map((c) => c.display).filter((d) => d.trim() !== '');
+    out.push(`  on the menu: ${menu.join(', ')}`);
     out.push(`  the pick came from the seed${call.seeded ? '' : ' and the seat'}`);
     out.push(
       `  the tell: ${call.tell === null ? 'the seat has not sat down yet' : strip(call.tell)}`,
     );
     for (const line of call.said) {
       const text = strip(line.text);
-      if (text) out.push(`  ${line.kind} · ${text}`);
+      if (text) out.push(saidLine({ ...line, text }));
     }
     // The refill is read off the record, not guessed from `clean`: a clean
     // call taken at a full pool gives no lamp back, which is the ordinary

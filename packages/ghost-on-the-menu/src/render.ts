@@ -1,5 +1,6 @@
 import {
   FIELD,
+  PARKING_Y,
   SCREEN_FORBIDDEN,
   sanitizeCaption,
   type Boss,
@@ -38,6 +39,8 @@ const PLAYER_FILL = '#c8d0dc';
 const SHOT_FILL = '#e8e0c8';
 const ENEMY_SHOT_FILL = '#d8624a';
 const FOG_FILL = 'rgba(76, 76, 106, 0.55)';
+/** The fog's leading edge: the one translucent body on the field gets a lip. */
+const FOG_RIM = '#8a8ab0';
 const VEIL_FILL = 'rgba(52, 52, 82, 0.88)';
 const LAMP_LIT = '#e8c060';
 const LAMP_RIM = '#3a3a4a';
@@ -65,7 +68,7 @@ export const COMBAT_FILL = {
 } as const;
 export type CombatClass = keyof typeof COMBAT_FILL;
 
-export const BOSS_FILL: Record<Boss['kind'] | 'archivist', string> = {
+export const BOSS_FILL: Record<Boss['kind'], string> = {
   whisperer: '#5a5a7a',
   menu: '#3a8a8a',
   doorman: '#a08040',
@@ -76,7 +79,7 @@ export const BOSS_FILL: Record<Boss['kind'] | 'archivist', string> = {
  * Dark rooms, one per wave or named boss. Not one #101018 box for every
  * experiment. Bezel furniture keeps FIELD_FILL.
  */
-export type FieldKind = WaveKind | Boss['kind'] | 'archivist';
+export type FieldKind = WaveKind | Boss['kind'];
 export const WAVE_FIELD: Record<FieldKind, string> = {
   inspect: '#10141c',
   poison: '#16121a',
@@ -89,7 +92,7 @@ export const WAVE_FIELD: Record<FieldKind, string> = {
   archivist: '#0e1820',
 };
 
-/** Pre-hit colour depends only on sprite class, never on `lie`. */
+/** Pre-hit color depends only on sprite class, never on `lie`. */
 export function fillFor(sprite: SpriteClass | CombatClass | string, revealed: boolean): string {
   if (revealed) return REVEALED_FILL;
   if (sprite in COMBAT_FILL) return COMBAT_FILL[sprite as CombatClass];
@@ -131,7 +134,15 @@ export type SpriteKey = (typeof SPRITE_KEYS)[number];
 /** Menu boss narrower than this draws the slit frame. */
 const SLIT_FRAME_W = 40;
 
-/** Cropped PNG sizes; dest rects keep this aspect instead of the sim box. */
+/**
+ * Cropped PNG sizes; a dest rect keeps this aspect instead of the sim box.
+ *
+ * The hazards are deliberately absent. All three are drawn at their hitbox
+ * exactly (see the hazard loop), because a thing the player has to dodge must
+ * be the size it hits at: the band used to carry an entry and was drawn 72x17
+ * against a 72x8 hitbox, which is a band that reads twice as thick as it is,
+ * while its two siblings were stretched to the box. One family, one rule.
+ */
 const SPRITE_NATIVE: Partial<Record<SpriteKey, { w: number; h: number }>> = {
   'boss-whisperer': { w: 108, h: 64 },
   'boss-menu-open': { w: 74, h: 117 },
@@ -140,7 +151,6 @@ const SPRITE_NATIVE: Partial<Record<SpriteKey, { w: number; h: number }>> = {
   'boss-doorman-plate-gone': { w: 51, h: 89 },
   'drop-lamp': { w: 73, h: 112 },
   'drop-spread': { w: 112, h: 97 },
-  'hazard-band': { w: 111, h: 26 },
   probe: { w: 35, h: 79 },
   shelf: { w: 167, h: 33 },
   ledger: { w: 93, h: 57 },
@@ -150,7 +160,7 @@ const SPRITE_NATIVE: Partial<Record<SpriteKey, { w: number; h: number }>> = {
 
 /** The boss frame is a function of the boss rect and plate the sim set; never of a fact. */
 export function bossFrame(b: Boss): SpriteKey {
-  const kind = b.kind as Boss['kind'] | 'archivist';
+  const kind = b.kind;
   switch (kind) {
     case 'menu':
       return b.w < SLIT_FRAME_W ? 'boss-menu-slit' : 'boss-menu-open';
@@ -204,6 +214,21 @@ const BOSS_BURST_FILL = '#e8e0c8';
 const BEZEL_H = 14;
 /** Seconds of a drop's power left at which its bezel glyph starts to blink. */
 const POWER_WARN_S = 1;
+/** Tallest body a caught lie can park at: the largest h in patterns/formations.json. */
+const MAX_SPRITE_H = 22;
+
+/**
+ * The floor every caption and every closing line sits below.
+ *
+ * Caught lies rise to PARKING_Y and stay there for the rest of the round, so
+ * the top band is the trophy row's, not the text's. A card that started at a
+ * literal y = 40 was painted straight through a parked trophy: furniture gray
+ * on the reveal's amber is about 1.4:1, which is gone. The better the player
+ * read the tape, the less of the cabinet's words they got.
+ */
+function captionTop(halo: number): number {
+  return PARKING_Y + MAX_SPRITE_H + halo + 18;
+}
 
 export function makeTextCtx(): DrawContext & { texts: string[] } {
   const texts: string[] = [];
@@ -264,16 +289,35 @@ function paintLines(
 }
 
 /**
+ * How a dest rect resolves the argument between the art and the sim box when
+ * their aspects disagree.
+ *
+ * `cover` — the art wins: scaled by the larger of the two scales, so the box
+ * is filled and the art may overhang it. Right for scenery and for a pickup,
+ * where a generous silhouette costs the player nothing.
+ *
+ * `contain` — the hitbox wins: scaled by the smaller of the two scales, so the
+ * art never reaches past the thing that takes hits. Right for a boss, because
+ * a cover fit drew the Menu 72x114 against a 72x48 box, two and a half times
+ * the height of what the player was shooting at, with its top nine rows
+ * clipped off the field.
+ */
+type SpriteFit = 'cover' | 'contain';
+
+/**
  * Dest rect at the PNG aspect, centered on the sim box.
  * Rectangle fallback stays the sim box when the PNG is missing.
  */
 function nativeDest(
   box: { x: number; y: number; w: number; h: number },
   native: { w: number; h: number } | undefined,
+  fit: SpriteFit = 'cover',
 ): { x: number; y: number; w: number; h: number } {
   if (!native) return { x: box.x, y: box.y, w: box.w, h: box.h };
-  const destW = Math.max(box.w, native.w * (box.h / native.h));
-  const destH = Math.max(box.h, native.h * (box.w / native.w));
+  const pick = fit === 'contain' ? Math.min : Math.max;
+  const scale = pick(box.w / native.w, box.h / native.h);
+  const destW = native.w * scale;
+  const destH = native.h * scale;
   return {
     x: Math.round(box.x + (box.w - destW) / 2),
     y: Math.round(box.y + (box.h - destH) / 2),
@@ -295,7 +339,9 @@ function bossSpriteRect(b: Boss): { x: number; y: number; w: number; h: number }
   if (b.plate) {
     sw = Math.max(b.w, b.plate.x + b.plate.w - b.x);
   }
-  return nativeDest({ x: sx, y: sy, w: sw, h: sh }, SPRITE_NATIVE[bossFrame(b)]);
+  // Contain: a boss is the one body the player spends a whole wave shooting,
+  // so the drawn thing never reaches past the thing that takes the hits.
+  return nativeDest({ x: sx, y: sy, w: sw, h: sh }, SPRITE_NATIVE[bossFrame(b)], 'contain');
 }
 
 type Rect = (x: number, y: number, w: number, h: number) => void;
@@ -361,21 +407,13 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   ctx.fillStyle = room;
   ctx.fillRect(0, 0, FIELD.width, FIELD.height);
 
-  if (state.fog && state.fog.alive) {
-    const f = state.fog;
-    if (!sprite('fog', f.x, f.y, f.w, f.h)) {
-      ctx.fillStyle = FOG_FILL;
-      rect(f.x, f.y, f.w, f.h);
-    }
-  }
-
   let bossPaintBottom = 0;
   if (state.boss && state.boss.alive) {
     const b = state.boss;
     const dest = bossSpriteRect(b);
     const drew = sprite(bossFrame(b), dest.x, dest.y, dest.w, dest.h);
     if (!drew) {
-      ctx.fillStyle = BOSS_FILL[b.kind as keyof typeof BOSS_FILL];
+      ctx.fillStyle = BOSS_FILL[b.kind];
       rect(b.x, b.y, b.w, b.h);
       // A darker band so a boss reads as a wall, not a large grid sprite.
       ctx.fillStyle = room;
@@ -383,7 +421,7 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
       if (b.w > 8 && b.h > band * 3) rect(b.x + 4, b.y + b.h - band * 2, b.w - 8, band);
       // The plate is part of the Doorman's sprite frame; as a rectangle it is drawn here.
       if (b.plate) {
-        ctx.fillStyle = BOSS_FILL[b.kind as keyof typeof BOSS_FILL];
+        ctx.fillStyle = BOSS_FILL[b.kind];
         rect(b.plate.x, b.plate.y, b.plate.w, b.plate.h);
       }
     }
@@ -457,13 +495,32 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     band: '#3a8a8a',
     plate: '#a08040',
   };
+  // Every hazard is drawn at its own hitbox, echo, band and plate alike: what
+  // the player dodges is exactly what hits, and the three members of one
+  // family take one rule. The band used to be the exception.
   for (const h of state.hazards) {
     if (!h.alive) continue;
     const key = `hazard-${h.kind}` satisfies SpriteKey;
-    const dest = key === 'hazard-band' ? nativeDest(h, SPRITE_NATIVE[key]) : h;
-    if (!sprite(key, dest.x, dest.y, dest.w, dest.h)) {
+    if (!sprite(key, h.x, h.y, h.w, h.h)) {
       ctx.fillStyle = HAZARD_FILL[h.kind];
       rect(h.x, h.y, h.w, h.h);
+    }
+  }
+
+  // The fog is painted here, above the formations and above the boss that
+  // emitted it, rather than first. It is the harshest thing the field does —
+  // it costs the bottom third of the screen the moment it lands — and it used
+  // to be the one threat drawn beneath everything else, in the only
+  // translucent fill in the game, over a room of its own color family. A
+  // boss fog was born behind the boss that fired it. It now falls in front of
+  // what it falls through, with an opaque lip on its leading edge.
+  if (state.fog && state.fog.alive) {
+    const f = state.fog;
+    if (!sprite('fog', f.x, f.y, f.w, f.h)) {
+      ctx.fillStyle = FOG_FILL;
+      rect(f.x, f.y, f.w, f.h);
+      ctx.fillStyle = FOG_RIM;
+      rect(f.x, f.y + f.h - 2, f.w, 2);
     }
   }
 
@@ -500,7 +557,7 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
       ctx.fillStyle = FURNITURE;
       // Sit below the live boss (painted dest, or the sim body) so the card
       // is not written across the Whisperer/Menu/Doorman; otherwise the top band.
-      let y = bossPaintBottom > 0 ? bossPaintBottom + 16 : 40;
+      let y = Math.max(captionTop(level.halo), bossPaintBottom > 0 ? bossPaintBottom + 16 : 0);
       if (state.caption.kind === 'wave') {
         ctx.font = '16px monospace';
         y = paintLines(ctx, state.caption.text, 16, y, 16, 18, 1);
@@ -548,21 +605,36 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // up and about to go without a digit either. Before this, a spread and a
   // pierce and a rapid were visible only in the shot pattern itself, which a
   // player in a fog wave or mid-dodge is not watching.
-  const powers: { t: number; fill: string }[] = [
-    { t: state.spreadT, fill: DROP_SPREAD_FILL },
-    { t: state.rapidT, fill: DROP_RAPID_FILL },
-    { t: state.pierceT, fill: DROP_PIERCE_FILL },
+  //
+  // Each kind holds its own socket whether or not it is live, and each is a
+  // different shape as well as a different fill: a bar, a filled square, a
+  // notched square. Hue alone is not a channel every player has, and a glyph
+  // that slid left when another power expired made 'the middle one is rapid'
+  // unlearnable — a glyph moving was the same visual event as a power
+  // arriving. The sockets are the lamps' grammar: a fixed hole per thing.
+  const powers: { t: number; fill: string; shape: 'bar' | 'square' | 'notch' }[] = [
+    { t: state.spreadT, fill: DROP_SPREAD_FILL, shape: 'bar' },
+    { t: state.rapidT, fill: DROP_RAPID_FILL, shape: 'square' },
+    { t: state.pierceT, fill: DROP_PIERCE_FILL, shape: 'notch' },
   ];
-  let px = FIELD.width - 12 - 6;
-  for (const power of powers) {
+  const py = FIELD.height - BEZEL_H + 4;
+  for (let i = 0; i < powers.length; i++) {
+    const power = powers[i]!;
+    const px = FIELD.width - 18 - i * 10;
     if (power.t <= 0) continue;
     // The last second blinks, four times a second, off on the odd halves.
     const going = power.t <= POWER_WARN_S && Math.floor(power.t * 8) % 2 === 1;
-    if (!going) {
-      ctx.fillStyle = power.fill;
-      ctx.fillRect(px, FIELD.height - BEZEL_H + 4, 6, 6);
+    if (going) continue;
+    ctx.fillStyle = power.fill;
+    if (power.shape === 'bar') {
+      ctx.fillRect(px, py + 2, 6, 2);
+    } else {
+      ctx.fillRect(px, py, 6, 6);
+      if (power.shape === 'notch') {
+        ctx.fillStyle = BEZEL;
+        ctx.fillRect(px + 3, py + 2, 3, 2);
+      }
     }
-    px -= 10;
   }
 
   if (state.scene) {
@@ -579,7 +651,10 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
     // `ghost-on-the-menu` still reads (G10).
     ctx.fillStyle = FURNITURE;
     ctx.font = '14px monospace';
-    let y = 46;
+    // The same floor the live captions take. The end scene is the screen that
+    // exists to show the trophies AND the words, so it is the one place the
+    // collision was guaranteed rather than merely likely.
+    let y = captionTop(level.halo);
     const line = state.scene.line ? sanitizeCaption(state.scene.line) : '';
     if (line) {
       y = paintLines(ctx, line, 16, y, 14, 18, 2);

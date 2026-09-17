@@ -14,7 +14,7 @@ import {
   revealOnHit,
   stepRound,
 } from '../src/index';
-import { isHittable } from '../src/sim';
+import { isHittable, watchSaid } from '../src/sim';
 import {
   attachPatterns,
   burstActive,
@@ -2624,6 +2624,34 @@ describe('what the round says, and the step it is asked to take', () => {
     expect(byLamps.ended).toBe('lamps');
     expect(DEFAULT_PATTERNS.voice.ending.lamps).toContain(byLamps.scene!.ending);
     expect(byLamps.scene!.ending).not.toBe(byTime.scene!.ending);
+  });
+
+  // watchSaid overloaded one variable as both the caption key and a 'scene'
+  // sentinel, so every round's closing rows were emitted TWICE: stepRound
+  // returns the moment state.scene is set, so state.caption is never cleared,
+  // the next see() found a key that was not 'scene' any more, re-pushed the
+  // live caption, and the scene branch then re-pushed the ending and the
+  // line. Both runners call see() once after their loop, so both hit it.
+  it("emits a round's closing rows once however many times it is seen", () => {
+    const state = createRoundState(roundOf({ tapeId: 'bout_said', duration: 2 }));
+    const watcher = watchSaid();
+    let guard = 0;
+    while (guard++ < 400 && !state.scene) {
+      stepRound(state, NO, MAX_DT);
+      watcher.see(state);
+    }
+    expect(state.scene).not.toBeNull();
+    // A live caption is still set on the frame the scene lands; the renderer
+    // refuses to paint it and the watcher now refuses to record it.
+    const after = watcher.rows().length;
+    for (let i = 0; i < 5; i++) watcher.see(state);
+    expect(watcher.rows().length).toBe(after);
+
+    const closing = watcher.rows().filter((r) => r.kind === 'scene' || r.kind === 'ending');
+    expect(closing.length).toBeGreaterThan(0);
+    for (const kind of ['scene', 'ending']) {
+      expect(closing.filter((r) => r.kind === kind).length).toBeLessThanOrEqual(1);
+    }
   });
 
   it('drops a seat line whose window closed instead of saying it late', () => {

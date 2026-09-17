@@ -4,7 +4,7 @@
 // `audio.ts`. Kept out of the sim so the sim stays one function (§5).
 
 import type { SfxName } from './audio';
-import { kindOfAtom, type Round, type RoundState, type WaveKind } from './types';
+import { kindOfAtom, type DropKind, type Round, type RoundState, type WaveKind } from './types';
 
 export { kindOfAtom, type WaveKind };
 
@@ -31,8 +31,13 @@ export interface CueSnapshot {
   bossKills: number;
   diving: number;
   dropCatches: number;
+  /** The same catches by kind, so a cue can name what was caught. */
+  drops: Record<DropKind, number>;
   parallelism: boolean;
 }
+
+/** The kinds in a fixed order, so one frame's catches fire in one order. */
+const DROP_KINDS: readonly DropKind[] = ['lamp', 'spread', 'rapid', 'pierce'];
 
 export function snapshot(state: RoundState): CueSnapshot {
   let caught = 0;
@@ -56,6 +61,7 @@ export function snapshot(state: RoundState): CueSnapshot {
     bossKills: state.bossKills,
     diving,
     dropCatches: state.dropCatches,
+    drops: { ...state.dropCatchesByKind },
     parallelism: state.parallelism,
   };
 }
@@ -65,12 +71,28 @@ export function cues(prev: CueSnapshot | null, next: CueSnapshot): SfxName[] {
   if (!prev) return [];
   const out: SfxName[] = [];
   if (next.caught > prev.caught) out.push('catch');
-  // A lamp coming back has its own sound. The four drop kinds used to fire
-  // one cue between them, so catching a life back and catching a spread were
-  // acoustically identical — and 'lamp' is the LOSS sound, so reusing it for
-  // a gain would have read backwards.
-  if (next.lives > prev.lives) out.push('lampback');
-  else if (next.dropCatches > prev.dropCatches) out.push('drop');
+  // The cue is chosen by the KIND that was caught, not by the lamp pool
+  // rising. Keying on the pool meant a lamp caught at a full pool — the
+  // ordinary case, where the pickup changes nothing — sounded exactly like a
+  // spread, which is the one pickup that was given its own sound on purpose;
+  // and the three timed powers shared one ding although the field gives each
+  // its own fill and its own bezel socket. 'lamp' is the LOSS sound, so it is
+  // never reused for a gain.
+  let named = false;
+  for (const kind of DROP_KINDS) {
+    if (next.drops[kind] <= prev.drops[kind]) continue;
+    named = true;
+    if (kind === 'lamp') out.push(next.lives > prev.lives ? 'lampback' : 'lampfull');
+    else if (kind === 'spread') out.push('drop-spread');
+    else if (kind === 'rapid') out.push('drop-rapid');
+    else out.push('drop-pierce');
+  }
+  // A pool that rose with no lamp caught, or a catch a caller counted without
+  // naming its kind: the old cues, so no pickup is ever silent.
+  if (!named) {
+    if (next.lives > prev.lives) out.push('lampback');
+    else if (next.dropCatches > prev.dropCatches) out.push('drop');
+  }
   if (next.lives < prev.lives) out.push('lamp');
   if (next.ended && !prev.ended) out.push('end');
   if (next.waveCard && !prev.waveCard) out.push('wave');
