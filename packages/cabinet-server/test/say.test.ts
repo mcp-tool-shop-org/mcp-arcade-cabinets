@@ -5,7 +5,8 @@ import { DEFAULT_PATTERNS } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import type { SeatView } from '../src/cabinet';
 import { FORBIDDEN, gateLine } from '../src/gate';
 import { DEFAULT_PERSONAS } from '../src/personas';
-import { askSay, sayPrompt, sayTier, seedLines } from '../src/say';
+import { askEndlessFor } from '../src/endless';
+import { askSay, NO_SEAT, sayPrompt, sayTier, seedLines } from '../src/say';
 import { seedPool } from '../src/seeds';
 
 const KINDS = ['whisperer', 'menu', 'doorman'] as const;
@@ -172,5 +173,35 @@ describe('askSay over an Ollama daemon', () => {
         models: [],
       }),
     ).rejects.toThrow(/no say seat/);
+  });
+
+  it('a seat with nothing behind it names both ways in, for either seat', async () => {
+    // `sayTier` right above makes the answer concrete — a key, else a
+    // signed-in cloud tag, else any listed local model — and none of it used
+    // to reach the operator, who was told a seat was missing and left to
+    // guess what one is.
+    const both =
+      'is configured; set a key for the hosted seat, or sign in to the daemon so a model is listed';
+    expect(NO_SEAT('say')).toBe(`no say seat ${both}`);
+    expect(NO_SEAT('endless')).toBe(`no endless seat ${both}`);
+
+    const nothing = { anthropicKey: null, ollamaUrl: '/x', models: [] };
+    await expect(askSay(view, DEFAULT_PERSONAS.boss.whisperer, [], [], nothing)).rejects.toThrow(
+      NO_SEAT('say'),
+    );
+    await expect(
+      askEndlessFor(
+        {
+          product: 'a hat rental for crows',
+          stack: 'python',
+          bandMin: 0.2,
+          bandMax: 0.4,
+          recent: [],
+          weak: [],
+          newLevel: false,
+        },
+        nothing,
+      ),
+    ).rejects.toThrow(NO_SEAT('endless'));
   });
 });

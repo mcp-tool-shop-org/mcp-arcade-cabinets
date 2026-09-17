@@ -113,6 +113,31 @@ describe('the environment overrides', () => {
     expect(fixture.opts).toEqual({});
     expect(vibeEnv({ CABINET_FIXTURE: '' }).notes).toEqual([]);
 
+    // The image's table says CABINET_SEED is a whole number on BOTH
+    // cabinets and anything else is a note. The shooter kept that promise
+    // and this cabinet dropped the value in silence, so the same wrong value
+    // got a line next door and nothing here. Same words, because same rule.
+    const seed = vibeEnv({ CABINET_SEED: 'later' });
+    expect(seed.opts.seed).toBeUndefined();
+    expect(seed.notes).toEqual(['CABINET_SEED was not understood; the cabinet draws its own\n']);
+    expect(vibeEnv({ CABINET_SEED: '' }).notes).toEqual([]);
+
+    // The host compose file offers CABINET, VOICE_URL and VOICE_TOKEN in one
+    // commented block to uncomment together, so an operator who takes that
+    // invitation runs the typing cabinet with two voice variables set and
+    // used to hear nothing at all about either. One line covers the pair.
+    const voicePair =
+      'VOICE_URL and VOICE_TOKEN are read by the shooter cabinet only; this cabinet has no voice\n';
+    expect(vibeEnv({ VOICE_URL: 'http://host.docker.internal:7788' }).notes).toEqual([voicePair]);
+    expect(vibeEnv({ VOICE_TOKEN: 'a-secret' }).notes).toEqual([voicePair]);
+    expect(
+      vibeEnv({ VOICE_URL: 'http://host.docker.internal:7788', VOICE_TOKEN: 'a-secret' }).notes,
+    ).toEqual([voicePair]);
+    // The image's own silent default is the operator saying nothing.
+    expect(vibeEnv({ VOICE_URL: '', VOICE_TOKEN: '' }).notes).toEqual([]);
+    // And the pair's line never echoes the url back.
+    expect(voicePair).not.toMatch(/[/\\]/);
+
     // Every line is path-free and menu-shaped: an operator's mount point is
     // never echoed back at them.
     for (const note of [...overlay.notes, ...bot.notes, ...vibeEnv({ CABINET_TIER: '9' }).notes]) {
@@ -146,7 +171,8 @@ describe('the headless endless round', () => {
     expect(ended, 'the bar emptied and the next run started').toBe(true);
     expect(h.live.state.over).toBe(false);
     const view = h.cabinet.call('view', {}).content[0]!.text;
-    expect(view).toMatch(/^product /);
+    // The run line may sit above it when the bar emptied during this run.
+    expect(view).toMatch(/^product /m);
     expect(view).not.toMatch(FORBIDDEN);
   }, 30_000);
 
@@ -169,10 +195,10 @@ describe('the headless endless round', () => {
     expect(suppliedCount(h.live.state)).toBe(1);
     // The same words again, and the same words with the hole written out.
     expect(send('let {product} count the leaves', pool[1]!.code)).toBe(
-      'the gate refused it (repeat); the cabinet plays one of its own instead',
+      'the gate refused it (that request was already made); the cabinet plays one of its own instead',
     );
     expect(send(`let ${next.product} count the leaves`, pool[1]!.code)).toBe(
-      'the gate refused it (repeat); the cabinet plays one of its own instead',
+      'the gate refused it (that request was already made); the cabinet plays one of its own instead',
     );
     expect(suppliedCount(h.live.state)).toBe(1);
     // A different request is taken.

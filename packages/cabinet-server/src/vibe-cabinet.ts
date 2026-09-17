@@ -21,6 +21,7 @@ import { lineFault, productFault, type CodeGateReason } from '@mcp-arcade-cabine
 
 import { vibeToolDef } from './contract';
 import { lineKey, normalizeLine, VIBE_NAMES } from './gate';
+import { STUCK_ANSWER, STUCK_VIEW_LINE } from './step-guard';
 import { NO_LEVER, VIBE_TOOL_NAMES, type VibeToolName } from './tool-names';
 
 /** A request a client offered, before the code gate has seen it. */
@@ -43,7 +44,7 @@ export type AskRefusal = CodeGateReason | 'repeat';
  * gate's reason word and nothing else — never the code, never the line.
  */
 export type AskAnswer =
-  { kind: 'queued' } | { kind: 'full' } | { kind: 'refused'; reason: AskRefusal };
+  { kind: 'queued' } | { kind: 'full' } | { kind: 'refused'; reason: AskRefusal; detail?: string };
 
 /**
  * What the host says about a reaction. `waiting` and `dropped` are the sim's
@@ -75,6 +76,11 @@ export interface VibeHost {
   react(line: string, about?: string): ReactAnswer;
   /** Lines the user has said lately, for the no-repeat window. */
   recent(): readonly string[];
+  /**
+   * Whether the run has stopped moving under the step guard. Optional: a
+   * host with no sim behind it (a test, the shell) never stalls.
+   */
+  stuck?(): boolean;
 }
 
 export interface VibeToolResult {
@@ -132,9 +138,78 @@ export function reactFault(
   return { ok: true, line };
 }
 
+/**
+ * The word gates' own words, as the rule a client can act on.
+ *
+ * `lineFault` and `productFault` speak to the authoring tools, and their
+ * words went straight through to the client: 'not ascii', which the shooter
+ * says as 'a character off this keyboard' for the identical rule; 'padded',
+ * which names nothing a client can picture; and 'forbidden word or digit',
+ * which folds two separate rules into one word and names neither. Where the
+ * two cabinets hold a line to the same rule they now say it in the same
+ * words — the closed-word clause here is the shooter's `GATE_FIX.forbidden`
+ * verbatim.
+ *
+ * 'yells', 'too many words', 'more than one sentence' and 'empty' are left
+ * alone: those already say what to change.
+ */
+const FAULT_WORDS: Record<string, string> = {
+  'not ascii': 'a character off this keyboard',
+  padded: 'a space at the start or the end',
+  'forbidden word or digit':
+    'a digit, or something about how the game is going; say it in character instead',
+};
+
 /** A spelling fault names the word it found; the tools say the rule instead. */
-function sayReason(fault: string): string {
-  return fault.startsWith('spelling:') ? 'a British spelling' : fault;
+export function sayReason(fault: string): string {
+  if (fault.startsWith('spelling:')) return 'a British spelling';
+  return FAULT_WORDS[fault] ?? fault;
+}
+
+/**
+ * The code gate's reasons, as plain phrases a client can act on.
+ *
+ * `ask` used to answer with the `CodeGateReason` token itself — hyphenated
+ * jargon for rules the client was never told in those words. The view says
+ * 'how hard that job should feel', not 'band', so 'value-out-of-band' named
+ * a concept the client had no handle on, and 'bad-ask' and 'bad-notes' named
+ * a field without naming its rule. The shooter's cabinet solved exactly this
+ * with `GATE_FIX`; this side simply never got its half. Each phrase here
+ * uses the same words the tool's own description uses for that field.
+ */
+export const VIBE_ASK_FIX: Record<AskRefusal, string> = {
+  empty: 'nothing to type',
+  'not-ascii': 'a character off this keyboard',
+  tab: 'a tab character',
+  'too-many-lines': 'more lines than the cabinet types',
+  'too-wide': 'a line wider than the screen',
+  unbalanced: 'a bracket is left open',
+  'wrong-language': 'that is not the language the view names',
+  'barred-word': 'the code used a word the cabinet keeps out',
+  'names-a-model': 'that names a tool, a model or a company',
+  'value-out-of-band': 'the code is bigger or smaller than the job should feel',
+  'bad-ask': 'the words are not one plain sentence asking for the thing',
+  'bad-title': 'the title is not a few plain words for what the code does',
+  'bad-notes': 'the notes are not up to three short teaching sentences',
+  'bad-product': 'the name for the thing being built is not a few plain words',
+  repeat: 'that request was already made',
+};
+
+/**
+ * The gate's own detail, when it is safe to hand a client.
+ *
+ * `CodeGateResult` carries a `detail` for precisely this and the host dropped
+ * it, so the one place the specifics existed never reached anybody. Some
+ * details are a measure ('eighty-one columns'), so the filter is the one
+ * `voice.ts` already uses on a worker's error word: no digit, no path
+ * separator. A detail that fails it is simply not said.
+ */
+export function sayDetail(detail: string | undefined): string | null {
+  if (detail === undefined) return null;
+  const word = detail.trim();
+  if (word === '') return null;
+  if (/[\p{Nd}\p{No}]/u.test(word) || word.includes('/') || word.includes('\\')) return null;
+  return word;
 }
 
 /**
@@ -178,13 +253,19 @@ const TOO_LONG = 'too long';
 /** The typing cabinet: its four tools over a host of words. */
 export function createVibeCabinet(host: VibeHost): VibeCabinet {
   const log: VibeCallRecord[] = [];
+  const stuck = () => host.stuck?.() === true;
 
   function view(): VibeToolResult {
     log.push({ name: 'view', ok: true });
-    return text(host.view());
+    const lines = host.view();
+    return text(stuck() ? `${lines}\n${STUCK_VIEW_LINE}` : lines);
   }
 
   function product(args: unknown): VibeToolResult {
+    if (stuck()) {
+      log.push({ name: 'product', ok: false });
+      return text(STUCK_ANSWER);
+    }
     const raw = argOf(args, 'product');
     if (typeof raw !== 'string') {
       log.push({ name: 'product', ok: false });
@@ -197,7 +278,10 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
         ? 'empty'
         : productFault(name);
     if (fault !== null) {
-      log.push({ name: 'product', ok: false, gate: sayReason(fault) });
+      // The log keeps the gate's own word, as `ask` does: it is this
+      // package's vocabulary and nothing a client reads. Only the answer is
+      // translated.
+      log.push({ name: 'product', ok: false, gate: fault });
       return text(
         `the gate refused it (${sayReason(fault)}); the cabinet draws one of its own instead`,
       );
@@ -208,6 +292,10 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
   }
 
   function ask(args: unknown): VibeToolResult {
+    if (stuck()) {
+      log.push({ name: 'ask', ok: false });
+      return text(STUCK_ANSWER);
+    }
     const askText = argOf(args, 'ask');
     const code = argOf(args, 'code');
     const title = argOf(args, 'title');
@@ -240,26 +328,47 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
       return text('the next level is full');
     }
     if (r.kind === 'refused') {
+      // The log keeps the gate's own token — it is this package's word and
+      // nothing a client reads. The answer carries the rule instead.
       log.push({ name: 'ask', ok: false, gate: r.reason });
-      return text(`the gate refused it (${r.reason}); the cabinet plays one of its own instead`);
+      const detail = sayDetail(r.detail);
+      const why = detail === null ? VIBE_ASK_FIX[r.reason] : `${VIBE_ASK_FIX[r.reason]}: ${detail}`;
+      return text(`the gate refused it (${why}); the cabinet plays one of its own instead`);
     }
     log.push({ name: 'ask', ok: true, gate: 'ok' });
     return text('the next request is queued');
   }
 
   function react(args: unknown): VibeToolResult {
+    if (stuck()) {
+      log.push({ name: 'react', ok: false });
+      return text(STUCK_ANSWER);
+    }
     const raw = argOf(args, 'text');
     const aboutRaw = argOf(args, 'about');
+    // Refuse rather than degrade. A handle of the wrong type used to be
+    // turned into no handle at all, so the line landed on whatever shipped
+    // next and the tool answered that the user would say it — the exact
+    // behavior the tag was added to stop, reported as success. This is the
+    // same class the sibling fix closed for `ask`'s notes; the transport's
+    // zod shape covers an MCP client, so the gap is the in-process caller.
+    // An absent handle stays the untagged path it always was.
+    if (aboutRaw !== undefined && typeof aboutRaw !== 'string') {
+      log.push({ name: 'react', ok: false });
+      return text(
+        'react wants the handle as words; it is the name the view prints beside each ask',
+        true,
+      );
+    }
     const over = tooLong('react', 'text', raw) || tooLong('react', 'about', aboutRaw);
     const gate = over ? ({ ok: false, reason: TOO_LONG } as const) : reactFault(raw, host.recent());
     if (!gate.ok) {
-      log.push({ name: 'react', ok: false, gate: sayReason(gate.reason) });
+      log.push({ name: 'react', ok: false, gate: gate.reason });
       return text(
         `the gate refused it (${sayReason(gate.reason)}); the user says one of their own instead`,
       );
     }
-    const about = typeof aboutRaw === 'string' ? aboutRaw : undefined;
-    const r = host.react(gate.line, about);
+    const r = host.react(gate.line, aboutRaw);
     log.push({ name: 'react', ok: r === 'waiting', gate: r === 'waiting' ? 'ok' : r });
     // The answer is honest about the tag: a line written for a request that
     // has already shipped is dropped, not promised, because saying it over

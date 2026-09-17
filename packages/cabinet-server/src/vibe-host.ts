@@ -113,6 +113,16 @@ export interface VibeLive {
   state: RunState;
   /** The run's own seed. The next level's definition is drawn from it. */
   seed: number;
+  /**
+   * Runs that have ended under this client. Bumped by the step on rollover.
+   *
+   * It is never shown as a count — nothing here is a number (G25). It is the
+   * one bit the view needs to tell a client that the run it was playing has
+   * been replaced under it: everything it queued, the product it named and
+   * the reaction it left all lived on the old state. Optional, so a live
+   * built by hand in a test need not carry it.
+   */
+  runs?: number;
 }
 
 /**
@@ -191,7 +201,16 @@ export function vibeViewLines(live: VibeLive): string {
       .map(([pair]) => pair),
   );
   const room = suppliedCount(state) < next.requests;
+  // One line, while it is fresh, and gone again after the first level of the
+  // new run. A client that never disconnects is the case this server is
+  // built for, and the one event that throws away everything it holds was
+  // the one event it was never told about.
+  const rolled =
+    (live.runs ?? 0) > 0 && state.levelIndex === 0
+      ? ['run a new run just started; anything you sent before is gone']
+      : [];
   return [
+    ...rolled,
     `product ${product}`,
     `team ${STACK_WORDS[next.stack] ?? 'wires'}`,
     // Lower case throughout: this is a cabinet's words, and nothing here
@@ -219,6 +238,7 @@ export function vibeViewLines(live: VibeLive): string {
 export function requestFor(
   state: RunState,
   handle: string,
+  gone: readonly string[] = [],
 ): { kind: 'request'; id: string } | { kind: 'shipped' } | { kind: 'unknown' } {
   const want = handle.trim().toLowerCase();
   const requests = state.plan.requests;
@@ -227,6 +247,17 @@ export function requestFor(
     if (askHandle(request.ask) !== want) continue;
     return i < state.requestIndex ? { kind: 'shipped' } : { kind: 'request', id: request.id };
   }
+  // A handle the level in hand does not carry is not automatically a handle
+  // the cabinet never minted. It only searched the current plan, so a handle
+  // read from `view` one level ago — or from before the server started the
+  // next run underneath the client — came back unknown, and the client was
+  // told the view did not name it. That says the client misread the view.
+  // What actually happened is that the client was late, which is the one
+  // case the tag was added to name honestly, and a client acting on the old
+  // answer re-reads the view looking for a handle it copied correctly
+  // instead of reacting sooner. `unknown` is now reserved for a handle the
+  // cabinet has genuinely never minted.
+  if (gone.includes(want)) return { kind: 'shipped' };
   return { kind: 'unknown' };
 }
 
@@ -236,19 +267,52 @@ export function requestFor(
  * accepted requests are kept for `pnpm sit` to print; they are not reachable
  * from any tool.
  */
+export interface VibeHostOpts {
+  /** Whether the run has stopped moving under the step guard. */
+  stuck?: () => boolean;
+}
+
 export function vibeHostFor(
   get: () => VibeLive,
+  opts: VibeHostOpts = {},
 ): VibeHost & { readonly accepted: readonly Snippet[] } {
   const accepted: Snippet[] = [];
+  /**
+   * The handles of requests that have gone by, newest last, bounded to the
+   * same window a reaction is compared against so the cabinet has one
+   * no-repeat window rather than two numbers to keep in step.
+   *
+   * Filled when the plan turns, from the plan that is being replaced, so a
+   * handle still in the level in hand is always found by the search above
+   * and never shadowed by this list.
+   */
+  const gone: string[] = [];
+  let seenPlan: RunState['plan'] | null = null;
+  let seenHandles: string[] = [];
+  const mark = (state: RunState) => {
+    if (state.plan === seenPlan) return;
+    for (const handle of seenHandles) {
+      if (gone.includes(handle)) continue;
+      gone.push(handle);
+      while (gone.length > REACT_WINDOW) gone.shift();
+    }
+    seenPlan = state.plan;
+    seenHandles = state.plan.requests.map((request) => askHandle(request.ask));
+  };
   return {
     accepted,
-    view: () => vibeViewLines(get()),
+    ...(opts.stuck ? { stuck: opts.stuck } : {}),
+    view: () => {
+      mark(get().state);
+      return vibeViewLines(get());
+    },
     product(name: string) {
       return feedProduct(get().state, name);
     },
     ask(request: VibeAsk): AskAnswer {
       const live = get();
       const { state } = live;
+      mark(state);
       const levers = leversOf(state);
       const next = endlessPeek({
         set: levers,
@@ -279,17 +343,25 @@ export function vibeHostFor(
         set: levers.difficulty,
         tolerance: VALUE_TOLERANCE,
       });
-      if (!gated.ok) return { kind: 'refused', reason: gated.reason };
+      // The gate's `detail` is carried out rather than dropped: it is the
+      // only place the specifics of a refusal exist, and the cabinet filters
+      // it before a client sees it.
+      if (!gated.ok) {
+        return gated.detail === undefined
+          ? { kind: 'refused', reason: gated.reason }
+          : { kind: 'refused', reason: gated.reason, detail: gated.detail };
+      }
       accepted.push(gated.snippet);
       feedRequests(state, [gated.snippet]);
       return { kind: 'queued' };
     },
     react(line: string, about?: string): ReactAnswer {
       const { state } = get();
+      mark(state);
       // No tag is the old behavior, which the sim already treats as "the
       // request in hand": honest for a client that did not read a handle.
       if (about === undefined || about.trim() === '') return feedReaction(state, line);
-      const found = requestFor(state, about);
+      const found = requestFor(state, about, gone);
       if (found.kind === 'shipped') return 'missed';
       if (found.kind === 'unknown') return 'no such request';
       return feedReaction(state, line, found.id);

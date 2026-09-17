@@ -28,8 +28,8 @@ import { createCabinet, type Cabinet } from './cabinet';
 import { assertCatalogTools, CONTRACT, type ToolDef } from './contract';
 import { setEnv, wholeEnv } from './env';
 import { hostForRound, tapeCards, type Live } from './host';
-import { createStepFaults, guardStep } from './step-guard';
-import { speakLine, voiceHealth } from './voice';
+import { createStepFaults, guardStep, isStuck } from './step-guard';
+import { speakLine, voiceHealth, type SpeakAnswer } from './voice';
 
 /** Seconds between liveness probes of the voice worker, off the beat. */
 export const VOICE_PROBE_S = 15;
@@ -144,6 +144,56 @@ export interface HeadlessOpts {
   voiceUrl?: string | null;
   /** The worker's bearer token (VOICE_TOKEN), when it binds beyond loopback. */
   voiceToken?: string;
+  /**
+   * The stderr sink for the voice hook's once-lines, taken as an argument so
+   * a test can read them without a spawn — the same shape `guardStep` uses.
+   */
+  warn?: (line: string) => void;
+}
+
+/**
+ * What the voice hook says on stderr, once each, when a configured worker
+ * turns this cabinet away or cannot speak.
+ *
+ * None of this was said anywhere. The outcomes were counted into `voiced`,
+ * which no shipping surface prints, and a refused bearer dropped the worker,
+ * so the operator — who had set the token, and whose worker was running and
+ * answering — was told by the only two sentences they could reach that
+ * nothing was there. Both browser cabinets already had words for it; the one
+ * surface with no screen had none. Path-free, said once, like every other
+ * miss here.
+ */
+export const VOICE_NOTES = {
+  auth: "the voice worker refused this cabinet's token; the cabinet plays silent\n",
+  payload: 'the voice worker refused the job; nothing was spoken\n',
+  speak: 'the voice worker could not speak; the cabinet plays on\n',
+} as const;
+
+/**
+ * Which note a take's outcome earns, or null for one that earns none. A
+ * receipt that failed is the worker working and the take being wrong about
+ * itself, and 'no worker' is already the one case both shipping sentences
+ * covered honestly.
+ */
+export function voiceNoteFor(answer: SpeakAnswer): keyof typeof VOICE_NOTES | null {
+  if (answer.status === 'refused') return answer.refused === 'auth' ? 'auth' : 'payload';
+  if (answer.status === 'speak failed') return 'speak';
+  return null;
+}
+
+/**
+ * The hook's stderr voice: each note said once, like `step-guard`'s line,
+ * because a cabinet asking for a line every beat would otherwise flood the
+ * terminal with the same sentence.
+ */
+export function voiceNotes(write: (line: string) => void): (answer: SpeakAnswer) => void {
+  const said = new Set<keyof typeof VOICE_NOTES>();
+  return (answer) => {
+    const key = voiceNoteFor(answer);
+    if (key === null || said.has(key)) return;
+    said.add(key);
+    write(VOICE_NOTES[key]);
+  };
 }
 
 /** A headless round the tools act on. Stepped by `step(dt)`; restarts at the scene. */
@@ -153,8 +203,22 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   const fixture = opts.fixture ?? DEFAULT_FIXTURE;
   const found = tapes.find((t) => t.name === fixture);
   if (!found) {
-    const loaded = tapes.map((t) => t.name).join(', ') || 'none';
-    throw new Error(`fixture ${fixture} is not on the menu (loaded: ${loaded})`);
+    // Two faults, two halts. An empty menu is CABINET_TAPES pointing
+    // somewhere with no tapes in it, and the old single sentence sent the
+    // operator to CABINET_FIXTURE instead — a variable that was not the
+    // fault and could not be set to anything that would help. The
+    // unreadable case says its own line on stderr above; an existing but
+    // empty or wrongly-populated directory said nothing at all, and this is
+    // the halt a first-run operator is most likely to meet.
+    if (tapes.length === 0) {
+      throw new Error(
+        'no tapes were found where the cabinet looked; set CABINET_TAPES to a directory of .tape.json files',
+      );
+    }
+    const loaded = tapes.map((t) => t.name).join(', ');
+    throw new Error(
+      `fixture ${fixture} is not on the menu (loaded: ${loaded}); set CABINET_FIXTURE to one of them`,
+    );
   }
   const tier = opts.tier ?? DEFAULT_TIER;
   const makeRound = (): Round =>
@@ -169,21 +233,43 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   const input: RoundInput = { left: false, right: false, fire: false };
   const live: Live = { round, state, input };
   const voiced = { asked: 0, ok: 0, failed: 0, noWorker: 0, refused: 0 };
+  // Owned here rather than by `startStdio`, because the cabinet is built here
+  // and the tools have to be able to read the count.
+  const faults = createStepFaults();
   const voiceUrl = opts.voiceUrl === undefined ? DEFAULT_VOICE_URL : opts.voiceUrl;
+  const note = voiceNotes(opts.warn ?? ((line: string) => void process.stderr.write(line)));
   // Whether the worker will speak for us. Probed via authenticated GET /stats
   // (bearer when set) with a short abort at start and on a cadence, and set
   // by every take's outcome; never on the beat. Open GET /health is not this.
-  // probeGen drops a late voiceHealth so a success started while up cannot
-  // resurrect workerUp after a 401. A 400 (bad job) leaves the worker up.
+  //
+  // Two generations, not one. `probeGen` drops a late voiceHealth so a
+  // success started while up cannot resurrect workerUp after a 401;
+  // `takeGen` does the same for a take. They used to be the same counter,
+  // and every routine freshness probe bumped it — so a take that started
+  // before the probe could no longer mark the worker live or drop it, and
+  // the liveness bit was decided almost entirely by probes rather than by
+  // what actually happened when the cabinet asked for a line.
+  //
+  // `probing` is the in-flight guard. The freshness window is much shorter
+  // than the probe cadence, so voiceReady goes stale between almost every
+  // pair of speak calls; without this, N rapid calls opened N concurrent
+  // probes at the worker.
+  //
+  // A 400 (bad job) leaves the worker up.
   let workerUp = false;
   let probeGen = 0;
+  let takeGen = 0;
   let lastAuthMs = 0;
+  let probing = false;
+  /** A configured worker that answered and turned this cabinet away. */
+  let refusedAuth = false;
   const voiceOpts = voiceUrl
     ? { url: voiceUrl, ...(opts.voiceToken ? { token: opts.voiceToken } : {}) }
     : null;
   const dropWorker = () => {
     workerUp = false;
     probeGen += 1;
+    takeGen += 1;
   };
   const markLive = () => {
     workerUp = true;
@@ -191,19 +277,30 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   };
   const probe = () => {
     if (!voiceOpts) return;
+    if (probing) return;
+    probing = true;
     const gen = ++probeGen;
-    void voiceHealth(voiceOpts).then((h) => {
-      if (gen !== probeGen) return;
-      if (h === null) {
-        workerUp = false;
-        return;
-      }
-      markLive();
-    });
+    void voiceHealth(voiceOpts)
+      .then((h) => {
+        if (gen !== probeGen) return;
+        if (h === null) {
+          workerUp = false;
+          return;
+        }
+        refusedAuth = false;
+        markLive();
+      })
+      .finally(() => {
+        probing = false;
+      });
   };
   probe();
   const host = hostForRound(() => live, {
     tapes: () => tapeCards(tapes),
+    // The round's own health, at the boundary. `guardStep` counts faults and
+    // keeps the server listed, which is right, but the count never crossed
+    // into anything a client reads.
+    stuck: () => isStuck(faults),
     ...(voiceOpts
       ? {
           // The server has no speaker: a take is spoken, receipted and cached
@@ -217,11 +314,15 @@ export function headlessRound(opts: HeadlessOpts = {}) {
             // is in flight. Fail-closed on the take; the words say to retry.
             return workerUp ? 'checking' : false;
           },
+          voiceRefused: () => refusedAuth,
           voice: (job) => {
             voiced.asked += 1;
-            const gen = probeGen;
+            const gen = takeGen;
             void speakLine(job, voiceOpts).then((a) => {
-              const live = gen === probeGen;
+              const live = gen === takeGen;
+              // Said once on stderr, path-free, whatever the take does to
+              // the liveness bit below.
+              note(a);
               if (a.status === 'voiced') {
                 voiced.ok += 1;
                 if (live) markLive();
@@ -236,6 +337,7 @@ export function headlessRound(opts: HeadlessOpts = {}) {
                 if (live) markLive();
               } else if (a.status === 'refused') {
                 voiced.refused += 1;
+                refusedAuth = true;
                 if (live) dropWorker();
               } else {
                 voiced.noWorker += 1;
@@ -263,7 +365,7 @@ export function headlessRound(opts: HeadlessOpts = {}) {
     stepRound(live.state, input, dt);
     host.takeSfx();
   };
-  return { cabinet, host, live, step, tapes, fixture: found.name, voiced, probe };
+  return { cabinet, host, live, step, tapes, fixture: found.name, voiced, probe, faults };
 }
 
 export function buildServer(cabinet: Cabinet): McpServer {
@@ -357,7 +459,13 @@ export function ghostEnv(
     // An empty VOICE_URL is the Catalog's own silent default and says
     // nothing; one that cannot be read says so once and then plays silent.
     if (raw !== '' && url === null) {
-      notes.push('the voice url was not understood; the cabinet plays silent\n');
+      // The clause naming the scheme is the whole point of the note. The
+      // shape operators get wrong is a bare `host.docker.internal:7788`, and
+      // a line that said only that the value was wrong gave the operator
+      // most likely to meet it nothing to change. No digit, no path.
+      notes.push(
+        'the voice url was not understood; name the scheme, http or https, and the cabinet plays silent until then\n',
+      );
     }
     out.voiceUrl = url;
   }
@@ -374,7 +482,8 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   const server = buildServer(h.cabinet);
   let last = Date.now();
   // A throw from the sim is a quiet round, never a dead server (see step-guard).
-  const step = guardStep(h.step, createStepFaults());
+  // The record is the round's own, so the tools can read it too.
+  const step = guardStep(h.step, h.faults);
   const timer = setInterval(() => {
     const now = Date.now();
     const dt = Math.min(0.05, (now - last) / 1000);

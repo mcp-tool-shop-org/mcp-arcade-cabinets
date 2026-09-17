@@ -31,6 +31,34 @@ export function createStepFaults(): StepFaults {
 export const STEP_FAULT_LINE = 'the round faulted and was not stepped; the cabinet plays on\n';
 
 /**
+ * Faults past which the round is called stuck, and the tools stop promising
+ * beats a frozen round will never take.
+ *
+ * A couple of ticks, not one: a single fault is a bad tick the next tick may
+ * step straight through, and the shooter's own step restarts the round at
+ * the scene. Three in a row is a round that is not coming back on its own,
+ * and the only surface that knew it was a line on stderr an MCP client
+ * cannot read.
+ */
+export const STUCK_FAULTS = 3;
+
+/** Whether the round has stopped moving. The counter already existed; this is the reading. */
+export function isStuck(faults: StepFaults): boolean {
+  return faults.count >= STUCK_FAULTS;
+}
+
+/**
+ * What every proposing lever answers while the round is stuck, and the extra
+ * line `view` prints. Both cabinets say the same rule in the same words, and
+ * these live here rather than in either cabinet for the reason at the top of
+ * this file: this is the leaf both sides may import.
+ */
+export const STUCK_ANSWER = 'the round is not moving; nothing was queued';
+
+/** The extra `view` line while the round is stuck. Word-only, like every other line. */
+export const STUCK_VIEW_LINE = 'round the round is not moving';
+
+/**
  * Wrap a step so nothing thrown by the sim escapes the timer callback.
  * `write` is the stderr sink, taken as an argument so a test can read the
  * line without a spawn.

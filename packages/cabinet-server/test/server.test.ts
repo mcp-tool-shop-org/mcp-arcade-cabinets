@@ -13,7 +13,14 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONTRACT } from '../src/contract';
 import { FORBIDDEN } from '../src/gate';
-import { ghostEnv, headlessRound, type HeadlessOpts } from '../src/server';
+import {
+  ghostEnv,
+  headlessRound,
+  voiceNoteFor,
+  voiceNotes,
+  VOICE_NOTES,
+  type HeadlessOpts,
+} from '../src/server';
 
 const PKG = path.resolve(__dirname, '..');
 const OUT = path.join(PKG, 'dist', 'server.test-build.js');
@@ -252,7 +259,10 @@ describe("the shooter's environment overrides", () => {
     // TypeError that voiceHealth and speakLine both swallow, so the cabinet
     // said 'no worker' for the rest of the session — the same words an
     // absent worker gets, with nothing said at start.
-    const said = 'the voice url was not understood; the cabinet plays silent\n';
+    // And it names the scheme, because a line that says only that the value
+    // is wrong gives the operator most likely to meet it nothing to change.
+    const said =
+      'the voice url was not understood; name the scheme, http or https, and the cabinet plays silent until then\n';
     for (const bad of ['host.docker.internal:7788', 'not a url', '127.0.0.1:7788', '/voice']) {
       const read = ghostEnv({ VOICE_URL: bad });
       expect(read.opts.voiceUrl, bad).toBeNull();
@@ -279,6 +289,59 @@ describe("the shooter's environment overrides", () => {
     for (const note of notes) {
       expect(note).not.toMatch(/[/\\]/);
       expect(note.endsWith('\n')).toBe(true);
+    }
+  });
+
+  it('an empty tape directory names the variable that is actually wrong', () => {
+    // The old halt blamed CABINET_FIXTURE for a CABINET_TAPES fault: with
+    // nothing loaded it read 'fixture naive-ndjson is not on the menu
+    // (loaded: none)', and no value of CABINET_FIXTURE would have helped.
+    const empty = mkdtempSync(path.join(os.tmpdir(), 'tapes-none-'));
+    expect(() => headlessRound({ tapesDir: empty, voiceUrl: null })).toThrow(
+      'no tapes were found where the cabinet looked; set CABINET_TAPES to a directory of .tape.json files',
+    );
+    // A menu that has tapes but not this one keeps the old sentence and
+    // gains the next step.
+    const full = mkdtempSync(path.join(os.tmpdir(), 'tapes-some-'));
+    copyBaked(full);
+    expect(() => headlessRound({ fixture: 'nope', tapesDir: full, voiceUrl: null })).toThrow(
+      /^fixture nope is not on the menu \(loaded: .+\); set CABINET_FIXTURE to one of them$/,
+    );
+  });
+});
+
+describe('the voice hook on the surface with no screen', () => {
+  // Every one of these outcomes was counted into `voiced`, which no shipping
+  // surface prints, and a refused bearer additionally dropped the worker —
+  // so an operator whose worker was running and answering was told by the
+  // only two sentences they could reach that nothing was there. Both browser
+  // cabinets already had words for it.
+  it('gives a refused bearer, a refused job and a failed take their own words', () => {
+    expect(voiceNoteFor({ status: 'refused', refused: 'auth', receipt: null, ms: 1 })).toBe('auth');
+    expect(voiceNoteFor({ status: 'refused', refused: 'payload', receipt: null, ms: 1 })).toBe(
+      'payload',
+    );
+    expect(voiceNoteFor({ status: 'speak failed', receipt: null, ms: 1 })).toBe('speak');
+    // A working worker and a take that is wrong about itself earns none, and
+    // 'no worker' is the one case the shipping sentences already said well.
+    expect(voiceNoteFor({ status: 'receipt failed', receipt: null, ms: 1 })).toBeNull();
+    expect(voiceNoteFor({ status: 'no worker', receipt: null, ms: 1 })).toBeNull();
+    expect(voiceNoteFor({ status: 'voiced', receipt: null, ms: 1 })).toBeNull();
+  });
+
+  it('says each note once, on stderr, path-free', () => {
+    const lines: string[] = [];
+    const note = voiceNotes((line) => void lines.push(line));
+    // A cabinet asking for a line every beat would flood the terminal.
+    note({ status: 'refused', refused: 'auth', receipt: null, ms: 1 });
+    note({ status: 'refused', refused: 'auth', receipt: null, ms: 1 });
+    note({ status: 'speak failed', receipt: null, ms: 1 });
+    note({ status: 'speak failed', receipt: null, ms: 1 });
+    expect(lines).toEqual([VOICE_NOTES.auth, VOICE_NOTES.speak]);
+    for (const line of Object.values(VOICE_NOTES)) {
+      expect(line).not.toMatch(/[/\\]/);
+      expect(line).not.toMatch(FORBIDDEN);
+      expect(line.endsWith('\n')).toBe(true);
     }
   });
 });

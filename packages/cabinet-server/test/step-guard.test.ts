@@ -5,7 +5,13 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { createStepFaults, guardStep, STEP_FAULT_LINE } from '../src/step-guard';
+import {
+  createStepFaults,
+  guardStep,
+  isStuck,
+  STEP_FAULT_LINE,
+  STUCK_FAULTS,
+} from '../src/step-guard';
 
 describe('the step guard', () => {
   it('swallows a throw from the sim, counts it, and keeps stepping', () => {
@@ -71,5 +77,23 @@ describe('the step guard', () => {
     step(0.02);
     expect(seen).toEqual([0.01, 0.02]);
     expect(faults).toEqual({ count: 0, said: false });
+  });
+
+  it('calls the round stuck only after a couple of ticks, not on one bad tick', () => {
+    const faults = createStepFaults();
+    const step = guardStep(
+      () => {
+        throw new Error('the sim did not like that');
+      },
+      faults,
+      () => {},
+    );
+    // One fault is a bad tick the next tick may step straight through, and
+    // the shooter's own step restarts the round at the scene.
+    step(0.01);
+    expect(isStuck(faults)).toBe(false);
+    for (let n = 1; n < STUCK_FAULTS; n++) step(0.01);
+    expect(faults.count).toBe(STUCK_FAULTS);
+    expect(isStuck(faults)).toBe(true);
   });
 });

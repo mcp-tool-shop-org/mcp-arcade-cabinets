@@ -453,6 +453,13 @@ export function createSeat(opts: SeatOpts): Seat {
     if (r.error !== null) {
       opts.admit('script');
       stats.scripted += 1;
+      // One branch per word `statusError` can produce, because collapsing
+      // them threw away most of what widening it bought. 'ollama refused'
+      // is a wrong or absent signed-in key — the most operator-fixable
+      // failure there is — and it reached the player and the sit transcript
+      // as 'no answer', which is the sentence that sends an operator to
+      // check a daemon that is running fine. 'no answer' is the true
+      // fall-through and nothing else.
       say(
         /retired/i.test(r.error)
           ? 'seat: model retired'
@@ -460,7 +467,13 @@ export function createSeat(opts: SeatOpts): Seat {
             ? 'seat: ollama down, script'
             : /ollama timeout/i.test(r.error)
               ? 'ollama timeout'
-              : 'seat: no answer, script',
+              : /refused/i.test(r.error)
+                ? 'seat: the daemon refused the key, script'
+                : /missing/i.test(r.error)
+                  ? 'seat: no such model, script'
+                  : /bad payload/i.test(r.error)
+                    ? 'seat: unreadable answer, script'
+                    : 'seat: no answer, script',
       );
       return;
     }

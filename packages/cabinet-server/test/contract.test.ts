@@ -214,3 +214,56 @@ describe('tools.vibe.json', () => {
     );
   });
 });
+
+describe('what a halt from this loader tells the operator', () => {
+  // These are fatal startup messages: `checkCatalogListing` runs before
+  // anything lists and `startStdio` prints err.message and exits, so an MCP
+  // client shows only a server that died. A key path into a file the
+  // operator may not have, with no statement of what was expected and no
+  // word about what to do, is not something anyone can act on.
+  it('names the rule beside the key, not just the key', () => {
+    const roomy = clone();
+    const tools = roomy.tools as {
+      name: string;
+      inputSchema: { properties: Record<string, { maxLength?: number }> };
+    }[];
+    tools.find((t) => t.name === 'say')!.inputSchema.properties.text!.maxLength = 10_000_000;
+    let message = '';
+    try {
+      loadContract(roomy);
+    } catch (err) {
+      message = err instanceof Error ? err.message : String(err);
+    }
+    expect(message).toContain('tools.json: say.inputSchema.properties.text.maxLength');
+    expect(message).toContain(
+      "a text bound must sit above nothing and within the contract's own ceiling",
+    );
+
+    const gone = clone();
+    delete gone.tools;
+    expect(() => loadContract(gone)).toThrow('the contract is a list of levers under a tools key');
+  });
+
+  it('a listing halt says it is a build fault, and a contract halt does not', () => {
+    const drift = JSON.parse(readFileSync(path.join(CATALOG, 'tools.json'), 'utf8')) as {
+      description: string;
+    }[];
+    drift[0]!.description = 'something else';
+    let message = '';
+    try {
+      assertCatalogTools(drift);
+    } catch (err) {
+      message = err instanceof Error ? err.message : String(err);
+    }
+    // The operator cannot fix this one: the listing and the contract ship
+    // together inside one build, so a message that reads like a setting they
+    // got wrong sends them looking for one that does not exist.
+    expect(message).toContain(
+      'the listing shipped with this build and its tool contract disagree; this is a build fault, not a setting',
+    );
+    // A contract halt is theirs to act on and carries no such clause.
+    const gone = clone();
+    delete gone.tools;
+    expect(() => loadContract(gone)).toThrow(/^(?!.*build fault).*$/s);
+  });
+});

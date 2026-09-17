@@ -21,7 +21,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 import { chatJson, mapTransport, type ChatOpts } from './client';
 import { FORBIDDEN } from './gate';
-import { CLAUDE_MODEL, sayTier, type SayOpts, type SayTier } from './say';
+import { CLAUDE_MODEL, NO_SEAT, sayTier, type SayOpts, type SayTier } from './say';
 import { bandWord, LANGUAGE_WORDS, sayablePairs, STACK_WORDS } from './vibe-words';
 
 export { bandWord, LANGUAGE_WORDS, sayablePairs, STACK_WORDS };
@@ -276,7 +276,12 @@ async function askOllamaEndless(
 export async function askEndlessFor(view: EndlessView, opts: SayOpts): Promise<EndlessAnswer> {
   const prompt = endlessPrompt(view);
   const pick = sayTier(opts);
-  if (!pick) throw new Error('no endless seat configured');
+  // Both ways in, named. `sayTier` makes the answer concrete — a key, else a
+  // signed-in cloud tag, else any listed local model — and none of that used
+  // to reach the operator, who got a bare sentence with no code, no hint and
+  // no statement of what configuring one would mean. The say seat's twin
+  // says the same thing in the same words.
+  if (!pick) throw new Error(NO_SEAT('endless'));
   if (pick.tier === 'claude') return askClaudeEndless(prompt, opts.anthropicKey!);
   const chat: ChatOpts = { url: opts.ollamaUrl, model: pick.model };
   if (opts.fetchImpl) chat.fetchImpl = opts.fetchImpl;

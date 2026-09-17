@@ -508,15 +508,57 @@ class Server(ThreadingHTTPServer):
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument('--host', default=os.environ.get('VOICE_HOST', '127.0.0.1'))
-    ap.add_argument('--port', type=int, default=int(os.environ.get('VOICE_PORT', '7788')))
-    ap.add_argument('--cache', default=os.environ.get('VOICE_CACHE', str(HERE.parent / 'film' / 'voice')))
-    ap.add_argument('--model', default=os.environ.get('KOKORO_DIR'))
-    ap.add_argument('--asr', default=os.environ.get('VOICE_ASR', 'small.en'))
-    ap.add_argument('--device', default=os.environ.get('VOICE_DEVICE', 'auto'))
-    ap.add_argument('--cache-takes', type=int, default=int(os.environ.get('VOICE_CACHE_TAKES', '400')))
-    ap.add_argument('--token', default=os.environ.get('VOICE_TOKEN'))
+    # Every flag says what it takes and which variable it falls back to.
+    # `--help` used to print bare names and defaults, so an operator learned
+    # nothing about what --asr accepts, what --device accepts, or that
+    # --token is the bearer the cabinet's VOICE_TOKEN has to match. Every
+    # other operator surface in this repo documents its variables carefully;
+    # this was the one that shipped with none.
+    ap = argparse.ArgumentParser(
+        description='The host-side voice worker for the arcade cabinets.',
+    )
+    ap.add_argument(
+        '--host',
+        default=os.environ.get('VOICE_HOST', '127.0.0.1'),
+        help='address to bind (VOICE_HOST). Binding beyond loopback requires --token.',
+    )
+    ap.add_argument(
+        '--port',
+        type=int,
+        default=int(os.environ.get('VOICE_PORT', '7788')),
+        help='port to listen on (VOICE_PORT).',
+    )
+    ap.add_argument(
+        '--cache',
+        default=os.environ.get('VOICE_CACHE', str(HERE.parent / 'film' / 'voice')),
+        help='directory the takes and their receipts are written to (VOICE_CACHE).',
+    )
+    ap.add_argument(
+        '--model',
+        default=os.environ.get('KOKORO_DIR'),
+        help='directory holding the kokoro-onnx model and its voices (KOKORO_DIR). Required.',
+    )
+    ap.add_argument(
+        '--asr',
+        default=os.environ.get('VOICE_ASR', 'small.en'),
+        help='faster-whisper model name for hearing the take back, e.g. small.en (VOICE_ASR).',
+    )
+    ap.add_argument(
+        '--device',
+        default=os.environ.get('VOICE_DEVICE', 'auto'),
+        help='where to run: auto, cpu, or cuda (VOICE_DEVICE).',
+    )
+    ap.add_argument(
+        '--cache-takes',
+        type=int,
+        default=int(os.environ.get('VOICE_CACHE_TAKES', '400')),
+        help='how many takes to keep on disk before the oldest are dropped (VOICE_CACHE_TAKES).',
+    )
+    ap.add_argument(
+        '--token',
+        default=os.environ.get('VOICE_TOKEN'),
+        help='the bearer token a cabinet must send (VOICE_TOKEN); the cabinet sets the same value. Required to bind beyond loopback.',
+    )
     args = ap.parse_args()
     if not args.model:
         sys.stderr.write('voice: no model dir; set KOKORO_DIR or pass --model <dir>\n')
@@ -528,7 +570,19 @@ def main() -> int:
         sys.stderr.write('voice: binding beyond loopback needs VOICE_TOKEN set\n')
         return 2
     t0 = time.time()
-    VOICE = Voice(Path(args.model), args.asr, args.device, Path(args.cache), args.cache_takes)
+    # Guarded like the two exits above it. A KOKORO_DIR that exists but holds
+    # the wrong files, an --asr name faster-whisper does not know, a --device
+    # the runtime cannot open, or a cache dir that cannot be written all left
+    # main() as an exception and printed a raw Python traceback with machine
+    # paths — the one thing every other miss in this file takes care never to
+    # do, on the operator's very first run.
+    try:
+        VOICE = Voice(Path(args.model), args.asr, args.device, Path(args.cache), args.cache_takes)
+    except Exception:
+        sys.stderr.write(
+            'voice: the speech stack did not load; check KOKORO_DIR, --asr and --device\n'
+        )
+        return 2
     sys.stderr.write(
         f'voice: kokoro-onnx ({len(VOICE.voices)} voices) + faster-whisper {args.asr} on {VOICE.device}, '
         f'ready in {time.time() - t0:.1f}s, http://{args.host}:{args.port}'

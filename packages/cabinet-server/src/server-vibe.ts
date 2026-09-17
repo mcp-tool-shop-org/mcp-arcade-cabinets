@@ -31,7 +31,7 @@ import { botFor, integrationFrom, parseBot } from '@mcp-arcade-cabinets/vibe-typ
 
 import { assertCatalogTools, VIBE_CONTRACT, type ToolDef } from './contract';
 import { setEnv, wholeEnv } from './env';
-import { createStepFaults, guardStep } from './step-guard';
+import { createStepFaults, guardStep, isStuck } from './step-guard';
 import { createVibeCabinet, type VibeCabinet } from './vibe-cabinet';
 import { vibeHostFor, type VibeLive } from './vibe-host';
 
@@ -110,12 +110,18 @@ export function vibeHeadlessRound(opts: VibeHeadlessOpts = {}) {
     // Menu-shaped miss, said once: a cabinet with no tapes has no
     // integration stack and plays every other stack exactly as it always
     // did. Never a machine path, never a crash.
-    process.stderr.write('tapes dir did not load; the cabinet plays without the wires stack\n');
+    //
+    // It used to say the directory did not load, which is a different fault
+    // and usually not the one that happened: an existing, readable directory
+    // that simply holds no tapes reaches here too, and an operator told the
+    // load failed goes looking at permissions instead of at what is in the
+    // directory. It says what was found now, not what it guesses went wrong.
+    process.stderr.write('no tapes were found; the cabinet plays without the wires stack\n');
   }
   const spec = parseBot(opts.bot ?? VIBE_BOT) ?? parseBot(VIBE_BOT)!;
   const tier = opts.tier ?? 0;
-  let plays = 0;
-  const live: VibeLive = { state: null as unknown as RunState, seed: opts.seed ?? 1 };
+  const faults = createStepFaults();
+  const live: VibeLive = { state: null as unknown as RunState, seed: opts.seed ?? 1, runs: 0 };
   const make = (): RunState =>
     createRun({
       seed: live.seed,
@@ -125,18 +131,26 @@ export function vibeHeadlessRound(opts: VibeHeadlessOpts = {}) {
     });
   live.state = make();
   let bot = botFor(spec, live.seed);
-  const host = vibeHostFor(() => live);
+  const host = vibeHostFor(() => live, { stuck: () => isStuck(faults) });
   const cabinet: VibeCabinet = createVibeCabinet(host);
   const step = (dt: number) => {
     if (live.state.over) {
-      plays += 1;
-      live.seed = nextSeed(live.seed, plays);
+      // A rollover is a whole new run: a new seed, a new state, a new bot.
+      // The supplied-request buffer, the named product and the reaction slot
+      // all live on the old state and go with it, so everything a client
+      // queued and was told was queued is gone. The counter is what lets the
+      // view say so; without it the next `view` reads exactly like an
+      // ordinary level turn and a client with no clock cannot tell the
+      // difference between waiting and having been thrown away.
+      const runs = (live.runs ?? 0) + 1;
+      live.runs = runs;
+      live.seed = nextSeed(live.seed, runs);
       live.state = make();
       bot = botFor(spec, live.seed);
     }
     stepRun(live.state, bot(live.state), dt);
   };
-  return { cabinet, host, live, step, bot: spec.name, tapes: integration.length };
+  return { cabinet, host, live, step, bot: spec.name, tapes: integration.length, faults };
 }
 
 export function buildVibeServer(cabinet: VibeCabinet): McpServer {
@@ -198,7 +212,28 @@ export function vibeEnv(
   }
 
   const seed = wholeEnv(env.CABINET_SEED);
-  if (opts.seed === undefined && seed !== null) out.seed = seed;
+  if (opts.seed === undefined) {
+    if (seed !== null) out.seed = seed;
+    // The image's own table says CABINET_SEED is a whole number on both
+    // cabinets and that anything else is a note. The shooter kept that
+    // promise and this cabinet dropped the value in silence, so the same
+    // wrong value got a line next door and nothing here. Same words as
+    // `ghostEnv`, because it is the same rule.
+    else if (set(env.CABINET_SEED)) {
+      notes.push('CABINET_SEED was not understood; the cabinet draws its own\n');
+    }
+  }
+
+  // The host compose file offers CABINET, VOICE_URL and VOICE_TOKEN in one
+  // commented block for an operator to uncomment together, and an operator
+  // who takes that invitation runs the typing cabinet with two voice
+  // variables set. This cabinet has no voice hook at all, so both were inert
+  // and neither said so. One line covers the pair: they are one setting.
+  if (set(env.VOICE_URL) || set(env.VOICE_TOKEN)) {
+    notes.push(
+      'VOICE_URL and VOICE_TOKEN are read by the shooter cabinet only; this cabinet has no voice\n',
+    );
+  }
 
   const tier = wholeEnv(env.CABINET_TIER);
   if (opts.tier === undefined) {
@@ -224,7 +259,7 @@ export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<void>
   const server = buildVibeServer(h.cabinet);
   let last = Date.now();
   // A throw from the sim is a quiet run, never a dead server (see step-guard).
-  const step = guardStep(h.step, createStepFaults());
+  const step = guardStep(h.step, h.faults);
   const timer = setInterval(() => {
     const now = Date.now();
     const dt = Math.min(0.05, (now - last) / 1000);

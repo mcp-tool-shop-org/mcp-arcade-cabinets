@@ -423,4 +423,45 @@ describe('askFire over a daemon', () => {
     seat.tick(V, 1.2, false);
     expect(admitted).toEqual(['script', 'fog']);
   }, 10_000);
+
+  it('gives every word statusError can produce its own status line', async () => {
+    // `statusError` was widened so a retired tag, a refused key and a
+    // missing model stop reading as 'ollama down', and then `admit` threw
+    // two thirds of that away: 'ollama refused' — a wrong or absent
+    // signed-in key, the most operator-fixable failure there is — reached
+    // the player and the sit transcript as 'no answer'.
+    const cases: [string, string][] = [
+      ['ollama model retired', 'seat: model retired'],
+      ['ollama down', 'seat: ollama down, script'],
+      ['ollama timeout', 'ollama timeout'],
+      ['ollama refused', 'seat: the daemon refused the key, script'],
+      ['ollama missing', 'seat: no such model, script'],
+      ['ollama bad payload', 'seat: unreadable answer, script'],
+      ['something nobody has seen', 'seat: no answer, script'],
+    ];
+    for (const [error, want] of cases) {
+      const pending: ReturnType<typeof deferred<FireAnswer>>[] = [];
+      const status: string[] = [];
+      const admitted: string[] = [];
+      const seat = createSeat({
+        ask: () => {
+          const d = deferred<FireAnswer>();
+          pending.push(d);
+          return d.promise;
+        },
+        admit: (verb) => admitted.push(verb),
+        beatSeconds: 1,
+        onStatus: (s) => status.push(s),
+      });
+      seat.tick(V, 0, false);
+      pending[0]!.reject(new Error(error));
+      await flush();
+      seat.tick(V, 0.1, false);
+      expect(status, error).toContain(want);
+      // The scripted floor never leaves, whatever the daemon said.
+      expect(admitted, error).toEqual(['script']);
+      // And no status line the seat writes carries a digit.
+      for (const s of status) expect(s, error).not.toMatch(/\d/);
+    }
+  });
 });

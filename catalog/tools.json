@@ -35,7 +35,7 @@
   },
   {
     "name": "speak",
-    "description": "Voice the line the boss is about to say, in its own voice. Nothing to choose: the words are the ones the gate admitted. Where a voice worker is configured, the cabinet hands it the admitted words and nothing else; it stays quiet when none is on. The cabinet speaks it one beat ahead, and a line that misses its beat waits for the next breather.",
+    "description": "Voice the line the boss is about to say, in its own voice. Nothing to choose: the words are the ones the gate admitted. Where a voice worker is configured, the cabinet hands it the admitted words and nothing else; a cabinet with a speaker voices the line one beat ahead and holds a late take for the next breather, and one without keeps the take for the operator. It stays quiet when no worker is on.",
     "inputSchema": {
       "type": "object",
       "properties": {},
@@ -73,7 +73,7 @@
   },
   {
     "name": "view",
-    "description": "The boss's view of the field, in words: the wave kind, the boss kind, its health word, which column the ship is in, which way the stick pushes, and the boss's motion word. Read-only. The cabinet never tells the boss which sprites are honest.",
+    "description": "The boss's view of the field, in words: the wave kind, the boss kind, its health word, which column the ship is in, which way the stick pushes, and the boss's motion word. With no boss up, the answer is the wave kind and one line saying the field is empty. When the round reaches its end scene the answer carries a line saying so, and every other lever waits there until a new round starts. Read-only. The cabinet never tells the boss which sprites are honest.",
     "inputSchema": {
       "type": "object",
       "properties": {},

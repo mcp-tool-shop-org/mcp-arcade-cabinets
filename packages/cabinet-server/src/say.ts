@@ -86,6 +86,17 @@ export interface SayOpts {
   fetchImpl?: typeof fetch;
 }
 
+/**
+ * The halt a seat with nothing behind it raises, for either seat.
+ *
+ * It used to be a bare sentence naming neither a way in nor a next step, so
+ * the operator was told a seat was missing and left to guess what one is.
+ * `sayTier` right below makes the answer concrete and nothing was saying it.
+ */
+export function NO_SEAT(seat: 'say' | 'endless'): string {
+  return `no ${seat} seat is configured; set a key for the hosted seat, or sign in to the daemon so a model is listed`;
+}
+
 /** Which tier the say seat sits in, by capability. Null when nothing is configured. */
 export function sayTier(opts: {
   anthropicKey: string | null;
@@ -176,7 +187,7 @@ export async function askSay(
 ): Promise<SayAnswer> {
   const prompt = sayPrompt(view, persona, seeds, recent);
   const pick = sayTier(opts);
-  if (!pick) throw new Error('no say seat configured');
+  if (!pick) throw new Error(NO_SEAT('say'));
   if (pick.tier === 'claude') return askClaude(prompt, opts.anthropicKey!);
   const chat: ChatOpts = { url: opts.ollamaUrl, model: pick.model };
   if (opts.fetchImpl) chat.fetchImpl = opts.fetchImpl;

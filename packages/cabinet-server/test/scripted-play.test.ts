@@ -4,11 +4,18 @@
 import { describe, expect, it } from 'vitest';
 
 import { play } from '../../ghost-on-the-menu/src/play';
+import { SCREEN_FORBIDDEN } from '../../ghost-on-the-menu/src/types';
 
 import { createScriptedSeat } from '../src/scripted';
 
-const SCREEN_FORBIDDEN =
-  /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
+// The product's own needle, not a copy of it. This file used to carry its
+// own literal, and a test that carries its own copy of the gate can only
+// ever assert against itself: a needle added to the product and not to this
+// file would leave the scripted-seat gate silently weaker than the one the
+// game runs. Built fresh and non-global because the exported constant is
+// `g`-flagged and `.test` on a global regex keeps its place between calls —
+// the same treatment ghost's own endless test gives it.
+const SCREEN = new RegExp(SCREEN_FORBIDDEN.source, 'i');
 
 describe('scripted MCP seat through play()', () => {
   it('refuses a digit line and a repeat', async () => {
@@ -35,7 +42,7 @@ describe('scripted MCP seat through play()', () => {
     expect(out.text).toMatch(/digit/);
     expect(out.text).toMatch(/repeat/);
     for (const line of out.text.split('\n')) {
-      if (line.startsWith('seat view:')) expect(line).not.toMatch(SCREEN_FORBIDDEN);
+      if (line.startsWith('seat view:')) expect(line).not.toMatch(SCREEN);
     }
   });
 });

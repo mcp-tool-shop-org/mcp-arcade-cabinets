@@ -35,12 +35,22 @@ export interface Live {
   input: RoundInput;
 }
 
-/** The view for a live round, or null kind when no boss is up. Words only. */
-export function seatView(live: Live): SeatView | { kind: null; wave: SeatView['wave'] } {
+/**
+ * The view for a live round, or null kind when no boss is up. Words only.
+ *
+ * The end scene is carried through, because every lever refuses through it
+ * and the view is the only thing a client has to read the field with. It
+ * used to be invisible here, so the view said there was a boss while the
+ * levers said there was nothing to spend.
+ */
+export function seatView(
+  live: Live,
+): SeatView | { kind: null; wave: SeatView['wave']; scene?: boolean } {
   const { round, state, input } = live;
   const wave = waveKindAt(round, state.t);
   const boss = state.boss;
-  if (!boss || !boss.alive) return { kind: null, wave };
+  const scene = state.scene ? { scene: true as const } : {};
+  if (!boss || !boss.alive) return { kind: null, wave, ...scene };
   return {
     kind: boss.kind,
     hp: hpWord(boss.hp, boss.maxHp),
@@ -48,6 +58,7 @@ export function seatView(live: Live): SeatView | { kind: null; wave: SeatView['w
     stick: stickWord(input),
     motion: boss.motion,
     wave,
+    ...scene,
   };
 }
 
@@ -81,6 +92,15 @@ export interface HostOpts {
    * bit that was live — silent until the next beat, not "no worker".
    */
   voiceReady?: () => boolean | 'checking';
+  /**
+   * Whether a configured worker has turned this cabinet away (a refused
+   * bearer). Separate from `voiceReady` because the two want different
+   * words: a worker that does not answer is absent, and a worker that
+   * answers and says no is present and misconfigured.
+   */
+  voiceRefused?: () => boolean;
+  /** Whether the round has stopped moving under the step guard. */
+  stuck?: () => boolean;
 }
 
 /**
@@ -119,16 +139,19 @@ export function hostForRound(
 
   return {
     view: () => seatView(get()),
+    ...(opts.stuck ? { stuck: opts.stuck } : {}),
     propose(verb: PilotIntent) {
       const { state } = get();
-      if (!state.boss || !state.boss.alive || state.scene) return 'no boss';
+      if (state.scene) return 'scene';
+      if (!state.boss || !state.boss.alive) return 'no boss';
       state.bossIntent = verb;
       return 'proposed';
     },
     say(line: string | null, lead: Lead) {
       const { round, state } = get();
       const boss = state.boss;
-      if (!boss || !boss.alive || state.scene) return 'no boss';
+      if (state.scene) return 'scene';
+      if (!boss || !boss.alive) return 'no boss';
       const own = attachedPatterns(round).voice.boss[boss.kind];
       forget(state);
       says += 1;
@@ -144,6 +167,10 @@ export function hostForRound(
     },
     speak() {
       if (!opts.voice) return 'silent';
+      // Before the liveness bit, because a refused bearer drops the worker
+      // and would otherwise read as no worker at all — which is the sentence
+      // that sent an operator with a running worker looking for a process.
+      if (opts.voiceRefused?.()) return 'refused';
       if (opts.voiceReady) {
         const ready = opts.voiceReady();
         if (ready === 'checking') return 'checking';
@@ -152,7 +179,8 @@ export function hostForRound(
       const { state } = get();
       const say = state.bossSay;
       const boss = state.boss;
-      if (!say || !boss || !boss.alive || state.scene) return 'no line';
+      if (state.scene) return 'scene';
+      if (!say || !boss || !boss.alive) return 'no line';
       const key = `${say.at}\0${say.text}`;
       if (spokenKey === key) return 'queued';
       spokenKey = key;

@@ -36,6 +36,10 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import {
   createVibeCabinet,
+  sayDetail,
+  sayReason,
+  VIBE_ASK_FIX,
+  type AskRefusal,
   reactFault,
   splitNotes,
   tooLong,
@@ -544,6 +548,67 @@ describe('a reaction names the request it was written about', () => {
     });
     // A handle for words no request carries names nothing.
     expect(requestFor(state, 'quill-quill-not-a-handle')).toEqual({ kind: 'unknown' });
+    // A handle that has gone by with its level is late, not misread. It only
+    // searched the plan in hand, so a client that read the view one level
+    // ago was told the view did not name a handle it had copied correctly.
+    expect(requestFor(state, 'onyx-onyx', ['onyx-onyx'])).toEqual({ kind: 'shipped' });
+    // The ring never shadows the level in hand.
+    expect(requestFor(state, askHandle(inHand.ask), [askHandle(inHand.ask)])).toEqual({
+      kind: 'request',
+      id: inHand.id,
+    });
+  });
+
+  it('a handle from the level before is late, not unknown', () => {
+    const live = played();
+    const host = vibeHostFor(() => live);
+    const cab = createVibeCabinet(host);
+    // The client reads the view while this plan is the one in hand.
+    cab.call('view', {});
+    const before = askHandle(live.state.plan.requests.at(-1)!.ask);
+    expect(requestFor(live.state, before)).not.toEqual({ kind: 'unknown' });
+
+    // The level turns underneath it — the case a long-lived client meets on
+    // every level, and the one the tag exists to name honestly.
+    const bot = botFor(parseBot('typist:45')!, 3);
+    let guard = 0;
+    const was = live.state.plan;
+    while (live.state.plan === was && !live.state.over && guard++ < 200_000) {
+      stepRun(live.state, bot(live.state), DT);
+    }
+    if (live.state.plan === was) return; // the run ended first; nothing to see
+    cab.call('view', {});
+    expect(requestFor(live.state, before)).toEqual({ kind: 'unknown' });
+    const late = cab.call('react', { text: 'that one came out lovely', about: before });
+    expect(late.content[0]!.text).toBe(
+      'that request has already shipped; the line missed it and was not said',
+    );
+  });
+
+  it('says once, in words, that a new run threw away everything the client sent', () => {
+    // The server starts the next run underneath a client that never
+    // disconnects, and the supplied buffer, the named product and the
+    // reaction slot all live on the old state. `view` used to answer with a
+    // different product and an empty asked list, which reads exactly like an
+    // ordinary level turn.
+    const first = createRun({ seed: 3, tier: 0, endless: true });
+    const live: VibeLive = { state: first, seed: 3, runs: 0 };
+    const host = vibeHostFor(() => live);
+    expect(host.view()).not.toMatch(/^run /m);
+
+    live.runs = 1;
+    live.state = createRun({ seed: 4, tier: 0, endless: true });
+    const rolled = host.view();
+    expect(rolled).toMatch(/^run a new run just started; anything you sent before is gone$/m);
+    expect(rolled).not.toMatch(SCREEN);
+
+    // And it is gone again after the first level of the new run.
+    const bot = botFor(parseBot('typist:45')!, 4);
+    let guard = 0;
+    while (live.state.levelIndex === 0 && !live.state.over && guard++ < 200_000) {
+      stepRun(live.state, bot(live.state), DT);
+    }
+    if (live.state.levelIndex > 0) expect(host.view()).not.toMatch(/^run /m);
   });
 
   it('says the line missed its request rather than promising it, and keeps the slot free', () => {
@@ -622,5 +687,162 @@ describe('a reaction names the request it was written about', () => {
     expect(cab.log.map((c) => `${c.name}:${c.gate ?? ''}`)).toEqual([
       'no such lever:no such lever',
     ]);
+  });
+
+  /** A host of words with every answer dialled from the test. */
+  function fakeVibeHost(over: Partial<VibeHost> = {}): VibeHost {
+    return {
+      view: () => 'product a thing',
+      product: () => 'set',
+      ask: () => ({ kind: 'queued' as const }),
+      react: () => 'waiting',
+      recent: () => [],
+      ...over,
+    };
+  }
+
+  it('the code gate answers with the rule, never its own token', () => {
+    // The tokens are this package's word for a rule, not a client's: the
+    // view says 'how hard that job should feel', never 'band', so
+    // 'value-out-of-band' named a concept the client had no handle on.
+    const cases: [AskRefusal, string][] = [
+      ['value-out-of-band', 'the code is bigger or smaller than the job should feel'],
+      ['wrong-language', 'that is not the language the view names'],
+      ['too-many-lines', 'more lines than the cabinet types'],
+      ['too-wide', 'a line wider than the screen'],
+      ['unbalanced', 'a bracket is left open'],
+      ['barred-word', 'the code used a word the cabinet keeps out'],
+      ['names-a-model', 'that names a tool, a model or a company'],
+      ['not-ascii', 'a character off this keyboard'],
+      ['tab', 'a tab character'],
+    ];
+    for (const [reason, want] of cases) {
+      const cab = createVibeCabinet(fakeVibeHost({ ask: () => ({ kind: 'refused', reason }) }));
+      const out = cab.call('ask', {
+        ask: 'make the thing count the ducks',
+        code: 'print(1)',
+        title: 'a duck counter',
+        notes: 'it counts ducks',
+      }).content[0]!.text;
+      expect(out, reason).toBe(
+        `the gate refused it (${want}); the cabinet plays one of its own instead`,
+      );
+      // The hyphenated token itself never reaches a client.
+      if (reason.includes('-')) expect(out, reason).not.toContain(reason);
+      // The log keeps the token: it is this package's word, not a client's.
+      expect(cab.log.at(-1)!.gate, reason).toBe(reason);
+    }
+    // Every reason the gate can raise has a phrase; none is left as a token.
+    for (const [reason, phrase] of Object.entries(VIBE_ASK_FIX)) {
+      expect(phrase, reason).not.toContain('-');
+      expect(phrase, reason).not.toMatch(SCREEN);
+    }
+  });
+
+  it('carries the gate detail only when it is word-shaped', () => {
+    // `CodeGateResult` has always had a `detail` and the host dropped it, so
+    // the one place the specifics existed never reached the client. Some of
+    // them are a measure, and a measure is not something a client reads.
+    expect(sayDetail('another language')).toBe('another language');
+    expect(sayDetail('story noun')).toBe('story noun');
+    expect(sayDetail(undefined)).toBeNull();
+    expect(sayDetail('   ')).toBeNull();
+    expect(sayDetail('81')).toBeNull();
+    expect(sayDetail('a/b')).toBeNull();
+    const cab = createVibeCabinet(
+      fakeVibeHost({
+        ask: () => ({ kind: 'refused', reason: 'wrong-language', detail: 'another language' }),
+      }),
+    );
+    expect(
+      cab.call('ask', {
+        ask: 'make the thing count the ducks',
+        code: 'print(1)',
+        title: 'a duck counter',
+        notes: 'it counts ducks',
+      }).content[0]!.text,
+    ).toBe(
+      'the gate refused it (that is not the language the view names: another language); the cabinet plays one of its own instead',
+    );
+  });
+
+  it('the word gates say the same rules the shooter says, in the shooter’s words', () => {
+    const cab = createVibeCabinet(fakeVibeHost());
+    // 'not ascii' is the identical rule the shooter states as 'a character
+    // off this keyboard'; 'padded' named nothing a client could picture; and
+    // 'forbidden word or digit' folded two rules into one word and named
+    // neither.
+    for (const [text, want] of [
+      ['that came out ‮lovely', 'a character off this keyboard'],
+      [
+        'the score is looking good',
+        'a digit, or something about how the game is going; say it in character instead',
+      ],
+    ] as const) {
+      const out = cab.call('react', { text }).content[0]!.text;
+      expect(out, text).toBe(
+        `the gate refused it (${want}); the user says one of their own instead`,
+      );
+    }
+    // `padded` cannot reach a client through these tools today, because both
+    // gates normalize the line before `lineFault` sees it. The translation is
+    // held anyway, so the word never becomes a client's problem if it does.
+    expect(sayReason('padded')).toBe('a space at the start or the end');
+    expect(sayReason('not ascii')).toBe('a character off this keyboard');
+    expect(sayReason('spelling: colour')).toBe('a British spelling');
+    // These already say what to change and are passed through untouched.
+    for (const fault of ['yells', 'too many words', 'more than one sentence', 'empty']) {
+      expect(sayReason(fault), fault).toBe(fault);
+    }
+    // These already said what to change and are left alone.
+    expect(cab.call('react', { text: 'that came out lovely!' }).content[0]!.text).toContain(
+      '(yells)',
+    );
+  });
+
+  it('refuses a handle of the wrong type rather than quietly dropping the tag', () => {
+    // A non-string handle used to become no handle at all, so the line
+    // landed on whatever shipped next and the tool reported the promise
+    // kept — the exact behavior the tag was added to stop.
+    const seen: (string | undefined)[] = [];
+    const cab = createVibeCabinet(
+      fakeVibeHost({ react: (_line, about) => (seen.push(about), 'waiting') }),
+    );
+    const r = cab.call('react', { text: 'that came out lovely', about: 7 });
+    expect(r.isError).toBe(true);
+    expect(r.content[0]!.text).toBe(
+      'react wants the handle as words; it is the name the view prints beside each ask',
+    );
+    expect(seen).toEqual([]);
+    // An absent handle stays the untagged path it always was.
+    expect(cab.call('react', { text: 'that came out lovely' }).content[0]!.text).toBe(
+      'the user will say it at the next thing that ships',
+    );
+    expect(seen).toEqual([undefined]);
+  });
+
+  it('a stuck run stops the levers promising a level that will never turn', () => {
+    let frozen = false;
+    const cab = createVibeCabinet(fakeVibeHost({ stuck: () => frozen }));
+    expect(
+      cab.call('ask', {
+        ask: 'make the thing count the ducks',
+        code: 'print(1)',
+        title: 'a duck counter',
+        notes: 'it counts ducks',
+      }).content[0]!.text,
+    ).toBe('the next request is queued');
+    frozen = true;
+    for (const [name, args] of [
+      ['product', { product: 'a duck counter' }],
+      ['ask', { ask: 'a', code: 'b', title: 'c', notes: 'd' }],
+      ['react', { text: 'that came out lovely' }],
+    ] as const) {
+      // The same words the shooter uses, because it is the same rule.
+      expect(cab.call(name, args).content[0]!.text, name).toBe(
+        'the round is not moving; nothing was queued',
+      );
+    }
+    expect(cab.call('view', {}).content[0]!.text).toMatch(/^round the round is not moving$/m);
   });
 });

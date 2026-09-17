@@ -257,8 +257,11 @@ describe('the boundary', () => {
     // and the boss said a line the caller had not written.
     const long = `${'The plate is out and the plate has opinions about you'}${'.'.repeat(cap.maxLength)}`;
     expect(long.length).toBeGreaterThan(cap.maxLength);
+    // The bound names itself: 'too long' could not be told from the
+    // twelve-word cap, and a client that cannot tell them apart rewrites the
+    // wrong thing.
     expect(cab.call('say', { text: long, lead: 'short' }).content[0]!.text).toBe(
-      'the gate refused it (too long); the boss says one of its own instead',
+      'the gate refused it (longer than one line of text); the boss says one of its own instead',
     );
     expect(
       cab.call('say', { text: 'The plate is \u202eout.', lead: 'short' }).content[0]!.text,
@@ -339,5 +342,108 @@ describe('the boundary', () => {
       lead: 'short',
     });
     expect(l.state.bossSay?.text).toBe(other.state.bossSay?.text);
+  });
+
+  /** A host of words with every answer dialled from the test. */
+  function fakeHost(over: Partial<CabinetHost> = {}): CabinetHost {
+    return {
+      view: () => ({ kind: null, wave: 'breather' }),
+      propose: () => 'proposed',
+      say: () => 'said',
+      sfx: () => 'queued',
+      speak: () => 'queued',
+      tapes: () => [],
+      recent: () => [],
+      maxWords: () => 12,
+      ...over,
+    };
+  }
+
+  it('the closed-word refusal names the class and the shape to write instead', () => {
+    const cab = createCabinet(fakeHost({ say: () => 'said' }));
+    // `loadTool` refuses any description carrying one of these words, so the
+    // contract structurally cannot list the class and this refusal is the
+    // only surface the rule can travel on. It used to say 'a closed word',
+    // which is a label defined nowhere.
+    const out = cab.call('say', { text: 'The score is even.', lead: 'beat' }).content[0]!.text;
+    expect(out).toBe(
+      'the gate refused it (the line said something about how the game is going; say it in character instead); the boss says one of its own instead',
+    );
+    // It still leaks no needle: the matched word is nowhere in the answer.
+    expect(out).not.toMatch(/\bscore\b/);
+  });
+
+  it('a say with no boss reports the gate verdict it already knew', () => {
+    const cab = createCabinet(fakeHost({ say: () => 'no boss' }));
+    expect(cab.call('say', { text: 'A clean line.', lead: 'beat' }).content[0]!.text).toBe(
+      'no boss on the field; nothing said',
+    );
+    // Both facts, so a client does not spend a whole round re-sending a line
+    // the cabinet had already refused on the first call.
+    expect(cab.call('say', { text: 'I have 3 items.', lead: 'beat' }).content[0]!.text).toBe(
+      'no boss on the field; nothing said, and the gate would have refused it (a digit is not allowed) anyway',
+    );
+  });
+
+  it('the end scene has a word, and the view and the levers agree about it', () => {
+    const cab = createCabinet(
+      fakeHost({
+        view: () => ({
+          kind: 'doorman',
+          hp: 'mid',
+          column: 'left',
+          stick: 'still',
+          motion: 'pulse',
+          wave: 'unlisted',
+          scene: true,
+        }),
+        propose: () => 'scene',
+        say: () => 'scene',
+        speak: () => 'scene',
+      }),
+    );
+    expect(cab.call('view', {}).content[0]!.text).toMatch(
+      /^round the round is at its end; a new one starts in a moment$/m,
+    );
+    expect(cab.call('fire', { verb: 'fog' }).content[0]!.text).toBe(
+      'the round is at its end scene; nothing to spend',
+    );
+    expect(cab.call('say', { text: 'A clean line.', lead: 'beat' }).content[0]!.text).toBe(
+      'the round is at its end scene; nothing said',
+    );
+    expect(cab.call('speak', {}).content[0]!.text).toBe(
+      'the round is at its end scene; the line waits',
+    );
+    // Still a word-only view: the new line carries no digit and no needle.
+    expect(cab.call('view', {}).content[0]!.text).not.toMatch(SCREEN);
+  });
+
+  it('a worker that refuses this cabinet is told apart from no worker at all', () => {
+    expect(
+      createCabinet(fakeHost({ speak: () => 'refused' })).call('speak', {}).content[0]!.text,
+    ).toBe('the voice worker refused this cabinet; the boss stays quiet');
+    expect(
+      createCabinet(fakeHost({ speak: () => 'no worker' })).call('speak', {}).content[0]!.text,
+    ).toBe('the voice is silent: no worker answers');
+  });
+
+  it('a stuck round stops the levers promising beats it will never take', () => {
+    let frozen = false;
+    const cab = createCabinet(fakeHost({ stuck: () => frozen }));
+    expect(cab.call('fire', { verb: 'fog' }).content[0]!.text).toMatch(/at its next beat/);
+    frozen = true;
+    for (const [name, args] of [
+      ['fire', { verb: 'fog' }],
+      ['say', { text: 'A clean line.', lead: 'beat' }],
+      ['speak', {}],
+      ['sfx', { kind: 'lamp' }],
+    ] as const) {
+      expect(cab.call(name, args).content[0]!.text, name).toBe(
+        'the round is not moving; nothing was queued',
+      );
+    }
+    // The view says so too, because a stderr line is not a surface an MCP
+    // client can read.
+    expect(cab.call('view', {}).content[0]!.text).toMatch(/^round the round is not moving$/m);
   });
 });

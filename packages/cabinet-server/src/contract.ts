@@ -68,43 +68,85 @@ export interface ToolDef {
  */
 let FILE = 'tools.json';
 
-function within<T>(file: string, run: () => T): T {
-  const was = FILE;
+/**
+ * The closing clause every halt from `assertCatalogTools` carries, and no
+ * halt from `loadContract` does.
+ *
+ * A contract halt is something the operator can act on: the file is theirs
+ * to edit and the rule says what the loader wanted. A listing halt is not —
+ * the listing and the contract ship together inside one build, so an
+ * operator who meets it has nothing to change, and a message that reads like
+ * a setting they got wrong sends them looking for one.
+ */
+const BUILD_FAULT =
+  'the listing shipped with this build and its tool contract disagree; this is a build fault, not a setting';
+
+let REMEDY: string | null = null;
+
+function within<T>(file: string, run: () => T, remedy: string | null = null): T {
+  const wasFile = FILE;
+  const wasRemedy = REMEDY;
   FILE = file;
+  REMEDY = remedy;
   try {
     return run();
   } finally {
-    FILE = was;
+    FILE = wasFile;
+    REMEDY = wasRemedy;
   }
 }
 
-function fail(key: string): never {
-  throw new Error(`${FILE}: ${key}`);
+/**
+ * Halt, naming the place and the rule.
+ *
+ * `key` alone used to be the whole message, so a fatal startup line read
+ * `tools.json: say.inputSchema.properties.text.maxLength` — a path into a
+ * file the operator may not have, with no statement of what was expected and
+ * no word about what to do. `startStdio` prints `err.message` and exits, so
+ * an MCP client shows only a server that died. The rule is the sentence that
+ * makes the path actionable, and it is not optional for new call sites.
+ */
+function fail(key: string, rule: string): never {
+  const tail = REMEDY === null ? '' : `; ${REMEDY}`;
+  throw new Error(`${FILE}: ${key} (${rule})${tail}`);
 }
 
 function rec(v: unknown, key: string): Record<string, unknown> {
-  if (typeof v !== 'object' || v === null || Array.isArray(v)) fail(key);
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) {
+    fail(key, 'this must be a block of named fields');
+  }
   return v as Record<string, unknown>;
 }
 
 function bool(v: unknown, key: string): boolean {
-  if (typeof v !== 'boolean') fail(key);
+  if (typeof v !== 'boolean') fail(key, 'this must be true or false');
   return v;
 }
 
 function loadProperty(v: unknown, key: string): ToolProperty {
   const p = rec(v, key);
-  if (p.type !== 'string') fail(`${key}.type`);
+  if (p.type !== 'string') fail(`${key}.type`, 'every argument this contract carries is text');
   if (Array.isArray(p.enum)) {
     const values = p.enum.map((e, i) => {
-      if (typeof e !== 'string' || e === '' || /\d/.test(e)) fail(`${key}.enum.${i}`);
+      if (typeof e !== 'string' || e === '' || /\d/.test(e)) {
+        fail(`${key}.enum.${i}`, 'a choice is one or more words and never carries a digit');
+      }
       return e;
     });
-    if (values.length === 0 || new Set(values).size !== values.length) fail(`${key}.enum`);
+    if (values.length === 0 || new Set(values).size !== values.length) {
+      fail(`${key}.enum`, 'a closed list needs at least one choice and no choice twice');
+    }
     return { type: 'string', enum: values };
   }
-  if (typeof p.maxLength !== 'number' || !Number.isInteger(p.maxLength)) fail(`${key}.maxLength`);
-  if (!(p.maxLength > 0) || p.maxLength > MAX_TEXT_LENGTH) fail(`${key}.maxLength`);
+  if (typeof p.maxLength !== 'number' || !Number.isInteger(p.maxLength)) {
+    fail(`${key}.maxLength`, 'a text bound is a whole number of characters');
+  }
+  if (!(p.maxLength > 0) || p.maxLength > MAX_TEXT_LENGTH) {
+    fail(
+      `${key}.maxLength`,
+      "a text bound must sit above nothing and within the contract's own ceiling",
+    );
+  }
   return { type: 'string', maxLength: p.maxLength };
 }
 
@@ -112,14 +154,31 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   const t = rec(v, `tools.${i}`);
   const name = t.name;
   if (typeof name !== 'string' || !names.includes(name)) {
-    fail(`tools.${i}.name`);
+    fail(`tools.${i}.name`, `this cabinet's levers are ${names.join(', ')} and nothing else`);
   }
   const description = t.description;
-  if (typeof description !== 'string' || description.trim() === '') fail(`${name}.description`);
-  if (FORBIDDEN.test(description)) fail(`${name}.description: forbidden word`);
-  if (WHISPER.test(description)) fail(`${name}.description: whisper`);
+  if (typeof description !== 'string' || description.trim() === '') {
+    fail(`${name}.description`, 'a lever a client cannot read about is a lever it cannot use');
+  }
+  if (FORBIDDEN.test(description)) {
+    fail(
+      `${name}.description: forbidden word`,
+      'nothing a client reads may carry a digit or a word about how the game is going',
+    );
+  }
+  if (WHISPER.test(description)) {
+    fail(
+      `${name}.description: whisper`,
+      "a description may not tell a client to pull another lever; that is the instrument's own policy and never ours",
+    );
+  }
   const s = rec(t.inputSchema, `${name}.inputSchema`);
-  if (s.type !== 'object' || s.additionalProperties !== false) fail(`${name}.inputSchema`);
+  if (s.type !== 'object' || s.additionalProperties !== false) {
+    fail(
+      `${name}.inputSchema`,
+      'arguments are a closed block of named fields and nothing else may be sent',
+    );
+  }
   const propsRaw = rec(s.properties, `${name}.inputSchema.properties`);
   const properties: Record<string, ToolProperty> = {};
   for (const [k, p] of Object.entries(propsRaw)) {
@@ -128,7 +187,12 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   const required: string[] = [];
   if (Array.isArray(s.required)) {
     for (const r of s.required) {
-      if (typeof r !== 'string' || !(r in properties)) fail(`${name}.inputSchema.required`);
+      if (typeof r !== 'string' || !(r in properties)) {
+        fail(
+          `${name}.inputSchema.required`,
+          'an argument the contract insists on must be one the contract also describes',
+        );
+      }
       required.push(r);
     }
   }
@@ -148,7 +212,12 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   // a networked tool touched nothing outside. The Catalog build is sealed
   // (disableNetwork, empty VOICE_URL); a local build is not, and the
   // annotation now describes the tool rather than one of its builds.
-  if (annotations.destructiveHint) fail(`${name}.annotations`);
+  if (annotations.destructiveHint) {
+    fail(
+      `${name}.annotations`,
+      'no lever on this cabinet removes anything, so none of them may claim to',
+    );
+  }
   return {
     name: name as AnyToolName,
     description,
@@ -169,12 +238,19 @@ export function loadContract(
 ): ToolDef[] {
   return within(file, () => {
     const obj = rec(raw, 'root');
-    if (!Array.isArray(obj.tools)) fail('tools');
+    if (!Array.isArray(obj.tools)) {
+      fail('tools', 'the contract is a list of levers under a tools key');
+    }
     const tools = obj.tools.map((t, i) => loadTool(t, i, names));
     const found = tools.map((t) => t.name);
-    if (new Set(found).size !== found.length) fail('tools: duplicate name');
-    for (const n of names)
-      if (!(found as readonly string[]).includes(n)) fail(`tools: missing ${n}`);
+    if (new Set(found).size !== found.length) {
+      fail('tools: duplicate name', 'each lever is written down once');
+    }
+    for (const n of names) {
+      if (!(found as readonly string[]).includes(n)) {
+        fail(`tools: missing ${n}`, 'every lever this cabinet dispatches must be described here');
+      }
+    }
     return tools;
   });
 }
@@ -201,28 +277,47 @@ export function assertCatalogTools(
   contract: readonly ToolDef[] = CONTRACT,
   file = 'catalog/tools.json',
 ): void {
-  within(file, () => {
-    if (!Array.isArray(raw)) fail('listing is not an array');
-    if (raw.length !== contract.length) fail('count');
-    for (let i = 0; i < contract.length; i++) {
-      const want = contract[i]!;
-      const got = rec(raw[i], `${want.name}`);
-      if (got.name !== want.name) fail(`${want.name}`);
-      if (got.description !== want.description) fail(`${want.name}.description`);
-      const schema = rec(got.inputSchema, `${want.name}.inputSchema`);
-      if (schema.type !== 'object' || schema.additionalProperties !== false) {
-        fail(`${want.name}.inputSchema`);
+  within(
+    file,
+    () => {
+      if (!Array.isArray(raw)) fail('listing is not an array', 'the listing is a list of levers');
+      if (raw.length !== contract.length) {
+        fail('count', 'the listing names a different number of levers than the cabinet carries');
       }
-      const props = rec(schema.properties, `${want.name}.inputSchema.properties`);
-      if (JSON.stringify(props) !== JSON.stringify(want.inputSchema.properties)) {
-        fail(`${want.name}.inputSchema.properties`);
+      for (let i = 0; i < contract.length; i++) {
+        const want = contract[i]!;
+        const got = rec(raw[i], `${want.name}`);
+        if (got.name !== want.name) {
+          fail(`${want.name}`, 'the levers are listed in the order the contract writes them');
+        }
+        if (got.description !== want.description) {
+          fail(`${want.name}.description`, "the words a client reads must be the contract's own");
+        }
+        const schema = rec(got.inputSchema, `${want.name}.inputSchema`);
+        if (schema.type !== 'object' || schema.additionalProperties !== false) {
+          fail(
+            `${want.name}.inputSchema`,
+            'the listed arguments must be as closed as the contract',
+          );
+        }
+        const props = rec(schema.properties, `${want.name}.inputSchema.properties`);
+        if (JSON.stringify(props) !== JSON.stringify(want.inputSchema.properties)) {
+          fail(
+            `${want.name}.inputSchema.properties`,
+            "the listed arguments and their bounds must be the contract's own",
+          );
+        }
+        const required = Array.isArray(schema.required) ? schema.required : [];
+        if (JSON.stringify(required) !== JSON.stringify(want.inputSchema.required)) {
+          fail(
+            `${want.name}.inputSchema.required`,
+            'the arguments the listing insists on must be the ones the contract insists on',
+          );
+        }
       }
-      const required = Array.isArray(schema.required) ? schema.required : [];
-      if (JSON.stringify(required) !== JSON.stringify(want.inputSchema.required)) {
-        fail(`${want.name}.inputSchema.required`);
-      }
-    }
-  });
+    },
+    BUILD_FAULT,
+  );
 }
 
 function defOf(contract: readonly ToolDef[], name: string, file: string): ToolDef {
