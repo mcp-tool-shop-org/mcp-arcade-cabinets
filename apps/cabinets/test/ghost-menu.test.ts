@@ -215,3 +215,59 @@ describe('the call card between calls', () => {
     expect(app().querySelector('.call-card li.tape-row')!.textContent).toBe(first);
   });
 });
+
+// ——— the front door ————————————————————————————————————————————————————————
+// Stage D. What a first visit sees: the document's first heading used to be a
+// cabinet's, below a tab list with no visible name at all, and the page's own
+// title appeared nowhere on screen. Under it came three gray paragraphs in a
+// row, the third of them ninety words in one block.
+
+describe('what a first visit sees', () => {
+  it('names the switch on the page and demotes the cabinet under it', async () => {
+    await paint();
+    const heads = [...app().querySelectorAll('h1, h2')].map((h) => ({
+      tag: h.tagName.toLowerCase(),
+      text: h.textContent,
+    }));
+    // The page is the arcade; a cabinet is a section of it.
+    expect(heads[0]).toEqual({ tag: 'h1', text: 'the cabinets' });
+    expect(heads.some((h) => h.tag === 'h2' && h.text === 'Ghost on the Menu')).toBe(true);
+    expect(heads.some((h) => h.tag === 'h1' && h.text === 'Ghost on the Menu')).toBe(false);
+    // And the tab list takes its name from the heading rather than carrying a
+    // second one only a reader's software ever hears.
+    const tabs = app().querySelector('[role="tablist"]')!;
+    expect(tabs.getAttribute('aria-label')).toBeNull();
+    expect(tabs.getAttribute('aria-labelledby')).toBe('cabinet-switch');
+  });
+
+  it('breaks the intro in two and gives the prose a measure', async () => {
+    await paint();
+    const prose = [...app().querySelectorAll('p.prose')].map((n) => n.textContent ?? '');
+    // Three paragraphs, not two, and the long block is now two of them: the
+    // wave and what is hidden in it, then what it costs you.
+    expect(prose.length).toBe(3);
+    expect(prose[1]).toContain('Every wave is one experiment');
+    expect(prose[1]).not.toContain('lamps');
+    expect(prose[2]!.startsWith('Hit one and it is yours')).toBe(true);
+    expect(prose[2]).toContain('Three lamps');
+    // Only the second half moves with the rung.
+    const play = app().querySelector('select[aria-label="difficulty"]') as HTMLSelectElement;
+    play.value = 'hardcore';
+    play.dispatchEvent(new Event('change'));
+    const after = [...app().querySelectorAll('p.prose')].map((n) => n.textContent ?? '');
+    expect(after[1]).toBe(prose[1]);
+    expect(after[2]).toContain('One lamp and falling plates');
+  });
+
+  it('says what a shift is in the page, not only on hover', async () => {
+    await paint();
+    const shift = byText('button', 'Shift') as HTMLButtonElement;
+    // A `title` reaches a mouse player and nobody else: no hover on a touch
+    // screen, and a reader's software passes it over.
+    expect(shift.getAttribute('aria-describedby')).toBe('shift-what');
+    const what = app().querySelector('#shift-what')!;
+    expect(what.textContent).toBe(shift.title);
+    expect(what.className).toBe('offscreen');
+    expect(what.textContent).toContain('calls drawn from the roster');
+  });
+});

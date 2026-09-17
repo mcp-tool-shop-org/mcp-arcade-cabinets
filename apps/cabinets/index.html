@@ -21,7 +21,28 @@
         sixteen pixels.
       */
       :root {
-        --field-chrome: 8rem;
+        --field-chrome: 11rem;
+        /*
+          The resting look of a control. WCAG 1.4.11 asks three to one for the
+          boundary of a control that has nothing else identifying it, and the
+          old pair -- a #3a3a4a edge and a #1a1a24 body -- measured 1.76:1 and
+          1.14:1 on the page's #0b0b0f: the menu read as a page of unmarked
+          text until the pointer was over it. The edge is 3.12:1 now and the
+          body 1.27:1, both measured against the page. `button.commit` and
+          `button.picked` are untouched; both already cleared the bar.
+        */
+        --edge: #5e5e76;
+        --body: #23232f;
+        /*
+          The boundary that carries layout rather than a control: the panes,
+          the blocks, the rules between them. It was #2a2a36, 1.39:1 on the
+          page, so the three panes that hold the whole typing game were
+          delineated at under one and a half to one. 2.07:1 now. The panes'
+          own #101018 fill is deliberately NOT moved with it: that fill is the
+          measured ground for the editor's four text colors, and lifting it
+          would move four ratios at once.
+        */
+        --rule: #444458;
       }
       body {
         margin: 0;
@@ -58,6 +79,28 @@
       .seat {
         flex: 1 1 12rem;
       }
+      /*
+        A checkbox, what it is, and why it is gray: one box that cannot come
+        apart. Both chrome rows wrap, and a `why` span was a plain sibling of
+        the control it explains — at the width where the row broke between
+        them, the reason a grayed control was gray wrapped onto the next line
+        away from the control, which is the failure the helper that writes it
+        exists to prevent.
+      */
+      .seat-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      /*
+        A measure for running prose. `.column` is 40rem wide and holds the
+        lists as well as the paragraphs, so the front door's three intro
+        paragraphs ran to about eighty characters a line. This is the prose
+        alone; the rows keep the column's width.
+      */
+      .prose {
+        max-width: 34rem;
+      }
       .muted {
         color: #9a9aa6;
       }
@@ -82,14 +125,14 @@
         font-size: 0.8rem;
       }
       .block {
-        border-top: 1px solid #2a2a36;
+        border-top: 1px solid var(--rule);
         padding-top: 0.5rem;
       }
       button,
       select {
-        background: #1a1a24;
+        background: var(--body);
         color: #e6e6e6;
-        border: 1px solid #3a3a4a;
+        border: 1px solid var(--edge);
         padding: 0.5rem 0.9rem;
         font: inherit;
         cursor: pointer;
@@ -132,20 +175,27 @@
         max-width: 640px;
       }
       .call-card {
-        border: 2px solid #3a3a4a;
+        border: 2px solid var(--edge);
         padding: 0.55rem 0.7rem;
       }
+      /*
+         The four calls of a shift are four members of one set, so their edges
+         carry one lightness and the hue is reinforcement rather than the only
+         channel -- the flavor word is already in the card. They ran 5.45,
+         2.45, 2.53 and 5.29 to one on the page, so two of them barely read as
+         bordered at all beside the other two. All four sit between 4.7 and
+         4.9 to one now. */
       .call-card.biome-steel {
-        border-color: #6a8aaa;
+        border-color: #5f81a0; /* 4.80:1 */
       }
       .call-card.biome-slate {
-        border-color: #5a4a6a;
+        border-color: #8a74a4; /* 4.79:1 */
       }
       .call-card.biome-teal {
-        border-color: #2a5a5a;
+        border-color: #438785; /* 4.72:1 */
       }
       .call-card.biome-ochre {
-        border-color: #a08040;
+        border-color: #99793c; /* 4.82:1 */
       }
       .tape-row {
         display: flex;
@@ -161,9 +211,9 @@
         text-align: left;
       }
       input[type='text'] {
-        background: #1a1a24;
+        background: var(--body);
         color: #e6e6e6;
-        border: 1px solid #3a3a4a;
+        border: 1px solid var(--edge);
         padding: 0.5rem 0.9rem;
         font: inherit;
       }
@@ -209,7 +259,7 @@
         height: 1.25rem;
         padding: 0;
         background: transparent;
-        border: 1px solid #3a3a4a;
+        border: 1px solid var(--edge);
         border-radius: 50%;
         font-size: 0.75rem;
         line-height: 1.2rem;
@@ -227,8 +277,8 @@
         left: 1.6rem;
         top: -0.2rem;
         width: min(22rem, calc(100vw - 2rem));
-        background: #1a1a24;
-        border: 1px solid #3a3a4a;
+        background: var(--body);
+        border: 1px solid var(--edge);
         color: #e6e6e6;
         padding: 0.4rem 0.6rem;
         z-index: 2;
@@ -292,8 +342,14 @@
         min-width: 0;
         flex: 1;
       }
+      /* Every other row in the shell flexes the name and fixes the trailing
+         column. These two shrink-wrapped theirs instead, so the first two rows
+         a first visit sees shared no column edge with the twenty rows beneath
+         them, and the two card names did not line up with each other either.
+         A fixed name column gives the cards one left edge and one tagline
+         edge, and puts them roughly over the list below. */
       .cabinet-card .tape-name {
-        flex: 0 0 auto;
+        flex: 0 0 12rem;
       }
       .vibe {
         max-width: none;
@@ -312,7 +368,7 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 1.1rem;
-        border-bottom: 1px solid #2a2a36;
+        border-bottom: 1px solid var(--rule);
         padding-bottom: 0.5rem;
       }
       .vibe-stat {
@@ -341,8 +397,8 @@
         display: block;
         flex: 1;
         height: 0.6rem;
-        background: #1a1a24;
-        border: 1px solid #3a3a4a;
+        background: var(--body);
+        border: 1px solid var(--edge);
         min-width: 6rem;
       }
       .vibe-bar-fill {
@@ -369,7 +425,7 @@
         align-items: stretch;
       }
       .vibe-pane {
-        border: 1px solid #2a2a36;
+        border: 1px solid var(--rule);
         background: #101018;
         padding: 0.6rem;
         min-height: 360px;
@@ -384,10 +440,17 @@
         outline: 2px solid #e8a04a;
         outline-offset: 2px;
       }
+      /* The pane's own name row. It is furniture INSIDE the pane the type
+         setting governs, so it rises with the text it labels rather than
+         staying at a fixed 0.85rem while the code beside it reaches 1.5rem --
+         the way `.vibe-mark` already does at 0.8em. The step is anchored so
+         that at the default type (large, 1.25rem) it is exactly the 0.85rem
+         it always was, with a floor so the small setting cannot shrink it
+         past legibility. */
       .vibe-head {
         color: #9a9aa6;
-        font-size: 0.85rem;
-        border-bottom: 1px solid #2a2a36;
+        font-size: max(0.75rem, calc(var(--vibe-font, 0.95rem) * 0.68));
+        border-bottom: 1px solid var(--rule);
         padding-bottom: 0.3rem;
       }
       /*
@@ -413,9 +476,18 @@
       .vibe-dot {
         white-space: pre;
       }
+      /*
+        Twelve lines of the chat, whatever a line is. The cap was a flat 320px
+        while everything inside it is a rem: at the default type that was
+        about thirteen lines, at `huge` eight, and for a player who had also
+        raised their browser's own text size, five. The chat is this cabinet's
+        whole narrative, so the one dimension that decides how much of it is
+        visible now moves with both the type setting and the browser
+        preference. 1.35 is `.vibe-lines li`'s line-height.
+      */
       .vibe-scroll {
         overflow-y: auto;
-        max-height: 320px;
+        max-height: calc(var(--vibe-font, 0.95rem) * 1.35 * 12);
       }
       .vibe-lines {
         list-style: none;
@@ -431,6 +503,14 @@
       }
       .vibe-user {
         color: #7fa3c6;
+      }
+      /* The standup quotes the player's last user line outside `.vibe-lines`,
+         so it had neither the type setting nor a line-height: the same words
+         that were on screen a second earlier at the chosen size dropped to the
+         browser default at the emotional payoff of the run. */
+      .vibe-standup .vibe-user {
+        font-size: var(--vibe-font, 0.95rem);
+        line-height: 1.35;
       }
       .vibe-nag {
         color: #9bb9d6;
@@ -480,8 +560,17 @@
         /* A token never breaks. A line too long for the pane scrolls sideways. */
         white-space: pre;
       }
+      /*
+        History, but readable history: everything above the caret is the
+        indentation and the surrounding code the player reads to place the next
+        line. #3f5c4a was 2.58:1 on the pane's #101018 -- under even the 3:1
+        large-text floor, with the default type at 1.25rem regular, which is
+        not large text -- and the drop at the caret was five-fold at the moment
+        of success. 4.83:1 now, still plainly below the 5.57:1 of the text not
+        yet typed, so the hierarchy reads the way round it always did.
+      */
       .vibe-line.done {
-        color: #3f5c4a;
+        color: #5f8a70;
       }
       .vibe-line.landing {
         color: #e8a04a;
@@ -527,11 +616,15 @@
           opacity: 0.2;
         }
       }
+      /* The affordance label inside the pane the type setting governs: at
+         `huge` the code was 1.5rem and the chip that says the copilot's line
+         can be taken was half its size. Anchored like `.vibe-head`, so at the
+         default type it is the 0.75rem it always was. */
       .vibe-tab {
         align-self: flex-start;
-        border: 1px solid #3a3a4a;
+        border: 1px solid var(--edge);
         color: #9a9aa6;
-        font-size: 0.75rem;
+        font-size: max(0.7rem, calc(var(--vibe-font, 0.95rem) * 0.6));
         padding: 0.1rem 0.4rem;
       }
       .vibe-preview-pane {
@@ -558,7 +651,7 @@
         padding-left: 0;
       }
       .vibe-retro {
-        border-top: 1px solid #2a2a36;
+        border-top: 1px solid var(--rule);
         padding-top: 0.5rem;
         display: flex;
         flex-direction: column;
@@ -574,8 +667,8 @@
       }
       .vibe-key {
         font-family: ui-monospace, monospace;
-        border: 1px solid #3a3a4a;
-        background: #1a1a24;
+        border: 1px solid var(--edge);
+        background: var(--body);
         color: #e8a04a;
         padding: 0.2rem 0.45rem;
       }
@@ -584,7 +677,22 @@
           grid-template-columns: minmax(10rem, 0.8fr) minmax(24rem, 2fr) auto;
         }
       }
-      @media (max-width: 900px) {
+      /*
+        The one-column fallback, and the width it has to arrive at.
+
+        Measured from the track minimums of `.vibe-panes` above: 12rem (192) +
+        16rem (256) + the preview track, which is `canvas.vibe-preview` at a
+        hard 480 inside `.vibe-preview-pane`'s 0.5rem padding either side
+        (496), + two 0.75rem gaps (24) = 968. `main.playing` adds 2rem of
+        padding either side, so the three-pane board needs a 1032px viewport.
+        The collapse used to arrive at 900, which left a dead band from 901 to
+        1031 where the explicit minima refused to shrink: a horizontal page
+        scrollbar and a clipped preview at half a 1920 display (960) and at a
+        tablet in landscape (1024), two of the commonest widths this opens at.
+        1031 is the last width that overflows, so it is the last width that
+        collapses.
+      */
+      @media (max-width: 1031px) {
         .vibe-panes {
           grid-template-columns: 1fr;
         }
@@ -603,7 +711,7 @@
            grows here — in the one place that holds it, which the script reads
            back rather than copying the breakpoint. */
         :root {
-          --field-chrome: 14rem;
+          --field-chrome: 15rem;
         }
         main {
           padding: 1rem 0.75rem;

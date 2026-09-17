@@ -56,16 +56,15 @@ import {
   THEME_WORDS,
   type Theme,
 } from './typer-audio';
+import { LOCAL_SEATS, probeSeatName } from './seats';
 import {
   DEFAULT_FONT,
-  LOCAL_SEATS,
   TIER_WORDS,
   VIBE_FONTS,
   bandWord,
   cleanName,
   isVibeFont,
   mountVibeTyper,
-  probeSeatName,
   readVibePrefs,
   SEED_MAX,
   writeVibePrefs,
@@ -125,12 +124,25 @@ function button(text: string, cls?: string): HTMLButtonElement {
   return b;
 }
 
-function introCopy(tier: Difficulty): string {
+/**
+ * What a round is, in two paragraphs rather than one.
+ *
+ * It was ninety words in one unbroken block, the third `.muted` paragraph in
+ * a row above a twenty-row list, at about eighty characters a line — well
+ * above a comfortable measure. It breaks where the subject changes: what a
+ * wave is and what is hidden in it, then what it costs you. Only the second
+ * part moves with the rung, which is why the two are separate functions and
+ * the difficulty handler rewrites one node.
+ */
+const INTRO_COPY =
+  'Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made.';
+
+function lampsCopy(tier: Difficulty): string {
   const lamps =
     tier === 'hardcore'
       ? 'One lamp and falling plates; a boss shot or a diving formation puts it out.'
       : 'Three lamps; a boss shot or a diving formation puts one out.';
-  return `Every wave is one experiment the instrument ran against the server: a word names it, then the handshake, the menu, the calls, and the answers coming back, with the wave’s own boss standing over it. Somewhere in there are the calls the agent should not have made. Hit one and it is yours for the rest of the round. ${lamps}`;
+  return `Hit one and it is yours for the rest of the round. ${lamps}`;
 }
 
 function difficultySelect(value: Difficulty): HTMLSelectElement {
@@ -208,10 +220,18 @@ function cabinetCards(): { id: CabinetId; name: string; line: string }[] {
 function switchMenu(body: HTMLElement) {
   const CABINETS = cabinetCards();
   let picked: CabinetId = readVibePrefs().cabinet ?? 'ghost';
+  // The page's own name, on the page. The document's first heading used to be
+  // a cabinet's, below a tab list that had no visible name at all — only an
+  // `aria-label` — and the title in the browser's tab appeared nowhere on
+  // screen. The heading names the switch and the switch is labelled by it, so
+  // the one statement serves the eye and a reader's software both.
+  const title = document.createElement('h1');
+  title.id = 'cabinet-switch';
+  title.textContent = 'the cabinets';
   const cards = document.createElement('ul');
   cards.className = 'tape-list cabinet-cards';
   cards.setAttribute('role', 'tablist');
-  cards.setAttribute('aria-label', 'the cabinets');
+  cards.setAttribute('aria-labelledby', title.id);
   body.id = 'cabinet-body';
   body.setAttribute('role', 'tabpanel');
   const rows: HTMLLIElement[] = [];
@@ -226,8 +246,8 @@ function switchMenu(body: HTMLElement) {
       tabs[i]?.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     body.replaceChildren();
-    if (picked === 'ghost') ghostMenu(body);
-    else vibeMenu(body);
+    if (picked === 'ghost') ghostMenu(body, 'h2');
+    else vibeMenu(body, 'h2');
   };
   CABINETS.forEach((cabinet, i) => {
     const li = document.createElement('li');
@@ -260,7 +280,7 @@ function switchMenu(body: HTMLElement) {
     tabs.push(name);
     cards.append(li);
   });
-  app.append(cards, body);
+  app.append(title, cards, body);
   paint();
 }
 
@@ -304,19 +324,29 @@ function menu() {
   }
 }
 
-function ghostMenu(wrap: HTMLElement) {
-  const h = document.createElement('h1');
+/**
+ * A cabinet's own heading. On a single-cabinet build the cabinet IS the page,
+ * so its name is the h1. Inside the switch the page is the arcade and the
+ * cabinet is a section of it, so the name is demoted and 'the cabinets' takes
+ * the h1 — which also gives the tab list above it a visible name, and gives
+ * the document a first heading that is not below a list of unlabeled tabs.
+ */
+export type MenuHeading = 'h1' | 'h2';
+
+function ghostMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
+  const h = document.createElement(heading);
   h.textContent = 'Ghost on the Menu';
   const prefs = readPrefs();
   const playDiff = (prefs.difficulty ?? 'seat') as Difficulty;
-  const intro = muted(introCopy(playDiff));
-  wrap.append(
-    h,
-    muted(
-      'A replay shooter on an mcp-arcade tape. The lies the instrument caught look like everything else until you hit one.',
-    ),
-    intro,
+  const lead = muted(
+    'A replay shooter on an mcp-arcade tape. The lies the instrument caught look like everything else until you hit one.',
   );
+  lead.classList.add('prose');
+  const intro = muted(INTRO_COPY);
+  intro.classList.add('prose');
+  const lamps = muted(lampsCopy(playDiff));
+  lamps.classList.add('prose');
+  wrap.append(h, lead, intro, lamps);
 
   // Where the player was. Everything else about them survived a visit — the
   // rung, the feel, the shake, the seat, the voice, the last shift code — and
@@ -380,7 +410,7 @@ function ghostMenu(wrap: HTMLElement) {
     const chosen = playTier.value as Difficulty;
     writePrefs({ difficulty: chosen });
     shiftTier.textContent = shiftTierWords(chosen);
-    intro.textContent = introCopy(chosen);
+    lamps.textContent = lampsCopy(chosen);
   });
   const row = document.createElement('div');
   row.className = 'row';
@@ -396,7 +426,17 @@ function ghostMenu(wrap: HTMLElement) {
   shiftRow.className = 'row block';
   const shiftTier = shiftTierLine(playDiff);
   const shift = button('Shift', 'commit');
-  shift.title = `${lengthWord(4)} calls drawn from the roster, back to back, the bursts climbing call by call. The lamps refill at every call.`;
+  // A `title` is the hover affordance and nothing more: a touch player has no
+  // hover, and a reader's software passes it over as soon as anything else
+  // describes the control. The same sentence is in the page, offscreen, tied
+  // to the button, so the one statement of what a shift is reaches everybody.
+  const shiftWords = `${lengthWord(4)} calls drawn from the roster, back to back, the bursts climbing call by call. The lamps refill at every call.`;
+  shift.title = shiftWords;
+  const shiftWhat = document.createElement('span');
+  shiftWhat.className = 'offscreen';
+  shiftWhat.id = 'shift-what';
+  shiftWhat.textContent = shiftWords;
+  shift.setAttribute('aria-describedby', shiftWhat.id);
   const code = document.createElement('input');
   code.type = 'text';
   code.placeholder = 'a shift code: four words';
@@ -415,7 +455,7 @@ function ghostMenu(wrap: HTMLElement) {
   const status = muted('');
   status.id = 'shift-code-status';
   liveShiftStatus(status);
-  shiftRow.append(shiftTier, shift, code, replay);
+  shiftRow.append(shiftTier, shift, shiftWhat, code, replay);
   wrap.append(
     muted(
       'Or take a shift: the rig hands you four calls in a row, each one a server the agent was sent to, and the fire climbs call by call. The code at the end replays the same shift.',
@@ -477,7 +517,7 @@ interface Shift {
   code: string;
 }
 
-/** Four shift flavours, keyed by call index 0..3. Local until shift.ts exports flavorTelegraph. */
+/** Four shift flavors, keyed by call index 0..3. Local until shift.ts exports flavorTelegraph. */
 const FLAVOR_AT = [
   { role: 'pressure', biome: 'steel' },
   { role: 'area-deny', biome: 'slate' },
@@ -590,7 +630,7 @@ function callCard(shift: Shift, i: number) {
         nextLabel: last ? 'End the shift' : 'Next call',
         flowWord: last ? 'the shift closes on its own' : 'the next call follows on its own',
         holdMusic: !last,
-        hint: 'Left, right, space. F toggles full screen. Click the field to retake this call.',
+        hintTail: 'Click the field to retake this call.',
       },
     );
   });
@@ -627,9 +667,15 @@ function shiftEnd(shift: Shift) {
   const codeLine = document.createElement('p');
   codeLine.textContent = `shift ${shift.code}`;
   codeLine.className = 'shift-code';
-  codeLine.title =
-    'Type these four words on the menu to take the same shift again, or hand them to someone.';
-  wrap.append(list, codeLine);
+  // The one instruction for reusing a shift was a `title` on a paragraph: not
+  // focusable, so Tab skips it, never announced by a reader's software, and
+  // invisible to a touch player, who has no hover. The code was shown with no
+  // statement anywhere on screen of what it is for. It is a line now.
+  const codeWhy = muted(
+    'Type these four words on the menu to take the same shift again, or hand them to someone.',
+  );
+  codeWhy.classList.add('why');
+  wrap.append(list, codeLine, codeWhy);
   const row = document.createElement('div');
   row.className = 'row';
   const again = button('Take this shift again', 'commit');
@@ -713,19 +759,19 @@ function dropSeatLook(): void {
   seatLook = null;
 }
 
-export function vibeMenu(wrap: HTMLElement) {
+export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
   const prefs = readVibePrefs();
-  const h = document.createElement('h1');
+  const h = document.createElement(heading);
   h.textContent = VIBE.cabinet.name;
-  wrap.append(
-    h,
-    muted(
-      'You are the coding agent. Your user has an idea, you type the code, and the thing gets built while you both watch.',
-    ),
-    muted(
-      'Enter sends a line. A wrong line is a hmm and a retry, never a loss. The context bar is the clock.',
-    ),
+  const first = muted(
+    'You are the coding agent. Your user has an idea, you type the code, and the thing gets built while you both watch.',
   );
+  first.classList.add('prose');
+  const second = muted(
+    'Enter sends a line. A wrong line is a hmm and a retry, never a loss. The context bar is the clock.',
+  );
+  second.classList.add('prose');
+  wrap.append(h, first, second);
 
   let picked: number | 'endless' =
     prefs.endless === 'on' ? 'endless' : Math.min(prefs.level ?? 0, VIBE.levels.levels.length - 1);

@@ -40,7 +40,7 @@ import {
   type Stack,
   type Tier,
 } from '@mcp-arcade-cabinets/vibe-typer';
-import { listPilotModels } from '@mcp-arcade-cabinets/ghost-on-the-menu';
+import { LOCAL_SEATS, probeSeatModels } from './seats';
 import {
   createVibeVoicer,
   speakLine,
@@ -93,6 +93,35 @@ const CARD_FADE_MS = 200;
 const CARD_WORD = '#f6d6ac';
 /** The milestone word's size on the card, in the field's own face. */
 const CARD_FONT = '28px system-ui, sans-serif';
+/**
+ * The ribbon's face, in one place. It was written out twice — once for the
+ * painted ribbon and once for the flat bar behind it — while every other word
+ * on this canvas takes `CARD_FONT`, so the two paths could drift apart at the
+ * one moment the player is being congratulated.
+ */
+const RIBBON_FONT = '16px system-ui, sans-serif';
+/**
+ * The word on the ribbon.
+ *
+ * Every other word drawn on this cabinet's surfaces comes from the levers —
+ * `words.valuation`, `words.hype`, `words.streak`, `words.context`,
+ * `words.beats`, and the milestone word from `cue.toast` — so a cabinet that
+ * renames the act renames everything except the band the player sees at the
+ * moment of shipping. It is one constant rather than two string literals
+ * here; taking it from the levers wants a `words.deployed` key, which is
+ * `CabinetSet` in `packages/vibe-typer/src/patterns.ts` and its loader, and
+ * is not this file's to add.
+ */
+const DEPLOY_WORD = 'deployed';
+/**
+ * The room the milestone word has on the card: its right half, which is where
+ * it is drawn because every card keeps its motif in its left third. The word
+ * comes from the levers, so its length is not fixed by this file — without a
+ * bound, anything past about twenty characters ran off the card's right edge
+ * and then off the preview. Ghost's own draw adapter has always clamped
+ * (`FIELD.width - 32`); this is the same rule for the same act.
+ */
+const CARD_WORD_MAX = CARD_W * 0.62;
 /** Characters a second a chat line types itself in at. */
 const CHAT_CPS = 90;
 /**
@@ -107,6 +136,8 @@ const WARM_AT = 0.25;
 /** The preview, in CSS pixels, drawn at twice that. */
 export const PREVIEW_W = 480;
 export const PREVIEW_H = 360;
+/** The room a drawn word has on the ribbon before it is condensed, not clipped. */
+const RIBBON_MAX = PREVIEW_W - 32;
 const PREVIEW_DPR = 2;
 /** Clean lines whose lengths wander less than this read as steady (G27). */
 const STEADY_CV = 0.45;
@@ -120,15 +151,6 @@ const RETRO_EVERY = 3;
 /** Pairs the retro's key map shows. */
 const RETRO_PAIRS = 8;
 
-/**
- * Pages cannot reach a daemon, so the production Pages build omits the seat
- * chrome and the fetch that goes with it. The launcher is a production
- * build that *can* reach one: `VITE_LOCAL_SEATS=true` at pack time. Dev is
- * never PROD, so the seat stays on there either way. Same switch as
- * `ghost.ts`; the launcher's pack greps the strings this guards.
- */
-export const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
-
 // The endless seat (G28 as slice 3 amends it). The seat writes a whole
 // request; the code gate accepts or refuses it; a refusal is re-asked once
 // and then forgotten, because the corpus is always there (G11, G13).
@@ -139,9 +161,6 @@ const ENDLESS_TIMEOUT_MS = 20_000;
 const TAGS_EVERY_MS = 5000;
 /** How long the field's repeated look for a daemon may take. */
 const TAGS_TIMEOUT_MS = 2000;
-/** How long the menu's single look may take before it says the authored user. */
-const SEAT_PROBE_TIMEOUT_MS = 5000;
-
 /** How often the shell asks whether a voice worker is up. Ghost's cadence. */
 const VOICE_PROBE_MS = 5000;
 /** Asks for one request slot before the shell gives that slot to the corpus. */
@@ -231,51 +250,11 @@ export function bandWord(min: number, max: number): string {
 }
 
 // ——— the daemon, read once ————————————————————————————————————————————————
-// One reading of the tag list, shared by the field and the menu, so the name
-// the menu prints is the name the field will sit. Neither of these throws: a
-// daemon that is not there, an answer that is not JSON, a look that timed out
-// and a look that was abandoned are all the same answer — no seat — and the
-// authored pool plays either way (G11).
-
-/**
- * The models a seat may sit, cloud first, as `listPilotModels` orders them.
- * Empty when the build cannot reach a daemon at all (Pages), when none is
- * listening, or when nothing it lists may be seated.
- */
-export async function probeSeatModels(o: {
-  signal?: AbortSignal;
-  timeoutMs: number;
-}): Promise<string[]> {
-  if (!LOCAL_SEATS) return [];
-  const signals: AbortSignal[] = [AbortSignal.timeout(o.timeoutMs)];
-  if (o.signal) signals.push(o.signal);
-  try {
-    const r = await fetch('/ollama/api/tags', { signal: AbortSignal.any(signals) });
-    if (!r.ok) return [];
-    const body = (await r.json()) as { models?: { name?: string }[] };
-    const names = (body.models ?? []).map((m) => String(m.name ?? '')).filter(Boolean);
-    return listPilotModels(names);
-  } catch {
-    return [];
-  }
-}
-
-/**
- * The one tag the endless seat will sit, for the menu to name before the run
- * starts, or `null` for the authored user. The menu is outside the field, so
- * a tag may be read there (G17); nothing on the field ever names it.
- *
- * The seat the route actually takes is the same order this reads: an Ollama
- * cloud tag first, then a local one. A launcher started with an API key seats
- * Claude instead, which no tag list can show — the controls row corrects the
- * name once the first answer lands.
- */
-export async function probeSeatName(signal?: AbortSignal): Promise<string | null> {
-  const listed = await probeSeatModels(
-    signal ? { signal, timeoutMs: SEAT_PROBE_TIMEOUT_MS } : { timeoutMs: SEAT_PROBE_TIMEOUT_MS },
-  );
-  return listed[0] ?? null;
-}
+// `LOCAL_SEATS`, `probeSeatModels` and `probeSeatName` live in `./seats` now,
+// which neither cabinet's mount imports: the menu could not ask whether a
+// seat exists without pulling this whole module — and `typer-cues`,
+// `typer-cards`, `typer-tiles` and `typer-audio` behind it — into a
+// Ghost-only bundle's graph.
 
 // ——— prefs ————————————————————————————————————————————————————————————————
 // Ghost keeps its own under `ghost.prefs`; these sit beside them under the
@@ -522,6 +501,42 @@ function liveStatus(node: HTMLElement, name: string): void {
  * nobody — the element is not focusable, Tab skips it, and a mouse player
  * only learns by hovering something that looks inert.
  */
+/**
+ * Tie one more description to a control without dropping the ones already on
+ * it. `aria-describedby` is a list, and setting the attribute outright — which
+ * is what every caller used to do — meant the second description silently
+ * deleted the first.
+ */
+function describedBy(control: HTMLElement, id: string): void {
+  const had = control.getAttribute('aria-describedby');
+  control.setAttribute('aria-describedby', had ? `${had} ${id}` : id);
+}
+
+/**
+ * What a feature IS, for a control whose only statement of it was a `title`.
+ * A touch player has no hover, and a reader's software reads the label rather
+ * than the title once anything else describes the control. The sentence goes
+ * in the page, offscreen, tied to the box, so the one explanation reaches
+ * everybody; the `title` stays as the hover affordance.
+ */
+function whatItIs(control: HTMLElement, id: string, text: string): HTMLSpanElement {
+  const what = el('span', 'offscreen', text);
+  what.id = id;
+  describedBy(control, id);
+  return what;
+}
+
+/**
+ * A checkbox and the words that explain it, in one box that cannot come
+ * apart. The controls row wraps, and a `why` span that is a plain sibling of
+ * the box it explains can wrap onto the next line away from it.
+ */
+function seatGroup(...parts: (Node | null)[]): HTMLSpanElement {
+  const box = el('span', 'seat-group');
+  for (const part of parts) if (part) box.append(part);
+  return box;
+}
+
 function whyDisabled(
   control: HTMLElement,
   id: string,
@@ -529,7 +544,7 @@ function whyDisabled(
 ): { why: HTMLSpanElement; set: (on: boolean) => void } {
   const why = el('span', 'muted why', text);
   why.id = id;
-  control.setAttribute('aria-describedby', id);
+  describedBy(control, id);
   return {
     why,
     set: (on: boolean) => {
@@ -645,11 +660,31 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const streakEl = el('span', 'vibe-stat vibe-streak');
   const streakWord = el('span', 'vibe-word', words.streak);
   const streakDots = el('span', 'vibe-dots', '');
-  streakDots.setAttribute('aria-label', words.streak);
-  streakEl.append(streakWord, streakDots);
+  /*
+    The bullets are the picture of the streak and carry nothing a reader's
+    software can get at. An `aria-label` on a generic span with no role is
+    either ignored — the run of dots is read as characters or as decoration —
+    or honored, in which case it REPLACES the bullets and the count is gone.
+    Either way the streak did not reach the player. The picture is decoration
+    now and the count is a word beside it, kept current by `drawBoard`.
+  */
+  streakDots.setAttribute('aria-hidden', 'true');
+  const streakSaid = el('span', 'offscreen');
+  streakEl.append(streakWord, streakDots, streakSaid);
   const barWrap = el('span', 'vibe-stat vibe-context');
   const barWord = el('span', 'vibe-word', words.context);
   const bar = el('span', 'vibe-bar');
+  /*
+    The hint calls this bar the clock, so the run's whole timer was invisible
+    to a reader's software while the two numeric stats beside it read fine: it
+    was a span whose only state was an inline width. It is a progress bar with
+    a value now, named by the levers' own word for it.
+  */
+  bar.setAttribute('role', 'progressbar');
+  bar.setAttribute('aria-label', words.context);
+  bar.setAttribute('aria-valuemin', '0');
+  bar.setAttribute('aria-valuemax', '100');
+  bar.setAttribute('aria-valuenow', '100');
   const barFill = el('span', 'vibe-bar-fill');
   bar.append(barFill);
   barWrap.append(barWord, bar);
@@ -760,7 +795,16 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   mute.type = 'button';
   const back = el('button', undefined, 'Back to the cabinets');
   back.type = 'button';
-  controls.append(mute, back);
+  /*
+    One grammar for a mounted cabinet, settled across the two: field, controls
+    row, status row, hint, the way out. Ghost has always read that way. This
+    cabinet put the identically worded exit SECOND in its controls row, one
+    control away from the toggle a player reaches for most, and appended its
+    status words into the control row itself — so the same act, with the same
+    consequence, sat in two different places with two different neighbors.
+  */
+  controls.append(mute);
+  const statusRow = el('div', 'row');
   // The seat, outside the field. G17 keeps the model's name off the field;
   // the controls row is not the field, as Ghost's is not, so the tag may be
   // read here and nowhere else. The chat never learns it.
@@ -772,6 +816,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   seatLabel.append(seatBox, document.createTextNode(' Model user'));
   seatLabel.title =
     'In endless, your user is played by a model on your own machine: it names the product, asks for the thing and writes the code you type, behind a gate that refuses anything that is not small, plain and in the right language. Needs the local game, not Pages.';
+  const seatWhat = whatItIs(seatBox, 'vibe-what-seat', seatLabel.title);
   const seatWhy = whyDisabled(seatBox, 'vibe-why-seat', 'needs a model on this machine');
   const seatStat = el('span', 'muted seat', '');
   liveStatus(seatStat, 'the user');
@@ -779,7 +824,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   if (seatOn) {
     // The unique mark the launcher's pack greps for: a Pages build has none.
     controls.setAttribute('data-vibe-seat', 'on');
-    controls.append(seatLabel, seatWhy.why, seatStat);
+    controls.append(seatGroup(seatLabel, seatWhat, seatWhy.why));
+    statusRow.append(seatStat);
   }
   // The voice (G15, slice 4C): the user speaks their own lines through the
   // host-side worker, and every take is heard back and receipted before it
@@ -795,6 +841,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   voiceLabel.append(voiceBox, document.createTextNode(' Voice'));
   voiceLabel.title =
     'Your user says their asks, their check-ins and their reactions out loud through the local voice worker (pnpm voice); every take is heard back and receipted before it plays, and you type the replies as always.';
+  const voiceWhat = whatItIs(voiceBox, 'vibe-what-voice', voiceLabel.title);
   const voiceWhy = whyDisabled(voiceBox, 'vibe-why-voice', 'needs the local voice running');
   const voiceStat = el('span', 'muted seat', '');
   liveStatus(voiceStat, 'voice');
@@ -803,7 +850,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     // a `/voice` proxy, and a shell built without this chrome would leave that
     // proxy with no caller. The gate greps for this and halts if it is gone.
     controls.setAttribute('data-vibe-voice', 'on');
-    controls.append(voiceLabel, voiceWhy.why, voiceStat);
+    controls.append(seatGroup(voiceLabel, voiceWhat, voiceWhy.why));
+    statusRow.append(voiceStat);
   }
 
   // ——— what the cabinet's own files are doing ——————————————————————————————
@@ -818,7 +866,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   // a bed belongs with it.
   const chrome = el('span', 'muted seat', '');
   liveStatus(chrome, 'cabinet');
-  controls.append(chrome);
+  statusRow.append(chrome);
   /** The words the chrome is carrying, in the order they were first raised. */
   const chromeWords = new Set<string>();
   const chromeWord = (word: string, on: boolean) => {
@@ -853,7 +901,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     'Type what you see. Enter sends a line, Tab takes the rest when the faded text appears, hold Escape to leave.',
   );
 
-  wrap.append(board, panes, controls, hint);
+  wrap.append(board, panes, controls, statusRow, hint, back);
   root.append(wrap);
   root.classList.add('playing');
 
@@ -1501,7 +1549,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     hypeNum.textContent = `×${state.hype}`;
     const dots = Math.min(state.streak, PITCH_CAP);
     streakDots.textContent = '•'.repeat(dots);
-    barFill.style.width = `${Math.max(0, Math.min(1, state.context)) * 100}%`;
+    const said = `${words.streak}: ${countWord(dots)}`;
+    if (streakSaid.textContent !== said) streakSaid.textContent = said;
+    const left = Math.max(0, Math.min(1, state.context));
+    barFill.style.width = `${left * 100}%`;
+    const now = String(Math.round(left * 100));
+    if (bar.getAttribute('aria-valuenow') !== now) bar.setAttribute('aria-valuenow', now);
     barFill.classList.toggle('warm', state.context < WARM_AT && state.context >= NEAR_MISS);
     barFill.classList.toggle('near', state.context < NEAR_MISS);
     if (toastLeft > 0) {
@@ -1631,7 +1684,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       c.fillStyle = CARD_WORD;
       c.font = CARD_FONT;
       c.textAlign = 'center';
-      c.fillText(toast.textContent ?? '', x + CARD_W * 0.66, y + h / 2 + 10);
+      c.fillText(toast.textContent ?? '', x + CARD_W * 0.66, y + h / 2 + 10, CARD_WORD_MAX);
       c.textAlign = 'left';
       c.globalAlpha = 1;
     }
@@ -1657,16 +1710,16 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
         const h = PREVIEW_W / RIBBON_ASPECT;
         c.drawImage(ribbon, 0, PREVIEW_H - DEPLOY_MID - h / 2, PREVIEW_W, h);
         c.fillStyle = '#101018';
-        c.font = '16px system-ui, sans-serif';
+        c.font = RIBBON_FONT;
         c.textAlign = 'center';
-        c.fillText('deployed', PREVIEW_W / 2, PREVIEW_H - 27);
+        c.fillText(DEPLOY_WORD, PREVIEW_W / 2, PREVIEW_H - 27, RIBBON_MAX);
         c.textAlign = 'left';
       } else {
         c.fillStyle = '#e8a04a';
         c.fillRect(0, PREVIEW_H - 46, PREVIEW_W, 26);
         c.fillStyle = '#101018';
-        c.font = '16px system-ui, sans-serif';
-        c.fillText('deployed', 16, PREVIEW_H - 27);
+        c.font = RIBBON_FONT;
+        c.fillText(DEPLOY_WORD, 16, PREVIEW_H - 27, RIBBON_MAX);
       }
     }
     if (flashLeft > 0) {
@@ -1967,7 +2020,7 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
         // The tag carries a version, which is a digit; the controls row is
         // not the field, so it may be read here (G17, and Ghost does the
         // same beside its own mute button).
-        seatSay(`seat: ${a.model ?? 'a model'}`);
+        seatSay(`seat: ${typeof a.model === 'string' && a.model !== '' ? a.model : 'a model'}`);
       })
       .catch(() => {
         if (left || ctl.signal.aborted) return;
@@ -2289,6 +2342,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     writeWeak(mergeWeak(storedWeak, state.weakBigrams));
     audio?.end();
     const scene = el('section', 'column vibe-standup');
+    // The end card quotes the chat, so it quotes it at the size the player
+    // chose. `--vibe-font` was set on the mount's wrap and the standup
+    // replaces that wrap outright, so the player's last user line — the same
+    // words that were on screen a second earlier — dropped to the browser
+    // default at the emotional payoff of the run.
+    scene.style.setProperty('--vibe-font', FONT_SIZES[font]);
     // The product and the stack it was built on, in the menu's own words. The
     // stack is the one fact the end card was missing: two levels can share a
     // premise and read as the same job otherwise.
@@ -2325,8 +2384,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       scene.append(el('p', 'muted', state.milestones.join(' · ')));
     }
     const seedLine = el('p', 'vibe-seed', `seed ${opts.seed}`);
-    seedLine.title = 'Type this seed on the menu to play the same run again.';
-    scene.append(seedLine);
+    // What the seed is for, in the page rather than in a `title` on a
+    // paragraph: a paragraph is not focusable, Tab skips it, a reader's
+    // software never announces a title on one, and a touch player has no
+    // hover — so the seed was shown with no statement of what it is.
+    const seedWhy = el('p', 'muted why', 'Type this seed on the menu to play the same run again.');
+    scene.append(seedLine, seedWhy);
     const row = el('div', 'row');
     const again = el('button', 'commit', 'Back to the cabinets');
     again.type = 'button';

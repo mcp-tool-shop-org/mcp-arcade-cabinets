@@ -261,13 +261,20 @@ describe('the endless entry’s seat', () => {
     expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('a written user');
   });
 
-  // Last in the file on purpose: it rebuilds the menu over a `vibe-typer`
+  // Last in the file on purpose: it rebuilds the menu over a `seats` module
   // whose `LOCAL_SEATS` is false — the Pages build — and what it leaves in
-  // the module registry would be wrong for anything after it.
+  // the module registry would be wrong for anything after it. The switch used
+  // to be mocked on `../src/vibe-typer`; it lives in `../src/seats` now,
+  // which is the whole point of that move — the menu asks whether a seat
+  // exists without importing the typing cabinet.
   it('says a written user where no seat can sit, and never looks', async () => {
+    vi.doMock('../src/seats', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('../src/seats')>();
+      return { ...actual, LOCAL_SEATS: false };
+    });
     vi.doMock('../src/vibe-typer', async (importOriginal) => {
       const actual = await importOriginal<typeof import('../src/vibe-typer')>();
-      return { ...actual, LOCAL_SEATS: false, mountVibeTyper: vi.fn() };
+      return { ...actual, mountVibeTyper: vi.fn() };
     });
     vi.resetModules();
     const { vibeMenu } = await import('../src/main');
@@ -280,6 +287,7 @@ describe('the endless entry’s seat', () => {
     expect(painted().at(-1)!.rows[0]!.cells[1]).toBe('a written user');
     expect(globalThis.fetch).not.toHaveBeenCalled();
     vi.doUnmock('../src/vibe-typer');
+    vi.doUnmock('../src/seats');
     vi.resetModules();
   });
 });

@@ -1159,11 +1159,23 @@ describe('the voice on the user lines, mounted', () => {
     expect(box.disabled).toBe(true);
     // Said in the cabinet's own words: no player runs `pnpm`.
     expect(root.textContent).toContain('the local voice is not running');
-    // And a greyed box says why it is grey, where a `title` on a disabled
+    // And a grayed box says why it is gray, where a `title` on a disabled
     // input says it to nobody.
     const why = root.querySelector('#vibe-why-voice') as HTMLElement;
     expect(why.hidden).toBe(false);
-    expect(box.getAttribute('aria-describedby')).toBe('vibe-why-voice');
+    // Two descriptions, both of them reaching the box: what the feature is —
+    // which used to be a `title` and so reached a mouse player and nobody
+    // else — and why it is currently gray. `aria-describedby` is a list, and
+    // the second description used to overwrite the first.
+    expect(box.getAttribute('aria-describedby')).toBe('vibe-what-voice vibe-why-voice');
+    const what = root.querySelector('#vibe-what-voice') as HTMLElement;
+    expect(what.textContent).toBe(box.closest('label')!.title);
+    expect(what.className).toBe('offscreen');
+    // And the box, what it is and why it is gray sit in one group, so the
+    // wrapping controls row can never put the explanation on a line of its
+    // own away from the control it explains.
+    expect(why.closest('.seat-group')).toBe(what.closest('.seat-group'));
+    expect(box.closest('.seat-group')).toBe(what.closest('.seat-group'));
     // The reason is beside the label, never inside it: what is inside the
     // label is the checkbox's own name.
     expect((box.closest('label')?.textContent ?? '').trim()).toBe('Voice');
@@ -1448,7 +1460,7 @@ describe('the keys the field does not own', () => {
   it('gives the keyboard back at the standup', () => {
     mount = mountLevel();
     expect(playUntil(mount, () => root.querySelector('.vibe-standup') !== null)).toBe(true);
-    // Nothing is typing any more: no key is taken and none is cancelled.
+    // Nothing is typing any more: no key is taken and none is canceled.
     for (const key of ['Enter', ' ', 'Tab']) {
       expect(keyOn(window, key).defaultPrevented, key).toBe(false);
     }
@@ -1806,5 +1818,108 @@ describe('the prefs the typing cabinet keeps', () => {
     // The read is still the strict allowlist.
     expect((readVibePrefs() as Record<string, unknown>).best).toBeUndefined();
     expect(readVibePrefs().muted).toBe('on');
+  });
+});
+
+// ——— the board, read rather than seen ——————————————————————————————————————
+// Stage D. The two graphical readouts on the board carried no value a reader's
+// software could get at, and one of them hid its own.
+
+describe('the board a reader gets', () => {
+  it('gives the context bar a role and a value that moves', () => {
+    const m = mountLevel();
+    mount = m;
+    const bar = root.querySelector('.vibe-bar')!;
+    expect(bar.getAttribute('role')).toBe('progressbar');
+    expect(bar.getAttribute('aria-valuemin')).toBe('0');
+    expect(bar.getAttribute('aria-valuemax')).toBe('100');
+    // The levers' own word for the bar, not a word this file invented.
+    expect(bar.getAttribute('aria-label')).toBe(DEFAULT_PATTERNS.cabinet.words.context);
+    const fill = root.querySelector('.vibe-bar-fill') as HTMLElement;
+    // The bar's value is whatever the bar drew, from the first frame on.
+    const reads = () => String(Math.round(parseFloat(fill.style.width)));
+    expect(bar.getAttribute('aria-valuenow')).toBe(reads());
+    const before = parseFloat(fill.style.width);
+    for (let i = 0; i < 400; i++) m.tick(0.5);
+    expect(parseFloat(fill.style.width)).toBeLessThan(before);
+    // Whatever the bar drew, the value says the same thing.
+    expect(bar.getAttribute('aria-valuenow')).toBe(reads());
+  });
+
+  it('puts the streak in words and marks the bullets decoration', () => {
+    const m = mountLevel();
+    mount = m;
+    const dots = root.querySelector('.vibe-dots')!;
+    // An aria-label on a generic span either replaces the bullets or is
+    // dropped; either way the count did not reach the player.
+    expect(dots.getAttribute('aria-label')).toBeNull();
+    expect(dots.getAttribute('aria-hidden')).toBe('true');
+    const said = root.querySelector('.vibe-streak .offscreen')!;
+    m.tick(STEP);
+    expect(said.textContent).toContain('none');
+    // A word, never a digit (G23).
+    expect(/\d/.test(said.textContent ?? '')).toBe(false);
+  });
+});
+
+// ——— one grammar for a mounted cabinet ————————————————————————————————————
+// Stage D. Field, controls row, status row, hint, the way out — Ghost's order,
+// which this cabinet reversed by putting the exit second in its controls row
+// and its status words in the row beside it.
+
+describe('the chrome under the panes', () => {
+  it('puts the way out last and the status words in a row of their own', () => {
+    mount = mountLevel();
+    const wrap = root.querySelector('section.vibe')!;
+    const order = [...wrap.children].map((n) => {
+      const node = n as HTMLElement;
+      return node.className || node.tagName.toLowerCase();
+    });
+    expect(order).toEqual(['vibe-board', 'vibe-panes', 'row', 'row', 'muted', 'button']);
+    const exit = wrap.lastElementChild as HTMLButtonElement;
+    expect(exit.textContent).toBe('Back to the cabinets');
+    // The sound toggle is alone among the buttons of the controls row; the
+    // exit is no longer one control away from the toggle reached for most.
+    const controls = wrap.children[2] as HTMLElement;
+    expect([...controls.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
+      'sound: on',
+    ]);
+    // The status words — the voice, the cabinet's own files — in their own row.
+    const statusRow = wrap.children[3] as HTMLElement;
+    expect(statusRow.querySelector('[aria-label="cabinet"]')).not.toBeNull();
+    expect(controls.querySelector('[aria-label="cabinet"]')).toBeNull();
+  });
+});
+
+// ——— the end card ————————————————————————————————————————————————————————
+// Stage D. The standup replaces the mount's wrap outright, so it dropped the
+// player's type choice and quoted the chat at the browser default. Hardcore,
+// for the same reason the standup tests above take it: it is the one listed
+// tier where an empty bar is the end rather than a compaction.
+
+describe('what the standup keeps', () => {
+  it('quotes the chat at the type the player chose, and says what the seed is for', () => {
+    writeVibePrefs({ font: 'huge' });
+    const m = mountVibeTyper(root, {
+      tier: 3,
+      endless: false,
+      levelIndex: 0,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    mount = m;
+    expect(toStandup(m)).toBe(true);
+    const scene = root.querySelector('.vibe-standup') as HTMLElement;
+    expect(scene.style.getPropertyValue('--vibe-font')).toBe(FONT_SIZES.huge);
+    const seed = root.querySelector('.vibe-seed')!;
+    // The one instruction for replaying a run was a `title` on a paragraph,
+    // which a touch player and a reader's software both never get.
+    const why = seed.nextElementSibling as HTMLElement;
+    expect(why.textContent).toBe('Type this seed on the menu to play the same run again.');
+    expect(why.className).toContain('why');
   });
 });

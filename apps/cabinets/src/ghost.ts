@@ -71,15 +71,8 @@ import {
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
+import { LOCAL_SEATS } from './seats';
 import { TAPES } from './tapes';
-
-/**
- * Pages cannot reach a daemon, so the production Pages build omits the
- * Ollama / Voice chrome. The launcher is a production build that *can*
- * reach one: `VITE_LOCAL_SEATS=true` at pack time. Dev (`pnpm … dev`)
- * is never PROD, so the seats stay on there either way.
- */
-const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
 /**
  * Director (2026-09-17): a round flows into the next tape. The scene is a
  * breath, long enough to read the closing line, not a hold; a seven-second
@@ -121,13 +114,18 @@ export interface MountExtra {
   furniture?: string[];
   nextLabel?: string;
   /**
+   * The hint's last clause, when a shift wants its own. Not the whole
+   * sentence: the clauses before it depend on what this browser can do, and a
+   * shift that wrote them out itself promised a key the build may have hidden.
+   */
+  hintTail?: string;
+  /**
    * What the chrome row says while the end scene is running down to whatever
    * comes next. The scene starts the next thing by itself and said nothing
    * about it, so a player reading the trophies was interrupted by a whole new
    * tape with no warning. A shift names its own next thing here.
    */
   flowWord?: string;
-  hint?: string;
   /** True on a shift call that is not the last: the music carries through the card. */
   holdMusic?: boolean;
 }
@@ -582,6 +580,35 @@ export function mountGhost(
 
   const controls = document.createElement('div');
   controls.className = 'row';
+  const settings = document.createElement('div');
+  settings.className = 'row';
+  /**
+   * Tie one more description to a control without dropping the ones already
+   * on it. `aria-describedby` is a list, and setting the attribute outright —
+   * which is what every caller used to do — meant the second description
+   * silently deleted the first.
+   */
+  const describedBy = (control: HTMLElement, id: string) => {
+    const had = control.getAttribute('aria-describedby');
+    control.setAttribute('aria-describedby', had ? `${had} ${id}` : id);
+  };
+  /**
+   * What a feature IS, for a control whose only statement of it was a
+   * `title`. A checkbox is focusable, so its title does reach a mouse player
+   * on hover — but a touch player has no hover and a reader's software reads
+   * the label, not the title, once anything else describes the control. The
+   * sentence goes in the page, offscreen, tied to the box, so the one
+   * explanation of the feature reaches everybody. The `title` stays: it is
+   * the hover affordance and nothing else now depends on it.
+   */
+  const whatItIs = (control: HTMLElement, id: string, text: string) => {
+    const what = document.createElement('span');
+    what.className = 'offscreen';
+    what.id = id;
+    what.textContent = text;
+    describedBy(control, id);
+    return what;
+  };
   /**
    * Why a grayed control is gray, as a visible word tied to the control.
    *
@@ -597,8 +624,21 @@ export function mountGhost(
     why.className = 'muted why';
     why.id = id;
     why.textContent = text;
-    control.setAttribute('aria-describedby', id);
+    describedBy(control, id);
     return { why, set: (on: boolean) => (why.hidden = !on) };
+  };
+  /**
+   * A checkbox and the words that explain it, in one box that cannot come
+   * apart. The chrome row wraps, and the `why` span was a plain sibling of
+   * the box it explains: at the width where the row broke between them, the
+   * reason a grayed control was gray wrapped onto the next line away from the
+   * control — the very failure the comment above was written to prevent.
+   */
+  const seatGroup = (...parts: (Node | null)[]) => {
+    const box = document.createElement('span');
+    box.className = 'seat-group';
+    for (const part of parts) if (part) box.append(part);
+    return box;
   };
   const mute = document.createElement('button');
   // One convention across both cabinets and the menu's own select: the button
@@ -628,8 +668,10 @@ export function mountGhost(
   ollama.checked = false;
   ollama.disabled = true;
   ollamaLabel.append(ollama, document.createTextNode(' Ollama bosses'));
-  ollamaLabel.title =
+  const OLLAMA_WORDS =
     'Local daemon or Ollama Cloud. The boss calls its own shots through the cabinet tools and writes its own lines behind a gate; it never sees which sprites are lies. Needs the local game, not Pages.';
+  ollamaLabel.title = OLLAMA_WORDS;
+  const ollamaWhat = whatItIs(ollama, 'ghost-what-seat', OLLAMA_WORDS);
   const ollamaWhy = whyDisabled(ollama, 'ghost-why-seat', 'needs a model on this machine');
   // What the seats are doing, outside the field: a closed library line after
   // fire, 'seat thinking' only while the ask is in flight. Never a fact,
@@ -652,8 +694,10 @@ export function mountGhost(
   voice.checked = false;
   voice.disabled = true;
   voiceLabel.append(voice, document.createTextNode(' Voice'));
-  voiceLabel.title =
+  const VOICE_WORDS =
     'The boss speaks its lines in its own voice through the local voice worker (pnpm voice). Every take is heard back and receipted before it plays; a failed receipt is never played.';
+  voiceLabel.title = VOICE_WORDS;
+  const voiceWhat = whatItIs(voice, 'ghost-what-voice', VOICE_WORDS);
   const voiceWhy = whyDisabled(voice, 'ghost-why-voice', 'needs the local voice running');
   const voiceStat = document.createElement('span');
   voiceStat.className = 'muted seat';
@@ -778,8 +822,10 @@ export function mountGhost(
     pilotModel.append(kept);
   }
   pilotModel.value = prefs.model ?? localDefault;
-  pilotModel.title = 'Cloud tags first when the local daemon has signed in.';
+  const MODEL_WORDS = 'Cloud tags first when the local daemon has signed in.';
+  pilotModel.title = MODEL_WORDS;
   pilotModel.setAttribute('aria-label', 'model');
+  const modelWhat = whatItIs(pilotModel, 'ghost-what-model', MODEL_WORDS);
   const full = document.createElement('button');
   full.textContent = 'Full screen';
   const difficulty = document.createElement('select');
@@ -803,29 +849,67 @@ export function mountGhost(
   nextBtn.textContent = extra.nextLabel ?? 'Next tape';
   nextBtn.disabled = true;
   nextBtn.hidden = !onNext;
-  controls.append(
-    full,
-    extra.lockDifficulty ? lockedTier : difficulty,
-    mute,
-    intensity,
-    shakeLabel,
-  );
+  /*
+    Two rows, not one.
+
+    Everything under the field used to be a single wrapping flex row carrying
+    up to eleven controls of four different grammars with the explanations
+    interleaved between them: a button that acts (Full screen), a button that
+    states (sound: on), two selects, a bare line of text, two checkboxes with
+    their own reasons, a model picker and the Next tape button, with nothing
+    between an action and a setting. The typing cabinet already keeps its
+    settings in a row of their own; this is the same shape.
+
+    The actions come first because they are what a player reaches for mid-
+    round; the settings sit under them and stay put. The way out is neither,
+    and stays where it has always been — last on the page, after the hint.
+
+    `--field-chrome` is the budget for this stack and went from 8rem to 11rem
+    (and 14 to 15 at phone widths, where the row already wrapped) to pay for
+    the second row. Owed: a look at 800 and 1000 px to confirm the field still
+    lands where it should.
+  */
+  controls.append(full, nextBtn);
+  settings.append(extra.lockDifficulty ? lockedTier : difficulty, mute, intensity, shakeLabel);
   if (LOCAL_SEATS) {
     // Unique string the launcher pack greps for: a Pages build DCE's this.
-    controls.setAttribute('data-local-seats', 'on');
-    controls.append(ollamaLabel, ollamaWhy.why, voiceLabel, voiceWhy.why, pilotModel);
+    settings.setAttribute('data-local-seats', 'on');
+    settings.append(
+      seatGroup(ollamaLabel, ollamaWhat, ollamaWhy.why),
+      seatGroup(voiceLabel, voiceWhat, voiceWhy.why),
+      seatGroup(pilotModel, modelWhat),
+    );
   }
-  controls.append(nextBtn);
   const statusRow = document.createElement('div');
   statusRow.className = 'row';
   statusRow.append(seat, sayStat, voiceStat, chrome);
 
   const hint = document.createElement('p');
   hint.className = 'muted';
-  hint.textContent =
-    extra.hint ??
-    'Left, right, space. F toggles full screen. Click the field to restart the same tape.';
-  canvas.setAttribute('aria-label', hint.textContent);
+  hint.id = 'ghost-hint';
+  /*
+    The hint is built from the clauses that apply rather than written out
+    whole. On a browser with no fullscreen API the Full screen button hides
+    and disables itself, and the hint went on naming F regardless — the player
+    was promised a key and only told it was not there after pressing it. The
+    clause is dropped with the button now. A shift supplies its own last
+    clause (`hintTail`) rather than its own whole sentence, so it cannot
+    repeat the promise either.
+  */
+  const canFull = Boolean(
+    canvas.requestFullscreen ?? (canvas as HTMLCanvasElement & FullEl).webkitRequestFullscreen,
+  );
+  hint.textContent = [
+    'Left, right, space.',
+    ...(canFull ? ['F toggles full screen.'] : []),
+    extra.hintTail ?? 'Click the field to restart the same tape.',
+  ].join(' ');
+  // The field's own short name, and the hint tied to it rather than copied
+  // into it: the accessible name used to be the same sentence that is visible
+  // as a paragraph directly beneath, so a reader's software read the line
+  // twice in a row.
+  canvas.setAttribute('aria-label', 'the field');
+  canvas.setAttribute('aria-describedby', hint.id);
   /**
    * What the field is saying, for a player who cannot see it. The canvas had
    * one label — the control hint — and nothing else, ever: the captions the
@@ -836,10 +920,13 @@ export function mountGhost(
    */
   const fieldWord = document.createElement('p');
   fieldWord.className = 'offscreen';
-  liveStatus(fieldWord, 'the field');
+  // Not 'the field': the canvas carries that name now, and two nodes with
+  // one accessible name is a reader's software announcing the same thing
+  // twice under two different things. This is what the field is SAYING.
+  liveStatus(fieldWord, 'the field in words');
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
-  wrap.append(canvas, controls, statusRow, hint, fieldWord, back);
+  wrap.append(canvas, controls, settings, statusRow, hint, fieldWord, back);
   root.append(wrap);
   root.classList.add('playing');
 
@@ -976,7 +1063,23 @@ export function mountGhost(
     const maxW = wrap.clientWidth || FIELD.width;
     const maxH = Math.max(FIELD.height, window.innerHeight - chromeAllowance());
     const s = Math.min(Math.floor(maxW / FIELD.width), Math.floor(maxH / FIELD.height));
-    if (s >= 2) {
+    /*
+      Pixel-locked from one times up, not from two.
+
+      The canvas carries `image-rendering: pixelated`, and below the old
+      threshold the stylesheet's fractional height took over: at an 800px
+      viewport a 480x360 field of hand-drawn sprites was nearest-neighbor
+      scaled by about 1.53, where sprite rows alternate one and two device
+      pixels and the diagonal edges of the ship and the bosses crawl. That
+      band — roughly 544 to 1024 px of available width — is the laptop and
+      tablet range, and it was the only place the art was never seen clean.
+      The choice was between a crisp small field and a large uneven one; it is
+      crisp at every step, so a 900px screen draws the field at 480x360.
+      Below one times there is no integer to lock to and the stylesheet's
+      fractional rule stands, which is a phone, where the field fills the
+      width anyway.
+    */
+    if (s >= 1) {
       canvas.style.width = `${FIELD.width * s}px`;
       canvas.style.height = `${FIELD.height * s}px`;
     } else {
@@ -1461,6 +1564,14 @@ export function mountGhost(
         }
         if (!a.call) {
           sayStatSay(a.suppressed ? 'say seat answered, called nothing' : 'say seat: no line');
+          return;
+        }
+        // The cast above is an assertion, not a check: the node side could
+        // answer with anything and these two fields go straight to a player
+        // surface through the say gate. A narrow guard per rendered field is
+        // enough, and an answer that fails it is the same as no line.
+        if (typeof a.call.text !== 'string' || typeof a.call.lead !== 'string') {
+          sayStatSay('say seat: no line');
           return;
         }
         const r = cabinet.call('say', a.call);

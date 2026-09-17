@@ -449,8 +449,16 @@ describe('the words the field says out loud', () => {
     const game = mountGhost(root, entry.name, entry.tape, () => undefined, undefined, false, {
       difficulty: 'recorded',
     });
-    const said = root.querySelector('[aria-label="the field"]')!;
+    const said = root.querySelector('[aria-label="the field in words"]')!;
     expect(said.getAttribute('aria-live')).toBe('polite');
+    // The canvas is named for what it is and describes itself with the hint
+    // beneath it, rather than carrying the hint's whole sentence as its own
+    // name — which made a reader read the same line twice in a row.
+    const canvas = root.querySelector('canvas')!;
+    expect(canvas.getAttribute('aria-label')).toBe('the field');
+    const hint = root.querySelector('#ghost-hint')!;
+    expect(canvas.getAttribute('aria-describedby')).toBe('ghost-hint');
+    expect(hint.textContent).toContain('Left, right, space.');
     const nextBtn = [...root.querySelectorAll('button')].find(
       (b) => b.textContent === 'Next tape',
     )!;
@@ -822,5 +830,92 @@ describe('the end scene, and where the play goes next', () => {
     // Still asking for frames: the scene is up and stays.
     expect(frames.length).toBe(1);
     game.unmount();
+  });
+});
+
+// ——— the chrome under the field ————————————————————————————————————————————
+// Stage D. The chrome was one wrapping flex row carrying up to eleven controls
+// of four different grammars with the explanations interleaved between them,
+// and the hint under it promised a key the build may have hidden.
+
+describe('the chrome under the field', () => {
+  /** The rows under the canvas, in the order the mount lays them down. */
+  function rows(): HTMLElement[] {
+    return [...root.querySelectorAll('section.column > div.row')] as HTMLElement[];
+  }
+
+  it('separates what acts from what is set', () => {
+    const game = mount();
+    const [actions, settings] = rows();
+    // The actions: the two buttons a player reaches for mid-round, and
+    // nothing that only sets something.
+    expect([...(actions?.children ?? [])].map((n) => n.tagName.toLowerCase())).toEqual([
+      'button',
+      'button',
+    ]);
+    expect([...(actions?.querySelectorAll('button') ?? [])].map((b) => b.textContent)).toEqual([
+      'Full screen',
+      'Next tape',
+    ]);
+    // The settings: the rung, the sound, the feel, the shake, and — in a dev
+    // build, which is what a test is — the seats.
+    expect(settings?.querySelector('select[aria-label="difficulty"]')).not.toBeNull();
+    expect(settings?.querySelector('select[aria-label="model"]')).not.toBeNull();
+    expect(settings?.getAttribute('data-local-seats')).toBe('on');
+    // The way out is neither, and stays last on the page after the hint.
+    const wrap = root.querySelector('section.column')!;
+    const last = wrap.lastElementChild as HTMLElement;
+    expect(last.tagName.toLowerCase()).toBe('button');
+    expect(last.textContent).toBe('Back to the cabinets');
+    game.unmount();
+  });
+
+  it('keeps a grayed box and the words about it in one group', () => {
+    const game = mount();
+    const box = root.querySelector('#ghost-why-seat')!.closest('.seat-group')!;
+    // What it is, why it is gray, and the box itself: one box that the
+    // wrapping row cannot break between.
+    expect(box.querySelector('#ghost-what-seat')).not.toBeNull();
+    const input = box.querySelector('input')!;
+    expect(input.type).toBe('checkbox');
+    expect(input.getAttribute('aria-describedby')).toBe('ghost-what-seat ghost-why-seat');
+    // The sentence that used to live only in a `title`, now in the page.
+    const what = root.querySelector('#ghost-what-seat')!;
+    expect(what.textContent).toBe(input.closest('label')!.title);
+    expect(what.className).toBe('offscreen');
+    game.unmount();
+  });
+
+  it('promises F only where F does something', () => {
+    const game = mount();
+    // jsdom hands a canvas no fullscreen API, which is also the browser the
+    // Full screen button hides itself on. The hint used to name F anyway.
+    expect(root.querySelector('#ghost-hint')!.textContent).toBe(
+      'Left, right, space. Click the field to restart the same tape.',
+    );
+    const full = [...root.querySelectorAll('button')].find((b) => b.textContent === 'Full screen');
+    expect(full?.hidden).toBe(true);
+    game.unmount();
+  });
+
+  it('names F where F works, and takes a shift last clause without it', () => {
+    const proto = HTMLCanvasElement.prototype as unknown as Record<string, unknown>;
+    proto.requestFullscreen = function (): Promise<void> {
+      return Promise.resolve();
+    };
+    try {
+      const entry = TAPES[0]!;
+      const game = mountGhost(root, entry.name, entry.tape, () => undefined, undefined, false, {
+        hintTail: 'Click the field to retake this call.',
+      });
+      // One sentence, built from the clauses that apply: a shift supplies its
+      // last clause only, so it cannot repeat the promise about F.
+      expect(root.querySelector('#ghost-hint')!.textContent).toBe(
+        'Left, right, space. F toggles full screen. Click the field to retake this call.',
+      );
+      game.unmount();
+    } finally {
+      Reflect.deleteProperty(proto, 'requestFullscreen');
+    }
   });
 });
