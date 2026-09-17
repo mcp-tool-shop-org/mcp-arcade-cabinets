@@ -134,6 +134,21 @@ describe('the level list, by stack', () => {
     expect(groups.slice(0, -1).reduce((n, g) => n + g.rows.length, 0)).toBe(LEVELS.length);
   });
 
+  // A player returning to pick by hand could not see which products they had
+  // already built, which is what made the end card's missing next hurt: the
+  // menu re-selected the product they had just shipped and said nothing.
+  it('marks a product this browser has already built, with a word in the third column', async () => {
+    const first = LEVELS.filter((level) => level.stack === stackOrder()[0]!)[0]!;
+    writeVibePrefs({ shipped: [first.product] });
+    await paint();
+    const rows = painted()[0]!.rows;
+    expect(rows[0]!.name).toBe(first.product);
+    expect(rows[0]!.cells).toEqual([bandWord(first.bandMin, first.bandMax), 'shipped']);
+    // Nothing else carries the mark, and the list stays digit-free (G23).
+    expect(rows.slice(1).every((r) => r.cells.length === 1)).toBe(true);
+    expect(/\d/.test(wrap.querySelector('.vibe-levels')!.textContent ?? '')).toBe(false);
+  });
+
   it('keeps digits off the list, headings and all (G23)', async () => {
     await paint();
     expect(/\d/.test(wrap.querySelector('.vibe-levels')!.textContent ?? '')).toBe(false);

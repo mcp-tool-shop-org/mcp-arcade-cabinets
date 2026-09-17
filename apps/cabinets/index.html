@@ -124,6 +124,12 @@
       .why {
         font-size: 0.8rem;
       }
+      /* What a cabinet plays like on glass. The script writes it only where
+         the pointer is coarse, so a mouse never meets this rule. */
+      .phone-note {
+        font-size: 0.85rem;
+        max-width: 34rem;
+      }
       .block {
         border-top: 1px solid var(--rule);
         padding-top: 0.5rem;
@@ -302,10 +308,23 @@
       main.playing .column {
         max-width: none;
       }
+      /* The box the zones are positioned against. It is the canvas's own
+         size, so a third of it is a third of the FIELD and not of the page,
+         and `layoutField` still measures the column and still sizes the
+         canvas alone. */
+      .field-box {
+        position: relative;
+        align-self: flex-start;
+        max-width: 100%;
+      }
       canvas.field {
         display: block;
         width: auto;
         max-width: 100%;
+        /* A finger on the field is playing, not scrolling: without this the
+           browser pans the page and double-tap-zooms the field out from
+           under the player on the first press. */
+        touch-action: none;
         /* Two declarations, not one: a browser that has never heard of `dvh`
            drops the second and keeps the first. `dvh` is the one that matters
            on a phone, where `vh` counts the retractable toolbar in and the
@@ -317,6 +336,51 @@
         image-rendering: pixelated;
         background: #101018;
         outline: none;
+      }
+      /* The three zones a finger plays Ghost with: the left of the field, the
+         right of it, and a band under the middle that fires. A mouse never
+         sees them — it has the keys — so they are drawn under a coarse
+         pointer and nowhere else, and `hidden` takes them off the end scene
+         so a tap reaches the field and restarts the tape. */
+      .pads {
+        display: none;
+      }
+      @media (pointer: coarse) {
+        .pads {
+          display: block;
+          position: absolute;
+          inset: 0;
+          touch-action: none;
+        }
+        .pads[hidden] {
+          display: none;
+        }
+        .pad {
+          position: absolute;
+          border: 1px solid var(--edge);
+          background: rgba(35, 35, 47, 0.35);
+          border-radius: 0.4rem;
+        }
+        .pad-left,
+        .pad-right {
+          top: 0;
+          bottom: 0;
+          width: 30%;
+        }
+        .pad-left {
+          left: 0;
+        }
+        .pad-right {
+          right: 0;
+        }
+        .pad-fire {
+          left: 32%;
+          right: 32%;
+          bottom: 0;
+          height: 36%;
+          background: rgba(232, 160, 74, 0.22);
+          border-color: #e8a04a;
+        }
       }
       canvas.field:focus-visible {
         outline: 2px solid #e8a04a;

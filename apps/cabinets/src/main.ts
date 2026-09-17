@@ -32,7 +32,6 @@ import {
   hashString,
   integrationSnippets,
   nextSeed,
-  STACKS,
   type IntegrationSeed,
   type Snippet,
   type Tier,
@@ -41,12 +40,14 @@ import {
 import {
   DIFFICULTIES,
   difficultyWord,
+  forgetTape,
   mountGhost,
   readPrefs,
   wordsOnly,
   writePrefs,
   type Difficulty,
 } from './ghost';
+import { coarsePointer } from './pointer';
 import { TAPES } from './tapes';
 import {
   DEFAULT_MUSIC,
@@ -63,7 +64,9 @@ import {
   VIBE_FONTS,
   bandWord,
   cleanName,
+  forgetVibePick,
   isVibeFont,
+  menuStackGroups,
   mountVibeTyper,
   readVibePrefs,
   SEED_MAX,
@@ -114,6 +117,20 @@ function liveShiftStatus(el: HTMLElement): void {
   el.setAttribute('aria-live', 'polite');
   el.setAttribute('role', 'status');
   el.setAttribute('aria-label', 'shift code status');
+}
+
+/**
+ * What a cabinet asks for on glass, said before the player presses Play.
+ *
+ * Both cabinets are dressed for a phone and neither said a word about what
+ * playing one there is like, so a player found out by pressing Play. The line
+ * is gated on a coarse pointer, so a mouse never reads it, and it names the
+ * affordance that cabinet grew rather than only warning them off.
+ */
+function phoneLine(text: string): HTMLParagraphElement {
+  const p = muted(text);
+  p.classList.add('phone-note');
+  return p;
 }
 
 function button(text: string, cls?: string): HTMLButtonElement {
@@ -197,14 +214,20 @@ const HAS_VIBE = import.meta.env.VITE_CABINET !== 'ghost';
  * the typing cabinet's levers on this path is `switchMenu`, which a
  * single-cabinet build folds away.
  */
-function cabinetCards(): { id: CabinetId; name: string; line: string }[] {
+function cabinetCards(): { id: CabinetId; name: string; line: string; phone: string }[] {
   return [
     {
       id: 'ghost',
       name: 'Ghost on the Menu',
       line: 'A replay shooter on an mcp-arcade tape.',
+      phone: 'On glass: hold the left or right of the field to move, the band under it to fire.',
     },
-    { id: 'vibe', name: VIBE.cabinet.name, line: VIBE.cabinet.tagline },
+    {
+      id: 'vibe',
+      name: VIBE.cabinet.name,
+      line: VIBE.cabinet.tagline,
+      phone: 'On glass: tap the editor to raise your keyboard.',
+    },
   ];
 }
 
@@ -261,6 +284,14 @@ function switchMenu(body: HTMLElement) {
     line.className = 'tape-diff cabinet-line';
     line.textContent = cabinet.line;
     li.append(name, line);
+    // What this cabinet plays like on glass, on the card itself, so nobody
+    // presses Play into a game they do not know how to hold.
+    if (coarsePointer()) {
+      const phone = document.createElement('span');
+      phone.className = 'cabinet-line muted phone-note';
+      phone.textContent = cabinet.phone;
+      li.append(phone);
+    }
     name.addEventListener('click', () => {
       picked = cabinet.id;
       writeVibePrefs({ cabinet: picked });
@@ -324,6 +355,88 @@ function menu() {
   }
 }
 
+// ——— a throw, caught ———————————————————————————————————————————————————————
+//
+// Nothing in this shell caught one. The menu empties the page and then calls
+// a mount directly, for both cabinets, and there was no window error handler
+// and no unhandled rejection handler anywhere: so a tape the loader refused,
+// an audio context a browser would not build in the state it was in, or a
+// lever the bundle expected and did not find left the player looking at an
+// empty page — no heading, no text, no way back — because the page was
+// emptied before the mount was called. The reload after it landed on the same
+// pick, since the pick is what is remembered, so the game stayed stuck until
+// they cleared their storage or gave up.
+//
+// Every other failure in this shell is handled with a word for the player:
+// art that does not arrive, music that does not load, a keyboard set that
+// hangs, a model that is not there. This is that word for the one path that
+// had none. It shows no stack and no error text, the way every other refusal
+// here shows none; the detail goes to the console, where a developer is
+// already looking.
+
+/** The page's own name, for a throw that belongs to no one cabinet. */
+const THE_CABINETS = 'the cabinets';
+/** The shooter's, for a throw on its way up. Its menu writes the same words. */
+const GHOST_NAME = 'Ghost on the Menu';
+
+/** True while the recovery scene is up, so a second throw cannot repaint over it. */
+let recovering = false;
+
+/** Forget what this browser last picked, whichever cabinets this build carries. */
+function forgetPicks(): void {
+  if (HAS_GHOST) forgetTape();
+  if (HAS_VIBE) forgetVibePick();
+}
+
+function recover(cabinet: string, detail: unknown): void {
+  // Where a developer is already looking, and nowhere the player can read.
+  console.error(detail);
+  if (recovering) return;
+  recovering = true;
+  app.replaceChildren();
+  const wrap = document.createElement('section');
+  wrap.className = 'column';
+  const h = document.createElement('h1');
+  h.textContent = cabinet;
+  wrap.append(h, muted('This cabinet did not open.'));
+  const row = document.createElement('div');
+  row.className = 'row';
+  const back = button('Back to the cabinets', 'commit');
+  const forget = button('Forget the last pick');
+  row.append(back, forget);
+  wrap.append(
+    row,
+    // The stuck pick is what made this unrecoverable, so the way out of it is
+    // offered here rather than left to a player clearing their storage.
+    muted('Forgetting the last pick opens the menu somewhere new.'),
+  );
+  app.append(wrap);
+  back.focus();
+  back.addEventListener('click', () => {
+    recovering = false;
+    safeMenu();
+  });
+  forget.addEventListener('click', () => {
+    forgetPicks();
+    recovering = false;
+    safeMenu();
+  });
+}
+
+/** Run a paint or a mount; a throw out of it becomes the scene above. */
+function guard(cabinet: string, work: () => void): void {
+  try {
+    work();
+  } catch (err) {
+    recover(cabinet, err);
+  }
+}
+
+/** The menu, painted under the guard. Everything that returns here calls this. */
+function safeMenu(): void {
+  guard(THE_CABINETS, menu);
+}
+
 /**
  * A cabinet's own heading. On a single-cabinet build the cabinet IS the page,
  * so its name is the h1. Inside the switch the page is the arcade and the
@@ -347,6 +460,13 @@ function ghostMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
   const lamps = muted(lampsCopy(playDiff));
   lamps.classList.add('prose');
   wrap.append(h, lead, intro, lamps);
+  if (coarsePointer()) {
+    wrap.append(
+      phoneLine(
+        'On glass: hold the left or right of the field to move, the band under it to fire. A keyboard plays it best.',
+      ),
+    );
+  }
 
   // Where the player was. Everything else about them survived a visit — the
   // rung, the feel, the shake, the seat, the voice, the last shift code — and
@@ -501,15 +621,17 @@ function playAt(i: number, fromClick = false) {
   // left them, not at the top of the list.
   writePrefs({ tape: t.name });
   const difficulty = readPrefs().difficulty;
-  mountGhost(
-    app,
-    t.name,
-    t.tape,
-    menu,
-    () => playAt(i + 1, true),
-    fromClick,
-    difficulty ? { difficulty } : undefined,
-  );
+  guard(GHOST_NAME, () => {
+    mountGhost(
+      app,
+      t.name,
+      t.tape,
+      safeMenu,
+      () => playAt(i + 1, true),
+      fromClick,
+      difficulty ? { difficulty } : undefined,
+    );
+  });
 }
 
 interface Shift {
@@ -568,7 +690,7 @@ function callCard(shift: Shift, i: number) {
   const { names } = shift.draw;
   const entry = TAPES.find((t) => t.name === names[i]);
   if (!entry) {
-    menu();
+    safeMenu();
     return;
   }
   app.replaceChildren();
@@ -634,7 +756,7 @@ function callCard(shift: Shift, i: number) {
       },
     );
   });
-  back.addEventListener('click', menu);
+  back.addEventListener('click', safeMenu);
 }
 
 /** The closing scene of a shift: the calls by name, server and policy, and the code. Nothing more (G8, G10). */
@@ -694,7 +816,7 @@ function shiftEnd(shift: Shift) {
     const seed = hashWords(`${Date.now()}|${performance.now()}`);
     startShift(drawShift(ROSTER, seed, shift.draw.difficulty, recentShifts()));
   });
-  back.addEventListener('click', menu);
+  back.addEventListener('click', safeMenu);
 }
 
 // ——— Vibe Typer ————————————————————————————————————————————————————————————
@@ -772,6 +894,13 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
   );
   second.classList.add('prose');
   wrap.append(h, first, second);
+  if (coarsePointer()) {
+    wrap.append(
+      phoneLine(
+        'On glass: tap the editor to raise your keyboard. A keyboard of your own plays it best.',
+      ),
+    );
+  }
 
   let picked: number | 'endless' =
     prefs.endless === 'on' ? 'endless' : Math.min(prefs.level ?? 0, VIBE.levels.levels.length - 1);
@@ -820,23 +949,26 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
     list.append(li);
   };
 
-  const byStack = new Map<string, number[]>();
-  VIBE.levels.levels.forEach((level, i) => {
-    const bucket = byStack.get(level.stack);
-    if (bucket) bucket.push(i);
-    else byStack.set(level.stack, [i]);
-  });
-  const order = [
-    ...STACKS.filter((stack) => byStack.has(stack)),
-    // A stack the levers grow that this shell has never heard of still gets
-    // a heading, after the known ones, rather than no row at all.
-    ...[...byStack.keys()].filter((stack) => !(STACKS as readonly string[]).includes(stack)),
-  ];
-  for (const stack of order) {
-    const list = groupList(STACK_WORDS[stack] ?? stack);
-    for (const i of byStack.get(stack) ?? []) {
+  // The grouping is the typing cabinet's own, so the menu's order and the end
+  // card's next product cannot drift: one walks the groups, the other walks
+  // the same flat order.
+  //
+  // The third column marks what this browser has already built. A player
+  // returning to pick by hand could not see where they had been, which is
+  // what made the end card's missing next hurt: the menu re-selected the
+  // product they had just shipped. A word, never a count (G23).
+  const shipped = new Set(prefs.shipped ?? []);
+  for (const group of menuStackGroups(VIBE.levels.levels)) {
+    const list = groupList(STACK_WORDS[group.stack] ?? group.stack);
+    for (const i of group.levels) {
       const level = VIBE.levels.levels[i]!;
-      addRow(list, i, level.product, bandWord(level.bandMin, level.bandMax));
+      let mark: HTMLSpanElement | undefined;
+      if (shipped.has(level.product)) {
+        mark = document.createElement('span');
+        mark.className = 'tape-diff';
+        mark.textContent = 'shipped';
+      }
+      addRow(list, i, level.product, bandWord(level.bandMin, level.bandMax), mark);
     }
   }
 
@@ -1000,7 +1132,7 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
       font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
       music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC,
       integration: integrationSeasoning(),
-      onExit: menu,
+      onExit: safeMenu,
       startAudio: true,
     });
   };
@@ -1010,4 +1142,16 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
   });
 }
 
-if (root) menu();
+if (root) {
+  // The pair that catches what no call site can: a throw from a later frame,
+  // and a promise nobody was waiting on. Both land in the same scene the
+  // guarded paints and mounts land in, so the player never meets an empty
+  // page whatever went wrong or whenever.
+  window.addEventListener('error', (e) => {
+    recover(THE_CABINETS, e.error ?? e.message);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    recover(THE_CABINETS, e.reason);
+  });
+  safeMenu();
+}

@@ -217,13 +217,15 @@ describe('the beds, while they are still arriving', () => {
   async function mountFresh(): Promise<{
     beds: Map<string, HTMLAudioElement>;
     game: { unmount: () => void };
+    /** The very module instance that owns those beds, for a test that draws one. */
+    fresh: typeof import('../src/ghost');
   }> {
     const beds = catchBeds();
     vi.resetModules();
     const fresh = (await import('../src/ghost')) as typeof import('../src/ghost');
     const entry = TAPES[0]!;
     const game = fresh.mountGhost(root, entry.name, entry.tape, () => undefined);
-    return { beds, game };
+    return { beds, game, fresh };
   }
 
   it('asks for every bed and says nothing about the music while they load', async () => {
@@ -277,6 +279,45 @@ describe('the beds, while they are still arriving', () => {
       // own mark.
       beds.get('rug')!.dispatchEvent(new Event('canplay'));
       expect(chromeWord()).not.toContain('music: chiptune');
+      game.unmount();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The shooter asked for its whole playlist at full download the moment a
+  // round mounted: eight elements at `preload = 'auto'`, about thirteen
+  // megabytes, arriving alongside the sprites and the first seconds of play,
+  // when a round plays one piece at a time and draws the next when that one
+  // ends. A player who went back to the menu after one round paid for pieces
+  // they never heard.
+  it('asks every bed for its metadata, and promotes the draw and the one behind it', async () => {
+    vi.useFakeTimers();
+    try {
+      const { beds, game, fresh } = await mountFresh();
+      // Nothing is asked for at full download at the mount …
+      expect([...beds.values()].every((b) => b.preload === 'metadata')).toBe(true);
+      // … and the settle rule is unmoved: metadata is still what the chrome
+      // waits on, which is the event `preload = 'metadata'` reaches.
+      for (const el of beds.values()) el.dispatchEvent(new Event('loadedmetadata'));
+      vi.advanceTimersByTime(60_000);
+      expect(chromeWord()).not.toContain('music: chiptune');
+
+      // One draw promotes two: the piece the bag handed over and the piece
+      // drawn behind it, so the next is buffering while the current plays.
+      const drawn = fresh.nextSongBed();
+      expect(drawn).toBeDefined();
+      const promoted = [...beds.values()].filter((b) => b.preload === 'auto');
+      expect(promoted.length).toBe(2);
+      expect(promoted).toContain(drawn as unknown as HTMLAudioElement);
+
+      // The second draw is the piece already promoted, and it promotes one
+      // more — the walk is unmoved, only the asking is.
+      const second = fresh.nextSongBed();
+      expect(promoted).toContain(second as unknown as HTMLAudioElement);
+      expect(second).not.toBe(drawn);
+      expect([...beds.values()].filter((b) => b.preload === 'auto').length).toBe(3);
       game.unmount();
     } finally {
       vi.useRealTimers();
@@ -917,5 +958,64 @@ describe('the chrome under the field', () => {
     } finally {
       Reflect.deleteProperty(proto, 'requestFullscreen');
     }
+  });
+});
+
+// Ghost is dressed for a phone — the stylesheet re-pads the shell and
+// re-sizes the field under 640px — and could not be played on one: the only
+// inputs were a window keydown and keyup and a click that restarts a finished
+// round, so a finger could start a round and then do nothing but watch it
+// end. The sim reads three booleans once a frame, so the zones write those
+// three and the sim is untouched.
+describe('the zones a finger plays the field with', () => {
+  /** A pointer event jsdom will carry, with the one field the wiring reads. */
+  function pointer(type: string, id: number): Event {
+    const e = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(e, 'pointerId', { value: id });
+    return e;
+  }
+
+  function pad(which: 'left' | 'right' | 'fire'): HTMLElement {
+    return root.querySelector(`.pad-${which}`) as HTMLElement;
+  }
+
+  it('holds a move down while a finger is on the zone, and lets it go', () => {
+    const game = mount();
+    expect(pad('left')).not.toBeNull();
+    expect(pad('fire')).not.toBeNull();
+    expect(game.debug().input.left).toBe(false);
+
+    pad('left').dispatchEvent(pointer('pointerdown', 1));
+    expect(game.debug().input.left).toBe(true);
+    // A hold, not a tap: fire is held the same way a move is.
+    pad('fire').dispatchEvent(pointer('pointerdown', 2));
+    expect(game.debug().input.fire).toBe(true);
+
+    pad('left').dispatchEvent(pointer('pointerup', 1));
+    expect(game.debug().input.left).toBe(false);
+    expect(game.debug().input.fire, 'the other finger is still down').toBe(true);
+    pad('fire').dispatchEvent(pointer('pointercancel', 2));
+    expect(game.debug().input.fire).toBe(false);
+    game.unmount();
+  });
+
+  it('keeps a move held when a second finger takes the same zone', () => {
+    const game = mount();
+    pad('right').dispatchEvent(pointer('pointerdown', 1));
+    pad('right').dispatchEvent(pointer('pointerdown', 2));
+    pad('right').dispatchEvent(pointer('pointerup', 1));
+    // One finger let go, one is still on it: the ship keeps moving.
+    expect(game.debug().input.right).toBe(true);
+    pad('right').dispatchEvent(pointer('pointerup', 2));
+    expect(game.debug().input.right).toBe(false);
+    game.unmount();
+  });
+
+  it('ignores a release from a pointer it never had', () => {
+    const game = mount();
+    pad('left').dispatchEvent(pointer('pointerdown', 1));
+    pad('left').dispatchEvent(pointer('pointerleave', 9));
+    expect(game.debug().input.left).toBe(true);
+    game.unmount();
   });
 });

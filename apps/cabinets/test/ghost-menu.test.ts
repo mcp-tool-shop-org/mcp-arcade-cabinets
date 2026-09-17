@@ -271,3 +271,70 @@ describe('what a first visit sees', () => {
     expect(what.textContent).toContain('calls drawn from the roster');
   });
 });
+
+// ——— a throw, and the page after it ————————————————————————————————————————
+//
+// Nothing in the shell caught one. The menu empties the page and then calls a
+// mount directly, for both cabinets, and there was no window error handler and
+// no unhandled rejection handler anywhere: a tape the loader refused, an audio
+// context a browser would not build, or a lever the bundle expected and did
+// not find left the player on an empty page with no heading, no text and no
+// way back. The reload after it landed on the same pick, so the game stayed
+// stuck until they cleared their storage.
+
+describe('a throw, and the page after it', () => {
+  it('paints a way back instead of an empty page, and shows no error text', async () => {
+    const said = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      await paint();
+      window.dispatchEvent(
+        new ErrorEvent('error', {
+          error: new Error('a lever that was not there'),
+          message: 'a lever that was not there',
+        }),
+      );
+      expect(app().querySelector('h1')!.textContent).toBe('the cabinets');
+      expect(app().textContent).toContain('This cabinet did not open.');
+      // No stack and no error text reaches the player, the way every other
+      // refusal in this shell shows none; the detail goes to the console.
+      expect(app().textContent).not.toContain('a lever that was not there');
+      expect(said).toHaveBeenCalled();
+      // And there is a way out of it that is not the browser's back button.
+      byText('button', 'Back to the cabinets').click();
+      expect(app().querySelector('[role="tablist"]')).not.toBeNull();
+    } finally {
+      said.mockRestore();
+    }
+  });
+
+  it('offers to forget the pick, because the pick is what made it stick', async () => {
+    const said = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      await paint();
+      writePrefs({ tape: TAPES[1]!.name, difficulty: 'hardcore' });
+      window.dispatchEvent(new ErrorEvent('error', { error: new Error('nothing a player reads') }));
+      byText('button', 'Forget the last pick').click();
+      // The pick is gone, so the reload after this lands somewhere new …
+      expect(readPrefs().tape).toBeUndefined();
+      // … and nothing else about the player went with it.
+      expect(readPrefs().difficulty).toBe('hardcore');
+      expect(app().querySelector('[role="tablist"]')).not.toBeNull();
+    } finally {
+      said.mockRestore();
+    }
+  });
+
+  it('takes a stray promise to the same place', async () => {
+    const said = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      await paint();
+      const e = new Event('unhandledrejection') as Event & { reason?: unknown };
+      e.reason = new Error('a promise nobody was waiting on');
+      window.dispatchEvent(e);
+      expect(app().textContent).toContain('This cabinet did not open.');
+      expect(said).toHaveBeenCalled();
+    } finally {
+      said.mockRestore();
+    }
+  });
+});

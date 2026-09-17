@@ -71,6 +71,7 @@ import {
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
+import { coarsePointer } from './pointer';
 import { LOCAL_SEATS } from './seats';
 import { TAPES } from './tapes';
 /**
@@ -194,13 +195,44 @@ export const nextSongKey = (): string => {
   }
   return key;
 };
-/** The next song that has a file; undefined when none has arrived yet. */
-const nextSongBed = (): MediaBed | undefined => {
+/**
+ * Ask the browser for the whole of this piece.
+ *
+ * Every bed is asked for at `metadata` (see `loadBeds`), which is enough for
+ * the chrome's settle rule and costs the opening a few kilobytes a piece
+ * instead of the whole playlist. A piece is promoted the moment the bag hands
+ * it over, and so is the one drawn behind it, so the next is buffering while
+ * the current one plays and nothing is ever asked to start from headers alone.
+ */
+const promoteBed = (bed: HTMLAudioElement | undefined): void => {
+  if (bed && bed.preload !== 'auto') bed.preload = 'auto';
+};
+
+/** One draw off the bag that has a file; undefined when none has arrived yet. */
+const drawSongBed = (): HTMLAudioElement | undefined => {
   for (let i = 0; i < SONG_KEYS.length; i++) {
     const bed = BEDS.get(nextSongKey());
     if (bed) return bed;
   }
   return undefined;
+};
+
+/**
+ * The song the bag hands over, with the next one already drawn behind it.
+ *
+ * The lookahead is the bag's own next draw, taken early and held — so the
+ * walk is unmoved, no song is heard again before the bag empties, and the
+ * piece that follows is downloading while this one plays.
+ */
+let queuedSong: HTMLAudioElement | undefined;
+export const nextSongBed = (): MediaBed | undefined => {
+  const bed = queuedSong ?? drawSongBed();
+  queuedSong = undefined;
+  if (!bed) return undefined;
+  promoteBed(bed);
+  queuedSong = drawSongBed();
+  promoteBed(queuedSong);
+  return bed;
 };
 
 export function readStoredBags(): LineBags {
@@ -278,6 +310,25 @@ export function writePrefs(patch: Prefs): void {
     localStorage.setItem(PREFS_KEY, JSON.stringify({ ...rawPrefs(), ...patch }));
   } catch {
     /* a private window or blocked storage: play still plays */
+  }
+}
+
+/**
+ * Forget which tape this browser last picked.
+ *
+ * What the recovery scene offers on Ghost's side. The pick is what is
+ * remembered, so a tape the loader refuses is reloaded straight back into and
+ * the cabinet is stuck until the player clears their storage. Nothing else
+ * about them moves: the rung, the feel, the shake, the seat, the voice and
+ * the last shift code all survive.
+ */
+export function forgetTape(): void {
+  try {
+    const raw = rawPrefs();
+    delete raw.tape;
+    localStorage.setItem(PREFS_KEY, JSON.stringify(raw));
+  } catch {
+    /* a private window or blocked storage: nothing was remembered anyway */
   }
 }
 
@@ -523,7 +574,14 @@ const loadBeds = () => {
   // order a round wants them in.
   for (const key of TRACK_KEYS) {
     const el = new Audio();
-    el.preload = 'auto';
+    // Metadata, not the whole file. A round plays one piece at a time and
+    // draws the next when it ends, so asking for the whole playlist at the
+    // mount put the heaviest download in the product alongside the sprites
+    // and the first seconds of play, and a player who went back to the menu
+    // after one round paid for pieces they never heard. `loadedmetadata`
+    // still fires, which is what the chrome's settle rule waits on, and
+    // `promoteBed` asks for the whole of a piece on the draw and one ahead.
+    el.preload = 'metadata';
     // A song plays once through; the next is drawn when it ends.
     el.loop = false;
     const arrived = () => {
@@ -545,6 +603,9 @@ const bedFailed = (el: MediaBed) => {
     if (have !== (el as unknown as HTMLAudioElement)) continue;
     BEDS.delete(key);
     bedMissing.add(key);
+    // The lookahead may be holding the very piece the browser refused; a
+    // refused piece is not the next song.
+    if (queuedSong === have) queuedSong = undefined;
     break;
   }
   for (const fn of bedWatchers) fn();
@@ -557,6 +618,13 @@ const music: { audio: AudioOut | null; muted: boolean; ctx: AudioContext | null 
   // browser has put it to sleep since.
   ctx: null,
 };
+
+/**
+ * The three moves a finger can hold, which are the three booleans the sim
+ * reads. Named apart from `keyof RoundInput` on purpose: the sim's input may
+ * grow fields a zone has no business writing.
+ */
+type Zone = 'left' | 'right' | 'fire';
 
 export function mountGhost(
   root: HTMLElement,
@@ -900,6 +968,10 @@ export function mountGhost(
     canvas.requestFullscreen ?? (canvas as HTMLCanvasElement & FullEl).webkitRequestFullscreen,
   );
   hint.textContent = [
+    // What a finger does, said only where a finger is what the player has.
+    ...(coarsePointer()
+      ? ['Hold the left or right of the field to move, the band under it to fire.']
+      : []),
     'Left, right, space.',
     ...(canFull ? ['F toggles full screen.'] : []),
     extra.hintTail ?? 'Click the field to restart the same tape.',
@@ -926,7 +998,41 @@ export function mountGhost(
   liveStatus(fieldWord, 'the field in words');
   const back = document.createElement('button');
   back.textContent = 'Back to the cabinets';
-  wrap.append(canvas, controls, settings, statusRow, hint, fieldWord, back);
+  /*
+    The field, and the three zones a finger plays it with.
+
+    Ghost's only inputs were a window keydown and keyup and a click that
+    restarts a finished round, so a phone could start a round and then do
+    nothing but watch it end. The sim reads its input as three booleans once a
+    frame, so hold-to-move needs nothing from the sim at all: a zone sets its
+    boolean down and clears it up. The zones are drawn only under a coarse
+    pointer (the stylesheet's `@media (pointer: coarse)`), the canvas carries
+    `touch-action: none` so the browser cannot scroll or double-tap-zoom the
+    field out from under the player, and the end scene hides them so the tap
+    that restarts the tape reaches the field rather than a zone.
+
+    The box exists to position them: it is the canvas's own size, so the
+    thirds are thirds of the field and not of the page, and `layoutField`
+    still measures `wrap` and still sizes the canvas alone.
+  */
+  const fieldBox = document.createElement('div');
+  fieldBox.className = 'field-box';
+  const pads = document.createElement('div');
+  pads.className = 'pads';
+  // Pictures of where to press. The words for the controls are the hint's,
+  // which the field already carries as its description.
+  pads.setAttribute('aria-hidden', 'true');
+  const padFor = (zone: Zone): HTMLDivElement => {
+    const el = document.createElement('div');
+    el.className = `pad pad-${zone}`;
+    pads.append(el);
+    return el;
+  };
+  const padLeft = padFor('left');
+  const padRight = padFor('right');
+  const padFire = padFor('fire');
+  fieldBox.append(canvas, pads);
+  wrap.append(fieldBox, controls, settings, statusRow, hint, fieldWord, back);
   root.append(wrap);
   root.classList.add('playing');
 
@@ -1324,6 +1430,60 @@ export function mountGhost(
   const keyUp = onKey(false);
   window.addEventListener('keydown', keyDown);
   window.addEventListener('keyup', keyUp);
+
+  /*
+    The zones, wired. `setPointerCapture` keeps a finger that slides off its
+    zone holding the move it started, which is what a thumb on a small screen
+    does constantly; `pointerup`, `pointercancel` and `pointerleave` let it
+    go. Fire is held the same way a move is, not tapped. Two fingers may hold
+    two zones, so a move is only released once no pointer is still on it.
+
+    Where a later aim would plug in: `zoneDown` is the one place a pointer's
+    position is known against the field's own box, so a target center in field
+    pixels would be written there (and on a move while the pointer is
+    captured) and nowhere else in this file.
+  */
+  const held = new Map<number, Zone>();
+  const stillHeld = (zone: Zone): boolean => {
+    for (const z of held.values()) if (z === zone) return true;
+    return false;
+  };
+  const zoneDown = (zone: Zone) => (e: PointerEvent) => {
+    e.preventDefault();
+    held.set(e.pointerId, zone);
+    input[zone] = true;
+    ensureAudio();
+    canvas.focus();
+    try {
+      (e.currentTarget as Element | null)?.setPointerCapture?.(e.pointerId);
+    } catch {
+      /* a pointer the browser has already let go of cannot be captured */
+    }
+  };
+  const zoneUp = (e: PointerEvent) => {
+    const zone = held.get(e.pointerId);
+    if (zone === undefined) return;
+    held.delete(e.pointerId);
+    if (!stillHeld(zone)) input[zone] = false;
+  };
+  /** Every zone let go at once: what the end scene does when it takes them away. */
+  const dropZones = () => {
+    if (held.size === 0) return;
+    held.clear();
+    input.left = false;
+    input.right = false;
+    input.fire = false;
+  };
+  for (const [zone, el] of [
+    ['left', padLeft],
+    ['right', padRight],
+    ['fire', padFire],
+  ] as const) {
+    el.addEventListener('pointerdown', zoneDown(zone));
+    el.addEventListener('pointerup', zoneUp);
+    el.addEventListener('pointercancel', zoneUp);
+    el.addEventListener('pointerleave', zoneUp);
+  }
 
   const tierFor = (): 0 | 1 | 2 | 3 | undefined =>
     DIFFICULTIES.find((d) => d.value === difficulty.value)?.tier;
@@ -1863,6 +2023,12 @@ export function mountGhost(
       ctx.fillStyle = '#8a6a3a';
       ctx.fillRect(0, 0, FIELD.width, 4);
       nextBtn.disabled = false;
+      // The zones come off the scene: a tap on the field restarts the tape,
+      // and a zone sitting over it would eat that tap.
+      if (!pads.hidden) {
+        pads.hidden = true;
+        dropZones();
+      }
       // The scene holds NEXT_TAPE_S, then the play flows into the next tape
       // on its own, the same path the Next button takes — and the chrome row
       // says so, because it used to happen with no warning at all.
@@ -1884,6 +2050,7 @@ export function mountGhost(
     } else {
       sceneAt = null;
       sceneHeld = false;
+      pads.hidden = false;
       if (flowWord !== '') {
         flowWord = '';
         writeChrome();
@@ -1947,6 +2114,8 @@ export function mountGhost(
       /** The round's prefetch bookkeeping, live — a test writes to it. */
       queue,
       queued: state.bossQueue.length,
+      /** What the field is being held at, live: the keys and the zones write here. */
+      input,
     }),
   };
 }

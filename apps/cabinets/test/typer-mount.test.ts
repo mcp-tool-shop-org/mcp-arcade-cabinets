@@ -27,7 +27,9 @@ import {
   PREVIEW_H,
   PREVIEW_W,
   STACK_WORDS,
+  menuLevelOrder,
   mountVibeTyper,
+  nextLevelIndex,
   readVibePrefs,
   writeVibePrefs,
   type VibeMount,
@@ -1465,7 +1467,14 @@ describe('the keys the field does not own', () => {
       expect(keyOn(window, key).defaultPrevented, key).toBe(false);
     }
     const buttons = [...root.querySelectorAll('.vibe-standup button')];
-    expect(buttons.map((b) => b.textContent)).toEqual(['Back to the cabinets', 'Retro']);
+    // The row grew two ways forward (the same product again, the next one)
+    // beside the way out and the retro; none of the four may swallow a key.
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      'Build this again',
+      'The next product',
+      'Back to the cabinets',
+      'Retro',
+    ]);
     for (const button of buttons) {
       for (const key of ['Enter', ' ']) {
         expect(keyOn(button, key).defaultPrevented, `${button.textContent} · ${key}`).toBe(false);
@@ -1921,5 +1930,195 @@ describe('what the standup keeps', () => {
     const why = seed.nextElementSibling as HTMLElement;
     expect(why.textContent).toBe('Type this seed on the menu to play the same run again.');
     expect(why.className).toContain('why');
+  });
+});
+
+// ——— the soft keyboard ————————————————————————————————————————————————————
+//
+// The cabinet is dressed for a phone — the stylesheet collapses the board to
+// one column under 1032px — and the one thing it asks for could not be given
+// there: the keys were read off a window keydown, Stage C gave the editor a
+// tab stop, and a tab stop on a plain section raises no keyboard. There was
+// no text field anywhere in the mount.
+
+/** The hidden box the soft keyboard types into. */
+function typeBox(): HTMLInputElement {
+  return root.querySelector('.vibe-editor input') as HTMLInputElement;
+}
+
+/** How many characters of the live line are down, right or wrong. */
+function typedCount(): number {
+  return root.querySelectorAll('.vibe-live .ok, .vibe-live .bad').length;
+}
+
+/** What a soft keyboard sends: the edit it is about to make. */
+function edit(inputType: string, data?: string): void {
+  const box = typeBox();
+  const e = new InputEvent('beforeinput', {
+    bubbles: true,
+    cancelable: true,
+    data: data ?? null,
+    inputType,
+  });
+  box.dispatchEvent(e);
+}
+
+describe('the box a soft keyboard types into', () => {
+  it('is a keyboard and not a document, so nothing corrects what is typed', () => {
+    mount = mountLevel();
+    const box = typeBox();
+    expect(box).not.toBeNull();
+    expect(box.type).toBe('text');
+    expect(box.className).toContain('offscreen');
+    expect(box.inputMode).toBe('text');
+    expect(box.autocapitalize).toBe('off');
+    expect(box.getAttribute('autocorrect')).toBe('off');
+    expect(box.spellcheck).toBe(false);
+    expect(box.autocomplete).toBe('off');
+  });
+
+  it('reads an inserted character as a keystroke, and a backspace as a backspace', () => {
+    mount = mountLevel();
+    settle(mount);
+    const target = liveTarget();
+    expect(target.length).toBeGreaterThan(2);
+    edit('insertText', target[0]);
+    mount.tick(STEP);
+    expect(typedCount()).toBe(1);
+    edit('insertText', target[1]);
+    mount.tick(STEP);
+    expect(typedCount()).toBe(2);
+    edit('deleteContentBackward');
+    mount.tick(STEP);
+    expect(typedCount()).toBe(1);
+  });
+
+  it('sends the line on a keydown, because that is the key a soft keyboard sends', () => {
+    mount = mountLevel();
+    settle(mount);
+    const target = liveTarget();
+    for (const ch of target) {
+      edit('insertText', ch);
+      mount.tick(STEP);
+    }
+    expect(typedCount()).toBe(target.length);
+    keyOn(typeBox(), 'Enter');
+    mount.tick(STEP);
+    mount.tick(STEP);
+    settle(mount);
+    // The line went; the editor is on the next one.
+    expect(liveTarget()).not.toBe(target);
+  });
+
+  it('is read once: a printable keydown on the box is not a second keystroke', () => {
+    mount = mountLevel();
+    settle(mount);
+    const target = liveTarget();
+    // A hardware keyboard on a touch device sends BOTH to the focused box.
+    // Only the edit is a move, so the character lands once.
+    const key = new KeyboardEvent('keydown', { key: target[0]!, bubbles: true, cancelable: true });
+    typeBox().dispatchEvent(key);
+    edit('insertText', target[0]);
+    mount.tick(STEP);
+    expect(typedCount()).toBe(1);
+  });
+
+  it('leaves nothing in the box, and takes its listeners down with the field', () => {
+    mount = mountLevel();
+    settle(mount);
+    const box = typeBox();
+    box.value = 'x';
+    box.dispatchEvent(
+      new InputEvent('input', { bubbles: true, inputType: 'insertText', data: 'x' }),
+    );
+    expect(box.value).toBe('');
+    const before = typedCount();
+    mount.unmount();
+    mount = null;
+    edit('insertText', 'a');
+    expect(typedCount()).toBe(before);
+  });
+});
+
+// ——— what comes after a product ————————————————————————————————————————————
+//
+// The end card had one way forward and it was the menu, which then re-selected
+// the product just finished, because the menu opens on the stored level. A
+// player working down the story levels shipped one, was returned to the menu,
+// and had to find the next one themselves.
+
+/** The buttons on the standup's row, in the order they were laid down. */
+function standupButtons(): string[] {
+  return [...root.querySelectorAll('.vibe-standup .row button')].map((b) => b.textContent ?? '');
+}
+
+/** The product the field's chat is headed with. */
+function headedProduct(): string {
+  return root.querySelector('.vibe-chat .vibe-who')?.textContent ?? '';
+}
+
+describe('the end card’s way forward', () => {
+  const LEVELS = DEFAULT_PATTERNS.levels.levels;
+
+  it('walks the menu’s own order and stops at the end of the list', () => {
+    const order = menuLevelOrder(LEVELS);
+    expect(order.length).toBe(LEVELS.length);
+    expect(new Set(order).size).toBe(LEVELS.length);
+    // Stack heading by stack heading, which is not the raw index order.
+    expect(nextLevelIndex(LEVELS, order[0]!)).toBe(order[1]!);
+    // And it stops rather than wrapping into another stack with no word.
+    expect(nextLevelIndex(LEVELS, order[order.length - 1]!)).toBeNull();
+  });
+
+  it('offers the same product again and the next one, and moves the stored level on', () => {
+    mount = mountLevel(0, 1);
+    expect(playToStandup(mount)).toBe(true);
+    expect(standupLines()[1]).toBe('the level shipped');
+    const after = nextLevelIndex(LEVELS, 0);
+    expect(after).not.toBeNull();
+    expect(standupButtons()).toEqual([
+      'Build this again',
+      'The next product',
+      'Back to the cabinets',
+      'Retro',
+    ]);
+    // The menu opens on the product AFTER the one that shipped, and the one
+    // that shipped is marked, so a player picking by hand can see where they
+    // were.
+    const kept = readVibePrefs();
+    expect(kept.level).toBe(after);
+    expect(kept.shipped).toEqual([LEVELS[0]!.product]);
+
+    // The next button remounts through the call the menu makes.
+    const next = [...root.querySelectorAll('.vibe-standup .row button')].find(
+      (b) => b.textContent === 'The next product',
+    ) as HTMLButtonElement;
+    next.click();
+    mount = null;
+    expect(root.querySelector('.vibe-standup')).toBeNull();
+    expect(headedProduct()).toBe(LEVELS[after!]!.product);
+    // Leave the new run the way a player would, so nothing outlives the test.
+    (
+      [...root.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Back to the cabinets',
+      ) as HTMLButtonElement
+    ).click();
+  });
+
+  it('gives the endless ladder a replay and no next, because there is none', () => {
+    mount = mountVibeTyper(root, {
+      tier: 3,
+      endless: true,
+      seed: 1,
+      agentName: 'Sprocket',
+      theme: 'mechanical',
+      integration: [],
+      onExit: () => undefined,
+      startAudio: false,
+    });
+    expect(toStandup(mount)).toBe(true);
+    expect(standupButtons()).toEqual(['Take this ladder again', 'Back to the cabinets', 'Retro']);
+    // A ladder nobody shipped marks nothing and moves no stored level.
+    expect(readVibePrefs().shipped).toBeUndefined();
   });
 });

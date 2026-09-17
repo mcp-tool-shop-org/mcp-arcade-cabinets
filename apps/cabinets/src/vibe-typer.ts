@@ -25,6 +25,7 @@ import {
   feedRequests,
   gateCode,
   leversOf,
+  nextSeed,
   planOf,
   seededRandom,
   stepRun,
@@ -32,6 +33,7 @@ import {
   suppliedCount,
   syncOf,
   NEAR_MISS,
+  STACKS,
   type Band,
   type CodeGateReason,
   type RunInput,
@@ -40,6 +42,7 @@ import {
   type Stack,
   type Tier,
 } from '@mcp-arcade-cabinets/vibe-typer';
+import { coarsePointer } from './pointer';
 import { LOCAL_SEATS, probeSeatModels } from './seats';
 import {
   createVibeVoicer,
@@ -241,6 +244,54 @@ export const TIER_WORDS: { tier: Tier; word: string }[] = [
   { tier: 3, word: 'hardcore' },
 ];
 
+/**
+ * The levels grouped the way the menu prints them: one group a stack, the
+ * known stacks in the corpus order and any stack the levers grew after them,
+ * and each group's levels in the levers' own order.
+ *
+ * One function, two readers. The menu paints these groups and the end card's
+ * next product walks them, because a next that walked the raw index would
+ * jump between stacks and land the player somewhere the menu never showed
+ * them in that order.
+ */
+export function menuStackGroups(
+  levels: readonly { stack: string }[],
+): { stack: string; levels: number[] }[] {
+  const byStack = new Map<string, number[]>();
+  levels.forEach((level, i) => {
+    const bucket = byStack.get(level.stack);
+    if (bucket) bucket.push(i);
+    else byStack.set(level.stack, [i]);
+  });
+  const order = [
+    ...STACKS.filter((stack) => byStack.has(stack)),
+    // A stack the levers grow that this shell has never heard of still gets
+    // a group, after the known ones, rather than no row at all.
+    ...[...byStack.keys()].filter((stack) => !(STACKS as readonly string[]).includes(stack)),
+  ];
+  return order.map((stack) => ({ stack, levels: byStack.get(stack) ?? [] }));
+}
+
+/** Every level in the menu's order, flat. */
+export function menuLevelOrder(levels: readonly { stack: string }[]): number[] {
+  return menuStackGroups(levels).flatMap((group) => group.levels);
+}
+
+/**
+ * The level after this one in the menu's order, or null at the end of the
+ * list. It stops rather than wrapping: a wrap would hand the player a product
+ * from another stack with no word about where they had been taken.
+ */
+export function nextLevelIndex(
+  levels: readonly { stack: string }[],
+  current: number,
+): number | null {
+  const order = menuLevelOrder(levels);
+  const at = order.indexOf(current);
+  if (at < 0 || at + 1 >= order.length) return null;
+  return order[at + 1] ?? null;
+}
+
 /** A level's band, in the same words. No band digits anywhere (G23). */
 export function bandWord(min: number, max: number): string {
   const mid = (min + max) / 2;
@@ -293,7 +344,16 @@ export interface VibePrefs {
   seat?: 'on' | 'off';
   /** Whether the user's lines are spoken, when a worker can be reached. */
   voice?: 'on' | 'off';
+  /**
+   * The products this browser has shipped, by name. The menu marks them in
+   * the third column so a player picking by hand can see where they were. A
+   * word a row, never a count (G23), and never sent anywhere (G8).
+   */
+  shipped?: string[];
 }
+
+/** How many shipped products are kept. The list is short; storage is not a log. */
+const SHIPPED_KEEP = 64;
 
 export function readVibePrefs(): VibePrefs {
   try {
@@ -318,6 +378,11 @@ export function readVibePrefs(): VibePrefs {
     if (typeof o.last === 'number' && Number.isFinite(o.last)) out.last = o.last >>> 0;
     if (o.seat === 'on' || o.seat === 'off') out.seat = o.seat;
     if (o.voice === 'on' || o.voice === 'off') out.voice = o.voice;
+    if (Array.isArray(o.shipped)) {
+      out.shipped = o.shipped
+        .filter((name): name is string => typeof name === 'string' && name !== '')
+        .slice(0, SHIPPED_KEEP);
+    }
     return out;
   } catch {
     return {};
@@ -348,6 +413,27 @@ export function writeVibePrefs(patch: VibePrefs): void {
     localStorage.setItem(PREFS_KEY, JSON.stringify({ ...rawVibePrefs(), ...patch }));
   } catch {
     /* a private window or blocked storage: the game still plays */
+  }
+}
+
+/**
+ * Forget which cabinet and which product this browser last picked.
+ *
+ * What the recovery scene offers. The pick is what is remembered, so a
+ * cabinet that throws on the way up is reloaded straight back into the same
+ * pick and the game is stuck until the player clears their storage. Nothing
+ * else about them is touched: the type, the keyboard, the sound, the music,
+ * the agent's name, the seed and the shipped products all survive.
+ */
+export function forgetVibePick(): void {
+  try {
+    const raw = rawVibePrefs();
+    delete raw.cabinet;
+    delete raw.level;
+    delete raw.endless;
+    localStorage.setItem(PREFS_KEY, JSON.stringify(raw));
+  } catch {
+    /* a private window or blocked storage: nothing was remembered anyway */
   }
 }
 
@@ -626,6 +712,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const prefs = readVibePrefs();
   const storedWeak = readWeak();
   const agentName = cleanName(opts.agentName) || 'the agent';
+  /** Whether this player is typing on glass. Read once, at the mount. */
+  const onFinger = coarsePointer();
 
   const state: RunState = createRun({
     seed: opts.seed,
@@ -774,7 +862,33 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   const codeBox = el('div', 'vibe-code');
   const tabHint = el('div', 'vibe-tab', 'Tab');
   tabHint.hidden = true;
-  editorPane.append(beatWord, codeBox, tabHint);
+  /**
+   * The one thing on a phone that raises a keyboard.
+   *
+   * A tab stop on a plain section raises nothing, and this cabinet had no
+   * text field anywhere in the mount, so the one thing it asks for could not
+   * be given on the device it is dressed for. The box is offscreen, holds
+   * nothing and is never read: it is a keyboard, not a document, so every
+   * correcting affordance a soft keyboard offers is turned off, and what it
+   * reports is translated into the same `RunInput` the key reader produces so
+   * the sim path stays one path.
+   *
+   * The desktop cost would have been a double read — with the box focused a
+   * key arrives at both it and the window listener — so exactly one reader is
+   * picked by focus: the window guard already ignores anything whose target
+   * closes on an `input`, and the box only takes focus where the pointer is
+   * coarse. A desktop round is byte for byte the round it was.
+   */
+  const typeBox = document.createElement('input');
+  typeBox.type = 'text';
+  typeBox.className = 'offscreen';
+  typeBox.setAttribute('aria-label', 'type here');
+  typeBox.inputMode = 'text';
+  typeBox.autocapitalize = 'off';
+  typeBox.setAttribute('autocorrect', 'off');
+  typeBox.spellcheck = false;
+  typeBox.autocomplete = 'off';
+  editorPane.append(beatWord, codeBox, tabHint, typeBox);
 
   const canvas = el('canvas', 'vibe-preview');
   canvas.width = PREVIEW_W * PREVIEW_DPR;
@@ -1023,7 +1137,12 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
    * editor pane takes focus back the moment a control is done with.
    */
   const takeKeys = () => {
-    if (!left && !over) editorPane.focus();
+    if (left || over) return;
+    // Under a coarse pointer the letters come from the hidden box, so the box
+    // is what takes focus back and the soft keyboard stays up; with a mouse
+    // the pane takes it, exactly as it always has.
+    if (onFinger) typeBox.focus();
+    else editorPane.focus();
   };
   // Asked for here rather than where the Map is built, so the handlers' guard
   // reads a flag that already exists.
@@ -2237,10 +2356,82 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   };
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
+
+  // ——— the soft keyboard ————————————————————————————————————————————————————
+  //
+  // A soft keyboard sends `insertText` and `deleteContentBackward` and very
+  // often no useful key at all, so the box is read through the edit it
+  // announces rather than through a keydown. Enter and Backspace still get a
+  // keydown, because the soft keyboards that do send them send those two.
+  //
+  // One reader, picked by focus: a key whose target is the box never reaches
+  // the window listener (its guard closes on `input`), and the keydown below
+  // takes only the three keys that are not characters — so a hardware
+  // keyboard attached to a touch device is read once, by the edit, and never
+  // twice.
+
+  /** An edit the box announced, as the move the sim takes. */
+  const takeEdit = (e: InputEvent): void => {
+    if (left || over) return;
+    if (e.inputType === 'deleteContentBackward') {
+      queue.push({ backspace: true });
+    } else if (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph') {
+      queue.push({ enter: true });
+    } else if (e.inputType === 'insertText') {
+      // A composition is whole words the player did not type character by
+      // character, and a paste is a line nobody typed: neither is a move,
+      // which is the key reader's rule kept here.
+      for (const ch of e.data ?? '') queue.push({ key: ch });
+    } else {
+      return;
+    }
+    ensureAudio();
+  };
+  /**
+   * Whether this browser announces an edit before it makes it. Latched on the
+   * first `beforeinput`, so a browser that has them is read there and a
+   * browser that has none is read on `input` — one reader either way.
+   */
+  let saysBefore = false;
+  const onBoxBefore = (e: Event) => {
+    saysBefore = true;
+    takeEdit(e as InputEvent);
+  };
+  const onBoxInput = (e: Event) => {
+    if (!saysBefore) takeEdit(e as InputEvent);
+    // The box holds nothing: it is a keyboard. Emptying it keeps the caret at
+    // the start, where a backspace still reports itself.
+    typeBox.value = '';
+  };
+  const onBoxKey = (e: KeyboardEvent) => {
+    if (left || over) return;
+    if (e.key !== 'Enter' && e.key !== 'Backspace' && e.key !== 'Tab') return;
+    const read = readKey(e);
+    if (read.kind !== 'input') return;
+    const prevent = read.input.tab === true ? state.copilot !== null : read.prevent;
+    if (prevent) e.preventDefault();
+    ensureAudio();
+    queue.push(read.input);
+  };
+  typeBox.addEventListener('beforeinput', onBoxBefore);
+  typeBox.addEventListener('input', onBoxInput);
+  typeBox.addEventListener('keydown', onBoxKey);
+  // A tap on the editor is a player asking for their keyboard. Only where the
+  // pointer is coarse: with a mouse, focus belongs to the pane as before.
+  const onPaneDown = () => {
+    if (!left && !over) typeBox.focus();
+  };
+  if (onFinger) editorPane.addEventListener('pointerdown', onPaneDown);
+
   /** The field's keys, taken down. The standup drops them; so does leaving. */
   const dropKeys = () => {
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
+    typeBox.removeEventListener('beforeinput', onBoxBefore);
+    typeBox.removeEventListener('input', onBoxInput);
+    typeBox.removeEventListener('keydown', onBoxKey);
+    editorPane.removeEventListener('pointerdown', onPaneDown);
+    typeBox.blur();
   };
 
   mute.addEventListener('click', () => {
@@ -2390,10 +2581,58 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     // hover — so the seed was shown with no statement of what it is.
     const seedWhy = el('p', 'muted why', 'Type this seed on the menu to play the same run again.');
     scene.append(seedLine, seedWhy);
+    // ——— what comes next ——————————————————————————————————————————————————
+    //
+    // The end card had one way forward and it was the menu — which then
+    // re-selected the product just finished, because the menu opens on the
+    // stored level. So a player working down the story levels shipped one and
+    // had to find the next one themselves, remembering which ones they had
+    // already built. Ghost's end scene, the same chassis, plays the tape again
+    // on a click and carries a Next tape button; this takes that chassis and
+    // none of its grammar. Both buttons remount through the call the menu
+    // makes, with the settings already in hand.
+    const listed = levers.levels.levels;
+    // The next product in the MENU's order — stack heading by stack heading —
+    // and null at the end of the list rather than a wrap into another stack.
+    // Endless has no next, so it shows the replay button alone.
+    const after = state.endless ? null : nextLevelIndex(listed, state.levelIndex);
+    if (state.ended === 'shipped' && !state.endless) {
+      // Where the menu opens next time: the product AFTER the one that
+      // shipped, and the one that shipped marked as built.
+      const done = prefs.shipped ?? [];
+      const kept = done.includes(plan.product) ? done : [...done, plan.product];
+      writeVibePrefs({
+        shipped: kept.slice(-SHIPPED_KEEP),
+        ...(after !== null ? { level: after } : {}),
+      });
+    }
+    /** The call the menu makes, with this run's settings already in hand. */
+    const remount = (levelIndex: number | null, seed: number) => {
+      leave();
+      mountVibeTyper(root, {
+        ...opts,
+        ...(levelIndex === null ? {} : { levelIndex }),
+        endless: levelIndex === null,
+        seed,
+        startAudio: true,
+      });
+    };
     const row = el('div', 'row');
-    const again = el('button', 'commit', 'Back to the cabinets');
-    again.type = 'button';
-    row.append(again);
+    const replay = el(
+      'button',
+      'commit',
+      state.endless ? 'Take this ladder again' : 'Build this again',
+    );
+    replay.type = 'button';
+    row.append(replay);
+    const next = after === null ? null : el('button', 'commit', 'The next product');
+    if (next) {
+      next.type = 'button';
+      row.append(next);
+    }
+    const back = el('button', undefined, 'Back to the cabinets');
+    back.type = 'button';
+    row.append(back);
     const offered = runs % RETRO_EVERY === 0;
     const retro = el('button', offered ? undefined : 'linky', 'Retro');
     retro.type = 'button';
@@ -2410,12 +2649,25 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
       panel = retroPanel();
       scene.append(panel);
     });
-    again.addEventListener('click', () => {
+    back.addEventListener('click', () => {
       leave();
       opts.onExit();
     });
+    // The same run again: the same seed is the same run, which is what the
+    // seed line under this row promises.
+    replay.addEventListener('click', () => {
+      remount(state.endless ? null : state.levelIndex, opts.seed);
+    });
+    // A new product draws the seed the menu would have drawn for it.
+    next?.addEventListener('click', () => {
+      remount(after, nextSeed(opts.seed, runs));
+    });
     root.replaceChildren(scene);
-    again.focus();
+    // A player who shipped is being carried forward, so the control that
+    // carries them is the one under their hands; anyone else lands on the
+    // replay, which is where Ghost's end scene leaves them.
+    if (next && state.ended === 'shipped') next.focus();
+    else replay.focus();
   }
 
   function leave() {
