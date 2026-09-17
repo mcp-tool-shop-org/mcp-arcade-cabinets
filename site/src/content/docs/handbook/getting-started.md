@@ -7,7 +7,7 @@ sidebar:
 
 ## Requirements
 
-Node 22 or later. To play without cloning, each cabinet is its own package on npm:
+Node 22 or later; an older Node is refused in a sentence that names the version found and the one needed. To play without cloning, each cabinet is its own package on npm:
 
 ```bash
 npx @mcptoolshop/ghost-on-the-menu
@@ -17,7 +17,7 @@ npx @mcptoolshop/ghost-on-the-menu
 npx @mcptoolshop/vibe-typer
 ```
 
-Each one serves its cabinet on `127.0.0.1` and opens it, with the local seats lit when an Ollama daemon is running. For Ghost, `--mcp` runs the cabinet as an MCP server over stdio instead; Vibe Typer's container tools are slice 4, so its `--mcp` says so and exits. The arcade with both cabinets on one switch is the Pages build only. To work on the arcade you also need pnpm 11; the repo is a pnpm workspace and every other package in it is private.
+Each one serves its cabinet on `127.0.0.1` and opens it, with the local seats lit when an Ollama daemon is running. For either cabinet, `--mcp` runs it as an MCP server over stdio instead, and the help names the tools it hands over. The arcade with both cabinets on one switch is the Pages build only. To work on the arcade you also need pnpm 11; the repo is a pnpm workspace and every other package in it is private.
 
 ## Install
 
@@ -41,7 +41,8 @@ Open the address Vite prints. The tape list shows a difficulty label (fixture, s
 | ---------------------------- | ---------------------------------------------------------- |
 | Left / Right, or A / D       | Move the ship                                              |
 | Space                        | Fire                                                       |
-| F, or the Full screen button | The field alone, letterboxed, full screen                  |
+| F, or the Full screen button | The field alone on the whole screen; it stays through the flow into the next tape |
+| (on a phone)                 | Hold the left or right of the field to move, the band under it to fire; the menu says so under each card |
 | Click the field              | Restart the same tape once the round has ended             |
 | Next tape                    | On the end scene, play the next fixture tape in the list   |
 | Shift                        | Four calls drawn from the roster, back to back, with a card between them; the lamps refill at every call and the bursts climb call by call. Its own difficulty select beside it. |

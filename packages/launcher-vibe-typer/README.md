@@ -12,7 +12,7 @@ A typing arcade game. You are a coding agent, hard-working, sycophantic and lova
 npx @mcptoolshop/vibe-typer
 ```
 
-That serves the cabinet on `127.0.0.1` and opens it. Nothing to install, nothing to configure, no account. Node 22 or newer.
+That serves the cabinet on `127.0.0.1` and opens it. Nothing to install, nothing to configure, no account. Node 22 or newer, and an older Node is told so in a sentence.
 
 This is one cabinet of the [arcade](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets). The other one, **Ghost on the Menu**, a replay shooter, is `npx @mcptoolshop/ghost-on-the-menu`. The whole arcade also plays [in the browser](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/).
 
@@ -27,7 +27,7 @@ Your user wants a website for their cat, Uber but for ducks, a blockchain for th
 - **The context bar is the clock.** It drains as the conversation runs; each request costs a slice; shipping refills a share. In a level, an empty bar is a compaction: the agent sums up in one line and carries on. Nothing yells.
 - **A wrong line is a retry.** A mistyped character waits for a backspace; a line sent wrong gets "hmm, that's not it" and the line resets. No lives, no loss.
 - **Levels, endless, hardcore.** Listed products on one stack each; an endless ladder that climbs until the bar empties; a hardcore tier from the selector that drains faster, burns context on every miss, and ends the level on empty.
-- **The standup and the retro.** A run ends with the product as built, the user's closing line, the valuation and the run's seed, which replays the run when typed into the menu. The retro is opt-in: the key pairs that caught you and a word for how steady your hands were, against your own past in this browser only.
+- **The standup and the retro.** A run ends with the product as built, the user's closing line, the valuation and the run's code, which replays the run when typed into the menu, on any browser. Two buttons take the same product again or the next one; the menu marks what you have shipped. The retro is opt-in: the key pairs that caught you and a word for how steady your hands were, against your own past in this browser only.
 
 ## What you learn
 
@@ -39,7 +39,7 @@ Five keyboard sample sets. Every clean line raises the keystroke pitch a semiton
 
 ## Controls
 
-Type what you see. Enter sends a line. Backspace fixes. Tab takes the rest of a line when the ghost offers it. Hold Escape to leave. Sound starts on the first key or click.
+Type what you see. Enter sends a line. Backspace fixes. Tab takes the rest of a line when the ghost offers it. Hold Escape to leave. Sound starts on the first key or click. On a phone, tap the editor to raise your keyboard.
 
 ## What it needs and what it will not do
 

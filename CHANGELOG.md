@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-17
+
+The dogfood swarm, whole, in one day on the Director's word: four health stages (bugs and security, proactive health, humanization, visual polish) and the feature pass framed as polish, with the player's pass on every wave and the Director's read on the served bundle between them. Both cabinets play on a phone; full screen survives the flow into the next tape; the typing cabinet has a run code that replays and an end card that goes on; the hosted tier is opt-in; the image answers help and version and stops when asked; Ghost's music is a playlist of seven generated pieces; the boss waits for its grid and the column holds six. The record is `docs/dogfood-swarm.md`.
+
 The dogfood swarm's health pass, Stage A, on the Director's word after he read nonsense on 0.11.0 and said the reviews and the briefs were not sufficient. Every wave and every merge now carries the player's pass: the coordinator plays the built bundle and reads every line on the field before anything is collected or merged, and a second reviewer of another family reads the game's transcript rather than the diff. The run's record is `docs/dogfood-swarm.md`; the owed review of the proofread commit is `docs/vibe-typer.proofread.review.md`.
 
 ### Added

@@ -49,7 +49,7 @@ const TIER_WORDS = ['zero', 'one', 'two', 'three'] as const;
 export const DEFAULT_FIXTURE = 'naive-ndjson';
 
 export const SERVER_NAME = 'ghost-on-the-menu';
-export const SERVER_VERSION = '0.11.1';
+export const SERVER_VERSION = '0.12.0';
 
 /**
  * Every line this server writes to stderr, under its own name.

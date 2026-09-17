@@ -17,8 +17,8 @@ Each cabinet is also an MCP server. Its tools are the levers a model uses to mak
 | `say`   | `text` (gated), `lead`: short, beat, long                  | A line the boss says, landing after the lead; a refused line plays one of the boss's own                        |
 | `speak` | none                                                       | Voices the line the gate admitted, one beat ahead, through the voice worker                                     |
 | `sfx`   | `kind`: a name from the cue table                          | One queued sound the shell plays                                                                                |
-| `view`  | none                                                       | The boss's view in words: the wave kind, the boss kind, a health word, the ship's column, the stick, the motion word |
-| `tapes` | none                                                       | The tapes by name with a difficulty word and a line about the wire                                               |
+| `view`  | none                                                       | The boss's view in words: the wave kind, the boss kind, a health word, the ship's column, the stick, the motion word, whether a line is waiting to be spoken, and, last, a line when the round was replaced |
+| `tapes` | none                                                       | The tapes by name with a difficulty word and a line about the wire, whether each was baked in or added by the operator, and which one the round is playing |
 
 **The seat proposes; the sim disposes.** Every call is a proposal the seeded sim admits or ignores at the next beat. The sim never waits on a tool.
 
@@ -66,14 +66,16 @@ A take plays the moment its receipt is back if its line is still on the field, w
 The repo's root `Dockerfile` builds the server into one file on `node:22-alpine` (digest-pinned FROM lines, `linux/amd64` and `linux/arm64`) with the tool contract and the twenty tapes baked in. It lists its six tools within a fraction of a second under the Docker MCP Toolkit's budget of one CPU and two gigabytes, and needs no network to list or to play. An optional read-only overlay (`CABINET_TAPES_USER`, Catalog volume `{{tapes}}:/tapes-user`) lists extra operator tapes beside those twenty; receipts stay off the menu. Host-only compose for a local image is `voice/compose.host.yaml` — not in the Catalog listing.
 
 ```bash
-docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.1
+docker run -i --rm --network none --cpus 1 --memory 2g ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.12.0
 ```
 
 Since 0.11.0 the same image carries the typing cabinet's server as well; `CABINET=vibe` selects it and everything else stays the shooter, so an existing `docker run` keeps meaning what it meant:
 
 ```bash
-docker run -i --rm --network none --cpus 1 --memory 2g -e CABINET=vibe ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.1
+docker run -i --rm --network none --cpus 1 --memory 2g -e CABINET=vibe ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.12.0
 ```
+
+Since 0.12.0 both servers answer `--version`, `--help` and `-h` on stdout and exit without starting a cabinet (the help carries that cabinet's levers and the image's variable table), register the stop signals so `docker stop` ends the container at once, and treat an unset `VOICE_URL` as no voice, so a start that says nothing plays silent and `speak` says so rather than probing a port nobody configured.
 
 Or build from this tree:
 
@@ -91,7 +93,7 @@ KOKORO_DIR=/path/to/kokoro VOICE_TOKEN=<token> VOICE_HOST=0.0.0.0 pnpm voice
 docker run -i --rm -e VOICE_URL=http://host.docker.internal:7788 -e VOICE_TOKEN=<token> mcp-arcade-cabinets
 ```
 
-Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.7.0`. The image is Ghost's; the typing cabinet's server ships inside its npm package and has no image yet.
+Without a worker the cabinet is silent and says so. The Docker MCP Catalog entry lives under `catalog/` in the repo (silent card, `disableNetwork: true`, no voice in the image); the published image is `ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.12.0`. The image is Ghost's; the typing cabinet's server ships inside its npm package and has no image yet.
 
 ## Not in this layer
 

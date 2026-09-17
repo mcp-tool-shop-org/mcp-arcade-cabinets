@@ -34,7 +34,7 @@ The game only ever reads tapes. It does not talk to a server, does not keep a sc
 npx @mcptoolshop/ghost-on-the-menu
 ```
 
-Left and right to move, space to fire, F for full screen. Press **Shift** for a run of four calls with a four-word replay code at the end.
+Left and right to move, space to fire, F for full screen, which stays with you from one tape into the next. On a phone, hold the left or right of the field to move and the band under it to fire. Press **Shift** for a run of four calls with a four-word replay code at the end.
 
 This is the same game as [the published page](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/), with one difference that is the whole reason this package exists: run locally, the cabinet can reach **your own Ollama daemon and voice worker**. A published web page cannot. With a model behind the bosses, they fly themselves and speak their own lines.
 
@@ -57,13 +57,13 @@ A headless round runs inside the server and the tools are the levers on it, so a
 }
 ```
 
-Six tools: `fire` (one verb a beat — a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of the boss's own, through a gate), `speak`, `sfx`, and read-only `view` and `tapes`.
+Six tools: `fire` (one verb a beat — a fan, a lean and an aimed shot, a held breath, fog, the plate), `say` (a line of the boss's own, through a gate), `speak`, `sfx`, and read-only `view` and `tapes`. `tapes` says which cards were baked in, which an operator added, and which one the round is playing; `view` says when a line is waiting to be spoken and when the round was replaced.
 
 The seat is **fact-blind**: it is handed words, never the state. It never sees which sprites are lies. It proposes; the game decides.
 
 ## What it needs
 
-Node 22 or newer. That is the whole requirement.
+Node 22 or newer. That is the whole requirement, and an older Node is told so in a sentence rather than a stack.
 
 Two things are optional and neither is bundled — the cabinet is complete without them:
 
@@ -115,7 +115,7 @@ The tapes are recorded by [mcp-arcade](https://github.com/mcp-tool-shop-org/mcp-
 There is also a Docker image of the MCP server, if you would rather not have Node. The [packages page](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/pkgs/container/mcp-arcade-cabinets) lists the tags:
 
 ```bash
-docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.11.1
+docker run -i --rm ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.12.0
 ```
 
 - [Play in the browser, no install](https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/)

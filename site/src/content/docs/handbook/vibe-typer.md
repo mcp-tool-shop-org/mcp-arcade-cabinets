@@ -31,7 +31,7 @@ Three panes and a bar. The **chat** on the left is the user in blue and the agen
 
 ## The standup and the retro
 
-A run ends on the **standup**: the product and its stack, its premise, the deploy ribbon, the user's closing line, the valuation, the milestone words, and the run's seed. Type the seed into the menu's seed box to replay the run exactly. The **retro** is opt-in and is offered fully every third standup: the eight key pairs that caught you most, then a word for how steady your hands were and a word for how brisk, measured against this browser and no one else. The pairs are remembered, decayed by half each run, and the next level's requests lean toward snippets that contain them.
+A run ends on the **standup**: the product and its stack, its premise, the deploy ribbon, the user's closing line, the valuation, the milestone words, and the run's code. Type the code into the menu's box to replay the run exactly, on any browser (the seed alone never did, because the practice pairs a browser stores weight the draw; the code carries their digest). Two buttons take the same product again or the next one in the menu's order, and the menu marks what this browser has shipped. The **retro** is opt-in and is offered fully every third standup: the eight key pairs that caught you most, then a word for how steady your hands were and a word for how brisk, measured against this browser and no one else. The pairs are remembered, decayed by half each run, and the next level's requests lean toward snippets that contain them.
 
 Words per minute, accuracy and error counts appear nowhere. The scoreboard is the game's number; the typist's numbers stay with the typist.
 
