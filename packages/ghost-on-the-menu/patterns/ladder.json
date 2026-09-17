@@ -104,7 +104,7 @@
       "grace": 0.45,
       "hazards": false,
       "rageStart": false,
-      "shotsInFlight": 2
+      "shotsInFlight": 3
     },
     {
       "tier": 3,
@@ -131,7 +131,8 @@
       "lamps": 1,
       "grace": 0.4,
       "hazards": true,
-      "rageStart": true
+      "rageStart": true,
+      "shotsInFlight": 2
     }
   ]
 }

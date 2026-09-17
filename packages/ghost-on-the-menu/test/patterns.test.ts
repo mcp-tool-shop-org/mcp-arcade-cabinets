@@ -640,8 +640,8 @@ describe('the formation fire levers', () => {
     // the recorded rung and hardcore say nothing.
     const set = loadPatterns(raw);
     for (const r of set.ladder.rungs) {
-      if (r.tier === 1) expect(r.shotsInFlight).toBe(3);
-      else if (r.tier === 2) expect(r.shotsInFlight).toBe(2);
+      if (r.tier === 1 || r.tier === 2) expect(r.shotsInFlight).toBe(3);
+      else if (r.tier === 3) expect(r.shotsInFlight).toBe(2);
       else expect(r.shotsInFlight).toBeNull();
     }
     rungs[1]!.shotsInFlight = 2;

@@ -161,10 +161,10 @@ describe('fairness band', () => {
     }
   });
 
-  it('the reader reveals every lie on tiers 0 and 1', () => {
+  it('the reader reveals every lie on tier 0', () => {
     let measured = 0;
     for (const c of CASES) {
-      if (c.tier > 1) continue;
+      if (c.tier > 0) continue;
       const out = run(c, 'reader');
       // "every lie" is vacuous on a tape with none, so the count is pinned
       // per case and the roster is required to carry lies overall.
@@ -176,21 +176,38 @@ describe('fairness band', () => {
       );
       expect(out.leaked, `${c.name}: leaked`).toBe(false);
     }
-    expect(measured, 'no lies on any tier 0/1 tape: the bar measured nothing').toBeGreaterThan(0);
+    expect(measured, 'no lies on any tier 0 tape: the bar measured nothing').toBeGreaterThan(0);
   });
 
-  // Split from the bar above on 2026-09-17 (Grok's consult, question two):
-  // "every lie, without dying" was a no-rain bar, right when the only
-  // incoming fire was the boss. Coverage is the tell and stays exact;
-  // survival is the rain and is measured on its own. The reader keeps its
-  // gun through a dodge and does not walk back onto a crossing, which is a
-  // person's ceiling under fire, not a turret under its target. Measured
-  // when set: ended by time on thirteen of twenty seated tapes.
-  it('the reader, under fire at seat, ends by time on half the seated tapes', () => {
+  // Re-based 2026-09-17 to the Director's tune: at seat every class fires,
+  // on the way in, with the first shot early, so the tells-only reader,
+  // which does not shoot back, no longer lives out every seated tape. What
+  // it must still do is find the lies while it lives. Measured when set:
+  // every lie on fifteen of twenty seated tapes, sixteen of twenty-one lies.
+  it('the reader, under fire at seat, still reveals every lie on most seated tapes and half the lies', () => {
+    const cases = CASES.filter((c) => c.tier === 1);
+    let lies = 0;
+    let revealed = 0;
+    let whole = 0;
+    for (const c of cases) {
+      const out = run(c, 'reader');
+      expect(out.lies.length, `${c.name}: lie count`).toBe(pinnedLies(c));
+      expect(out.leaked, `${c.name}: leaked`).toBe(false);
+      lies += out.lies.length;
+      revealed += out.revealed.length;
+      if (out.lies.every((id) => out.revealed.includes(id))) whole += 1;
+    }
+    expect(lies, 'no lies on any seated tape: the bar measured nothing').toBeGreaterThan(0);
+    expect(whole).toBeGreaterThanOrEqual(Math.ceil(cases.length * 0.6));
+    expect(revealed).toBeGreaterThanOrEqual(Math.ceil(lies / 2));
+  });
+
+  // Survival at seat, split from coverage. Measured when set: six of twenty.
+  it('the reader, under fire at seat, ends by time on a fifth of the seated tapes', () => {
     const cases = CASES.filter((c) => c.tier === 1);
     const outs = cases.map((c) => run(c, 'reader'));
     expect(outs.filter((o) => o.ended === 'time').length).toBeGreaterThanOrEqual(
-      Math.ceil(cases.length / 2),
+      Math.ceil(cases.length / 5),
     );
   });
 
@@ -247,29 +264,24 @@ describe('the difficulty curve', () => {
     expect(meanLamps(byTier(1).map((c) => run(c, 'reader')))).toBeGreaterThanOrEqual(1.0);
   });
 
-  // Lowered from three quarters on 2026-09-17 with the seat tune (Grok's
-  // consult, question three): the ship holds two shots in the air at live
-  // now, and the mover, which never dodges and parks under the nearest
-  // grid or menu, finishes half the roster where it finished most. The
-  // remainder is the bot's missing dodge, which is not taught to it so the
-  // bar keeps measuring the levers. Measured when set: ten of twenty.
-  it('live is survivable by the mover on half the tapes, with half the lies found', () => {
+  // Re-based 2026-09-17 to the Director's tune. The mover never dodges and
+  // parks under the nearest sprite, and live fires with every class on the
+  // way in now, so it lives out no live tape; what a dumb hunter still does
+  // is find lies before it goes. Measured when set: half the lies on four
+  // tapes. The reader ends by time on three and finds eleven of twenty-one.
+  it('live: the mover still finds half the lies on some tapes before it goes', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => run(c, 'sweeper'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.45));
     const h = namedHalf(cases, outs);
-    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 2));
-    expect(h.perTape, h.short).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
+    expect(h.perTape, h.short).toBeGreaterThanOrEqual(3);
   });
 
-  it('live is survivable by the reader on half the tapes, with half the lies found', () => {
+  it('live: the reader ends by time on some tapes and finds two fifths of the lies', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => run(c, 'reader'));
-    // Half the roster.
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
+    expect(alive(outs)).toBeGreaterThanOrEqual(2);
     const h = namedHalf(cases, outs);
-    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies / 2));
-    expect(h.perTape, h.short).toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
+    expect(h.revealed, h.short).toBeGreaterThanOrEqual(Math.ceil(h.lies * 0.4));
   });
 });
 
@@ -286,42 +298,35 @@ describe('the shift climb', () => {
   const last = (c: Case, bot: BotName) =>
     playTape(c.tape, { fixture: c.name, bot, tier: c.tier, climb: 1 });
 
-  it('is felt: the last call at live costs the mover more than the tape alone', () => {
+  // Re-based 2026-09-17 to the Director's tune: the mover loses every lamp
+  // at live alone and at the top of the climb alike, so "costs more" has no
+  // room to show; the bar is that the climb costs no less. The reader still
+  // ends by time on some tapes at the top of the climb (measured three) and
+  // at seat on a third (measured seven); the mover still finds a lie on
+  // some (measured three).
+  it('is felt: the last call at live costs the mover no less than the tape alone', () => {
     const alone = byTier(2).map((c) => run(c, 'sweeper'));
     const climbed = byTier(2).map((c) => last(c, 'sweeper'));
     const lost = (outs: ReturnType<typeof run>[]) => outs.reduce((s, o) => s + (3 - o.lives), 0);
-    expect(lost(climbed)).toBeGreaterThan(lost(alone));
+    expect(lost(climbed)).toBeGreaterThanOrEqual(lost(alone));
   });
 
-  // Lowered from half on 2026-09-17 for the same reason as the tape-alone
-  // bar above. Measured when set: eight of twenty.
-  it('live, last call: the mover survives a third of the roster with half the lies found', () => {
+  it('live, last call: the mover still finds half the lies on some tapes', () => {
     const cases = byTier(2);
     const outs = cases.map((c) => last(c, 'sweeper'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.35));
-    const short: string[] = [];
-    let lies = 0;
-    let revealed = 0;
     let perTape = 0;
-    for (let i = 0; i < cases.length; i++) {
-      const c = cases[i]!;
-      const o = outs[i]!;
-      lies += o.lies.length;
-      revealed += o.revealed.length;
-      if (o.lies.length === 0) continue;
-      if (o.revealed.length >= Math.ceil(o.lies.length / 2)) perTape += 1;
-      else short.push(c.name);
+    for (const o of outs) {
+      if (o.lies.length > 0 && o.revealed.length >= Math.ceil(o.lies.length / 2)) perTape += 1;
     }
-    expect(revealed, short.join(', ') || 'global').toBeGreaterThanOrEqual(Math.ceil(lies / 2));
-    expect(perTape, short.join(', ') || 'per-tape').toBeGreaterThanOrEqual(Math.ceil(ROSTER / 2));
+    expect(perTape).toBeGreaterThanOrEqual(2);
   });
 
-  it('live, last call: the reader survives half the roster', () => {
+  it('live, last call: the reader ends by time on some tapes', () => {
     const outs = byTier(2).map((c) => last(c, 'reader'));
-    expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.5));
+    expect(alive(outs)).toBeGreaterThanOrEqual(2);
   });
 
-  it('seat, last call: the reader still clears a quarter of the roster', () => {
+  it('seat, last call: the reader still ends by time on a quarter of the roster', () => {
     const outs = byTier(1).map((c) => last(c, 'reader'));
     expect(alive(outs)).toBeGreaterThanOrEqual(Math.ceil(ROSTER * 0.25));
   });
@@ -360,7 +365,7 @@ describe('hardcore', () => {
   // `void lived`, so a regression that killed the reader on every tape read
   // as green under a title naming the opposite. Survival at hardcore is the
   // human bar, not the scripted bot's; the bot andon is "finds lies".
-  it('idle and the sweeper die at hardcore; the reader still finds lies', () => {
+  it('every bot dies at hardcore, and none leaks', () => {
     for (const c of tapes) {
       const o = playTape(c.tape, { fixture: c.name, bot: 'idle', tier: 3 });
       expect(o.ended, c.name).toBe('lamps');
@@ -369,14 +374,15 @@ describe('hardcore', () => {
       const o = playTape(c.tape, { fixture: c.name, bot: 'sweeper', tier: 3 });
       expect(o.ended, c.name).toBe('lamps');
     }
+    // Re-based 2026-09-17 to the Director's tune: hardcore is one lamp under
+    // a formation that fires with every class on the way in, and the reader
+    // bot dies in its first seconds on every tape. Its bar here is that it
+    // dies and leaks nothing; whether hardcore is beatable is the human bar,
+    // the Director's, not a scripted bot's.
     const read = tapes.map((c) => playTape(c.tape, { fixture: c.name, bot: 'reader', tier: 3 }));
-    const found = read.reduce((s, o) => s + o.revealed.length, 0);
-    // Unique lie ids no longer collapse two whispers into one, so the old
-    // 1/3-of-events bar over-counted. The reader still has to find lies on
-    // the full roster (not a gallery) and survive a few tapes (not a wall).
-    expect(found).toBeGreaterThan(0);
-    expect(read.filter((o) => o.revealed.length > 0).length).toBeGreaterThanOrEqual(
-      Math.ceil(tapes.length / 4),
-    );
+    for (let i = 0; i < read.length; i++) {
+      expect(read[i]!.ended, tapes[i]!.name).toBe('lamps');
+      expect(read[i]!.leaked, tapes[i]!.name).toBe(false);
+    }
   });
 });
