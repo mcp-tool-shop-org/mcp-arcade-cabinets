@@ -20,6 +20,7 @@ import {
   integrationSnippets,
   leversOf,
   planOf,
+  reactionWaiting,
   stepRun,
   type RunState,
   type Snippet,
@@ -40,7 +41,15 @@ import {
   tooLong,
   type VibeHost,
 } from '../src/vibe-cabinet';
-import { isRepeatAsk, recentAsks, vibeHostFor, type VibeLive } from '../src/vibe-host';
+import {
+  askHandle,
+  HANDLE_WORDS,
+  isRepeatAsk,
+  recentAsks,
+  requestFor,
+  vibeHostFor,
+  type VibeLive,
+} from '../src/vibe-host';
 
 const DIR = path.resolve(__dirname, '../../../fixtures/tapes');
 /** The same class the printed screen is held to, plus every other digit. */
@@ -323,8 +332,15 @@ describe('the boundary', () => {
       /refused it \(that line was just said\)/,
     );
     expect(cab.call('ask', { ask: 1 }).isError).toBe(true);
-    expect(() => cab.call('nag', {})).toThrow(/no such tool/);
-    expect(() => cab.call('fire', { verb: 'spread' })).toThrow(/no such tool/);
+    // A name off the closed list is a refusal a caller can read, the shape
+    // every other refusal here has, not a throw. `fire` is the shooter's,
+    // which is exactly the trap an in-process caller building the name from
+    // a string would fall into.
+    for (const name of ['nag', 'fire']) {
+      const r = cab.call(name, { verb: 'spread' });
+      expect(r.isError, name).toBe(true);
+      expect(r.content[0]!.text, name).toBe('no such lever on this cabinet');
+    }
     expect(calls).toEqual([
       'product a hat rental for crows',
       'ask a song 2',
@@ -478,5 +494,133 @@ describe('the boundary', () => {
     // A different request is not a repeat.
     expect(isRepeatAsk('let {product} sing on a tuesday', product, queued, said)).toBe(false);
     expect(isRepeatAsk('let {product} announce it is here', product, [], [])).toBe(false);
+  });
+});
+
+describe('a reaction names the request it was written about', () => {
+  /** A run stepped far enough that one request has shipped and one is in hand. */
+  function played() {
+    const live: VibeLive = {
+      state: createRun({ seed: 3, tier: 0, endless: true }),
+      seed: 3,
+    };
+    const bot = botFor(parseBot('typist:45')!, 3);
+    for (let f = 0; f < 60_000 && live.state.requestIndex < 1; f++) {
+      stepRun(live.state, bot(live.state), DT);
+    }
+    expect(live.state.requestIndex, 'a request shipped').toBeGreaterThan(0);
+    return live;
+  }
+
+  it('the view carries a handle per asked line, and no digit anywhere', () => {
+    const live = played();
+    const host = vibeHostFor(() => live);
+    const view = host.view();
+    const asked = view.split('\n').filter((line) => line.startsWith('asked '));
+    expect(asked.length).toBeGreaterThan(0);
+    for (const line of asked) {
+      const handle = line.split(' ')[1]!;
+      expect(handle, line).toMatch(/^[a-z]+-[a-z]+$/);
+      expect(HANDLE_WORDS).toContain(handle.split('-')[0]);
+      expect(HANDLE_WORDS).toContain(handle.split('-')[1]);
+    }
+    expect(view).not.toMatch(SCREEN);
+    // The same ask always mints the same handle, which is what makes a
+    // handle read out of a view a moment ago still name what it named.
+    expect(askHandle('let the diary count the leaves')).toBe(
+      askHandle('Let the diary count the leaves!'),
+    );
+  });
+
+  it('maps a handle back to a request, and calls a request that has gone shipped', () => {
+    const live = played();
+    const { state } = live;
+    const gone = state.plan.requests[0]!;
+    const inHand = state.plan.requests[state.requestIndex]!;
+    expect(requestFor(state, askHandle(gone.ask))).toEqual({ kind: 'shipped' });
+    expect(requestFor(state, askHandle(inHand.ask))).toEqual({
+      kind: 'request',
+      id: inHand.id,
+    });
+    // A handle for words no request carries names nothing.
+    expect(requestFor(state, 'quill-quill-not-a-handle')).toEqual({ kind: 'unknown' });
+  });
+
+  it('says the line missed its request rather than promising it, and keeps the slot free', () => {
+    const live = played();
+    const { state } = live;
+    const host = vibeHostFor(() => live);
+    const cab = createVibeCabinet(host);
+    const gone = askHandle(state.plan.requests[0]!.ask);
+    const inHand = askHandle(state.plan.requests[state.requestIndex]!.ask);
+
+    const missed = cab.call('react', { text: 'that one came out lovely', about: gone });
+    expect(missed.content[0]!.text).toBe(
+      'that request has already shipped; the line missed it and was not said',
+    );
+    expect(reactionWaiting(state)).toBe(false);
+
+    const nowhere = cab.call('react', { text: 'that one came out lovely', about: 'onyx-onyx' });
+    expect(nowhere.content[0]!.text).toBe(
+      'the view does not name that request; the line was not said',
+    );
+    expect(reactionWaiting(state)).toBe(false);
+
+    // The request the line was actually written about takes it.
+    const said = cab.call('react', { text: 'that one came out lovely', about: inHand });
+    expect(said.content[0]!.text).toBe('the user will say it at the next thing that ships');
+    expect(reactionWaiting(state)).toBe(true);
+
+    expect(cab.log.map((c) => `${c.name}:${c.ok}:${c.gate ?? ''}`)).toEqual([
+      'react:false:missed',
+      'react:false:no such request',
+      'react:true:ok',
+    ]);
+    for (const r of [missed, nowhere, said]) expect(r.content[0]!.text).not.toMatch(SCREEN);
+  });
+
+  it('carries the tag through to the host, and an untagged line lands as it always did', () => {
+    const seen: { line: string; about: string | undefined }[] = [];
+    const host: VibeHost = {
+      view: () => 'product a thing',
+      product: () => 'set',
+      ask: () => ({ kind: 'queued' as const }),
+      react: (line, about) => (seen.push({ line, about }), 'waiting'),
+      recent: () => [],
+    };
+    const cab = createVibeCabinet(host);
+    cab.call('react', { text: 'that is lovely', about: 'timber-quill' });
+    cab.call('react', { text: 'that is exactly it' });
+    expect(seen).toEqual([
+      { line: 'that is lovely', about: 'timber-quill' },
+      { line: 'that is exactly it', about: undefined },
+    ]);
+    // The tag has the contract's own bound, and is refused rather than cut.
+    expect(tooLong('react', 'about', 'a'.repeat(40))).toBe(false);
+    expect(tooLong('react', 'about', 'a'.repeat(41))).toBe(true);
+    const over = cab.call('react', { text: 'that is lovely', about: 'a'.repeat(41) });
+    expect(over.content[0]!.text).toBe(
+      'the gate refused it (too long); the user says one of their own instead',
+    );
+    expect(seen).toHaveLength(2);
+  });
+
+  it('answers a name off the closed list with a refusal rather than throwing', () => {
+    const host: VibeHost = {
+      view: () => 'product a thing',
+      product: () => 'set',
+      ask: () => ({ kind: 'queued' as const }),
+      react: () => 'waiting',
+      recent: () => [],
+    };
+    const cab = createVibeCabinet(host);
+    const r = cab.call('paint', {});
+    expect(r.isError).toBe(true);
+    expect(r.content[0]!.text).toBe('no such lever on this cabinet');
+    // The raw name is never kept, on the log or in the answer.
+    expect(r.content[0]!.text).not.toContain('paint');
+    expect(cab.log.map((c) => `${c.name}:${c.gate ?? ''}`)).toEqual([
+      'no such lever:no such lever',
+    ]);
   });
 });

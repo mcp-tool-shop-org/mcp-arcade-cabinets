@@ -36,6 +36,9 @@ const OWN_ASK = bash('cal-sh-d1-001');
  */
 const NO_TOPIC_POOL = { ...OWN_ASK, topics: ['a-topic-nobody-has-written-for'] };
 
+/** The level's product, which is the one hole a reaction may carry. */
+const PRODUCT = 'a website for my cat';
+
 function picker(seed = 3, tier: 0 | 1 | 2 | 3 = 0): LinePicker {
   const p = new LinePicker(DEFAULT_PATTERNS, { seed, tier });
   p.startLevel(0);
@@ -65,7 +68,7 @@ describe('the line picker', () => {
       expect(a.ask('python', 'Uber but for ducks', SNIPPET)).toBe(
         b.ask('python', 'Uber but for ducks', SNIPPET),
       );
-      expect(a.reaction(OWN_ASK)).toBe(b.reaction(OWN_ASK));
+      expect(a.reaction(OWN_ASK, PRODUCT)).toBe(b.reaction(OWN_ASK, PRODUCT));
     }
   });
 
@@ -112,8 +115,8 @@ describe('the line picker', () => {
     };
     const hardOn = new LinePicker(on, { seed: 6, tier: 3 });
     const easyOn = new LinePicker(on, { seed: 6, tier: 2 });
-    expect(hardOn.reaction(NO_TOPIC_POOL)).toBe(easyOn.reaction(NO_TOPIC_POOL));
-    expect(DEFAULT_PATTERNS.user.reactions['2']).toContain(hardOn.reaction(NO_TOPIC_POOL));
+    expect(hardOn.reaction(NO_TOPIC_POOL, PRODUCT)).toBe(easyOn.reaction(NO_TOPIC_POOL, PRODUCT));
+    expect(DEFAULT_PATTERNS.user.reactions['2']).toContain(hardOn.reaction(NO_TOPIC_POOL, PRODUCT));
   });
 
   it('walks the check-ins and the answers without a repeat inside a level', () => {
@@ -154,20 +157,24 @@ describe('the line picker', () => {
     expect(DEFAULT_PATTERNS.user.reactionsByTopicEnabled).toBe(false);
     const p = picker();
     for (let i = 0; i < 8; i++) {
-      const said = p.reaction(SNIPPET);
+      const said = p.reaction(SNIPPET, PRODUCT);
       expect(byTopic[topic!]).not.toContain(said);
       expect(DEFAULT_PATTERNS.user.reactions['0']).not.toContain(said);
       expect(DEFAULT_PATTERNS.user.reviews).toContain(said);
     }
     // And a snippet nobody wrote a topic for reads the same pool.
-    expect(DEFAULT_PATTERNS.user.reviews).toContain(picker().reaction(NO_TOPIC_POOL));
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(picker().reaction(NO_TOPIC_POOL, PRODUCT));
   });
 
   it('says four different lines across a level and its deploy', () => {
     // Three reactions and the verdict, out of one bag: the deploy is never a
     // line the user already said mid-level.
     const p = picker();
-    const said = [p.reaction(SNIPPET), p.reaction(SNIPPET), p.reaction(SNIPPET)];
+    const said = [
+      p.reaction(SNIPPET, PRODUCT),
+      p.reaction(SNIPPET, PRODUCT),
+      p.reaction(SNIPPET, PRODUCT),
+    ];
     const verdict = p.review('no-such-level');
     expect(new Set([...said, verdict]).size).toBe(4);
     expect(said).not.toContain(verdict);
@@ -178,13 +185,13 @@ describe('the line picker', () => {
     // from that pool, which no reaction can have said.
     const withPool = picker();
     const id = Object.keys(DEFAULT_PATTERNS.user.reviewsByProduct)[0]!;
-    withPool.reaction(SNIPPET);
+    withPool.reaction(SNIPPET, PRODUCT);
     expect(DEFAULT_PATTERNS.user.reviewsByProduct[id]).toContain(withPool.review(id));
   });
 
   it('starts the reaction bag over at each level', () => {
     const p = picker();
-    const first = [p.reaction(SNIPPET), p.reaction(SNIPPET)];
+    const first = [p.reaction(SNIPPET, PRODUCT), p.reaction(SNIPPET, PRODUCT)];
     p.startLevel(1);
     const verdict = p.review('no-such-level');
     // A new level may say a line the level before it said; what it may not
@@ -203,7 +210,7 @@ describe('the line picker', () => {
     };
     const p = new LinePicker(on, { seed: 7, tier: 0 });
     const said = new Set<string>();
-    for (let i = 0; i < pool.length; i++) said.add(p.reaction(SNIPPET));
+    for (let i = 0; i < pool.length; i++) said.add(p.reaction(SNIPPET, PRODUCT));
     expect([...said].sort()).toEqual([...pool].sort());
   });
 
@@ -313,5 +320,53 @@ describe('filling a line', () => {
     const nothing: Snippet = { ...SNIPPET, title: 'top 3 rows', topics: ['utility-class'] };
     expect(safeTitle(nothing)).toBe('that thing');
     expect(safeTitle(SNIPPET)).toBe(SNIPPET.title);
+  });
+});
+
+// ——— the reaction a snippet carries ——————————————————————————————————————
+//
+// The reaction is the ask's row one down: one line the user says when THIS
+// request's piece ships, written beside the ask it answers. Before it, every
+// reaction came from a pool that had never read the request — a metaphor for
+// a loop against an ask about duck fares — and the only pool that was honest
+// about that was the generic reviews, which are true of any piece whatever
+// was asked for.
+
+describe('a snippet that carries its own reaction', () => {
+  const OWN: Snippet = { ...SNIPPET, reaction: 'that is exactly what {product} needed' };
+  const BOUND: Snippet = { ...OWN, for: 'duck-rides' };
+
+  it('says its own line, with the product filled in', () => {
+    expect(picker().reaction(OWN, PRODUCT, 'cat-website')).toBe(
+      `that is exactly what ${PRODUCT} needed`,
+    );
+  });
+
+  it('plays a bound reaction only inside its own level', () => {
+    expect(picker().reaction(BOUND, PRODUCT, 'duck-rides')).toBe(
+      `that is exactly what ${PRODUCT} needed`,
+    );
+    // Anywhere else the premise is not there to hold it up, so the pool the
+    // picker draws today answers instead — the same rule `askFor` has.
+    const elsewhere = picker().reaction(BOUND, PRODUCT, 'cat-website');
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(elsewhere);
+    // And a caller that does not say which level it is planning gets the pool.
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(picker().reaction(BOUND, PRODUCT));
+  });
+
+  it('spends no draw from the generic bag and is never the verdict', () => {
+    // `ask` has this rule already: only the fallback path spends a draw. The
+    // deploy's verdict walks the same bag and skips whatever was said as a
+    // reaction, so a reaction that spent a draw would move the verdict and
+    // could make the level repeat a line the user never said.
+    const spent = picker(5);
+    for (let i = 0; i < 3; i++) spent.reaction(OWN, PRODUCT, 'cat-website');
+    const quiet = picker(5);
+    expect(spent.review('no-such-level')).toBe(quiet.review('no-such-level'));
+
+    // The fall-through path does spend one, which is what makes this a test.
+    const drawn = picker(5);
+    for (let i = 0; i < 3; i++) drawn.reaction(SNIPPET, PRODUCT, 'cat-website');
+    expect(drawn.review('no-such-level')).not.toBe(quiet.review('no-such-level'));
   });
 });

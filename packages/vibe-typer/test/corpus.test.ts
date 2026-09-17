@@ -86,6 +86,46 @@ describe('the ported corpus', () => {
     expect(() => loadCorpus(blank)).toThrow('patterns/corpus/bash.json: 4.for');
   });
 
+  // The reaction is the ask's row one down: the line the user says when this
+  // request's piece ships. It goes through the ask's gate verbatim, and it
+  // leans on the SAME `for` — no second binding field — so a reaction about
+  // ducks plays in the rideshare for ducks and nowhere else. Authoring is
+  // then one key per snippet in six JSON files and no code.
+  it('holds a snippet reaction to the gate its ask is held to', () => {
+    const rest = Object.fromEntries(
+      CORPUS_STACKS.map((s) => [s, DEFAULT_CORPUS.byStack[s]!.map((x) => ({ ...x }))]),
+    ) as Record<string, Record<string, unknown>[]>;
+
+    const digit = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    digit.bash![1]!.reaction = 'that is 3 times better than i asked for';
+    expect(() => loadCorpus(digit)).toThrow('patterns/corpus/bash.json: 1.reaction');
+
+    const titled = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    titled.bash![2]!.reaction = 'the {title} is exactly it';
+    expect(() => loadCorpus(titled)).toThrow('patterns/corpus/bash.json: 2.reaction');
+
+    const notAString = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    notAString.bash![5]!.reaction = 7;
+    expect(() => loadCorpus(notAString)).toThrow('patterns/corpus/bash.json: 5.reaction');
+
+    // A story noun with no level to hold it up: the ask row's own halt.
+    const loose = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    loose.bash![3]!.reaction = 'the ducks look so much happier now';
+    delete loose.bash![3]!.for;
+    expect(() => loadCorpus(loose)).toThrow('patterns/corpus/bash.json: 3.reaction');
+
+    // The same line, saying whose story it belongs to, loads and is kept.
+    const bound = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    bound.bash![3]!.reaction = 'the ducks look so much happier now';
+    bound.bash![3]!.for = 'duck-rides';
+    expect(loadCorpus(bound).byStack.bash![3]!.reaction).toBe('the ducks look so much happier now');
+
+    // `{product}` is the one hole, exactly as it is on the ask.
+    const held = JSON.parse(JSON.stringify(rest)) as typeof rest;
+    held.bash![6]!.reaction = 'that is what {product} was missing';
+    expect(loadCorpus(held).byStack.bash![6]!.reaction).toBe('that is what {product} was missing');
+  });
+
   it('flags a story ask and leaves an ordinary one alone', () => {
     expect(askIsBound('split one bill among five ducks')).toBe(true);
     expect(askIsBound('keep only the socks with no partner')).toBe(true);

@@ -13,6 +13,7 @@ import {
   revealOnHit,
   stepRound,
 } from '../src/index';
+import { isHittable } from '../src/sim';
 import {
   attachPatterns,
   burstActive,
@@ -1230,6 +1231,9 @@ describe('the ollama seats in the sim', () => {
   it("a pilot spread is a fan of the lever's width, a column an aimed shot", () => {
     const s = createRoundState(seatedRound());
     toBoss(s, 'whisperer');
+    // Seat's formation fires now (every class, on the way in); this beat
+    // counts the boss's shots alone, so the formation is cleared off first.
+    for (const e of s.enemies) e.alive = false;
     const fan = DEFAULT_PATTERNS.fire.tiers['1'].boss.pilot.fan;
     expect(fan).toBeGreaterThan(1);
     s.bossIntent = 'spread';
@@ -1750,5 +1754,201 @@ describe('dead hulls leave the field', () => {
     expect(copies().length, 'a host whose copies died never gets copies again').toBeGreaterThan(0);
     const ids = state.enemies.map((e) => e.id);
     expect(new Set(ids).size, 'a reused copy id').toBe(ids.length);
+  });
+});
+
+// The formation's answer (2026-09-17). With the levers as they shipped a
+// player holding fire killed a wave on its entry paths and the formation
+// fired from the hover alone, a mode most sprites never reached: only the
+// boss attacked. These levers are what the Director tunes.
+describe('formation fire levers', () => {
+  /** A tier-1 round with one menu sprite (a shooter that never dives) on its entry path, and a pattern set patched as asked. */
+  function entering(patch: (set: PatternSet) => void): { state: RoundState; target: Enemy } {
+    const set = JSON.parse(JSON.stringify(DEFAULT_PATTERNS)) as PatternSet;
+    patch(set);
+    const round = roundOf({
+      tapeId: 'bout_fire',
+      duration: 30,
+      tier: 1,
+      beats: [
+        {
+          id: 'inspect.tools_list:menu:0',
+          t: 0,
+          x: 240,
+          sprite: 'menu',
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/list',
+            note: 'tools/list',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, set);
+    const state = createRoundState(round);
+    const target = state.enemies[0]!;
+    // Far from the ship's column, so the ship never shoots it.
+    state.player.x = 20;
+    return { state, target };
+  }
+  const shotsOf = (state: RoundState) => state.enemyShots.length;
+  /** Steps once and says whether a shot left the formation on that step (shots are compacted as they leave the field). */
+  const fired = (state: RoundState): boolean => {
+    const before = shotsOf(state);
+    stepRound(state, still, 1 / 60);
+    return shotsOf(state) > before;
+  };
+  const still = { left: false, right: false, fire: false };
+
+  it('fires on the way in only when the tier says onEntry, and from the hover regardless', () => {
+    const quiet = entering((set) => {
+      set.fire.tiers['1'].formation!.onEntry = false;
+      set.fire.tiers['1'].formation!.firstShot = 0.1;
+    });
+    const loud = entering((set) => {
+      set.fire.tiers['1'].formation!.onEntry = true;
+      set.fire.tiers['1'].formation!.firstShot = 0.1;
+    });
+    let quietOnEntry = 0;
+    let loudOnEntry = 0;
+    // A shot counts as fired on the way in only when the sprite is still on
+    // its path after the step: the clock is armed from the entry now, so a
+    // sprite may fire on the very step it settles into the hover.
+    for (let i = 0; i < 240; i++) {
+      if (quiet.target.mode === 'enter' && fired(quiet.state) && quiet.target.mode === 'enter') {
+        quietOnEntry += 1;
+      }
+      if (loud.target.mode === 'enter' && fired(loud.state) && loud.target.mode === 'enter') {
+        loudOnEntry += 1;
+      }
+    }
+    expect(quiet.target.mode).toBe('hover');
+    expect(loud.target.mode).toBe('hover');
+    expect(quietOnEntry).toBe(0);
+    expect(loudOnEntry).toBeGreaterThan(0);
+    // From the hover both fire.
+    let quietHover = 0;
+    for (let i = 0; i < 180; i++) if (fired(quiet.state)) quietHover += 1;
+    expect(quietHover).toBeGreaterThan(0);
+  });
+
+  it('brings the first shot forward by firstShot, as a fraction of the period', () => {
+    const at = (firstShot: number): number => {
+      const { state, target } = entering((set) => {
+        set.fire.tiers['1'].formation!.onEntry = false;
+        set.fire.tiers['1'].formation!.firstShot = firstShot;
+      });
+      park(state, target);
+      state.player.x = 20;
+      let guard = 0;
+      while (shotsOf(state) === 0 && guard++ < 600) stepRound(state, still, 1 / 60);
+      return state.t;
+    };
+    const period = DEFAULT_PATTERNS.fire.tiers['1'].formation!.period;
+    const whole = at(1);
+    const half = at(0.5);
+    expect(whole).toBeGreaterThan(period * 0.95);
+    expect(half).toBeGreaterThan(period * 0.45);
+    expect(half).toBeLessThan(period * 0.6);
+  });
+
+  it("honors a rung cap on the ship's shots in flight, and none when the rung has none", () => {
+    const most = (cap: number | null): number => {
+      const { state } = entering((set) => {
+        set.ladder.rungs.find((r) => r.tier === 1)!.shotsInFlight = cap;
+      });
+      let peak = 0;
+      for (let i = 0; i < 90; i++) {
+        stepRound(state, { left: false, right: false, fire: true }, 1 / 60);
+        peak = Math.max(peak, state.shots.length);
+      }
+      return peak;
+    };
+    expect(most(2)).toBe(2);
+    expect(most(4)).toBe(4);
+    expect(most(null)).toBeGreaterThan(4);
+  });
+});
+
+// Grok's consult (docs/ghost-attack.grok-consult.md), the three line defects.
+describe('the three defects behind the silent formation', () => {
+  const still = { left: false, right: false, fire: false };
+  /** A tier-1 round with one sprite of the class asked, on its entry path. */
+  function roundWith(sprite: 'menu' | 'grid'): RoundState {
+    const round = roundOf({
+      tapeId: 'bout_defects',
+      duration: 30,
+      tier: 1,
+      beats: [
+        {
+          id: `inspect.tools_list:${sprite}:0`,
+          t: 0,
+          x: 240,
+          sprite,
+          lie: false,
+          members: 1,
+          source: {
+            atom: 'inspect.tools_list',
+            method: 'tools/list',
+            note: 'tools/list',
+            index: 0,
+          },
+        },
+      ],
+    });
+    attachPatterns(round, DEFAULT_PATTERNS);
+    const state = createRoundState(round);
+    state.player.x = 20;
+    return state;
+  }
+
+  it('a sprite above the field cannot be hit', () => {
+    const state = roundWith('menu');
+    const target = state.enemies[0]!;
+    // Spawned half above the top edge, as a path that starts at the edge does.
+    expect(target.y).toBeLessThan(0);
+    expect(isHittable(state, target)).toBe(false);
+    target.y = 0;
+    expect(isHittable(state, target)).toBe(true);
+  });
+
+  it("arms a shooter's clock at its entry, so the first shot comes as it settles rather than a period later", () => {
+    const state = roundWith('menu');
+    const target = state.enemies[0]!;
+    let hoverAt = Number.POSITIVE_INFINITY;
+    let firstShotAt = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < 600 && firstShotAt === Number.POSITIVE_INFINITY; i++) {
+      const before = state.enemyShots.length;
+      stepRound(state, still, 1 / 60);
+      if (target.mode === 'hover' && hoverAt === Number.POSITIVE_INFINITY) hoverAt = state.t;
+      if (state.enemyShots.length > before) firstShotAt = state.t;
+    }
+    const period = DEFAULT_PATTERNS.fire.tiers['1'].formation!.period;
+    const firstShot = DEFAULT_PATTERNS.fire.tiers['1'].formation!.firstShot;
+    // The entry is longer than firstShot × period, so the clock has run out by
+    // the time the sprite settles: it fires on its first hover ticks.
+    expect(hoverAt).toBeGreaterThan(period * firstShot);
+    expect(firstShotAt).toBeLessThan(hoverAt + 0.2);
+  });
+
+  it('a diving grid keeps its gun', () => {
+    const state = roundWith('grid');
+    const target = state.enemies[0]!;
+    let dived = false;
+    let shotWhileDiving = 0;
+    for (let i = 0; i < 1200; i++) {
+      const before = state.enemyShots.length;
+      stepRound(state, still, 1 / 60);
+      if (target.mode === 'dive') {
+        dived = true;
+        if (state.enemyShots.length > before) shotWhileDiving += 1;
+      }
+      if (!target.alive) break;
+    }
+    expect(dived).toBe(true);
+    expect(shotWhileDiving).toBeGreaterThan(0);
   });
 });

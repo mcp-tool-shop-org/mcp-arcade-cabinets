@@ -80,7 +80,10 @@ describe('scripted bot', () => {
   });
 
   it('flies the livefire task-only wrap-on tape with zero lies', async () => {
-    const out = await play({ fixture: 'livefire.intern.task-only-wrap-on' });
+    // Immortal: this tape derives to live, where no scripted bot lives out a
+    // round since the 2026-09-17 tune, and the play-through here is about
+    // the tape (zero lies, nothing revealed, no leak), not about a bot.
+    const out = await play({ fixture: 'livefire.intern.task-only-wrap-on', immortal: true });
     expect(out.text).not.toMatch(FORBIDDEN);
     expect(out.text).toMatch(/round complete/);
     expect(out.text).toMatch(/revealed: none/);

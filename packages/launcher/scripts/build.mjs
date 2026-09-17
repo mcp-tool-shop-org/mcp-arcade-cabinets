@@ -103,6 +103,45 @@ export const VIBE_TRACK_KEYS = [
 ];
 
 /**
+ * The shooter's recorded beds, the same list as `TRACK_KEYS` in
+ * `packages/ghost-on-the-menu/src/audio.ts`, spelled again for the same reason
+ * as the Vibe list above and checked the same way. It was a directory-only
+ * requirement until the music pass made each bed a two-minute piece: at 38
+ * seconds a missing bed cost the player a loop, and at two minutes it costs
+ * them the piece the Director asked for, so the tarball now names all eight.
+ * `apps/cabinets/test/bed-length.test.ts` fails the build if the two lists
+ * ever disagree, and `packages/launcher/test/pack-gate.test.ts` watches the
+ * halt go red with one of them left out.
+ */
+export const GHOST_TRACK_KEYS = [
+  'inspect',
+  'poison',
+  'rug',
+  'unlisted',
+  'breather',
+  'whisperer',
+  'menu',
+  'doorman',
+];
+
+/**
+ * The least a recorded bed may weigh in a tarball, in bytes.
+ *
+ * Presence is not enough. Every installed bed is a 110-128 s piece at MP3
+ * 128k and the lightest of the fifteen is 1.69 MB, so a file under a megabyte
+ * is not a bed: it is a truncated copy, a placeholder, or a copy that a
+ * partial write left short. At run time that is silent by design — the
+ * chiptune or the procedural bar simply keeps the round — which is exactly why
+ * it has to halt here, before a tarball that cannot be unpublished after 72
+ * hours. The floor sits well under the lightest real bed so a re-master can
+ * move without a test moving with it, and well over anything truncated.
+ * Duration is not checked here: a pack script is plain node with no decoder,
+ * and `apps/cabinets/test/bed-length.test.ts` walks the mp3 frames of every
+ * installed bed and holds the 110-130 s window.
+ */
+export const BED_MIN_BYTES = 1024 * 1024;
+
+/**
  * What each cabinet's package carries, and how to tell from the built shell
  * that it is the right one.
  *
@@ -124,6 +163,8 @@ const CABINETS = {
     /** The stdio cabinet server (`--mcp`): `fire`, `say`, `speak`, `sfx`, `view`, `tapes`. */
     stdio: 'ghost',
     public: ['sprites', 'tracks'],
+    /** One recorded bed a wave and a boss, checked by name. */
+    files: GHOST_TRACK_KEYS.map((key) => path.join('play', 'tracks', `${key}.mp3`)),
     needles: [
       ['data-local-seats', 'the seats mount mark'],
       ['/ollama/api/tags', 'the daemon probe'],
@@ -168,6 +209,15 @@ const PUBLIC_DIRS = [...new Set(Object.values(CABINETS).flatMap((spec) => spec.p
 export function halt(lines) {
   for (const line of lines) process.stderr.write(`${line}\n`);
   process.exit(1);
+}
+
+/** A file's size in bytes, or null when it is not there. */
+async function weigh(target) {
+  try {
+    return (await stat(target)).size;
+  } catch {
+    return null;
+  }
 }
 
 async function present(target) {
@@ -257,6 +307,26 @@ export async function checkDist({ cabinet, out }) {
       ...absentFiles.map((rel) => `- missing: dist/${rel}`),
       '',
       'next: pnpm build:launcher (from the repo root)',
+    ]);
+  }
+  // Present, and a bed rather than a stub of one.
+  const thin = [];
+  for (const rel of spec.files ?? []) {
+    const size = await weigh(path.join(dist, rel));
+    if (size !== null && size < BED_MIN_BYTES) thin.push([rel, size]);
+  }
+  if (thin.length > 0) {
+    halt([
+      `launcher: ${spec.name} is carrying a bed that is not a bed`,
+      ...thin.map(
+        ([rel, size]) =>
+          `- too small: dist/${rel} is ${(size / 1024).toFixed(1)} KB, under the ${(
+            BED_MIN_BYTES / 1024
+          ).toFixed(0)} KB a recorded bed weighs`,
+      ),
+      '',
+      'next: pnpm build:launcher (from the repo root), and check the file in',
+      '     apps/cabinets/public against apps/cabinets/test/bed-length.test.ts',
     ]);
   }
   const strays = [];

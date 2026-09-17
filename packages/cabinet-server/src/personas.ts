@@ -10,7 +10,20 @@ import { FORBIDDEN, SAY_MAX_WORDS } from './gate';
 export type BossKind = 'whisperer' | 'menu' | 'doorman' | 'archivist';
 export type Lead = 'short' | 'beat' | 'long';
 export const LEADS = ['short', 'beat', 'long'] as const;
-const KINDS: readonly BossKind[] = ['whisperer', 'menu', 'doorman', 'archivist'];
+/**
+ * The boss kinds this loader knows. The sim's own list is `BOSS_KINDS` in
+ * `packages/ghost-on-the-menu/src/patterns.ts`, which is not exported — only
+ * the derived type is — so this is a copy, and a test pins it to that file's
+ * source rather than leaving the two to drift.
+ *
+ * `loadPersonas` also refuses a sheet for a kind that is not here. Without
+ * that, a fifth sheet loaded green and was silently ignored, and a fifth
+ * kind in the sim made `personas.boss[boss.kind]` undefined at the host and
+ * threw a TypeError inside a `speak` call — which is the one thing a loader
+ * that halts at load exists to prevent.
+ */
+export const BOSS_KINDS: readonly BossKind[] = ['whisperer', 'menu', 'doorman', 'archivist'];
+const KINDS = BOSS_KINDS;
 
 /**
  * Delivery, authored per persona (finding 14: loudness carries the dry
@@ -113,6 +126,11 @@ export function loadPersonas(raw: unknown): Personas {
   const maxGap = num(voiceRaw.maxGap, 'voice.maxGap');
   if (!(maxGap > 0 && maxGap <= 3)) fail('voice.maxGap');
   const bossRaw = rec(obj.boss, 'boss');
+  // A key the loader does not know is a halt at load, not a sheet quietly
+  // dropped on the floor. The missing-key case is the loop below.
+  for (const key of Object.keys(bossRaw)) {
+    if (!(KINDS as readonly string[]).includes(key)) fail('boss: unknown kind');
+  }
   const boss = {} as Record<BossKind, Persona>;
   for (const kind of KINDS) {
     const p = rec(bossRaw[kind], `boss.${kind}`);

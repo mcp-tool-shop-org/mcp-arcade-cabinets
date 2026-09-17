@@ -5,86 +5,280 @@
  "beam_size": 1,
  "vad_filter": false,
  "language": "en",
- "read_from": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks",
- "beds": [
-  {
-   "key": "bash",
-   "characters": 0,
-   "text": "",
-   "segments": 0,
-   "min_no_speech_prob": null,
-   "mean_no_speech_prob": null,
-   "max_avg_logprob": null,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "csharp",
-   "characters": 1,
-   "text": "\ud83c\udfb5",
-   "segments": 1,
-   "min_no_speech_prob": 0.3674,
-   "mean_no_speech_prob": 0.3674,
-   "max_avg_logprob": -1.778,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "java",
-   "characters": 0,
-   "text": "",
-   "segments": 0,
-   "min_no_speech_prob": null,
-   "mean_no_speech_prob": null,
-   "max_avg_logprob": null,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "javascript",
-   "characters": 0,
-   "text": "",
-   "segments": 0,
-   "min_no_speech_prob": null,
-   "mean_no_speech_prob": null,
-   "max_avg_logprob": null,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "python",
-   "characters": 0,
-   "text": "",
-   "segments": 0,
-   "min_no_speech_prob": null,
-   "mean_no_speech_prob": null,
-   "max_avg_logprob": null,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "sql",
-   "characters": 31,
-   "text": "Thanks for watching! Yeah Oh Oh",
-   "segments": 4,
-   "min_no_speech_prob": 0.2698,
-   "mean_no_speech_prob": 0.5097,
-   "max_avg_logprob": -0.449,
-   "no_speech_everywhere": false
-  },
-  {
-   "key": "integration",
-   "characters": 0,
-   "text": "",
-   "segments": 0,
-   "min_no_speech_prob": null,
-   "mean_no_speech_prob": null,
-   "max_avg_logprob": null,
-   "no_speech_everywhere": false
-  }
+ "rule": "the transcript with known caption hallucinations removed as whole phrases and tokens, plus a token that is only ever repeated, must carry no remaining word; route M1 passes by construction and this gate is for generative pieces",
+ "caption_phrases": [
+  "this is the end of the video",
+  "thanks for watching",
+  "thank you",
+  "subtitles by",
+  "music",
+  "you",
+  "the",
+  "bye"
+ ],
+ "caption_tokens": [
+  "bye",
+  "music",
+  "thank",
+  "thanks",
+  "the",
+  "you"
  ],
  "no_speech_floor": 0.5,
- "misses": [
-  "csharp",
-  "sql"
- ],
- "misses_with_speech": [
-  "csharp",
-  "sql"
- ]
+ "installed": {
+  "beds": [
+   {
+    "key": "bash",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/bash.mp3",
+    "seconds": 120.0,
+    "transcript": "",
+    "characters": 0,
+    "remainder": "",
+    "removed": [],
+    "verdict": "clean",
+    "segments": 0,
+    "min_no_speech_prob": null,
+    "mean_no_speech_prob": null,
+    "max_avg_logprob": null,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "csharp",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/csharp.mp3",
+    "seconds": 125.0,
+    "transcript": "My Outro For My 21st Birthday",
+    "characters": 29,
+    "remainder": "my outro for my 21st birthday",
+    "removed": [],
+    "verdict": "word",
+    "segments": 1,
+    "min_no_speech_prob": 0.3674,
+    "mean_no_speech_prob": 0.3674,
+    "max_avg_logprob": -1.365,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "java",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/java.mp3",
+    "seconds": 120.0,
+    "transcript": "",
+    "characters": 0,
+    "remainder": "",
+    "removed": [],
+    "verdict": "clean",
+    "segments": 0,
+    "min_no_speech_prob": null,
+    "mean_no_speech_prob": null,
+    "max_avg_logprob": null,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "javascript",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/javascript.mp3",
+    "seconds": 125.0,
+    "transcript": "",
+    "characters": 0,
+    "remainder": "",
+    "removed": [],
+    "verdict": "clean",
+    "segments": 0,
+    "min_no_speech_prob": null,
+    "mean_no_speech_prob": null,
+    "max_avg_logprob": null,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "python",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/python.mp3",
+    "seconds": 115.0,
+    "transcript": "",
+    "characters": 0,
+    "remainder": "",
+    "removed": [],
+    "verdict": "clean",
+    "segments": 0,
+    "min_no_speech_prob": null,
+    "mean_no_speech_prob": null,
+    "max_avg_logprob": null,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "sql",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/sql.mp3",
+    "seconds": 120.0,
+    "transcript": "\ud83c\udfb6 Yeah Oh Oh",
+    "characters": 12,
+    "remainder": "yeah oh oh",
+    "removed": [],
+    "verdict": "word",
+    "segments": 4,
+    "min_no_speech_prob": 0.2698,
+    "mean_no_speech_prob": 0.5097,
+    "max_avg_logprob": -0.449,
+    "no_speech_everywhere": false
+   },
+   {
+    "key": "integration",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/apps/cabinets/public/vibe/tracks/integration.mp3",
+    "seconds": 125.0,
+    "transcript": "",
+    "characters": 0,
+    "remainder": "",
+    "removed": [],
+    "verdict": "clean",
+    "segments": 0,
+    "min_no_speech_prob": null,
+    "mean_no_speech_prob": null,
+    "max_avg_logprob": null,
+    "no_speech_everywhere": false
+   }
+  ],
+  "misses": [
+   "csharp",
+   "sql"
+  ],
+  "caption_only": [],
+  "clean": [
+   "bash",
+   "java",
+   "javascript",
+   "python",
+   "integration"
+  ]
+ },
+ "fresh": {
+  "beds": [
+   {
+    "key": "bash-8311",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/bash-8311.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.952,
+    "mean_no_speech_prob": 0.956,
+    "max_avg_logprob": -0.42,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "csharp-8312",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/csharp-8312.flac",
+    "seconds": 120.0,
+    "transcript": "I'll see you next time.",
+    "characters": 23,
+    "remainder": "i'll see next time",
+    "removed": [
+     "you"
+    ],
+    "verdict": "word",
+    "segments": 1,
+    "min_no_speech_prob": 0.7827,
+    "mean_no_speech_prob": 0.7827,
+    "max_avg_logprob": -0.988,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "java-8313",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/java-8313.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9432,
+    "mean_no_speech_prob": 0.9513,
+    "max_avg_logprob": -0.404,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "javascript-8314",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/javascript-8314.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9376,
+    "mean_no_speech_prob": 0.948,
+    "max_avg_logprob": -0.414,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "python-8315",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/python-8315.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9503,
+    "mean_no_speech_prob": 0.9556,
+    "max_avg_logprob": -0.421,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "sql-8316",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/sql-8316.flac",
+    "seconds": 120.0,
+    "transcript": "Thank you. Thank you.",
+    "characters": 21,
+    "remainder": "",
+    "removed": [
+     "thank you"
+    ],
+    "verdict": "caption only",
+    "segments": 2,
+    "min_no_speech_prob": 0.9406,
+    "mean_no_speech_prob": 0.9492,
+    "max_avg_logprob": -0.408,
+    "no_speech_everywhere": true
+   },
+   {
+    "key": "integration-8317",
+    "file": "E:/AI/mcp-arcade-cabinets/.swarm/worktrees/music-m1/docs/art/originals-vibe-beds-2min/fresh/integration-8317.flac",
+    "seconds": 120.0,
+    "transcript": "I'll see you next time.",
+    "characters": 23,
+    "remainder": "i'll see next time",
+    "removed": [
+     "you"
+    ],
+    "verdict": "word",
+    "segments": 1,
+    "min_no_speech_prob": 0.7995,
+    "mean_no_speech_prob": 0.7995,
+    "max_avg_logprob": -0.997,
+    "no_speech_everywhere": true
+   }
+  ],
+  "misses": [
+   "csharp-8312",
+   "integration-8317"
+  ],
+  "caption_only": [
+   "bash-8311",
+   "java-8313",
+   "javascript-8314",
+   "python-8315",
+   "sql-8316"
+  ],
+  "clean": []
+ }
 }

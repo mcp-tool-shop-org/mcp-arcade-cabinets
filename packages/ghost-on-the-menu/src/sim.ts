@@ -277,9 +277,14 @@ function hittable(state: RoundState, enemy: Enemy): boolean {
     const meta = metaOf.get(state);
     if (!meta || !decoysMayFire(meta)) return false;
   }
+  // On the field: a path that starts at the top edge spawns the hull half
+  // above it, and a shot that lands there kills a sprite the player has not
+  // seen (Grok's consult, defect one: the wobble deaths at y between -3 and
+  // 75 began here).
   return (
     enemy.alive &&
     state.t >= enemy.tEnter &&
+    enemy.y >= 0 &&
     enemy.mode !== 'caught' &&
     enemy.mode !== 'dying' &&
     enemy.mode !== 'exit'
@@ -1304,14 +1309,26 @@ function stepFormationFire(state: RoundState, meta: Meta, enemy: Enemy): void {
     maybeLedgerDump(state, meta, enemy);
     return;
   }
-  if (enemy.sprite !== 'grid' && enemy.sprite !== 'menu') return;
   if (meta.round.flavor && !flavorAllows(meta, 'rain')) return;
   if (isDecoy(enemy) && !decoysMayFire(meta)) return;
   const rhythm = meta.patterns.fire.tiers[fireKey(meta.round.tier)].formation;
   if (!rhythm) return;
-  if (enemy.mode !== 'hover') return;
+  if (!rhythm.shooters.includes(enemy.sprite)) return;
+  // From the hover, and, where the tier's lever says so, on the way in once
+  // the sprite is on the field. Hover alone was the whole game's silence: a
+  // player holding fire kills nearly every sprite on its entry path, so the
+  // formation never reached the mode it was allowed to shoot from.
+  const entering = rhythm.onEntry && enemy.mode === 'enter' && enemy.y >= 0;
+  if (enemy.mode !== 'hover' && enemy.mode !== 'dive' && !entering) return;
   const period = rhythm.period * fireScale(state, meta);
-  if (enemy.fireAt === Number.POSITIVE_INFINITY) enemy.fireAt = state.t + period;
+  // The cadence is armed from the sprite's entry, not from its first eligible
+  // tick (Grok's consult, defect two): a sprite used to pay the whole path
+  // and then a period more, which a measured lifetime of a second or two
+  // never reached. A sprite whose entry is in the future (a grid the boss
+  // launches later) arms when it enters.
+  if (enemy.fireAt === Number.POSITIVE_INFINITY && Number.isFinite(enemy.tEnter)) {
+    enemy.fireAt = enemy.tEnter + period * rhythm.firstShot;
+  }
   if (state.t < enemy.fireAt) return;
   enemy.fireAt = state.t + period;
   fireSpread(state.enemyShots, enemy.x + enemy.w / 2, enemy.y + enemy.h, rhythm);
@@ -1389,7 +1406,12 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
   state.player.x = Math.max(0, Math.min(FIELD.width - state.player.w, state.player.x));
 
   state.fireCooldown = Math.max(0, state.fireCooldown - dt);
-  if (input.fire && state.fireCooldown <= 0) {
+  // The rung's cap on shots in the air: a held button is a column, not a
+  // wall, so a formation can come onto the field and be shot at rather than
+  // shot on the frame it appears.
+  const inFlight = state.shots.length;
+  const mayFire = inFlight < (meta?.rung.shotsInFlight ?? Number.POSITIVE_INFINITY);
+  if (input.fire && state.fireCooldown <= 0 && mayFire) {
     const cx = state.player.x + state.player.w / 2;
     const y = state.player.y - SHOT_H;
     if (state.spreadT > 0) {
@@ -1443,6 +1465,10 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
     // Motion is class motion only. `lie` is not consulted here (G7).
     if (enemy.mode === 'dive') {
       stepDive(state, meta, enemy, dt);
+      // A diver keeps its gun (Grok's consult, defect three): the grid is
+      // both a shooter and the diver, and its dive clock beat its fire clock,
+      // so the one class that was half the formation's voice dived mute.
+      if (meta) stepFormationFire(state, meta, enemy);
       continue;
     }
     if (enemy.path.length > 0 && enemy.pathT < 1) {

@@ -124,6 +124,50 @@ describe('the gate halts', () => {
     expect(() => loadPatterns(raw)).toThrow('patterns/user.json: asks.bash.0.2');
   });
 
+  // `reactionsByTopicEnabled` was a one-character cliff with nothing behind
+  // it. Its own doc comment invited the flip, and flipping it re-lit a pool
+  // of fourteen hundred lines of which four hundred and sixty-one name a
+  // piece the request never asked for — the exact class the Director read on
+  // the published 0.11.0 — plus the tier pool behind it, which the by-topic
+  // path falls through to for a snippet whose topics have no pool of their
+  // own. Nothing measured either pool, and the loader took `true` without a
+  // further word. The flip is a gate now: turning it on means cleaning the
+  // pools first, and the halt names the line that is in the way.
+  it('refuses the by-topic lever while the pools it lights name pieces', () => {
+    const flipped = loose();
+    flipped.user!.reactionsByTopicEnabled = true;
+    expect(() => loadPatterns(flipped)).toThrow(/patterns\/user\.json: reaction/);
+
+    // Not a blanket refusal: pools that pass the rule load with the lever on.
+    // The fixture lines are built rather than authored — the shape the
+    // authoring run has to reach, in the fewest words that can carry it.
+    const heads = ['it is', 'that is', 'this is', 'it looks', 'that looks', 'this looks'];
+    const tails = ['neat', 'tidy', 'clean', 'clear', 'calm', 'solid'];
+    const neutral = heads.flatMap((head) => tails.map((tail) => `${head} ${tail}`));
+    const cleaned = () => {
+      const raw = loose();
+      raw.user!.reactionsByTopicEnabled = true;
+      raw.user!.reactionsByTopic = { loop: [neutral[0]!] };
+      raw.user!.reactions = { '0': [...neutral], '1': [...neutral], '2': [...neutral] };
+      return raw;
+    };
+    expect(() => loadPatterns(cleaned())).not.toThrow();
+
+    // One piece-naming line anywhere in either pool is enough to stop it.
+    const byTopic = cleaned();
+    byTopic.user!.reactionsByTopic = { loop: ['the button glows when you think about soup.'] };
+    expect(() => loadPatterns(byTopic)).toThrow('patterns/user.json: reactionsByTopic.loop.0');
+
+    const tierPool = cleaned();
+    const tiers = tierPool.user!.reactions as Record<string, string[]>;
+    tiers['1']![2] = 'the button glows when you think about soup.';
+    expect(() => loadPatterns(tierPool)).toThrow('patterns/user.json: reactions.1.2');
+
+    // The lever as it ships is off, and the pools load exactly as they are.
+    expect(RAW.user.reactionsByTopicEnabled).toBe(false);
+    expect(() => loadPatterns(loose())).not.toThrow();
+  });
+
   it('halts on a forbidden word, a model name, a yell and a long line', () => {
     const digit = clone(RAW);
     digit.agent.replies[0] = 'that is a fact about the build';
@@ -249,8 +293,16 @@ describe('the gate halts', () => {
     delete absent.user!.reactionsByTopicEnabled;
     expect(loadPatterns(absent).user.reactionsByTopicEnabled).toBe(false);
 
+    // Reading `true` and acting on it are two things: the loader will only
+    // take it over pools that pass the piece rule (the case below), so this
+    // one hands it such pools and then reads the lever back.
     const on = loose();
+    const heads = ['it is', 'that is', 'this is', 'it looks', 'that looks', 'this looks'];
+    const tails = ['neat', 'tidy', 'clean', 'clear', 'calm', 'solid'];
+    const neutral = heads.flatMap((head) => tails.map((tail) => `${head} ${tail}`));
     on.user!.reactionsByTopicEnabled = true;
+    on.user!.reactionsByTopic = { loop: [neutral[0]!] };
+    on.user!.reactions = { '0': [...neutral], '1': [...neutral], '2': [...neutral] };
     expect(loadPatterns(on).user.reactionsByTopicEnabled).toBe(true);
 
     const bad = loose();

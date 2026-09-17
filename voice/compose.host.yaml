@@ -23,9 +23,18 @@ services:
     # Optional operator tapes (read-only). Leave unset for the baked twenty.
     # volumes:
     #   - ${TAPES_USER}:/tapes-user:ro
+    #
+    # One `environment:` key, because a mapping may only have one: the file
+    # used to offer two commented blocks under this service and an operator
+    # who followed both invitations wrote a duplicate key, which Compose
+    # either rejects or resolves by dropping the tapes mount. Uncomment the
+    # header and whichever lines below it you want.
+    #
+    # `CABINET: vibe` runs the typing cabinet; unset or `ghost` is the
+    # shooter. VOICE_URL and VOICE_TOKEN are the host worker and are read by
+    # the shooter only — never on a Catalog run.
     # environment:
+    #   CABINET: vibe
     #   CABINET_TAPES_USER: /tapes-user
-    # Local voice (host worker). Uncomment only on a host run, never Catalog:
-    # environment:
     #   VOICE_URL: http://host.docker.internal:7788
     #   VOICE_TOKEN: ${VOICE_TOKEN}

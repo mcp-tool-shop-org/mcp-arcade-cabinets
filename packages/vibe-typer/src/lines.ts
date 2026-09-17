@@ -133,8 +133,23 @@ export class LinePicker {
    *
    * The tier pools stay in the lever file, behind the lever, for the
    * authoring run that will write reactions per request to land on.
+   *
+   * ONE PATH COMES BEFORE ALL OF THAT: a snippet that carries its own
+   * `reaction` says the line written beside its own ask, so the reaction
+   * answers the request the player just read. It is filled the way the ask
+   * is (`{product}` and nothing else), it honours the same `for` binding —
+   * a reaction leaning on one story's premise plays only in that level —
+   * and it spends NO draw from the generic bag and is not recorded as said,
+   * exactly as a snippet's own ask spends no draw from the template pool.
+   * Spending one would let a level's deploy verdict collide with a line the
+   * user never said.
    */
-  reaction(snippet: Snippet): string {
+  reaction(snippet: Snippet, product: string, levelId?: string): string {
+    const bound = typeof snippet.for === 'string' && snippet.for !== '';
+    const ownPlays = !bound || snippet.for === levelId;
+    if (typeof snippet.reaction === 'string' && snippet.reaction !== '' && ownPlays) {
+      return fill(snippet.reaction, product, snippet);
+    }
     if (this.set.user.reactionsByTopicEnabled) {
       for (const topic of snippet.topics) {
         const pool = this.set.user.reactionsByTopic[topic];

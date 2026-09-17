@@ -134,8 +134,17 @@ export interface EndlessAnswer {
 }
 
 // Bounds on what comes back, so a seat cannot post a novel through the
-// route into the gate. The gate would refuse it anyway; this keeps the
-// refusal cheap and the payload small.
+// route into the gate, and the refusal is cheap.
+//
+// They refuse; they do not clip. A clipped field used to be handed on as
+// though the model had written exactly that, and `gateCode` has no
+// total-length rule of its own — a cut that lands after a complete
+// statement in a brace-free language passes every check it does have, and
+// the player types code the model did not write. This package removed that
+// repair twice on purpose (vibe-cabinet.ts's `tooLong`, gate.ts's say);
+// the endless seat was the third copy and kept the old behavior. A refusal
+// here is `parseRequest` returning null, which is the documented fallback:
+// the corpus plays.
 const ASK_MAX = 200;
 const CODE_MAX = 2048;
 const TITLE_MAX = 80;
@@ -143,8 +152,10 @@ const NOTE_MAX = 200;
 const NOTES_MAX = 3;
 const PRODUCT_MAX = 80;
 
+/** A bounded string, or null — for a value that is not one, and for one over its cap. */
 function str(value: unknown, cap: number): string | null {
-  return typeof value === 'string' ? value.slice(0, cap) : null;
+  if (typeof value !== 'string') return null;
+  return value.length > cap ? null : value;
 }
 
 /** Pull the object out of an answer that may be fenced, prefaced or both. */
@@ -167,15 +178,26 @@ export function parseRequest(raw: unknown): EndlessRequest | null {
   const code = str(o.code, CODE_MAX);
   const title = str(o.title, TITLE_MAX);
   if (ask === null || code === null || title === null) return null;
-  const notes = Array.isArray(o.notes)
-    ? o.notes
-        .filter((n): n is string => typeof n === 'string')
-        .slice(0, NOTES_MAX)
-        .map((n) => n.slice(0, NOTE_MAX))
+  const kept = Array.isArray(o.notes)
+    ? o.notes.filter((n): n is string => typeof n === 'string').slice(0, NOTES_MAX)
     : [];
+  // One note over its cap refuses the whole request, the way an over-long
+  // ask does: a note is teaching text the player reads, and half a sentence
+  // is not what the seat wrote either.
+  const notes: string[] = [];
+  for (const n of kept) {
+    const note = str(n, NOTE_MAX);
+    if (note === null) return null;
+    notes.push(note);
+  }
   const out: EndlessRequest = { ask, code, title, notes };
-  const product = str(o.product, PRODUCT_MAX);
-  if (product !== null && product.trim() !== '') out.product = product;
+  // `product` is required by the schema and may be the empty string, which
+  // is how a seat says it has none; only an over-long one is a refusal.
+  if (typeof o.product === 'string') {
+    const product = str(o.product, PRODUCT_MAX);
+    if (product === null) return null;
+    if (product.trim() !== '') out.product = product;
+  }
   return out;
 }
 

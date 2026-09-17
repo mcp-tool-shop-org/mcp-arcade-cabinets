@@ -20,13 +20,16 @@
     },
     "1": {
       "formation": {
-        "period": 2.1,
+        "period": 1.8,
         "burst": 1,
         "spread": 0.08,
-        "speed": 180
+        "speed": 180,
+        "onEntry": true,
+        "firstShot": 0.3,
+        "shooters": ["init", "ready", "menu", "grid", "answer"]
       },
       "boss": {
-        "period": 5.75,
+        "period": 4.8,
         "burst": 1,
         "spread": 0.12,
         "speed": 80,
@@ -40,20 +43,23 @@
         }
       },
       "dive": {
-        "period": 2.1,
+        "period": 1.8,
         "speed": 130,
         "depth": 0.93
       }
     },
     "2": {
       "formation": {
-        "period": 3.45,
+        "period": 2.0,
         "burst": 1,
         "spread": 0.12,
-        "speed": 90
+        "speed": 120,
+        "onEntry": true,
+        "firstShot": 0.35,
+        "shooters": ["init", "ready", "menu", "grid", "answer"]
       },
       "boss": {
-        "period": 5.2,
+        "period": 4.2,
         "burst": 1,
         "spread": 0.22,
         "speed": 100,
@@ -67,23 +73,26 @@
         }
       },
       "dive": {
-        "period": 3.45,
+        "period": 2.0,
         "speed": 170,
         "depth": 0.95
       }
     },
     "3": {
       "formation": {
-        "period": 2.76,
+        "period": 1.6,
         "burst": 1,
-        "spread": 0.14,
-        "speed": 160
+        "spread": 0.16,
+        "speed": 180,
+        "onEntry": true,
+        "firstShot": 0.5,
+        "shooters": ["init", "ready", "menu", "grid", "answer"]
       },
       "boss": {
-        "period": 4.8,
+        "period": 3.6,
         "burst": 1,
-        "spread": 0.24,
-        "speed": 105,
+        "spread": 0.28,
+        "speed": 120,
         "aim": true,
         "pilot": {
           "fan": 4,
@@ -94,8 +103,8 @@
         }
       },
       "dive": {
-        "period": 2.76,
-        "speed": 180,
+        "period": 1.6,
+        "speed": 200,
         "depth": 0.95
       }
     }

@@ -40,6 +40,22 @@ run:
   volumes:
     - '{{mcp-arcade-cabinets.tapes}}:/tapes-user:ro'
   disableNetwork: true
+# Every variable the image reads, and which cabinet reads it. One set for the
+# cabinet that does not read it gets one path-free line on stderr at start, as
+# does a value that cabinet cannot use; nothing here is silently inert.
+#
+#   CABINET            both     ghost (or unset) is this listing's shooter, vibe is the typist
+#   CABINET_TAPES      both     where the tapes are (baked at /app/tapes)
+#   CABINET_TAPES_USER ghost    operator tapes merged beside the baked twenty
+#   CABINET_FIXTURE    ghost    which tape the round plays
+#   CABINET_TIER       both     zero to three; anything else is a note and the default (one on the shooter, zero on the typing cabinet)
+#   CABINET_SEED       both     a whole number; anything else is a note
+#   CABINET_BOT        vibe     the typist at the keyboard
+#   VOICE_URL          ghost    the host worker's base; empty (the Catalog default) is silent
+#   VOICE_TOKEN        ghost    the worker's bearer, when it binds beyond loopback
+#
+# Only CABINET_TAPES_USER is offered as a parameter here: the rest are for a
+# local build, and the Catalog cabinet plays the listing it describes.
 config:
   description: Optional host directory of extra .tape.json files, merged beside the baked twenty. Leave empty for the baked menu.
   env:

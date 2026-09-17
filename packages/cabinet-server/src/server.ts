@@ -26,6 +26,7 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createCabinet, type Cabinet } from './cabinet';
 import { assertCatalogTools, CONTRACT, type ToolDef } from './contract';
+import { setEnv, wholeEnv } from './env';
 import { hostForRound, tapeCards, type Live } from './host';
 import { createStepFaults, guardStep } from './step-guard';
 import { speakLine, voiceHealth } from './voice';
@@ -38,6 +39,14 @@ export const VOICE_AUTH_FRESH_MS = 1000;
 
 /** The host-side voice worker; in the Catalog container, host.docker.internal. */
 export const DEFAULT_VOICE_URL = 'http://127.0.0.1:7788';
+
+/** The tier a round plays at when the operator names none. */
+export const DEFAULT_TIER = 1;
+/** The tier as a word: a note to the operator carries no digit, like every other surface (Kimi, wave 5). */
+const TIER_WORDS = ['zero', 'one', 'two', 'three'] as const;
+
+/** The fixture a round plays when the operator names none. */
+export const DEFAULT_FIXTURE = 'naive-ndjson';
 
 export const SERVER_NAME = 'ghost-on-the-menu';
 export const SERVER_VERSION = '0.11.1';
@@ -106,10 +115,19 @@ function checkCatalogListing(): void {
   assertCatalogTools(JSON.parse(raw) as unknown);
 }
 
+/**
+ * Enums and bounded strings, and a property the contract does not list under
+ * `required` is optional at the transport. It used to be required whatever
+ * the contract said, so a contract could not express an optional field at
+ * all — which the typing cabinet's `react` now needs for its tag.
+ */
 function zodShape(def: ToolDef) {
   const shape: Record<string, z.ZodTypeAny> = {};
+  const needed = new Set(def.inputSchema.required);
   for (const [k, p] of Object.entries(def.inputSchema.properties)) {
-    shape[k] = 'enum' in p ? z.enum(p.enum as [string, ...string[]]) : z.string().max(p.maxLength);
+    const base =
+      'enum' in p ? z.enum(p.enum as [string, ...string[]]) : z.string().max(p.maxLength);
+    shape[k] = needed.has(k) ? base : base.optional();
   }
   return shape;
 }
@@ -132,13 +150,13 @@ export interface HeadlessOpts {
 export function headlessRound(opts: HeadlessOpts = {}) {
   const dir = opts.tapesDir ?? DEFAULT_TAPES_DIR;
   const tapes = listTapes(dir, opts.tapesUserDir);
-  const fixture = opts.fixture ?? 'naive-ndjson';
+  const fixture = opts.fixture ?? DEFAULT_FIXTURE;
   const found = tapes.find((t) => t.name === fixture);
   if (!found) {
     const loaded = tapes.map((t) => t.name).join(', ') || 'none';
     throw new Error(`fixture ${fixture} is not on the menu (loaded: ${loaded})`);
   }
-  const tier = opts.tier ?? 1;
+  const tier = opts.tier ?? DEFAULT_TIER;
   const makeRound = (): Round =>
     prepassRound(found.tape, {
       seconds: DEFAULT_SECONDS,
@@ -264,18 +282,95 @@ export function buildServer(cabinet: Cabinet): McpServer {
   return server;
 }
 
+/**
+ * A worker base this cabinet can actually fetch, or null.
+ *
+ * VOICE_URL used to be passed through whole. A value with no scheme or a
+ * typo'd host makes every fetch in `voiceHealth`/`speakLine` throw a
+ * TypeError, both of which swallow it and answer 'no worker' — the same
+ * words an absent worker gets, for the rest of the session, with nothing
+ * said at start. A bare `host.docker.internal:7788` is the shape that does
+ * it, and `new URL` alone would accept it (as a scheme), so the scheme is
+ * checked too.
+ */
+function voiceUrlOf(raw: string): string | null {
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The operator's environment, read once and said out loud — the shooter's
+ * twin of `vibeEnv` next door, and for the same reason.
+ *
+ * This server used to spread five raw `process.env` reads into `HeadlessOpts`
+ * with no validation and no notes, and read neither CABINET_TIER nor
+ * CABINET_SEED at all although both are opts here. An operator who set
+ * CABINET_TIER on the shooter — the cabinet the Catalog listing describes —
+ * played tier one and was told nothing.
+ *
+ * Pure, and the environment never wins over an explicit `opts`, so the lines
+ * can be read in a test instead of out of a spawned process.
+ */
+export function ghostEnv(
+  env: Record<string, string | undefined>,
+  opts: HeadlessOpts = {},
+): { opts: HeadlessOpts; notes: string[] } {
+  const notes: string[] = [];
+  const out: HeadlessOpts = {};
+
+  if (opts.fixture === undefined && setEnv(env.CABINET_FIXTURE)) out.fixture = env.CABINET_FIXTURE;
+  if (opts.tapesDir === undefined && setEnv(env.CABINET_TAPES)) out.tapesDir = env.CABINET_TAPES;
+  if (opts.tapesUserDir === undefined && setEnv(env.CABINET_TAPES_USER)) {
+    out.tapesUserDir = env.CABINET_TAPES_USER;
+  }
+
+  const seed = wholeEnv(env.CABINET_SEED);
+  if (opts.seed === undefined) {
+    if (seed !== null) out.seed = seed;
+    else if (setEnv(env.CABINET_SEED)) {
+      notes.push('CABINET_SEED was not understood; the cabinet draws its own\n');
+    }
+  }
+
+  const tier = wholeEnv(env.CABINET_TIER);
+  if (opts.tier === undefined) {
+    if (tier !== null && tier >= 0 && tier <= 3) out.tier = tier as 0 | 1 | 2 | 3;
+    else if (setEnv(env.CABINET_TIER)) {
+      notes.push(
+        `CABINET_TIER was not understood; the cabinet plays at tier ${TIER_WORDS[DEFAULT_TIER]}\n`,
+      );
+    }
+  }
+
+  // Read by the typing cabinet, never here: this round is always the sweeper.
+  if (setEnv(env.CABINET_BOT)) {
+    notes.push('CABINET_BOT is read by the typing cabinet only; this cabinet plays its own bot\n');
+  }
+
+  if (opts.voiceUrl === undefined && env.VOICE_URL !== undefined) {
+    const raw = env.VOICE_URL.trim();
+    const url = raw === '' ? null : voiceUrlOf(raw);
+    // An empty VOICE_URL is the Catalog's own silent default and says
+    // nothing; one that cannot be read says so once and then plays silent.
+    if (raw !== '' && url === null) {
+      notes.push('the voice url was not understood; the cabinet plays silent\n');
+    }
+    out.voiceUrl = url;
+  }
+  if (opts.voiceToken === undefined && setEnv(env.VOICE_TOKEN)) out.voiceToken = env.VOICE_TOKEN;
+
+  return { opts: { ...out, ...opts }, notes };
+}
+
 export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   checkCatalogListing();
-  const h = headlessRound({
-    ...(process.env.CABINET_FIXTURE ? { fixture: process.env.CABINET_FIXTURE } : {}),
-    ...(process.env.CABINET_TAPES ? { tapesDir: process.env.CABINET_TAPES } : {}),
-    ...(process.env.CABINET_TAPES_USER ? { tapesUserDir: process.env.CABINET_TAPES_USER } : {}),
-    ...(process.env.VOICE_URL !== undefined
-      ? { voiceUrl: process.env.VOICE_URL === '' ? null : process.env.VOICE_URL }
-      : {}),
-    ...(process.env.VOICE_TOKEN ? { voiceToken: process.env.VOICE_TOKEN } : {}),
-    ...opts,
-  });
+  const read = ghostEnv(process.env, opts);
+  for (const note of read.notes) process.stderr.write(note);
+  const h = headlessRound(read.opts);
   const server = buildServer(h.cabinet);
   let last = Date.now();
   // A throw from the sim is a quiet round, never a dead server (see step-guard).

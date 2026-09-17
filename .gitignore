@@ -28,6 +28,15 @@ docs/art/originals-vibe-4/
 # the flac masters ACE-Step wrote for the bed batch; the cabinet ships the mp3s
 docs/art/originals-vibe-beds/
 
+# the originals, stems, arranged masters and fresh auditions for Ghost's
+# two-minute beds; the cabinet ships the mp3s under apps/cabinets/public/tracks
+docs/art/originals-ghost-beds/
+
+# the same evidence for Vibe Typer's seven beds: the 38 s originals, the
+# whole-bar loops cut from their masters, the stems, the arranged and mastered
+# pieces and the fresh auditions
+docs/art/originals-vibe-beds-2min/
+
 # frames from `pnpm film` (a dev tool, not a test)
 film/
 site/.astro/
@@ -45,3 +54,6 @@ site/public/play/
 # Claude Code worktrees and local settings
 .claude/
 docs/art/originals-vibe-5/
+
+# The audition page for the Director's listen: served locally, never shipped.
+site/public/audition/

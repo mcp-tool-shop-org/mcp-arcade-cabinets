@@ -70,6 +70,20 @@ CAST_FALLBACK = ('whisperer', 'menu', 'doorman', 'archivist')
 # and non-Latin letters — no traversal, but it did not describe the set.
 TAKE_ID = re.compile(r'[0-9a-f]{20}')
 
+# Classes of miss already said once. `log_message` is silenced outright, so
+# stderr is the only place a refusal can surface — and /stats, the one
+# endpoint that carries counters, is itself behind the bearer, which is
+# exactly the thing an operator with a wrong token cannot read.
+SAID: set[str] = set()
+
+
+def _note(key: str, line: str) -> None:
+    """One stderr line the first time a class of miss happens, then quiet."""
+    if key in SAID:
+        return
+    SAID.add(key)
+    sys.stderr.write(line)
+
 
 def cast_kinds(path: Path = PERSONAS) -> tuple[str, ...]:
     """The boss kinds, read from the persona sheets the cabinet ships.
@@ -83,6 +97,13 @@ def cast_kinds(path: Path = PERSONAS) -> tuple[str, ...]:
         kinds = tuple(k for k in raw['boss'] if isinstance(k, str) and k.isascii() and k.isalpha())
     except (OSError, ValueError, KeyError, TypeError):
         kinds = ()
+    if not kinds:
+        # Said out loud, once, and path-free. A silent fallback re-opens the
+        # exact hole this function was written to close: a boss missing from
+        # the hint is the name the ASR misspells and the receipt refuses, and
+        # the operator's only symptom would be takes that quietly stop
+        # passing. Every other miss in this file says one line too.
+        _note('cast', 'voice: persona sheets did not load; the recognition hint is the built-in cast\n')
     return kinds or CAST_FALLBACK
 
 
@@ -277,7 +298,18 @@ class Voice:
 
 VOICE: Voice | None = None
 TOKEN: str | None = None
-STATS = {'spoken': 0, 'cached': 0, 'refused': 0, 'started': time.time()}
+# `receipt_failed` was called `refused`, which is not what the word means on
+# the other side of this wire: `SpeakAnswer.refused` in the TypeScript client
+# is an HTTP 400 or 401, and this counts a take whose spoken-content receipt
+# did not pass. Anyone reading both surfaces while debugging a silent cabinet
+# was told two different stories with one word.
+#
+# `auth` and `bad_request` are the two refusals that had no counter at all: a
+# 401 and the whole 400 family returned without touching STATS, so a client
+# sending a malformed job, or an operator whose VOICE_TOKEN does not match,
+# left no trace anywhere the operator could reach.
+STATS = {'spoken': 0, 'cached': 0, 'receipt_failed': 0, 'auth': 0, 'bad_request': 0,
+         'started': time.time()}
 # POST /speak: reject before read. Never rfile.read(-1).
 MAX_SPEAK_BODY = 4096
 MAX_KIND = 32
@@ -309,6 +341,20 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _refuse(self, code: int, error: str):
+        """A 401 or a 400, counted and said once so it is not invisible.
+
+        /health stays liveness only and carries none of this; /stats keeps
+        the counters, for the operator whose bearer does work.
+        """
+        if code == 401:
+            STATS['auth'] += 1
+            _note('auth', 'voice: a request arrived without a usable bearer token\n')
+        elif code == 400:
+            STATS['bad_request'] += 1
+            _note('bad_request', 'voice: a job was refused as malformed; nothing was spoken\n')
+        return self._json(code, {'error': error})
+
     def _allowed(self) -> bool:
         """With VOICE_TOKEN set, /speak and /audio need the bearer; /health never does.
 
@@ -330,7 +376,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {'ok': True, 'engine': 'kokoro-onnx'})
         if path == '/stats':
             if not self._allowed():
-                return self._json(401, {'error': 'a bearer token is required'})
+                return self._refuse(401, 'a bearer token is required')
             return self._json(200, {
                 'ok': True,
                 'engine': 'kokoro-onnx',
@@ -342,7 +388,7 @@ class Handler(BaseHTTPRequestHandler):
             })
         if path.startswith('/audio/') and path.endswith('.wav'):
             if not self._allowed():
-                return self._json(401, {'error': 'a bearer token is required'})
+                return self._refuse(401, 'a bearer token is required')
             lid = path[len('/audio/'):-4]
             if not TAKE_ID.fullmatch(lid):
                 return self._json(404, {'error': 'no such take'})
@@ -373,23 +419,23 @@ class Handler(BaseHTTPRequestHandler):
         if path != '/speak':
             return self._json(404, {'error': 'no such path'})
         if not self._allowed():
-            return self._json(401, {'error': 'a bearer token is required'})
+            return self._refuse(401, 'a bearer token is required')
         raw_len = self.headers.get('content-length')
         if raw_len is None:
-            return self._json(400, {'error': 'bad content-length'})
+            return self._refuse(400, 'bad content-length')
         try:
             n = int(raw_len)
         except (TypeError, ValueError):
-            return self._json(400, {'error': 'bad content-length'})
+            return self._refuse(400, 'bad content-length')
         if n < 0 or n > MAX_SPEAK_BODY:
-            return self._json(400, {'error': 'bad content-length'})
+            return self._refuse(400, 'bad content-length')
         raw_body = self.rfile.read(n)
         try:
             body = json.loads(raw_body)
         except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-            return self._json(400, {'error': 'bad json'})
+            return self._refuse(400, 'bad json')
         if not isinstance(body, dict):
-            return self._json(400, {'error': 'bad json'})
+            return self._refuse(400, 'bad json')
         try:
             text = str(body.get('text', '')).strip()
             preset = str(body.get('preset', 'am_michael'))
@@ -398,17 +444,17 @@ class Handler(BaseHTTPRequestHandler):
             loudness = float(body.get('loudness', 0.0))
             max_gap = float(body.get('max_gap_s', 0.5))
         except (TypeError, ValueError):
-            return self._json(400, {'error': 'bad request'})
+            return self._refuse(400, 'bad request')
         if len(kind) > MAX_KIND or len(preset) > MAX_PRESET:
-            return self._json(400, {'error': 'kind or preset too long'})
+            return self._refuse(400, 'kind or preset too long')
         if not (0.1 <= max_gap <= 3.0):
-            return self._json(400, {'error': 'max_gap_s out of range'})
+            return self._refuse(400, 'max_gap_s out of range')
         if not text or len(text) > 200:
-            return self._json(400, {'error': 'text must be one short line'})
+            return self._refuse(400, 'text must be one short line')
         if preset not in VOICE.voices:
-            return self._json(400, {'error': 'no such voice'})
+            return self._refuse(400, 'no such voice')
         if not (0.5 <= rate <= 2.0) or not (-24.0 <= loudness <= 12.0):
-            return self._json(400, {'error': 'rate or loudness out of range'})
+            return self._refuse(400, 'rate or loudness out of range')
         try:
             receipt = VOICE.speak(text, preset, rate, loudness, kind, max_gap)
         except Exception as err:  # noqa: BLE001
@@ -419,7 +465,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             STATS['spoken'] += 1
         if not receipt['ok']:
-            STATS['refused'] += 1
+            STATS['receipt_failed'] += 1
         out = dict(receipt)
         out['url'] = f"/audio/{receipt['id']}.wav" if receipt['ok'] else None
         return self._json(200, out)

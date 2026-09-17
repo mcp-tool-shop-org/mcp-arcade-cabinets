@@ -20,6 +20,15 @@ export interface CabinetSpec {
  */
 export const VIBE_TRACK_KEYS: string[];
 
+/**
+ * The shooter's recorded beds, one a wave and a boss. Exported for the same
+ * reason as the list above: the gate's list is the one a test may read.
+ */
+export const GHOST_TRACK_KEYS: string[];
+
+/** The least a recorded bed may weigh in a tarball, in bytes. */
+export const BED_MIN_BYTES: number;
+
 /** Write the lines to stderr and `process.exit(1)`. */
 export function halt(lines: string[]): never;
 

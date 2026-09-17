@@ -1,7 +1,11 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
+import personasJson from '../personas.json';
 import { FORBIDDEN } from '../src/gate';
-import { DEFAULT_PERSONAS, loadPersonas } from '../src/personas';
+import { BOSS_KINDS, DEFAULT_PERSONAS, loadPersonas } from '../src/personas';
 
 function clone(): Record<string, unknown> {
   return JSON.parse(JSON.stringify(DEFAULT_PERSONAS)) as Record<string, unknown>;
@@ -75,5 +79,37 @@ describe('personas.json', () => {
       >
     ).preset = 'Robot 9';
     expect(() => loadPersonas(preset)).toThrow('boss.doorman.voice.preset');
+  });
+});
+
+describe('the boss kinds are one list, four places', () => {
+  it('is the list the sim itself keeps', () => {
+    // `BOSS_KINDS` over in the sim is `const` and not exported — only the
+    // derived type is — so the loader's copy is pinned to that file's source
+    // the way patterns.test.ts pins VOICE_FORBIDDEN. If the sim gains a
+    // fifth kind, this is what says so.
+    const file = path.resolve('packages/ghost-on-the-menu/src/patterns.ts');
+    const source = readFileSync(file, 'utf8');
+    const match = /const BOSS_KINDS = \[([^\]]*)\] as const;/.exec(source);
+    expect(match).not.toBeNull();
+    const sim = match![1]!
+      .split(',')
+      .map((s) => s.trim().replace(/^'|'$/g, ''))
+      .filter((s) => s !== '');
+    expect(sim).toEqual([...BOSS_KINDS]);
+  });
+
+  it('is exactly what the shipped sheets carry', () => {
+    expect(Object.keys(personasJson.boss)).toEqual([...BOSS_KINDS]);
+  });
+
+  it('halts at load on a sheet for a kind it does not know', () => {
+    // It used to load green and be silently ignored, which is the same
+    // silence that would let a fifth kind reach `personas.boss[kind]`
+    // undefined and throw a TypeError inside a `speak` call instead.
+    const extra = clone();
+    const boss = extra.boss as Record<string, unknown>;
+    boss.usher = JSON.parse(JSON.stringify(boss.doorman)) as unknown;
+    expect(() => loadPersonas(extra)).toThrow('personas.json: boss: unknown kind');
   });
 });

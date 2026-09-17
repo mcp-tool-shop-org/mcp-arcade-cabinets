@@ -26,7 +26,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The pack script is plain node; `scripts/build.d.mts` declares the surface a
 // test may call, so this import is typed rather than `any`.
-import { checkDist, halt, VIBE_TRACK_KEYS } from '../scripts/build.mjs';
+import {
+  BED_MIN_BYTES,
+  checkDist,
+  GHOST_TRACK_KEYS,
+  halt,
+  VIBE_TRACK_KEYS,
+} from '../scripts/build.mjs';
 
 /**
  * The seven stacks, read off the gate itself. It was a fourth hand-copy of
@@ -35,6 +41,23 @@ import { checkDist, halt, VIBE_TRACK_KEYS } from '../scripts/build.mjs';
  * bed was left out of the tarball.
  */
 const BEDS = VIBE_TRACK_KEYS;
+
+/**
+ * The shooter's eight, read off the gate the same way. The shooter's beds were
+ * a directory-only requirement until the music pass made each one a
+ * two-minute piece; the requirement is per file now, and a gate nobody has
+ * watched go red is a gate nobody knows the shape of.
+ */
+const GHOST_BEDS = GHOST_TRACK_KEYS;
+
+/** Where each cabinet keeps its beds inside `play/`. */
+const TRACK_DIR: Record<Cabinet, string[]> = {
+  ghost: ['tracks'],
+  vibe: ['vibe', 'tracks'],
+};
+
+/** The beds each cabinet's package must carry, by key. */
+const CABINET_BEDS: Record<Cabinet, string[]> = { ghost: GHOST_BEDS, vibe: BEDS };
 
 type Cabinet = 'ghost' | 'vibe';
 
@@ -64,8 +87,10 @@ const STDIO: Record<Cabinet, string> = {
 
 interface Fake {
   cabinet: Cabinet;
-  /** Beds not to write, for the typing cabinet. */
+  /** Beds not to write, whichever cabinet's beds those are. */
   leaveOut?: string[];
+  /** Beds to write as a stub: present, and far under what a bed weighs. */
+  thin?: string[];
   /** A needle to leave out of the play bundle. */
   dropNeedle?: string;
   /** A string to write into the play bundle that does not belong to this cabinet. */
@@ -89,7 +114,7 @@ async function buildFakeDist(pkg: string, fake: Fake): Promise<void> {
   const play = path.join(dist, 'play');
   if (!fake.noAssets) await mkdir(path.join(play, 'assets'), { recursive: true });
   for (const dir of PUBLIC[cabinet]) await mkdir(path.join(play, dir), { recursive: true });
-  if (cabinet === 'vibe') await mkdir(path.join(play, 'vibe', 'tracks'), { recursive: true });
+  await mkdir(path.join(play, ...TRACK_DIR[cabinet]), { recursive: true });
   if (fake.stray) await mkdir(path.join(play, fake.stray), { recursive: true });
   await mkdir(path.join(dist, 'tapes'), { recursive: true });
   for (const f of ['cli.js', 'cabinet-server.js']) await writeFile(path.join(dist, f), '');
@@ -100,11 +125,13 @@ async function buildFakeDist(pkg: string, fake: Fake): Promise<void> {
     if (fake.plant) marks.push(fake.plant);
     await writeFile(path.join(play, 'assets', 'index-fake.js'), marks.join('\n'));
   }
-  if (cabinet === 'vibe') {
-    for (const key of BEDS) {
-      if (fake.leaveOut?.includes(key)) continue;
-      await writeFile(path.join(play, 'vibe', 'tracks', `${key}.mp3`), '');
-    }
+  for (const key of CABINET_BEDS[cabinet]) {
+    if (fake.leaveOut?.includes(key)) continue;
+    // A bed that passes weighs what a bed weighs. The bytes are nothing, but
+    // the gate reads the size and a zero-byte file is the failure under test
+    // two cases down.
+    const body = fake.thin?.includes(key) ? Buffer.alloc(64) : Buffer.alloc(BED_MIN_BYTES);
+    await writeFile(path.join(play, ...TRACK_DIR[cabinet], `${key}.mp3`), body);
   }
 }
 
@@ -189,6 +216,21 @@ describe('the pack gate over the typing cabinet', () => {
     // And only that one: six beds out of seven is the failure a directory
     // check would have waved through, so the message has to be specific.
     for (const key of BEDS.filter((k) => k !== 'sql')) {
+      expect(said, key).not.toContain(path.join('tracks', `${key}.mp3`));
+    }
+  });
+
+  // Presence was the whole check until the beds became two-minute pieces. A
+  // truncated or placeholder copy is present, passes, and reaches the registry
+  // as a stack whose music is a fraction of a second.
+  it('halts naming a bed that is there and is far too small to be one', async () => {
+    const pkg = await fakePackage({ cabinet: 'vibe', thin: ['java'] });
+    const { halted, said } = await runGate(pkg, 'vibe');
+    expect(halted).toBe(true);
+    expect(said).toContain('@mcptoolshop/vibe-typer');
+    expect(said).toContain(path.join('play', 'vibe', 'tracks', 'java.mp3'));
+    expect(said).toContain('too small');
+    for (const key of BEDS.filter((k) => k !== 'java')) {
       expect(said, key).not.toContain(path.join('tracks', `${key}.mp3`));
     }
   });
@@ -321,6 +363,43 @@ describe('the pack gate over the shooter', () => {
     const { halted, said } = await runGate(pkg, 'ghost');
     expect(said).toBe('');
     expect(halted).toBe(false);
+  });
+
+  it('halts naming the bed that is missing, and only that one', async () => {
+    // The shooter's beds are 110-128 s pieces since the music pass. A bed left
+    // out of the tarball is silent at run time by design — the chiptune keeps
+    // the round — so the tarball is the only place it can be caught, and this
+    // is the halt that catches it.
+    const pkg = await fakePackage({ cabinet: 'ghost', leaveOut: ['doorman'] });
+    const { halted, said } = await runGate(pkg, 'ghost');
+    expect(halted).toBe(true);
+    expect(said).toContain('@mcptoolshop/ghost-on-the-menu');
+    expect(said).toContain(path.join('play', 'tracks', 'doorman.mp3'));
+    expect(said).toContain('pnpm build:launcher');
+    for (const key of GHOST_BEDS.filter((k) => k !== 'doorman')) {
+      expect(said, key).not.toContain(path.join('tracks', `${key}.mp3`));
+    }
+  });
+
+  it('halts on every bed when none of them were copied', async () => {
+    const pkg = await fakePackage({ cabinet: 'ghost', leaveOut: GHOST_BEDS });
+    const { halted, said } = await runGate(pkg, 'ghost');
+    expect(halted).toBe(true);
+    for (const key of GHOST_BEDS) {
+      expect(said, key).toContain(path.join('play', 'tracks', `${key}.mp3`));
+    }
+  });
+
+  it('halts naming a bed that is there and is far too small to be one', async () => {
+    const pkg = await fakePackage({ cabinet: 'ghost', thin: ['whisperer'] });
+    const { halted, said } = await runGate(pkg, 'ghost');
+    expect(halted).toBe(true);
+    expect(said).toContain('@mcptoolshop/ghost-on-the-menu');
+    expect(said).toContain(path.join('play', 'tracks', 'whisperer.mp3'));
+    expect(said).toContain('too small');
+    // The floor is under the lightest bed the cabinet ships (1.69 MB) and
+    // over anything a truncated write leaves behind.
+    expect(BED_MIN_BYTES).toBeLessThan(1.69 * 1024 * 1024);
   });
 
   it('halts naming the layout it is missing', async () => {

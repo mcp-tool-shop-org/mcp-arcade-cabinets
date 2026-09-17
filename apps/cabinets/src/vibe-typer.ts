@@ -56,9 +56,11 @@ import { PIECE_KINDS, pieceKindOf, type PieceKind } from './typer-tiles';
 import {
   createTyperAudio,
   DEFAULT_MUSIC,
+  domBedMaker,
   isMusicMode,
   isTheme,
   type MusicMode,
+  type SampleState,
   type Theme,
   type TyperAudio,
   type VibeTrackKey,
@@ -343,9 +345,28 @@ export function readVibePrefs(): VibePrefs {
   }
 }
 
+/**
+ * What is under the key, unvalidated. Ghost's `rawPrefs`, for the same reason:
+ * `readVibePrefs` is a strict allowlist, so merging a patch over IT drops every
+ * field this build does not know about, and the settings row writes on every
+ * change. A pref this build has never heard of belongs to whichever build
+ * wrote it, so the merge is over the raw object and the validating stays on
+ * the read.
+ */
+function rawVibePrefs(): Record<string, unknown> {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return { ...(parsed as Record<string, unknown>) };
+  } catch {
+    return {};
+  }
+}
+
 export function writeVibePrefs(patch: VibePrefs): void {
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...readVibePrefs(), ...patch }));
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...rawVibePrefs(), ...patch }));
   } catch {
     /* a private window or blocked storage: the game still plays */
   }
@@ -712,6 +733,40 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     controls.append(voiceLabel, voiceStat);
   }
 
+  // ——— what the cabinet's own files are doing ——————————————————————————————
+  //
+  // Ghost carries 'art: using blocks' and 'music: chiptune' in a chrome span
+  // and this cabinet carried nothing: a keyboard whose eight samples never
+  // arrived fell back to the procedural click for the rest of the run without
+  // a word, and a device frame that never loaded drew as rectangles the same
+  // way. In a game whose product is the keyboard under the player's hands,
+  // that is the degradation most worth naming. The recorded beds are not
+  // reported from here — their loader is the music branch's, and the word for
+  // a bed belongs with it.
+  const chrome = el('span', 'muted seat', '');
+  liveStatus(chrome, 'cabinet');
+  controls.append(chrome);
+  /** The words the chrome is carrying, in the order they were first raised. */
+  const chromeWords = new Set<string>();
+  const chromeWord = (word: string, on: boolean) => {
+    if (on) chromeWords.add(word);
+    else chromeWords.delete(word);
+    const text = [...chromeWords].join(' · ');
+    // A live region that is rewritten with the text it already has announces
+    // itself again for nothing.
+    if (chrome.textContent !== text) chrome.textContent = text;
+  };
+  const KEYS_GONE = 'keys: using clicks';
+  const KEYS_SLOW = 'keys: slow, using clicks';
+  const ART_GONE = 'art: using blocks';
+  const SOUND_ASLEEP = 'sound: asleep, click to wake';
+  const SOUND_GONE = 'sound: not on this browser';
+  /** The engine's own word about its sample set, turned into the chrome's. */
+  const sampleWord = (state: SampleState) => {
+    chromeWord(KEYS_GONE, state === 'missing');
+    chromeWord(KEYS_SLOW, state === 'timeout');
+  };
+
   // The hint names what the player can see and nothing else. It used to say
   // "when the ghost offers it": the sibling cabinet on this menu is called
   // Ghost on the Menu, so that word read as the shooter's grammar rather
@@ -736,14 +791,32 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
   // image and a Pages build without `vibe/frames/` still plays. Nothing here
   // runs in jsdom, where `Image` is never handed a loaded file.
   const frames = new Map<DeviceKind, HTMLImageElement>();
+  /** The device kinds whose picture is not there; the chrome says so once. */
+  const framesGone = new Set<DeviceKind>();
   if (typeof Image !== 'undefined') {
     for (const kind of DEVICE_KINDS) {
       const img = new Image();
       img.decoding = 'async';
       // Each fires once and detaches; a load that lands after unmount writes
       // into a Map nothing reads any more (the review's first change).
-      img.addEventListener('load', () => frames.set(kind, img), { once: true });
-      img.addEventListener('error', () => frames.delete(kind), { once: true });
+      img.addEventListener(
+        'load',
+        () => {
+          frames.set(kind, img);
+          framesGone.delete(kind);
+          chromeWord(ART_GONE, framesGone.size > 0);
+        },
+        { once: true },
+      );
+      img.addEventListener(
+        'error',
+        () => {
+          frames.delete(kind);
+          framesGone.add(kind);
+          chromeWord(ART_GONE, true);
+        },
+        { once: true },
+      );
       img.src = `${import.meta.env.BASE_URL}vibe/frames/${kind}.png`;
     }
   }
@@ -882,22 +955,94 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     canvas.setAttribute('aria-label', previewLabel(plan.product));
   };
 
-  const ensureAudio = () => {
-    if (audio || typeof AudioContext === 'undefined') return;
+  /** The context this mount built, kept so a browser that sleeps it can be asked. */
+  let audioCtx: AudioContext | null = null;
+  /** A construction that threw is tried once, not once a gesture. */
+  let audioFailed = false;
+  /**
+   * `resume()` was called exactly once, from inside a guard that returns early
+   * for good once the engine exists — so a context the browser suspended AFTER
+   * the first gesture (an interruption on a phone, a tab restored, WebKit's
+   * own `interrupted`, which is not 'suspended' and never matched a test for
+   * it) stayed asleep for the rest of the run with nothing said. Every state
+   * but 'running' is asked to come back, on every gesture and whenever the
+   * context says its state changed; a refusal gets a word on the chrome row.
+   */
+  const wakeAudio = () => {
+    const ctxNow = audioCtx;
+    if (left || !ctxNow || ctxNow.state === 'running') return;
+    const settled = (ok: boolean) => {
+      if (left) return;
+      chromeWord(SOUND_ASLEEP, !(ok && ctxNow.state === 'running'));
+    };
     try {
-      const base = import.meta.env.BASE_URL || '/';
-      audio = createTyperAudio(new AudioContext(), base, planOf(state).seed);
-      audio.setTheme(opts.theme);
-      audio.setMusic(music);
-      // The level's stack, before the first tick: it is what asks for this
-      // stack's recorded bed, and the engine is built on the first gesture.
-      audio.setStack(planOf(state).stack);
-      audio.setMuted(muted);
-      audio.resume();
+      void Promise.resolve(ctxNow.resume()).then(
+        () => settled(true),
+        () => settled(false),
+      );
     } catch {
-      audio = null;
+      settled(false);
     }
   };
+  const onCtxState = () => wakeAudio();
+  const ensureAudio = () => {
+    if (audio) {
+      // A gesture is also the moment to wake a context that went to sleep.
+      wakeAudio();
+      return;
+    }
+    if (audioFailed || typeof AudioContext === 'undefined') return;
+    // The context is built into a local first: constructed inline as an
+    // argument, a `createTyperAudio` that threw after the context existed left
+    // it unreachable and never closed, and the guard above — back to null —
+    // let the next gesture build another. A page may hold only a few, so that
+    // ended with construction itself throwing for good, silently.
+    let built: AudioContext | null = null;
+    try {
+      const base = import.meta.env.BASE_URL || '/';
+      built = new AudioContext();
+      const out = createTyperAudio(built, base, planOf(state).seed, domBedMaker, sampleWord);
+      out.setTheme(opts.theme);
+      out.setMusic(music);
+      // The level's stack, before the first tick: it is what asks for this
+      // stack's recorded bed, and the engine is built on the first gesture.
+      out.setStack(planOf(state).stack);
+      out.setMuted(muted);
+      audio = out;
+      audioCtx = built;
+      built.addEventListener?.('statechange', onCtxState);
+    } catch {
+      audio = null;
+      audioFailed = true;
+      if (built) {
+        try {
+          void Promise.resolve(built.close()).catch(() => undefined);
+        } catch {
+          /* a context that will not close is already past helping */
+        }
+      }
+      chromeWord(SOUND_GONE, true);
+      return;
+    }
+    wakeAudio();
+  };
+
+  /**
+   * The tab, going away and coming back. A hidden tab stops
+   * `requestAnimationFrame`, so the loop stops — but the recorded beds are
+   * media elements outside the graph and play on, and the crossfade that
+   * `tick` drives freezes wherever it was, which is two beds at partial
+   * volume: music with no game. The engine settles the cross and pauses them;
+   * coming back starts the bed that holds the level and wakes the context,
+   * which a phone will have suspended while the tab was away.
+   */
+  const onVisibility = () => {
+    if (left) return;
+    const away = document.visibilityState === 'hidden';
+    audio?.setHidden(away);
+    if (!away) wakeAudio();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
 
   // ——— the voice (G15, slice 4C) ————————————————————————————————————————————
   //
@@ -2065,6 +2210,9 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     stopTake();
     if (raf) cancelAnimationFrame(raf);
     dropKeys();
+    document.removeEventListener('visibilitychange', onVisibility);
+    audioCtx?.removeEventListener?.('statechange', onCtxState);
+    audioCtx = null;
     if (motionMq && typeof motionMq.removeEventListener === 'function') {
       motionMq.removeEventListener('change', onMotion);
     }

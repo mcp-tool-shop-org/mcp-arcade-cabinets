@@ -301,6 +301,77 @@ describe('askFire over a daemon', () => {
     await expect(askFire(V, { url: '/x', model: 'old:cloud' })).rejects.toThrow(/retired/);
   });
 
+  it('reads a non-ok status rather than collapsing every one of them to one word', async () => {
+    // Every status but 404 used to be 'ollama down', thrown before the body
+    // was read: a retired cloud tag (410), a missing key (401) and a bad
+    // gateway all reached the seat as a daemon that is running fine.
+    const status = (code: number, body: unknown) =>
+      vi.stubGlobal('fetch', async () => ({
+        ok: false,
+        status: code,
+        json: async () => body,
+      }));
+    const words = async (): Promise<string> => {
+      try {
+        await askFire(V, { url: '/x', model: 'a:cloud' });
+        return 'no throw';
+      } catch (err) {
+        return err instanceof Error ? err.message : String(err);
+      }
+    };
+
+    status(410, { error: 'model "deepseek-v3.1:cloud" was retired' });
+    expect(await words()).toBe('ollama model retired');
+    // A retired tag whose daemon answers some other status is still retired.
+    status(400, { error: 'that tag was retired' });
+    expect(await words()).toBe('ollama model retired');
+    status(401, { error: 'unauthorized' });
+    expect(await words()).toBe('ollama refused');
+    status(403, { error: 'forbidden' });
+    expect(await words()).toBe('ollama refused');
+    status(404, { error: 'model not found' });
+    expect(await words()).toBe('ollama missing');
+    status(502, { error: 'bad gateway' });
+    expect(await words()).toBe('ollama error');
+    // A gateway's error page is not JSON; the status still says enough.
+    vi.stubGlobal('fetch', async () => ({
+      ok: false,
+      status: 410,
+      json: async () => {
+        throw new SyntaxError('Unexpected token <');
+      },
+    }));
+    expect(await words()).toBe('ollama model retired');
+    for (const w of ['ollama model retired', 'ollama refused', 'ollama missing', 'ollama error']) {
+      expect(w).not.toMatch(/\d/);
+    }
+  });
+
+  it("proves 'seat: model retired' is reachable from a real answer, not only a hand-made Error", async () => {
+    // The status string was kept alive by a test that rejected with an Error
+    // it wrote itself, so the branch tested green while nothing on the
+    // daemon path could produce the word.
+    vi.stubGlobal('fetch', async () => ({
+      ok: false,
+      status: 410,
+      json: async () => ({ error: 'model "glm-4.6:cloud" was retired' }),
+    }));
+    const admitted: string[] = [];
+    const status: string[] = [];
+    const seat = createSeat({
+      ask: (v) => askFire(v, { url: '/x', model: 'glm-4.6:cloud' }),
+      admit: (verb) => admitted.push(verb),
+      beatSeconds: 1,
+      onStatus: (s) => status.push(s),
+    });
+    seat.tick(V, 0, false);
+    await flush();
+    seat.tick(V, 0.1, false);
+    expect(admitted).toEqual(['script']);
+    expect(status).toContain('seat: model retired');
+    for (const s of status) expect(s).not.toMatch(/\d/);
+  });
+
   it('hanging fetch honors init.signal, admits script, counts timeout, prefetches next', async () => {
     let sawSignal = false;
     vi.stubGlobal('fetch', (_url: string, init?: { signal?: AbortSignal }) => {

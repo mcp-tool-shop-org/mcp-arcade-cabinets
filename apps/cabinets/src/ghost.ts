@@ -59,6 +59,7 @@ import {
   type CueSnapshot,
   type DrawContext,
   type Intensity,
+  type MediaBed,
   type Round,
   type RoundInput,
   type RoundState,
@@ -74,6 +75,16 @@ import { TAPES } from './tapes';
  * is never PROD, so the seats stay on there either way.
  */
 const LOCAL_SEATS = import.meta.env.VITE_LOCAL_SEATS === 'true' || !import.meta.env.PROD;
+/**
+ * Director: seconds the end scene holds before the next tape starts by
+ * itself. A round used to stop at its scene until the Next button was
+ * clicked, every tape; the Director's word (2026-09-17) is that play flows
+ * from one tape into the next. The hold is long enough to read the end line
+ * and the trophies; a click on the field inside it replays this tape, and
+ * the Next button skips the wait. A mount with nothing to flow into (none
+ * offered) holds as before.
+ */
+export const NEXT_TAPE_S = 7;
 
 const INTENSITIES: Intensity[] = ['calm', 'medium', 'loud'];
 
@@ -84,7 +95,12 @@ export const DIFFICULTIES: {
   label: string;
   tier: 0 | 1 | 2 | 3 | undefined;
 }[] = [
-  { value: 'recorded', label: 'difficulty: as recorded', tier: undefined },
+  // The tier the tape's own header derives, which for every fixture tape is
+  // the study rung: the formations neither fire nor dive, and a round is a
+  // shooting gallery. It stays selectable — it is how a tape is read as it
+  // was recorded — and the label says what it is, because a player who lands
+  // on it without being told reads the game as broken.
+  { value: 'recorded', label: 'difficulty: as recorded (nothing fires)', tier: undefined },
   { value: 'seat', label: 'difficulty: seat', tier: 1 },
   { value: 'live', label: 'difficulty: live', tier: 2 },
   { value: 'hardcore', label: 'difficulty: hardcore', tier: 3 },
@@ -146,9 +162,29 @@ export function readPrefs(): Prefs {
   }
 }
 
+/**
+ * What is actually under the key, unvalidated. `readPrefs` is a strict
+ * allowlist, so merging a patch over IT drops every field this build does not
+ * know about — and a write from any of the six controls is enough to do it. A
+ * pref this build has never heard of belongs to the build that wrote it (an
+ * older bundle in another tab, a newer one after a rollback, the next slice's
+ * own key), so the merge below is over the raw object and the validating stays
+ * where it belongs, on the read.
+ */
+function rawPrefs(): Record<string, unknown> {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return { ...(parsed as Record<string, unknown>) };
+  } catch {
+    return {};
+  }
+}
+
 export function writePrefs(patch: Prefs): void {
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...readPrefs(), ...patch }));
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...rawPrefs(), ...patch }));
   } catch {
     /* a private window or blocked storage: play still plays */
   }
@@ -198,6 +234,21 @@ export function admitIntents(a: {
   live: unknown;
 }): boolean {
   return !a.left && a.gen === a.fireGen && a.asked === a.live;
+}
+
+/**
+ * A request the mount can revoke that still keeps the caller's own deadline.
+ * Spreading `init` and then writing `signal` REPLACES what the caller passed,
+ * and the fire seat's caller is the one that carries the ask's budget
+ * (`AbortSignal.timeout(budget.timeoutMs)`): dropped, a daemon that accepts
+ * the connection and then hangs leaves the ask pending for the life of the
+ * mount, no abort ever reaches the transport map, and the status row keeps
+ * whatever word it had — 'seat warming' forever, and never a timeout. Every
+ * other seat fetch in this shell composes; this is the composition they use.
+ */
+export function withSignal(init: RequestInit | undefined, own: AbortSignal): RequestInit {
+  const caller = init?.signal;
+  return { ...init, signal: caller ? AbortSignal.any([caller, own]) : own };
 }
 
 function chromeTarget(t: EventTarget | null): boolean {
@@ -268,41 +319,84 @@ const FIRE_LINE: Record<string, string> = {
 // and a bed never restarts from zero. Beds load once; the context is built
 // on the first gesture, as browsers require.
 const BEDS = new Map<string, HTMLAudioElement>();
+/** Beds whose file answered with an `error`. Only these make the status word. */
 const bedMissing = new Set<string>();
 let bedsRequested = false;
 let bedsSettled = false;
 const bedWatchers = new Set<() => void>();
+/**
+ * How long the chrome waits on the beds before it draws what it knows.
+ *
+ * This is sized for METADATA, not for a whole file. The beds are 110-128 s
+ * pieces of about 1.8 MB each; the deadline that shipped was a bare 4000 ms
+ * waited on `canplaythrough`, which is the whole file buffered, so on any
+ * ordinary connection every bed was still downloading when it expired and all
+ * eight were written down as missing. A bed settles on `loadedmetadata` or
+ * `canplay` now — the moment the element knows its own length and can start —
+ * and this deadline only decides when the chrome stops holding its breath.
+ */
+const BED_SETTLE_MS = 8000;
 const loadBeds = () => {
   if (bedsRequested) return;
   bedsRequested = true;
   const pending = new Set<string>(TRACK_KEYS);
+  const notify = () => {
+    for (const fn of bedWatchers) fn();
+  };
   const one = (key: string, ok: boolean) => {
     pending.delete(key);
     if (ok || BEDS.has(key)) bedMissing.delete(key);
     else bedMissing.add(key);
     if (pending.size === 0) bedsSettled = true;
-    for (const fn of bedWatchers) fn();
+    notify();
   };
+  // The deadline settles the CHROME, not the beds. A bed that has not
+  // answered by now is still on its way: it keeps its listeners and clears
+  // its mark the moment it arrives. `music: chiptune` therefore means a bed
+  // that failed to load, never one that is merely slow.
   window.setTimeout(() => {
-    for (const key of [...pending]) one(key, false);
-  }, 4000);
+    if (pending.size === 0) return;
+    bedsSettled = true;
+    notify();
+  }, BED_SETTLE_MS);
+  // The order stands as TRACK_KEYS has it: the five pool beds a round can
+  // open on come first and the three boss beds after, which is already the
+  // order a round wants them in.
   for (const key of TRACK_KEYS) {
     const el = new Audio();
     el.preload = 'auto';
     el.loop = true;
-    el.addEventListener(
-      'canplaythrough',
-      () => {
-        BEDS.set(key, el);
-        one(key, true);
-      },
-      { once: true },
-    );
+    const arrived = () => {
+      BEDS.set(key, el);
+      one(key, true);
+    };
+    // Either event is enough: the element knows its length (which is what the
+    // hold follows) and can begin. Both are registered because a browser that
+    // stalls after the headers still fires the first of them.
+    el.addEventListener('loadedmetadata', arrived, { once: true });
+    el.addEventListener('canplay', arrived, { once: true });
     el.addEventListener('error', () => one(key, false), { once: true });
     el.src = `${import.meta.env.BASE_URL}tracks/${key}.mp3`;
   }
 };
-const music: { audio: AudioOut | null; muted: boolean } = { audio: null, muted: false };
+/** A bed the browser refused to play: the shell says chiptune and stops asking. */
+const bedFailed = (el: MediaBed) => {
+  for (const [key, have] of BEDS) {
+    if (have !== (el as unknown as HTMLAudioElement)) continue;
+    BEDS.delete(key);
+    bedMissing.add(key);
+    break;
+  }
+  for (const fn of bedWatchers) fn();
+};
+const music: { audio: AudioOut | null; muted: boolean; ctx: AudioContext | null } = {
+  audio: null,
+  muted: false,
+  // The context the first gesture built, kept beside the score it carries: a
+  // mount that reuses the score needs the same context to wake it when the
+  // browser has put it to sleep since.
+  ctx: null,
+};
 
 export function mountGhost(
   root: HTMLElement,
@@ -389,6 +483,28 @@ export function mountGhost(
   let voiceSawDown = false;
   let left = false;
   const tagsCtl = new AbortController();
+  /**
+   * Both mount-level probes re-armed at a flat five seconds for the life of
+   * the mount. That cadence is right for the case the comments describe — a
+   * player who starts `pnpm voice` or the daemon after the page opened — and
+   * wrong for the far commoner one, a local build where nothing is listening
+   * and nothing will be: two requests every five seconds is about sixty failed
+   * fetches in a round, each re-running a mark-down and rewriting a live
+   * region whose text has not changed. So a probe that keeps failing doubles
+   * its wait up to a ceiling, and the first answer puts it back to five.
+   */
+  const PROBE_MS = 5000;
+  const PROBE_CAP_MS = 60_000;
+  /** Five seconds for the first retry, doubling with each failure after it. */
+  const probeWait = (fails: number) =>
+    Math.min(PROBE_CAP_MS, PROBE_MS * 2 ** Math.max(0, fails - 1));
+  let voiceFails = 0;
+  let tagsFails = 0;
+  /** A word for a live region, written only when it is not the word already there. */
+  const writeWord = (node: HTMLElement, text: string) => {
+    if (left || node.textContent === text) return;
+    node.textContent = text;
+  };
   const takeEl = new Audio();
   takeEl.volume = 0.9;
   const duckBeds = (on: boolean) => {
@@ -418,21 +534,23 @@ export function mountGhost(
     voice.disabled = true;
     voice.checked = false;
     if (wasOn) stopTake();
-    voiceStat.textContent = 'voice: no worker (pnpm voice)';
+    voiceFails += 1;
+    writeWord(voiceStat, 'voice: no worker (pnpm voice)');
   };
   const probeVoice = () => {
     void voiceHealth({ url: '/voice', timeoutMs: 2000 })
       .then((h) => {
         if (left) return;
         if (h) {
+          voiceFails = 0;
           const firstUp = !workerUp && !voiceSawDown;
           workerUp = true;
           voice.disabled = false;
           if (firstUp && prefs.voice === 'on') {
             voice.checked = true;
-            voiceStat.textContent = 'voice on';
+            writeWord(voiceStat, 'voice on');
           } else if (!voice.checked) {
-            voiceStat.textContent = 'voice ready';
+            writeWord(voiceStat, 'voice ready');
           }
           return;
         }
@@ -444,7 +562,7 @@ export function mountGhost(
       })
       .finally(() => {
         if (left) return;
-        voiceProbe = window.setTimeout(probeVoice, 5000);
+        voiceProbe = window.setTimeout(probeVoice, probeWait(voiceFails));
       });
   };
   if (LOCAL_SEATS) probeVoice();
@@ -507,13 +625,16 @@ export function mountGhost(
   const missingArt = new Set<string>();
   let musicMissing = false;
   let fullWord = '';
+  /** What the sound is doing when it is not simply playing. Words only. */
+  let soundWord = '';
   const writeChrome = () => {
     if (left) return;
     const parts: string[] = [];
     if (artMissing) parts.push('art: using blocks');
     if (musicMissing) parts.push('music: chiptune');
+    if (soundWord) parts.push(soundWord);
     if (fullWord) parts.push(fullWord);
-    chrome.textContent = parts.join(' · ');
+    writeWord(chrome, parts.join(' · '));
   };
 
   type FullEl = HTMLCanvasElement & { webkitRequestFullscreen?: () => Promise<void> };
@@ -666,13 +787,88 @@ export function mountGhost(
   let muted = music.muted;
   mute.textContent = muted ? 'Sound off' : 'Sound on';
   const takeIsPlaying = () => !takeEl.paused && !takeEl.ended && Boolean(takeEl.src);
-  const ensureAudio = () => {
-    if (audio || typeof AudioContext === 'undefined') return;
-    audio = attach(new AudioContext(), undefined, (k) => BEDS.get(k), { seed: round.seed });
-    audio.setMuted(muted);
-    music.audio = audio;
-    if (takeIsPlaying() && !muted) audio.setBedDuck(true);
+  /** A construction that threw is tried once, not once a gesture. */
+  let audioFailed = false;
+  const SOUND_ASLEEP = 'sound: asleep, click the field';
+  const SOUND_GONE = 'sound: not on this browser';
+  const sayAudioWord = (word: string) => {
+    soundWord = word;
+    writeChrome();
   };
+  /**
+   * A context the browser has put to sleep after the first gesture — an
+   * interruption on a phone, a tab restored, WebKit's own `interrupted`, which
+   * is not 'suspended' and so never matched a test for it — stays asleep for
+   * the rest of the round unless something asks it to come back. Every state
+   * but 'running' is asked; a refusal is said on the chrome row rather than
+   * leaving the player with a silent game and no word for it.
+   */
+  const wakeAudio = () => {
+    const ctxNow = music.ctx;
+    if (left || !ctxNow || ctxNow.state === 'running') return;
+    const settled = (ok: boolean) => {
+      if (left) return;
+      sayAudioWord(ok && ctxNow.state === 'running' ? '' : SOUND_ASLEEP);
+    };
+    try {
+      void Promise.resolve(ctxNow.resume()).then(
+        () => settled(true),
+        () => settled(false),
+      );
+    } catch {
+      settled(false);
+    }
+  };
+  const onCtxState = () => wakeAudio();
+  const ensureAudio = () => {
+    if (audio) {
+      // A gesture is also the moment to wake a context that went to sleep.
+      wakeAudio();
+      return;
+    }
+    if (audioFailed || typeof AudioContext === 'undefined') return;
+    let built: AudioContext | null = null;
+    try {
+      built = new AudioContext();
+      const out = attach(built, undefined, (k) => BEDS.get(k), {
+        seed: round.seed,
+        onBedFail: bedFailed,
+      });
+      out.setMuted(muted);
+      audio = out;
+      music.audio = out;
+      music.ctx = built;
+      built.addEventListener?.('statechange', onCtxState);
+      if (takeIsPlaying() && !muted) out.setBedDuck(true);
+    } catch {
+      // The context was built before the wiring failed, so it is a live
+      // context nothing can reach: a page may hold only a few, and one leaked
+      // a gesture ends with construction itself throwing for good. It is
+      // closed here, the failure is remembered so the next gesture does not
+      // build another, and the round plays silent rather than not at all.
+      audio = null;
+      audioFailed = true;
+      if (built) {
+        try {
+          void Promise.resolve(built.close()).catch(() => undefined);
+        } catch {
+          /* a context that will not close is already past helping */
+        }
+      }
+      sayAudioWord(SOUND_GONE);
+      return;
+    }
+    wakeAudio();
+  };
+  // A context an earlier mount built is this mount's to wake as well.
+  music.ctx?.addEventListener?.('statechange', onCtxState);
+  // A tab coming back is the other moment a suspended context has to be asked:
+  // a phone suspends the context while the tab is away and says nothing when
+  // it returns, and the round would play out silent.
+  const onVisibility = () => {
+    if (!left && document.visibilityState !== 'hidden') wakeAudio();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
   mute.addEventListener('click', () => {
     muted = !muted;
     music.muted = muted;
@@ -756,14 +952,14 @@ export function mountGhost(
   let last = performance.now();
   let raf = 0;
   let musicEnded = false;
+  /** The frame clock at which the end scene first showed; null while a round is on. */
+  let sceneAt: number | null = null;
   let spokenSpawn = '';
   const seatSay = (text: string) => {
-    if (left) return;
-    seat.textContent = text;
+    writeWord(seat, text);
   };
   const sayStatSay = (text: string) => {
-    if (left) return;
-    sayStat.textContent = text;
+    writeWord(sayStat, text);
   };
   const seatFailed = (err: unknown) => {
     seatSay(seatFailLine(err));
@@ -818,8 +1014,7 @@ export function mountGhost(
     fireCtl.abort();
     fireCtl = new AbortController();
   };
-  const fireFetch: typeof fetch = (input, init) =>
-    fetch(input, { ...init, signal: fireCtl.signal });
+  const fireFetch: typeof fetch = (input, init) => fetch(input, withSignal(init, fireCtl.signal));
   const beatSeconds = (rd: Round) =>
     attachedPatterns(rd).fire.tiers[String(rd.tier) as '0' | '1' | '2' | '3'].boss.period;
   const newSeat = (): Seat => {
@@ -1020,6 +1215,7 @@ export function mountGhost(
     daemon = 'down';
     ollama.disabled = true;
     ollama.checked = false;
+    tagsFails += 1;
     seatSay('seat: no daemon');
     if (was === 'down') return;
     bumpFire();
@@ -1043,6 +1239,7 @@ export function mountGhost(
         }
         const was = daemon;
         const returning = daemonWasUp && was === 'down';
+        tagsFails = 0;
         daemon = 'up';
         daemonWasUp = true;
         fillPilot(listed);
@@ -1064,7 +1261,7 @@ export function mountGhost(
       })
       .finally(() => {
         if (left) return;
-        tagsProbe = window.setTimeout(probeTags, 5000);
+        tagsProbe = window.setTimeout(probeTags, probeWait(tagsFails));
       });
   };
   if (LOCAL_SEATS) probeTags();
@@ -1191,6 +1388,16 @@ export function mountGhost(
       ctx.fillStyle = '#8a6a3a';
       ctx.fillRect(0, 0, FIELD.width, 4);
       nextBtn.disabled = false;
+      // The scene holds NEXT_TAPE_S, then the play flows into the next tape
+      // on its own, the same path the Next button takes.
+      if (sceneAt === null) sceneAt = now;
+      else if (onNext && now - sceneAt >= NEXT_TAPE_S * 1000) {
+        leave();
+        onNext();
+        return;
+      }
+    } else {
+      sceneAt = null;
     }
     raf = requestAnimationFrame(frame);
   }
@@ -1218,6 +1425,8 @@ export function mountGhost(
     sayBusy = false;
     stopTake();
     bedWatchers.delete(watchBeds);
+    music.ctx?.removeEventListener?.('statechange', onCtxState);
+    document.removeEventListener('visibilitychange', onVisibility);
     motionMq?.removeEventListener('change', onMotion);
     root.classList.remove('playing');
   };

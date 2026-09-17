@@ -3,7 +3,17 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { exitAfter, forwardSignals, main, parseArgs, version, versionIn } from '../src/cli';
+import {
+  checkSeats,
+  exitAfter,
+  forwardSignals,
+  main,
+  parseArgs,
+  sayTrouble,
+  seatLines,
+  version,
+  versionIn,
+} from '../src/cli';
 
 const PKG = path.resolve(__dirname, '..');
 const DECLARED = (
@@ -191,5 +201,82 @@ describe('--mcp with no packed server beside it', () => {
   it('is a mode of its own, not a fallback to the game', () => {
     expect(parseArgs(['--mcp']).mode).toBe('mcp');
     expect(parseArgs(['--mcp', '--no-open']).mode).toBe('mcp');
+  });
+});
+
+// The same two unchecked, unechoed environment variables the shooter had.
+// This cabinet has no hosted tier, so there is no line about a key here: the
+// user seat is local, and that is what the page promises.
+describe('what npx says about the seats before the first call', () => {
+  it('names what it resolved, and whether the bearer is set', () => {
+    expect(seatLines({})).toEqual([
+      'the user sits at http://127.0.0.1:11434 (the default)',
+      'the voice worker is at http://127.0.0.1:7788 (the default), no bearer set',
+    ]);
+    expect(seatLines({ OLLAMA_URL: 'http://10.0.0.2:11434', VOICE_TOKEN: 'bearer' })).toEqual([
+      'the user sits at http://10.0.0.2:11434',
+      'the voice worker is at http://127.0.0.1:7788 (the default), bearer set',
+    ]);
+    // No hosted key is reported, because this cabinet never lights one.
+    for (const line of seatLines({ ANTHROPIC_API_KEY: 'key' })) {
+      expect(line.toLowerCase().includes('claude')).toBe(false);
+      expect(line.includes('key')).toBe(false);
+    }
+  });
+
+  it('refuses an address it could never reach, and names which variable', () => {
+    expect(checkSeats({})).toBeNull();
+    expect(checkSeats({ OLLAMA_URL: 'localhost:11434' })).toBe(
+      'OLLAMA_URL wants an http:// or https:// address, got localhost:11434',
+    );
+    expect(checkSeats({ VOICE_URL: 'voice' })).toBe('VOICE_URL is not an address, got voice');
+  });
+
+  it('sends the cabinet trouble to stderr', () => {
+    let said = '';
+    const err = process.stderr.write.bind(process.stderr);
+    process.stderr.write = ((chunk: string) => {
+      said += String(chunk);
+      return true;
+    }) as typeof process.stderr.write;
+    try {
+      sayTrouble('the voice worker at http://127.0.0.1:7788 did not answer');
+    } finally {
+      process.stderr.write = err;
+    }
+    expect(said).toBe(
+      'the voice worker at http://127.0.0.1:7788 did not answer' + String.fromCharCode(10),
+    );
+  });
+
+  it('leaves with one and names the variable rather than standing a cabinet up', async () => {
+    const before = process.exitCode;
+    const had = process.env.VOICE_URL;
+    process.env.VOICE_URL = 'voice';
+    let stdout = '';
+    const out = process.stdout.write.bind(process.stdout);
+    process.stdout.write = ((chunk: string) => {
+      stdout += String(chunk);
+      return true;
+    }) as typeof process.stdout.write;
+    let said = '';
+    const err = process.stderr.write.bind(process.stderr);
+    process.stderr.write = ((chunk: string) => {
+      said += String(chunk);
+      return true;
+    }) as typeof process.stderr.write;
+    try {
+      await main([]);
+    } finally {
+      process.stdout.write = out;
+      process.stderr.write = err;
+      if (had === undefined) delete process.env.VOICE_URL;
+      else process.env.VOICE_URL = had;
+    }
+    expect(process.exitCode).toBe(1);
+    process.exitCode = before;
+    expect(said).toContain('VOICE_URL is not an address, got voice');
+    expect(said).not.toContain('the shell is missing');
+    expect(stdout).toBe('');
   });
 });

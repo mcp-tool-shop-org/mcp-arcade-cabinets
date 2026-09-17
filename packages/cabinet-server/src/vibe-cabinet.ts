@@ -21,7 +21,7 @@ import { lineFault, productFault, type CodeGateReason } from '@mcp-arcade-cabine
 
 import { vibeToolDef } from './contract';
 import { lineKey, normalizeLine, VIBE_NAMES } from './gate';
-import { VIBE_TOOL_NAMES, type VibeToolName } from './tool-names';
+import { NO_LEVER, VIBE_TOOL_NAMES, type VibeToolName } from './tool-names';
 
 /** A request a client offered, before the code gate has seen it. */
 export interface VibeAsk {
@@ -46,6 +46,16 @@ export type AskAnswer =
   { kind: 'queued' } | { kind: 'full' } | { kind: 'refused'; reason: AskRefusal };
 
 /**
+ * What the host says about a reaction. `waiting` and `dropped` are the sim's
+ * own two answers; the other two are about the tag a client may put on the
+ * line. `missed` is the request the line was written about having already
+ * shipped — the case the tag exists for, because an untagged line would then
+ * be said over the next piece. `no such request` is a handle the view does
+ * not list.
+ */
+export type ReactAnswer = 'waiting' | 'dropped' | 'missed' | 'no such request';
+
+/**
  * Words only, and a place to put a proposal. Everything the four tools can
  * reach. There is nothing here that can answer "how much is it worth" or
  * "how far in are we", which is the point.
@@ -57,8 +67,12 @@ export interface VibeHost {
   product(name: string): 'set' | 'already set';
   /** Offer one request for the next level. */
   ask(request: VibeAsk): AskAnswer;
-  /** Leave one line for the user to say at the next ship. */
-  react(line: string): 'waiting' | 'dropped';
+  /**
+   * Leave one line for the user to say at the next ship. `about` is the
+   * handle the view prints beside the ask the line was written about; with
+   * none, the line lands on the request in hand as it always did.
+   */
+  react(line: string, about?: string): ReactAnswer;
   /** Lines the user has said lately, for the no-repeat window. */
   recent(): readonly string[];
 }
@@ -70,7 +84,8 @@ export interface VibeToolResult {
 }
 
 export interface VibeCallRecord {
-  name: VibeToolName;
+  /** `no such lever` for a name off the closed list; the raw name is never kept. */
+  name: VibeToolName | typeof NO_LEVER;
   ok: boolean;
   /** Why a word gate or the code gate refused, or 'ok'. */
   gate?: string;
@@ -234,21 +249,29 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
 
   function react(args: unknown): VibeToolResult {
     const raw = argOf(args, 'text');
-    const gate = tooLong('react', 'text', raw)
-      ? ({ ok: false, reason: TOO_LONG } as const)
-      : reactFault(raw, host.recent());
+    const aboutRaw = argOf(args, 'about');
+    const over = tooLong('react', 'text', raw) || tooLong('react', 'about', aboutRaw);
+    const gate = over ? ({ ok: false, reason: TOO_LONG } as const) : reactFault(raw, host.recent());
     if (!gate.ok) {
       log.push({ name: 'react', ok: false, gate: sayReason(gate.reason) });
       return text(
         `the gate refused it (${sayReason(gate.reason)}); the user says one of their own instead`,
       );
     }
-    const r = host.react(gate.line);
-    log.push({ name: 'react', ok: r === 'waiting', gate: 'ok' });
+    const about = typeof aboutRaw === 'string' ? aboutRaw : undefined;
+    const r = host.react(gate.line, about);
+    log.push({ name: 'react', ok: r === 'waiting', gate: r === 'waiting' ? 'ok' : r });
+    // The answer is honest about the tag: a line written for a request that
+    // has already shipped is dropped, not promised, because saying it over
+    // the next piece is what the tag was added to stop.
     return text(
       r === 'waiting'
         ? 'the user will say it at the next thing that ships'
-        : 'a reaction is already waiting; dropped',
+        : r === 'missed'
+          ? 'that request has already shipped; the line missed it and was not said'
+          : r === 'no such request'
+            ? 'the view does not name that request; the line was not said'
+            : 'a reaction is already waiting; dropped',
     );
   }
 
@@ -269,7 +292,12 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
     log,
     call(name: string, args: unknown): VibeToolResult {
       if (!(VIBE_TOOL_NAMES as readonly string[]).includes(name)) {
-        throw new Error(`no such tool: ${name}`);
+        // A refusal, not a throw — the same shape every other refusal on
+        // this boundary has, and the same reason as the shooter's cabinet:
+        // this path is reachable from in-process callers that build the name
+        // from a string. The create-time handler check stays the andon.
+        log.push({ name: NO_LEVER, ok: false, gate: NO_LEVER });
+        return text('no such lever on this cabinet', true);
       }
       return handlers[name as VibeToolName](args);
     },

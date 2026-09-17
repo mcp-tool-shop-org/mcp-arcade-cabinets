@@ -3,9 +3,18 @@
 // tapes it opens give the integration stack its server and tool names (G30 —
 // headers and rows, never a receipt, never a fact). It stays off the barrel
 // so the browser bundle never pulls node:fs.
+//
+// THE TAPES ARE AN INPUT TO THE SCORE, not only to the integration stack.
+// `withIntegration` rebuilds the character trigram model over the seasoned
+// corpus, and every snippet's value is read off that model — so the corpus a
+// run plans from is the corpus PLUS whatever tapes were on disk, and two
+// runs are byte-identical only when that whole corpus is the same one. It is
+// why a tape dropped in silence is a halt here rather than a skip, and why
+// the directory is resolved from this module and never from the cwd.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { loadTape, TapeError, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
@@ -20,6 +29,21 @@ export const SCREEN_FORBIDDEN =
   /\d|\b(nrp|integrity|utility|attack_success|pass|fail|score|cleared|lie|fact|revealed|followed|held|ghost_answered|ghost_refused|menu_changed|menu_stable)\b/i;
 
 export const DT = 1 / 60;
+
+/**
+ * Where the tapes live when the caller names no directory, resolved from
+ * this module and not from the process cwd. `test/helpers.ts` fixed exactly
+ * this for itself — from inside the package directory a cwd-relative resolve
+ * found no tapes at all — and this default had the same trap: `play({ level:
+ * 8 })` from anywhere but the repo root got no integration snippets and then
+ * halted naming a lever file, blaming `levels.json` for a missing directory.
+ * `src/` and `dist/` both sit one level under the package, so the same
+ * relative walk holds for the bundle `pnpm test:play` loads.
+ */
+export const DEFAULT_TAPES = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../fixtures/tapes',
+);
 
 /** A file name or an error message on stderr, with anything that is not printable ASCII replaced. */
 function plain(text: string): string {
@@ -138,7 +162,11 @@ export function integrationFrom(dir: string): Snippet[] {
       // every error looked exactly like a directory with no tapes in it.
       // The integration stack seasons the trigram model, so a tape dropped
       // in silence moves every snippet's value.
-      if (!(err instanceof TapeError)) throw err;
+      // The halt names the file and nothing else: the message reaches the
+      // printed transcript through `play`, which is scanned as a screen.
+      if (!(err instanceof TapeError)) {
+        throw new Error(`cannot read the tape named ${plain(name)}`, { cause: err });
+      }
       process.stderr.write(`skipping tape ${plain(name)}: ${plain(err.message)}\n`);
     }
   }
@@ -156,11 +184,46 @@ export interface PlayArgs {
   tapes?: string;
 }
 
+/**
+ * The first chat line that carried something the screen may not show: where
+ * it was, who said it, what the scan matched and the line itself.
+ *
+ * A leak used to be reported as the bare word "leaked" over a transcript
+ * printing the last four chat lines. An endless run says hundreds of lines,
+ * so a needle that landed on the twelfth was flagged and then invisible, and
+ * the operator had no way to find it short of re-running under a debugger —
+ * while every other failure in this module names itself usefully.
+ */
+export interface Leak {
+  /** Which chat line, counting the first one said as one. */
+  at: number;
+  who: 'user' | 'agent';
+  /** What the screen scan matched. */
+  needle: string;
+  /** The line as it was said. */
+  line: string;
+}
+
+/** The first line of a chat that may not be shown, or null. */
+export function firstLeak(chat: readonly { who: 'user' | 'agent'; line: string }[]): Leak | null {
+  for (let i = 0; i < chat.length; i++) {
+    const said = chat[i]!;
+    const hit = SCREEN_FORBIDDEN.exec(said.line);
+    if (hit) return { at: i + 1, who: said.who, needle: hit[0], line: said.line };
+  }
+  return null;
+}
+
+/** One line of why, naming the leak. Digits are allowed: this is not the screen. */
+export function leakWhy(leak: Leak): string {
+  return `leaked: the ${leak.who} said ${leak.needle} on chat line ${leak.at}`;
+}
+
 export interface Transcript {
   ok: boolean;
   text: string;
   leaked: boolean;
-  ended: 'shipped' | 'context' | null;
+  ended: 'shipped' | 'context' | 'unplanned' | null;
   valuation: number;
   levels: number;
   pieces: number;
@@ -212,7 +275,18 @@ export function play(args: PlayArgs = {}): Transcript {
   // integration stack: two of the sixteen listed levels are integration
   // levels, so the stack has to be there before a level asks for it. A run
   // that forced the stack and found no tapes is still the one hard failure.
-  const snippets = integrationFrom(args.tapes ?? path.resolve('fixtures/tapes'));
+  //
+  // Inside a guard of its own since Stage A made a tape this cabinet cannot
+  // read a halt: a fixture with a JSON syntax error threw straight out of
+  // `play`, where every other failure in this function returns a Transcript
+  // carrying a `why`. The halting decision was right and the shape of the
+  // halt was not.
+  let snippets: Snippet[];
+  try {
+    snippets = integrationFrom(args.tapes ?? DEFAULT_TAPES);
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : String(err), 'bad tape');
+  }
   if (stack === 'integration' && snippets.length === 0) {
     return fail('no tapes for the integration stack', 'no tapes');
   }
@@ -228,7 +302,11 @@ export function play(args: PlayArgs = {}): Transcript {
   let ticks = 0;
   let compactions = 0;
   let overrun = false;
-  let leaked = !screenClean(state.chat.map((c) => c.line));
+  // The needle is kept, not just the fact of it: the chat is scanned from
+  // where the last step left off and the FIRST hit is held, so a line that
+  // landed early in a long run is still nameable at the end.
+  let leak: Leak | null = firstLeak(state.chat);
+  let leaked = leak !== null;
   while (!state.over) {
     if (ticks >= MAX_TICKS) {
       overrun = true;
@@ -238,24 +316,36 @@ export function play(args: PlayArgs = {}): Transcript {
     const before = state.chat.length;
     stepRun(state, bot(state), DT);
     for (const event of state.events) if (event.kind === 'compaction') compactions += 1;
-    for (let i = before; i < state.chat.length; i++) {
-      if (SCREEN_FORBIDDEN.test(state.chat[i]!.line)) leaked = true;
+    const fresh = firstLeak(state.chat.slice(before));
+    if (fresh) {
+      leaked = true;
+      if (!leak) leak = { ...fresh, at: fresh.at + before };
     }
   }
   const levels = state.levelIndex + 1;
   const tail = state.chat.slice(-4).map((c) => `${c.who} ${c.line}`);
-  const screen = [
+  const furniture = [
     `product ${state.plan.product}`,
     `stack ${state.plan.stack}`,
     `agent ${DEFAULT_PATTERNS.cabinet.agentName}`,
+  ];
+  if (!screenClean([...furniture, ...tail])) leaked = true;
+  // The offending line is printed where the operator will look: the tail of
+  // the chat is the last four lines, and the line that leaked is usually not
+  // among them. It carries the needle with it, so the runner's own scan hits
+  // the evidence as readily as it would have hit the original.
+  const screen = [
+    ...furniture,
+    ...(leak ? [`leak the ${leak.who} said ${leak.line}`] : []),
     ...tail,
   ];
-  if (!screenClean(screen)) leaked = true;
   const endName = overrun
     ? 'run overran'
     : state.ended === 'context'
       ? 'the context ran out'
-      : 'level shipped';
+      : state.ended === 'unplanned'
+        ? 'the planner came up empty'
+        : 'level shipped';
   const header = [
     DEFAULT_PATTERNS.cabinet.name,
     `level ${state.plan.id} stack ${state.plan.stack} tier ${TIER_WORDS[tier]} bot ${spec.name} seed ${seed} endless ${endless ? 'yes' : 'no'}`,
@@ -263,7 +353,7 @@ export function play(args: PlayArgs = {}): Transcript {
   ];
   const footer = [
     `valuation: ${Math.round(state.valuation)}`,
-    `pieces: ${state.built.length}`,
+    `pieces: ${state.pieceCount}`,
     `levels: ${levels}`,
     `compactions: ${compactions}`,
   ];
@@ -271,14 +361,21 @@ export function play(args: PlayArgs = {}): Transcript {
   const contextOut = state.ended === 'context';
   // The gentlest tier is the acceptance bar: the bar must not empty there.
   const bar = !(tier === 0 && contextOut);
-  const ok = !leaked && !overrun && bar;
+  // The endless ladder has no end to reach, so a planner that came up empty
+  // is a failed run and never a shipped one.
+  const planned = state.ended !== 'unplanned';
+  const ok = !leaked && !overrun && bar && planned;
   const why = leaked
-    ? 'leaked'
+    ? leak
+      ? leakWhy(leak)
+      : 'leaked'
     : overrun
       ? 'overrun'
-      : bar
-        ? ''
-        : 'the context ran out on the gentlest tier';
+      : !planned
+        ? 'the planner came up empty'
+        : bar
+          ? ''
+          : 'the context ran out on the gentlest tier';
   return {
     ok,
     text,
@@ -286,7 +383,7 @@ export function play(args: PlayArgs = {}): Transcript {
     ended: state.ended ?? null,
     valuation: state.valuation,
     levels,
-    pieces: state.built.length,
+    pieces: state.pieceCount,
     compactions,
     overrun,
     why,

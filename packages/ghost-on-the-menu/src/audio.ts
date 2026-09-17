@@ -194,6 +194,15 @@ export const END_FADE_S = 1.5;
  * A wanted change during the hold is remembered and made when it is up.
  */
 export const BED_MIN_S = 36;
+/**
+ * Ceiling on the hold. The hold follows the file's own `duration` so a loop
+ * finishes, and the beds are 110-128 s pieces — but `duration` comes off the
+ * file, and a mis-encoded or mis-tagged one can report minutes or hours. Four
+ * minutes is longer than any bed the cabinet ships and short enough that a bad
+ * header costs a player one long stretch rather than the whole round on one
+ * bed.
+ */
+export const BED_MAX_S = 240;
 
 /** A scheduled oscillator and the context time it stops at. */
 interface Voice {
@@ -204,7 +213,19 @@ interface Voice {
 /** How long the playing bed holds: its own length when it knows one. */
 function bedHold(bed: MediaBed | undefined, floor: number): number {
   const d = bed?.duration;
-  return typeof d === 'number' && Number.isFinite(d) && d > 0 ? d : floor;
+  if (typeof d !== 'number' || !Number.isFinite(d) || d <= 0) return floor;
+  return Math.min(d, BED_MAX_S);
+}
+/**
+ * A piece no longer than this plays out whole before a change; a longer one
+ * holds `floor` (BED_MIN_S) and loops on its own. Sized so a forty-second
+ * bed is never cut and a two-minute bed gives way after a verse.
+ */
+export const BED_SHORT_S = 48;
+/** The hold before a wave change may move the bed. */
+function changeHold(bed: MediaBed | undefined, floor: number): number {
+  const whole = bedHold(bed, floor);
+  return whole <= BED_SHORT_S ? whole : floor;
 }
 /** Recorded beds sit here, not at 1, so shots and the catch still read. */
 export const BED_LEVEL = 0.32;
@@ -369,7 +390,7 @@ interface CtxLike {
  *
  * Beds: if a recorded file exists for the asked wave or boss key, that
  * named bed plays. A change of key waits out one whole loop (the playing
- * bed's own duration, or BED_MIN_S when it has none), then
+ * bed's own duration, capped at BED_MAX_S, or BED_MIN_S when it has none), then
  * crossfades. Pool rotation only when the asked key has no file, and only
  * after the same hold. The seed still picks the opening pool bed when the
  * asked key has no file. A burst speeds the playing bed up (`burstRate`)
@@ -384,11 +405,18 @@ export function attach(
     seed?: number;
     pool?: readonly string[];
     burstRate?: number;
+    /**
+     * A bed the browser would not play. The shell writes its status word off
+     * this — `music: chiptune` is a true thing to say once a file has been
+     * refused — and stops handing the same element back.
+     */
+    onBedFail?: (bed: MediaBed) => void;
   } = {},
 ): AudioOut {
   const minBed = opts.minBedSeconds ?? BED_MIN_S;
   const pool = opts.pool ?? BED_POOL;
   const burstRate = opts.burstRate ?? BURST_RATE;
+  const onBedFail = opts.onBedFail;
   let muted = false;
   let nextBar = 0;
   let lastKind = '';
@@ -458,6 +486,38 @@ export function attach(
     }
     fades = keep;
   };
+  /**
+   * A bed that would not start. It leaves `live` and the fades, and if it was
+   * the one holding the round it stops being: `currentBed` and `bedSince` go
+   * back to nothing, so the very next tick finds no bed and plays the
+   * chiptune bar. The shell is told, so it can say so and stop offering this
+   * element again.
+   */
+  /**
+   * Beds the browser has refused. They are treated as absent from here on:
+   * the lookup still holds the element, and re-adopting it every tick would
+   * silence the chiptune once a frame for a bed that will not play.
+   */
+  const refusedBeds = new WeakSet<MediaBed>();
+  const bedRefused = (bed: MediaBed) => {
+    refusedBeds.add(bed);
+    fades = fades.filter((f) => f.bed !== bed);
+    bed.volume = 0;
+    try {
+      bed.pause();
+    } catch {
+      /* an element that never started has nothing to pause */
+    }
+    bed.playbackRate = 1;
+    live.delete(bed);
+    // A rejection can land after the round has already moved on, in which
+    // case this bed is not the one holding the level and nothing else changes.
+    if (bed === currentBed) {
+      currentBed = undefined;
+      bedSince = 0;
+    }
+    onBedFail?.(bed);
+  };
   const bringIn = (bed: MediaBed, level: number, dur: number, rate: number) => {
     // Restart during END_FADE_S reuses this element; stale end() steps must not.
     cancelEndFade();
@@ -468,7 +528,27 @@ export function attach(
     // A bed comes in from silence when there is a fade to come in on.
     bed.volume = dur > 0 ? 0 : level;
     live.add(bed);
-    void bed.play();
+    // Autoplay policy does not throw: it REJECTS the promise `play()` returns.
+    // Unhandled, that left a bed which is not playing sitting in `currentBed`
+    // for the whole hold with the chiptune silenced behind it — a cabinet that
+    // simply goes quiet. A refusal hands the round back to the chiptune now.
+    try {
+      const started = bed.play() as Promise<void> | void;
+      if (started && typeof (started as Promise<void>).catch === 'function') {
+        // The handler is guarded too: a shell callback that throws inside
+        // `bedRefused` would otherwise surface as an unhandled rejection
+        // from a promise nobody holds (Kimi's music review, point three).
+        void (started as Promise<void>).catch(() => {
+          try {
+            bedRefused(bed);
+          } catch {
+            /* the round plays on; the refusal was already recorded */
+          }
+        });
+      }
+    } catch {
+      bedRefused(bed);
+    }
     fadeTo(bed, level, dur);
   };
   let musicGain: GainNode | undefined;
@@ -592,9 +672,14 @@ export function attach(
     }
   };
   /** The pool bed at the rotation, skipping keys with no file; undefined when the pool has none. */
+  /** The lookup, minus anything that has already refused to play. */
+  const bedFor = (key: string): MediaBed | undefined => {
+    const b = bed?.(key);
+    return b && refusedBeds.has(b) ? undefined : b;
+  };
   const poolBed = (): MediaBed | undefined => {
     for (let i = 0; i < pool.length; i++) {
-      const b = bed?.(pool[(poolAt + i) % pool.length]!);
+      const b = bedFor(pool[(poolAt + i) % pool.length]!);
       if (b) {
         poolAt = (poolAt + i) % pool.length;
         return b;
@@ -611,18 +696,35 @@ export function attach(
     if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
     if (next) bringIn(next, bedGain(), leaving ? BED_FADE_S : 0, rate);
     if (leaving) leaving.playbackRate = 1;
-    return Boolean(next);
+    // Not `Boolean(next)`: a bed that refused to start inside `bringIn` has
+    // already given `currentBed` back, and this tick must fall to the bar
+    // rather than silence the chiptune for a bed that is not playing.
+    return Boolean(currentBed);
   };
   const switchBed = (waveKind: string, t: number) => {
-    const named = bed?.(waveKind);
+    const named = bedFor(waveKind);
     const isBoss =
       waveKind === 'whisperer' ||
       waveKind === 'menu' ||
       waveKind === 'doorman' ||
       waveKind === 'archivist';
-    // One WHOLE loop before a playing bed gives way, named or not: the bed's
-    // own length when the element knows it, minBed as the floor when it does not.
-    if (currentBed && t - bedSince < bedHold(currentBed, minBed)) return true;
+    // A boss is a scene change: its bed comes at once, hold or no hold.
+    // Held behind the playing file's length, no boss bed was ever heard in a
+    // round shorter than the file (Grok's consult, question four).
+    if (isBoss && named && named !== currentBed) return adopt(named, t);
+    // Otherwise a playing bed holds before it gives way to a wave's named bed
+    // or the next pool bed: a short piece plays out whole (the Director's
+    // note of 2026-09-11, a forty-second bed cut at thirty-six), a long one
+    // holds a verse, BED_MIN_S, long enough to get into and short enough
+    // that a round can change its mind. The file's own length is how long
+    // it loops, not how long the game waits.
+    if (currentBed && t - bedSince < changeHold(currentBed, minBed)) return true;
+    // The opening is a seeded draw from the pool, whatever the wave kind:
+    // every tape's first wave is inspect, so taking the named bed here
+    // opened every round on the same piece (the Director, 2026-09-17). A
+    // boss at the opening still takes its own bed; a wave change after the
+    // hold still takes the named bed.
+    if (!currentBed && !isBoss && pool.length > 0) return adopt(poolBed(), t);
     if (named) return adopt(named, t);
     if (isBoss) {
       // Wanted boss bed is missing: drop the overlay so chiptune can follow.

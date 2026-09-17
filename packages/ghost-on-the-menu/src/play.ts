@@ -130,41 +130,65 @@ function crossingX(
   return t.x + t.w / 2 + (t.vx ?? 0) * dt;
 }
 
-/** Step out of the lane of the nearest incoming shot or diver; null if clear. */
-function dodge(state: RoundState): RoundInput | null {
-  const px = state.player.x + state.player.w / 2;
+/** The x where each incoming shot, diver and hazard will cross the ship's row, within reach. */
+function crossings(state: RoundState): number[] {
   const py = state.player.y;
-  let threat: number | null = null;
+  const lanes: number[] = [];
   for (const s of state.enemyShots) {
     if (s.dead) continue;
     const cx = crossingX(s, py);
-    if (cx !== null && Math.abs(cx - px) < DODGE_LANE) {
-      if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
-    }
+    if (cx !== null) lanes.push(cx);
   }
   for (const e of state.enemies) {
     if (!e.alive || e.mode !== 'dive') continue;
-    const cx = e.x + e.w / 2;
-    if (e.y < py && py - e.y < DODGE_REACH && Math.abs(cx - px) < DODGE_LANE) {
-      if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
-    }
+    if (e.y < py && py - e.y < DODGE_REACH) lanes.push(e.x + e.w / 2);
   }
   for (const h of state.hazards) {
     if (!h.alive || h.vy <= 0) continue;
     const cx = crossingX(h, py);
-    if (cx !== null && Math.abs(cx - px) < DODGE_LANE) {
-      if (threat === null || Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
+    if (cx !== null) lanes.push(cx);
+  }
+  return lanes;
+}
+
+/**
+ * Step out of the way; null if the ship stands clear. Under sparse fire the
+ * step is away from the nearest threat, as it always was. Under rain (more
+ * than one threat in reach) the step is to the nearest x clear of EVERY
+ * threat, because stepping out of one lane into the next is how the reader
+ * lost its lamps once the formation started to speak (Grok's consult: one
+ * dodge for each climate, not one for both). The move carries no fire of
+ * its own; the caller keeps the button down when it is aligned.
+ */
+function dodge(state: RoundState): RoundInput | null {
+  const px = state.player.x + state.player.w / 2;
+  const lanes = crossings(state);
+  const near = lanes.filter((cx) => Math.abs(cx - px) < DODGE_LANE);
+  if (near.length === 0) return null;
+  if (lanes.length > 1) {
+    const clear = (x: number) => lanes.every((cx) => Math.abs(cx - x) >= DODGE_LANE);
+    const half = state.player.w / 2;
+    for (let step = 8; step <= FIELD.width; step += 8) {
+      const left = px - step;
+      const right = px + step;
+      const leftOk = left >= half && clear(left);
+      const rightOk = right <= FIELD.width - half && clear(right);
+      if (leftOk && rightOk) {
+        const toward = px < FIELD.width / 2 ? 1 : -1;
+        return { left: toward < 0, right: toward > 0, fire: false };
+      }
+      if (leftOk) return { left: true, right: false, fire: false };
+      if (rightOk) return { left: false, right: true, fire: false };
     }
   }
-  if (threat === null) return null;
+  let threat = near[0]!;
+  for (const cx of near) if (Math.abs(cx - px) < Math.abs(threat - px)) threat = cx;
   // Away from the threat; a threat dead ahead sends the ship toward the field's centre.
   const away = threat === px ? (px < FIELD.width / 2 ? 1 : -1) : px < threat ? -1 : 1;
   return { left: away < 0, right: away > 0, fire: false };
 }
 
 function readerInput(state: RoundState, tells: Set<string>): RoundInput {
-  const d = dodge(state);
-  if (d) return d;
   const px = state.player.x + state.player.w / 2;
   let target: RoundState['enemies'][number] | undefined;
   for (const e of state.enemies) {
@@ -174,9 +198,20 @@ function readerInput(state: RoundState, tells: Set<string>): RoundInput {
       target = e;
     }
   }
+  const aligned = target !== undefined && Math.abs(target.x + target.w / 2 - px) < target.w / 2 + 2;
+  const d = dodge(state);
+  // A person does not drop the button to sidestep: the reader keeps firing
+  // through a dodge while it is under its tell.
+  if (d) return { ...d, fire: aligned };
   if (!target) return IDLE;
-  const dx = target.x + target.w / 2 - px;
-  return { left: dx < -3, right: dx > 3, fire: Math.abs(dx) < target.w / 2 + 2 };
+  const tx = target.x + target.w / 2;
+  const dx = tx - px;
+  // After a dodge, do not walk straight back onto a crossing: hold where it
+  // is clear until the lane under the tell is clear too.
+  if (Math.abs(dx) > 3 && crossings(state).some((cx) => Math.abs(cx - tx) < DODGE_LANE)) {
+    return IDLE;
+  }
+  return { left: dx < -3, right: dx > 3, fire: aligned };
 }
 
 /** The dumb player: nearest hittable sprite, always firing. Never reads `lie`. */

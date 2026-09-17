@@ -50,6 +50,19 @@ export interface SpeakAnswer {
   error?: string;
 }
 
+/**
+ * The `error` word for a worker that answered and whose answer was not a
+ * receipt: a 200 carrying a proxy's HTML error page, a truncated body, or
+ * anything else `res.json()` cannot read.
+ *
+ * It rides on `receipt failed` rather than on `no worker` on purpose. The
+ * worker is live — it answered — and `no worker` drops it for the rest of
+ * the session on that word, which is what a live-but-wrong worker was
+ * being reported as. The sibling client next door already has the right
+ * vocabulary for this shape (`ollama bad payload`).
+ */
+export const BAD_PAYLOAD = 'bad payload';
+
 export interface VoiceOpts {
   /** The worker's base, e.g. `/voice` behind the dev proxy or `http://127.0.0.1:7788`. */
   url: string;
@@ -164,7 +177,17 @@ export async function speakLine(
       };
     }
     if (!res.ok) return { receipt: null, status: 'no worker', ms };
-    const r = (await res.json()) as VoiceReceipt;
+    // Its own try: a 200 whose body is not a receipt used to land in the
+    // outer catch and be reported as 'no worker', which drops a worker that
+    // answered. The body is bounded in time by the abort above; it is not
+    // bounded in size, and a capped reader is the fix for that if a hostile
+    // VOICE_URL is ever in scope (it is operator-supplied today).
+    let r: VoiceReceipt;
+    try {
+      r = (await res.json()) as VoiceReceipt;
+    } catch {
+      return { receipt: null, status: 'receipt failed', ms, error: BAD_PAYLOAD };
+    }
     if (!r.ok) return { receipt: r, status: 'receipt failed', ms };
     // A passed receipt whose url is not the worker's own take path is not a
     // take: treat it as a failed receipt so nothing downstream plays it.
@@ -195,8 +218,26 @@ export interface VoicerStats {
   dropped: number;
   receiptFailed: number;
   noWorker: number;
+  /**
+   * A worker that answered 500. It had no bucket, so `asked` could exceed
+   * the outcomes by the number of takes a worker had failed outright and
+   * the difference read as takes still in flight.
+   */
+  speakFailed: number;
+  /** A 400 (bad job) or a 401 (bearer). Same gap, same reason. */
+  refused: number;
   cached: number;
   msSum: number;
+}
+
+/**
+ * Every outcome a settled take can have. `asked` is this sum plus what is
+ * still in flight, which is the identity `voiceOutcomes` lets a test state
+ * rather than infer — `dropped` is not in it, because a take can be voiced
+ * and then dropped and would otherwise be counted twice.
+ */
+export function voiceOutcomes(s: VoicerStats): number {
+  return s.voiced + s.receiptFailed + s.noWorker + s.speakFailed + s.refused;
 }
 
 export interface Voicer {
@@ -244,6 +285,8 @@ export function createVoicer(opts: VoicerOpts): Voicer {
     dropped: 0,
     receiptFailed: 0,
     noWorker: 0,
+    speakFailed: 0,
+    refused: 0,
     cached: 0,
     msSum: 0,
   };
@@ -288,10 +331,15 @@ export function createVoicer(opts: VoicerOpts): Voicer {
         }
         if (a.status === 'receipt failed') {
           stats.receiptFailed += 1;
-          say('voice: receipt failed, not played');
+          say(
+            a.error === BAD_PAYLOAD
+              ? 'voice: the worker answered with something unreadable'
+              : 'voice: receipt failed, not played',
+          );
           return;
         }
         if (a.status === 'speak failed') {
+          stats.speakFailed += 1;
           say('voice: speak failed');
           return;
         }
@@ -302,6 +350,7 @@ export function createVoicer(opts: VoicerOpts): Voicer {
           );
           return;
         }
+        stats.refused += 1;
         if (a.refused === 'auth') {
           say('voice: refused (bearer)');
           return;
