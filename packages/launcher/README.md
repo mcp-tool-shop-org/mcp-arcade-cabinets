@@ -86,6 +86,7 @@ No telemetry, no analytics, no network call of its own. The `--mcp` server needs
 
 ```
   --mcp              speak MCP on stdio instead of opening the game
+                     its tools: fire, say, speak, sfx, view, tapes
   --port <n>         port to listen on (default 7777; takes the next
                      free one when that is busy)
   --no-open          start the server but do not open a browser
@@ -93,18 +94,19 @@ No telemetry, no analytics, no network call of its own. The `--mcp` server needs
   -v, --version      the version
 ```
 
-| Environment          |                                                                  |
-| -------------------- | ---------------------------------------------------------------- |
-| `OLLAMA_URL`         | the daemon the bosses sit at (default `http://127.0.0.1:11434`)  |
-| `VOICE_URL`          | the voice worker, when you run one                               |
-| `VOICE_TOKEN`        | the worker's bearer; added server-side                           |
-| `ANTHROPIC_API_KEY`  | sits the Claude tier of the say seat                             |
-| `CABINET_TAPES`      | with `--mcp`: a directory of tapes instead of the bundled ones   |
-| `CABINET_TAPES_USER` | with `--mcp`: more tapes, merged beside the bundled ones         |
-| `CABINET_FIXTURE`    | with `--mcp`: the tape a fresh round starts on                   |
-| `CABINET_SEED`       | with `--mcp`: a whole number, so a round repeats                 |
-| `CABINET_TIER`       | with `--mcp`: how hard the round is, zero to three               |
-| `CABINET_BOT`        | with `--mcp`: read by the typing cabinet; this one flies its own |
+| Environment          |                                                                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `OLLAMA_URL`         | the daemon the bosses sit at (default `http://127.0.0.1:11434`)                                                                      |
+| `VOICE_URL`          | the voice worker, when you run one                                                                                                   |
+| `VOICE_TOKEN`        | the worker's bearer; added server-side                                                                                               |
+| `ANTHROPIC_API_KEY`  | the Claude tier's key; never in the page, never spent unless asked                                                                   |
+| `CABINET_SAY_CLAUDE` | `on` hands the boss lines to Claude on that key; it costs money and stops after a ceiling of lines a run, then the local tier writes |
+| `CABINET_TAPES`      | with `--mcp`: a directory of tapes instead of the bundled ones                                                                       |
+| `CABINET_TAPES_USER` | with `--mcp`: more tapes, merged beside the bundled ones                                                                             |
+| `CABINET_FIXTURE`    | with `--mcp`: the tape a fresh round starts on                                                                                       |
+| `CABINET_SEED`       | with `--mcp`: a whole number, so a round repeats                                                                                     |
+| `CABINET_TIER`       | with `--mcp`: how hard the round is, zero to three                                                                                   |
+| `CABINET_BOT`        | with `--mcp`: read by the typing cabinet; this one flies its own                                                                     |
 
 ## Where this comes from
 

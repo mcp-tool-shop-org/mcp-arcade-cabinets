@@ -646,9 +646,12 @@
   },
   "blind": [
     "the low lane went soft",
-    "something settled over the floor",
-    "the bottom of the room is gray now",
-    "i cannot see what is under me"
+    "the floor is under something now",
+    "i lost the bottom of the room",
+    "the fog found my feet",
+    "i am flying by memory down here",
+    "the room kept the floor to itself",
+    "nothing to see, so i keep still"
   ],
   "drops": {
     "catch": {

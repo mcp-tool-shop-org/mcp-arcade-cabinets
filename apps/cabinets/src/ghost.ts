@@ -68,6 +68,7 @@ import {
   type Round,
   type RoundInput,
   type RoundState,
+  type RoundButton,
 } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import type { Tape } from '@mcp-arcade-cabinets/tape-core';
 
@@ -1394,7 +1395,7 @@ export function mountGhost(
   motionMq?.addEventListener('change', onMotion);
 
   const input: RoundInput = { left: false, right: false, fire: false };
-  const keys: Record<string, keyof RoundInput> = {
+  const keys: Record<string, RoundButton> = {
     ArrowLeft: 'left',
     ArrowRight: 'right',
     a: 'left',
