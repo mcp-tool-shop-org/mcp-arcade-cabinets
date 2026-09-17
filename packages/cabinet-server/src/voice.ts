@@ -7,6 +7,9 @@
 // still unplayed at the scene is dropped. Words only in every status.
 
 import type { VoiceJob } from './host';
+import { BAD_PAYLOAD, noWorkerWords, receiptWords, refusedWords, VOICE_WORDS } from './voice-words';
+
+export { VOICE_WORDS };
 
 /**
  * The least a job needs to be spoken: the gated words, what kind of line it
@@ -60,8 +63,13 @@ export interface SpeakAnswer {
  * the session on that word, which is what a live-but-wrong worker was
  * being reported as. The sibling client next door already has the right
  * vocabulary for this shape (`ollama bad payload`).
+ *
+ * The literal now lives in `voice-words.ts`, the leaf both voicers import,
+ * so the typing cabinet can tell this case apart from any other failed
+ * receipt without a value import of this file. Re-exported here because
+ * this is where callers have always read it.
  */
-export const BAD_PAYLOAD = 'bad payload';
+export { BAD_PAYLOAD };
 
 export interface VoiceOpts {
   /** The worker's base, e.g. `/voice` behind the dev proxy or `http://127.0.0.1:7788`. */
@@ -317,7 +325,7 @@ export function createVoicer(opts: VoicerOpts): Voicer {
         stats.dropped += 1;
       }
       stats.asked += 1;
-      say('voice speaking ahead');
+      say(VOICE_WORDS.asked);
       void opts.speak(job).then((a) => {
         if (!pending || pending.token !== mine) return;
         pending = null;
@@ -326,40 +334,32 @@ export function createVoicer(opts: VoicerOpts): Voicer {
           stats.voiced += 1;
           if (a.receipt.cached) stats.cached += 1;
           ready = { job, url: a.receipt.url };
-          say('voice: receipt ok');
+          say(VOICE_WORDS.receipt);
           return;
         }
         if (a.status === 'receipt failed') {
           stats.receiptFailed += 1;
-          say(
-            a.error === BAD_PAYLOAD
-              ? 'voice: the worker answered with something unreadable'
-              : 'voice: receipt failed, not played',
-          );
+          say(receiptWords(a.error));
           return;
         }
         if (a.status === 'speak failed') {
           stats.speakFailed += 1;
-          say('voice: speak failed');
+          say(VOICE_WORDS.speakFailed);
           return;
         }
         if (a.status === 'no worker') {
           stats.noWorker += 1;
-          say(
-            a.why === 'timeout' ? 'voice: the worker did not answer in time' : 'voice: no worker',
-          );
+          say(noWorkerWords(a.why));
           return;
         }
         stats.refused += 1;
-        if (a.refused === 'auth') {
-          say('voice: refused (bearer)');
-          return;
-        }
-        const why =
-          a.error && !/\d/.test(a.error) && !a.error.includes('/') && !a.error.includes('\\')
-            ? a.error
-            : '';
-        say(why ? `voice: refused (${why})` : 'voice: refused');
+        // One static phrase per class, and never `a.error`. This used to
+        // interpolate the worker's own error word behind a filter of digits
+        // and path separators only, so an engine, a model or a vendor name
+        // in a worker's refusal body landed on the bezel. The sibling
+        // voicer refused exactly this and wrote down why; the rule is one
+        // rule and this is the half that was not keeping it (G17).
+        say(refusedWords(a.refused));
       });
     },
     tick(t, caption, breather, ended) {

@@ -24,15 +24,23 @@
 # that does not read it gets one path-free line on stderr at start, and so
 # does a value the cabinet cannot use.
 #
+# THIS TABLE IS THE CANONICAL ONE. It ships with the image, so it is the copy
+# an operator who pulled the image can reach. `catalog/server.yaml` carries
+# the same rows between the same two markers and `surfaces.test.ts` compares
+# the two line for line; they were hand-copies before that and had already
+# drifted three ways.
+#
+# VARIABLES BEGIN
 #   CABINET            both     ghost (or unset) is the shooter, vibe is the typist
-#   CABINET_TAPES      both     where the tapes are
+#   CABINET_TAPES      both     where the tapes are (baked at /app/tapes)
 #   CABINET_TAPES_USER ghost    operator tapes merged beside the baked menu
-#   CABINET_FIXTURE    ghost    which tape the round plays
+#   CABINET_FIXTURE    ghost    which tape the round plays; the image sets its default on the shooter branch only
 #   CABINET_TIER       both     zero to three; anything else is a note and the default (one on the shooter, zero on the typing cabinet)
 #   CABINET_SEED       both     a whole number; anything else is a note
-#   CABINET_BOT        vibe     the typist at the keyboard, e.g. typist:45
-#   VOICE_URL          ghost    the host worker's base; empty is silent
+#   CABINET_BOT        vibe     the typist at the keyboard, as `typist:<words per minute>`
+#   VOICE_URL          ghost    the host worker's base; empty (the Catalog default) is silent
 #   VOICE_TOKEN        ghost    the worker's bearer, when it binds beyond loopback
+# VARIABLES END
 #
 # Multi-arch: docker buildx build --platform linux/amd64,linux/arm64 .
 # No GPU stage. FROM is the node:22-alpine index digest (amd64+arm64), not :latest.
@@ -59,11 +67,19 @@ LABEL org.opencontainers.image.title="mcp-arcade-cabinets" \
       org.opencontainers.image.source="https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="MCP Tool Shop"
+# CABINET_FIXTURE is baked EMPTY and given its default on the shooter branch
+# of the ENTRYPOINT instead. It used to be baked non-empty for both cabinets,
+# and the typing cabinet reads any non-empty value as the operator having set
+# it — so every single `CABINET=vibe` start opened its log with a note about
+# a variable nothing the operator did had touched, and nothing they could do
+# would stop it short of `-e CABINET_FIXTURE=`. The first line of a log is
+# exactly where a note stops being read. Its siblings avoid this by being
+# baked empty; this one now does too.
 ENV NODE_ENV=production \
     CABINET=ghost \
     CABINET_TAPES=/app/tapes \
     CABINET_TAPES_USER="" \
-    CABINET_FIXTURE=naive-ndjson \
+    CABINET_FIXTURE="" \
     VOICE_URL=""
 WORKDIR /app
 COPY --from=build /src/packages/cabinet-server/dist/server.js ./server.js
@@ -78,4 +94,11 @@ USER node
 # as unvalidated: `vibee`, `Vibe` and `typer` all silently ran the shooter.
 # `"$@"` forwards whatever the operator appended after the image name; the
 # trailing `sh` is `$0` so the first of those lands in `$1`.
-ENTRYPOINT ["sh", "-c", "case \"$CABINET\" in vibe) exec node /app/vibe.js \"$@\" ;; ghost|'') exec node /app/server.js \"$@\" ;; *) echo 'CABINET was not understood; the image runs the shooter' >&2 ; exec node /app/server.js \"$@\" ;; esac", "sh"]
+#
+# The shooter's branch is a function because it does two things now: it gives
+# CABINET_FIXTURE the image's default (only here, so the typing cabinet never
+# sees one set) and then execs. The note is prefixed with the image's own
+# name for the same reason both servers now prefix theirs: an MCP client's
+# log pane interleaves several servers and the host, and two cabinets ship
+# here under one entrypoint.
+ENTRYPOINT ["sh", "-c", "ghost() { : \"${CABINET_FIXTURE:=naive-ndjson}\" ; export CABINET_FIXTURE ; exec node /app/server.js \"$@\" ; } ; case \"$CABINET\" in vibe) exec node /app/vibe.js \"$@\" ;; ghost|'') ghost \"$@\" ;; *) echo 'mcp-arcade-cabinets: CABINET was not understood; it is ghost or vibe, and the image runs the shooter' >&2 ; ghost \"$@\" ;; esac", "sh"]

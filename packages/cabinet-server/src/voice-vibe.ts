@@ -29,6 +29,7 @@
 // themselves, which have already been through `lineFault`.
 
 import type { SpeakAnswer, SpeakJob } from './voice';
+import { noWorkerWords, receiptWords, refusedWords, VOICE_WORDS } from './voice-words';
 
 /** The beats the typing cabinet's sim moves through. Copied, not imported. */
 export type VibeBeat = 'request' | 'reply' | 'code' | 'ship' | 'compaction' | 'creep' | 'sync';
@@ -270,7 +271,7 @@ export function createVibeVoicer(opts: VibeVoicerOpts): VibeVoicer {
       const slot: Slot = { job, token: mine, status: 'pending' };
       line.push(slot);
       stats.asked += 1;
-      say('voice speaking ahead');
+      say(VOICE_WORDS.asked);
       const chain = opts.speak(job).then((a) => {
         if (slot.token !== mine || !line.includes(slot)) return;
         stats.msSum += a.ms;
@@ -280,7 +281,7 @@ export function createVibeVoicer(opts: VibeVoicerOpts): VibeVoicer {
           slot.status = 'ready';
           slot.url = a.receipt.url;
           slot.duration = a.receipt.duration_s;
-          say('voice: receipt ok');
+          say(VOICE_WORDS.receipt);
           return;
         }
         // Nothing to play: the slot leaves rather than blocking the one
@@ -289,18 +290,20 @@ export function createVibeVoicer(opts: VibeVoicerOpts): VibeVoicer {
         line.splice(line.indexOf(slot), 1);
         if (a.status === 'receipt failed') {
           stats.receiptFailed += 1;
-          say('voice: receipt failed, not played');
+          // The shooter told an unreadable body apart from any other failed
+          // receipt and this cabinet collapsed the two, so one worker
+          // behavior read as two different events depending on which cabinet
+          // was up. The distinction is in the shared table now.
+          say(receiptWords(a.error));
           return;
         }
         if (a.status === 'speak failed') {
-          say('voice: speak failed');
+          say(VOICE_WORDS.speakFailed);
           return;
         }
         if (a.status === 'no worker') {
           stats.noWorker += 1;
-          say(
-            a.why === 'timeout' ? 'voice: the worker did not answer in time' : 'voice: no worker',
-          );
+          say(noWorkerWords(a.why));
           return;
         }
         stats.refused += 1;
@@ -309,11 +312,7 @@ export function createVibeVoicer(opts: VibeVoicerOpts): VibeVoicer {
         // path separators from it does not stop an engine, a model or a
         // vendor name reaching the controls row, and nothing dynamic from the
         // worker is printed anywhere in this cabinet (G17).
-        say(
-          a.refused === 'auth'
-            ? 'voice: the worker wants its bearer'
-            : 'voice: the worker refused the line',
-        );
+        say(refusedWords(a.refused));
       });
       // `speakLine` catches its own transport errors, so a rejection here is
       // something thrown above it — a hook that threw, a body that got past
@@ -326,7 +325,7 @@ export function createVibeVoicer(opts: VibeVoicerOpts): VibeVoicer {
         const at = line.indexOf(slot);
         if (at !== -1) line.splice(at, 1);
         stats.noWorker += 1;
-        say('voice: the worker did not answer');
+        say(VOICE_WORDS.noAnswer);
       });
     },
     tick(beat, ended) {

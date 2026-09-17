@@ -12,6 +12,7 @@ import {
   type VibeVoiceJob,
 } from '../src/voice-vibe';
 import type { SpeakAnswer, VoiceReceipt } from '../src/voice';
+import { BAD_PAYLOAD, VOICE_WORDS } from '../src/voice-words';
 
 const BEATS: VibeBeat[] = ['request', 'reply', 'code', 'ship', 'compaction', 'creep', 'sync'];
 
@@ -237,7 +238,24 @@ describe('the timing rule', () => {
     expect(played).toEqual([]);
     expect(v.stats().receiptFailed).toBe(1);
     expect(v.stats().voiced).toBe(0);
-    expect(v.status()).toBe('voice: receipt failed, not played');
+    expect(v.status()).toBe(VOICE_WORDS.receiptFailed);
+  });
+
+  it('tells an unreadable body apart from any other failed receipt', async () => {
+    // The shooter made this distinction and this cabinet collapsed it, so
+    // one worker behavior read as two different events depending on which
+    // cabinet was up. The words are the shared table's now.
+    const worker = fakeWorker();
+    const v = createVibeVoicer({ speak: worker.speak, play: () => undefined });
+    v.job(job('ask'));
+    await worker.answer(0, {
+      receipt: null,
+      status: 'receipt failed',
+      ms: 7,
+      error: BAD_PAYLOAD,
+    });
+    expect(v.status()).toBe(VOICE_WORDS.unreadable);
+    expect(v.status()).not.toBe(VOICE_WORDS.receiptFailed);
   });
 
   it('counts a worker that is not there, and plays nothing', async () => {
@@ -264,13 +282,14 @@ describe('the timing rule', () => {
       refused: 'payload',
       error: 'kokoro has no such preset',
     });
-    expect(v.status()).toBe('voice: the worker refused the line');
+    expect(v.status()).toBe(VOICE_WORDS.refused);
+    expect(v.status()).not.toContain('kokoro');
     expect(v.stats().refused).toBe(1);
 
     const bearer = createVibeVoicer({ speak: worker.speak, play: () => undefined });
     bearer.job(job('ask'));
     await worker.answer(1, { receipt: null, status: 'refused', ms: 4, refused: 'auth' });
-    expect(bearer.status()).toBe('voice: the worker wants its bearer');
+    expect(bearer.status()).toBe(VOICE_WORDS.auth);
   });
 
   it('drops a slot whose speak hook threw, and says so', async () => {

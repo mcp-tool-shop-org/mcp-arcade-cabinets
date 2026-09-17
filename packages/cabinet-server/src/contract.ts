@@ -31,13 +31,35 @@ export const MAX_TEXT_LENGTH = 4096;
 
 export interface EnumProperty {
   type: 'string';
+  /** The words a client's approval form puts on this box. Optional, and carried. */
+  description?: string;
   enum: string[];
 }
 export interface TextProperty {
   type: 'string';
+  description?: string;
   maxLength: number;
 }
 export type ToolProperty = EnumProperty | TextProperty;
+
+/**
+ * The keys a property object may carry. Anything else is a halt rather than
+ * a key dropped on the floor: `loadProperty` used to return `{type,enum}` or
+ * `{type,maxLength}` and ignore the rest, so a `description` written into
+ * the contract passed every gate and reached no client at all.
+ */
+const PROPERTY_KEYS = ['type', 'description', 'enum', 'maxLength'] as const;
+
+/** The keys a tool object may carry, for the same reason. */
+const TOOL_KEYS = ['name', 'title', 'description', 'inputSchema', 'annotations'] as const;
+
+/** The keys an annotations block may carry; the loader rebuilds it from these four. */
+const ANNOTATION_KEYS = [
+  'readOnlyHint',
+  'destructiveHint',
+  'idempotentHint',
+  'openWorldHint',
+] as const;
 
 export interface ToolSchema {
   type: 'object';
@@ -55,6 +77,12 @@ export interface ToolAnnotations {
 
 export interface ToolDef {
   name: AnyToolName;
+  /**
+   * What a client shows in its approval prompt in place of the bare name.
+   * Both cabinets ship one `view`, and a client with both servers configured
+   * listed the two with nothing to tell them apart.
+   */
+  title?: string;
   description: string;
   inputSchema: ToolSchema;
   annotations: ToolAnnotations;
@@ -123,9 +151,50 @@ function bool(v: unknown, key: string): boolean {
   return v;
 }
 
+/**
+ * The words a client reads, held to the same two rules the tool description
+ * is: no digit, no word about how the game is going, and never a nudge to
+ * pull another lever.
+ */
+function words(v: unknown, key: string): string {
+  if (typeof v !== 'string' || v.trim() === '') {
+    fail(key, 'this is the sentence a client reads, so it cannot be empty');
+  }
+  if (FORBIDDEN.test(v)) {
+    fail(
+      `${key}: forbidden word`,
+      'nothing a client reads may carry a digit or a word about how the game is going',
+    );
+  }
+  if (WHISPER.test(v)) {
+    fail(
+      `${key}: whisper`,
+      "a description may not tell a client to pull another lever; that is the instrument's own policy and never ours",
+    );
+  }
+  return v;
+}
+
+/** A key this loader does not know is a halt, not a quiet drop. */
+function closed(o: Record<string, unknown>, allowed: readonly string[], key: string): void {
+  for (const k of Object.keys(o)) {
+    if (!allowed.includes(k)) {
+      fail(
+        `${key}.${k}`,
+        `this loader carries ${allowed.join(', ')} and nothing else, so anything here would never reach a client`,
+      );
+    }
+  }
+}
+
 function loadProperty(v: unknown, key: string): ToolProperty {
   const p = rec(v, key);
+  closed(p, PROPERTY_KEYS, key);
   if (p.type !== 'string') fail(`${key}.type`, 'every argument this contract carries is text');
+  // Carried, not dropped. This is the box a client's approval form draws,
+  // and its rule used to live only inside the tool's own paragraph.
+  const described =
+    p.description === undefined ? {} : { description: words(p.description, `${key}.description`) };
   if (Array.isArray(p.enum)) {
     const values = p.enum.map((e, i) => {
       if (typeof e !== 'string' || e === '' || /\d/.test(e)) {
@@ -136,7 +205,7 @@ function loadProperty(v: unknown, key: string): ToolProperty {
     if (values.length === 0 || new Set(values).size !== values.length) {
       fail(`${key}.enum`, 'a closed list needs at least one choice and no choice twice');
     }
-    return { type: 'string', enum: values };
+    return { type: 'string', ...described, enum: values };
   }
   if (typeof p.maxLength !== 'number' || !Number.isInteger(p.maxLength)) {
     fail(`${key}.maxLength`, 'a text bound is a whole number of characters');
@@ -147,11 +216,12 @@ function loadProperty(v: unknown, key: string): ToolProperty {
       "a text bound must sit above nothing and within the contract's own ceiling",
     );
   }
-  return { type: 'string', maxLength: p.maxLength };
+  return { type: 'string', ...described, maxLength: p.maxLength };
 }
 
 function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   const t = rec(v, `tools.${i}`);
+  closed(t, TOOL_KEYS, `tools.${i}`);
   const name = t.name;
   if (typeof name !== 'string' || !names.includes(name)) {
     fail(`tools.${i}.name`, `this cabinet's levers are ${names.join(', ')} and nothing else`);
@@ -160,18 +230,10 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   if (typeof description !== 'string' || description.trim() === '') {
     fail(`${name}.description`, 'a lever a client cannot read about is a lever it cannot use');
   }
-  if (FORBIDDEN.test(description)) {
-    fail(
-      `${name}.description: forbidden word`,
-      'nothing a client reads may carry a digit or a word about how the game is going',
-    );
-  }
-  if (WHISPER.test(description)) {
-    fail(
-      `${name}.description: whisper`,
-      "a description may not tell a client to pull another lever; that is the instrument's own policy and never ours",
-    );
-  }
+  words(description, `${name}.description`);
+  // Optional, and carried when it is there. Both cabinets ship a `view`, and
+  // a client with both servers configured had nothing to tell them apart.
+  const titled = t.title === undefined ? {} : { title: words(t.title, `${name}.title`) };
   const s = rec(t.inputSchema, `${name}.inputSchema`);
   if (s.type !== 'object' || s.additionalProperties !== false) {
     fail(
@@ -197,6 +259,7 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
     }
   }
   const a = rec(t.annotations, `${name}.annotations`);
+  closed(a, ANNOTATION_KEYS, `${name}.annotations`);
   const annotations: ToolAnnotations = {
     readOnlyHint: bool(a.readOnlyHint, `${name}.annotations.readOnlyHint`),
     destructiveHint: bool(a.destructiveHint, `${name}.annotations.destructiveHint`),
@@ -220,6 +283,7 @@ function loadTool(v: unknown, i: number, names: readonly string[]): ToolDef {
   }
   return {
     name: name as AnyToolName,
+    ...titled,
     description,
     inputSchema: { type: 'object', properties, required, additionalProperties: false },
     annotations,
@@ -269,8 +333,9 @@ export const VIBE_CONTRACT: readonly ToolDef[] = loadContract(
 );
 
 /**
- * Catalog listing (name, description, inputSchema) must equal the contract.
- * Annotations stay package-only and are not compared.
+ * Catalog listing (name, title, description, inputSchema) must equal the
+ * contract, argument descriptions included. Annotations stay package-only
+ * and are not compared.
  */
 export function assertCatalogTools(
   raw: unknown,
@@ -292,6 +357,12 @@ export function assertCatalogTools(
         }
         if (got.description !== want.description) {
           fail(`${want.name}.description`, "the words a client reads must be the contract's own");
+        }
+        // The name a client's approval prompt shows in place of the bare
+        // lever word. It travels with the listing or it is not a listing of
+        // the same cabinet.
+        if (got.title !== want.title) {
+          fail(`${want.name}.title`, "the name a client shows must be the contract's own");
         }
         const schema = rec(got.inputSchema, `${want.name}.inputSchema`);
         if (schema.type !== 'object' || schema.additionalProperties !== false) {

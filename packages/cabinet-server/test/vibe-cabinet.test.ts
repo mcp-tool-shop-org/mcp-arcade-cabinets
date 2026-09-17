@@ -389,7 +389,9 @@ describe('the boundary', () => {
     for (const bad of [42, null, ['one', 'two'], { one: 'two' }, undefined]) {
       const r = cab.call('ask', { ...good, notes: bad });
       expect(r.isError, String(bad)).toBe(true);
-      expect(r.content[0]!.text).toBe('ask wants the words, the code, a title and the notes');
+      expect(r.content[0]!.text).toBe(
+        'ask, code, title and notes must be words, and all four must be sent',
+      );
     }
     expect(seen, 'nothing reached the host').toEqual([]);
     expect(cab.call('ask', good).content[0]!.text).toBe('the next request is queued');
@@ -471,11 +473,17 @@ describe('the boundary', () => {
     ]);
 
     // Each bound is the contract's own, and one character under it is fine.
+    // `ask`'s three are the code gate's own ceilings since Stage D - they
+    // used to be roughly twice them, so a client that sized its answer to
+    // the field it could see was refused by the gate every time.
+    // contract.test.ts derives them from MAX_LINES, MAX_COLS and MAX_NOTES.
     expect(tooLong('product', 'product', 'a'.repeat(80))).toBe(false);
     expect(tooLong('product', 'product', 'a'.repeat(81))).toBe(true);
-    expect(tooLong('ask', 'code', 'a'.repeat(2048))).toBe(false);
-    expect(tooLong('ask', 'code', 'a'.repeat(2049))).toBe(true);
-    expect(tooLong('ask', 'notes', 'a'.repeat(601))).toBe(true);
+    expect(tooLong('ask', 'code', 'a'.repeat(971))).toBe(false);
+    expect(tooLong('ask', 'code', 'a'.repeat(972))).toBe(true);
+    expect(tooLong('ask', 'notes', 'a'.repeat(482))).toBe(false);
+    expect(tooLong('ask', 'notes', 'a'.repeat(483))).toBe(true);
+    expect(tooLong('ask', 'ask', 'a'.repeat(161))).toBe(true);
     expect(tooLong('react', 'text', 'a'.repeat(161))).toBe(true);
     expect(tooLong('view', 'nothing', 'a')).toBe(false);
   });
@@ -601,6 +609,13 @@ describe('a reaction names the request it was written about', () => {
     const rolled = host.view();
     expect(rolled).toMatch(/^run a new run just started; anything you sent before is gone$/m);
     expect(rolled).not.toMatch(SCREEN);
+    // LAST, where the shooter puts its own exceptional rows. The two
+    // cabinets used to put them at opposite ends, so on one the first line
+    // of the payload was stable and on the other it was not, and a client
+    // that reads positionally could not do the same thing on both.
+    const lines = rolled.split(/\r?\n/);
+    expect(lines[lines.length - 1]).toMatch(/^run /);
+    expect(lines[0]).toMatch(/^product /);
 
     // And it is gone again after the first level of the new run.
     const bot = botFor(parseBot('typist:45')!, 4);
@@ -810,8 +825,9 @@ describe('a reaction names the request it was written about', () => {
     );
     const r = cab.call('react', { text: 'that came out lovely', about: 7 });
     expect(r.isError).toBe(true);
+    // The shooter's shape, on both cabinets: the field first, then the rule.
     expect(r.content[0]!.text).toBe(
-      'react wants the handle as words; it is the name the view prints beside each ask',
+      'about must be the handle as words; it is the name the view prints beside each ask',
     );
     expect(seen).toEqual([]);
     // An absent handle stays the untagged path it always was.
@@ -819,6 +835,25 @@ describe('a reaction names the request it was written about', () => {
       'the user will say it at the next thing that ships',
     );
     expect(seen).toEqual([undefined]);
+  });
+
+  it("refuses a bad argument in the shooter's grammar: the field, then the rule", () => {
+    // The shooter names the field and the closed set - `verb must be one of
+    // spread, column, hold, fog, plate, script` - and this cabinet named the
+    // tool and described the want, so a client with both cabinets configured
+    // met two shapes for one class of mistake. `product` was the worst of
+    // it, because the tool and the field share a name and the old answer did
+    // not say which of the two it meant.
+    const cab = createVibeCabinet(fakeVibeHost());
+    for (const [tool, args, field] of [
+      ['product', { product: 7 }, 'product'],
+      ['ask', { ask: 1, code: 'x', title: 'y', notes: 'z' }, 'ask, code, title and notes'],
+      ['react', { text: 'lovely work', about: 7 }, 'about'],
+    ] as const) {
+      const r = cab.call(tool, args as unknown as Record<string, unknown>);
+      expect(r.isError, tool).toBe(true);
+      expect(r.content[0]!.text, tool).toMatch(new RegExp(`^${field} must be `));
+    }
   });
 
   it('a stuck run stops the levers promising a level that will never turn', () => {

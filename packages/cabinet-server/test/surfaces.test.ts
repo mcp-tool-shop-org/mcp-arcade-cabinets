@@ -15,7 +15,7 @@
 // never applied here.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -122,6 +122,37 @@ describe('the hand-written statements of the tool set', () => {
     ).toEqual([...ghost, ...vibe].sort());
   });
 
+  it("the package's own sources and test names state a count this cabinet carries", () => {
+    // The three hand-written statements outside the package were gated and
+    // the ones inside it were not, so `cabinet.ts`, `server.ts` and a test
+    // name all still said the shooter was five tools long after `speak`
+    // made it six. Every statement in here is about one cabinet or the
+    // other, so the gate is that the word is one of the two counts.
+    const ghost = countWord(TOOL_NAMES.length);
+    const vibe = countWord(VIBE_TOOL_NAMES.length);
+    const dir = path.resolve(__dirname, '..');
+    const files = [
+      ...readdirSync(path.join(dir, 'src')).map((f) => path.join('src', f)),
+      ...readdirSync(path.join(dir, 'test')).map((f) => path.join('test', f)),
+      // This file carries the pattern itself, which would match its own
+      // prose rather than a claim about a cabinet.
+    ].filter((f) => f.endsWith('.ts') && !f.endsWith('surfaces.test.ts'));
+    let seen = 0;
+    for (const rel of files) {
+      const text = readFileSync(path.join(dir, rel), 'utf8');
+      // Only a counted statement about a cabinet's own set: `the six tools`,
+      // `its four tools`, `these four tools`. Prose about levers in general
+      // (`the tools can reach`, `two tools contradicting each other`) is not
+      // a claim about how many this cabinet carries.
+      for (const word of matchAll(text, /\b(?:the|its|these)\s+(\w+)\s+tools(?![.\w])/gi)) {
+        if (!(COUNT_WORDS as readonly string[]).includes(word)) continue;
+        seen += 1;
+        expect([ghost, vibe], `${rel} states a set of ${word} tools`).toContain(word);
+      }
+    }
+    expect(seen, 'no statement of a tool set found in the package at all').toBeGreaterThan(0);
+  });
+
   /**
    * The pin rule, enforced rather than remembered.
    *
@@ -197,5 +228,74 @@ describe('the screen needle', () => {
     expect(() => literalIn('packages/cabinet-server/src/tool-names.ts')).toThrow(
       /no SCREEN_FORBIDDEN literal found/,
     );
+  });
+});
+
+describe('the image variable table', () => {
+  /**
+   * It existed twice, as hand-copies, and they had already drifted: the
+   * Dockerfile carried an example the yaml dropped, one said 'the baked
+   * menu' where the other said 'the baked twenty', and only one of them said
+   * the Catalog default for VOICE_URL. Nothing gated them against each
+   * other, while both opened with the promise that nothing here is silently
+   * inert.
+   *
+   * The Dockerfile's is canonical: it ships with the image, so it is the
+   * copy an operator who pulled the image can reach. This is the gate the
+   * tool counts already have.
+   */
+  function table(rel: string): string[] {
+    const text = read(rel);
+    const begin = text.indexOf('# VARIABLES BEGIN');
+    const end = text.indexOf('# VARIABLES END');
+    if (begin === -1 || end <= begin) throw new Error(`${rel}: no variable table to compare`);
+    return text
+      .slice(text.indexOf('\n', begin) + 1, end)
+      .split('\n')
+      .map((line) => line.replace(/^\s*#\s?/, '').trimEnd())
+      .filter((line) => line !== '');
+  }
+
+  it("is one table, and the listing carries the image's own rows", () => {
+    const canon = table('Dockerfile');
+    expect(canon.length, 'the image no longer states what each cabinet reads').toBeGreaterThan(0);
+    expect(table('catalog/server.yaml')).toEqual(canon);
+  });
+
+  it('names every variable the two servers actually read', () => {
+    const canon = table('Dockerfile').join(' ');
+    for (const name of [
+      'CABINET',
+      'CABINET_TAPES',
+      'CABINET_TAPES_USER',
+      'CABINET_FIXTURE',
+      'CABINET_TIER',
+      'CABINET_SEED',
+      'CABINET_BOT',
+      'VOICE_URL',
+      'VOICE_TOKEN',
+    ]) {
+      expect(canon, name).toContain(name);
+    }
+  });
+
+  it('bakes CABINET_FIXTURE for the cabinet that reads it and no other', () => {
+    // A non-empty baked value is the operator having set it, as far as
+    // `vibeEnv` can tell, so every `CABINET=vibe` start opened its log with
+    // a note about the image's own default. It is set on the shooter branch
+    // of the ENTRYPOINT now.
+    const docker = read('Dockerfile');
+    expect(docker).toMatch(/^\s*CABINET_FIXTURE="" \\$/m);
+    const entry = docker.slice(docker.indexOf('ENTRYPOINT'));
+    expect(entry).toContain('CABINET_FIXTURE:=naive-ndjson');
+    expect(entry).toContain('node /app/vibe.js');
+    // The vibe branch never passes through the ghost function that sets it.
+    const vibeBranch = entry.slice(entry.indexOf('vibe)'), entry.indexOf("ghost|''"));
+    expect(vibeBranch).not.toContain('CABINET_FIXTURE');
+  });
+
+  it("signs the image's own stderr line the way both servers sign theirs", () => {
+    const entry = read('Dockerfile');
+    expect(entry).toContain('mcp-arcade-cabinets: CABINET was not understood');
   });
 });

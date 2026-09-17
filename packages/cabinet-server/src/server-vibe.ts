@@ -30,12 +30,27 @@ import {
 import { botFor, integrationFrom, parseBot } from '@mcp-arcade-cabinets/vibe-typer/src/play';
 
 import { assertCatalogTools, VIBE_CONTRACT, type ToolDef } from './contract';
-import { setEnv, wholeEnv } from './env';
+import { BOT_NOTE, SEED_NOTE, setEnv, tierNote, wholeEnv } from './env';
 import { createStepFaults, guardStep, isStuck } from './step-guard';
 import { createVibeCabinet, type VibeCabinet } from './vibe-cabinet';
 import { vibeHostFor, type VibeLive } from './vibe-host';
 
 export const VIBE_SERVER_NAME = 'vibe-typer';
+
+/**
+ * Every line this server writes to stderr, under its own name - the same
+ * shape `server.ts` and `voice/worker.py` use. Both cabinets ship in one
+ * image under one entrypoint, so an unsigned note about a variable was
+ * ambiguous between them by construction.
+ */
+export function vibeTagged(line: string): string {
+  return `${VIBE_SERVER_NAME}: ${line}`;
+}
+
+/** The default sink: the tag, then whatever the caller wrote. */
+function warnLine(line: string): void {
+  process.stderr.write(vibeTagged(line));
+}
 /**
  * Kept in step with `SERVER_VERSION` in `server.ts` by a test, rather than
  * imported from it. The release gate greps that constant out of that file
@@ -82,8 +97,12 @@ function zodShape(def: ToolDef) {
   const shape: Record<string, z.ZodTypeAny> = {};
   const needed = new Set(def.inputSchema.required);
   for (const [k, p] of Object.entries(def.inputSchema.properties)) {
-    const base =
+    const typed =
       'enum' in p ? z.enum(p.enum as [string, ...string[]]) : z.string().max(p.maxLength);
+    // The contract's own words for this box, into the emitted JSON Schema.
+    // Without this the argument's rule reached a client only inside the
+    // tool's paragraph, and an approval form drew an unlabeled box.
+    const base = p.description === undefined ? typed : typed.describe(p.description);
     shape[k] = needed.has(k) ? base : base.optional();
   }
   return shape;
@@ -116,7 +135,7 @@ export function vibeHeadlessRound(opts: VibeHeadlessOpts = {}) {
     // that simply holds no tapes reaches here too, and an operator told the
     // load failed goes looking at permissions instead of at what is in the
     // directory. It says what was found now, not what it guesses went wrong.
-    process.stderr.write('no tapes were found; the cabinet plays without the wires stack\n');
+    warnLine('no tapes were found; the cabinet plays without the wires stack\n');
   }
   const spec = parseBot(opts.bot ?? VIBE_BOT) ?? parseBot(VIBE_BOT)!;
   const tier = opts.tier ?? 0;
@@ -159,6 +178,7 @@ export function buildVibeServer(cabinet: VibeCabinet): McpServer {
     server.registerTool(
       def.name,
       {
+        ...(def.title === undefined ? {} : { title: def.title }),
         description: def.description,
         inputSchema: zodShape(def),
         annotations: def.annotations,
@@ -220,7 +240,7 @@ export function vibeEnv(
     // wrong value got a line next door and nothing here. Same words as
     // `ghostEnv`, because it is the same rule.
     else if (set(env.CABINET_SEED)) {
-      notes.push('CABINET_SEED was not understood; the cabinet draws its own\n');
+      notes.push(SEED_NOTE);
     }
   }
 
@@ -239,13 +259,13 @@ export function vibeEnv(
   if (opts.tier === undefined) {
     if (tier !== null && tier >= 0 && tier <= 3) out.tier = tier as Tier;
     else if (set(env.CABINET_TIER)) {
-      notes.push('CABINET_TIER was not understood; the cabinet plays at tier zero\n');
+      notes.push(tierNote('zero'));
     }
   }
 
   if (opts.bot === undefined && set(env.CABINET_BOT)) {
     if (parseBot(env.CABINET_BOT) !== null) out.bot = env.CABINET_BOT;
-    else notes.push(`CABINET_BOT was not understood; the cabinet plays under ${VIBE_BOT}\n`);
+    else notes.push(BOT_NOTE);
   }
 
   return { opts: { ...out, ...opts }, notes };
@@ -254,12 +274,12 @@ export function vibeEnv(
 export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<void> {
   checkVibeCatalogListing();
   const read = vibeEnv(process.env, opts);
-  for (const note of read.notes) process.stderr.write(note);
+  for (const note of read.notes) warnLine(note);
   const h = vibeHeadlessRound(read.opts);
   const server = buildVibeServer(h.cabinet);
   let last = Date.now();
   // A throw from the sim is a quiet run, never a dead server (see step-guard).
-  const step = guardStep(h.step, h.faults);
+  const step = guardStep(h.step, h.faults, warnLine);
   const timer = setInterval(() => {
     const now = Date.now();
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -270,14 +290,14 @@ export async function startVibeStdio(opts: VibeHeadlessOpts = {}): Promise<void>
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write(
-    `${VIBE_SERVER_NAME} ${VIBE_SERVER_VERSION}: endless under ${h.bot}, tools listed\n`,
+    vibeTagged(`${VIBE_SERVER_VERSION}: endless under ${h.bot}, tools listed\n`),
   );
 }
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
 if (invoked === fileURLToPath(import.meta.url)) {
   startVibeStdio().catch((err: unknown) => {
-    process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
+    process.stderr.write(vibeTagged(`${err instanceof Error ? err.message : String(err)}\n`));
     process.exit(1);
   });
 }

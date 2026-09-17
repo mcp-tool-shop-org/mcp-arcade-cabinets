@@ -96,23 +96,58 @@ export function endlessPrompt(view: EndlessView): EndlessPrompt {
  * The schema both tiers are held to. `product` is required and may be the
  * empty string, because a strict tool schema wants every property named and
  * an empty product is how a seat says it has none.
+ *
+ * Every property carries its rule. They used to live only in the user turn,
+ * so a seat whose provider weights the tool schema over the prose saw five
+ * undescribed required fields; `TOOL_DESCRIPTION` named four of the five and
+ * left out the one the doc comment above explains. The rules stay in the
+ * prompt as well rather than moving out of it: the lower tier asks for a
+ * JSON object with no schema attached, and that turn is the only place it
+ * can read them.
  */
 export const ENDLESS_SCHEMA = {
   type: 'object',
   properties: {
-    ask: { type: 'string' },
-    code: { type: 'string' },
-    title: { type: 'string' },
-    notes: { type: 'array', items: { type: 'string' } },
-    product: { type: 'string' },
+    ask: {
+      type: 'string',
+      description:
+        'What you want, in your own voice: one sentence of at most twelve words, lower case, no exclamation mark, no word in capitals, every number spelled out, American spelling, and no name of any tool, model or company. You may write {product} exactly like that and the game fills the thing being built in for you; no other braces.',
+    },
+    code: {
+      type: 'string',
+      description:
+        'A small, real, runnable snippet in the language the level names: at most twelve lines, at most eighty columns to a line, plain ASCII, no tab characters, and no comment or name in it that names a tool, a model or a company. Write numbers here as ordinary digits; only the ask spells them out. Its size should match the word for how hard the job should feel.',
+    },
+    title: { type: 'string', description: 'A few plain words for what the code does.' },
+    notes: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Up to three short teaching sentences about the code, one sentence to an entry.',
+    },
+    product: {
+      type: 'string',
+      description:
+        'A new absurd startup idea, at most eight words, lower case, no number - and the empty string when the level did not ask for one.',
+    },
   },
   required: ['ask', 'code', 'title', 'notes', 'product'],
   additionalProperties: false,
 } as const;
 
-const TOOL_NAME = 'endless_request';
-const TOOL_DESCRIPTION =
-  'Send one request for the coding agent to write: the ask, the code, a title and notes.';
+/** The one tool the upper tier is given, by name. */
+export const ENDLESS_TOOL_NAME = 'endless_request';
+const TOOL_NAME = ENDLESS_TOOL_NAME;
+
+/**
+ * The sentence beside that tool. It named four of the five required
+ * fields and left out `product`, which the schema marks required and which
+ * is how a seat says it has none.
+ */
+export const ENDLESS_TOOL_DESCRIPTION =
+  'Send one request for the coding agent to write: the ask, the code, a title, notes, and the product ' +
+  'the level is building - the empty string when the level did not ask for a new one. ' +
+  'Every field carries its own rule; read them before you write.';
+const TOOL_DESCRIPTION = ENDLESS_TOOL_DESCRIPTION;
 
 /** What a seat sends back, ungated. The code gate is the cabinet package's. */
 export interface EndlessRequest {

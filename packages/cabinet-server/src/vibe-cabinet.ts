@@ -250,6 +250,22 @@ export function tooLong(name: VibeToolName, key: string, value: unknown): boolea
 /** The refusal every tool says, in its own closing words. */
 const TOO_LONG = 'too long';
 
+/**
+ * How a bad argument is refused, on both cabinets.
+ *
+ * The shooter names the field and then the rule - `verb must be one of
+ * spread, column, hold, fog, plate, script` - and this cabinet named the
+ * tool and described the want, so a client with both servers configured met
+ * two shapes for one class of mistake. `product` was the worst of it,
+ * because the tool and the field share a name and `product wants a few plain
+ * words` did not say which of the two was being talked about. The shooter's
+ * shape wins: it reads more plainly for a machine caller, and it always
+ * starts with the field.
+ */
+function badArgument(field: string, rule: string, hint?: string): string {
+  return hint === undefined ? `${field} must be ${rule}` : `${field} must be ${rule}; ${hint}`;
+}
+
 /** The typing cabinet: its four tools over a host of words. */
 export function createVibeCabinet(host: VibeHost): VibeCabinet {
   const log: VibeCallRecord[] = [];
@@ -269,7 +285,7 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
     const raw = argOf(args, 'product');
     if (typeof raw !== 'string') {
       log.push({ name: 'product', ok: false });
-      return text('product wants a few plain words', true);
+      return text(badArgument('product', 'a few plain words', 'it is the thing being built'), true);
     }
     const name = normalizeLine(raw);
     const fault = tooLong('product', 'product', raw)
@@ -319,7 +335,10 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
       typeof notesRaw !== 'string'
     ) {
       log.push({ name: 'ask', ok: false });
-      return text('ask wants the words, the code, a title and the notes', true);
+      return text(
+        badArgument('ask, code, title and notes', 'words, and all four must be sent'),
+        true,
+      );
     }
     const over = (['ask', 'code', 'title', 'notes'] as const).some((key) =>
       tooLong('ask', key, argOf(args, key)),
@@ -362,7 +381,11 @@ export function createVibeCabinet(host: VibeHost): VibeCabinet {
     if (aboutRaw !== undefined && typeof aboutRaw !== 'string') {
       log.push({ name: 'react', ok: false });
       return text(
-        'react wants the handle as words; it is the name the view prints beside each ask',
+        badArgument(
+          'about',
+          'the handle as words',
+          'it is the name the view prints beside each ask',
+        ),
         true,
       );
     }

@@ -1,5 +1,5 @@
 // The stdio cabinet server. A headless round runs inside it (the sweeper
-// bot as the ship, lamps kept up so every boss is met), and the five tools
+// bot as the ship, lamps kept up so every boss is met), and the six tools
 // are the levers a model pulls on that round. stdout is the transport;
 // nothing else is written there. Tools list at once: the sim is built
 // before the transport connects.
@@ -26,7 +26,7 @@ import { loadTape, type Tape } from '@mcp-arcade-cabinets/tape-core';
 
 import { createCabinet, type Cabinet } from './cabinet';
 import { assertCatalogTools, CONTRACT, type ToolDef } from './contract';
-import { setEnv, wholeEnv } from './env';
+import { SEED_NOTE, setEnv, tierNote, wholeEnv } from './env';
 import { hostForRound, tapeCards, type Live } from './host';
 import { createStepFaults, guardStep, isStuck } from './step-guard';
 import { speakLine, voiceHealth, type SpeakAnswer } from './voice';
@@ -51,6 +51,25 @@ export const DEFAULT_FIXTURE = 'naive-ndjson';
 export const SERVER_NAME = 'ghost-on-the-menu';
 export const SERVER_VERSION = '0.11.1';
 
+/**
+ * Every line this server writes to stderr, under its own name.
+ *
+ * A stdio server's stderr is where an MCP client's log pane interleaves
+ * several servers and the host, so an unattributed sentence is one the
+ * operator cannot route back to a cabinet - and both cabinets ship in one
+ * image under one entrypoint, so an unsigned note about a variable was
+ * ambiguous between them by construction. `voice/worker.py` has had the
+ * shape all along: a tag, then the line, then the hint.
+ */
+export function tagged(line: string): string {
+  return `${SERVER_NAME}: ${line}`;
+}
+
+/** The default sink: the tag, then whatever the caller wrote. */
+function warnLine(line: string): void {
+  process.stderr.write(tagged(line));
+}
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 /** `packages/cabinet-server/{src,dist}` → the repo's fixtures. Baked into the image later. */
 export const DEFAULT_TAPES_DIR = path.resolve(here, '..', '..', '..', 'fixtures', 'tapes');
@@ -61,7 +80,7 @@ function listTapesDir(dir: string, warnMissing: boolean): { name: string; tape: 
     names = readdirSync(dir).sort();
   } catch {
     // Menu-shaped miss: never dump ENOENT/EACCES with a machine path.
-    if (warnMissing) process.stderr.write('tapes dir did not load (unreadable)\n');
+    if (warnMissing) warnLine('tapes dir did not load (unreadable)\n');
     return [];
   }
   const out: { name: string; tape: Tape }[] = [];
@@ -81,7 +100,7 @@ function listTapesDir(dir: string, warnMissing: boolean): { name: string; tape: 
           : err instanceof Error
             ? err.message
             : 'did not load';
-      process.stderr.write(`tape ${name}: ${why}\n`);
+      warnLine(`tape ${name}: ${why}\n`);
     }
   }
   return out;
@@ -125,8 +144,12 @@ function zodShape(def: ToolDef) {
   const shape: Record<string, z.ZodTypeAny> = {};
   const needed = new Set(def.inputSchema.required);
   for (const [k, p] of Object.entries(def.inputSchema.properties)) {
-    const base =
+    const typed =
       'enum' in p ? z.enum(p.enum as [string, ...string[]]) : z.string().max(p.maxLength);
+    // The contract's own words for this box, into the emitted JSON Schema.
+    // Without this the argument's rule reached a client only inside the
+    // tool's paragraph, and an approval form drew an unlabeled box.
+    const base = p.description === undefined ? typed : typed.describe(p.description);
     shape[k] = needed.has(k) ? base : base.optional();
   }
   return shape;
@@ -237,7 +260,7 @@ export function headlessRound(opts: HeadlessOpts = {}) {
   // and the tools have to be able to read the count.
   const faults = createStepFaults();
   const voiceUrl = opts.voiceUrl === undefined ? DEFAULT_VOICE_URL : opts.voiceUrl;
-  const note = voiceNotes(opts.warn ?? ((line: string) => void process.stderr.write(line)));
+  const note = voiceNotes(opts.warn ?? warnLine);
   // Whether the worker will speak for us. Probed via authenticated GET /stats
   // (bearer when set) with a short abort at start and on a cadence, and set
   // by every take's outcome; never on the beat. Open GET /health is not this.
@@ -374,6 +397,7 @@ export function buildServer(cabinet: Cabinet): McpServer {
     server.registerTool(
       def.name,
       {
+        ...(def.title === undefined ? {} : { title: def.title }),
         description: def.description,
         inputSchema: zodShape(def),
         annotations: def.annotations,
@@ -434,7 +458,7 @@ export function ghostEnv(
   if (opts.seed === undefined) {
     if (seed !== null) out.seed = seed;
     else if (setEnv(env.CABINET_SEED)) {
-      notes.push('CABINET_SEED was not understood; the cabinet draws its own\n');
+      notes.push(SEED_NOTE);
     }
   }
 
@@ -442,9 +466,7 @@ export function ghostEnv(
   if (opts.tier === undefined) {
     if (tier !== null && tier >= 0 && tier <= 3) out.tier = tier as 0 | 1 | 2 | 3;
     else if (setEnv(env.CABINET_TIER)) {
-      notes.push(
-        `CABINET_TIER was not understood; the cabinet plays at tier ${TIER_WORDS[DEFAULT_TIER]}\n`,
-      );
+      notes.push(tierNote(TIER_WORDS[DEFAULT_TIER]!));
     }
   }
 
@@ -477,13 +499,13 @@ export function ghostEnv(
 export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   checkCatalogListing();
   const read = ghostEnv(process.env, opts);
-  for (const note of read.notes) process.stderr.write(note);
+  for (const note of read.notes) warnLine(note);
   const h = headlessRound(read.opts);
   const server = buildServer(h.cabinet);
   let last = Date.now();
   // A throw from the sim is a quiet round, never a dead server (see step-guard).
   // The record is the round's own, so the tools can read it too.
-  const step = guardStep(h.step, h.faults);
+  const step = guardStep(h.step, h.faults, warnLine);
   const timer = setInterval(() => {
     const now = Date.now();
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -495,13 +517,13 @@ export async function startStdio(opts: HeadlessOpts = {}): Promise<void> {
   probeTimer.unref();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write(`${SERVER_NAME} ${SERVER_VERSION}: ${h.fixture}, tools listed\n`);
+  process.stderr.write(tagged(`${SERVER_VERSION}: ${h.fixture}, tools listed\n`));
 }
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
 if (invoked === fileURLToPath(import.meta.url)) {
   startStdio().catch((err: unknown) => {
-    process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
+    process.stderr.write(tagged(`${err instanceof Error ? err.message : String(err)}\n`));
     process.exit(1);
   });
 }

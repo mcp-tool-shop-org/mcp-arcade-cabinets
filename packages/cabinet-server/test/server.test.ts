@@ -12,15 +12,19 @@ import { build } from 'esbuild';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONTRACT } from '../src/contract';
+import { BOT_NOTE, SEED_NOTE, tierNote } from '../src/env';
 import { FORBIDDEN } from '../src/gate';
 import {
   ghostEnv,
   headlessRound,
+  SERVER_NAME,
+  tagged,
   voiceNoteFor,
   voiceNotes,
   VOICE_NOTES,
   type HeadlessOpts,
 } from '../src/server';
+import { vibeEnv, VIBE_SERVER_NAME, vibeTagged } from '../src/server-vibe';
 
 const PKG = path.resolve(__dirname, '..');
 const OUT = path.join(PKG, 'dist', 'server.test-build.js');
@@ -234,13 +238,11 @@ describe("the shooter's environment overrides", () => {
     for (const bad of ['9', '-1', '4', 'abc', '1.5']) {
       const read = ghostEnv({ CABINET_TIER: bad });
       expect(read.opts.tier, bad).toBeUndefined();
-      expect(read.notes, bad).toEqual([
-        'CABINET_TIER was not understood; the cabinet plays at tier one\n',
-      ]);
+      expect(read.notes, bad).toEqual([tierNote('one')]);
     }
     const seed = ghostEnv({ CABINET_SEED: 'later' });
     expect(seed.opts.seed).toBeUndefined();
-    expect(seed.notes).toEqual(['CABINET_SEED was not understood; the cabinet draws its own\n']);
+    expect(seed.notes).toEqual([SEED_NOTE]);
 
     // The mirror of the typing cabinet's CABINET_TAPES_USER note: a variable
     // the image may set for both cabinets and this one does not read.
@@ -252,6 +254,40 @@ describe("the shooter's environment overrides", () => {
     const given = ghostEnv({ CABINET_TIER: '9', CABINET_SEED: 'x' }, { tier: 1, seed: 4 });
     expect(given.notes).toEqual([]);
     expect(given.opts).toEqual({ tier: 1, seed: 4 });
+  });
+
+  // The four notes about a value the cabinet could not read used to say only
+  // what it would do instead. The voice url note one block away is the
+  // counter-example and carries its own reasoning: a line that said only
+  // that the value was wrong gave the operator most likely to meet it
+  // nothing to change. The shapes were written down in the image's table and
+  // nowhere the operator reading stderr was looking.
+  it("names the shape a working value has, in the words the image's own table uses", () => {
+    expect(SEED_NOTE).toContain('a whole number');
+    expect(tierNote('one')).toContain('zero to three');
+    expect(BOT_NOTE).toContain('typist:<words per minute>');
+    // Said the same way on both cabinets: these are the one copy both
+    // `ghostEnv` and `vibeEnv` push.
+    expect(ghostEnv({ CABINET_SEED: 'later' }).notes).toEqual(
+      vibeEnv({ CABINET_SEED: 'later' }).notes,
+    );
+    // And the typist note carries no digit, like every other note here. It
+    // used to hand the operator the raw spec string `parseBot` eats.
+    expect(BOT_NOTE).not.toMatch(/\d/);
+    for (const note of [SEED_NOTE, tierNote('one'), tierNote('zero'), BOT_NOTE]) {
+      expect(note).not.toMatch(/\d/);
+    }
+  });
+
+  it('signs every line it writes to stderr with its own name', () => {
+    // An MCP client's log pane interleaves several servers and the host, and
+    // both cabinets ship in one image under one entrypoint, so an unsigned
+    // note about a variable was ambiguous between them by construction.
+    // `voice/worker.py` has had the shape all along.
+    const line = 'the round faulted and was not stepped';
+    expect(tagged(line)).toBe(`${SERVER_NAME}: ${line}`);
+    expect(vibeTagged(line)).toBe(`${VIBE_SERVER_NAME}: ${line}`);
+    expect(tagged(line)).not.toBe(vibeTagged(line));
   });
 
   it('plays silent and says so when the voice url cannot be read', () => {

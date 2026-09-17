@@ -44,15 +44,25 @@ run:
 # cabinet that does not read it gets one path-free line on stderr at start, as
 # does a value that cabinet cannot use; nothing here is silently inert.
 #
-#   CABINET            both     ghost (or unset) is this listing's shooter, vibe is the typist
+# This table is a COPY. The Dockerfile's is canonical — it ships with the
+# image, so it is the one an operator who pulled the image can reach — and
+# surfaces.test.ts compares the rows between the two markers line for line.
+# Do not edit these rows here; edit the Dockerfile and copy them over. The
+# two were free-hand before that and had drifted three ways, while both of
+# them opened with the promise that nothing here is silently inert.
+# `ghost` below is this listing's own cabinet.
+#
+# VARIABLES BEGIN
+#   CABINET            both     ghost (or unset) is the shooter, vibe is the typist
 #   CABINET_TAPES      both     where the tapes are (baked at /app/tapes)
-#   CABINET_TAPES_USER ghost    operator tapes merged beside the baked twenty
-#   CABINET_FIXTURE    ghost    which tape the round plays
+#   CABINET_TAPES_USER ghost    operator tapes merged beside the baked menu
+#   CABINET_FIXTURE    ghost    which tape the round plays; the image sets its default on the shooter branch only
 #   CABINET_TIER       both     zero to three; anything else is a note and the default (one on the shooter, zero on the typing cabinet)
 #   CABINET_SEED       both     a whole number; anything else is a note
-#   CABINET_BOT        vibe     the typist at the keyboard
+#   CABINET_BOT        vibe     the typist at the keyboard, as `typist:<words per minute>`
 #   VOICE_URL          ghost    the host worker's base; empty (the Catalog default) is silent
 #   VOICE_TOKEN        ghost    the worker's bearer, when it binds beyond loopback
+# VARIABLES END
 #
 # Only CABINET_TAPES_USER is offered as a parameter here: the rest are for a
 # local build, and the Catalog cabinet plays the listing it describes.

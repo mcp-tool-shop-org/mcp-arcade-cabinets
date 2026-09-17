@@ -21,6 +21,7 @@ import {
 } from '@mcp-arcade-cabinets/vibe-typer';
 
 import { VIBE_CONTRACT } from '../src/contract';
+import { BOT_NOTE, SEED_NOTE, tierNote } from '../src/env';
 import { FORBIDDEN } from '../src/gate';
 import { SERVER_VERSION } from '../src/server';
 import {
@@ -81,16 +82,18 @@ describe('the environment overrides', () => {
     for (const bad of ['9', '-1', '4', 'abc', '1.5']) {
       const read = vibeEnv({ CABINET_TIER: bad });
       expect(read.opts.tier, bad).toBeUndefined();
-      expect(read.notes, bad).toEqual([
-        'CABINET_TIER was not understood; the cabinet plays at tier zero\n',
-      ]);
+      expect(read.notes, bad).toEqual([tierNote('zero')]);
     }
 
     const bot = vibeEnv({ CABINET_BOT: 'nonsense' });
     expect(bot.opts.bot).toBeUndefined();
-    expect(bot.notes).toEqual([
-      `CABINET_BOT was not understood; the cabinet plays under ${VIBE_BOT}\n`,
-    ]);
+    // It used to print the spec string `parseBot` eats - the one operator
+    // note in either server carrying a digit, and a second unexplained value
+    // handed to someone who has just been told their own was not understood.
+    expect(bot.notes).toEqual([BOT_NOTE]);
+    expect(bot.notes[0]).not.toContain(VIBE_BOT);
+    expect(bot.notes[0]).not.toMatch(/\d/);
+    expect(bot.notes[0]).toContain('typist:<words per minute>');
 
     // The overlay is the shooter's menu: the image sets CABINET_TAPES_USER
     // for both cabinets and the Catalog mounts an operator directory at it,
@@ -103,9 +106,13 @@ describe('the environment overrides', () => {
     expect(overlay.opts).toEqual({});
     expect(vibeEnv({ CABINET_TAPES_USER: '' }).notes).toEqual([]);
 
-    // The same class, and the other half of the image's asymmetry: the
-    // Dockerfile sets CABINET_FIXTURE for both cabinets and this one has no
-    // tape menu to pick a fixture from, so it was silently inert here.
+    // The same class, and the other half of the image's asymmetry: a
+    // CABINET_FIXTURE the operator really set, on a cabinet with no tape
+    // menu to pick a fixture from. The image no longer bakes one (it is set
+    // on the shooter branch of the ENTRYPOINT), so this note now fires only
+    // when an operator set it themselves - it used to be the first line of
+    // this cabinet's log on every single container start, which is how a
+    // note stops being read at all.
     const fixture = vibeEnv({ CABINET_FIXTURE: 'naive-ndjson' });
     expect(fixture.notes).toEqual([
       'CABINET_FIXTURE is read by the shooter cabinet only; this cabinet has no tape menu\n',
@@ -119,7 +126,7 @@ describe('the environment overrides', () => {
     // got a line next door and nothing here. Same words, because same rule.
     const seed = vibeEnv({ CABINET_SEED: 'later' });
     expect(seed.opts.seed).toBeUndefined();
-    expect(seed.notes).toEqual(['CABINET_SEED was not understood; the cabinet draws its own\n']);
+    expect(seed.notes).toEqual([SEED_NOTE]);
     expect(vibeEnv({ CABINET_SEED: '' }).notes).toEqual([]);
 
     // The host compose file offers CABINET, VOICE_URL and VOICE_TOKEN in one

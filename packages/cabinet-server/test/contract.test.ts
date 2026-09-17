@@ -3,6 +3,8 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { MAX_COLS, MAX_LINES, MAX_NOTES } from '@mcp-arcade-cabinets/vibe-typer';
+
 import {
   assertCatalogTools,
   CONTRACT,
@@ -31,7 +33,7 @@ function cloneVibe(): Record<string, unknown> {
 }
 
 describe('tools.json', () => {
-  it('is the five tools, tiny, closed, and without a whisper, a digit or a fact word', () => {
+  it('is the six tools, tiny, closed, and without a whisper, a digit or a fact word', () => {
     expect(CONTRACT.map((t) => t.name)).toEqual([...TOOL_NAMES]);
     for (const t of CONTRACT) {
       expect(t.description).not.toMatch(FORBIDDEN);
@@ -102,6 +104,71 @@ describe('tools.json', () => {
     expect(() => loadContract(missing)).toThrow('missing tapes');
   });
 
+  it('gives every argument a title and a description a client can put on a box', () => {
+    // Not one property on either contract carried a `description`, so an MCP
+    // client rendering an approval form showed unlabeled boxes and every
+    // argument's rule lived only in the tool's prose. It was structural
+    // rather than an oversight: `loadProperty` returned `{type,enum}` or
+    // `{type,maxLength}` and dropped everything else.
+    for (const t of [...CONTRACT, ...VIBE_CONTRACT]) {
+      expect(t.title, t.name).toBeTypeOf('string');
+      expect(t.title, t.name).not.toMatch(FORBIDDEN);
+      for (const [key, p] of Object.entries(t.inputSchema.properties)) {
+        expect(p.description, `${t.name}.${key}`).toBeTypeOf('string');
+        expect(p.description, `${t.name}.${key}`).not.toMatch(FORBIDDEN);
+        expect(p.description, `${t.name}.${key}`).not.toMatch(WHISPER);
+      }
+    }
+    // Both cabinets ship a `view`, and a client with both servers configured
+    // listed the two with nothing to tell them apart.
+    expect(toolDef('view').title).not.toBe(vibeToolDef('view').title);
+
+    // The two enums that were documented to the shallowest depth now say
+    // what separates their choices.
+    const kind = toolDef('sfx').inputSchema.properties.kind!;
+    for (const sound of enumOf('sfx', 'kind')) {
+      expect(kind.description, sound).toContain(`${sound} is`);
+    }
+    const lead = toolDef('say').inputSchema.properties.lead!;
+    for (const word of enumOf('say', 'lead')) {
+      expect(lead.description, word).toContain(`${word} is`);
+    }
+  });
+
+  it('halts on a key it does not know rather than carrying it nowhere', () => {
+    // `loadTool` read four keys and silently ignored every other, and the
+    // annotations block was rebuilt from four named hints, so a `title` or a
+    // per-property `description` could be written into the contract, pass
+    // every gate, and reach no client at all with nothing said.
+    const strayTool = clone();
+    (strayTool.tools as Record<string, unknown>[])[0]!.outputSchema = {};
+    expect(() => loadContract(strayTool)).toThrow('tools.0.outputSchema');
+
+    const strayHint = clone();
+    (
+      (strayHint.tools as Record<string, unknown>[])[0]!.annotations as Record<string, unknown>
+    ).cautionHint = true;
+    expect(() => loadContract(strayHint)).toThrow('fire.annotations.cautionHint');
+
+    const strayProp = clone();
+    (
+      (strayProp.tools as Record<string, Record<string, Record<string, unknown>>>[])[0]!
+        .inputSchema as unknown as { properties: Record<string, Record<string, unknown>> }
+    ).properties.verb!.pattern = '^a';
+    expect(() => loadContract(strayProp)).toThrow('fire.inputSchema.properties.verb.pattern');
+
+    // And the words on a box are held to the same two rules the tool's own
+    // description is.
+    const facty = clone();
+    (
+      (facty.tools as Record<string, Record<string, Record<string, unknown>>>[])[0]!
+        .inputSchema as unknown as { properties: Record<string, Record<string, unknown>> }
+    ).properties.verb!.description = 'Pick the one that scores.';
+    expect(() => loadContract(facty)).toThrow(
+      'fire.inputSchema.properties.verb.description: forbidden word',
+    );
+  });
+
   it('bounds a text property rather than taking any number the file names', () => {
     // Both servers turn maxLength straight into `z.string().max(n)`, so an
     // open bound is megabytes through the transport and into a gate.
@@ -163,6 +230,31 @@ describe('tools.vibe.json', () => {
     for (const name of ['product', 'ask', 'react'] as const) {
       expect(vibeToolDef(name).annotations.readOnlyHint, name).toBe(false);
     }
+  });
+
+  it("bounds every box at the gate's own ceiling, not at twice it", () => {
+    // The only machine-readable bounds on `ask` used to be roughly twice the
+    // rules the gate enforces, so a client that sized its answer to the
+    // field it could see wrote something that passed the transport and was
+    // then refused by `too-many-lines`, `too-wide` or `bad-notes` - which
+    // reads as the cabinet moving the goalposts. The bound is the only part
+    // of the rule a client can read mechanically.
+    const props = vibeToolDef('ask').inputSchema.properties;
+    const cap = (key: string) => {
+      const p = props[key]!;
+      expect(p, key).not.toHaveProperty('enum');
+      return 'maxLength' in p ? p.maxLength : 0;
+    };
+    // Twelve lines of eighty columns, and the newlines between them.
+    expect(cap('code')).toBe(MAX_LINES * MAX_COLS + (MAX_LINES - 1));
+    // Three notes, one to a line, each one a twelve-word line like any other
+    // on this cabinet - which is what `react.text` is bounded at.
+    const reactText = vibeToolDef('react').inputSchema.properties.text!;
+    const lineCap = 'maxLength' in reactText ? reactText.maxLength : 0;
+    expect(cap('notes')).toBe(MAX_NOTES * lineCap + (MAX_NOTES - 1));
+    // A twelve-word sentence is bounded the way every other twelve-word
+    // field on either cabinet is.
+    expect(cap('ask')).toBe(lineCap);
   });
 
   it('halts on a description that whispers, one that carries a digit, or a missing tool', () => {

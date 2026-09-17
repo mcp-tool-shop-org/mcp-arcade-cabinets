@@ -110,6 +110,86 @@ describe('the boss kinds are one list, four places', () => {
     const extra = clone();
     const boss = extra.boss as Record<string, unknown>;
     boss.usher = JSON.parse(JSON.stringify(boss.doorman)) as unknown;
-    expect(() => loadPersonas(extra)).toThrow('personas.json: boss: unknown kind');
+    // It names the key it found and the kinds it knows, the way `loadTool`
+    // names the cabinet's levers. It used to name neither.
+    expect(() => loadPersonas(extra)).toThrow('personas.json: boss.usher');
+    expect(() => loadPersonas(extra)).toThrow('whisperer, menu, doorman, archivist');
+  });
+
+  it('says the rule beside the key, the way the sibling loader does', () => {
+    // `DEFAULT_PERSONAS` is built at import and `startStdio` prints
+    // `err.message` and exits, so an MCP client showed a server that died
+    // with a path into a file the operator may not have, no statement of
+    // what was expected and no word about what to do. Every bound was right
+    // there in the check beside it and none of them was said.
+    const bounds: [string, string, (o: Record<string, unknown>) => void][] = [
+      [
+        'boss.doorman.voice.rate',
+        'multiplier',
+        (o) => {
+          voiceOf(o, 'doorman').rate = 9;
+        },
+      ],
+      [
+        'boss.doorman.voice.loudness',
+        'decibels',
+        (o) => {
+          voiceOf(o, 'doorman').loudness = -99;
+        },
+      ],
+      [
+        'boss.doorman.voice.preset',
+        'lower-case',
+        (o) => {
+          voiceOf(o, 'doorman').preset = 'Loud Voice';
+        },
+      ],
+      [
+        'voice.maxGap',
+        'at most three',
+        (o) => {
+          (o.voice as Record<string, unknown>).maxGap = 30;
+        },
+      ],
+      [
+        'maxWords',
+        "never above the gate's own",
+        (o) => {
+          o.maxWords = 99;
+        },
+      ],
+      [
+        'window',
+        'at least one',
+        (o) => {
+          o.window = 0;
+        },
+      ],
+      [
+        'cadence',
+        'above nothing',
+        (o) => {
+          o.cadence = 0;
+        },
+      ],
+    ];
+    for (const [key, rule, break_] of bounds) {
+      const bad = clone();
+      break_(bad);
+      let message = '';
+      try {
+        loadPersonas(bad);
+      } catch (err) {
+        message = err instanceof Error ? err.message : String(err);
+      }
+      expect(message, key).toContain(`personas.json: ${key}`);
+      expect(message, key).toContain(rule);
+    }
   });
 });
+
+/** The voice sheet of one boss in a cloned file, for a test that breaks one bound. */
+function voiceOf(o: Record<string, unknown>, kind: string): Record<string, unknown> {
+  const boss = o.boss as Record<string, Record<string, unknown>>;
+  return boss[kind]!.voice as Record<string, unknown>;
+}

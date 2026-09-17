@@ -1,4 +1,4 @@
-// The capability boundary (G12). A cabinet is the five tools over a
+// The capability boundary (G12). A cabinet is the six tools over a
 // `CabinetHost`, and the host is the only thing the tools can reach: words
 // about the field, a place to put a verb, a line, or a sound, and the tape
 // list by name and label. There is no method on the host that returns a

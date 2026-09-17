@@ -205,12 +205,16 @@ export function vibeViewLines(live: VibeLive): string {
   // new run. A client that never disconnects is the case this server is
   // built for, and the one event that throws away everything it holds was
   // the one event it was never told about.
+  //
+  // It goes LAST, where the shooter puts its own exceptional rows: the two
+  // cabinets used to put them at opposite ends, so on one the first line of
+  // the payload was stable and on the other it was not, and a client that
+  // reads positionally could not do the same thing on both.
   const rolled =
     (live.runs ?? 0) > 0 && state.levelIndex === 0
       ? ['run a new run just started; anything you sent before is gone']
       : [];
   return [
-    ...rolled,
     `product ${product}`,
     `team ${STACK_WORDS[next.stack] ?? 'wires'}`,
     // Lower case throughout: this is a cabinet's words, and nothing here
@@ -225,6 +229,7 @@ export function vibeViewLines(live: VibeLive): string {
     ...(pairs.length > 0 ? [`pairs ${pairs.join(' ')}`] : []),
     `next ${named === null ? 'the next level wants a product' : 'the product is set'}`,
     `room ${room ? 'the next level has room' : 'the next level is full'}`,
+    ...rolled,
   ].join('\n');
 }
 

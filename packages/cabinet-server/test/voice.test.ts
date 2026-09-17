@@ -16,6 +16,7 @@ import {
   voiceOutcomes,
   type SpeakAnswer,
 } from '../src/voice';
+import { VOICE_WORDS } from '../src/voice-words';
 
 /** A take id the worker can actually mint: `line_id()` is twenty hex characters. */
 const TAKE = 'a1b2c3d4e5f60718293a';
@@ -416,8 +417,41 @@ describe('a live worker that answers with something else', () => {
     await flush();
     expect(v.stats().noWorker).toBe(0);
     expect(v.stats().receiptFailed).toBe(1);
-    expect(v.status()).toBe('voice: the worker answered with something unreadable');
+    expect(v.status()).toBe(VOICE_WORDS.unreadable);
     for (const s of status) expect(s).not.toMatch(/\d/);
+  });
+
+  it("says the refusal in a word of its own, never the worker's", async () => {
+    // This used to interpolate `SpeakAnswer.error` behind a filter of digits
+    // and path separators only, so an engine, a model or a vendor name in a
+    // worker's refusal body landed on the bezel. The sibling voicer refused
+    // exactly this and wrote down why; one rule, and this was the half not
+    // keeping it. VOICE_URL is operator-supplied, so the body is not
+    // trusted input.
+    const status = async (a: SpeakAnswer) => {
+      const v = createVoicer({
+        speak: async () => a,
+        play: () => undefined,
+        captionSeconds: 2.4,
+      });
+      v.job(JOB);
+      await flush();
+      return v.status();
+    };
+    const named = await status({
+      receipt: null,
+      status: 'refused',
+      ms: 8,
+      refused: 'payload',
+      error: 'kokoro has no such preset',
+    });
+    expect(named).toBe(VOICE_WORDS.refused);
+    expect(named).not.toContain('kokoro');
+    expect(named).not.toContain('(');
+    // The same words the typing cabinet says, out of the one shared table.
+    expect(await status({ receipt: null, status: 'refused', ms: 4, refused: 'auth' })).toBe(
+      VOICE_WORDS.auth,
+    );
   });
 
   it('counts every outcome, so asked never runs ahead of what is accounted for', async () => {

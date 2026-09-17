@@ -11,6 +11,8 @@ import {
   bandWord,
   ENDLESS_SCHEMA,
   ENDLESS_SYSTEM,
+  ENDLESS_TOOL_DESCRIPTION,
+  ENDLESS_TOOL_NAME,
   endlessPrompt,
   parseRequest,
   type EndlessView,
@@ -80,6 +82,23 @@ describe('the endless prompt', () => {
   it('holds both tiers to one schema', () => {
     expect(ENDLESS_SCHEMA.required).toEqual(['ask', 'code', 'title', 'notes', 'product']);
     expect(ENDLESS_SCHEMA.additionalProperties).toBe(false);
+  });
+
+  it('describes every field it insists on, and names all five in the tool sentence', () => {
+    // This was the one contract in the package nothing held to the package's
+    // standards: five properties with no descriptions, the rules living only
+    // in the user turn, and a tool sentence that named four of the five. A
+    // seat whose provider weights the tool schema over the prose saw five
+    // undescribed required fields.
+    for (const key of ENDLESS_SCHEMA.required) {
+      const prop = ENDLESS_SCHEMA.properties[key as keyof typeof ENDLESS_SCHEMA.properties] as {
+        description?: string;
+      };
+      expect(prop.description, key).toBeTypeOf('string');
+      expect(prop.description, key).not.toBe('');
+      expect(ENDLESS_TOOL_DESCRIPTION, key).toContain(key);
+    }
+    expect(ENDLESS_TOOL_NAME).toBe('endless_request');
   });
 });
 
