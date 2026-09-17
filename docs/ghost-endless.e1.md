@@ -1,8 +1,6 @@
-# Endless, slice E1 — the sim, the levers and the band (draft)
+# Endless, slice E1 — the sim, the levers and the band
 
-Draft numbers and decisions from the E1 build, 2026-09-17. The lead rewrites
-the prose; the tables are measurements and should move only when something is
-re-measured. Nothing here quotes the Director.
+The record of the E1 build, 2026-09-17: the endless run's draw, climb, lamp pool, score, rank word and code, built by an Opus builder in a worktree against the lock in `docs/ghost-endless.dispatch.md` (G31–G35) and read by the lead. The tables are measurements and move only when something is re-measured. The rank words and the chain words are the lead's: a shift on the board, from clocking in to closing the floor; the chain from one call to unbroken. Landed on `main` the same day, after the Director's heat and the field-wide sweep moved the live bars (the notes beside each bar in `test/endless.test.ts` say what and why) and after a merge that kept the caught-lamp clamp on the round's own pool. The shell (E3), the call tool and the seat picker (E2) and the voice and film (E4) are the slices after this one. Nothing here quotes the Director.
 
 ## Standards compliance
 
