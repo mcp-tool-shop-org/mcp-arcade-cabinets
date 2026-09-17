@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONTRACT } from '../src/contract';
 import { FORBIDDEN } from '../src/gate';
-import { headlessRound, type HeadlessOpts } from '../src/server';
+import { DEFAULT_TIER, ghostEnv, headlessRound, type HeadlessOpts } from '../src/server';
 
 const PKG = path.resolve(__dirname, '..');
 const OUT = path.join(PKG, 'dist', 'server.test-build.js');
@@ -208,5 +208,77 @@ describe('the stdio server', () => {
     expect(r.content[0]?.text).toMatch(/not found|-32602/);
     const alive = await client.callTool({ name: 'view', arguments: {} });
     expect(alive).toBeTruthy();
+  });
+});
+
+describe("the shooter's environment overrides", () => {
+  it('reads the tier and the seed it has always carried, and says what it could not use', () => {
+    // Five raw `process.env` reads used to be spread into HeadlessOpts with
+    // no validation and no notes, and CABINET_TIER and CABINET_SEED were not
+    // read at all although both are opts here: an operator who set the tier
+    // on the shooter played the default and was told nothing.
+    const quiet = ghostEnv({ CABINET_TIER: '2', CABINET_SEED: '7', CABINET_FIXTURE: 'a' });
+    expect(quiet.notes).toEqual([]);
+    expect(quiet.opts).toEqual({ tier: 2, seed: 7, fixture: 'a' });
+
+    for (const tier of ['0', '3']) {
+      expect(ghostEnv({ CABINET_TIER: tier }).notes).toEqual([]);
+    }
+    for (const bad of ['9', '-1', '4', 'abc', '1.5']) {
+      const read = ghostEnv({ CABINET_TIER: bad });
+      expect(read.opts.tier, bad).toBeUndefined();
+      expect(read.notes, bad).toEqual([
+        `CABINET_TIER was not understood; the cabinet plays at tier ${DEFAULT_TIER}\n`,
+      ]);
+    }
+    const seed = ghostEnv({ CABINET_SEED: 'later' });
+    expect(seed.opts.seed).toBeUndefined();
+    expect(seed.notes).toEqual(['CABINET_SEED was not understood; the cabinet draws its own\n']);
+
+    // The mirror of the typing cabinet's CABINET_TAPES_USER note: a variable
+    // the image may set for both cabinets and this one does not read.
+    expect(ghostEnv({ CABINET_BOT: 'typist:30' }).notes).toEqual([
+      'CABINET_BOT is read by the typing cabinet only; this cabinet plays its own bot\n',
+    ]);
+
+    // An explicit opt wins and is not second-guessed by the environment.
+    const given = ghostEnv({ CABINET_TIER: '9', CABINET_SEED: 'x' }, { tier: 1, seed: 4 });
+    expect(given.notes).toEqual([]);
+    expect(given.opts).toEqual({ tier: 1, seed: 4 });
+  });
+
+  it('plays silent and says so when the voice url cannot be read', () => {
+    // Passed through whole, a url with no scheme made every fetch throw a
+    // TypeError that voiceHealth and speakLine both swallow, so the cabinet
+    // said 'no worker' for the rest of the session — the same words an
+    // absent worker gets, with nothing said at start.
+    const said = 'the voice url was not understood; the cabinet plays silent\n';
+    for (const bad of ['host.docker.internal:7788', 'not a url', '127.0.0.1:7788', '/voice']) {
+      const read = ghostEnv({ VOICE_URL: bad });
+      expect(read.opts.voiceUrl, bad).toBeNull();
+      expect(read.notes, bad).toEqual([said]);
+    }
+    // The Catalog's own silent default says nothing; a good one says nothing.
+    expect(ghostEnv({ VOICE_URL: '' })).toEqual({ opts: { voiceUrl: null }, notes: [] });
+    expect(ghostEnv({ VOICE_URL: 'http://host.docker.internal:7788' })).toEqual({
+      opts: { voiceUrl: 'http://host.docker.internal:7788' },
+      notes: [],
+    });
+    // Unset is not the same as empty: the cabinet keeps its own default.
+    expect(ghostEnv({}).opts.voiceUrl).toBeUndefined();
+  });
+
+  it('says every line path-free, with nowhere for an operator mount to be echoed back', () => {
+    const notes = [
+      ...ghostEnv({ CABINET_TIER: '9' }).notes,
+      ...ghostEnv({ CABINET_SEED: 'x' }).notes,
+      ...ghostEnv({ CABINET_BOT: 'typist:30' }).notes,
+      ...ghostEnv({ VOICE_URL: 'file:///home/someone/voice' }).notes,
+    ];
+    expect(notes).toHaveLength(4);
+    for (const note of notes) {
+      expect(note).not.toMatch(/[/\\]/);
+      expect(note.endsWith('\n')).toBe(true);
+    }
   });
 });

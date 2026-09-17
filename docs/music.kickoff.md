@@ -1,0 +1,53 @@
+# Kickoff — the music pass: two-minute beds for Ghost on the Menu
+
+**Why this exists.** The Director played v0.11.1 on 2026-09-16 and said the songs do not play long enough to get into; the tracks are good and short, and he wants them mastered and made longer, about two minutes each, so the music is something a player remembers. He approved both routes below the same evening. The beds are ACE-Step 1.5 loops of 32 to 40 seconds (`docs/art/receipts.json → tracks`), and the field holds a bed for a flat 36 seconds (`BED_MIN_S` in `packages/ghost-on-the-menu/src/audio.ts`) before it may give way, so a player hears at most one loop of anything and the three 40-second boss beds are cut four seconds early every time.
+
+**Scope.** Ghost on the Menu's eight beds: `inspect`, `poison`, `rug`, `unlisted`, `breather` (the wave pool) and `whisperer`, `menu`, `doorman` (the bosses); `parallelism.mp3` is not a bed (a burst is the playing bed faster since v0.7.0) and is left alone. **And Vibe Typer's seven stack beds** (`bash`, `csharp`, `java`, `javascript`, `python`, `sql`, `integration` under `apps/cabinets/public/vibe/tracks/`, 52 s each, fully receipted with their tags, key and tempo under `vibe_typer_beds`), on the Director's word the same evening: the same two routes, the same mastering, the same whisper check, the fresh pieces seeded 8311 to 8317 with the receipted tags verbatim and the original bed as the timbre reference.
+
+**The story does not move.** Each boss keeps its theme and each wave keeps its mood; the fiction of the beds was set when they were made and the Director likes them. This pass changes length, shape and loudness, never which bed belongs to whom.
+
+## Standing frame
+
+The lead writes every public surface (this file, the changelog, the handbook's music paragraph, the receipts prose). The builder writes scripts, tests, the audio files and its report. One branch, one commit, a review from a packet cut from the merge base before merge, `pnpm verify` and `pnpm build:play` green, `pnpm build:launcher` for both packages (the tarball gate names the beds), identity scan clean before the push. The coordinator plays the built bundle before the merge and listens to the field. Never quote the Director in a file; write the decision and the reason. Feel numbers stay `// Director` constants or JSON levers. Every generation is receipted in `docs/art/receipts.json` with the job id, the model, the seed, the settings and the GPU seconds; the Comfy route is at no credit cost (the graph carries no paid API node; `estimate_credits` returned 0 on 2026-09-16, as it did for the Vibe beds).
+
+## Standards compliance (this slice)
+
+| Standard                 | Score | Evidence                                                                                                                                                                                                                                                             |
+| ------------------------ | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PIN_PER_STEP             | 2     | Every Comfy job is receipted with its template, model, seed, tags and duration; the local arrangement is a script with a fixed plan per bed and a fixed seed for any choice it makes; the mastering targets are constants in the script.                             |
+| ANDON_AUTHORITY          | 2     | The arrangement script refuses a bed whose bar length it cannot find; the master refuses a bed outside the loudness window; the no-words check refuses a bed with a transcribed word; the pack gate requires every bed by name; the Director's ear is the last halt. |
+| NAMED_COMPENSATORS       | 2     | See the table below. No skip.                                                                                                                                                                                                                                        |
+| DECOMPOSE_BY_SECRETS     | 2     | The arrangement (local, deterministic) and the fresh generations (cloud, seeded) are separate scripts with separate receipts; the hold fix is a separate finding in the health wave.                                                                                 |
+| UNCERTAINTY_GATED_HUMANS | 2     | The Director hears every bed before it merges; the fresh pieces are auditioned, not installed, until he picks; the size decision below is put to him with the numbers.                                                                                               |
+| EXTERNAL_VERIFIER        | 2     | The beds are heard back by faster-whisper for words (as the Vibe beds were), reviewed from a packet by a non-Claude model, and the field is played by the coordinator; the builder judges nothing of its own.                                                        |
+
+## Irreversible actions and compensators
+
+| Action                                               | Undo                                                                                                                                                                                  | Owner                     |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| A Comfy Cloud job (GPU seconds, no credits)          | Cannot be un-run; the receipt row stays with the spend and the job id, and the file is not installed                                                                                  | coordinator               |
+| Replacing a bed under `apps/cabinets/public/tracks/` | `git checkout main -- apps/cabinets/public/tracks/<key>.mp3`; the originals also stay under `docs/art/originals-ghost-beds/` (git-ignored, copied out of the worktree before removal) | builder, then coordinator |
+| A branch push                                        | Delete the branch                                                                                                                                                                     | coordinator               |
+| The merge                                            | Revert the merge commit; the tarball gate and Pages follow `main`                                                                                                                     | coordinator               |
+
+## The brief, as decisions
+
+1. **Route one, the arrangement (M1).** Each existing bed is split into stems on Comfy Cloud (`AudioStemSeparate`, htdemucs, four stems, no paid node) and rebuilt locally into a piece of about two minutes from its own material: an intro on the quiet stems, the full loop, a breakdown without drums, the full loop again, an outro. Cuts land on bar lines found from the loop's own tempo (the loop length divides into whole bars; the script derives the bar from the file and refuses when it cannot). Every note in the result is a note the Director already liked.
+2. **Route two, fresh pieces (M2).** For each bed, one new two-minute piece from ACE-Step 1.5 with the original bed as the timbre reference (`ReferenceTimbreAudio`, `generate_audio_codes` off), the same key and tempo, `[instrumental]`, seeded. These are auditioned beside the M1 pieces; the Director picks per bed which ships, or both (the pool can hold more than one bed a mood only if the code learns to rotate them, which is a separate decision).
+3. **Mastering, both routes.** Loudness matched across the set to one integrated target (the script's constant, a quiet bed under shots; start at the level the current beds sit at, measured, not assumed), a true-peak ceiling, a gentle limiter, and loop-safe ends (a short fade at the head and tail so a piece that outlasts its wave still loops without a click). Ducking and `BED_LEVEL` in the shell stay as they are.
+4. **No words.** Every installed bed is heard back by faster-whisper on the rig's GPU as the Vibe beds were; a transcribed word is a miss and a re-roll. The tags for M2 name no vocals five ways, as the Vibe family sentence does.
+5. **Weight is a decision, not a side effect.** Eight two-minute beds at the current MP3 setting would take Ghost's package from about 6 MB to about 25 MB and Pages with it. The builder measures three encodings (MP3 128k, MP3 96k, Opus 96k) on one finished bed and reports size and a listening note; the Director picks. Opus is supported by every browser the shell targets, but the shell, the pack gate and the release check name `.mp3` today, so a format change is code in three places and is named in the report before it is made.
+6. **The hold follows the track.** `BED_MIN_S` becomes the floor for a bed whose length is not yet known; a bed holds for its own `duration` once metadata is loaded. This lands in the health wave as finding C-w1-04 and is not this slice's to write, but this slice's beds are tested against it: a two-minute bed must play through before a wave bed replaces it.
+7. **Receipts.** `docs/art/receipts.json → ghost_beds_2min` records every stem job and every M2 job (job id, template or node set, seed, tags, duration, GPU seconds), the arrangement plan per bed (section order and bar counts), the mastering measurements before and after (integrated loudness, true peak, length), the encoding picked, and the whisper result. The prose beside the numbers is the lead's.
+
+## Acceptance
+
+- Every shipped bed is between 110 and 130 seconds and loops without a click.
+- Integrated loudness of the eight within one LU of each other; true peak under the ceiling; the measurements in the receipt.
+- The whisper check transcribes nothing on all eight.
+- `pnpm verify`, `pnpm build:play`, `pnpm build:launcher` green; the Ghost tarball carries the eight by name and no stray file; the size delta is in the report.
+- The coordinator plays a tape and a shift on the built bundle and hears each bed play through; the Director listens and says yes per bed.
+
+## What the builder reports
+
+The section for `docs/music.md` (the record: what was made, the numbers, the decisions with reasons, what the next pass should know), the receipt rows, the three-encoding measurement, the list of git-ignored paths holding evidence (`docs/art/originals-ghost-beds/`, `film/`), and nothing that names a pixel or a note the Director has not heard.

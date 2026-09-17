@@ -7,7 +7,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { VoiceJob } from '../src/host';
 import { DEFAULT_PERSONAS } from '../src/personas';
-import { AUDIO_URL, createVoicer, speakLine, voiceHealth, type SpeakAnswer } from '../src/voice';
+import {
+  AUDIO_URL,
+  BAD_PAYLOAD,
+  createVoicer,
+  speakLine,
+  voiceHealth,
+  voiceOutcomes,
+  type SpeakAnswer,
+} from '../src/voice';
 
 /** A take id the worker can actually mint: `line_id()` is twenty hex characters. */
 const TAKE = 'a1b2c3d4e5f60718293a';
@@ -376,5 +384,70 @@ describe('the worker client', () => {
       json: async () => ({ ok: false, engine: 'kokoro-onnx' }),
     })) as unknown as typeof fetch;
     expect(await voiceHealth({ url: '/voice', fetchImpl: bodyFalse })).toBeNull();
+  });
+});
+
+describe('a live worker that answers with something else', () => {
+  it('is a failed receipt, not an absent worker, and says so in its own words', async () => {
+    // A 200 whose body is not JSON — a proxy's error page, a truncated
+    // answer. It used to land in the outer catch as 'no worker', which is
+    // the one status that drops the worker for the rest of the session.
+    const fetchImpl = (async () => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new SyntaxError('Unexpected token < in JSON at position 0');
+      },
+    })) as unknown as typeof fetch;
+    const a = await speakLine(JOB, { url: '/voice', fetchImpl });
+    expect(a.status).toBe('receipt failed');
+    expect(a.error).toBe(BAD_PAYLOAD);
+    expect(a.receipt).toBeNull();
+    expect(a.why).toBeUndefined();
+
+    const status: string[] = [];
+    const v = createVoicer({
+      speak: async () => a,
+      play: () => expect.unreachable('nothing plays without a receipt'),
+      captionSeconds: 2.4,
+      onStatus: (s) => status.push(s),
+    });
+    v.job(JOB);
+    await flush();
+    expect(v.stats().noWorker).toBe(0);
+    expect(v.stats().receiptFailed).toBe(1);
+    expect(v.status()).toBe('voice: the worker answered with something unreadable');
+    for (const s of status) expect(s).not.toMatch(/\d/);
+  });
+
+  it('counts every outcome, so asked never runs ahead of what is accounted for', async () => {
+    // The gap: 'speak failed' and both refusals incremented nothing, so a
+    // worker that failed or refused every take reported asked=N with every
+    // other counter at zero, which reads as N takes still in flight.
+    const outcomes: SpeakAnswer[] = [
+      receipt(true),
+      receipt(false),
+      { receipt: null, status: 'no worker', ms: 5 },
+      { receipt: null, status: 'speak failed', ms: 5, error: 'speak failed' },
+      { receipt: null, status: 'refused', ms: 5, refused: 'payload', error: 'no such voice' },
+      { receipt: null, status: 'refused', ms: 5, refused: 'auth' },
+    ];
+    let i = 0;
+    const v = createVoicer({
+      speak: async () => outcomes[i++]!,
+      play: () => undefined,
+      captionSeconds: 2.4,
+    });
+    for (let n = 0; n < outcomes.length; n++) {
+      v.job(JOB);
+      // Settle each take before the next, so no job supersedes a pending one
+      // and `asked` is exactly the outcomes with nothing left in flight.
+      await flush();
+    }
+    const s = v.stats();
+    expect(s.asked).toBe(outcomes.length);
+    expect(s.speakFailed).toBe(1);
+    expect(s.refused).toBe(2);
+    expect(voiceOutcomes(s)).toBe(s.asked);
   });
 });

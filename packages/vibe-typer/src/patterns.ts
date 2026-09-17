@@ -283,6 +283,11 @@ export interface UserSet {
    * an authoring run writes reactions per snippet, the picker draws the
    * tier's neutral reactions, which are held to the lines-neutral gate. The
    * data and the loader stay so that run has somewhere to land.
+   *
+   * Turning it on is not a one-character change: `loadUser` halts on the
+   * first by-topic or tier line that names a piece the request never asked
+   * for, and it names that line. Cleaning the pools is the price of the
+   * flip, which is what the flip was always asking for.
    */
   reactionsByTopicEnabled: boolean;
   creeps: string[];
@@ -387,6 +392,113 @@ function asStack(value: unknown, file: string, key: string): Stack {
   const s = asString(value, file, key);
   if (!(STACKS as readonly string[]).includes(s)) fail(file, key);
   return s as Stack;
+}
+
+/**
+ * Things a request might build. A line that lands against a request the
+ * writer never read may not name one: "the greeting is almost ready" is
+ * nonsense against a request to make the login faster, and the Director read
+ * exactly that on the published 0.11.0.
+ *
+ * The list lived in test/lines-neutral.test.ts, which is still where it is
+ * scanned across every blind pool and where its limits are written out — it
+ * is a denylist and a floor, not the property, and the vocabulary rule next
+ * to it is what fails closed. It is here as well because one lever, and only
+ * one, can re-light a pool of lines this rule catches by flipping a boolean,
+ * and a gate a test cannot reach is no gate at all: see `loadUser`.
+ */
+export const PIECES: readonly string[] = [
+  'greeting',
+  'button',
+  'table',
+  'list',
+  'chart',
+  'background',
+  'image',
+  'picture',
+  'card',
+  'header',
+  'footer',
+  'badge',
+  'slider',
+  'clock',
+  'countdown',
+  'menu',
+  'grid',
+  'stepper',
+  'avatar',
+  'banner',
+  'picker',
+  'frame',
+  'layer',
+  'border',
+  'font',
+  'heading',
+  'link',
+  'icon',
+  'margin',
+  'row',
+  'column',
+  'form',
+  'screen',
+  'sidebar',
+  'tooltip',
+  'spinner',
+  'dashboard',
+  'radio',
+  'checkbox',
+  'input',
+  'label',
+  'email',
+  'login',
+  'search',
+  'profile',
+  'page',
+  'map',
+  'calendar',
+  'timer',
+  'progress',
+  'duck',
+  'yogurt',
+  'fridge',
+  'toaster',
+  'door',
+  'hat',
+  'bonnet',
+  'sock',
+  // Ordinary things a request builds that the first list missed. Added
+  // because a denylist that stops growing stops catching, not because any
+  // line used them.
+  'modal',
+  'drawer',
+  'carousel',
+  'toggle',
+  'tab',
+  'navbar',
+  'accordion',
+  'gallery',
+  'widget',
+  'cart',
+  'playlist',
+  'invoice',
+  'panel',
+  'tile',
+  'gauge',
+  'timeline',
+  'overlay',
+];
+
+/**
+ * Plural-aware: `column` bars `columns`, which is the form the line the
+ * Director read actually used. `piece` is deliberately not in the list — it
+ * is the game's own word for whatever got built and is true of every
+ * request.
+ */
+export const PIECE_RULE = new RegExp(`\\b(${PIECES.join('|')})(?:s|es)?\\b`, 'i');
+
+/** True when a line names a thing the request may never have asked for. */
+export function namesAPiece(line: string): boolean {
+  return PIECE_RULE.test(line);
 }
 
 /** Why this line cannot be said, or null. One reason, in words. */
@@ -796,10 +908,38 @@ function loadUser(raw: unknown): UserSet {
   // the neutral reactions.
   const enabled = obj.reactionsByTopicEnabled;
   if (enabled !== undefined && typeof enabled !== 'boolean') fail(file, 'reactionsByTopicEnabled');
+  const reactions = loadTierLines(req(obj, file, 'reactions'), file, 'reactions', MIN_REACTIONS);
+  const reactionsByTopic = loadPools(req(obj, file, 'reactionsByTopic'), file, 'reactionsByTopic');
+  // The lever was a one-character cliff with nothing behind it. Flipping it
+  // re-lights the by-topic pool — keyed to the snippet's code construct and
+  // not to the request, so it draws a metaphor for a loop against whatever
+  // was asked — and the tier pool behind it, which was authored as "the user
+  // names the thing that just shipped". Both carry lines that name a piece
+  // the request never asked for: the class the Director read on the
+  // published 0.11.0. Nothing measured either pool, and the loader took
+  // `true` without a further word.
+  //
+  // So the flip is now a gate rather than a cliff. Turning it on means the
+  // pools it turns on have been cleaned first; until then the load halts and
+  // names the line, which is the whole size of the job it is asking for. The
+  // tier pool is held too, because the by-topic path falls through to it for
+  // a snippet whose topics have no pool of their own.
+  if (enabled === true) {
+    for (const [name, pool] of Object.entries(reactionsByTopic)) {
+      pool.forEach((line, i) => {
+        if (namesAPiece(line)) fail(file, `reactionsByTopic.${name}.${i}`);
+      });
+    }
+    for (const tier of LINE_TIERS) {
+      reactions[tier].forEach((line, i) => {
+        if (namesAPiece(line)) fail(file, `reactions.${tier}.${i}`);
+      });
+    }
+  }
   return {
     asks,
-    reactions: loadTierLines(req(obj, file, 'reactions'), file, 'reactions', MIN_REACTIONS),
-    reactionsByTopic: loadPools(req(obj, file, 'reactionsByTopic'), file, 'reactionsByTopic'),
+    reactions,
+    reactionsByTopic,
     reactionsByTopicEnabled: enabled === true,
     creeps: loadLines(req(obj, file, 'creeps'), file, 'creeps', MIN_CREEPS),
     reviews: loadLines(req(obj, file, 'reviews'), file, 'reviews', MIN_REVIEWS),

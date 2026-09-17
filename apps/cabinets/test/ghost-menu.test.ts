@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { decodeShift } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 
-import { readPrefs } from '../src/ghost';
+import { readPrefs, writePrefs } from '../src/ghost';
 import { TAPES } from '../src/tapes';
 
 const ROSTER = TAPES.map((t) => t.name);
@@ -45,6 +45,40 @@ beforeEach(() => {
 
 afterEach(() => {
   document.body.replaceChildren();
+});
+
+describe('the rung a fresh browser plays at', () => {
+  it('opens on the seat, and the recorded rung says what it is', async () => {
+    await paint();
+    byText('button.tape-name', 'Ghost on the Menu').click();
+    const play = app().querySelector('select[aria-label="difficulty"]') as HTMLSelectElement;
+    const shift = app().querySelector('select[aria-label="shift difficulty"]') as HTMLSelectElement;
+
+    // Nothing is stored yet, and every fixture tape's header derives to the
+    // study rung, where the formations neither fire nor dive: opening there
+    // reads as a broken game, so a browser that has never played opens on the
+    // seat and the Shift row opens with it.
+    expect(readPrefs().difficulty).toBeUndefined();
+    expect(play.value).toBe('seat');
+    expect(shift.value).toBe('seat');
+
+    // The study rung is still a choice, and its label says what choosing it
+    // means rather than leaving the player to find out by playing it.
+    const recorded = [...play.options].find((o) => o.value === 'recorded');
+    expect(recorded).toBeTruthy();
+    expect(recorded!.textContent).toContain('as recorded');
+    expect(recorded!.textContent).toContain('nothing fires');
+  });
+
+  it('plays what this browser last chose, default or not', async () => {
+    writePrefs({ difficulty: 'recorded' });
+    await paint();
+    byText('button.tape-name', 'Ghost on the Menu').click();
+    const play = app().querySelector('select[aria-label="difficulty"]') as HTMLSelectElement;
+    const shift = app().querySelector('select[aria-label="shift difficulty"]') as HTMLSelectElement;
+    expect(play.value).toBe('recorded');
+    expect(shift.value).toBe('recorded');
+  });
 });
 
 describe('the call card between calls', () => {

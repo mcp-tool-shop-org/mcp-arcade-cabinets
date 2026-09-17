@@ -110,6 +110,14 @@ interface RunContext {
 const SYNC_LINES = 3;
 
 /**
+ * Pieces the preview keeps. Far past any listed level and past any endless
+ * run a player sits through; it exists so a day-long container session has a
+ * bounded RunState rather than an array that grows for as long as the client
+ * stays connected.
+ */
+export const BUILT_CAP = 256;
+
+/**
  * The salt that keeps the nag clock off the planner's generator (slice 3).
  * The level seed fans out through mixSeed, so the check-ins are replayable
  * and the plan is byte-identical with the nag lever at any value.
@@ -346,6 +354,7 @@ export function createRun(opts: CreateRunOpts): RunState {
     streak: 0,
     copilot: null,
     built: [],
+    pieceCount: 0,
     chat: [],
     clock: 0,
     over: false,
@@ -456,6 +465,14 @@ function ship(state: RunState): void {
   // The last piece carries the deploy bonus too, so the preview grows by
   // exactly what the score counts (G24; the review's first change).
   state.built.push({ id: request.snippet.id, size: piece + bonus });
+  state.pieceCount += 1;
+  // The preview is a window, not a history. A listed level never reaches the
+  // cap; a container session has no natural end, and `built` grew one entry
+  // per request for as long as an MCP client stayed connected. The supplied
+  // buffer was capped for this reason (`bufferCap` above); this is the same
+  // rule on the array that grows with the run. `pieceCount` is what the
+  // count is read from, so nothing downstream loses a piece to the trim.
+  if (state.built.length > BUILT_CAP) state.built.splice(0, state.built.length - BUILT_CAP);
   push(state, { kind: 'piece', size: piece + bonus });
   if (last) push(state, { kind: 'ship', nearMiss });
   state.context = refill(state.context, state.plan.refillShare);
@@ -475,10 +492,17 @@ function ship(state: RunState): void {
   const seated = ctx.reactionFor === request.id ? ctx.reaction : null;
   ctx.reaction = null;
   ctx.reactionFor = null;
+  // The product and the level id go to the picker so a snippet's own
+  // reaction can fill `{product}` and can honour the `for` binding its ask
+  // already honours. Without them the picker could do neither, and a
+  // reaction authored beside an ask would have been unreachable.
   say(
     state,
     'user',
-    seated ?? (last ? ctx.picker.review(state.plan.id) : ctx.picker.reaction(request.snippet)),
+    seated ??
+      (last
+        ? ctx.picker.review(state.plan.id)
+        : ctx.picker.reaction(request.snippet, state.plan.product, state.plan.id)),
   );
   setStreak(state, state.streak + 1);
   state.beat = 'ship';
@@ -543,9 +567,15 @@ function advance(state: RunState): void {
   // seat's name on every level after it.
   ctx.suppliedProduct = null;
   if (!plan) {
+    // The planner came up empty: an empty candidate pool, which is a stack
+    // with no corpus or an integration stack with no tapes. This used to be
+    // reported as `shipped`, identical to a listed run the player finished —
+    // and "shipped" is never a true thing to say about the endless ladder,
+    // which by definition has no end to reach. It has its own word now so
+    // the player, the transcript and the band can tell the two apart.
     state.over = true;
-    state.ended = 'shipped';
-    push(state, { kind: 'over', how: 'shipped' });
+    state.ended = 'unplanned';
+    push(state, { kind: 'over', how: 'unplanned' });
     return;
   }
   state.plan = plan;
@@ -699,8 +729,20 @@ function backspace(state: RunState): void {
 /**
  * One step. `dt` is seconds; the shell and the bots both run a fixed frame.
  * Events are cleared at the top, so what the shell drains is this step's.
+ *
+ * A dt that is not a finite positive number is a caller bug and throws, the
+ * way `createRun` throws on a bad plan. It cannot be allowed through: the
+ * bar clamps every non-finite value to empty, so a stray dt would be turned
+ * into a plausible-looking game over — the run would end with the context
+ * word on the board, which is a false statement about what happened, and in
+ * a listed level it would refill and push a compaction every tick until the
+ * play-through called the run an overrun. Every other number this package
+ * takes is range-checked at load; this is the one that arrives per frame.
  */
 export function stepRun(state: RunState, input: RunInput, dt: number): RunState {
+  if (typeof dt !== 'number' || !Number.isFinite(dt) || dt <= 0) {
+    throw new Error('stepRun: dt must be a finite positive number of seconds');
+  }
   state.events.length = 0;
   if (state.over) return state;
   state.clock += dt;

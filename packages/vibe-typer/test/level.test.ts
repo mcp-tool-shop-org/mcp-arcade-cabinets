@@ -296,3 +296,38 @@ describe('planning a level', () => {
     }
   });
 });
+
+// ——— the stack running out ————————————————————————————————————————————————
+//
+// The widening ladder's last rung used to hand back the whole stack
+// unfiltered, so once a stack's free pool was spent the planner drew
+// already-played snippets with no signal anywhere — no event, no flag, nothing
+// in the transcript — against this module's own claim that the seed never
+// biases toward a repeat (Q1.9). A run pinned to one stack has roughly forty
+// snippets in band and spends four a level, so an endless session passes that
+// point inside ten levels, and `used` was never pruned, so the run could not
+// start a fresh cycle deliberately either.
+
+describe('when a stack runs out', () => {
+  const stackOf = (id: Stack) => (SEASONED.byStack[id] ?? []).map((snippet) => snippet.id);
+
+  it('starts a new cycle, says so on the plan, and repeats nothing inside a level', () => {
+    const used = new Set(stackOf('bash'));
+    const spent = used.size;
+    const made = plan({ endless: true, levelIndex: 3, stack: 'bash', used });
+    expect(made.recycled).toBe(true);
+    // A fresh cycle: the ids this level did not take are free again, so the
+    // next level is not drawing from a pool of one.
+    expect(used.size).toBeLessThan(spent);
+    expect(used.size).toBe(made.requests.length);
+    // And nothing inside the level is the same snippet twice: the ids this
+    // level has already drawn are the ones the cycle keeps.
+    const drawn = made.requests.map((request) => request.snippet.id);
+    expect(new Set(drawn).size).toBe(drawn.length);
+  });
+
+  it('says nothing on a level that had snippets to draw', () => {
+    const made = plan({ endless: true, levelIndex: 3, stack: 'bash' });
+    expect(made.recycled).toBeUndefined();
+  });
+});

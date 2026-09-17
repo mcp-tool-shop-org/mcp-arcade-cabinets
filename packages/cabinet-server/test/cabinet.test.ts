@@ -216,7 +216,19 @@ describe('the boundary', () => {
     expect(cab.call('tapes', {}).content[0]!.text).toBe(
       'a: fixture. Fixture tape over ndjson, four waves.',
     );
-    expect(() => cab.call('score', {})).toThrow(/no such tool/);
+    // A name off the closed list is a refusal a caller can read, the shape
+    // every other refusal here has, not a throw: this path is reachable
+    // from in-process callers that build the name from a string, where MCP
+    // can only send a name out of the contract.
+    const off = cab.call('score', {});
+    expect(off.isError).toBe(true);
+    expect(off.content[0]!.text).toBe('no such lever on this cabinet');
+    expect(off.content[0]!.text).not.toContain('score');
+    expect(cab.log[cab.log.length - 1]).toEqual({
+      name: 'no such lever',
+      ok: false,
+      gate: 'no such lever',
+    });
     expect(calls).toEqual([
       'propose plate',
       'say null short',

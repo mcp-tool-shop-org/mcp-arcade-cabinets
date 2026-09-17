@@ -28,7 +28,74 @@ import {
 
 import { lineKey } from './gate';
 import { bandWord, LANGUAGE_WORDS, sayablePairs, STACK_WORDS } from './vibe-words';
-import type { AskAnswer, VibeAsk, VibeHost } from './vibe-cabinet';
+import type { AskAnswer, ReactAnswer, VibeAsk, VibeHost } from './vibe-cabinet';
+
+/**
+ * The handle words. A request's own id is `endless-<n>` or `<def.id>-<i>`
+ * and carries digits, and nothing this cabinet shows a client is a number
+ * (G25), so a client is given a handle instead and the host maps it back.
+ *
+ * Two words out of this list, drawn from the ask's own letters, so the same
+ * ask always has the same handle and a handle read out of a view a moment
+ * ago still names the request it named then — which is the whole point of
+ * tagging a reaction rather than letting it land on whatever ships next.
+ */
+export const HANDLE_WORDS = [
+  'acorn',
+  'anchor',
+  'apron',
+  'basket',
+  'beacon',
+  'bramble',
+  'candle',
+  'cedar',
+  'cinder',
+  'copper',
+  'dial',
+  'ember',
+  'fennel',
+  'garnet',
+  'harbor',
+  'hollow',
+  'ivory',
+  'kettle',
+  'lantern',
+  'marble',
+  'meadow',
+  'needle',
+  'onyx',
+  'pebble',
+  'quill',
+  'ribbon',
+  'saddle',
+  'thimble',
+  'timber',
+  'velvet',
+  'willow',
+  'yarrow',
+] as const;
+
+/** FNV-1a over the ask's letters. Any stable spread over the word list would do. */
+function handleHash(text: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h;
+}
+
+/**
+ * The handle for one ask: two words, no digit, the same every time for the
+ * same words. Two different asks can collide, and the host answers the
+ * first request in the plan whose ask hashes here — a bounded wrongness of
+ * the same kind the untagged path had for every reaction, and far smaller.
+ */
+export function askHandle(ask: string): string {
+  const h = handleHash(lineKey(ask));
+  const n = HANDLE_WORDS.length;
+  return `${HANDLE_WORDS[h % n]!}-${HANDLE_WORDS[(h >>> 8) % n]!}`;
+}
 
 /** Asks the view shows back, so a client does not send the same thing twice. */
 export const RECENT_TO_SEAT = 3;
@@ -131,11 +198,36 @@ export function vibeViewLines(live: VibeLive): string {
     // yells (G25). `C sharp` and `SQL` are the only two that would.
     `language ${(LANGUAGE_WORDS[next.stack] ?? LANGUAGE_WORDS.integration!).toLowerCase()}`,
     `band ${bandWord(next.bandMin)}`,
-    ...asks.map((ask) => `asked ${ask}`),
+    // The handle first, then the words: a client that wants to say a line
+    // back about one of these quotes the handle in `react`, and the line is
+    // dropped rather than said over the wrong piece if that request has
+    // already gone by the time the call lands.
+    ...asks.map((ask) => `asked ${askHandle(ask)} ${ask}`),
     ...(pairs.length > 0 ? [`pairs ${pairs.join(' ')}`] : []),
     `next ${named === null ? 'the next level wants a product' : 'the product is set'}`,
     `room ${room ? 'the next level has room' : 'the next level is full'}`,
   ].join('\n');
+}
+
+/**
+ * Which request a handle names, or why it names none. `shipped` is the case
+ * the tag exists for: a client read the view, wrote a line about the request
+ * in hand, and that request went out before the call landed — the line would
+ * otherwise be said over the next piece, or stand in as the verdict on the
+ * whole product when it was the last one.
+ */
+export function requestFor(
+  state: RunState,
+  handle: string,
+): { kind: 'request'; id: string } | { kind: 'shipped' } | { kind: 'unknown' } {
+  const want = handle.trim().toLowerCase();
+  const requests = state.plan.requests;
+  for (let i = 0; i < requests.length; i++) {
+    const request = requests[i]!;
+    if (askHandle(request.ask) !== want) continue;
+    return i < state.requestIndex ? { kind: 'shipped' } : { kind: 'request', id: request.id };
+  }
+  return { kind: 'unknown' };
 }
 
 /**
@@ -192,8 +284,15 @@ export function vibeHostFor(
       feedRequests(state, [gated.snippet]);
       return { kind: 'queued' };
     },
-    react(line: string) {
-      return feedReaction(get().state, line);
+    react(line: string, about?: string): ReactAnswer {
+      const { state } = get();
+      // No tag is the old behavior, which the sim already treats as "the
+      // request in hand": honest for a client that did not read a handle.
+      if (about === undefined || about.trim() === '') return feedReaction(state, line);
+      const found = requestFor(state, about);
+      if (found.kind === 'shipped') return 'missed';
+      if (found.kind === 'unknown') return 'no such request';
+      return feedReaction(state, line, found.id);
     },
     recent() {
       return get()

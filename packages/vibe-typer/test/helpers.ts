@@ -23,7 +23,7 @@ export const LEVELS = DEFAULT_PATTERNS.levels.levels.length;
 export const TICK_CAP = 60 * 60 * 90;
 
 export interface RunReport {
-  ended: 'shipped' | 'context' | null;
+  ended: 'shipped' | 'context' | 'unplanned' | null;
   compactions: number;
   ships: number;
   pieces: number;
@@ -170,7 +170,8 @@ export function drive(opts: DriveOpts): RunReport {
   }
   report.ended = state.ended ?? null;
   report.valuation = state.valuation;
-  report.pieces = state.built.length;
+  // The count, not the window: `built` is capped for a long-lived session.
+  report.pieces = state.pieceCount;
   return report;
 }
 

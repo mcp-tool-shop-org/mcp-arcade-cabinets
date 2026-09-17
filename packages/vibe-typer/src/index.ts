@@ -37,6 +37,9 @@ export {
   CORPUS_STACKS,
   FORM_FORBIDDEN,
   MODEL_FORBIDDEN,
+  namesAPiece,
+  PIECE_RULE,
+  PIECES,
   STACKS,
   VOICE_FORBIDDEN,
 } from './patterns';
@@ -65,12 +68,14 @@ export type {
 } from './patterns';
 
 export {
+  askIsBound,
   buildModel,
   codeLines,
   DEFAULT_CORPUS,
   inBand,
   integrationSnippets,
   loadCorpus,
+  STORY_NOUNS,
   surprisal,
   weakWeight,
   withIntegration,
@@ -122,6 +127,7 @@ export {
   MAX_LINES,
   MAX_NOTES,
   MAX_PRODUCT_WORDS,
+  MAX_TOLERANCE,
   productFault,
   VALUE_TOLERANCE,
 } from './codegate';
@@ -135,6 +141,7 @@ export type {
 
 export {
   agentNameOf,
+  BUILT_CAP,
   codeOf,
   corpusOf,
   createRun,

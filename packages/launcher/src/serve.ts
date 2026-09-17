@@ -93,6 +93,83 @@ export interface ServeOpts {
   voiceToken: string | null;
   /** Sits the Claude tier of the say seat. Never reaches the browser. */
   anthropicKey: string | null;
+  /**
+   * Where the cabinet says, in words, why a call to the daemon or the worker
+   * came back empty. The page is told `no answer` on purpose — it has a
+   * scripted fallback and no business knowing more — but the person who ran
+   * `npx` was getting the same one word for a daemon that is not running, an
+   * address with a typo in it, a worker that is down and a tag the host has
+   * retired. The launcher points this at stderr; a test points it at an array.
+   */
+  onTrouble?: (line: string) => void;
+}
+
+/** A network seat a cabinet reaches out to, in the words a player would use. */
+export type TroubleSeat = 'daemon' | 'worker';
+
+const SEAT_WORD: Record<TroubleSeat, string> = {
+  daemon: 'the daemon',
+  worker: 'the voice worker',
+};
+
+function errName(err: unknown): string {
+  return err instanceof Error ? err.name : '';
+}
+
+function errCode(err: unknown): string {
+  let cur: unknown = err;
+  for (let i = 0; i < 4 && cur && typeof cur === 'object'; i += 1) {
+    if ('code' in cur && typeof cur.code === 'string') return cur.code;
+    cur = 'cause' in cur ? cur.cause : undefined;
+  }
+  return '';
+}
+
+/**
+ * Why a proxied call came back with nothing, said the way the cabinet says
+ * everything else. The address is in the line because the misdiagnosis this
+ * cures is a typo in OLLAMA_URL that reads exactly like a daemon that is not
+ * running. No file path and no stack ever goes in here.
+ */
+export function troubleLine(seat: TroubleSeat, url: string, err: unknown): string {
+  const who = SEAT_WORD[seat];
+  const name = errName(err);
+  if (name === 'TimeoutError' || name === 'AbortError') {
+    return `${who} at ${url} took too long to answer`;
+  }
+  const code = errCode(err);
+  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || code === 'EHOSTUNREACH') {
+    return `${who} at ${url} is not running, or is not at that address`;
+  }
+  return `${who} at ${url} did not answer`;
+}
+
+/**
+ * An address this cabinet will actually try to open a socket to, or the line
+ * that says why not. `--port` has been held to a stated shape for a while;
+ * the two environment variables every session depends on had none, so a
+ * scheme-less or typo'd `OLLAMA_URL` started clean and turned up later as the
+ * proxy's `no answer`, which reads exactly like a daemon that is not running.
+ */
+export function checkSeatUrl(name: string, raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return `${name} is not an address, got ${raw}`;
+  }
+  // `new URL('127.0.0.1:11434')` parses, with the host as the scheme. Left
+  // alone it is a request the cabinet can never send.
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return `${name} wants an http:// or https:// address, got ${raw}`;
+  }
+  if (parsed.hostname === '') return `${name} names no host, got ${raw}`;
+  return null;
+}
+
+/** What the cabinet says when the host has retired the tag a seat is on. */
+export function retiredLine(seat: TroubleSeat): string {
+  return `${SEAT_WORD[seat]} says that model tag is retired; pick another seat`;
 }
 
 interface SeatView {
@@ -268,6 +345,8 @@ async function proxy(
   base: string,
   rest: string,
   token: string | null,
+  seat: TroubleSeat,
+  onTrouble?: (line: string) => void,
 ): Promise<void> {
   const raw = req.url ?? '';
   const cut = raw.indexOf('?');
@@ -335,9 +414,11 @@ async function proxy(
       stream.on('end', () => resolve());
       stream.pipe(res);
     });
-  } catch {
+  } catch (err: unknown) {
     // The daemon or the worker is not up, or took too long. The shell
-    // already falls back to the scripted seat on a failed call.
+    // already falls back to the scripted seat on a failed call; the person
+    // who started the cabinet gets the cause in words.
+    onTrouble?.(troubleLine(seat, base, err));
     if (!res.headersSent) sendJson(res, 502, { error: 'no answer' });
     else res.end();
   } finally {
@@ -430,7 +511,14 @@ function sayRoute(opts: ServeOpts) {
       sendJson(res, 200, answer);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      sendJson(res, 200, { error: /retired/i.test(msg) ? 'model retired' : 'no answer' });
+      // A retired tag and a quiet seat read the same to the page, which wants
+      // only the fallback. They do not read the same to the person running
+      // the cabinet: one is fixed by picking another seat, the other by
+      // starting the daemon. The address is not named here because this seat
+      // may be the hosted tier rather than the local daemon.
+      const gone = /retired/i.test(msg);
+      opts.onTrouble?.(gone ? retiredLine('daemon') : 'the seat did not answer');
+      sendJson(res, 200, { error: gone ? 'model retired' : 'no answer' });
     } finally {
       if (timer !== undefined) clearTimeout(timer);
       busy = false;
@@ -516,7 +604,14 @@ function endlessRoute(opts: ServeOpts) {
       sendJson(res, 200, answer);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      sendJson(res, 200, { error: /retired/i.test(msg) ? 'model retired' : 'no answer' });
+      // A retired tag and a quiet seat read the same to the page, which wants
+      // only the fallback. They do not read the same to the person running
+      // the cabinet: one is fixed by picking another seat, the other by
+      // starting the daemon. The address is not named here because this seat
+      // may be the hosted tier rather than the local daemon.
+      const gone = /retired/i.test(msg);
+      opts.onTrouble?.(gone ? retiredLine('daemon') : 'the seat did not answer');
+      sendJson(res, 200, { error: gone ? 'model retired' : 'no answer' });
     } finally {
       if (timer !== undefined) clearTimeout(timer);
       busy = false;
@@ -621,7 +716,15 @@ export function createCabinetServer(opts: ServeOpts): Server {
           req.resume();
           return;
         }
-        await proxy(req, res, base, rest, up === 'voice' ? opts.voiceToken : null);
+        await proxy(
+          req,
+          res,
+          base,
+          rest,
+          up === 'voice' ? opts.voiceToken : null,
+          up === 'voice' ? 'worker' : 'daemon',
+          opts.onTrouble,
+        );
         return;
       }
       if (req.method !== 'GET' && req.method !== 'HEAD') {

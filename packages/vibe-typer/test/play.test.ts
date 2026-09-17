@@ -7,7 +7,10 @@ import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_TAPES,
+  firstLeak,
   integrationFrom,
+  leakWhy,
   parseBot,
   play,
   seedFromTape,
@@ -151,6 +154,65 @@ describe('the play-through', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe('the tape boundary', () => {
+  // The default was `path.resolve('fixtures/tapes')` — the process cwd, not
+  // this package. test/helpers.ts fixed exactly that for itself, with a
+  // comment saying that from the package directory it found no tapes at all;
+  // `play`'s own default kept the trap, so `play({ level: 8 })` from anywhere
+  // but the repo root got no integration snippets and then halted as
+  // `patterns/levels.json: levels.8`, blaming a lever file for a missing
+  // directory. And the tapes are an input to the trigram model, so the same
+  // call from two directories scored differently.
+  it('finds the tapes from this module and not from wherever it was called', () => {
+    expect(path.isAbsolute(DEFAULT_TAPES)).toBe(true);
+    expect(DEFAULT_TAPES).toBe(path.resolve(__dirname, '../../../fixtures/tapes'));
+    expect(DEFAULT_TAPES).toBe(TAPES);
+    expect(integrationFrom(DEFAULT_TAPES).length).toBeGreaterThan(0);
+  });
+
+  // Stage A made a tape this cabinet cannot read a halt, which is the right
+  // decision — but the throw left `play` by a door no other failure in it
+  // uses: every other one returns a Transcript carrying a `why`.
+  it('returns a transcript, not a throw, when a fixture is torn', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'vibe-tapes-'));
+    try {
+      writeFileSync(path.join(dir, 'torn.tape.json'), '{ "schema": ');
+      const out = play({ tier: 0, bot: 'perfect', seed: 1, tapes: dir });
+      expect(out.ok).toBe(false);
+      expect(out.why).toBe('bad tape');
+      expect(out.text).toMatch(/torn\.tape\.json/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('a leak names itself', () => {
+  // `leaked` was a boolean over a transcript printing the last four chat
+  // lines. An endless run says hundreds, so a needle that landed on the
+  // twelfth was flagged and then invisible: the operator got the word
+  // "leaked" over a screen with nothing wrong on it. Every other failure in
+  // that module names itself usefully.
+  it('keeps the first offending line, its speaker and the needle', () => {
+    const leak = firstLeak([
+      { who: 'user', line: 'can you make it a bit faster' },
+      { who: 'agent', line: 'on it, the run is a pass' },
+      { who: 'user', line: 'and 4 more of those' },
+    ]);
+    expect(leak).not.toBeNull();
+    expect(leak!.at).toBe(2);
+    expect(leak!.who).toBe('agent');
+    expect(leak!.needle).toBe('pass');
+    expect(leak!.line).toBe('on it, the run is a pass');
+    expect(leakWhy(leak!)).toBe('leaked: the agent said pass on chat line 2');
+  });
+
+  it('says nothing about a chat that may be shown', () => {
+    expect(firstLeak([{ who: 'user', line: 'make it a little louder' }])).toBeNull();
+    expect(firstLeak([])).toBeNull();
   });
 });
 

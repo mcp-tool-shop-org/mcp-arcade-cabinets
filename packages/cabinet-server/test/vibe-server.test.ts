@@ -103,6 +103,16 @@ describe('the environment overrides', () => {
     expect(overlay.opts).toEqual({});
     expect(vibeEnv({ CABINET_TAPES_USER: '' }).notes).toEqual([]);
 
+    // The same class, and the other half of the image's asymmetry: the
+    // Dockerfile sets CABINET_FIXTURE for both cabinets and this one has no
+    // tape menu to pick a fixture from, so it was silently inert here.
+    const fixture = vibeEnv({ CABINET_FIXTURE: 'naive-ndjson' });
+    expect(fixture.notes).toEqual([
+      'CABINET_FIXTURE is read by the shooter cabinet only; this cabinet has no tape menu\n',
+    ]);
+    expect(fixture.opts).toEqual({});
+    expect(vibeEnv({ CABINET_FIXTURE: '' }).notes).toEqual([]);
+
     // Every line is path-free and menu-shaped: an operator's mount point is
     // never echoed back at them.
     for (const note of [...overlay.notes, ...bot.notes, ...vibeEnv({ CABINET_TIER: '9' }).notes]) {
@@ -272,6 +282,24 @@ describe('the stdio server', () => {
 
     const bad = await client.callTool({ name: 'react', arguments: { text: 42 } });
     expect((bad as { isError?: boolean }).isError).toBe(true);
+
+    // The tag is optional at the transport: the zod shape used to make every
+    // property required whatever the contract's `required` list said, so a
+    // tag no client could leave off would be no tag at all.
+    const tagged = await client.callTool({
+      name: 'react',
+      arguments: { text: 'that one came out lovely', about: 'timber-quill' },
+    });
+    expect((tagged as { isError?: boolean }).isError).toBeFalsy();
+    expect(text(tagged)).toMatch(
+      /the user will say it|a reaction is already waiting|the view does not name that request|has already shipped/,
+    );
+    expect(text(tagged)).not.toMatch(FORBIDDEN);
+    const overTag = await client.callTool({
+      name: 'react',
+      arguments: { text: 'that one came out lovely', about: 'a'.repeat(41) },
+    });
+    expect((overTag as { isError?: boolean }).isError).toBe(true);
 
     const again = await client.listTools();
     expect(again.tools).toHaveLength(4);

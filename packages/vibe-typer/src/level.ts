@@ -147,18 +147,47 @@ export function levelDefAt(opts: PlanOpts, rng: () => number): LevelDef | null {
   return moved;
 }
 
-/** Candidates for a request: unused, in band, widening only when it must. */
-function candidates(corpus: Corpus, stack: Stack, def: LevelDef, used: Set<string>): Snippet[] {
-  const tries: Snippet[][] = [
-    inBand(corpus, stack, def.bandMin, def.bandMax),
-    inBand(corpus, stack, band(def.bandMin - 1), band(def.bandMax + 1)),
-    corpus.byStack[stack] ?? [],
-  ];
-  for (const list of tries) {
+/**
+ * Candidates for a request: unused, in band, widening only when it must.
+ *
+ * The last rung used to hand back the whole stack unfiltered, so once a
+ * stack's free pool was spent the planner drew already-played snippets with
+ * no signal anywhere — no event, no flag, nothing in the transcript —
+ * against this file's own claim that the seed never biases toward a repeat
+ * (Q1.9). A run pinned to one stack spends four snippets a level out of the
+ * forty or so in band, so an endless session passes that point inside ten
+ * levels, and `used` was never pruned, so the run could not start a fresh
+ * cycle deliberately either.
+ *
+ * Reaching that rung now clears the stack's ids out of `used` — a new cycle,
+ * declared rather than drifted into — keeping only what this level has
+ * already drawn, so a repeat is never back to back inside a level. The
+ * caller records it on the plan (`recycled`), which is how "the stack ran
+ * out" reaches the shell and the transcript.
+ */
+function candidates(
+  corpus: Corpus,
+  stack: Stack,
+  def: LevelDef,
+  used: Set<string>,
+  drawnHere: ReadonlySet<string>,
+): { pool: Snippet[]; recycled: boolean } {
+  const near = inBand(corpus, stack, def.bandMin, def.bandMax);
+  const wider = inBand(corpus, stack, band(def.bandMin - 1), band(def.bandMax + 1));
+  for (const list of [near, wider]) {
     const free = list.filter((s) => !used.has(s.id));
-    if (free.length > 0) return free;
+    if (free.length > 0) return { pool: free, recycled: false };
   }
-  return tries[2] ?? [];
+  const all = corpus.byStack[stack] ?? [];
+  const spent = all.filter((s) => !used.has(s.id));
+  if (spent.length > 0) return { pool: spent, recycled: false };
+  for (const snippet of all) {
+    if (!drawnHere.has(snippet.id)) used.delete(snippet.id);
+  }
+  const fresh = all.filter((s) => !drawnHere.has(s.id));
+  return fresh.length > 0
+    ? { pool: fresh, recycled: true }
+    : { pool: [...all], recycled: all.length > 0 };
 }
 
 /** A one-line addition from the same stack at or under the request's band. */
@@ -210,6 +239,9 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
   const product = opts.endless && opts.product !== undefined ? opts.product : def.product;
   const requests: Request[] = [];
   const pinned = def.snippets;
+  /** Snippets this level has already taken; a fresh cycle never frees them. */
+  const drawnHere = new Set<string>();
+  let recycled = false;
   for (let i = 0; i < def.requests; i++) {
     // Three ways a request gets its snippet, and they cannot collide: a fed
     // one is endless only, a pinned one is a listed story level only, and a
@@ -230,12 +262,14 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
       if (!found) throw new Error(`patterns/levels.json: levels.${opts.levelIndex}.snippets.${i}`);
       snippet = found;
     } else {
-      const pool = candidates(opts.corpus, stack, def, opts.used);
-      if (pool.length === 0) break;
-      const weights = pool.map((s) => 1 + weakBias * weakWeight(s, opts.weakBigrams));
-      snippet = pool[weightedPick(weights, rng)]!;
+      const drawn = candidates(opts.corpus, stack, def, opts.used, drawnHere);
+      if (drawn.pool.length === 0) break;
+      if (drawn.recycled) recycled = true;
+      const weights = drawn.pool.map((s) => 1 + weakBias * weakWeight(s, opts.weakBigrams));
+      snippet = drawn.pool[weightedPick(weights, rng)]!;
     }
     opts.used.add(snippet.id);
+    drawnHere.add(snippet.id);
     const request: Request = {
       id: `${def.id}-${i}`,
       // `picker.ask` prefers the snippet's own words and falls back to the
@@ -277,6 +311,7 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
     messageCost: def.messageCost ?? tierDefaults.messageCost,
     shipBonus: def.shipBonus,
     ...(syncAt === undefined ? {} : { syncAt }),
+    ...(recycled ? { recycled: true as const } : {}),
     seed: levelSeed,
   };
 }

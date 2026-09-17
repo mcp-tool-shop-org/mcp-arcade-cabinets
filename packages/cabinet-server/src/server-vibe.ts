@@ -30,6 +30,7 @@ import {
 import { botFor, integrationFrom, parseBot } from '@mcp-arcade-cabinets/vibe-typer/src/play';
 
 import { assertCatalogTools, VIBE_CONTRACT, type ToolDef } from './contract';
+import { setEnv, wholeEnv } from './env';
 import { createStepFaults, guardStep } from './step-guard';
 import { createVibeCabinet, type VibeCabinet } from './vibe-cabinet';
 import { vibeHostFor, type VibeLive } from './vibe-host';
@@ -56,6 +57,9 @@ export const VIBE_TAPES_DIR = path.resolve(here, '..', '..', '..', 'fixtures', '
  */
 export const VIBE_BOT = 'typist:45';
 
+/** The reader both cabinets share; re-exported here because this is where it was. */
+export { wholeEnv };
+
 /** Catalog listing must match the contract. Missing file (the package) is not a mismatch. */
 function checkVibeCatalogListing(): void {
   const catalog = path.resolve(here, '..', '..', '..', 'catalog', 'tools.vibe.json');
@@ -68,11 +72,19 @@ function checkVibeCatalogListing(): void {
   assertCatalogTools(JSON.parse(raw) as unknown, VIBE_CONTRACT, 'catalog/tools.vibe.json');
 }
 
-/** The same mapping `server.ts` uses: enums and bounded strings, nothing else. */
+/**
+ * The same mapping `server.ts` uses: enums and bounded strings, nothing else,
+ * and a property the contract leaves out of `required` is optional here too.
+ * `react.about` is the first one, and a required tag would be a tag no
+ * client could leave off.
+ */
 function zodShape(def: ToolDef) {
   const shape: Record<string, z.ZodTypeAny> = {};
+  const needed = new Set(def.inputSchema.required);
   for (const [k, p] of Object.entries(def.inputSchema.properties)) {
-    shape[k] = 'enum' in p ? z.enum(p.enum as [string, ...string[]]) : z.string().max(p.maxLength);
+    const base =
+      'enum' in p ? z.enum(p.enum as [string, ...string[]]) : z.string().max(p.maxLength);
+    shape[k] = needed.has(k) ? base : base.optional();
   }
   return shape;
 }
@@ -144,22 +156,6 @@ export function buildVibeServer(cabinet: VibeCabinet): McpServer {
 }
 
 /**
- * A whole number out of an environment variable, or null when it is not one.
- * `CABINET_TIER=abc` and `CABINET_SEED=1.5` are **absent**, not the default:
- * a fallback reached through `NaN` reads afterwards as though the operator
- * asked for the default, which they did not. A leading minus is allowed
- * because the sim folds a seed through `>>> 0` and a negative one is an
- * ordinary seed to it.
- */
-export function wholeEnv(raw: string | undefined): number | null {
-  if (raw === undefined) return null;
-  const text = raw.trim();
-  if (!/^-?\d+$/.test(text)) return null;
-  const n = Number(text);
-  return Number.isSafeInteger(n) ? n : null;
-}
-
-/**
  * The operator's environment, read once and said out loud.
  *
  * `wholeEnv` exists because a fallback reached through `NaN` reads
@@ -184,12 +180,20 @@ export function vibeEnv(
 ): { opts: VibeHeadlessOpts; notes: string[] } {
   const notes: string[] = [];
   const out: VibeHeadlessOpts = {};
-  const set = (raw: string | undefined): raw is string => raw !== undefined && raw.trim() !== '';
+  const set = setEnv;
 
   if (opts.tapesDir === undefined && set(env.CABINET_TAPES)) out.tapesDir = env.CABINET_TAPES;
   if (set(env.CABINET_TAPES_USER)) {
     notes.push(
       'CABINET_TAPES_USER is read by the shooter cabinet only; this cabinet plays the baked tapes\n',
+    );
+  }
+  // The image sets CABINET_FIXTURE for both cabinets and this one has no
+  // tape menu to pick a fixture from, so one of the four cabinet variables
+  // baked into the image was inert here and said nothing about it.
+  if (set(env.CABINET_FIXTURE)) {
+    notes.push(
+      'CABINET_FIXTURE is read by the shooter cabinet only; this cabinet has no tape menu\n',
     );
   }
 

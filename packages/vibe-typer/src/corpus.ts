@@ -116,6 +116,19 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
       // shape as the `{title}` refusal above it.
       if (askIsBound(ask) && boundTo === undefined) fail(file, key('ask'));
     }
+    // The snippet's own reaction: the line the user says when this piece
+    // ships. The same gate as the ask one row up, verbatim — a string, no
+    // `{title}`, the chat's own line scan, and a reaction that leans on a
+    // story level's premise must say which level through the SAME `for`.
+    // Mirroring rather than widening is the point: nonsense cannot reach the
+    // disk on the reaction row that could not reach it on the ask row.
+    const reaction = rec.reaction;
+    if (reaction !== undefined) {
+      if (typeof reaction !== 'string') fail(file, key('reaction'));
+      if (reaction.includes('{title}')) fail(file, key('reaction'));
+      if (lineFault(reaction) !== null) fail(file, key('reaction'));
+      if (askIsBound(reaction) && boundTo === undefined) fail(file, key('reaction'));
+    }
     return {
       id,
       stack,
@@ -125,6 +138,7 @@ function loadStack(raw: unknown, stack: Stack): Snippet[] {
       notes: notes as string[],
       topics: topics as string[],
       ...(typeof ask === 'string' ? { ask } : {}),
+      ...(typeof reaction === 'string' ? { reaction } : {}),
       ...(typeof boundTo === 'string' ? { for: boundTo } : {}),
     };
   });
@@ -244,6 +258,11 @@ export function integrationAsk(tool: string, band: 1 | 3 | 5): string | null {
  * Build the integration stack from tape headers and rows: one line per
  * envelope tier per tool name. Names that read as a probe are skipped; a
  * name is a name, never a fact and never a receipt (G30).
+ *
+ * These snippets carry no `reaction`: they are minted at play time from
+ * whatever tapes are on disk, and nobody proofreads a line written here. The
+ * generic reviews answer their ships, permanently and by design — not as a
+ * transition waiting for an authoring run.
  */
 export function integrationSnippets(seeds: readonly IntegrationSeed[]): Snippet[] {
   const out: Snippet[] = [];

@@ -10,7 +10,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TAPES } from '../src/tapes';
-import { admitIntents, mountGhost, newQueueClock, queueDue } from '../src/ghost';
+import {
+  admitIntents,
+  mountGhost,
+  newQueueClock,
+  queueDue,
+  readPrefs,
+  withSignal,
+  writePrefs,
+} from '../src/ghost';
 
 /** Enough of a 2d context to draw into and read nothing back. */
 function canvasStub(): CanvasRenderingContext2D {
@@ -290,5 +298,220 @@ describe('the boss-intent prefetch, on its own', () => {
     expect(admitIntents({ left: false, gen: 1, fireGen: 1, asked: roundA, live: roundB })).toBe(
       false,
     );
+  });
+});
+
+describe("the fire seat's own fetch", () => {
+  it("keeps the caller's deadline and adds the mount's revoke", () => {
+    const budget = new AbortController();
+    const mountCtl = new AbortController();
+    const composed = withSignal({ method: 'POST', signal: budget.signal }, mountCtl.signal);
+    // Whatever else the caller passed is still there.
+    expect(composed.method).toBe('POST');
+    // The caller's signal is the ask's only deadline — `chatOnce` passes
+    // `AbortSignal.timeout(budget.timeoutMs)`. Spread first and overwritten,
+    // it was discarded, and a daemon that accepted the connection and then
+    // hung left the ask pending for the life of the mount with no timeout
+    // word anywhere on the status row.
+    budget.abort();
+    expect(composed.signal?.aborted, "the caller's deadline still fires").toBe(true);
+
+    // And the mount's own revoke still reaches it: a restart or a leave drops
+    // an ask that is still in the air.
+    const other = new AbortController();
+    const revoke = new AbortController();
+    const both = withSignal({ signal: other.signal }, revoke.signal);
+    expect(both.signal?.aborted).toBe(false);
+    revoke.abort();
+    expect(both.signal?.aborted).toBe(true);
+
+    // A caller with no signal of its own gets the mount's, untouched.
+    const alone = new AbortController();
+    expect(withSignal(undefined, alone.signal).signal).toBe(alone.signal);
+  });
+});
+
+describe('the prefs this browser keeps', () => {
+  it('leaves a key it does not know alone while another is written', () => {
+    // A field an older or newer bundle wrote, beside one this build owns.
+    localStorage.setItem(
+      'ghost.prefs',
+      JSON.stringify({ difficulty: 'live', best: 'a run of words' }),
+    );
+    // Any of the six controls is enough: this is the shake checkbox.
+    writePrefs({ shake: 'off' });
+
+    const raw = JSON.parse(localStorage.getItem('ghost.prefs')!) as Record<string, unknown>;
+    expect(raw.best, 'a pref this build has never heard of is not this build to erase').toBe(
+      'a run of words',
+    );
+    expect(raw.shake).toBe('off');
+    expect(raw.difficulty).toBe('live');
+    // The read is still the strict allowlist: the unknown key is kept for
+    // whoever wrote it and never handed to the game.
+    expect((readPrefs() as Record<string, unknown>).best).toBeUndefined();
+    expect(readPrefs().shake).toBe('off');
+  });
+});
+
+// ——— the sound, and the context under it ——————————————————————————————————
+// The score lives as long as the page, so each of these takes a fresh
+// instance of the module: a context one case built must not be the context
+// the next one finds already there.
+
+/** A fresh instance of the module, whose page-lived score is at nothing. */
+async function freshGhost(): Promise<typeof import('../src/ghost')> {
+  vi.resetModules();
+  return import('../src/ghost');
+}
+
+/** Swap in a context class for one case, and put back whatever was there. */
+function withAudioContext(klass: unknown, body: () => void | Promise<void>): void | Promise<void> {
+  const holder = globalThis as { AudioContext?: unknown };
+  const was = holder.AudioContext;
+  holder.AudioContext = klass;
+  const undo = () => {
+    if (was === undefined) delete holder.AudioContext;
+    else holder.AudioContext = was;
+  };
+  try {
+    const out = body();
+    if (out instanceof Promise) return out.finally(undo);
+    undo();
+    return out;
+  } catch (err) {
+    undo();
+    throw err;
+  }
+}
+
+function paramStub() {
+  return {
+    value: 0,
+    setValueAtTime: () => undefined,
+    exponentialRampToValueAtTime: () => undefined,
+    linearRampToValueAtTime: () => undefined,
+    cancelScheduledValues: () => undefined,
+  };
+}
+
+describe('the context the sound is built on', () => {
+  it('plays the round silent when the browser will not build one', async () => {
+    const ghost = await freshGhost();
+    let built = 0;
+    class Refuses {
+      constructor() {
+        built += 1;
+        throw new Error('no audio on this browser');
+      }
+    }
+    await withAudioContext(Refuses, () => {
+      const entry = TAPES[0]!;
+      // `startAudio` is the mount building the context itself, which is where
+      // a throw escaped and took the whole mount down with it rather than
+      // costing the sound alone.
+      const game = ghost.mountGhost(root, entry.name, entry.tape, () => undefined, undefined, true);
+      expect(built).toBe(1);
+      const canvas = root.querySelector('canvas')!;
+      canvas.dispatchEvent(new MouseEvent('click'));
+      expect(built, 'a construction that threw is tried once, not once a gesture').toBe(1);
+      const chrome = root.querySelector('span[aria-label="cabinet"]')!;
+      expect(chrome.textContent, 'and the row says the sound is gone').toContain('sound');
+      game.unmount();
+    });
+  });
+
+  it('asks a context that is not running to come back, and says so when it will not', async () => {
+    const ghost = await freshGhost();
+    const made: FakeCtx[] = [];
+    class FakeCtx {
+      // WebKit's own word for a context an interruption took away. It is not
+      // 'suspended', so a test for that state alone never matched it.
+      state = 'interrupted';
+      currentTime = 0;
+      destination = {};
+      resumes = 0;
+      readonly onState: (() => void)[] = [];
+      constructor() {
+        made.push(this);
+      }
+      createGain() {
+        return { gain: paramStub(), connect: () => undefined, disconnect: () => undefined };
+      }
+      createOscillator() {
+        return {
+          type: 'sine',
+          frequency: paramStub(),
+          connect: () => undefined,
+          disconnect: () => undefined,
+          start: () => undefined,
+          stop: () => undefined,
+        };
+      }
+      resume() {
+        this.resumes += 1;
+        return Promise.resolve();
+      }
+      close() {
+        return Promise.resolve();
+      }
+      addEventListener(type: string, fn: () => void) {
+        if (type === 'statechange') this.onState.push(fn);
+      }
+      removeEventListener() {
+        /* the mount gives the listener back; nothing here reads it */
+      }
+    }
+    await withAudioContext(FakeCtx, async () => {
+      const entry = TAPES[0]!;
+      const game = ghost.mountGhost(root, entry.name, entry.tape, () => undefined, undefined, true);
+      const ctx = made[0]!;
+      // Ghost's `ensureAudio` only ever constructed the context; it never
+      // asked it to run, so a context handed back asleep stayed asleep.
+      expect(ctx.resumes).toBe(1);
+      await new Promise((done) => setTimeout(done, 0));
+      const chrome = root.querySelector('span[aria-label="cabinet"]')!;
+      expect(chrome.textContent, 'a refusal is a word, not silence').toContain('asleep');
+      // The browser says the state moved, and it is still not running.
+      for (const fn of ctx.onState) fn();
+      expect(ctx.resumes, 'every state but running is asked again').toBe(2);
+      game.unmount();
+    });
+  });
+});
+
+describe('a probe on a machine where nothing is listening', () => {
+  it('backs off rather than asking every five seconds for the whole round', async () => {
+    vi.useFakeTimers();
+    try {
+      const game = mount();
+      const tags = () => signals.filter((s) => s.url.includes('/ollama/api/tags')).length;
+      await vi.advanceTimersByTimeAsync(0);
+      expect(tags(), 'the mount looks once').toBe(1);
+
+      // The word is already on the row; what is counted from here is only the
+      // re-announcing of a word that has not changed.
+      const seat = root.querySelector('span[aria-label="seat"]')!;
+      expect(seat.textContent).toBe('seat: no daemon');
+      let rewrites = 0;
+      const watch = new MutationObserver((records) => {
+        rewrites += records.length;
+      });
+      watch.observe(seat, { childList: true, characterData: true, subtree: true });
+
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(tags(), 'the first retry is still five seconds').toBe(2);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(tags(), 'the wait doubled, so nothing is asked here').toBe(2);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(tags()).toBe(3);
+
+      expect(rewrites, 'a live region is not rewritten with the word it has').toBe(0);
+      expect(watch.takeRecords().length).toBe(0);
+      watch.disconnect();
+      game.unmount();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

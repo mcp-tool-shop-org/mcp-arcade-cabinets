@@ -16,7 +16,7 @@
 // Pure. No node:, no clock, no state: the same candidate and the same
 // context always give the same verdict.
 
-import type { Corpus } from './corpus';
+import { askIsBound, type Corpus } from './corpus';
 import { value as valueOf } from './difficulty';
 import { lineFault, MODEL_FORBIDDEN, type DifficultySet } from './patterns';
 import { hashString } from './seed';
@@ -38,6 +38,15 @@ export const MAX_PRODUCT_WORDS = 8;
  * band pays would break the climb, and one worth a tenth would be a gift.
  */
 export const VALUE_TOLERANCE = 0.15;
+/**
+ * The widest tolerance a caller may hand `gateCode`. The field is above: a
+ * tolerance of one or more makes the low edge zero or negative, so nothing
+ * can ever be refused as under-band, and a negative one inverts the window
+ * and refuses almost everything. Either is a caller bug rather than a wider
+ * gate, and this module is the one thing standing between a model's answer
+ * and the field, so it says so instead of quietly widening.
+ */
+export const MAX_TOLERANCE = 0.5;
 
 /** What a seat sends back for one request. Nothing here has been gated yet. */
 export interface SeatRequest {
@@ -359,6 +368,14 @@ function shapeOf(candidate: unknown): SeatRequest | null {
  * the language, then the words, then the value, then the chat lines.
  */
 export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
+  if (
+    typeof ctx.tolerance !== 'number' ||
+    !Number.isFinite(ctx.tolerance) ||
+    ctx.tolerance < 0 ||
+    ctx.tolerance > MAX_TOLERANCE
+  ) {
+    throw new Error('gateCode: tolerance is outside the band the gate may widen to');
+  }
   const seat = shapeOf(candidate);
   if (!seat) return refuse('empty', 'shape');
   const code = tidy(seat.code);
@@ -411,6 +428,15 @@ export function gateCode(candidate: unknown, ctx: CodeGateCtx): CodeGateResult {
   // writes the product itself in braces instead, and the braces then land on
   // the field because nothing fills them. Only the exact hole is a hole.
   if (/[{}]/.test(askText)) return refuse('bad-ask', 'stray brace');
+  // The other door into the same field. `loadStack` refuses an authored ask
+  // that names a story level's noun without saying which level it is for,
+  // and `askFor` drops a bound ask outside its level — but a seated snippet
+  // carries no `for` (it is written for the level in hand and minted below
+  // without one), so a seat could put "reverse the line of waiting ducks"
+  // into an app for lost socks: the defect the corpus closed, on the path
+  // nobody proofreads. A seat writes for the level in hand, so the answer
+  // here is to refuse rather than to bind.
+  if (askIsBound(askText)) return refuse('bad-ask', 'story noun');
   // `lineFault` refuses a non-ASCII line too, since sub-slice B part two;
   // these run first only so the reason is the specific one rather than
   // whichever word rule the line also happens to break.

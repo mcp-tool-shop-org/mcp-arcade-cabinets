@@ -20,7 +20,7 @@ import { constants as osConstants } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createCabinetServer, HOST, listenFrom } from '../../launcher/src/serve';
+import { checkSeatUrl, createCabinetServer, HOST, listenFrom } from '../../launcher/src/serve';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -66,6 +66,42 @@ Environment
 The server listens on ${HOST} only. The daemon and the voice worker are
 reached through a fixed allowlist: the model list, chat and generate, worker
 health and stats, speak and its cached takes. Nothing else is proxied.`;
+
+/**
+ * Trouble, in the cabinet's own words, on stderr. Never stdout: under `--mcp`
+ * stdout belongs to the transport, and a line of ours on it is a broken
+ * session rather than a message.
+ */
+export function sayTrouble(line: string): void {
+  process.stderr.write(`${line}\n`);
+}
+
+/** The first thing wrong with the two addresses in the environment, or null. */
+export function checkSeats(env: NodeJS.ProcessEnv = process.env): string | null {
+  return (
+    checkSeatUrl('OLLAMA_URL', env.OLLAMA_URL ?? DEFAULT_OLLAMA) ??
+    checkSeatUrl('VOICE_URL', env.VOICE_URL ?? DEFAULT_VOICE)
+  );
+}
+
+/**
+ * What the cabinet resolved, said before the first call rather than after it
+ * fails. A session pointed at the wrong daemon used to look exactly like one
+ * pointed at the right daemon, right up until the user went quiet and the
+ * corpus played instead. There is no line about a hosted key here because
+ * this cabinet never lights one. These go to stderr so piping stays clean.
+ */
+export function seatLines(env: NodeJS.ProcessEnv = process.env): string[] {
+  const ollama = env.OLLAMA_URL ?? DEFAULT_OLLAMA;
+  const voice = env.VOICE_URL ?? DEFAULT_VOICE;
+  const mine = (set: string | undefined) => (set ? '' : ' (the default)');
+  return [
+    `the user sits at ${ollama}${mine(env.OLLAMA_URL)}`,
+    `the voice worker is at ${voice}${mine(env.VOICE_URL)}, ${
+      env.VOICE_TOKEN ? 'bearer set' : 'no bearer set'
+    }`,
+  ];
+}
 
 /** Read the arguments. Pure, so the table of cases is a test. */
 export function parseArgs(argv: readonly string[]): Args {
@@ -211,6 +247,14 @@ function runMcp(): void {
 
 /** Stand the shell up and open it. */
 async function runPlay(args: Args): Promise<void> {
+  // The environment is read before the package is, because a bad address is
+  // the player's to fix and a missing shell is ours.
+  const bad = checkSeats();
+  if (bad) {
+    process.stderr.write(`${bad}\n`);
+    process.exitCode = 1;
+    return;
+  }
   if (!existsSync(PLAY_DIR)) {
     process.stderr.write('the shell is missing from this package\n');
     process.exitCode = 1;
@@ -237,6 +281,7 @@ async function runPlay(args: Args): Promise<void> {
     // put a name on screen that did not write the line — and would spend a
     // player's key on a game that never asked for one.
     anthropicKey: null,
+    onTrouble: sayTrouble,
   });
   let port: number;
   try {
@@ -250,6 +295,7 @@ async function runPlay(args: Args): Promise<void> {
   const url = `http://${HOST}:${port}/`;
   process.stdout.write(`Vibe Typer is at ${url}\n`);
   process.stdout.write('Ctrl-C closes the cabinet.\n');
+  for (const line of seatLines()) sayTrouble(line);
   if (args.open) openBrowser(url);
   const close = () => {
     server.close(() => process.exit(0));

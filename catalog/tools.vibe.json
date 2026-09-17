@@ -52,13 +52,17 @@
   },
   {
     "name": "react",
-    "description": "Say one line back about the piece that just shipped, or about the whole thing when it goes out. At most twelve words, one sentence, no exclamation mark, no digit, and nothing that names a tool, a model or the seat. The line waits for the next piece to ship and lands there; a second line before that is dropped. A line the gate refuses is dropped and the cabinet says one of its own.",
+    "description": "Say one line back about the piece that just shipped, or about the whole thing when it goes out. At most twelve words, one sentence, no exclamation mark, no digit, and nothing that names a tool, a model or the seat. Name the request you are reacting to with about: the handle the view prints beside each line under asked. With a handle, the line is said only if that request is still to come; if it has already shipped the line is dropped rather than said over the next piece. With no handle the line lands on whatever ships next. The line waits for the next piece to ship and lands there; a second line before that is dropped. A line the gate refuses is dropped and the cabinet says one of its own.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "text": {
           "type": "string",
           "maxLength": 160
+        },
+        "about": {
+          "type": "string",
+          "maxLength": 40
         }
       },
       "required": ["text"],
