@@ -363,7 +363,9 @@ describe('the endless band', () => {
     // that never dodges can lose the pool inside its second call. Measured
     // when set: a shortest run of two.
     expect(Math.min(...taken), 'the shortest run at live').toBeGreaterThanOrEqual(2);
-    expect(calls(2, 'reader')).toBeGreaterThanOrEqual(95);
+    // Eighty since the formation sweeps the field (2026-09-17): the reader
+    // chases a moving tell under rain. Measured when set: eighty-five.
+    expect(calls(2, 'reader')).toBeGreaterThanOrEqual(80);
     // Long enough that the climb passes the full reach of a shift, which is
     // the whole point of a pool that outlives the opening band.
     // The climb past the tape-alone reach is no longer read off a bot's run:
