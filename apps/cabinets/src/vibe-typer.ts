@@ -2388,8 +2388,14 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     } else if (e.inputType === 'insertText') {
       // A composition is whole words the player did not type character by
       // character, and a paste is a line nobody typed: neither is a move,
-      // which is the key reader's rule kept here.
-      for (const ch of e.data ?? '') queue.push({ key: ch });
+      // which is the key reader's rule kept here. A paste and a composition
+      // announce themselves by their own input types and fall through below;
+      // a suggestion accepted off the keyboard's bar arrives as one insert of
+      // a whole word, so an insert is a move only when it is one character
+      // (Kimi's review of the polish wave: the loop took the word).
+      const ch = e.data ?? '';
+      if ([...ch].length !== 1) return;
+      queue.push({ key: ch });
     } else {
       return;
     }

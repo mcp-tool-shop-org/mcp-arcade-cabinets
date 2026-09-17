@@ -1977,6 +1977,21 @@ describe('the box a soft keyboard types into', () => {
     expect(box.autocomplete).toBe('off');
   });
 
+  it('takes a whole word from the suggestion bar as no move at all', () => {
+    mount = mountLevel();
+    settle(mount);
+    const target = liveTarget();
+    // A suggestion accepted off the keyboard's bar is one insert of a whole
+    // word the player did not type character by character: not a move, the
+    // key reader's rule for a paste kept here.
+    edit('insertText', target.slice(0, 3));
+    mount.tick(STEP);
+    expect(typedCount()).toBe(0);
+    edit('insertText', target[0]);
+    mount.tick(STEP);
+    expect(typedCount()).toBe(1);
+  });
+
   it('reads an inserted character as a keystroke, and a backspace as a backspace', () => {
     mount = mountLevel();
     settle(mount);
