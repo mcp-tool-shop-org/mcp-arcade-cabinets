@@ -189,6 +189,22 @@ export interface TrackBed {
  */
 export type BedMaker = (key: VibeTrackKey, url: string) => TrackBed | null;
 
+/**
+ * How long one keyboard's eight samples may take before the engine stops
+ * waiting on them. Ghost puts a deadline on every fetch it makes and this was
+ * the one path with none: a hung request and a missing folder both ended as
+ * the procedural click, and neither said anything, so a player whose keyboard
+ * had gone quiet could not tell a slow machine from an absent one.
+ */
+export const KEYS_TIMEOUT_MS = 8000;
+
+/**
+ * What the engine says about its own files, for the chrome to put a word to.
+ * `ok` is the set playing as recorded; `missing` is a folder that is not
+ * there; `timeout` is one that never answered inside KEYS_TIMEOUT_MS.
+ */
+export type SampleState = 'ok' | 'missing' | 'timeout';
+
 /** The default maker: a real element where the browser has one, else nothing. */
 export function domBedMaker(): TrackBed | null {
   if (typeof Audio === 'undefined') return null;
@@ -254,6 +270,16 @@ export interface TyperAudio {
    * down, so it does nothing there.
    */
   setBedDuck(on: boolean): void;
+  /**
+   * The tab went away, or came back. A backgrounded tab stops
+   * `requestAnimationFrame`, so `tick` stops and with it the crossfade — but
+   * the recorded beds are media elements outside the graph and play on, so a
+   * stack change caught mid-cross froze with two beds audible at partial
+   * volume until the tab returned: music with no game. Hidden, the cross is
+   * settled where it was headed and every bed is paused; back, the bed that
+   * holds the level starts again from where it stopped.
+   */
+  setHidden(hidden: boolean): void;
   /** The run is over: the bed leaves. */
   end(): void;
   close(): void;
@@ -311,6 +337,8 @@ export function createTyperAudio(
   base: string,
   seed: number,
   makeBed: BedMaker = domBedMaker,
+  /** Told how the keyboard's own samples ended, so the chrome can say so. */
+  onSamples?: (state: SampleState) => void,
 ): TyperAudio {
   const rng = seeded(seed);
   const master = ctx.createGain();
@@ -339,6 +367,8 @@ export function createTyperAudio(
   let tempo = BED_MODES[DEFAULT_MUSIC].bpm;
   let beats: number[] = [];
   let ended = false;
+  /** True while the tab is away: no frames are coming, so nothing may drift. */
+  let hidden = false;
   // The recorded beds: the ones that loaded, the ones that asked, the stack
   // the level is in, and which bed currently has it. `playing` is null until a
   // stack's file is both asked for and ready, which is why a Pages build with
@@ -422,14 +452,20 @@ export function createTyperAudio(
     for (const n of notes) note(at, n);
   };
 
+  /** The set in flight, so a theme change and `close()` both drop it. */
+  let keysCtl: AbortController | null = null;
   const load = (next: Theme) => {
     if (loading === next) return;
     loading = next;
     buffers = [];
+    keysCtl?.abort();
+    const ctl = new AbortController();
+    keysCtl = ctl;
+    const signal = AbortSignal.any([ctl.signal, AbortSignal.timeout(KEYS_TIMEOUT_MS)]);
     const urls = KEY_FILES.map((file) => `${base}keys/${next}/${file}`);
     void Promise.all(
       urls.map(async (url) => {
-        const res = await fetch(url);
+        const res = await fetch(url, { signal });
         if (!res.ok) throw new Error('no sample');
         return ctx.decodeAudioData(await res.arrayBuffer());
       }),
@@ -437,10 +473,19 @@ export function createTyperAudio(
       .then((decoded) => {
         if (loading !== next) return;
         buffers = decoded;
+        onSamples?.('ok');
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         // A missing set is not a silent game: the procedural click stands in.
-        if (loading === next) buffers = [];
+        // It is no longer a silent one either — the cabinet's product is the
+        // keyboard under the player's hands, so the chrome gets a word for it,
+        // and a hang is reported as a hang rather than as an absence.
+        if (loading !== next) return;
+        buffers = [];
+        // A theme change or a closed cabinet dropped this set on purpose.
+        if (ctl.signal.aborted) return;
+        const name = err instanceof Error ? err.name : '';
+        onSamples?.(name === 'TimeoutError' ? 'timeout' : 'missing');
       });
   };
 
@@ -614,6 +659,16 @@ export function createTyperAudio(
     // over the same crossfade and is paused when it gets there, so the two
     // beds cross rather than one cutting the other off.
     setBed(bedLevel(), BED_CROSS_S);
+  };
+
+  /**
+   * The crossfade, finished now rather than over the next frames: the bed that
+   * holds the level is at its own volume and every other is at zero. What
+   * `stepTracks` would have reached if the frames had kept coming.
+   */
+  const settleTracks = () => {
+    const want = trackLevel();
+    for (const [key, el] of tracks) el.volume = key === playing ? want : 0;
   };
 
   /** One frame of the crossfade: every bed moves toward where it belongs. */
@@ -914,7 +969,9 @@ export function createTyperAudio(
       }
     },
     tick(dt: number, hype: number, hold: boolean) {
-      if (muted || ended) return;
+      // A frame that arrives while the tab is away (a test's own clock, a
+      // stray timer) may not move a bed that is paused where it stands.
+      if (muted || ended || hidden) return;
       // `off` schedules nothing at all. The cues are untouched by this.
       if (music === 'off') return;
       const mode = BED_MODES[music];
@@ -945,6 +1002,22 @@ export function createTyperAudio(
         guard += 1;
       }
     },
+    setHidden(next: boolean) {
+      if (next === hidden) return;
+      hidden = next;
+      if (next) {
+        // The cross is finished where it was headed before everything stops,
+        // so the tab comes back to one bed at its own level and not to two
+        // frozen half way. Then every recording is paused: the graph's own
+        // bar stops with the frames, but a media element does not.
+        settleTracks();
+        stopTracks();
+        return;
+      }
+      if (muted || ended || playing === null) return;
+      settleTracks();
+      startTrack(playing);
+    },
     setBedDuck(on: boolean) {
       if (voiceDuck === on) return;
       voiceDuck = on;
@@ -960,6 +1033,9 @@ export function createTyperAudio(
     close() {
       ended = true;
       playing = null;
+      // Nothing the cabinet asked for outlives it: a sample set still in the
+      // air is dropped here rather than decoding into a closed context.
+      keysCtl?.abort();
       stopTracks();
       for (const v of voices) v.stop();
       voices = [];

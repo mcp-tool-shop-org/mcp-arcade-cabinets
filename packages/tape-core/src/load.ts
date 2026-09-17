@@ -16,6 +16,26 @@ import {
 
 const FORBIDDEN = new Set<string>(FORBIDDEN_KEYS);
 
+/**
+ * How big a tape the loader will take.
+ *
+ * The header fields were already bounded; the wire was not. A cabinet's
+ * prepass walks the rows more than once per row, so a whole-session recording
+ * does not read as a slow tape, it reads as a hung cabinet — no error, no
+ * name, just a stdio server or a browser frame that stops answering. These
+ * bounds turn that into a stated refusal at the boundary: a tape is either
+ * small enough to play or it is refused by name, and nothing in between.
+ *
+ * The largest recording on disk is 36 rows over 4 atoms with an 83-character
+ * note, so the limits sit far above any real tape and far below a stall.
+ */
+export const MAX_ROWS = 2_000;
+export const MAX_ATOMS = 256;
+export const MAX_FACTS = 256;
+
+/** The bound on every free-text string a tape carries (the header is tighter). */
+export const TEXT_MAX_CHARS = 1_024;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -43,13 +63,16 @@ function req(obj: Record<string, unknown>, key: string, path: string): unknown {
 
 function asString(value: unknown, path: string): string {
   if (typeof value !== 'string') throw new TapeError(`${path} must be a string`);
+  if (value.length > TEXT_MAX_CHARS) {
+    throw new TapeError(`${path} must be at most ${TEXT_MAX_CHARS} characters`);
+  }
   return value;
 }
 
 function asStringOrNull(value: unknown, path: string): string | null {
   if (value === null) return null;
-  if (typeof value === 'string') return value;
-  throw new TapeError(`${path} must be a string or null`);
+  if (typeof value !== 'string') throw new TapeError(`${path} must be a string or null`);
+  return asString(value, path);
 }
 
 /**
@@ -159,8 +182,20 @@ function loadFact(value: unknown, path: string): TapeFact {
   };
 }
 
-function loadList<T>(value: unknown, path: string, item: (v: unknown, p: string) => T): T[] {
+/**
+ * A bounded list. The count is checked BEFORE the items are read, so an
+ * over-large tape costs one length test rather than a walk of every row.
+ */
+function loadList<T>(
+  value: unknown,
+  path: string,
+  max: number,
+  item: (v: unknown, p: string) => T,
+): T[] {
   if (!Array.isArray(value)) throw new TapeError(`${path} must be an array`);
+  if (value.length > max) {
+    throw new TapeError(`${path} must have at most ${max} entries, got ${value.length}`);
+  }
   return value.map((v, i) => item(v, `${path}[${i}]`));
 }
 
@@ -209,9 +244,9 @@ export function loadTape(json: unknown): Tape {
     container: loadContainer(req(json, 'container', '(root)'), 'container'),
     seat: loadSeat(req(json, 'seat', '(root)'), 'seat'),
     attribution_ok: asBoolean(req(json, 'attribution_ok', '(root)'), 'attribution_ok'),
-    atoms: loadList(req(json, 'atoms', '(root)'), 'atoms', loadAtom),
-    rows: loadList(req(json, 'rows', '(root)'), 'rows', loadRow),
-    facts: loadList(req(json, 'facts', '(root)'), 'facts', loadFact),
+    atoms: loadList(req(json, 'atoms', '(root)'), 'atoms', MAX_ATOMS, loadAtom),
+    rows: loadList(req(json, 'rows', '(root)'), 'rows', MAX_ROWS, loadRow),
+    facts: loadList(req(json, 'facts', '(root)'), 'facts', MAX_FACTS, loadFact),
   };
   assertTapeGraph(tape);
   return tape;

@@ -20,6 +20,20 @@
 # CABINET=vibe the variable is not read, and the server says so once on
 # stderr rather than leaving an operator to wonder about the mount.
 #
+# What each cabinet reads, and nothing else. A variable set for the cabinet
+# that does not read it gets one path-free line on stderr at start, and so
+# does a value the cabinet cannot use.
+#
+#   CABINET            both     ghost (or unset) is the shooter, vibe is the typist
+#   CABINET_TAPES      both     where the tapes are
+#   CABINET_TAPES_USER ghost    operator tapes merged beside the baked menu
+#   CABINET_FIXTURE    ghost    which tape the round plays
+#   CABINET_TIER       both     0-3; anything else is a note and the default
+#   CABINET_SEED       both     a whole number; anything else is a note
+#   CABINET_BOT        vibe     the typist at the keyboard, e.g. typist:45
+#   VOICE_URL          ghost    the host worker's base; empty is silent
+#   VOICE_TOKEN        ghost    the worker's bearer, when it binds beyond loopback
+#
 # Multi-arch: docker buildx build --platform linux/amd64,linux/arm64 .
 # No GPU stage. FROM is the node:22-alpine index digest (amd64+arm64), not :latest.
 
@@ -57,6 +71,11 @@ COPY --from=build /src/packages/cabinet-server/dist/server-vibe.js ./vibe.js
 COPY fixtures/tapes ./tapes
 RUN chown -R node:node /app
 USER node
-# `CABINET=vibe` runs the typing cabinet; anything else is the shooter, which
-# keeps every existing `docker run` of this image meaning what it meant.
-ENTRYPOINT ["sh", "-c", "case \"$CABINET\" in vibe) exec node /app/vibe.js ;; *) exec node /app/server.js ;; esac"]
+# `CABINET=vibe` runs the typing cabinet; unset or `ghost` is the shooter, and
+# anything else is still the shooter — which keeps every existing `docker run`
+# of this image meaning what it meant — but says so on stderr first. It is the
+# variable with the largest consequence and was the only one the image treated
+# as unvalidated: `vibee`, `Vibe` and `typer` all silently ran the shooter.
+# `"$@"` forwards whatever the operator appended after the image name; the
+# trailing `sh` is `$0` so the first of those lands in `$1`.
+ENTRYPOINT ["sh", "-c", "case \"$CABINET\" in vibe) exec node /app/vibe.js \"$@\" ;; ghost|'') exec node /app/server.js \"$@\" ;; *) echo 'CABINET was not understood; the image runs the shooter' >&2 ; exec node /app/server.js \"$@\" ;; esac", "sh"]

@@ -1474,3 +1474,189 @@ describe('the product, in endless', () => {
     expect(label()).toBe(`the product as it is built: ${second}`);
   });
 });
+
+// ——— the context the sound is built on ————————————————————————————————————
+
+/** Enough of a context to be built and to refuse to be wired. */
+class BrokenAudioContext {
+  static built = 0;
+  static closed = 0;
+  currentTime = 0;
+  sampleRate = 44100;
+  state = 'running';
+  destination = {};
+  constructor() {
+    BrokenAudioContext.built += 1;
+  }
+  createGain(): never {
+    throw new Error('this context has no gain to give');
+  }
+  close() {
+    BrokenAudioContext.closed += 1;
+    return Promise.resolve();
+  }
+  resume() {
+    return Promise.resolve();
+  }
+  addEventListener() {
+    /* nothing is listening to a context that never got wired */
+  }
+  removeEventListener() {
+    /* the same */
+  }
+}
+
+/** The same fake context, handed back asleep, counting what asks it to run. */
+class AsleepAudioContext extends FakeAudioContext {
+  static made: AsleepAudioContext[] = [];
+  // WebKit's word for a context an interruption took away: not 'suspended',
+  // so a guard written for that state alone never matched it.
+  override state = 'interrupted';
+  resumes = 0;
+  readonly onState: (() => void)[] = [];
+  constructor() {
+    super();
+    AsleepAudioContext.made.push(this);
+  }
+  override resume() {
+    this.resumes += 1;
+    return Promise.resolve();
+  }
+  addEventListener(type: string, fn: () => void) {
+    if (type === 'statechange') this.onState.push(fn);
+  }
+  removeEventListener() {
+    /* the mount gives it back; nothing here reads that */
+  }
+}
+
+/** Make every `Image` the field builds report itself broken on `src`. */
+function brokenImages(): { restore: () => void } {
+  const proto = Image.prototype as unknown as object;
+  const was = Object.getOwnPropertyDescriptor(proto, 'src');
+  Object.defineProperty(proto, 'src', {
+    configurable: true,
+    get(this: HTMLImageElement) {
+      return this.getAttribute('src') ?? '';
+    },
+    set(this: HTMLImageElement, value: string) {
+      this.setAttribute('src', value);
+      this.dispatchEvent(new Event('error'));
+    },
+  });
+  return {
+    restore: () => {
+      if (was) Object.defineProperty(proto, 'src', was);
+      else delete (proto as Record<string, unknown>).src;
+    },
+  };
+}
+
+function mountWithSound(): VibeMount {
+  return mountVibeTyper(root, {
+    tier: 0,
+    endless: false,
+    levelIndex: 0,
+    seed: 1,
+    agentName: 'Sprocket',
+    theme: 'mechanical',
+    integration: [],
+    onExit: () => undefined,
+    startAudio: true,
+  });
+}
+
+function chromeWords(): string {
+  return root.querySelector('span[aria-label="cabinet"]')?.textContent ?? '';
+}
+
+describe('the context the sound is built on', () => {
+  it('closes one it could not wire, and does not build another a gesture', () => {
+    BrokenAudioContext.built = 0;
+    BrokenAudioContext.closed = 0;
+    (globalThis as unknown as { AudioContext: unknown }).AudioContext = BrokenAudioContext;
+    mount = mountWithSound();
+    expect(BrokenAudioContext.built).toBe(1);
+    // Built inline as an argument, a context whose wiring threw was
+    // unreachable and never closed — and the guard, back at null, let the
+    // next gesture build another. A page may hold only a few.
+    expect(BrokenAudioContext.closed, 'the context it could not use is closed').toBe(1);
+    expect(mount.debug().music, 'and the run plays with no engine at all').toBeNull();
+
+    root.querySelector('.vibe')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(BrokenAudioContext.built, 'a construction that threw is tried once').toBe(1);
+    expect(chromeWords(), 'the row says the sound is gone').toContain('sound');
+  });
+
+  it('asks a context that is not running to come back, and takes its listeners down', async () => {
+    AsleepAudioContext.made = [];
+    (globalThis as unknown as { AudioContext: unknown }).AudioContext = AsleepAudioContext;
+    const taken: string[] = [];
+    const given: string[] = [];
+    const addWas = document.addEventListener.bind(document);
+    const removeWas = document.removeEventListener.bind(document);
+    vi.spyOn(document, 'addEventListener').mockImplementation(((type: string, fn: never) => {
+      taken.push(type);
+      addWas(type as keyof DocumentEventMap, fn);
+    }) as never);
+    vi.spyOn(document, 'removeEventListener').mockImplementation(((type: string, fn: never) => {
+      given.push(type);
+      removeWas(type as keyof DocumentEventMap, fn);
+    }) as never);
+    try {
+      mount = mountWithSound();
+      const ctx = AsleepAudioContext.made[0]!;
+      // `resume()` was called once, from inside a guard that returns early for
+      // good once the engine exists — and only for 'suspended', which this
+      // state is not.
+      expect(ctx.resumes).toBe(1);
+      await new Promise((done) => setTimeout(done, 0));
+      expect(chromeWords(), 'a refusal is a word, not silence').toContain('asleep');
+
+      // The browser says the state moved and it is still not running.
+      for (const fn of ctx.onState) fn();
+      expect(ctx.resumes).toBe(2);
+
+      // The tab going away and coming back is the other moment it is asked.
+      expect(taken).toContain('visibilitychange');
+      mount.unmount();
+      mount = null;
+      expect(given, 'the mount gives the listener back').toContain('visibilitychange');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+});
+
+describe("the cabinet's own files", () => {
+  it('says the frames are gone rather than drawing blocks in silence', () => {
+    const images = brokenImages();
+    try {
+      mount = mountLevel();
+      // Ghost carries 'art: using blocks' for exactly this; the typing
+      // cabinet carried nothing at all.
+      expect(chromeWords()).toContain('art');
+      expect(chromeWords()).toContain('blocks');
+      // Words, and no digit anywhere near them (G23).
+      expect(/\d/.test(chromeWords())).toBe(false);
+    } finally {
+      images.restore();
+    }
+  });
+});
+
+describe('the prefs the typing cabinet keeps', () => {
+  it('leaves a key it does not know alone while another is written', () => {
+    localStorage.setItem('vibe.prefs', JSON.stringify({ tier: 2, best: 'a run of words' }));
+    writeVibePrefs({ muted: 'on' });
+    const raw = JSON.parse(localStorage.getItem('vibe.prefs')!) as Record<string, unknown>;
+    expect(raw.best, 'a pref this build has never heard of is not this build to erase').toBe(
+      'a run of words',
+    );
+    expect(raw.muted).toBe('on');
+    expect(raw.tier).toBe(2);
+    // The read is still the strict allowlist.
+    expect((readVibePrefs() as Record<string, unknown>).best).toBeUndefined();
+    expect(readVibePrefs().muted).toBe('on');
+  });
+});

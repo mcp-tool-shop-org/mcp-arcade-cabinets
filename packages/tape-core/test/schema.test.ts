@@ -9,6 +9,7 @@ import {
   TapeError,
   loadTape,
 } from '../src/index';
+import { MAX_ATOMS, MAX_FACTS, MAX_ROWS, TEXT_MAX_CHARS } from '../src/load';
 
 const FIXTURES = path.resolve(__dirname, '../../../fixtures/tapes');
 
@@ -193,5 +194,80 @@ describe('the header fields a cabinet paints', () => {
     raw.agent_policy = 'naive';
     raw.target_kind = 'stdio';
     expect(loadTape(raw).server_name).toBe('ollama-intern-mcp-3');
+  });
+});
+
+// The wire had no bound at all. The header fields were capped from the first
+// day, but rows, atoms, facts and every free-text field on a row were free to
+// be any size, and the prepass that consumes them walks the rows more than
+// once per row. A whole-session recording therefore did not fail, it stalled:
+// a stdio server or a browser frame that simply stopped answering, with no
+// name on it. These bounds make an over-large tape a stated refusal instead.
+describe('the size of a tape the loader will take', () => {
+  function clone(name = 'naive-ndjson.tape.json'): Record<string, unknown> {
+    return readRaw(name) as Record<string, unknown>;
+  }
+
+  it('refuses more rows than it will play, and names the limit', () => {
+    const raw = clone() as unknown as { rows: Record<string, unknown>[] };
+    const row = raw.rows[0]!;
+    raw.rows = Array.from({ length: MAX_ROWS + 1 }, (_, i) => ({ ...row, seq: i }));
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(new RegExp(`rows.*at most ${MAX_ROWS}`));
+  });
+
+  it('refuses more atoms than it will play, and names the limit', () => {
+    const raw = clone() as unknown as { atoms: Record<string, unknown>[] };
+    const atom = raw.atoms[0]!;
+    raw.atoms = Array.from({ length: MAX_ATOMS + 1 }, (_, i) => ({ ...atom, id: `atom.${i}` }));
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(new RegExp(`atoms.*at most ${MAX_ATOMS}`));
+  });
+
+  it('refuses more facts than it will play, and names the limit', () => {
+    const raw = clone() as unknown as { facts: Record<string, unknown>[] };
+    const fact = raw.facts[0]!;
+    raw.facts = Array.from({ length: MAX_FACTS + 1 }, () => ({ ...fact }));
+    expect(() => loadTape(raw)).toThrow(TapeError);
+    expect(() => loadTape(raw)).toThrow(new RegExp(`facts.*at most ${MAX_FACTS}`));
+  });
+
+  it('refuses an unbounded free-text field on a row, and names the limit', () => {
+    for (const field of ['note', 'direction', 'method', 'rpc_id'] as const) {
+      const raw = clone() as unknown as { rows: Record<string, unknown>[] };
+      raw.rows[0]![field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
+      expect(() => loadTape(raw), field).toThrow(TapeError);
+      expect(() => loadTape(raw), field).toThrow(
+        `rows[0].${field} must be at most ${TEXT_MAX_CHARS} characters`,
+      );
+    }
+  });
+
+  it('refuses an unbounded free-text field at the root, and names the limit', () => {
+    for (const field of ['bout_id', 'framing', 'protocol_version'] as const) {
+      const raw = clone();
+      raw[field] = 'a'.repeat(TEXT_MAX_CHARS + 1);
+      expect(() => loadTape(raw), field).toThrow(TapeError);
+      expect(() => loadTape(raw), field).toThrow(
+        new RegExp(`${field} must be at most ${TEXT_MAX_CHARS} characters`),
+      );
+    }
+  });
+
+  it('still takes a tape that sits on the limits', () => {
+    const raw = clone() as unknown as { rows: Record<string, unknown>[]; bout_id: string };
+    raw.rows[0]!.note = 'a'.repeat(TEXT_MAX_CHARS);
+    raw.bout_id = 'b'.repeat(TEXT_MAX_CHARS);
+    const tape = loadTape(raw);
+    expect(tape.rows[0]!.note.length).toBe(TEXT_MAX_CHARS);
+    expect(tape.bout_id.length).toBe(TEXT_MAX_CHARS);
+  });
+
+  it('refuses the count before it reads the items', () => {
+    // The refusal must cost one length test, not a walk of every row: a tape
+    // that is over the bound AND full of unreadable rows still names the count.
+    const raw = clone() as unknown as { rows: unknown[] };
+    raw.rows = Array.from({ length: MAX_ROWS + 1 }, () => null);
+    expect(() => loadTape(raw)).toThrow(new RegExp(`rows.*at most ${MAX_ROWS}`));
   });
 });

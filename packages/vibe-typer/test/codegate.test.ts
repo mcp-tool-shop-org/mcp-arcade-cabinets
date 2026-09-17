@@ -13,6 +13,7 @@ import {
   LANGUAGE_HINTS,
   MAX_COLS,
   MAX_LINES,
+  MAX_TOLERANCE,
   VALUE_TOLERANCE,
   type CodeGateCtx,
   type CodeGateReason,
@@ -169,6 +170,51 @@ describe('the code gate refuses, one reason at a time', () => {
         gateCode(candidate({ ask: 'make the {diary for plants} do the thing' }), ctx('python', 1)),
       ),
     ).toBe('bad-ask');
+  });
+
+  // The corpus loader refuses an authored ask that names a story level's noun
+  // without saying which level it is for, and `askFor` drops a bound ask
+  // outside its level. This is the other door into the same field, and it was
+  // not held to that rule: a seated snippet carries no `for`, so a seat — or
+  // any MCP client in the user's chair through the container's `ask` tool —
+  // could put a duck into an app for lost socks. The duck belongs beside the
+  // brace case, which is where it is.
+  it('refuses an ask that leans on a story level the seat is not in', () => {
+    expect(
+      reasonOf(gateCode(candidate({ ask: 'reverse the line of waiting ducks' }), ctx('python', 1))),
+    ).toBe('bad-ask');
+    const r = gateCode(candidate({ ask: 'add my first sandwich to {product}' }), ctx('python', 1));
+    expect(reasonOf(r)).toBe('bad-ask');
+    if (!r.ok) expect(r.detail).toBe('story noun');
+    // The hole is read as the product before the rule runs, so a product that
+    // is itself a story is not what this catches — only the ask's own words.
+    expect(
+      reasonOf(
+        gateCode(candidate({ ask: 'keep only the ones with no partner' }), ctx('python', 1)),
+      ),
+    ).toBe('ok');
+  });
+
+  // The tolerance is how far outside the band's own corpus range a seated
+  // snippet's value may sit. At one or more the low edge is zero or negative,
+  // so nothing can ever be refused as under-band; negative inverts the window
+  // and refuses almost everything. Either is a caller bug in the one module
+  // standing between a model's answer and the field, so it says so.
+  it('refuses to run at all on a tolerance that is not a tolerance', () => {
+    const wide = { ...ctx('python', 1), tolerance: 1 };
+    expect(() => gateCode(candidate(), wide)).toThrow('tolerance');
+    expect(() => gateCode(candidate(), { ...ctx('python', 1), tolerance: -0.1 })).toThrow(
+      'tolerance',
+    );
+    expect(() => gateCode(candidate(), { ...ctx('python', 1), tolerance: NaN })).toThrow(
+      'tolerance',
+    );
+    // The edges hold, and the one every caller passes is well inside them.
+    expect(() => gateCode(candidate(), { ...ctx('python', 1), tolerance: 0 })).not.toThrow();
+    expect(() =>
+      gateCode(candidate(), { ...ctx('python', 1), tolerance: MAX_TOLERANCE }),
+    ).not.toThrow();
+    expect(VALUE_TOLERANCE).toBeLessThanOrEqual(MAX_TOLERANCE);
   });
 
   it('keeps the product hole in an ask and fills nothing itself', () => {

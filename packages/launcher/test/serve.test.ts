@@ -8,6 +8,7 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  checkSeatUrl,
   createCabinetServer,
   listenFrom,
   ownHost,
@@ -16,6 +17,8 @@ import {
   parseSeatView,
   parseStrings,
   readBody,
+  retiredLine,
+  troubleLine,
 } from '../src/serve';
 
 /**
@@ -711,6 +714,107 @@ describe('a Ghost-shaped cabinet', () => {
     } finally {
       await new Promise<void>((r) => shooter.close(() => r()));
       await rm(moduleDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// A daemon that is not running, an address with a typo in it, a worker that
+// is down and a tag the host has retired all reached the person who ran
+// `npx` as the same one word: `no answer`. The page is still told only that
+// -- it has a fallback and no business knowing more -- but the cabinet now
+// says the cause out loud, in its own words, with no path and no stack in it.
+describe('what the cabinet says when a seat is not there', () => {
+  it('names the seat, the address and the cause', () => {
+    const refused = Object.assign(new Error('fetch failed'), {
+      cause: Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' }),
+    });
+    expect(troubleLine('daemon', 'http://127.0.0.1:11434', refused)).toBe(
+      'the daemon at http://127.0.0.1:11434 is not running, or is not at that address',
+    );
+    const late = Object.assign(new Error('the operation was aborted'), { name: 'TimeoutError' });
+    expect(troubleLine('worker', 'http://127.0.0.1:7788', late)).toBe(
+      'the voice worker at http://127.0.0.1:7788 took too long to answer',
+    );
+    expect(troubleLine('daemon', 'http://127.0.0.1:1', new Error('something else'))).toBe(
+      'the daemon at http://127.0.0.1:1 did not answer',
+    );
+    expect(retiredLine('daemon')).toBe(
+      'the daemon says that model tag is retired; pick another seat',
+    );
+    for (const line of [
+      troubleLine('daemon', 'http://127.0.0.1:11434', refused),
+      troubleLine('worker', 'http://127.0.0.1:7788', late),
+      retiredLine('worker'),
+    ]) {
+      expect(line.includes(process.cwd())).toBe(false);
+      expect(line.includes('at Object.')).toBe(false);
+    }
+  });
+
+  it('holds the two addresses to a stated shape, the way --port is held', () => {
+    expect(checkSeatUrl('OLLAMA_URL', 'http://127.0.0.1:11434')).toBeNull();
+    expect(checkSeatUrl('VOICE_URL', 'https://voice.example.test')).toBeNull();
+    // The scheme-less forms are the ones that used to start clean and fail
+    // later. A host that begins with a letter even parses, with the host
+    // taken for the scheme, so a scheme check is what catches it.
+    expect(checkSeatUrl('OLLAMA_URL', 'localhost:11434')).toBe(
+      'OLLAMA_URL wants an http:// or https:// address, got localhost:11434',
+    );
+    expect(checkSeatUrl('OLLAMA_URL', '127.0.0.1:11434')).toBe(
+      'OLLAMA_URL is not an address, got 127.0.0.1:11434',
+    );
+    for (const bad of ['', 'localhost', 'ollama', 'http//127.0.0.1', 'ftp://host', 'http://']) {
+      const said = checkSeatUrl('OLLAMA_URL', bad);
+      expect(said, JSON.stringify(bad)).not.toBeNull();
+      expect(String(said).startsWith('OLLAMA_URL '), JSON.stringify(bad)).toBe(true);
+    }
+  });
+
+  it('says it on stderr when a proxied call finds nothing there, and still tells the page nothing', async () => {
+    // A port that was listened on and let go: nothing is there now.
+    const vacated = createServer(() => undefined);
+    const deadPort = await listenFrom(vacated, 24_611);
+    await new Promise((r) => vacated.close(() => r(undefined)));
+    const said: string[] = [];
+    const quiet = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      ollamaUrl: `http://127.0.0.1:${deadPort}`,
+      voiceUrl: null,
+      voiceToken: null,
+      anthropicKey: null,
+      onTrouble: (line: string) => said.push(line),
+    });
+    const port = await listenFrom(quiet, 24_711);
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/ollama/api/tags`);
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ error: 'no answer' });
+      expect(said).toHaveLength(1);
+      expect(said[0]!.startsWith(`the daemon at http://127.0.0.1:${deadPort} `)).toBe(true);
+    } finally {
+      await new Promise((r) => quiet.close(() => r(undefined)));
+    }
+  });
+
+  it('says nothing at all while the daemon is answering', async () => {
+    const said: string[] = [];
+    const fine = createCabinetServer({
+      playDir: play,
+      sayModule: null,
+      ollamaUrl: upstreamBase,
+      voiceUrl: null,
+      voiceToken: null,
+      anthropicKey: null,
+      onTrouble: (line: string) => said.push(line),
+    });
+    const port = await listenFrom(fine, 24_811);
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/ollama/api/tags`);
+      expect(res.status).toBe(200);
+      expect(said).toEqual([]);
+    } finally {
+      await new Promise((r) => fine.close(() => r(undefined)));
     }
   });
 });

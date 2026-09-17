@@ -16,7 +16,9 @@ port with a stub voice in place of Kokoro and faster-whisper.
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import json
 import os
 import socket
@@ -85,6 +87,13 @@ class WorkerCase(unittest.TestCase):
         self._was_voice, self._was_token = worker.VOICE, worker.TOKEN
         worker.VOICE = self.voice
         worker.TOKEN = TOKEN
+        # Module state, so a test that reads a counter or waits for the
+        # once-only line has to start from the floor.
+        self._was_stats = dict(worker.STATS)
+        for key in worker.STATS:
+            if key != 'started':
+                worker.STATS[key] = 0
+        worker.SAID.clear()
         self.server = worker.Server(('127.0.0.1', 0), worker.Handler)
         self.base = f'http://127.0.0.1:{self.server.server_address[1]}'
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -95,6 +104,9 @@ class WorkerCase(unittest.TestCase):
         self.server.server_close()
         self.thread.join(timeout=5)
         worker.VOICE, worker.TOKEN = self._was_voice, self._was_token
+        worker.STATS.clear()
+        worker.STATS.update(self._was_stats)
+        worker.SAID.clear()
         self.tmp.cleanup()
 
     # --- helpers -----------------------------------------------------------
@@ -272,6 +284,62 @@ class WorkerCase(unittest.TestCase):
                 self.server.slots.release()
 
 
+    # --- what a refusal leaves behind -------------------------------------
+
+    def test_a_refused_bearer_is_counted_and_said_once(self):
+        """The operator with the wrong token can read neither log nor /stats.
+
+        log_message is silenced outright and /stats is behind the same bearer
+        that is failing, so without this the worker looks healthy on the open
+        /health the TypeScript client deliberately does not trust.
+        """
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            for _ in range(3):
+                code, _, _ = self.call('/stats', token=WRONG)
+                self.assertEqual(code, 401)
+            code, _, _ = self.call('/speak', token=WRONG, body=self.speak_body())
+            self.assertEqual(code, 401)
+        self.assertEqual(worker.STATS['auth'], 4)
+        said = err.getvalue()
+        self.assertEqual(said.count('bearer'), 1, 'one line the first time, then quiet')
+        self.assertNotIn('/', said, 'path-free')
+        self.assertTrue(said.endswith('\n'))
+
+    def test_a_malformed_job_is_counted_and_said_once(self):
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            code, _, _ = self.call('/speak', token=TOKEN, raw=b'{not json')
+            self.assertEqual(code, 400)
+            code, _, _ = self.call('/speak', token=TOKEN, body=self.speak_body(rate=9.0))
+            self.assertEqual(code, 400)
+        self.assertEqual(worker.STATS['bad_request'], 2)
+        self.assertEqual(worker.STATS['auth'], 0)
+        said = err.getvalue()
+        self.assertEqual(said.count('malformed'), 1)
+        self.assertNotIn('/', said)
+        self.assertEqual(self.voice.spoken, [])
+
+    def test_the_counters_say_what_they_mean_and_stats_carries_them(self):
+        # `refused` meant a failed spoken-content receipt here and an HTTP
+        # 400 or 401 on the TypeScript side, so two surfaces told two stories
+        # with one word while someone debugged a silent cabinet.
+        self.assertIn('receipt_failed', worker.STATS)
+        self.assertNotIn('refused', worker.STATS)
+        self.call('/stats', token=WRONG)
+        self.call('/speak', token=TOKEN, raw=b'{not json')
+        code, body, _ = self.call('/stats', token=TOKEN)
+        self.assertEqual(code, 200)
+        stats = json.loads(body)['stats']
+        self.assertEqual(stats['auth'], 1)
+        self.assertEqual(stats['bad_request'], 1)
+        self.assertEqual(stats['receipt_failed'], 0)
+        self.assertNotIn('started', stats)
+        # /health stays liveness only and carries none of it.
+        _, health, _ = self.call('/health')
+        self.assertEqual(json.loads(health), {'ok': True, 'engine': 'kokoro-onnx'})
+
+
 class CastHintCase(unittest.TestCase):
     def test_the_hint_names_every_boss_the_cabinet_ships(self):
         kinds = worker.cast_kinds()
@@ -283,7 +351,25 @@ class CastHintCase(unittest.TestCase):
         self.assertTrue(hint.startswith('The '))
 
     def test_an_unreadable_sheet_falls_back_to_the_cast_it_shipped_with(self):
-        self.assertEqual(worker.cast_kinds(Path('nowhere/personas.json')), worker.CAST_FALLBACK)
+        worker.SAID.discard('cast')
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            self.assertEqual(worker.cast_kinds(Path('nowhere/personas.json')), worker.CAST_FALLBACK)
+            worker.cast_kinds(Path('nowhere/personas.json'))
+        # A silent fallback re-opens the hole cast_kinds was written to
+        # close: the operator's only symptom would be takes that quietly
+        # stop passing their receipts.
+        said = err.getvalue()
+        self.assertEqual(said.count('persona sheets did not load'), 1)
+        self.assertNotIn('/', said, 'path-free')
+        self.assertTrue(said.endswith('\n'))
+        worker.SAID.discard('cast')
+
+    def test_the_fallback_cast_is_the_one_the_sheets_ship(self):
+        # A fourth spelling of the same list, pinned to the sheets rather
+        # than left to drift the way the Archivist did.
+        sheets = json.loads(worker.PERSONAS.read_text(encoding='utf-8'))
+        self.assertEqual(tuple(sheets['boss']), worker.CAST_FALLBACK)
 
 
 if __name__ == '__main__':

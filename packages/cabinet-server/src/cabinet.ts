@@ -9,6 +9,7 @@ import type { PilotIntent, SfxName, WaveKind } from '@mcp-arcade-cabinets/ghost-
 
 import { enumOf, toolDef, TOOL_NAMES, type ToolName } from './contract';
 import { gateLine, type GateReason } from './gate';
+import { NO_LEVER } from './tool-names';
 import type { BossKind, Lead } from './personas';
 
 /** The boss's view: the same fact-blind words the shell sends, plus the wave kind. */
@@ -58,10 +59,11 @@ export interface ToolResult {
 }
 
 export interface CallRecord {
-  name: ToolName;
+  /** `no such lever` for a name off the closed list; the raw name is never kept. */
+  name: ToolName | typeof NO_LEVER;
   ok: boolean;
   /** For `say`: why the gate refused, or 'ok'. */
-  gate?: GateReason | 'ok';
+  gate?: GateReason | 'ok' | typeof NO_LEVER;
 }
 
 export interface Cabinet {
@@ -218,7 +220,13 @@ export function createCabinet(host: CabinetHost): Cabinet {
     log,
     call(name: string, args: unknown): ToolResult {
       if (!(TOOL_NAMES as readonly string[]).includes(name)) {
-        throw new Error(`no such tool: ${name}`);
+        // A refusal, not a throw. Every other refusal on this boundary is a
+        // structured result a client can read, and this path is reachable
+        // from in-process callers (the shell, `pnpm sit`, a test) that build
+        // the name from a string. The create-time handler check above stays
+        // the real andon for a name in the contract with no dispatch.
+        log.push({ name: NO_LEVER, ok: false, gate: NO_LEVER });
+        return text('no such lever on this cabinet', true);
       }
       return handlers[name as ToolName](args);
     },

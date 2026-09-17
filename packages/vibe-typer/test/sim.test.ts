@@ -5,6 +5,7 @@ import { DEFAULT_PATTERNS, tierContext, type Patterns } from '../src/patterns';
 import {
   agentNameOf,
   codeOf,
+  BUILT_CAP,
   createRun,
   feedProduct,
   feedReaction,
@@ -18,6 +19,7 @@ import {
   syncOf,
 } from '../src/sim';
 import { endlessPeek } from '../src/level';
+import { DEFAULT_CORPUS, type Corpus } from '../src/corpus';
 import type { Event, RunInput, RunState, Tier } from '../src/types';
 import { makeBot, seatFeed } from './helpers';
 
@@ -60,6 +62,21 @@ function shipRequest(state: RunState): void {
     if (typeable(state)) sendLine(state);
     else step(state);
     n += 1;
+  }
+}
+
+/**
+ * Ship the request in hand and stop ON the ship beat, before `advance` takes
+ * the run to the next request. What the user says at a ship is the last line
+ * of the chat only until then.
+ */
+function toShip(state: RunState): void {
+  const lines = codeOf(state).length;
+  sendLine(state);
+  for (let i = 0; i < lines; i++) sendLine(state);
+  if (state.beat === 'creep') {
+    step(state);
+    sendLine(state);
   }
 }
 
@@ -589,7 +606,12 @@ describe('determinism', () => {
     return state;
   }
 
-  it('gives a byte-identical state for the same levers, seed and input', () => {
+  // The corpus is in the list on purpose: `withIntegration` rebuilds the
+  // character trigram model over the seasoned corpus and every snippet's
+  // value is read off that model, so the tapes on disk are an input to the
+  // score and not only to the integration stack. Two runs are byte-identical
+  // when the whole corpus is the same one, which is what this drives.
+  it('gives a byte-identical state for the same corpus, levers, seed and input', () => {
     expect(JSON.stringify(run())).toBe(JSON.stringify(run()));
   });
 
@@ -898,5 +920,105 @@ describe("the seat's reaction", () => {
     // The slot lives beside the run, not in it: nothing a player could save
     // or replay carries a line that has not been said yet.
     expect(JSON.stringify(state)).not.toContain('so much better than i asked for');
+  });
+});
+
+// ——— the boundaries of a step ————————————————————————————————————————————
+
+describe('the step', () => {
+  // Every numeric lever in this package is range-checked at load. The one
+  // number that arrives per frame was not checked at all, and `clamp` maps
+  // every non-finite value to empty by design — so a stray dt was turned
+  // into a plausible-looking game over: the player and the transcript were
+  // told the context ran out, which is a false statement about the run.
+  it('refuses a dt that is not a finite positive number of seconds', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const clock = state.clock;
+    const context = state.context;
+    for (const dt of [Number.NaN, Number.POSITIVE_INFINITY, -1, 0]) {
+      expect(() => stepRun(state, {}, dt), String(dt)).toThrow('dt');
+    }
+    // A caller bug reads as a caller bug: the run is where it was, and the
+    // bar was never told the context ran out.
+    expect(state.clock).toBe(clock);
+    expect(state.context).toBe(context);
+    expect(state.over).toBe(false);
+    expect(state.ended).toBeUndefined();
+    expect(() => step(state)).not.toThrow();
+  });
+
+  // `built` grew one entry per request for as long as a client stayed
+  // connected, and the stdio cabinet server serializes RunState for `view`
+  // on a session with no natural end. The supplied buffer was capped for
+  // exactly this reason; the preview is a window now, and the count is what
+  // never falls off.
+  it('keeps the preview a window and the count whole', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const shipped = state.plan.requests[0]!.snippet.id;
+    for (let i = 0; i < BUILT_CAP + 10; i++) state.built.push({ id: `old-${i}`, size: 1 });
+    shipRequest(state);
+    expect(state.built).toHaveLength(BUILT_CAP);
+    expect(state.built.at(-1)!.id).toBe(shipped);
+    expect(state.pieceCount).toBe(1);
+  });
+
+  // An endless level that cannot be planned — a stack with no corpus, an
+  // integration stack with no tapes — used to be reported as a completed
+  // run: `shipped`, identical to a listed level the player finished. The
+  // ladder is endless by definition, so shipped is never a true thing to say
+  // about it; the one honest reading is that the planner came up empty.
+  it('names the planner coming up empty rather than calling the ladder shipped', () => {
+    const bash = DEFAULT_CORPUS.byStack.bash!;
+    const corpus: Corpus = { snippets: bash, byStack: { bash }, model: DEFAULT_CORPUS.model };
+    // A seed whose first endless level is the stack this corpus has and whose
+    // second is one it does not.
+    let seed = -1;
+    for (let s = 1; s < 400 && seed < 0; s++) {
+      const set = DEFAULT_PATTERNS;
+      const first = endlessPeek({ set, seed: s, tier: 0, levelIndex: 0 });
+      const second = endlessPeek({ set, seed: s, tier: 0, levelIndex: 1 });
+      if (first.stack === 'bash' && second.stack !== 'bash') seed = s;
+    }
+    expect(seed).toBeGreaterThan(0);
+    const state = createRun({ seed, tier: 0, endless: true, corpus });
+    for (let i = 0; i < 8 && !state.over; i++) shipRequest(state);
+    expect(state.over).toBe(true);
+    expect(state.ended).toBe('unplanned');
+    expect(state.events.some((e) => e.kind === 'over' && e.how === 'unplanned')).toBe(true);
+  });
+});
+
+// ——— the reaction the request carries ————————————————————————————————————
+
+describe('the ship', () => {
+  // `ship` called the picker with neither the product nor the level id, so a
+  // reaction authored beside an ask could not have its `{product}` filled and
+  // could not honour the `for` binding its ask already honours — the authoring
+  // run would have been rewritten afterwards. Both go across now.
+  it('lets the request answer itself, with the product filled', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const request = state.plan.requests[0]!;
+    expect(state.plan.requests.length).toBeGreaterThan(1);
+    request.snippet = { ...request.snippet, reaction: 'that is exactly what {product} needed' };
+    toShip(state);
+    expect(state.chat.at(-1)).toMatchObject({
+      who: 'user',
+      line: `that is exactly what ${state.plan.product} needed`,
+    });
+  });
+
+  it('drops a reaction written for another level and takes the pool instead', () => {
+    const state = createRun({ seed: 4, tier: 0, endless: false });
+    const request = state.plan.requests[0]!;
+    request.snippet = {
+      ...request.snippet,
+      reaction: 'the ducks are all lined up now',
+      for: 'some-other-level',
+    };
+    toShip(state);
+    const said = state.chat.at(-1)!;
+    expect(said.who).toBe('user');
+    expect(said.line).not.toBe('the ducks are all lined up now');
+    expect(DEFAULT_PATTERNS.user.reviews).toContain(said.line);
   });
 });

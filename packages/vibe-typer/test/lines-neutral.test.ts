@@ -34,97 +34,20 @@ import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_CORPUS, askIsBound, STORY_NOUNS } from '../src/corpus';
 import { LinePicker } from '../src/lines';
-import { DEFAULT_PATTERNS, type Patterns } from '../src/patterns';
+import { DEFAULT_PATTERNS, PIECE_RULE, type Patterns } from '../src/patterns';
 import type { Snippet, Tier } from '../src/types';
 
 /**
- * Things a request might build. A blind line may not name one. The regex is
- * plural-aware: `column` bars `columns`, which is the form the line the
- * Director read actually used. `piece` is deliberately NOT here — it is the
- * game's own word for whatever got built and is true of every request.
+ * The piece rule moved to src/patterns.ts, because one lever can re-light a
+ * pool of lines it catches and the loader has to be able to refuse that flip
+ * (`reactionsByTopicEnabled`). Everything the old comment said about it still
+ * holds and is worth repeating here, where the rule is scanned across every
+ * blind pool: PIECES is a DENYLIST and a FLOOR, not the property. It catches
+ * the words we have already been burned by, it cannot catch a piece nobody
+ * has listed, and it cannot catch a claim made with verbs. VOCABULARY below
+ * is the form that fails closed.
  */
-const PIECES = [
-  'greeting',
-  'button',
-  'table',
-  'list',
-  'chart',
-  'background',
-  'image',
-  'picture',
-  'card',
-  'header',
-  'footer',
-  'badge',
-  'slider',
-  'clock',
-  'countdown',
-  'menu',
-  'grid',
-  'stepper',
-  'avatar',
-  'banner',
-  'picker',
-  'frame',
-  'layer',
-  'border',
-  'font',
-  'heading',
-  'link',
-  'icon',
-  'margin',
-  'row',
-  'column',
-  'form',
-  'screen',
-  'sidebar',
-  'tooltip',
-  'spinner',
-  'dashboard',
-  'radio',
-  'checkbox',
-  'input',
-  'label',
-  'email',
-  'login',
-  'search',
-  'profile',
-  'page',
-  'map',
-  'calendar',
-  'timer',
-  'progress',
-  'duck',
-  'yogurt',
-  'fridge',
-  'toaster',
-  'door',
-  'hat',
-  'bonnet',
-  'sock',
-  // Ordinary things a request builds that the first list missed. Added
-  // because a denylist that stops growing stops catching, not because any
-  // line used them.
-  'modal',
-  'drawer',
-  'carousel',
-  'toggle',
-  'tab',
-  'navbar',
-  'accordion',
-  'gallery',
-  'widget',
-  'cart',
-  'playlist',
-  'invoice',
-  'panel',
-  'tile',
-  'gauge',
-  'timeline',
-  'overlay',
-];
-
-const PIECE = new RegExp(`\\b(${PIECES.join('|')})(?:s|es)?\\b`, 'i');
+const PIECE = PIECE_RULE;
 
 /**
  * Every word the blind pools are allowed to use. Pinned from the pools as
@@ -480,6 +403,9 @@ function wordsOf(line: string): string[] {
 
 const TIERS: Tier[] = [0, 1, 2, 3];
 
+/** The level's product, the one hole a snippet's own reaction may carry. */
+const PRODUCT = 'a website for my cat';
+
 /** The pools this file scans, by the name the picker reaches them under. */
 function blindPools(set: Patterns): Record<string, readonly string[]> {
   return {
@@ -499,7 +425,7 @@ function blindPools(set: Patterns): Record<string, readonly string[]> {
  * THE REACTION DEBT.
  *
  * `user.reactions` cannot be held to the rules above by cutting. It was
- * authored as "the user names the thing that just shipped", so seventy of
+ * authored as "the user names the thing that just shipped", so seventy-two of
  * its hundred and eight lines name a piece, and the lines that survive
  * PIECES ("the dropdown opens to reveal a tiny room") name one the list has
  * not caught yet. Cutting to a clean pool would leave the gentlest tier with
@@ -507,15 +433,99 @@ function blindPools(set: Patterns): Record<string, readonly string[]> {
  *
  * So the pool is not drawn while `reactionsByTopicEnabled` is off — the
  * reaction takes the generic reviews instead, which ARE held to the rules
- * above — and what guards the pool itself is a ratchet rather than a gate:
- * the count of piece-naming lines may fall and may not rise. New nonsense
- * cannot land in it; the nonsense already there is an authoring run the
- * Director has to say yes to, and the number below is the size of that job.
+ * above — and what guards the pool itself is the pin below.
+ *
+ * The pin is the LINES, not a count of them. A count is a ceiling on how many
+ * piece-naming lines there are and not on WHICH, so swapping one piece-naming
+ * line for another passed green while the header above claimed that new
+ * nonsense could not land; and a count never tightens, so a partial authoring
+ * run that cut a tier from thirty-three lines to twenty would leave thirteen
+ * slots of regrowth behind a constant nobody would revisit. Equality closes
+ * both ends: a new line and a cut one each fail here, and this list is updated
+ * in the same commit that moves the pool.
+ *
+ * The lever these pools sit behind cannot be flipped while they read like
+ * this: `loadUser` halts on the first one (src/patterns.ts).
  */
-const REACTION_DEBT: Record<string, number> = {
-  'user.reactions.0': 33,
-  'user.reactions.1': 19,
-  'user.reactions.2': 20,
+const REACTION_DEBT: Record<string, readonly string[]> = {
+  'user.reactions.0': [
+    'the avatar smiles only when you mean it.',
+    'the badge counts how many ducks have visited today.',
+    'the banner changes color with the room temperature.',
+    'the button glows when you think about soup.',
+    'the calendar marks today with a small star sticker.',
+    'the chat widget says hello like an old friend.',
+    'the checkbox ticks like a clock made of wood.',
+    'the crumb trail leaves a line of yogurt lids.',
+    'the dashboard glows when the room is happy.',
+    'the error page offers you a virtual yogurt.',
+    'the footer thanks you for staying this long.',
+    'the greeting whispers good morning to every visitor.',
+    'the header waves hello like a friendly neighbor.',
+    'the invite link works even if you are a duck.',
+    'the list organizes ducks by how they quack.',
+    'the login page greets you like a cousin.',
+    'the logo blinks when you open the fridge.',
+    'the logout page says see you tomorrow friend.',
+    'the notification slides in like yogurt off a spoon.',
+    'the page title hums when the tab is open.',
+    'the pages let you leaf through like a book.',
+    'the profile page lists every cousin in order.',
+    'the progress bar fills with warm soup.',
+    'the radio buttons quack when you select them.',
+    'the search bar hums while it thinks hard.',
+    'the settings page has a button labeled maybe.',
+    'the sidebar keeps all our secrets safe.',
+    'the slider moves like a fern toward sunlight.',
+    'the spinner spins in the shape of a duck.',
+    'the table seats seventeen ducks without complaining once.',
+    'the timer counts down with tiny perfect drama.',
+    'the tiny icon watches you like a small pet.',
+    'the tooltip explains what the button dreams about.',
+  ],
+  'user.reactions.1': [
+    'every user gets a greeting and a cookie.',
+    'my fern has a profile picture now.',
+    'the button turned purple and the room feels calm.',
+    'the chart is beautiful and my cousin framed it.',
+    'the ducks are grouped and my cousin approves.',
+    'the email went out and the ducks are informed.',
+    'the font is bouncy and my cousin is giggling.',
+    'the footer stays down and my cousin is relieved.',
+    'the form knows my name and i am home.',
+    'the fridge sent an alert and we are famous.',
+    'the header waves back and my cousin is delighted.',
+    'the icon is a duck and my cousin quacked.',
+    'the list sorted itself while i watched in awe.',
+    'the menu remembers my last order and cheers.',
+    'the screen turned purple and my cousin is inspired.',
+    'the search finds yogurt and my cousin is proud.',
+    'the sidebar is tidy and my cousin is breathing.',
+    'the yogurt tracker is live and my cousin relaxes.',
+    'we shipped the greeting and my cousin is emotional.',
+  ],
+  'user.reactions.2': [
+    'the alert banner is just very proud.',
+    'the avatar blinked and i felt alive.',
+    'the avatar wears a tiny hat now.',
+    'the banner image is staring into me.',
+    'the border is breathing and i love it.',
+    'the break room is on the map.',
+    'the button now glows when i blink.',
+    'the chart sang and the investors cheered.',
+    'the donut chart has actual sprinkles now.',
+    'the duck now has its own lawyer.',
+    'the font sent me flowers at work.',
+    'the icon pack moved to the beach.',
+    'the maybe button said yes this time.',
+    'the menu icon opened up to me.',
+    'the progress ring proposed to my finger.',
+    'the search bar found my missing sock.',
+    'the share button just told my cousin.',
+    'the sidebar has opinions on my outfits.',
+    'the slider knows exactly what i want.',
+    'the tooltip wrote a memoir about me.',
+  ],
 };
 
 describe('the pools that are drawn blind', () => {
@@ -639,7 +649,7 @@ describe('the blind set is derived from the picker', () => {
       // The two draws that take an argument and fall through to a blind pool
       // anyway: a snippet nobody wrote a topic for, and a level with no
       // reviews of its own.
-      reached.push(picker.reaction(topicSnippet()).slice(SENTINEL.length));
+      reached.push(picker.reaction(topicSnippet(), PRODUCT).slice(SENTINEL.length));
       reached.push(picker.review('no-such-level').slice(SENTINEL.length));
     }
     const loose = [...new Set(reached)].filter((pool) => !covered.has(pool));
@@ -670,7 +680,7 @@ describe('the reactions', () => {
     const picker = new LinePicker(sentinelSet(), { seed: 4, tier: 1 });
     // Not the by-topic pool, and not the tier pool either: the generic
     // reviews, which this file holds to both rules above.
-    expect(picker.reaction(topicSnippet())).toBe(`${SENTINEL}user.reviews`);
+    expect(picker.reaction(topicSnippet(), PRODUCT)).toBe(`${SENTINEL}user.reviews`);
   });
 
   it('answers every request with a line that passes both rules', () => {
@@ -678,7 +688,7 @@ describe('the reactions', () => {
       const picker = new LinePicker(DEFAULT_PATTERNS, { seed: 3, tier });
       picker.startLevel(0);
       for (const snippet of DEFAULT_CORPUS.snippets.slice(0, 60)) {
-        const said = picker.reaction(snippet);
+        const said = picker.reaction(snippet, PRODUCT);
         expect(DEFAULT_PATTERNS.user.reviews, `tier ${tier}: ${said}`).toContain(said);
         expect(PIECE.test(said), `tier ${tier} reacted with a piece: ${said}`).toBe(false);
         const strays = wordsOf(said).filter((w) => !VOCABULARY.has(w));
@@ -693,7 +703,11 @@ describe('the reactions', () => {
       const snippet = DEFAULT_CORPUS.snippets[0]!;
       for (let level = 0; level < 4; level++) {
         picker.startLevel(level);
-        const said = [picker.reaction(snippet), picker.reaction(snippet), picker.reaction(snippet)];
+        const said = [
+          picker.reaction(snippet, PRODUCT),
+          picker.reaction(snippet, PRODUCT),
+          picker.reaction(snippet, PRODUCT),
+        ];
         const verdict = picker.review('no-such-level');
         expect(said, `tier ${tier} level ${level}`).not.toContain(verdict);
         expect(new Set([...said, verdict]).size, `tier ${tier} level ${level}`).toBe(4);
@@ -706,17 +720,19 @@ describe('the reactions', () => {
     set.user.reactionsByTopicEnabled = true;
     const picker = new LinePicker(set, { seed: 4, tier: 1 });
     const topic = Object.keys(DEFAULT_PATTERNS.user.reactionsByTopic)[0]!;
-    expect(picker.reaction(topicSnippet())).toBe(`${SENTINEL}user.reactionsByTopic.${topic}`);
+    expect(picker.reaction(topicSnippet(), PRODUCT)).toBe(
+      `${SENTINEL}user.reactionsByTopic.${topic}`,
+    );
   });
 
   for (const [name, debt] of Object.entries(REACTION_DEBT)) {
-    it(`${name} carries no more nonsense than it did (the reaction debt)`, () => {
+    it(`${name} names the nonsense it named and no other (the reaction debt)`, () => {
       const tier = name.slice(-1) as '0' | '1' | '2';
-      const bad = DEFAULT_PATTERNS.user.reactions[tier].filter((line) => PIECE.test(line));
-      expect(
-        bad.length,
-        `${name} grew a piece-naming line:\n${bad.join('\n')}`,
-      ).toBeLessThanOrEqual(debt);
+      const bad = DEFAULT_PATTERNS.user.reactions[tier].filter((line) => PIECE.test(line)).sort();
+      const grew = bad.filter((line) => !debt.includes(line));
+      const cut = debt.filter((line) => !bad.includes(line));
+      expect(grew, `${name} grew a piece-naming line:\n${grew.join('\n')}`).toEqual([]);
+      expect(cut, `${name} lost one, so the pin above is stale:\n${cut.join('\n')}`).toEqual([]);
     });
   }
 });
@@ -778,6 +794,153 @@ describe('the asks in the corpus', () => {
       .filter((s) => s.for !== undefined && !levelIds.has(s.for))
       .map((s) => `${s.id}: ${s.for}`);
     expect(wrong, `bound to no level:\n${wrong.join('\n')}`).toEqual([]);
+  });
+
+  // STORY_NOUNS was a hand-kept list derived from the sixteen levels that
+  // exist today with nothing tying it back to them. A seventeenth level whose
+  // premise brings a new thing — a bicycle, a greenhouse, a ferry — would
+  // reopen the whole ask-leak class in silence: asks naming it would not be
+  // "bound", the loader would not ask them which level they are for, and they
+  // would be drawn into any level of the same stack and band.
+  //
+  // So the list is tied to the levels here, the way patterns.test.ts pins
+  // VOICE_FORBIDDEN by reading Ghost's source. Every word that appears in
+  // exactly ONE level's product or story is either a story noun or is listed
+  // below as looked at and not one. A word in neither fails, which is what a
+  // new level's premise will do — and the author then says which it is.
+  const NOT_A_STORY_NOUN = new Set([
+    'about',
+    'again',
+    'answers',
+    'apps',
+    'argues',
+    'asking',
+    'audience',
+    'bad',
+    'before',
+    'blockchain',
+    'book',
+    'bot',
+    'button',
+    'buttons',
+    'club',
+    'coffee',
+    'commute',
+    'company',
+    'computer',
+    'cousin',
+    'crowded',
+    'dashboard',
+    'decisions',
+    'desktop',
+    'disappearing',
+    'do',
+    'dryer',
+    'eaten',
+    'ego',
+    'enterprise',
+    'entire',
+    'every',
+    'everybody',
+    'everywhere',
+    'farther',
+    'finds',
+    'fridge',
+    'full',
+    'handwriting',
+    'has',
+    'hourly',
+    'houseplants',
+    'inside',
+    'itself',
+    'keeps',
+    'leaves',
+    'ledger',
+    'lobby',
+    'long',
+    'longer',
+    'loops',
+    'lost',
+    'loyalty',
+    'machine',
+    'marketplace',
+    'meet',
+    'metaverse',
+    'most',
+    'need',
+    'needs',
+    'news',
+    'newsletter',
+    'no',
+    'nobody',
+    'noon',
+    'not',
+    'nowhere',
+    'office',
+    'one',
+    'other',
+    'out',
+    'phone',
+    'platform',
+    'praises',
+    'program',
+    'proof',
+    'proper',
+    'remember',
+    'rideshare',
+    'runs',
+    'sees',
+    'sell',
+    'slightly',
+    'soft',
+    'speaking',
+    'swirls',
+    'thermostat',
+    'these',
+    'tool',
+    'tools',
+    'traffic',
+    'used',
+    'wants',
+    'we',
+    'windowsill',
+    'with',
+    'workday',
+    'worried',
+    'write',
+    'writes',
+    'yogurt',
+    'you',
+    'your',
+  ]);
+
+  it('every word one level alone uses is a story noun or is listed as not one', () => {
+    const levels = DEFAULT_PATTERNS.levels.levels;
+    const where = new Map<string, string[]>();
+    for (const level of levels) {
+      for (const word of new Set(wordsOf(`${level.product} ${level.story}`))) {
+        if (!where.has(word)) where.set(word, []);
+        where.get(word)!.push(level.id);
+      }
+    }
+    const unlooked: string[] = [];
+    for (const [word, ids] of where) {
+      if (ids.length !== 1) continue;
+      if (askIsBound(word) || NOT_A_STORY_NOUN.has(word)) continue;
+      unlooked.push(`${word}  <- ${ids[0]}`);
+    }
+    expect(
+      unlooked,
+      `a level's premise brings a word nobody has ruled on:\n${unlooked.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('the tie is live: a new premise word fails until somebody rules on it', () => {
+    expect(askIsBound('greenhouse')).toBe(false);
+    expect(NOT_A_STORY_NOUN.has('greenhouse')).toBe(false);
+    // And the words the levels really do supply are ruled on, both ways.
+    expect(askIsBound('ducks')).toBe(true);
+    expect(NOT_A_STORY_NOUN.has('thermostat')).toBe(true);
   });
 
   it('the story-noun rule catches the asks the field showed', () => {

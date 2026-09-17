@@ -23,9 +23,11 @@ import {
   DUCK_S,
   isMusicMode,
   isVibeTrackKey,
+  KEY_FILES,
   MUSIC_MODES,
   type BedMaker,
   type MusicMode,
+  type SampleState,
   type TrackBed,
   type TyperAudio,
   VIBE_TRACK_KEYS,
@@ -663,5 +665,91 @@ describe('the recorded bed, one a stack', () => {
     audio.setStack('java');
     audio.setStack('sql');
     expect(shop.urls).toEqual(['/vibe/tracks/sql.mp3', '/vibe/tracks/java.mp3']);
+  });
+});
+
+// ——— the keyboard's own files ——————————————————————————————————————————————
+// The product of this cabinet is the keyboard under the player's hands, so a
+// sample set that never arrived is the degradation most worth naming — and it
+// used to be the quietest one: `buffers = []`, the procedural click for the
+// rest of the run, and not a word anywhere.
+
+/** Let every pending microtask land: the eight fetches settle in a batch. */
+const settle = () => new Promise((done) => setTimeout(done, 0));
+
+describe('a keyboard whose samples do not arrive', () => {
+  it('says a missing set is missing, a hang is a hang, and fetches with a deadline', async () => {
+    const was = globalThis.fetch;
+    const inits: (RequestInit | undefined)[] = [];
+    try {
+      const gone: SampleState[] = [];
+      globalThis.fetch = ((_url: string, init?: RequestInit) => {
+        inits.push(init);
+        return Promise.reject(new Error('no such folder'));
+      }) as never;
+      createTyperAudio(
+        new RecordingContext() as unknown as AudioContext,
+        '/',
+        1,
+        () => null,
+        (state) => gone.push(state),
+      );
+      await settle();
+      expect(gone).toEqual(['missing']);
+      // Every seat fetch in this shell carries a deadline; these carried none,
+      // so a sample fetch that hung was indistinguishable from an absent file
+      // and the run waited on it forever.
+      expect(inits.length).toBe(KEY_FILES.length);
+      for (const init of inits) expect(init?.signal).toBeInstanceOf(AbortSignal);
+
+      // What a fetch cut off by its own deadline rejects with.
+      const hung: SampleState[] = [];
+      globalThis.fetch = (() =>
+        Promise.reject(new DOMException('signal timed out', 'TimeoutError'))) as never;
+      createTyperAudio(
+        new RecordingContext() as unknown as AudioContext,
+        '/',
+        1,
+        () => null,
+        (state) => hung.push(state),
+      );
+      await settle();
+      expect(hung, 'a hang is reported as a hang').toEqual(['timeout']);
+    } finally {
+      globalThis.fetch = was;
+    }
+  });
+});
+
+describe('the tab, gone and back', () => {
+  it('settles the cross and pauses the beds rather than freezing them', () => {
+    const shop = bedShop();
+    const { audio } = build(shop.make);
+    audio.setMusic(BED_TRACK_MODE);
+    audio.setStack('python');
+    const bed = shop.made.get('python')!;
+    bed.fire('canplaythrough');
+    // Half a crossfade in, which is where a tab going away used to leave it:
+    // `tick` is driven by requestAnimationFrame and a hidden tab stops
+    // getting frames, while the recordings are media elements outside the
+    // graph and play on — two beds at partial volume and no game.
+    audio.tick(BED_CROSS_S / 2, 1, false);
+    expect(bed.volume).toBeGreaterThan(0);
+    expect(bed.volume).toBeLessThan(BED_TRACK_LEVEL);
+    const pauses = bed.pauses;
+
+    audio.setHidden(true);
+    expect(bed.pauses, 'the bed is paused where it stands').toBe(pauses + 1);
+    expect(bed.volume).toBe(0);
+    // A frame that arrives anyway moves nothing.
+    audio.tick(WHOLE_CROSS, 1, false);
+    expect(bed.volume).toBe(0);
+
+    const plays = bed.plays;
+    audio.setHidden(false);
+    // The cross is finished rather than picked up half way: one bed, at its
+    // own level, playing again.
+    expect(bed.volume).toBeCloseTo(BED_TRACK_LEVEL, 6);
+    expect(bed.plays).toBe(plays + 1);
   });
 });

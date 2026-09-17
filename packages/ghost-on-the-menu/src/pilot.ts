@@ -160,15 +160,83 @@ export interface OllamaOpts {
 }
 
 /**
- * Models that spent the whole budget thinking with `think: false` set. They
+ * Seats that spent the whole budget thinking with `think: false` set. They
  * are asked again with `think: 'low'` and a longer budget, and remembered so
  * the next beat asks that way first. gpt-oss on Ollama Cloud does this.
+ *
+ * A seat is an endpoint AND a tag, not a tag alone: the same name served by a
+ * local daemon and by a proxied Cloud endpoint is two different seats, and one
+ * slow endpoint must not double the other's per-beat budget. The memory also
+ * ages: a one-off slow answer used to pin a seat to the long budget for the
+ * life of the process, which in a long-lived `--mcp` container meant the
+ * pessimistic verdict could only ever accumulate. After the stale window the
+ * seat is asked short again, and one good short answer clears it.
  */
-const thinkers = new Set<string>();
+const thinkers = new Map<string, Map<string, number>>();
 
-/** For tests and the shell: whether a model has been seen to need `think: 'low'`. */
-export function needsLowThink(model: string): boolean {
-  return thinkers.has(model);
+/** How long a low-think verdict stands before the seat is asked short again. */
+export const LOW_THINK_STALE_MS = 10 * 60_000;
+
+/** When the seat was last seen to need it, or undefined. Stale entries are dropped. */
+function seenAt(url: string, model: string): number | undefined {
+  const byUrl = thinkers.get(model);
+  const seen = byUrl?.get(url);
+  if (byUrl === undefined || seen === undefined) return undefined;
+  if (Date.now() - seen >= LOW_THINK_STALE_MS) {
+    byUrl.delete(url);
+    if (byUrl.size === 0) thinkers.delete(model);
+    return undefined;
+  }
+  return seen;
+}
+
+function liveThinker(url: string, model: string): boolean {
+  return seenAt(url, model) !== undefined;
+}
+
+function rememberThinker(url: string, model: string): void {
+  const byUrl = thinkers.get(model) ?? new Map<string, number>();
+  byUrl.set(url, Date.now());
+  thinkers.set(model, byUrl);
+}
+
+function forgetThinker(url: string, model: string): void {
+  const byUrl = thinkers.get(model);
+  if (byUrl === undefined) return;
+  byUrl.delete(url);
+  if (byUrl.size === 0) thinkers.delete(model);
+}
+
+/**
+ * For tests and the shell: whether a seat has been seen to need `think: 'low'`.
+ * With a url it answers for that one endpoint; without one it answers for the
+ * tag wherever it is served, which is what a status line wants to report.
+ */
+export function needsLowThink(model: string, url?: string): boolean {
+  if (url !== undefined) return liveThinker(url, model);
+  const byUrl = thinkers.get(model);
+  if (byUrl === undefined) return false;
+  for (const seat of [...byUrl.keys()]) {
+    if (liveThinker(seat, model)) return true;
+  }
+  return false;
+}
+
+/**
+ * Forget what was learned about a seat. No arguments forgets every seat (the
+ * shell calls this when the seat changes, and a test calls it so a retry it
+ * exercised does not leak into the next test in the file).
+ */
+export function resetLowThink(model?: string, url?: string): void {
+  if (model === undefined) {
+    thinkers.clear();
+    return;
+  }
+  if (url !== undefined) {
+    forgetThinker(url, model);
+    return;
+  }
+  thinkers.delete(model);
 }
 
 const SHORT = { think: false as const, num_predict: 16, timeoutMs: 3_000 };
@@ -257,10 +325,14 @@ async function generate(
 }
 
 async function ask(opts: OllamaOpts, prompt: string): Promise<string> {
-  if (!thinkers.has(opts.model)) {
+  if (!liveThinker(opts.url, opts.model)) {
     const first = await generate(opts, prompt, SHORT);
-    if (first.response.trim() !== '' || first.thinking === '') return first.response;
-    thinkers.add(opts.model);
+    if (first.response.trim() !== '' || first.thinking === '') {
+      // A short answer landed: whatever we remembered about this seat is over.
+      forgetThinker(opts.url, opts.model);
+      return first.response;
+    }
+    rememberThinker(opts.url, opts.model);
   }
   return (await generate(opts, prompt, LOW)).response;
 }

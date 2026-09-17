@@ -30,7 +30,18 @@ export interface Snippet {
    */
   ask?: string;
   /**
-   * The level id whose premise this snippet's `ask` was written against.
+   * One line the user says when this request's piece ships, so the reaction
+   * answers the request instead of a pool that never read it. `{product}` may
+   * stand in it and is the only hole; `{title}` is refused, the way it is in
+   * `ask`. A reaction that leans on a story level's premise uses the SAME
+   * `for` binding the ask uses — there is no second binding field — so it
+   * plays only inside that level. A snippet without one falls through to the
+   * pool the picker draws today.
+   */
+  reaction?: string;
+  /**
+   * The level id whose premise this snippet's `ask` — or its `reaction` —
+   * was written against.
    * Present only on a snippet whose ask names something that belongs to one
    * story — a duck, a sandwich, a sock, the cat — or leans on a pronoun that
    * story supplies. The planner uses such an ask only inside that level; the
@@ -95,6 +106,16 @@ export interface LevelPlan {
    * requests, and it is a breather (slice 2).
    */
   syncAt?: number;
+  /**
+   * Set when this level had to reach the widening ladder's last rung: the
+   * stack's free pool was spent, so the planner started a fresh cycle and
+   * drew snippets the run has already played. Absent on every level that
+   * drew from unused snippets. It is on the plan rather than in an event
+   * because the plan is what the container serializes for `view` and what
+   * the transcript reads at the end — "the stack ran out" is a state of the
+   * level, not a frame it passed through.
+   */
+  recycled?: true;
   seed: number;
 }
 
@@ -131,7 +152,7 @@ export type Event =
   | { kind: 'copilot'; on: boolean }
   | { kind: 'creep' }
   | { kind: 'sync'; on: boolean }
-  | { kind: 'over'; how: 'shipped' | 'context' };
+  | { kind: 'over'; how: 'shipped' | 'context' | 'unplanned' };
 
 export interface RunState {
   plan: LevelPlan;
@@ -154,11 +175,24 @@ export interface RunState {
   streak: number;
   /** Null in hardcore (G26). `until` is a clock reading in seconds. */
   copilot: { until: number; used: boolean } | null;
+  /**
+   * The pieces the preview is drawn from, newest last, capped at
+   * `BUILT_CAP`. A container session has no natural end, so the array a run
+   * carries is a window and not the whole history; `pieceCount` is the
+   * count that never falls off.
+   */
   built: BuiltPiece[];
+  /** Every piece this run has shipped, including the ones off the window. */
+  pieceCount: number;
   chat: ChatLine[];
   clock: number;
   over: boolean;
-  ended?: 'shipped' | 'context';
+  /**
+   * How the run ended. `unplanned` is the endless ladder finding no level to
+   * plan — an empty candidate pool, which is the planner coming up empty and
+   * never a product the player finished.
+   */
+  ended?: 'shipped' | 'context' | 'unplanned';
   /** Drained by the shell each frame; `stepRun` clears them at the top of a step. */
   events: Event[];
   /** Char share of the current request taken by Copilot; folded into the payout at ship. */

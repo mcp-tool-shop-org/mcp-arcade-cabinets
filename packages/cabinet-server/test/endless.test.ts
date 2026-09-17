@@ -118,20 +118,35 @@ describe('what the seat sends back', () => {
     expect(parseRequest({ ...good, code: 7 })).toBeNull();
   });
 
-  it('bounds every string so a novel cannot come back through the route', () => {
-    const big = parseRequest({
-      ask: 'a'.repeat(900),
-      code: 'b'.repeat(9000),
-      title: 'c'.repeat(900),
-      notes: ['d'.repeat(900), 'e', 'f', 'g', 'h'],
-      product: 'i'.repeat(900),
-    });
-    expect(big?.ask).toHaveLength(200);
-    expect(big?.code).toHaveLength(2048);
-    expect(big?.title).toHaveLength(80);
-    expect(big?.notes).toHaveLength(3);
-    expect(big?.notes[0]).toHaveLength(200);
-    expect(big?.product).toHaveLength(80);
+  it('refuses a field over its bound rather than clipping it to fit', () => {
+    // This used to clip and hand the short version to the gate as though
+    // the model had written exactly that. `gateCode` has no total-length
+    // rule, so a cut landing after a complete statement in a brace-free
+    // language passes every check it does have and the player types code
+    // the model did not write. A refusal is null, and the corpus plays.
+    expect(
+      parseRequest({
+        ask: 'a'.repeat(900),
+        code: 'b'.repeat(9000),
+        title: 'c'.repeat(900),
+        notes: ['d'.repeat(900), 'e', 'f', 'g', 'h'],
+        product: 'i'.repeat(900),
+      }),
+    ).toBeNull();
+
+    // One field at a time, each exactly one character over its own cap.
+    const caps = { ask: 200, code: 2048, title: 80, product: 80 } as const;
+    for (const [field, cap] of Object.entries(caps)) {
+      expect(parseRequest({ ...good, [field]: 'x'.repeat(cap + 1) }), field).toBeNull();
+      expect(parseRequest({ ...good, [field]: 'x'.repeat(cap) }), field).not.toBeNull();
+    }
+    expect(parseRequest({ ...good, notes: ['n'.repeat(201)] })).toBeNull();
+    expect(parseRequest({ ...good, notes: ['n'.repeat(200)] })?.notes).toHaveLength(1);
+
+    // At the caps, and with more notes than the schema asks for, it is
+    // still a request: the count is not a field the seat wrote.
+    const ok = parseRequest({ ...good, notes: ['d'.repeat(200), 'e', 'f', 'g', 'h'] });
+    expect(ok?.notes).toHaveLength(3);
   });
 });
 

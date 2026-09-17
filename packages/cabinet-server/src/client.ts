@@ -137,6 +137,35 @@ export function mapTransport(err: unknown, daemon: 'ollama' | 'claude'): Error {
   return err instanceof Error ? err : new Error(String(err));
 }
 
+/**
+ * Words for a non-ok answer from the daemon, read off the status and the
+ * error body rather than collapsed into one.
+ *
+ * Every status but 404 used to be 'ollama down', thrown before the body was
+ * read. Ollama Cloud answers a retired tag with 410 and a body that says so,
+ * and a missing or wrong signed-in key with 401/403; all three reached the
+ * seat as 'ollama down' and sent the operator to check a daemon that was
+ * running fine. It also made `createSeat`'s 'seat: model retired' branch
+ * unreachable from a real response, because nothing on this path could
+ * produce the word.
+ *
+ * Digit-free, like everything the seat may put on a status line. The body is
+ * already bounded in time by the abort on the request.
+ */
+async function statusError(res: Response): Promise<string> {
+  let error = '';
+  try {
+    const j = (await res.json()) as { error?: unknown };
+    if (typeof j.error === 'string') error = j.error;
+  } catch {
+    // A gateway's error page is not JSON. The status still says enough.
+  }
+  if (res.status === 410 || /retired/i.test(error)) return 'ollama model retired';
+  if (res.status === 401 || res.status === 403) return 'ollama refused';
+  if (res.status === 404) return 'ollama missing';
+  return 'ollama error';
+}
+
 async function chatOnce(
   opts: ChatOpts,
   system: string,
@@ -175,7 +204,7 @@ async function chatOnce(
     throw mapTransport(err, 'ollama');
   }
   if (!res.ok) {
-    throw new Error(res.status === 404 ? 'ollama missing' : 'ollama down');
+    throw new Error(await statusError(res));
   }
   let j: OllamaChatBody;
   try {

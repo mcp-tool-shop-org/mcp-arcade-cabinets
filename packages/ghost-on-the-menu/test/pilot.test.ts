@@ -9,10 +9,12 @@ import {
   hpWord,
   isCloudModel,
   listPilotModels,
+  LOW_THINK_STALE_MS,
   needsLowThink,
   parseIntent,
   parseLetter,
   pilotPrompt,
+  resetLowThink,
   stickWord,
   voicePrompt,
   type BossView,
@@ -170,6 +172,9 @@ describe('ollama voice seat', () => {
 describe('askOllama over a daemon', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    // What a retry taught about a seat is this test's, not the next one's.
+    resetLowThink();
   });
 
   type Sent = { model: string; think: boolean | string; num_predict: number; prompt: string };
@@ -317,5 +322,92 @@ describe('askOllama over a daemon', () => {
     expect(index).toBe(3);
     expect(sent[0]!.prompt).toContain(lines[3]!);
     expect(sent[0]!.prompt).not.toMatch(FORBIDDEN);
+  });
+
+  // A seat is an endpoint and a tag, not a tag alone, and what it taught goes
+  // stale. The verdict used to be a module-level set keyed by the tag, never
+  // cleared: one slow proxied endpoint doubled the local daemon's per-beat
+  // budget for the life of the process, and in an `--mcp` container that set
+  // could only grow, only ever toward the long budget.
+  it('keeps the verdict on one endpoint off another serving the same tag', async () => {
+    const calls: { url: string; think: boolean | string }[] = [];
+    vi.stubGlobal('fetch', async (url: string, init: { body: string }) => {
+      const body = JSON.parse(init.body) as { think: boolean | string };
+      calls.push({ url, think: body.think });
+      return {
+        ok: true,
+        json: async () =>
+          body.think === false ? { response: '', thinking: 'weighing it' } : { response: 'fog' },
+      };
+    });
+    const model = 'twin-test:cloud';
+    const local = 'http://127.0.0.1:11434/api/generate';
+    const proxy = '/ollama/api/generate';
+    expect(await askOllama(view, { url: local, model })).toBe('fog');
+    expect(needsLowThink(model, local)).toBe(true);
+    expect(needsLowThink(model, proxy)).toBe(false);
+    // Reported for the tag wherever it is served, which is what a status line wants.
+    expect(needsLowThink(model)).toBe(true);
+    calls.length = 0;
+    expect(await askOllama(view, { url: proxy, model })).toBe('fog');
+    expect(calls[0]!.url).toBe(proxy);
+    expect(calls[0]!.think).toBe(false);
+  });
+
+  it('asks a stale seat short again, and a short answer clears it', async () => {
+    const think: (boolean | string)[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: { body: string }) => {
+      const body = JSON.parse(init.body) as { think: boolean | string };
+      think.push(body.think);
+      const first = think.length === 1;
+      return {
+        ok: true,
+        json: async () =>
+          first ? { response: '', thinking: 'weighing it' } : { response: 'hold' },
+      };
+    });
+    const seat = { url: '/x', model: 'stale-test:cloud' };
+    expect(await askOllama(view, seat)).toBe('hold');
+    expect(think).toEqual([false, 'low']);
+    expect(needsLowThink(seat.model, seat.url)).toBe(true);
+
+    const later = Date.now() + LOW_THINK_STALE_MS + 1;
+    vi.spyOn(Date, 'now').mockReturnValue(later);
+    expect(needsLowThink(seat.model, seat.url)).toBe(false);
+    expect(await askOllama(view, seat)).toBe('hold');
+    expect(think[2]).toBe(false);
+    expect(think).toHaveLength(3);
+    expect(needsLowThink(seat.model, seat.url)).toBe(false);
+  });
+
+  it('forgets every seat on reset, and one seat when named', async () => {
+    const think: (boolean | string)[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: { body: string }) => {
+      const body = JSON.parse(init.body) as { think: boolean | string };
+      think.push(body.think);
+      return {
+        ok: true,
+        json: async () =>
+          body.think === false ? { response: '', thinking: 'weighing it' } : { response: 'fog' },
+      };
+    });
+    const model = 'reset-test:cloud';
+    await askOllama(view, { url: '/a', model });
+    await askOllama(view, { url: '/b', model });
+    expect(needsLowThink(model, '/a')).toBe(true);
+    expect(needsLowThink(model, '/b')).toBe(true);
+
+    resetLowThink(model, '/a');
+    expect(needsLowThink(model, '/a')).toBe(false);
+    expect(needsLowThink(model, '/b')).toBe(true);
+
+    resetLowThink(model);
+    expect(needsLowThink(model)).toBe(false);
+
+    resetLowThink();
+    expect(needsLowThink(model, '/b')).toBe(false);
+    think.length = 0;
+    await askOllama(view, { url: '/b', model });
+    expect(think[0]).toBe(false);
   });
 });
