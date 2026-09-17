@@ -169,7 +169,13 @@ export function whyFailed(t, bot = 'reader') {
   const half = Math.ceil(lies.length / 2);
   const bar =
     bot === 'reader' ? missed.length === 0 : bot === 'sweeper' ? revealed.length >= half : true;
-  if (!t.leaked && bar && t.ended === 'time' && !/\bseat threw\b/.test(t.text ?? '')) {
+  // An endless run that hit its call cap ended as it should, like a round that ran its clock out.
+  if (
+    !t.leaked &&
+    bar &&
+    (t.ended === 'time' || t.ended === 'calls') &&
+    !/\bseat threw\b/.test(t.text ?? '')
+  ) {
     reasons.push('overrun');
   }
   return reasons.join('; ') || 'round failed';

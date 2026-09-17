@@ -16,7 +16,7 @@ type Transcript = {
   text: string;
   revealed: string[];
   lies: string[];
-  ended: 'time' | 'lamps' | null;
+  ended: 'time' | 'lamps' | 'calls' | null;
   lives: number;
   leaked: boolean;
 };
@@ -27,12 +27,12 @@ type PlayCli = {
 };
 
 type SweepCli = {
-  endLabel: (ended: 'time' | 'lamps' | null) => string;
+  endLabel: (ended: 'time' | 'lamps' | 'calls' | null) => string;
   parseTapeFile: (file: string, name: string) => unknown;
 };
 
 type SitCli = {
-  endLabel: (ended: 'time' | 'lamps' | null) => string;
+  endLabel: (ended: 'time' | 'lamps' | 'calls' | null) => string;
   gateFromSay: (text: string) => string;
   parseTapeFile: (file: string, name: string) => unknown;
   nextVerbLine: (prefetchAdmitted: number, thisBeatAsked: number) => string;

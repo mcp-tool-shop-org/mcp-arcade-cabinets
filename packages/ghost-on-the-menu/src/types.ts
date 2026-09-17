@@ -139,6 +139,8 @@ export interface Shot {
   dead: boolean;
   /** A ship's shot fired under a pierce drop: it keeps going through a sprite it hits. */
   pierce?: boolean;
+  /** What a piercing shot has struck, so a hull it is still inside is not struck every frame. */
+  struck?: Set<Enemy>;
 }
 
 export interface Enemy {

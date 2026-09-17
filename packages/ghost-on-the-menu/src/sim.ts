@@ -1650,7 +1650,15 @@ export function stepRound(state: RoundState, input: RoundInput, dt: number): Rou
       if (!hittable(state, enemy)) continue;
       if (!overlaps(shot, enemy)) continue;
       // A piercing shot keeps going; anything else is spent on what it hit.
-      if (!shot.pierce) shot.dead = true;
+      // What a piercing shot has already struck it does not strike again
+      // while it is still inside the hull (Kimi's review of the drops).
+      if (shot.pierce) {
+        const struck = (shot.struck ??= new Set<Enemy>());
+        if (struck.has(enemy)) continue;
+        struck.add(enemy);
+      } else {
+        shot.dead = true;
+      }
       const hp = enemy.hp ?? 1;
       if (hp > 1) {
         enemy.hp = hp - 1;

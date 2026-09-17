@@ -66,7 +66,8 @@ export interface Transcript {
   revealed: string[];
   /** Every lie id on the round, so a band test can compare without the fact. */
   lies: string[];
-  ended: 'time' | 'lamps' | null;
+  /** How the round or the run ended: the clock, the last lamp, or an endless run's call cap. */
+  ended: 'time' | 'lamps' | 'calls' | null;
   lives: number;
   /** True if any forbidden word or digit reached the screen or the transcript. */
   leaked: boolean;
@@ -319,7 +320,7 @@ export function endlessTranscript(run: EndlessRun, bot: BotName): Transcript {
     text,
     revealed: [],
     lies: [],
-    ended: run.ended === 'lamps' ? 'lamps' : 'time',
+    ended: run.ended === 'lamps' ? 'lamps' : 'calls',
     lives: run.lamps,
     leaked,
   };

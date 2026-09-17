@@ -348,7 +348,7 @@ describe('the endless band', () => {
     expect(reader).toBeLessThan(SEEDS.length * 4);
   });
 
-  it('at live a run is long enough to climb, and the mover is the one who lasts', () => {
+  it('at live the bots take enough calls over the seeds for the band to mean something', () => {
     // Live is the rung the formations are cleared on rather than dodged, so
     // the mover outlasts the reader here and the two swap back at seat.
     // Measured: mover a hundred and seventy-two calls over twenty seeds
@@ -371,9 +371,10 @@ describe('the endless band', () => {
     // Long enough that the climb passes the full reach of a shift, which is
     // the whole point of a pool that outlives the opening band.
     // The climb past the tape-alone reach is no longer read off a bot's run:
-    // on the hot live rung neither scripted bot lives past the opening band.
-    // The curve itself is pinned by the climb cases above (the floor, the
-    // step and the ceiling); a person's run is the Director's bar.
+    // on the hot live rung the runs are a few calls each and too few of
+    // them reach past the opening band to pin the reach here. The curve
+    // itself is pinned by the climb cases above (the floor, the step and
+    // the ceiling); a person's run is the Director's bar.
   });
 
   it('a run ends, and the end is the last lamp', () => {
