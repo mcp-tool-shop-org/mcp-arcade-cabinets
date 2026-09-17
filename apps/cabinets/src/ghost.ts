@@ -53,14 +53,16 @@ import {
   snapshot,
   SPRITE_KEYS,
   stepRound,
-  BED_ENTRY_S,
   TRACK_KEYS,
+  bagFor,
+  nextBagLine,
   readLineBags,
   waveKindAt,
   type AudioOut,
   type CueSnapshot,
   type DrawContext,
   type Intensity,
+  type LineBag,
   type LineBags,
   type MediaBed,
   type Round,
@@ -144,6 +146,47 @@ const FEEL_VALUES = new Set<string>(INTENSITIES);
 
 /** Sibling of `ghost.prefs`: where each voice pool's bag is in its walk. Words only, no fact. */
 const BAGS_KEY = 'ghost.lines';
+/**
+ * The songs' bag, this browser's: the recorded beds are drawn like the
+ * agent's lines, no song heard again until every song has been heard, and
+ * the walk carries across tapes and visits (the Director, 2026-09-17). Its
+ * own key, beside the lines, because the music outlives a mount: the same
+ * player carries the song from one tape into the next.
+ */
+const SONGS_KEY = 'ghost.songs';
+const SONG_KEYS: readonly string[] = [...TRACK_KEYS];
+let songBags: LineBags | null = null;
+const songBag = (): LineBag => {
+  if (!songBags) {
+    try {
+      const raw = localStorage.getItem(SONGS_KEY);
+      songBags = readLineBags(raw ? (JSON.parse(raw) as unknown) : null);
+    } catch {
+      songBags = {};
+    }
+  }
+  return bagFor(songBags, 'songs');
+};
+/** The seed the bag reshuffles on when it empties: the visit's, not a round's. */
+const songSeed = (Date.now() >>> 0) ^ 0x5f3759df;
+/** The next song's key, and the walk written down so a reload keeps its place. */
+export const nextSongKey = (): string => {
+  const key = nextBagLine(SONG_KEYS, songBag(), songSeed, 17);
+  try {
+    localStorage.setItem(SONGS_KEY, JSON.stringify(songBags));
+  } catch {
+    /* a private window or blocked storage: the walk starts over next time */
+  }
+  return key;
+};
+/** The next song that has a file; undefined when none has arrived yet. */
+const nextSongBed = (): MediaBed | undefined => {
+  for (let i = 0; i < SONG_KEYS.length; i++) {
+    const bed = BEDS.get(nextSongKey());
+    if (bed) return bed;
+  }
+  return undefined;
+};
 
 export function readStoredBags(): LineBags {
   try {
@@ -386,11 +429,10 @@ const loadBeds = () => {
   // open on come first and the three boss beds after, which is already the
   // order a round wants them in.
   for (const key of TRACK_KEYS) {
-    const el = new Audio() as HTMLAudioElement & { entry?: number };
+    const el = new Audio();
     el.preload = 'auto';
-    el.loop = true;
-    // A boss bed starts past its thin intro (BED_ENTRY_S); the others from the top.
-    el.entry = BED_ENTRY_S[key] ?? 0;
+    // A song plays once through; the next is drawn when it ends.
+    el.loop = false;
     const arrived = () => {
       BEDS.set(key, el);
       one(key, true);
@@ -857,6 +899,7 @@ export function mountGhost(
       built = new AudioContext();
       const out = attach(built, undefined, (k) => BEDS.get(k), {
         seed: round.seed,
+        nextBed: nextSongBed,
         onBedFail: bedFailed,
       });
       out.setMuted(muted);
@@ -1315,8 +1358,9 @@ export function mountGhost(
         musicEnded = false;
       } else if (!musicEnded) {
         musicEnded = true;
-        // In a shift the bed plays on through the card to the next call.
-        if (!extra.holdMusic) audio.end();
+        // The song plays on through the scene into the next tape, and in a
+        // shift through the card to the next call; only the chiptune stops.
+        audio.end(true);
       }
     }
     if (ollama.checked && !state.scene) {

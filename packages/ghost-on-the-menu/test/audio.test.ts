@@ -8,9 +8,6 @@ import {
   bar,
   barSeconds,
   BED_LEVEL,
-  BED_ENTRY_S,
-  BED_MAX_S,
-  BED_MIN_S,
   BED_POOL,
   BURST_RATE,
   DEFAULT_MUSIC,
@@ -118,9 +115,8 @@ describe('the score is pure data (no assets, no sim)', () => {
 });
 
 describe('recorded track files', () => {
-  it('holds a bed for one loop, thirty to forty-five seconds', () => {
-    expect(BED_MIN_S).toBeGreaterThanOrEqual(30);
-    expect(BED_MIN_S).toBeLessThanOrEqual(45);
+  it('every recorded bed is a song in the pool', () => {
+    expect([...BED_POOL].sort()).toEqual([...TRACK_KEYS].sort());
   });
   it('every TRACK_KEYS has a file under apps/cabinets/public/tracks', () => {
     const dir = path.resolve(__dirname, '../../../apps/cabinets/public/tracks');
@@ -184,9 +180,12 @@ describe('restart', () => {
   });
 });
 
-// The recorded beds (the Director's play, 2026-09-11: "sporadic, doesn't stay
-// one song long enough, cut off for no reason"). Measured before the rule:
-// twenty switches in a ninety-second round, every one a restart from zero.
+// The recorded beds. The Director's plays: 2026-09-11, the music switched
+// and restarted too often; 2026-09-16, the beds were cut before their loop
+// ended; 2026-09-17, a piece was replaced at every wave and then at every
+// boss before it could settle. His rule that evening: a playlist. A piece
+// runs to its end, the next is drawn without repeats until the set is
+// spent, and no event on the field replaces one.
 describe('recorded beds', () => {
   const silentCtx = () =>
     ({
@@ -211,15 +210,17 @@ describe('recorded beds', () => {
         }) as unknown as GainNode,
     }) as unknown as Parameters<typeof attach>[0];
 
-  function bed() {
+  function bed(duration?: number) {
     const b = {
-      loop: false,
+      loop: true,
       muted: false,
       volume: 1,
       currentTime: 0,
       playbackRate: 1,
+      ended: false,
       playing: false,
       plays: 0,
+      ...(duration === undefined ? {} : { duration }),
       play() {
         this.playing = true;
         this.plays += 1;
@@ -231,79 +232,152 @@ describe('recorded beds', () => {
     return b;
   }
 
-  it('a boss bed comes at once, hold or no hold, and the wave bed after it waits out the hold', () => {
-    const inspect = bed();
-    const whisperer = bed();
-    const menu = bed();
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer, menu };
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60, seed: 0 });
+  it('one song plays through every wave and every boss; nothing on the field changes it', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of TRACK_KEYS) beds[k] = bed(120);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 0 });
     out.tick(0, 'inspect');
-    for (let t = 1; t < 18; t += 1) out.tick(t, 'inspect');
-    expect(inspect.playing).toBe(true);
-    // A boss is a scene change: its bed does not wait for the verse to end.
-    out.tick(18, 'whisperer');
-    expect(whisperer.playing).toBe(true);
-    for (let t = 18.05; t < 19.5; t += 0.05) out.tick(t, 'whisperer');
-    expect(inspect.playing).toBe(false);
-    expect(whisperer.volume).toBe(BED_LEVEL);
-    // Another boss: at once as well.
-    out.tick(20, 'menu');
-    expect(menu.playing).toBe(true);
-    for (let t = 20.05; t < 21.2; t += 0.05) out.tick(t, 'menu');
-    expect(whisperer.playing).toBe(false);
-    expect(menu.volume).toBe(BED_LEVEL);
+    const opening = TRACK_KEYS.find((k) => beds[k]!.playing)!;
+    expect(opening).toBeDefined();
+    expect(beds[opening]!.loop, 'a song is played once, not looped').toBe(false);
+    for (let t = 1; t < 200; t += 1) {
+      out.tick(t, t < 40 ? 'poison' : t < 80 ? 'whisperer' : t < 120 ? 'menu' : 'doorman');
+    }
+    for (const k of TRACK_KEYS) {
+      expect(beds[k]!.playing, k).toBe(k === opening);
+      expect(beds[k]!.plays, k).toBe(k === opening ? 1 : 0);
+    }
   });
 
-  it('crossfades between beds and resumes a bed where it left off, never from zero', () => {
-    const inspect = bed();
-    const whisperer = bed();
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
+  it('draws the next song when the playing one ends, from the shell bag when there is one', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of TRACK_KEYS) beds[k] = bed(120);
+    const drawn: string[] = [];
+    const order = ['menu', 'rug', 'doorman'];
+    const out = attach(silentCtx(), undefined, (k) => beds[k], {
+      nextBed: () => {
+        const key = order[drawn.length % order.length]!;
+        drawn.push(key);
+        return beds[key];
+      },
+    });
     out.tick(0, 'inspect');
-    expect(inspect.playing).toBe(true);
-    expect(inspect.volume).toBe(BED_LEVEL);
-    inspect.currentTime = 7.5; // seven seconds in
-    out.tick(8, 'whisperer');
-    // Both play through the crossfade; the leaving bed is not paused yet.
-    expect(whisperer.playing).toBe(true);
-    expect(inspect.playing).toBe(true);
-    expect(whisperer.volume).toBeGreaterThanOrEqual(0);
-    expect(whisperer.volume).toBeLessThanOrEqual(BED_LEVEL);
-    for (let t = 8.05; t < 9.2; t += 0.05) out.tick(t, 'whisperer');
-    expect(inspect.playing).toBe(false);
-    expect(inspect.volume).toBe(0);
-    expect(whisperer.volume).toBe(BED_LEVEL);
-    // Back to inspect: it resumes from where it was, not from zero.
-    out.tick(20, 'inspect');
-    expect(inspect.playing).toBe(true);
-    expect(inspect.currentTime).toBe(7.5);
-    expect(inspect.plays).toBe(2);
+    expect(drawn).toEqual(['menu']);
+    expect(beds.menu!.playing).toBe(true);
+    for (let t = 1; t < 30; t += 1) out.tick(t, 'whisperer');
+    expect(drawn, 'a boss drew nothing').toEqual(['menu']);
+    beds.menu!.ended = true;
+    out.tick(30, 'whisperer');
+    expect(drawn).toEqual(['menu', 'rug']);
+    expect(beds.rug!.playing).toBe(true);
+    for (let t = 30.05; t < 31.2; t += 0.05) out.tick(t, 'whisperer');
+    expect(beds.menu!.playing, 'the ended song is faded out under the next').toBe(false);
+    expect(beds.rug!.volume).toBe(BED_LEVEL);
+  });
+
+  it('with no bag the pool rotates from the seed, and a song that comes round again starts from its top', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of TRACK_KEYS) beds[k] = bed(120);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 2 });
+    out.tick(0, 'inspect');
+    const first = BED_POOL[2 % BED_POOL.length]!;
+    expect(beds[first]!.playing).toBe(true);
+    beds[first]!.ended = true;
+    beds[first]!.currentTime = 120;
+    out.tick(1, 'inspect');
+    const second = BED_POOL[3 % BED_POOL.length]!;
+    expect(beds[second]!.playing).toBe(true);
+    // Round the whole pool and back to the first: from the top, not from its end.
+    for (let n = 4; n < 4 + BED_POOL.length - 1; n += 1) {
+      const key = BED_POOL[(n - 1) % BED_POOL.length]!;
+      beds[key]!.ended = true;
+      out.tick(n, 'inspect');
+    }
+    expect(beds[first]!.plays).toBe(2);
+    expect(beds[first]!.currentTime).toBe(0);
+  });
+
+  it('the opening is the seed draw, whatever the wave kind, so two seeds open on two songs', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of TRACK_KEYS) beds[k] = bed();
+    const a = attach(silentCtx(), undefined, (k) => beds[k], { seed: 2 });
+    a.tick(0, 'inspect');
+    const more: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of TRACK_KEYS) more[k] = bed();
+    const b = attach(silentCtx(), undefined, (k) => more[k], { seed: 3 });
+    b.tick(0, 'inspect');
+    const openedA = TRACK_KEYS.filter((k) => beds[k]!.playing);
+    const openedB = TRACK_KEYS.filter((k) => more[k]!.playing);
+    expect(openedA).toHaveLength(1);
+    expect(openedB).toHaveLength(1);
+    expect(openedA).not.toEqual(openedB);
+  });
+
+  it('skips a song with no file and opens on the next the pool has', () => {
+    const beds: Record<string, ReturnType<typeof bed>> = {};
+    for (const k of ['poison', 'rug', 'unlisted']) beds[k] = bed();
+    // seed 0 is 'inspect', which has no file here: the next song with one opens.
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 0 });
+    out.tick(0, 'inspect');
+    expect(beds.poison!.playing).toBe(true);
+  });
+
+  it('with a bag that hands back nothing the chiptune plays, and a song takes over when one comes', () => {
+    const started: number[] = [];
+    const ctx = silentCtx() as unknown as { createOscillator: () => OscillatorNode };
+    ctx.createOscillator = () =>
+      ({
+        type: 'sine',
+        frequency: { value: 0 },
+        connect() {},
+        start(t: number) {
+          started.push(t);
+        },
+        stop() {},
+      }) as unknown as OscillatorNode;
+    const song = bed(120);
+    let have = false;
+    const out = attach(ctx as unknown as Parameters<typeof attach>[0], undefined, () => song, {
+      nextBed: () => (have ? song : undefined),
+    });
+    out.tick(0, 'inspect');
+    expect(started.length).toBeGreaterThan(0);
+    expect(song.playing).toBe(false);
+    have = true;
+    const before = started.length;
+    out.tick(1, 'inspect');
+    expect(song.playing).toBe(true);
+    for (let t = 1.05; t < 3; t += 0.05) out.tick(t, 'inspect');
+    expect(started.length).toBe(before);
   });
 
   it('setMuted mutes every live recorded bed, including the leaving one', () => {
     const inspect = bed();
     const whisperer = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
+    const order = [inspect, whisperer];
+    const out = attach(silentCtx(), undefined, (k) => beds[k], {
+      nextBed: () => order.shift(),
+    });
     out.tick(0, 'inspect');
     expect(inspect.playing).toBe(true);
-    inspect.currentTime = 7.5;
-    out.tick(8, 'whisperer');
+    inspect.ended = true;
+    out.tick(8, 'inspect');
     expect(whisperer.playing).toBe(true);
     expect(inspect.playing).toBe(true);
     out.setMuted(true);
     expect(inspect.muted).toBe(true);
     expect(whisperer.muted).toBe(true);
-    for (let t = 8.05; t < 9.2; t += 0.05) out.tick(t, 'whisperer');
+    for (let t = 8.05; t < 9.2; t += 0.05) out.tick(t, 'inspect');
     expect(inspect.muted).toBe(true);
     expect(whisperer.muted).toBe(true);
   });
 
-  it('a burst speeds the playing bed up over a ramp and lets it back down; nothing else plays', () => {
+  it('a burst speeds the playing song up over a ramp and lets it back down; nothing else plays', () => {
     const menu = bed();
     const parallelism = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { menu, parallelism };
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { pool: ['menu'] });
     out.tick(0, 'menu');
     out.tick(1, 'menu', true);
     expect(menu.playing).toBe(true); // never swapped out
@@ -320,13 +394,14 @@ describe('recorded beds', () => {
     expect(menu.plays).toBe(1);
   });
 
-  it('a wave change during a burst brings the new bed in at the burst rate', () => {
+  it('a song that ends during a burst hands the burst rate to the next', () => {
     const menu = bed();
     const doorman = bed();
     const beds: Record<string, ReturnType<typeof bed>> = { menu, doorman };
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0 });
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { pool: ['menu', 'doorman'] });
     out.tick(0, 'menu');
     for (let t = 0.05; t < 1.5; t += 0.05) out.tick(t, 'menu', true);
+    menu.ended = true;
     out.tick(2, 'doorman', true);
     expect(doorman.playbackRate).toBeCloseTo(BURST_RATE, 5);
     for (let t = 2.05; t < 3.2; t += 0.05) out.tick(t, 'doorman', true);
@@ -334,97 +409,37 @@ describe('recorded beds', () => {
     expect(menu.playbackRate).toBe(1);
   });
 
-  it('opens on the pool bed the seed draws, whatever the wave kind, so two seeds open on two pieces', () => {
+  it('carries the song across a restart or the next tape, and a seed only sets an opening', () => {
     const beds: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
-    // Every tape's first wave is inspect; the opening must not be inspect.mp3 every time.
-    const a = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 60, seed: 2 });
-    a.tick(0, 'inspect');
-    expect(beds.poison!.playing).toBe(true);
-    expect(beds.inspect!.playing).toBe(false);
-    const more: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of [...BED_POOL, 'whisperer']) more[k] = bed();
-    const b = attach(silentCtx(), undefined, (k) => more[k], { minBedSeconds: 60, seed: 3 });
-    b.tick(0, 'inspect');
-    expect(more.rug!.playing).toBe(true);
-    expect(more.inspect!.playing).toBe(false);
-  });
-
-  it('plays a named TRACK_KEYS bed as itself at a wave change after the hold, and a boss bed at the opening', () => {
-    const beds: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 0, seed: 0 });
+    for (const k of BED_POOL) beds[k] = bed(120);
+    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 0 });
     out.tick(0, 'inspect');
-    expect(beds.inspect!.playing).toBe(true);
-    out.tick(1, 'poison');
-    expect(beds.poison!.playing).toBe(true);
-    const boss: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of [...BED_POOL, 'whisperer']) boss[k] = bed();
-    const open = attach(silentCtx(), undefined, (k) => boss[k], { minBedSeconds: 60, seed: 2 });
-    open.tick(0, 'whisperer');
-    expect(boss.whisperer!.playing).toBe(true);
-    expect(boss.poison!.playing).toBe(false);
-  });
-
-  it('skips a bed with no file and opens on the next pool bed the seed picks', () => {
-    const beds: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of ['poison', 'rug', 'unlisted']) beds[k] = bed();
-    // seed 1 is 'breather', which has no file here: the next pool bed opens.
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { seed: 1 });
-    out.tick(0, 'inspect');
-    expect(beds.poison!.playing).toBe(true);
-    const other = attach(silentCtx(), undefined, (k) => beds[k], { seed: 4 });
-    other.tick(0, 'inspect');
-    expect(beds.unlisted!.plays).toBe(1);
-  });
-
-  it('keeps a named wave bed through the hold; a boss key comes at once and the wave after it waits', () => {
-    const beds: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of [...BED_POOL, 'whisperer']) beds[k] = bed();
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 10, seed: 0 });
-    out.tick(0, 'inspect');
-    expect(beds.inspect!.playing).toBe(true);
-    for (let t = 1; t < 5; t += 1) out.tick(t, 'poison');
-    // A wave change inside the hold: the opening bed keeps the level.
-    expect(beds.poison!.playing).toBe(false);
-    expect(beds.inspect!.playing).toBe(true);
-    out.tick(5, 'whisperer');
-    expect(beds.whisperer!.playing).toBe(true);
-    for (let t = 5.05; t < 6.2; t += 0.05) out.tick(t, 'whisperer');
-    expect(beds.whisperer!.volume).toBe(BED_LEVEL);
-    // The wave after the boss waits out the boss bed's own hold.
-    out.tick(7, 'poison');
-    expect(beds.whisperer!.playing).toBe(true);
-    expect(beds.poison!.playing).toBe(false);
-    out.tick(15.5, 'poison');
-    expect(beds.poison!.playing).toBe(true);
-  });
-
-  it('carries the named bed across a restart or the next call, and a seed only sets an opening', () => {
-    const beds: Record<string, ReturnType<typeof bed>> = {};
-    for (const k of BED_POOL) beds[k] = bed();
-    const out = attach(silentCtx(), undefined, (k) => beds[k], { minBedSeconds: 10, seed: 0 });
-    out.tick(0, 'inspect');
+    const opening = BED_POOL.find((k) => beds[k]!.playing)!;
     for (let t = 1; t < 7; t += 1) out.tick(t, 'inspect');
-    out.seed(3); // a bed is playing: ignored
-    // The next call: the round clock goes back to zero; named inspect stays.
+    out.seed(3); // a song is playing: ignored
+    // The next tape: the round clock goes back to zero; the song plays on.
+    out.end(true);
     out.tick(0, 'inspect');
-    expect(beds.inspect!.playing).toBe(true);
-    expect(beds.inspect!.plays).toBe(1);
-    for (let t = 1; t < 4; t += 1) out.tick(t, 'inspect');
-    expect(beds.breather!.playing).toBe(false);
-    out.tick(4.5, 'inspect');
-    expect(beds.inspect!.playing).toBe(true);
-    expect(beds.breather!.playing).toBe(false);
+    expect(beds[opening]!.playing).toBe(true);
+    expect(beds[opening]!.plays).toBe(1);
+    for (let t = 1; t < 4; t += 1) out.tick(t, 'poison');
+    expect(BED_POOL.filter((k) => beds[k]!.playing)).toEqual([opening]);
   });
 
-  it('fades the music out at the scene on the wall clock, and a restart brings it back', () => {
+  it('the scene between two tapes keeps the song and drops the burst; back to the cabinets fades it', () => {
     vi.useFakeTimers();
     try {
       const inspect = bed();
       const beds: Record<string, ReturnType<typeof bed>> = { inspect };
-      const out = attach(silentCtx(), undefined, (k) => beds[k]);
+      const out = attach(silentCtx(), undefined, (k) => beds[k], { pool: ['inspect'] });
       out.tick(0, 'inspect');
+      for (let t = 0.05; t < 2; t += 0.05) out.tick(t, 'inspect', true);
+      expect(inspect.playbackRate).toBeCloseTo(BURST_RATE, 5);
+      out.end(true);
+      vi.advanceTimersByTime(END_FADE_S * 1000 + 100);
+      expect(inspect.playing, 'the song left at the scene').toBe(true);
+      expect(inspect.volume).toBe(BED_LEVEL);
+      expect(inspect.playbackRate).toBe(1);
       out.end();
       expect(inspect.playing).toBe(true);
       vi.advanceTimersByTime(800);
@@ -440,12 +455,12 @@ describe('recorded beds', () => {
     }
   });
 
-  it('a restart during END_FADE_S keeps the new bed playing when leftover end timers fire', () => {
+  it('a restart during END_FADE_S keeps the new song playing when leftover end timers fire', () => {
     vi.useFakeTimers();
     try {
       const inspect = bed();
       const beds: Record<string, ReturnType<typeof bed>> = { inspect };
-      const out = attach(silentCtx(), undefined, (k) => beds[k]);
+      const out = attach(silentCtx(), undefined, (k) => beds[k], { pool: ['inspect'] });
       out.tick(0, 'inspect');
       out.end();
       expect(inspect.playing).toBe(true);
@@ -483,8 +498,8 @@ describe('recorded beds', () => {
   // The Director heard beds that do not start at all. Autoplay policy does not
   // throw: `play()` REJECTS, and a rejection nobody caught left an element
   // that is not playing sitting in `currentBed` — so the round kept silencing
-  // the chiptune for it, for the whole hold, and the only other sign was an
-  // unhandled rejection in the console.
+  // the chiptune for it, and the only other sign was an unhandled rejection
+  // in the console.
   it('hands the round back to the chiptune when the browser refuses to play a bed', async () => {
     const started: number[] = [];
     const ctx = silentCtx() as unknown as { createOscillator: () => OscillatorNode };
@@ -507,7 +522,7 @@ describe('recorded beds', () => {
     };
     const told: unknown[] = [];
     const out = attach(ctx as unknown as Parameters<typeof attach>[0], undefined, () => refused, {
-      minBedSeconds: 60,
+      pool: ['inspect'],
       onBedFail: (b) => told.push(b),
     });
     out.tick(0, 'inspect');
@@ -517,7 +532,7 @@ describe('recorded beds', () => {
     expect(told, 'the shell was never told, so its status word stays wrong').toEqual([refused]);
     expect(refused.playing).toBe(false);
     expect(refused.volume).toBe(0);
-    // And the very next frame, well inside the hold, plays the bar.
+    // And the very next frame plays the bar.
     out.tick(0.05, 'inspect');
     expect(
       started.length,
@@ -526,166 +541,6 @@ describe('recorded beds', () => {
   });
 });
 
-// The Director's read, 2026-09-16: the beds cut off too soon. Measured
-// lengths were inspect 36.0, whisperer/menu/doorman 40.0, poison/rug/unlisted
-// 36.0, breather 32.0 s, and the hold was a flat 36, so the three 40 s beds
-// were faded four seconds before their loop ended and a 36 s bed was faded as
-// it restarted. A bed now holds for its OWN length; 36 stays as the floor for
-// a bed that cannot say how long it is. The music pass is lengthening these
-// files, so the hold must follow the file, never a constant.
-describe('a bed plays through whole before a wave change may move it', () => {
-  const ctx = () =>
-    ({
-      currentTime: 0,
-      destination: {} as AudioNode,
-      createOscillator: () =>
-        ({
-          type: 'sine',
-          frequency: { value: 0 },
-          connect() {},
-          start() {},
-          stop() {},
-        }) as unknown as OscillatorNode,
-      createGain: () =>
-        ({
-          gain: {
-            setValueAtTime() {},
-            linearRampToValueAtTime() {},
-            exponentialRampToValueAtTime() {},
-          },
-          connect() {},
-        }) as unknown as GainNode,
-    }) as unknown as Parameters<typeof attach>[0];
-
-  function bed(duration?: number) {
-    return {
-      loop: false,
-      muted: false,
-      volume: 1,
-      currentTime: 0,
-      playbackRate: 1,
-      playing: false,
-      plays: 0,
-      ...(duration === undefined ? {} : { duration }),
-      play() {
-        this.playing = true;
-        this.plays += 1;
-      },
-      pause() {
-        this.playing = false;
-      },
-    };
-  }
-
-  it('does not give way at 36 when the file is 40 seconds long: a short piece plays out whole', () => {
-    const inspect = bed(40);
-    const poison = bed(40);
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    out.tick(BED_MIN_S, 'poison');
-    expect(poison.playing, 'the 40 s loop was cut at 36').toBe(false);
-    expect(inspect.playing).toBe(true);
-    out.tick(40.1, 'poison');
-    expect(poison.playing, 'the 40 s loop never gave way at 40').toBe(true);
-  });
-
-  it('gives way at 32 when the file is 32 seconds long', () => {
-    const inspect = bed(32);
-    const poison = bed(32);
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    out.tick(31, 'poison');
-    expect(poison.playing).toBe(false);
-    out.tick(32.1, 'poison');
-    expect(poison.playing, 'a 32 s loop was held to 36').toBe(true);
-  });
-
-  // A two-minute piece plays through before a wave change may move it. For
-  // one evening a long piece held only a verse (BED_MIN_S) so a wave bed
-  // could be heard inside a short round; the Director heard that as every
-  // bed ending after thirty or forty seconds (2026-09-17), and the boss bed
-  // at once is the only mid-piece change he kept.
-  it('holds a two-minute piece for its whole length at a wave change', () => {
-    const inspect = bed(120);
-    const poison = bed(120);
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    out.tick(BED_MIN_S + 0.1, 'poison');
-    expect(poison.playing, 'the two-minute bed gave way after a verse').toBe(false);
-    out.tick(119, 'poison');
-    expect(poison.playing).toBe(false);
-    out.tick(120.1, 'poison');
-    expect(poison.playing, 'the two-minute bed never gave way').toBe(true);
-  });
-
-  it('holds BED_MAX_S, not the header, when a file reports an impossible length', () => {
-    const inspect = bed(36000);
-    const poison = bed(36000);
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    out.tick(BED_MAX_S - 1, 'poison');
-    expect(poison.playing).toBe(false);
-    out.tick(BED_MAX_S + 0.1, 'poison');
-    expect(poison.playing, 'a ten-hour header held the round').toBe(true);
-    // And the cap is long enough for the beds the cabinet actually ships.
-    expect(BED_MAX_S).toBeGreaterThan(130);
-  });
-
-  it('falls back to BED_MIN_S when a bed has no duration', () => {
-    const inspect = bed();
-    const poison = bed();
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    out.tick(BED_MIN_S - 1, 'poison');
-    expect(poison.playing).toBe(false);
-    out.tick(BED_MIN_S + 0.1, 'poison');
-    expect(poison.playing).toBe(true);
-  });
-
-  // A boss bed comes at once and lasts a boss; opened on its silent intro it
-  // read as no music at all (the Director, 2026-09-17). A bed that names an
-  // entry starts there; one that does not starts at the top.
-  it('starts a bed from its entry when it names one', () => {
-    const inspect = bed(120);
-    const whisperer = { ...bed(112), entry: 8 };
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, whisperer };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    expect(inspect.currentTime).toBe(0);
-    out.tick(5, 'whisperer');
-    expect(whisperer.playing).toBe(true);
-    expect(whisperer.currentTime).toBe(8);
-    expect(BED_ENTRY_S.whisperer).toBeGreaterThan(0);
-    expect(BED_ENTRY_S.inspect).toBeUndefined();
-  });
-
-  it('carries the hold across a round restart, measured against the file length', () => {
-    const inspect = bed(40);
-    const poison = bed(40);
-    const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
-    const out = attach(ctx(), undefined, (k) => beds[k]);
-    out.tick(0, 'inspect');
-    for (let t = 1; t <= 20; t += 1) out.tick(t, 'inspect');
-    // The next call of a shift: the round clock goes back to zero.
-    out.tick(0, 'inspect');
-    expect(inspect.plays, 'the bed restarted instead of carrying').toBe(1);
-    out.tick(10, 'poison');
-    expect(poison.playing, 'the carried hold was dropped').toBe(false);
-    out.tick(20.5, 'poison');
-    expect(poison.playing, 'the carried hold never ran out').toBe(true);
-  });
-});
-
-// schedule() pushed every oscillator it created onto the caller's array, and
-// sfxOscs is emptied only by silenceSfx (mute or close). Every player shot
-// fires the 'fire' cue, so an unmuted two-to-three-minute round retained on
-// the order of a thousand stopped oscillators and their gain nodes, then
-// walked all of them at mute.
 describe('finished oscillators do not pile up', () => {
   it('keeps only what is still sounding', () => {
     let disconnects = 0;

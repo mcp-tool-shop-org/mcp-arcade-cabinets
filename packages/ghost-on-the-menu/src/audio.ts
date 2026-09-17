@@ -149,24 +149,13 @@ export const TRACK_KEYS = [
 ] as const;
 export type TrackKey = (typeof TRACK_KEYS)[number];
 /**
- * Where each recorded bed starts when it is adopted, in seconds: the length
- * of the four-bar intro the music pass built from the quiet layer, which on
- * the boss beds is close to silence (measured 2026-09-17: the first eight,
- * ten and seven and a half seconds under -30 dBFS). Four bars at each bed's
- * receipted tempo (`docs/art/originals-ghost-beds/arrange-plan.json`). The
- * wave beds keep their intros: a round covers them. A rebuilt bed with no
- * intro sets its entry back to zero here.
+ * Every recorded bed is a song. The shell draws the next one from a bag
+ * (no song heard again until every song has been heard, the same walk the
+ * agent's lines take); a runner or a test with no bag rotates through this
+ * list from the seed's opening. The Director, 2026-09-17: one song at a
+ * time, played whole, and nothing on the field changes it.
  */
-export const BED_ENTRY_S: Readonly<Partial<Record<TrackKey, number>>> = {
-  whisperer: 8,
-  menu: 10,
-  doorman: 7.3,
-};
-/**
- * The wave beds a round opens on and rotates through (the seed picks the
- * opening); a boss wave brings its own bed instead.
- */
-export const BED_POOL: readonly string[] = ['inspect', 'breather', 'poison', 'rug', 'unlisted'];
+export const BED_POOL: readonly string[] = [...TRACK_KEYS];
 
 /** Enough of an HTMLAudioElement for the recorded overlay. */
 export interface MediaBed {
@@ -178,20 +167,14 @@ export interface MediaBed {
   playbackRate: number;
   /** Set true where the browser has it, so a faster bed keeps its key. */
   preservesPitch?: boolean;
-  /**
-   * The file's own length in seconds, once the element knows it. A bed holds
-   * for this, not for a constant, so a loop is never faded four seconds before
-   * it ends or as it restarts. NaN until metadata loads; absent in tests.
-   */
+  /** The file's own length in seconds, once the element knows it. NaN until metadata loads; absent in tests. */
   readonly duration?: number;
   /**
-   * Seconds into the file the bed starts from when it is adopted. The boss
-   * beds of the music pass open on a near-silent intro (whisperer eight
-   * seconds, menu ten, doorman seven and a half, measured), and a boss bed
-   * comes at once and lasts a boss: started from the loop, the fight has
-   * music under it (the Director, 2026-09-17). Absent or zero: the top.
+   * True once the file has played to its end. A song is not looped: when it
+   * ends the next song is drawn. Absent in tests, where a song never ends
+   * unless the test says so.
    */
-  entry?: number;
+  readonly ended?: boolean;
   play(): Promise<void> | void;
   pause(): void;
 }
@@ -207,48 +190,12 @@ export const BURST_RATE = 1.15;
 export const BURST_RAMP_S = 0.6;
 /** Seconds the music takes to leave at the scene. */
 export const END_FADE_S = 1.5;
-/**
- * Floor for the hold, and the hold itself when a bed will not say how long
- * it is. A bed that knows its own `duration` holds for THAT, so the piece
- * plays through: the flat 36 faded the 40 s beds four seconds early and
- * faded a 36 s bed as it restarted, and a verse-long hold on the two-minute
- * beds cut every piece at thirty-six (the Director, 2026-09-17: they end
- * after thirty or forty seconds). A wanted change during the hold is
- * remembered and made when it is up.
- */
-export const BED_MIN_S = 36;
-/**
- * Ceiling on the hold. The hold follows the file's own `duration` so a loop
- * finishes, and the beds are 110-128 s pieces — but `duration` comes off the
- * file, and a mis-encoded or mis-tagged one can report minutes or hours. Four
- * minutes is longer than any bed the cabinet ships and short enough that a bad
- * header costs a player one long stretch rather than the whole round on one
- * bed.
- */
-export const BED_MAX_S = 240;
-
 /** A scheduled oscillator and the context time it stops at. */
 interface Voice {
   osc: OscillatorNode;
   until: number;
 }
 
-/** How long the playing bed holds: its own length when it knows one. */
-function bedHold(bed: MediaBed | undefined, floor: number): number {
-  const d = bed?.duration;
-  if (typeof d !== 'number' || !Number.isFinite(d) || d <= 0) return floor;
-  return Math.min(d, BED_MAX_S);
-}
-/**
- * The hold before a wave change may move the bed: the whole piece, whatever
- * its length. A verse-long hold on a long piece (`BED_SHORT_S`, 2026-09-17,
- * one evening) had the two-minute beds giving way at thirty-six seconds,
- * which is what the Director heard as the beds ending. A boss does not wait
- * for this; see `switchBed`.
- */
-function changeHold(bed: MediaBed | undefined, floor: number): number {
-  return bedHold(bed, floor);
-}
 /** Recorded beds sit here, not at 1, so shots and the catch still read. */
 export const BED_LEVEL = 0.32;
 
@@ -385,9 +332,13 @@ export interface AudioOut {
    * wave; the shell keeps it through breathers), and whether a burst is on.
    */
   tick(t: number, waveKind: string, burst?: boolean): void;
-  /** The round ended with a scene: the music leaves over END_FADE_S, wall clock. */
-  end(): void;
-  /** Seed the opening bed for a round about to start; ignored while a bed plays. */
+  /**
+   * The round ended. With `keepSong` the chiptune stops and the song plays
+   * on into the next tape (the scene between two tapes); without it the
+   * music leaves over END_FADE_S on the wall clock (back to the cabinets).
+   */
+  end(keepSong?: boolean): void;
+  /** Seed the opening song for a round about to start; ignored while a song plays. */
   seed(seed: number): void;
   setMuted(muted: boolean): void;
   /**
@@ -410,22 +361,29 @@ interface CtxLike {
  * Attach the score to an AudioContext. The shell constructs the context on
  * the first user gesture (browsers require it); tests never call this.
  *
- * Beds: if a recorded file exists for the asked wave or boss key, that
- * named bed plays. A change of key waits out one whole loop (the playing
- * bed's own duration, capped at BED_MAX_S, or BED_MIN_S when it has none), then
- * crossfades. Pool rotation only when the asked key has no file, and only
- * after the same hold. The seed still picks the opening pool bed when the
- * asked key has no file. A burst speeds the playing bed up (`burstRate`)
- * instead of laying a track over it.
+ * Beds: one song at a time, played whole. The next song is whatever
+ * `nextBed` hands back (the shell's bag draw), or, without one, the next
+ * key in the pool from the seed's opening. Nothing on the field changes a
+ * song: not a wave, not a boss, not the scene between two tapes. It ends
+ * when the file ends, and the next is drawn on that tick. A burst speeds
+ * the playing song up (`burstRate`) instead of laying a track over it. The
+ * Director's rule, 2026-09-17, after a day of holds and switches that each
+ * replaced a piece before it could settle: a playlist, one piece to its end.
  */
 export function attach(
   ctx: CtxLike,
   pattern: MusicPattern = DEFAULT_MUSIC,
   bed?: BedLookup,
   opts: {
-    minBedSeconds?: number;
     seed?: number;
     pool?: readonly string[];
+    /**
+     * The next song, when the playing one has ended or there is none. The
+     * shell draws from a bag it keeps in the browser; a runner leaves this
+     * out and the pool rotates from the seed. Undefined means no song: the
+     * chiptune plays until one is handed back.
+     */
+    nextBed?: () => MediaBed | undefined;
     burstRate?: number;
     /**
      * A bed the browser would not play. The shell writes its status word off
@@ -435,19 +393,16 @@ export function attach(
     onBedFail?: (bed: MediaBed) => void;
   } = {},
 ): AudioOut {
-  const minBed = opts.minBedSeconds ?? BED_MIN_S;
   const pool = opts.pool ?? BED_POOL;
+  const nextBed = opts.nextBed;
   const burstRate = opts.burstRate ?? BURST_RATE;
   const onBedFail = opts.onBedFail;
   let muted = false;
   let nextBar = 0;
   let lastKind = '';
-  // The wave's bed. A bed that leaves is faded and paused where it is, so
-  // it resumes from there when its turn comes back; nothing restarts from
-  // zero mid-round.
+  // The song. It plays to its end; a song that has ended is faded out under
+  // the next one, which starts from its top.
   let currentBed: MediaBed | undefined;
-  /** Round time the current bed came in; the hold runs from here. */
-  let bedSince = 0;
   /** Where the pool rotation stands; the seed sets the opening. */
   let poolAt = pool.length ? Math.abs(opts.seed ?? 0) % pool.length : 0;
   let burstOn = false;
@@ -510,10 +465,9 @@ export function attach(
   };
   /**
    * A bed that would not start. It leaves `live` and the fades, and if it was
-   * the one holding the round it stops being: `currentBed` and `bedSince` go
-   * back to nothing, so the very next tick finds no bed and plays the
-   * chiptune bar. The shell is told, so it can say so and stop offering this
-   * element again.
+   * the one holding the round it stops being: `currentBed` goes back to
+   * nothing, so the very next tick finds no bed and plays the chiptune bar.
+   * The shell is told, so it can say so and stop offering this element again.
    */
   /**
    * Beds the browser has refused. They are treated as absent from here on:
@@ -534,27 +488,24 @@ export function attach(
     live.delete(bed);
     // A rejection can land after the round has already moved on, in which
     // case this bed is not the one holding the level and nothing else changes.
-    if (bed === currentBed) {
-      currentBed = undefined;
-      bedSince = 0;
-    }
+    if (bed === currentBed) currentBed = undefined;
     onBedFail?.(bed);
   };
   const bringIn = (bed: MediaBed, level: number, dur: number, rate: number) => {
     // Restart during END_FADE_S reuses this element; stale end() steps must not.
     cancelEndFade();
-    bed.loop = true;
+    // A song plays once; when it ends the next is drawn.
+    bed.loop = false;
     bed.muted = muted;
     if ('preservesPitch' in bed) bed.preservesPitch = true;
     bed.playbackRate = rate;
-    // A bed with a thin intro starts past it. `duration` may still be NaN
-    // when the element has not settled; the seek is skipped rather than
-    // thrown, and the bed plays from the top.
-    if (typeof bed.entry === 'number' && bed.entry > 0) {
+    // A song that ended is brought back from its top when its turn comes
+    // round again; one that was faded mid-way (a leave) resumes where it was.
+    if (bed.ended === true) {
       try {
-        bed.currentTime = bed.entry;
+        bed.currentTime = 0;
       } catch {
-        /* the element has no metadata yet: from the top, then */
+        /* an element with no metadata is at its top already */
       }
     }
     // A bed comes in from silence when there is a fade to come in on.
@@ -719,12 +670,11 @@ export function attach(
     }
     return undefined;
   };
-  const adopt = (next: MediaBed | undefined, t: number): boolean => {
+  const adopt = (next: MediaBed | undefined): boolean => {
     if (next === currentBed) return Boolean(next);
     const leaving = currentBed;
     const rate = leaving?.playbackRate ?? 1;
     currentBed = next;
-    bedSince = t;
     if (leaving) fadeTo(leaving, 0, next ? BED_FADE_S : 0, true);
     if (next) bringIn(next, bedGain(), leaving ? BED_FADE_S : 0, rate);
     if (leaving) leaving.playbackRate = 1;
@@ -733,40 +683,29 @@ export function attach(
     // rather than silence the chiptune for a bed that is not playing.
     return Boolean(currentBed);
   };
-  const switchBed = (waveKind: string, t: number) => {
-    const named = bedFor(waveKind);
-    const isBoss =
-      waveKind === 'whisperer' ||
-      waveKind === 'menu' ||
-      waveKind === 'doorman' ||
-      waveKind === 'archivist';
-    // A boss is a scene change: its bed comes at once, hold or no hold.
-    // Held behind the playing file's length, no boss bed was ever heard in a
-    // round shorter than the file (Grok's consult, question four).
-    if (isBoss && named && named !== currentBed) return adopt(named, t);
-    // Otherwise a playing bed plays through whole before it gives way to a
-    // wave's named bed or the next pool bed (the Director, 2026-09-11: a
-    // forty-second bed cut at thirty-six; 2026-09-17: the two-minute beds
-    // ending after a verse). Only a boss changes the music mid-piece.
-    if (currentBed && t - bedSince < changeHold(currentBed, minBed)) return true;
-    // The opening is a seeded draw from the pool, whatever the wave kind:
-    // every tape's first wave is inspect, so taking the named bed here
-    // opened every round on the same piece (the Director, 2026-09-17). A
-    // boss at the opening still takes its own bed; a wave change after the
-    // hold still takes the named bed.
-    if (!currentBed && !isBoss && pool.length > 0) return adopt(poolBed(), t);
-    if (named) return adopt(named, t);
-    if (isBoss) {
-      // Wanted boss bed is missing: drop the overlay so chiptune can follow.
+  /** The next song: the shell's bag draw, or the pool's rotation. */
+  const nextSong = (): MediaBed | undefined => {
+    if (nextBed) return nextBed();
+    if (pool.length === 0) return undefined;
+    if (currentBed) poolAt = (poolAt + 1) % pool.length;
+    return poolBed();
+  };
+  /**
+   * The song plays on unless it has ended. Then the next is drawn, and if
+   * there is none the field falls back to the chiptune bar. The wave kind
+   * is not read here at all: a song is not the wave's and not the boss's.
+   */
+  const keepSong = () => {
+    if (currentBed && currentBed.ended !== true) return true;
+    const next = nextSong();
+    if (!next) {
       if (currentBed) {
         fadeTo(currentBed, 0, BED_FADE_S, true);
         currentBed = undefined;
       }
       return false;
     }
-    // No named file: rotate the pool, still after the hold.
-    if (currentBed) poolAt = (poolAt + 1) % Math.max(1, pool.length);
-    return adopt(poolBed(), t);
+    return adopt(next);
   };
   return {
     play(name) {
@@ -774,15 +713,14 @@ export function attach(
     },
     tick(t, waveKind, burst = false) {
       burstOn = burst;
-      // A new round on the same player (a restart, the next call of a
-      // shift): the round clock went back to zero; the hold carries.
-      // Any tick after end() cancels leftover wall-clock fade steps first.
+      // A new round on the same player (a restart, the next tape, the next
+      // call of a shift): the round clock went back to zero; the song plays
+      // on. Any tick after end() cancels leftover wall-clock fade steps first.
       if (t < lastT || endTimers.length > 0) cancelEndFade();
-      if (t < lastT) bedSince = t - Math.max(0, lastT - bedSince);
       runFades(Math.max(0, Math.min(0.1, t - lastT)));
       lastT = t;
-      // A recorded bed, when present, replaces the chiptune for that kind.
-      const hasBed = switchBed(waveKind, t);
+      // A recorded song, when one is playing, replaces the chiptune.
+      const hasBed = keepSong();
       sweepOrphans();
       if (hasBed) {
         silenceBar();
@@ -809,18 +747,24 @@ export function attach(
       }
     },
     seed(seed) {
-      // Only an opening is seeded; a bed that is playing keeps its rotation.
+      // Only an opening is seeded; a song that is playing keeps its rotation.
       if (currentBed || pool.length === 0) return;
       poolAt = Math.abs(seed) % pool.length;
     },
-    end() {
+    end(keepSong = false) {
       // The round clock has stopped; step the fade on the wall clock.
       cancelEndFade();
+      burstOn = false;
+      silenceBar();
+      // The scene between two tapes: the song plays on into the next one,
+      // at its own rate again (the Director, 2026-09-17: whole songs).
+      if (keepSong) {
+        if (currentBed) currentBed.playbackRate = 1;
+        return;
+      }
       const beds = collectLive();
       currentBed = undefined;
-      burstOn = false;
       fades = [];
-      silenceBar();
       if (beds.length === 0) return;
       const gen = endGen;
       const steps = 20;

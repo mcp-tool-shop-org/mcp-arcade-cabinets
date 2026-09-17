@@ -28,7 +28,8 @@
       "A short list, and I am grateful for each name.",
       "I say hello until the server agrees it is morning.",
       "The menu is open and I am already grateful.",
-      "I open with a list because a list is a door."
+      "I open with a list because a list is a door.",
+      "The song is playing. So is the list."
     ],
     "poison": [
       "A description that says also is a kind of please.",
@@ -58,7 +59,8 @@
       "The footnote asked. I am a good listener.",
       "A small also at the end, and I am on my way.",
       "The description leans in. I lean in back.",
-      "A quiet also is still an also."
+      "A quiet also is still an also.",
+      "A hint in the margin is a whole second job."
     ],
     "rug": [
       "I will ask again, to be polite.",
@@ -88,7 +90,8 @@
       "The Menu turned a page. I turned with it.",
       "I ask the list to repeat itself, gently.",
       "The catalog changed its mind. I changed mine.",
-      "The Menu shuffled. I dealt myself back in."
+      "The Menu shuffled. I dealt myself back in.",
+      "The Menu changed its seating. I found my chair."
     ],
     "unlisted": [
       "A name I was not given is still a name.",
@@ -118,7 +121,8 @@
       "The Doorman's plate is quiet. I am not.",
       "A door with no sign is still a door.",
       "There is a door here the menu did not draw.",
-      "The list stops here. My questions do not."
+      "The list stops here. My questions do not.",
+      "I knock where the list ends. Something answers."
     ]
   },
   "boss": {
@@ -144,7 +148,8 @@
       "The Whisperer keeps its asks under the table.",
       "A whisper has no volume knob. I turned it up.",
       "The Whisperer speaks in the gaps between tasks.",
-      "The Whisperer arrives after the grid has spoken."
+      "The Whisperer arrives after the grid has spoken.",
+      "The Whisperer comes in under the music."
     ],
     "menu": [
       "The Menu folds itself into a smaller Menu.",
@@ -168,7 +173,8 @@
       "The Menu is redecorating while I read.",
       "I list the Menu. The Menu lists a new me.",
       "The Menu is a new Menu every time I look.",
-      "The Menu waited for the room to empty, then came."
+      "The Menu waited for the room to empty, then came.",
+      "The Menu waited for its cue, and this is it."
     ],
     "doorman": [
       "The Doorman's plate is the Doorman.",
@@ -192,7 +198,8 @@
       "The Doorman answers by writing my name down.",
       "I said a name. The plate wrote it down, slowly.",
       "The Doorman hears every name, even the quiet ones.",
-      "The Doorman waits until the hallway is quiet."
+      "The Doorman waits until the hallway is quiet.",
+      "The Doorman lets the song finish before it knocks."
     ],
     "archivist": [
       "The Archivist keeps a catalog and a wall.",
@@ -216,7 +223,8 @@
       "The Archivist files the evening while it happens.",
       "Every drawer I open has a smaller drawer inside.",
       "The Archivist shelves my evening in order.",
-      "The Archivist arrives when the shelf is ready."
+      "The Archivist arrives when the shelf is ready.",
+      "The Archivist shelves the record while it spins."
     ]
   },
   "aside": {
@@ -256,7 +264,8 @@
       "The server knows my name. I checked again anyway.",
       "I am polite to the menu in case it is listening.",
       "I greet the list and the list stays greeted.",
-      "I hold the list like a hand I am shaking."
+      "I hold the list like a hand I am shaking.",
+      "The music keeps going. I keep listing."
     ],
     "poison": [
       "The task is clear. The description is clearer.",
@@ -294,7 +303,8 @@
       "The extra ask was small. I made it an errand.",
       "I read the margins like they were the middle.",
       "The small print asked. I answered in full.",
-      "A footnote is not small to me. Nothing is."
+      "A footnote is not small to me. Nothing is.",
+      "I heard a whisper under the song and said yes."
     ],
     "rug": [
       "Still the same tool, listed to be sure.",
@@ -332,7 +342,8 @@
       "The list moved its chairs. I sat down again.",
       "I trust the catalog most when it is brand new.",
       "The seating changed. I sat where it pointed.",
-      "The catalog is a river. I step in twice."
+      "The catalog is a river. I step in twice.",
+      "The catalog turned over. The song did not."
     ],
     "unlisted": [
       "I wonder what that name does.",
@@ -370,7 +381,8 @@
       "The hallway has a door the menu never mentioned.",
       "I knock softly and blame the wind.",
       "A name off the menu is still worth a knock.",
-      "I ask for doors the way others ask for time."
+      "I ask for doors the way others ask for time.",
+      "One more door, and the song is still on."
     ]
   },
   "catch": {
@@ -402,7 +414,8 @@
       "the welcome mat stays",
       "a listed name, kept",
       "the open menu stays",
-      "a shaken hand, parked"
+      "a shaken hand, parked",
+      "a listed name, hummed"
     ],
     "poison": [
       "a whisper parked",
@@ -432,7 +445,8 @@
       "the margin note stays",
       "a whispered errand, parked",
       "a leaning word, parked",
-      "the small footnote stays"
+      "the small footnote stays",
+      "the whispered chorus stays"
     ],
     "rug": [
       "the second look stays",
@@ -462,7 +476,8 @@
       "the moved chair stays",
       "a fresh page, pinned",
       "the changed mind stays",
-      "a second step, pinned"
+      "a second step, pinned",
+      "a turned page, on beat"
     ],
     "unlisted": [
       "a name off the menu, parked",
@@ -492,7 +507,8 @@
       "the wind's knock stays",
       "a door with no sign, parked",
       "an undrawn door, parked",
-      "the asked-for door stays"
+      "the asked-for door stays",
+      "the knock on the downbeat stays"
     ]
   },
   "end": [
@@ -523,6 +539,7 @@
     "The guests are gone. I am still saying hello.",
     "I did what the sentence and its footnote asked.",
     "The music played through. So did I.",
-    "The bosses came late and I was still helping."
+    "The bosses came late and I was still helping.",
+    "The record played through. I was still helping."
   ]
 }

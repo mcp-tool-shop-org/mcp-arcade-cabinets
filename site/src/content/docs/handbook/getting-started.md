@@ -68,7 +68,7 @@ A tape carries the tier it was recorded at: a fixture is tier 0, a seated run on
 
 Seat, live and hardcore also get **parallelism** bursts: extra honest copies, hotter fire, and the music sped up under them. The first burst is a blink; later waves hold it longer. Recorded tapes stay a gallery.
 
-The music follows the room, but a song holds about half a minute (one loop) before the wanted wave or boss bed comes in. Beds sit under the shots and the catch. In a shift the music carries through the cards. There is no burst track; a burst speeds the playing bed up and lets it back down.
+The music is a playlist: a piece runs from its first bar to its last, the next is drawn without repeats until the set is spent, and no event on the field replaces one, not a wave, not a boss, not the scene between two tapes. Beds sit under the shots and the catch. There is no burst track; a burst speeds the playing piece up and lets it back down.
 
 A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. The wave card carries a dry line in the voice of an agent, and the boss enters with another. Short asides keep talking during the wave.
 

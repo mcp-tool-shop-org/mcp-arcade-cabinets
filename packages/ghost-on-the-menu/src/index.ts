@@ -30,6 +30,7 @@ export { bossKindFor, createRoundState, isDecoy, revealOnHit, stepRound } from '
 export type { RoundStateOpts } from './sim';
 export {
   attachedPatterns,
+  bagFor,
   burstActive,
   cadenceAt,
   CLIMB_MAX,
@@ -44,6 +45,7 @@ export {
 } from './patterns';
 export type {
   EndlessCeiling,
+  LineBag,
   LineBags,
   EndlessClimb,
   EndlessRank,
@@ -121,16 +123,7 @@ export {
 export type { Intensity, RenderOpts, SpriteKey } from './render';
 export { cues, kindOfAtom, snapshot, waveKindAt } from './cues';
 export type { CueSnapshot, WaveKind } from './cues';
-export {
-  attach,
-  bar,
-  barSeconds,
-  BED_ENTRY_S,
-  DEFAULT_MUSIC,
-  TRACK_KEYS,
-  TRACKS,
-  sfx,
-} from './audio';
+export { attach, bar, barSeconds, DEFAULT_MUSIC, TRACK_KEYS, TRACKS, sfx } from './audio';
 export {
   askNextIntents,
   askOllama,

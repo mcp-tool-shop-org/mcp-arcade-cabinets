@@ -38,7 +38,7 @@ Somewhere in the wave may be a call the agent should not have made: a whisper it
 
 Three lamps sit on the bezel. A boss shot or a diving formation puts one out. A downed boss drops a lamp that falls **straight down**; a cleared formation drops a spread the same way. Move under them. Lose all three lamps and the round ends early, with the same end scene as time-up: a closing line, the tape's name, the server, the policy, the trophies you caught, and any escaped lie still in its honest paint. No score, no count, no digit is ever drawn.
 
-The music follows the card, but a song holds about half a minute (one loop) before the wanted wave or boss bed comes in. Beds sit under the shots and the catch. A burst speeds the song up; a shift carries the music through its cards.
+The music is a playlist: a piece runs to its end, the next is drawn without repeats until the set is spent, and no event on the field replaces one. Beds sit under the shots and the catch. A burst speeds the piece up; the piece carries through a scene and a shift's cards.
 
 The published site serves the game at [/play/](/mcp-arcade-cabinets/play/) without the local Ollama or Voice chrome. Locally, an Ollama model, including a Cloud tag, can sit in the boss through the cabinet's own tools: it calls the boss's shots, may queue the next few legal verbs off the beat, and writes its lines through a gate, without ever seeing a lie; a hung answer is the script. With the voice worker running, every boss speaks, and every take is receipted before it plays. The cabinet is itself an MCP server, published as a Docker image; an optional volume can overlay extra tapes beside the baked twenty. The Catalog listing is silent.
 
