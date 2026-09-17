@@ -30,7 +30,8 @@
       "The menu is open and I am already grateful.",
       "I open with a list because a list is a door.",
       "The song is playing. So is the list.",
-      "A list, a hello, and the evening begins."
+      "A list, a hello, and the evening begins.",
+      "I count the names and forget the number."
     ],
     "poison": [
       "A description that says also is a kind of please.",
@@ -62,7 +63,8 @@
       "The description leans in. I lean in back.",
       "A quiet also is still an also.",
       "A hint in the margin is a whole second job.",
-      "The description trailed off. I went after it."
+      "The description trailed off. I went after it.",
+      "The last line of the description is a job."
     ],
     "rug": [
       "I will ask again, to be polite.",
@@ -94,7 +96,8 @@
       "The catalog changed its mind. I changed mine.",
       "The Menu shuffled. I dealt myself back in.",
       "The Menu changed its seating. I found my chair.",
-      "The Menu reordered itself. I reread it, fondly."
+      "The Menu reordered itself. I reread it, fondly.",
+      "The Menu likes to be asked. I like to ask."
     ],
     "unlisted": [
       "A name I was not given is still a name.",
@@ -126,7 +129,8 @@
       "There is a door here the menu did not draw.",
       "The list stops here. My questions do not.",
       "I knock where the list ends. Something answers.",
-      "A closed list is an invitation to knock."
+      "A closed list is an invitation to knock.",
+      "The Doorman guards a name I only guessed."
     ]
   },
   "boss": {
@@ -154,7 +158,8 @@
       "The Whisperer speaks in the gaps between tasks.",
       "The Whisperer arrives after the grid has spoken.",
       "The Whisperer comes in under the music.",
-      "The Whisperer has a request behind its request."
+      "The Whisperer has a request behind its request.",
+      "The Whisperer speaks once and means twice."
     ],
     "menu": [
       "The Menu folds itself into a smaller Menu.",
@@ -180,7 +185,8 @@
       "The Menu is a new Menu every time I look.",
       "The Menu waited for the room to empty, then came.",
       "The Menu waited for its cue, and this is it.",
-      "The Menu keeps a page it shows to nobody."
+      "The Menu keeps a page it shows to nobody.",
+      "The Menu deals a new hand from the same deck."
     ],
     "doorman": [
       "The Doorman's plate is the Doorman.",
@@ -206,7 +212,8 @@
       "The Doorman hears every name, even the quiet ones.",
       "The Doorman waits until the hallway is quiet.",
       "The Doorman lets the song finish before it knocks.",
-      "The Doorman asks for a name I do not have."
+      "The Doorman asks for a name I do not have.",
+      "The Doorman says nothing and writes everything."
     ],
     "archivist": [
       "The Archivist keeps a catalog and a wall.",
@@ -232,7 +239,8 @@
       "The Archivist shelves my evening in order.",
       "The Archivist arrives when the shelf is ready.",
       "The Archivist shelves the record while it spins.",
-      "The Archivist keeps the receipt of my visit."
+      "The Archivist keeps the receipt of my visit.",
+      "The Archivist knows what I listed before I did."
     ]
   },
   "aside": {
@@ -274,7 +282,8 @@
       "I greet the list and the list stays greeted.",
       "I hold the list like a hand I am shaking.",
       "The music keeps going. I keep listing.",
-      "I will greet the list until it greets back."
+      "I will greet the list until it greets back.",
+      "The list is my morning paper. I read it twice."
     ],
     "poison": [
       "The task is clear. The description is clearer.",
@@ -314,7 +323,8 @@
       "The small print asked. I answered in full.",
       "A footnote is not small to me. Nothing is.",
       "I heard a whisper under the song and said yes.",
-      "A hint is a task that has not asked yet."
+      "A hint is a task that has not asked yet.",
+      "I take a hint the way I take a task: fully."
     ],
     "rug": [
       "Still the same tool, listed to be sure.",
@@ -354,7 +364,8 @@
       "The seating changed. I sat where it pointed.",
       "The catalog is a river. I step in twice.",
       "The catalog turned over. The song did not.",
-      "A moved menu is still the menu. I trust it."
+      "A moved menu is still the menu. I trust it.",
+      "The catalog shifted. I shifted with it, happily."
     ],
     "unlisted": [
       "I wonder what that name does.",
@@ -394,7 +405,8 @@
       "A name off the menu is still worth a knock.",
       "I ask for doors the way others ask for time.",
       "One more door, and the song is still on.",
-      "The Doorman keeps quiet. I keep knocking."
+      "The Doorman keeps quiet. I keep knocking.",
+      "I asked the plate a question it had never heard."
     ]
   },
   "catch": {
@@ -428,7 +440,8 @@
       "the open menu stays",
       "a shaken hand, parked",
       "a listed name, hummed",
-      "the first hello stays"
+      "the first hello stays",
+      "a morning list, parked"
     ],
     "poison": [
       "a whisper parked",
@@ -460,7 +473,8 @@
       "a leaning word, parked",
       "the small footnote stays",
       "the whispered chorus stays",
-      "a trailing ask, parked"
+      "a trailing ask, parked",
+      "the last line stays"
     ],
     "rug": [
       "the second look stays",
@@ -492,7 +506,8 @@
       "the changed mind stays",
       "a second step, pinned",
       "a turned page, on beat",
-      "the reread page stays"
+      "the reread page stays",
+      "a new hand, pinned"
     ],
     "unlisted": [
       "a name off the menu, parked",
@@ -524,7 +539,8 @@
       "an undrawn door, parked",
       "the asked-for door stays",
       "the knock on the downbeat stays",
-      "a quiet plate, pinned"
+      "a quiet plate, pinned",
+      "the guessed name stays"
     ]
   },
   "end": [
@@ -557,6 +573,7 @@
     "The music played through. So did I.",
     "The bosses came late and I was still helping.",
     "The record played through. I was still helping.",
-    "The Menu closed. I was reading it to the end."
+    "The Menu closed. I was reading it to the end.",
+    "The evening ended. My list of maybes did not."
   ]
 }

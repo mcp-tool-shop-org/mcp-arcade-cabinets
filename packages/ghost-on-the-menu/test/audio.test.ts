@@ -253,7 +253,7 @@ describe('recorded beds', () => {
     const beds: Record<string, ReturnType<typeof bed>> = {};
     for (const k of TRACK_KEYS) beds[k] = bed(120);
     const drawn: string[] = [];
-    const order = ['menu', 'rug', 'doorman'];
+    const order = ['rug', 'breather', 'doorman'];
     const out = attach(silentCtx(), undefined, (k) => beds[k], {
       nextBed: () => {
         const key = order[drawn.length % order.length]!;
@@ -262,17 +262,17 @@ describe('recorded beds', () => {
       },
     });
     out.tick(0, 'inspect');
-    expect(drawn).toEqual(['menu']);
-    expect(beds.menu!.playing).toBe(true);
-    for (let t = 1; t < 30; t += 1) out.tick(t, 'whisperer');
-    expect(drawn, 'a boss drew nothing').toEqual(['menu']);
-    beds.menu!.ended = true;
-    out.tick(30, 'whisperer');
-    expect(drawn).toEqual(['menu', 'rug']);
+    expect(drawn).toEqual(['rug']);
     expect(beds.rug!.playing).toBe(true);
+    for (let t = 1; t < 30; t += 1) out.tick(t, 'whisperer');
+    expect(drawn, 'a boss drew nothing').toEqual(['rug']);
+    beds.rug!.ended = true;
+    out.tick(30, 'whisperer');
+    expect(drawn).toEqual(['rug', 'breather']);
+    expect(beds.breather!.playing).toBe(true);
     for (let t = 30.05; t < 31.2; t += 0.05) out.tick(t, 'whisperer');
-    expect(beds.menu!.playing, 'the ended song is faded out under the next').toBe(false);
-    expect(beds.rug!.volume).toBe(BED_LEVEL);
+    expect(beds.rug!.playing, 'the ended song is faded out under the next').toBe(false);
+    expect(beds.breather!.volume).toBe(BED_LEVEL);
   });
 
   it('with no bag the pool rotates from the seed, and a song that comes round again starts from its top', () => {

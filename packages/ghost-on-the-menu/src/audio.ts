@@ -144,7 +144,6 @@ export const TRACK_KEYS = [
   'unlisted',
   'breather',
   'whisperer',
-  'menu',
   'doorman',
 ] as const;
 export type TrackKey = (typeof TRACK_KEYS)[number];

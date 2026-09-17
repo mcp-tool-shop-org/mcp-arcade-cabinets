@@ -120,7 +120,6 @@ export const GHOST_TRACK_KEYS = [
   'unlisted',
   'breather',
   'whisperer',
-  'menu',
   'doorman',
 ];
 

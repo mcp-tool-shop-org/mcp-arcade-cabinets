@@ -9,6 +9,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TRACK_KEYS } from '@mcp-arcade-cabinets/ghost-on-the-menu';
 import { TAPES } from '../src/tapes';
 import {
   admitIntents,
@@ -227,7 +228,7 @@ describe('the beds, while they are still arriving', () => {
     vi.useFakeTimers();
     try {
       const { beds, game } = await mountFresh();
-      expect(beds.size, 'the shell asked for fewer beds than the game has').toBe(8);
+      expect(beds.size, 'the shell asked for fewer beds than the game has').toBe(TRACK_KEYS.length);
       // Well past any deadline, with not one bed answered: they are still on
       // their way, and a bed on its way is not a missing bed.
       vi.advanceTimersByTime(60_000);
