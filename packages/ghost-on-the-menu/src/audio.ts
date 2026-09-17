@@ -187,11 +187,12 @@ export const BURST_RAMP_S = 0.6;
 export const END_FADE_S = 1.5;
 /**
  * Floor for the hold, and the hold itself when a bed will not say how long
- * it is. A bed that knows its own `duration` holds for THAT, so the loop
- * finishes: the flat 36 faded the 40 s beds four seconds early and faded a
- * 36 s bed as it restarted. The music pass is lengthening these files, and
- * the hold follows whatever length each file has.
- * A wanted change during the hold is remembered and made when it is up.
+ * it is. A bed that knows its own `duration` holds for THAT, so the piece
+ * plays through: the flat 36 faded the 40 s beds four seconds early and
+ * faded a 36 s bed as it restarted, and a verse-long hold on the two-minute
+ * beds cut every piece at thirty-six (the Director, 2026-09-17: they end
+ * after thirty or forty seconds). A wanted change during the hold is
+ * remembered and made when it is up.
  */
 export const BED_MIN_S = 36;
 /**
@@ -217,15 +218,14 @@ function bedHold(bed: MediaBed | undefined, floor: number): number {
   return Math.min(d, BED_MAX_S);
 }
 /**
- * A piece no longer than this plays out whole before a change; a longer one
- * holds `floor` (BED_MIN_S) and loops on its own. Sized so a forty-second
- * bed is never cut and a two-minute bed gives way after a verse.
+ * The hold before a wave change may move the bed: the whole piece, whatever
+ * its length. A verse-long hold on a long piece (`BED_SHORT_S`, 2026-09-17,
+ * one evening) had the two-minute beds giving way at thirty-six seconds,
+ * which is what the Director heard as the beds ending. A boss does not wait
+ * for this; see `switchBed`.
  */
-export const BED_SHORT_S = 48;
-/** The hold before a wave change may move the bed. */
 function changeHold(bed: MediaBed | undefined, floor: number): number {
-  const whole = bedHold(bed, floor);
-  return whole <= BED_SHORT_S ? whole : floor;
+  return bedHold(bed, floor);
 }
 /** Recorded beds sit here, not at 1, so shots and the catch still read. */
 export const BED_LEVEL = 0.32;
@@ -712,12 +712,10 @@ export function attach(
     // Held behind the playing file's length, no boss bed was ever heard in a
     // round shorter than the file (Grok's consult, question four).
     if (isBoss && named && named !== currentBed) return adopt(named, t);
-    // Otherwise a playing bed holds before it gives way to a wave's named bed
-    // or the next pool bed: a short piece plays out whole (the Director's
-    // note of 2026-09-11, a forty-second bed cut at thirty-six), a long one
-    // holds a verse, BED_MIN_S, long enough to get into and short enough
-    // that a round can change its mind. The file's own length is how long
-    // it loops, not how long the game waits.
+    // Otherwise a playing bed plays through whole before it gives way to a
+    // wave's named bed or the next pool bed (the Director, 2026-09-11: a
+    // forty-second bed cut at thirty-six; 2026-09-17: the two-minute beds
+    // ending after a verse). Only a boss changes the music mid-piece.
     if (currentBed && t - bedSince < changeHold(currentBed, minBed)) return true;
     // The opening is a seeded draw from the pool, whatever the wave kind:
     // every tape's first wave is inspect, so taking the named bed here

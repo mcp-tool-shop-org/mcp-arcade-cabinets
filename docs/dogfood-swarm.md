@@ -67,6 +67,8 @@ Kimi K2.6 on the lines commit, five points, halt. A repeated line in the doorman
 
 **The reactions run landed** (`docs/vibe-typer.reactions.md`, the Director's yes after wave 5). Two hundred and forty-nine snippets carry a line the user says when that piece ships, written against the request by Mistral Large 3 with the user's voice sheet, read back by glm-5.3-flash (a family that wrote none of them; the script halts if the two families match), and held by a gate to the request's own words. The lead read three levels as a player through `pnpm transcript vibe-typer` (duck rides at tier zero, the sandwich ledger at hardcore, the lost socks at tier one): every line answered the request two lines above it, and the level's last ship says the product's review, which is the sim's design. The builder had counted two frames and left them; the lead reversed that for one of them, since "sits there waiting for me" is true of anything, which is the blind pool's defect in a new coat, and rewrote twenty-nine lines by hand under the same gate. After the rewrite: "sits there" four, "line up" six, "just how i wanted" none. Verified on the merged tree with the standing batch of ghost lines and the two Kimi fixes above.
 
+**The Director's third listen to the beds**, the same hour: they sound right and end after thirty or forty seconds. The verse hold (`BED_SHORT_S`, one evening old) was cutting every two-minute piece at thirty-six at the next wave. Asked, he chose the whole piece: a bed plays through before a wave change may move it, the boss bed still at once. Seventeen more of the agent's lines with it, one per pool.
+
 ## Owed after Stage A
 
 - Stages B (proactive), C (humanization), D (visual) of the health pass; the feature pass; the final test; the treatment.

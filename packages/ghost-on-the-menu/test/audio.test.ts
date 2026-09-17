@@ -9,7 +9,6 @@ import {
   barSeconds,
   BED_LEVEL,
   BED_MAX_S,
-  BED_SHORT_S,
   BED_MIN_S,
   BED_POOL,
   BURST_RATE,
@@ -533,7 +532,7 @@ describe('recorded beds', () => {
 // it restarted. A bed now holds for its OWN length; 36 stays as the floor for
 // a bed that cannot say how long it is. The music pass is lengthening these
 // files, so the hold must follow the file, never a constant.
-describe('a bed holds for its own length when short, and a verse when long', () => {
+describe('a bed plays through whole before a wave change may move it', () => {
   const ctx = () =>
     ({
       currentTime: 0,
@@ -602,36 +601,36 @@ describe('a bed holds for its own length when short, and a verse when long', () 
     expect(poison.playing, 'a 32 s loop was held to 36').toBe(true);
   });
 
-  // A long piece is a session theme, not a wave sting (Grok's consult,
-  // question four): it loops on its own length and the game changes it on
-  // meaning, a wave after BED_MIN_S, a boss at once. Held for the file's
-  // whole length, a two-minute bed sat under a round shorter than itself
-  // and no wave or boss bed was ever heard.
-  it('holds a two-minute piece for BED_MIN_S at a wave change, not for its whole length', () => {
+  // A two-minute piece plays through before a wave change may move it. For
+  // one evening a long piece held only a verse (BED_MIN_S) so a wave bed
+  // could be heard inside a short round; the Director heard that as every
+  // bed ending after thirty or forty seconds (2026-09-17), and the boss bed
+  // at once is the only mid-piece change he kept.
+  it('holds a two-minute piece for its whole length at a wave change', () => {
     const inspect = bed(120);
     const poison = bed(120);
     const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
     const out = attach(ctx(), undefined, (k) => beds[k]);
     out.tick(0, 'inspect');
-    out.tick(BED_MIN_S - 1, 'poison');
-    expect(poison.playing).toBe(false);
     out.tick(BED_MIN_S + 0.1, 'poison');
-    expect(poison.playing, 'the two-minute bed held the whole round').toBe(true);
-    expect(BED_SHORT_S).toBeGreaterThan(40);
-    expect(BED_SHORT_S).toBeLessThan(BED_MIN_S * 2);
+    expect(poison.playing, 'the two-minute bed gave way after a verse').toBe(false);
+    out.tick(119, 'poison');
+    expect(poison.playing).toBe(false);
+    out.tick(120.1, 'poison');
+    expect(poison.playing, 'the two-minute bed never gave way').toBe(true);
   });
 
-  it('holds BED_MIN_S when a file reports an impossible length', () => {
+  it('holds BED_MAX_S, not the header, when a file reports an impossible length', () => {
     const inspect = bed(36000);
     const poison = bed(36000);
     const beds: Record<string, ReturnType<typeof bed>> = { inspect, poison };
     const out = attach(ctx(), undefined, (k) => beds[k]);
     out.tick(0, 'inspect');
-    out.tick(BED_MIN_S - 1, 'poison');
+    out.tick(BED_MAX_S - 1, 'poison');
     expect(poison.playing).toBe(false);
-    out.tick(BED_MIN_S + 0.1, 'poison');
+    out.tick(BED_MAX_S + 0.1, 'poison');
     expect(poison.playing, 'a ten-hour header held the round').toBe(true);
-    // And the loop cap is long enough for the beds the cabinet actually ships.
+    // And the cap is long enough for the beds the cabinet actually ships.
     expect(BED_MAX_S).toBeGreaterThan(130);
   });
 
