@@ -1,0 +1,197 @@
+{
+  "verdict": "escalate",
+  "confidence": 0.88,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:0:F3",
+      "model_family": "local",
+      "model_id": "gpt-oss:120b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.96,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "5a02f506200bd273905b64bed646b175e91999e47f738207417a39dc850103c4"
+    },
+    {
+      "lens": "citation_groundedness:1:F7",
+      "model_family": "local",
+      "model_id": "gpt-oss:120b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.99,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "f4d9b6bf8b2d93aea285b8eae799b8d83e61bed7359f1983d353877105f1a1b8"
+    },
+    {
+      "lens": "citation_groundedness:2:F8",
+      "model_family": "local",
+      "model_id": "gpt-oss:120b-cloud",
+      "outcome": "uncertain",
+      "findings": [],
+      "confidence": 0.88,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "9dba688eebb4d96e2dbd0723cf7316227030b70a79fc2f91a9322bdbb7acc8ff"
+    },
+    {
+      "lens": "citation_groundedness:3:F12",
+      "model_family": "local",
+      "model_id": "gpt-oss:120b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.98,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "d087b06539055f2fddb2a1c86af1d7c17d1415192d60467dc79282111cc62f23"
+    },
+    {
+      "lens": "citation_groundedness:4:F15",
+      "model_family": "local",
+      "model_id": "gpt-oss:120b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.99,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "abf20f3ef06c749c05e9f1a79ad658868890f6b5278b51b110cafaf7a64792ad"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "F3",
+      "identifier": "10.1287/mnsc.38.11.1562",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Growth Versus Security in Dynamic Investment Analysis",
+      "source_abstract": "This paper concerns the problem of optimal dynamic choice in discrete time for an investor. In each period the investor is faced with one or more risky investments. The maximization of the expected logarithm of the period by period wealth, referred to as the Kelly criterion, is a very desirable investment procedure. It has many attractive properties, such as maximizing the asymptotic rate of growth of the investor's fortune. On the other hand, instead of focusing on maximal growth, one can develop strategies based on maximum security. For example, one can minimize the ruin probability subject to making a positive return or compute a confidence level of increasing the investor's initial fortune to a given final wealth goal. This paper is concerned with methods to combine these two approaches. We derive computational formulas for a variety of growth and security measures. Utilizing fractional Kelly strategies, we can develop a complete tradeoff of growth versus security. The theory is applicable to favorable investment situations such as blackjack, horseracing, lotto games, index and commodity futures and options trading. The results provide insight into how one should properly invest in these situations.",
+      "supporting_span": "The maximization of the expected logarithm of the period by period wealth, referred to as the Kelly criterion, ... maximizing the asymptotic rate of growth of the investor's fortune. Utilising fractional Kelly strategies, we can develop a complete tradeoff of growth versus security.",
+      "confidence": 0.96
+    },
+    {
+      "citation_id": "F7",
+      "identifier": "10.1111/j.1360-0443.2010.03050.x",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Losses disguised as wins in modern multi\u2010line video slot machines",
+      "source_abstract": "ABSTRACT\n                  \n                    Aims\u2003\n                    Players can wager on multiple lines of modern slot machines. When they spin and fail to gain any credits, the machine goes into a state of relative quiet. By contrast, when they spin and win, these spins are accompanied by reinforcing sights and sounds. Such reinforcement also occurs when the amount won is\n                    less\n                    than the spin wager. We sought to show that these \u2018losses disguised as wins\u2019, or LDWs, would be as arousing as wins, and more arousing than regular losses.\n                  \n                  \n                    Measurement and participants\u2003\n                    We measured skin conductance response (SCR) amplitudes and heart\u2010rate changes following wins, LDWs and losses for 40 novices playing a multi\u2010line slot machine.\n                  \n                  \n                    Findings\u2003\n                    SCR amplitudes were similar for wins and LDWs\u2014both were significantly larger than for regular losses.\n                  \n                  \n                    Conclusions\u2003\n                    For novice players, the reinforcing sights and sounds of the slot machine triggered arousal on wins, where the number of credits gained was greater than the spin wager, but also on \u2018losses disguised as wins\u2019 where the amount \u2018won\u2019 was less than the spin wager. Despite the fact that players lost money on these spins, these outcomes were more arousing than regular losses where no credits were gained. Although these findings involve novice players, the heightened arousal associated with these losses may have implications for the development of problem gambling, as arousal has been viewed as a key reinforcer in gambling behaviour.",
+      "supporting_span": "SCR amplitudes were similar for wins and LDWs\u2014both were significantly larger than for regular losses.",
+      "confidence": 0.99
+    },
+    {
+      "citation_id": "F8",
+      "identifier": "10.4309/jgi.2009.23.5",
+      "existence": "resolved",
+      "finding_match": "not_addressed",
+      "verdict": "escalate",
+      "action": "RETRIEVE FULL TEXT",
+      "detail": "claim is not addressed in the title+abstract",
+      "source_title": "PAR Sheets, probabilities, and slot machine play: Implications for problem and non-problem gambling",
+      "source_abstract": "Through the Freedom of Information and Protection of Privacy Act, we obtained design documents, called PAR Sheets, for slot machine games that are in use in Ontario, Canada. From our analysis of these PAR Sheets and observations from playing and watching others play these games, we report on the design of the structural characteristics of Ontario slots and their implications for problem gambling. We discuss characteristics such as speed of play, stop buttons, bonus modes, hand-pays, nudges, near misses, how some wins are in fact losses, and how two identical looking slot machines can have very different payback percentages. We then discuss how these characteristics can lead to multi-level reinforcement schedules (different reinforcement schedules for frequent and infrequent gamblers playing the same game) and how they may provide an illusion of control and contribute in other ways to irrational thinking, all of which are known risk factors for problem gambling.",
+      "supporting_span": null,
+      "confidence": 0.88
+    },
+    {
+      "citation_id": "F12",
+      "identifier": "10.1017/S1930297500004599",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "Developing expert political judgment: The impact of training and practice on judgmental accuracy in geopolitical forecasting tournaments",
+      "source_abstract": "AbstractThe heuristics-and-biases research program highlights reasons for expecting people to be poor intuitive forecasters. This article tests the power of a cognitive-debiasing training module (\u201cCHAMPS KNOW\u201d) to improve probability judgments in a four-year series of geopolitical forecasting tournaments sponsored by the U.S. intelligence community. Although the training lasted less than one hour, it consistently improved accuracy (Brier scores) by 6 to 11% over the control condition. Cognitive ability and practice also made largely independent contributions to predictive accuracy. Given the brevity of the training tutorials and the heterogeneity of the problems posed, the observed effects are likely to be lower-bound estimates of what could be achieved by more intensive interventions. Future work should isolate which prongs of the multipronged CHAMPS KNOW training were most effective in improving judgment on which categories of problems.",
+      "supporting_span": "Although the training lasted less than one hour, it consistently improved accuracy (Brier scores) by 6 to 11% over the control condition.",
+      "confidence": 0.98
+    },
+    {
+      "citation_id": "F15",
+      "identifier": "10.1287/mnsc.2023.4684",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "The Longshot Bias Is a Context Effect",
+      "source_abstract": "In nearly every betting market, gamblers overvalue the riskiest bets. This \u201clongshot bias\u201d is usually explained by a tendency to overweight low-probability events. We offer a novel explanation: contrast effects enhance the attractiveness of longshots because gambles presented in terms of their payoffs are easier to compare along the payoff dimension than along the probability dimension. Our analysis of historical betting odds suggests that contrasts between gamble payoffs can explain the longshot bias. Laboratory experiments confirm those contrast effects and show that the longshot bias disappears when gamblers consider bets in isolation or when winning probabilities are easier to compare.  This paper was accepted by Manel Baucells, behavioral economics and decision analysis.  Funding: The authors thank the University of Chicago\u2019s Center for Decision Research and Richard Thaler for funding.  Supplemental Material: The online supplement and data are available at https://doi.org/10.1287/mnsc.2023.4684 .",
+      "supporting_span": "Laboratory experiments confirm those contrast effects and show that the longshot bias disappears when gamblers consider bets in isolation or when winning probabilities are easier to compare.",
+      "confidence": 0.99
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m2s8r5yendvs2qb3t61jm0pk",
+    "pre_strip_hash": "82db2a3ee601310e16761866b74c0f495fbd0e02b0afa995f5d59e25b78fa412",
+    "post_strip_hash": "82db2a3ee601310e16761866b74c0f495fbd0e02b0afa995f5d59e25b78fa412",
+    "timestamp": "2026-09-18 03:25:20.718413+00:00",
+    "verifier_models": [
+      "gpt-oss:120b-cloud"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:0:F3": "5a02f506200bd273905b64bed646b175e91999e47f738207417a39dc850103c4",
+      "citation_groundedness:1:F7": "f4d9b6bf8b2d93aea285b8eae799b8d83e61bed7359f1983d353877105f1a1b8",
+      "citation_groundedness:2:F8": "9dba688eebb4d96e2dbd0723cf7316227030b70a79fc2f91a9322bdbb7acc8ff",
+      "citation_groundedness:3:F12": "d087b06539055f2fddb2a1c86af1d7c17d1415192d60467dc79282111cc62f23",
+      "citation_groundedness:4:F15": "abf20f3ef06c749c05e9f1a79ad658868890f6b5278b51b110cafaf7a64792ad"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "F3",
+        "identifier": "10.1287/mnsc.38.11.1562",
+        "query": "https://api.crossref.org/works/10.1287/mnsc.38.11.1562?mailto=verify%40prism-verify.dev",
+        "source_sha256": "ac1b929d38ac895cbe5ea920638438009bf7defb9a5d870839c5a08df69154fa",
+        "existence": "resolved"
+      },
+      {
+        "id": "F7",
+        "identifier": "10.1111/j.1360-0443.2010.03050.x",
+        "query": "https://api.crossref.org/works/10.1111/j.1360-0443.2010.03050.x?mailto=verify%40prism-verify.dev",
+        "source_sha256": "788b2054f906ce46f7762290bfeed1542de5e38338e901169e3b6fdfbe1fbe3c",
+        "existence": "resolved"
+      },
+      {
+        "id": "F8",
+        "identifier": "10.4309/jgi.2009.23.5",
+        "query": "https://api.crossref.org/works/10.4309/jgi.2009.23.5?mailto=verify%40prism-verify.dev",
+        "source_sha256": "b84521dd7140b41d4e159a023ffcc2c13936b4943f5fab1cca5e15934782b567",
+        "existence": "resolved"
+      },
+      {
+        "id": "F12",
+        "identifier": "10.1017/S1930297500004599",
+        "query": "https://api.crossref.org/works/10.1017/S1930297500004599?mailto=verify%40prism-verify.dev",
+        "source_sha256": "cd8761cefc2df33d2acc3da15ed19730feb73455f4b099edb640dd888869c02e",
+        "existence": "resolved"
+      },
+      {
+        "id": "F15",
+        "identifier": "10.1287/mnsc.2023.4684",
+        "query": "https://api.crossref.org/works/10.1287/mnsc.2023.4684?mailto=verify%40prism-verify.dev",
+        "source_sha256": "192e5c596c994db28141811c4df7676051d520f36e28a0249f7e7ad1a4131a23",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-91914c8d4e99814a",
+    "schema_version": 5,
+    "signature": "a7347506f674b4118aa8f1f8bc7a0ba146cf598381ae56fbce00d1b06de3766ec89ca6486972fb3303fba3606c6333664254fe5ede4d46c9dec3a09ecc6b970d",
+    "replayable": true
+  }
+}

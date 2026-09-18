@@ -1,0 +1,65 @@
+{
+  "verdict": "accept",
+  "confidence": 0.98,
+  "retryable": false,
+  "revision_hint": null,
+  "lens_results": [
+    {
+      "lens": "citation_groundedness:0:F8",
+      "model_family": "local",
+      "model_id": "gpt-oss:120b-cloud",
+      "outcome": "pass",
+      "findings": [],
+      "confidence": 0.98,
+      "sees_reasoning": false,
+      "latency_ms": null,
+      "errored": false,
+      "prompt_hash": "71648bcc55e75f6de4ce39a53429d3c80582f555c00f482c085c4d04c9ce179c"
+    }
+  ],
+  "pairwise_rho": {},
+  "citation_results": [
+    {
+      "citation_id": "F8",
+      "identifier": "10.4309/jgi.2009.23.5",
+      "existence": "resolved",
+      "finding_match": "supported",
+      "verdict": "accept",
+      "action": "OK",
+      "detail": "source supports the claim",
+      "source_title": "PAR Sheets, probabilities, and slot machine play: Implications for problem and non-problem gambling",
+      "source_abstract": "Through the Freedom of Information and Protection of Privacy Act, we obtained design documents, called PAR Sheets, for slot machine games that are in use in Ontario, Canada. From our analysis of these PAR Sheets and observations from playing and watching others play these games, we report on the design of the structural characteristics of Ontario slots and their implications for problem gambling. We discuss characteristics such as speed of play, stop buttons, bonus modes, hand-pays, nudges, near misses, how some wins are in fact losses, and how two identical looking slot machines can have very different payback percentages. We then discuss how these characteristics can lead to multi-level reinforcement schedules (different reinforcement schedules for frequent and infrequent gamblers playing the same game) and how they may provide an illusion of control and contribute in other ways to irrational thinking, all of which are known risk factors for problem gambling.",
+      "supporting_span": "We discuss characteristics such as speed of play, stop buttons, bonus modes, hand-pays, nudges, near misses, how some wins are in fact losses, and how two identical looking slot machines can have very different payback percentages. ... and how they may provide an illusion of control and contribute in other ways to irrational thinking, all of which are known risk factors for problem gambling.",
+      "confidence": 0.98
+    }
+  ],
+  "receipt": {
+    "id": "prism-01m2s8s543p2th9499456am973",
+    "pre_strip_hash": "9ed85106723af8ca6c3a1d80d04b01e786fc5e14ebfd3ff0d1855062544e2622",
+    "post_strip_hash": "9ed85106723af8ca6c3a1d80d04b01e786fc5e14ebfd3ff0d1855062544e2622",
+    "timestamp": "2026-09-18 03:25:52.643640+00:00",
+    "verifier_models": [
+      "gpt-oss:120b-cloud"
+    ],
+    "pairwise_rho": {},
+    "reasoning_visibility_mode": "stripped",
+    "lens_prompt_hashes": {
+      "citation_groundedness:0:F8": "71648bcc55e75f6de4ce39a53429d3c80582f555c00f482c085c4d04c9ce179c"
+    },
+    "artifact_type": "citations",
+    "retrieval_pins": [
+      {
+        "id": "F8",
+        "identifier": "10.4309/jgi.2009.23.5",
+        "query": "https://api.crossref.org/works/10.4309/jgi.2009.23.5?mailto=verify%40prism-verify.dev",
+        "source_sha256": "b84521dd7140b41d4e159a023ffcc2c13936b4943f5fab1cca5e15934782b567",
+        "existence": "resolved"
+      }
+    ],
+    "alg": "Ed25519",
+    "kid": "ed25519-91914c8d4e99814a",
+    "schema_version": 5,
+    "signature": "f88c5a97c3156ae834676412486d5a24342dfec2353ea5d5253c43dc10fd92ffb4d2562fd507c2861ffed21a55143fcb32a05c63a75d2a4e38010dce1bf4110f",
+    "replayable": true
+  }
+}

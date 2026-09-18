@@ -1,0 +1,42 @@
+[
+  {
+    "id": "F3",
+    "claim": "Maximising expected log wealth (the Kelly criterion) maximises the asymptotic growth rate of fortune, while fractional Kelly strategies trade that growth against security measures such as ruin probability on a finite horizon.",
+    "title": "Growth Versus Security in Dynamic Investment Analysis",
+    "authors": "MacLean, Ziemba, Blazenko",
+    "year": 1992,
+    "identifier": "10.1287/mnsc.38.11.1562"
+  },
+  {
+    "id": "F7",
+    "claim": "On multi-line video slots, losses disguised as wins (credit gains smaller than the spin wager) produced skin-conductance amplitudes similar to genuine wins and larger than regular losses in 40 novice players.",
+    "title": "Losses disguised as wins in modern multi-line video slot machines",
+    "authors": "Dixon, Harrigan, Sandhu, Collins, Fugelsang",
+    "year": 2010,
+    "identifier": "10.1111/j.1360-0443.2010.03050.x"
+  },
+  {
+    "id": "F8",
+    "claim": "Ontario slot PAR sheets and casino observation show structural characteristics including speed of play, stop buttons, near misses, and wins that are in fact losses, which can contribute to known problem-gambling risk factors.",
+    "title": "PAR Sheets, probabilities, and slot machine play: Implications for problem and non-problem gambling",
+    "authors": "Harrigan, Dixon",
+    "year": 2009,
+    "identifier": "10.4309/jgi.2009.23.5"
+  },
+  {
+    "id": "F12",
+    "claim": "About one hour of probabilistic-reasoning training improved forecasters' Brier scores by 6 to 11 percent over controls, replicated across four tournament years.",
+    "title": "Developing expert political judgment: The impact of training and practice on judgmental accuracy in geopolitical forecasting tournaments",
+    "authors": "Chang, Chen, Mellers, Tetlock",
+    "year": 2016,
+    "identifier": "10.1017/S1930297500004599"
+  },
+  {
+    "id": "F15",
+    "claim": "The longshot bias disappears when gamblers consider bets in isolation or when winning probabilities are easier to compare than payoffs.",
+    "title": "The Longshot Bias Is a Context Effect",
+    "authors": "Meyer, Hundtofte",
+    "year": 2023,
+    "identifier": "10.1287/mnsc.2023.4684"
+  }
+]
