@@ -1,0 +1,130 @@
+[
+  {
+    "id": "F1",
+    "claim": "A scoring rule is strictly proper if and only if reporting one's true probability distribution uniquely maximises expected score, making honest reporting the dominant strategy.",
+    "title": "Strictly Proper Scoring Rules, Prediction, and Estimation",
+    "authors": "Gneiting, Raftery",
+    "year": 2007,
+    "identifier": "10.1198/016214506000001437"
+  },
+  {
+    "id": "F2",
+    "claim": "The Kelly gambler maximises the exponential growth rate G of capital over a non-terminating sequence of reinvested bets; betting the entire bankroll maximises expected capital after N trials but leaves the gambler broke with probability one if play continues indefinitely.",
+    "title": "A New Interpretation of Information Rate",
+    "authors": "Kelly",
+    "year": 1956,
+    "identifier": "10.1002/j.1538-7305.1956.tb03809.x"
+  },
+  {
+    "id": "F3",
+    "claim": "Maximising expected log wealth (the Kelly criterion) maximises the asymptotic growth rate of fortune, while fractional Kelly strategies trade that growth against security measures such as ruin probability on a finite horizon.",
+    "title": "Growth Versus Security in Dynamic Investment Analysis",
+    "authors": "MacLean, Ziemba, Blazenko",
+    "year": 1992,
+    "identifier": "10.1287/mnsc.38.11.1562"
+  },
+  {
+    "id": "F4",
+    "claim": "Among self-financed group wagering mechanisms that require no outside subsidy, weighted-score wagering is uniquely budget-balanced, anonymous, truthful, normal and sybilproof.",
+    "title": "Self-Financed Wagering Mechanisms for Forecasting",
+    "authors": "Lambert, Langford, Wortman, Chen, Reeves, Shoham, Pennock",
+    "year": 2008,
+    "identifier": "10.1145/1386790.1386820"
+  },
+  {
+    "id": "F5",
+    "claim": "Lambert et al.'s weighted-score wagering mechanisms admit arbitrage: participants can extract a guaranteed positive payoff by betting on any prediction within a certain range when they agree to disagree.",
+    "title": "Removing Arbitrage from Wagering Mechanisms",
+    "authors": "Chen, Devanur, Pennock, Vaughan",
+    "year": 2014,
+    "identifier": "10.1145/2600057.2602876"
+  },
+  {
+    "id": "F6",
+    "claim": "Compared to full-misses, near-miss gambling outcomes were experienced as less pleasant but increased desire to play, and they recruited striatal and insula circuitry that also responded to monetary wins.",
+    "title": "Gambling Near-Misses Enhance Motivation to Gamble and Recruit Win-Related Brain Circuitry",
+    "authors": "Clark, Lawrence, Astley-Jones, Gray",
+    "year": 2009,
+    "identifier": "10.1016/j.neuron.2008.12.031"
+  },
+  {
+    "id": "F7",
+    "claim": "On multi-line video slots, losses disguised as wins (credit gains smaller than the spin wager) produced skin-conductance amplitudes similar to genuine wins and larger than regular losses in 40 novice players.",
+    "title": "Losses disguised as wins in modern multi-line video slot machines",
+    "authors": "Dixon, Harrigan, Sandhu, Collins, Fugelsang",
+    "year": 2010,
+    "identifier": "10.1111/j.1360-0443.2010.03050.x"
+  },
+  {
+    "id": "F8",
+    "claim": "Ontario slot PAR sheets and casino observation show structural characteristics including speed of play, stop buttons, near misses, and wins that are in fact losses, which can contribute to known problem-gambling risk factors.",
+    "title": "PAR Sheets, probabilities, and slot machine play: Implications for problem and non-problem gambling",
+    "authors": "Harrigan, Dixon",
+    "year": 2009,
+    "identifier": "10.4309/jgi.2009.23.5"
+  },
+  {
+    "id": "F9",
+    "claim": "Opponent modeling is essential to high performance in poker; the program Poki constructs statistical models of each opponent and dynamically adapts to observed patterns and tendencies.",
+    "title": "The challenge of poker",
+    "authors": "Billings, Davidson, Schaeffer, Szafron",
+    "year": 2002,
+    "identifier": "10.1016/S0004-3702(01)00130-8"
+  },
+  {
+    "id": "F10",
+    "claim": "In a repeated-game experiment, participants won against artificial mentalizing agents when they believed they were playing people, and lost when the same task was framed as casino gambling; choice sequences were best explained by theory-of-mind learning models only in the social framing.",
+    "title": "The Social Bayesian Brain: Does Mentalizing Make a Difference When We Learn?",
+    "authors": "Devaine, Hollard, Daunizeau",
+    "year": 2014,
+    "identifier": "10.1371/journal.pcbi.1003992"
+  },
+  {
+    "id": "F11",
+    "claim": "Intuitive predictions follow representativeness and are insensitive to the prior probability of the outcome, in violation of the logic of statistical prediction.",
+    "title": "On the psychology of prediction",
+    "authors": "Kahneman, Tversky",
+    "year": 1973,
+    "identifier": "10.1037/h0034747"
+  },
+  {
+    "id": "F12",
+    "claim": "About one hour of probabilistic-reasoning training improved forecasters' Brier scores by 6 to 11 percent over controls, replicated across four tournament years.",
+    "title": "Developing expert political judgment: The impact of training and practice on judgmental accuracy in geopolitical forecasting tournaments",
+    "authors": "Chang, Chen, Mellers, Tetlock",
+    "year": 2016,
+    "identifier": "10.1017/S1930297500004599"
+  },
+  {
+    "id": "F13",
+    "claim": "When Bayesian problems were presented in frequency formats rather than probability formats, statistically naive participants derived up to 50 percent of inferences by Bayesian algorithms.",
+    "title": "How to Improve Bayesian Reasoning Without Instruction: Frequency Formats",
+    "authors": "Gigerenzer, Hoffrage",
+    "year": 1995,
+    "identifier": "10.1037/0033-295X.102.4.684"
+  },
+  {
+    "id": "F14",
+    "claim": "Betting odds provide biased estimates of a horse's win probability: longshots are overbet and favorites are underbet, and tests on compound bets favor probability misperception over risk-love as the explanation.",
+    "title": "Explaining the Favorite-Longshot Bias: Is it Risk-Love or Misperceptions?",
+    "authors": "Snowberg, Wolfers",
+    "year": 2010,
+    "identifier": "10.3386/w15923"
+  },
+  {
+    "id": "F15",
+    "claim": "The longshot bias disappears when gamblers consider bets in isolation or when winning probabilities are easier to compare than payoffs.",
+    "title": "The Longshot Bias Is a Context Effect",
+    "authors": "Meyer, Hundtofte",
+    "year": 2023,
+    "identifier": "10.1287/mnsc.2023.4684"
+  },
+  {
+    "id": "F16",
+    "claim": "In a simplified poker task with no outcome feedback, players took longer, folded more, and made more mistakes against trustworthy-looking opponents, showing that rapid impressions of opponent type change wagering even without a history of actions.",
+    "title": "Human Wagering Behavior Depends on Opponents' Faces",
+    "authors": "Schlicht, Shimojo, Camerer, Battaglia, Nakayama",
+    "year": 2010,
+    "identifier": "10.1371/journal.pone.0011663"
+  }
+]
