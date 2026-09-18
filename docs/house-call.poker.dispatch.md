@@ -1,5 +1,7 @@
 # House Call — poker dispatch: the unpark design (provisional)
 
+> **PARKED by the Director, 2026-09-18.** The paper track stopped after slice 1 (`cabinet/house-call-s1` at `a924a16`, reviewed clean, not merged). His direction for when it resumes: **it has to feel like mcp-poker, interactive and fun, in the browser**, and **you play against different models, picked with the same model-picker format as Ghost on the Menu's seats**. No paper play, no printing, no ticking. The next slice is a browser prototype Grok builds on the existing `packages/house-call` and serves on a port; chips pay like poker, the calibration readout stays off the felt. G46 (house pays) is his to reopen, since "play against models" seats other stacks at the table. Everything below is the record of the paper track, kept for the read and the receipts, not as a plan.
+
 **Director (2026-09-17):** House Call comes back as a poker-shaped cabinet if a paper hand is fun. The Coordinator (Claude, this repo's advisor session) writes Build Briefs; **Cursor Grok executes them**. The Director returns updates between slices. Tokens on the Claude side are thin, so briefs are short and Grok does the retrieval.
 
 **What this is:** a design unpark on `docs/` and paper, beside Trace (`docs/trace.dispatch.md`, the named next cabinet). Not a slice of 0.12, not a package, not a third npm name. Version stays `0.x`.
