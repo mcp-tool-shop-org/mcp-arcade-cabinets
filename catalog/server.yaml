@@ -28,7 +28,7 @@ about:
   icon: https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/mcp-arcade-cabinets/icon.png
 source:
   project: https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets
-  commit: f54f93614b08e162a2c597b6c9c359c1e93fd574
+  commit: 7dd375af87d0ba78903047564addf522ff6118c9
 run:
   # The Catalog cabinet is sealed: the voice worker is a host GPU stack no Catalog
   # user runs, and without one the cabinet says the voice is silent and plays on.
