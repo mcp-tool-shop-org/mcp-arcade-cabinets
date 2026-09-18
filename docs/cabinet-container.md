@@ -25,6 +25,8 @@ Three things an operator reaches that the image could not answer before. Both st
 
 The 0.12.0 image (the release that carries the polish wave's help, version, stop signal and voice default) is manifest list `sha256:1d882879d6ea8c4ef294fe0195ed7c5dd7ca1adbe52c71e21d43c0d799272518`, `linux/amd64` and `linux/arm64`, 240 MB on amd64, pulled back from the registry and smoked: both cabinets answer their version and list their tools with the network off under one CPU and two gigabytes, and `docker stop` ends the container in under half a second.
 
+The Catalog, as of 0.12.0: the registry PR ([docker/mcp-registry#5061](https://github.com/docker/mcp-registry/pull/5061)) has had no review from Docker since it was opened on 2026-09-11, so nothing is on the Docker MCP Catalog yet; its branch carried an older pin and an older `tools.json` than this repo's `catalog/`, and on 2026-09-17 it was brought to the 0.12.0 release commit with this repo's listing (silent, one parameter for an operator's tape directory, every argument described). The listing goes live when Docker reviews and merges; that is theirs. The typing cabinet's entry is a separate PR on the Director's word.
+
 ## What was measured, in numbers
 
 | Check                                                  | Result                                                                                                                                                                                                                                                    |
