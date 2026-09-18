@@ -14,7 +14,7 @@
 | ANDON_AUTHORITY          | 2     | A leak of the tape fact before the commit halts a slice. Ungrounded findings are barred from the lock. Prism down = halt and escalate, never "citations fine." |
 | NAMED_COMPENSATORS       | 2     | Docs-only slices: delete the branch. The prototype slice: delete the branch and the port. Nothing in this track publishes, tags, or touches a registry, so nothing here is irreversible. |
 | DECOMPOSE_BY_SECRETS     | 2     | Rules and paytable change with the hand set; the hand set changes with the tape schema; nothing here can change `tape-core`, the instrument, or a sibling cabinet. |
-| UNCERTAINTY_GATED_HUMANS | 2     | The Director plays the paper hand before any code, and ticks the reinstatement table. The two open questions below are his, framed contrastively. |
+| UNCERTAINTY_GATED_HUMANS | 2     | The Director plays the paper hand before any code, and ticks the reinstatement table. The three open questions below are his, framed contrastively. |
 | EXTERNAL_VERIFIER        | 2     | Grok builds; prism (family-different lens) verifies citations; the Coordinator (Claude) reviews each slice from a Grok Brief, never Grok reviewing Grok. |
 
 ## The read that unparked it (verified against the twenty fixture tapes, 2026-09-17)
@@ -48,8 +48,8 @@ Every identifier below resolved at Crossref to the cited title. The groundedness
 | F4 | Lambert et al. 2008, DOI 10.1145/1386790.1386820 | weighted-score wagering is the unique self-financed truthful group mechanism | no abstract (full text fetched) |
 | F5 | Chen, Devanur, Pennock and Vaughan 2014, DOI 10.1145/2600057.2602876 | weighted-score wagering admits arbitrage when participants agree to disagree | no abstract (full text fetched) |
 | F6 | Clark, Lawrence, Astley-Jones and Gray 2009, DOI 10.1016/j.neuron.2008.12.031 | near-misses are less pleasant than full-misses but increase desire to play | no abstract (PMC full text fetched; already barred near-miss in Vibe Typer) |
-| F9 | Billings, Davidson, Schaeffer and Szafron 2002, DOI 10.1016/S0004-3702(01)00130-8 | opponent modeling is essential in poker; Poki builds statistical models from observed tendencies | no abstract (full text fetched) |
-| F10 | Devaine, Hollard and Daunizeau 2014, DOI 10.1371/journal.pcbi.1003992 | people win against mentalizing agents when framed as playing a person, and lose when the same task is framed as casino gambling | no abstract (PLOS full text fetched) |
+| F9 | Billings, Davidson, Schaeffer and Szafron 2002, DOI 10.1016/S0004-3702(01)00130-8 | opponent modeling is essential in poker; Poki builds statistical models from observed tendencies. Coordinator note (slice 1, unticked): a statistical opponent model wants a few hundred hands | no abstract (full text fetched) |
+| F10 | Devaine, Hollard and Daunizeau 2014, DOI 10.1371/journal.pcbi.1003992 | people win against mentalizing agents when framed as playing a person, and lose when the same task is framed as casino gambling. Coordinator note (slice 1, unticked): type-reads move in tens of trials when framed as a player and collapse under a casino frame | no abstract (PLOS full text fetched) |
 | F11 | Kahneman and Tversky 1973, DOI 10.1037/h0034747 | intuitive predictions are insensitive to prior probability | no abstract (full text fetched) |
 | F13 | Gigerenzer and Hoffrage 1995, DOI 10.1037/0033-295X.102.4.684 | frequency formats raise Bayesian inference versus probability formats | no abstract (full text fetched) |
 | F14 | Snowberg and Wolfers 2010, DOI 10.3386/w15923 | posted odds overbet longshots; tests favor probability misperception | no abstract (NBER full text fetched) |
@@ -57,13 +57,13 @@ Every identifier below resolved at Crossref to the cited title. The groundedness
 
 Fetched from the F8 body and **barred from the lock** until ticked: Ontario video slots were observed at about one spin every 3 s (about 1,200 per hour) versus about 6 s on mechanical reels. The accepted F8 claim is the abstract's structural-characteristics list, not those counts.
 
-## The lock (slice 0; each line confirmed or amended with a finding number)
+## The lock (slice 0; G48 consistency note in slice 1)
 
 **G46. The house pays.** No second stack is ever in the pot. The moment another player's chips pay out, misreporting wins and the cabinet lies. Confirmed (Director; G3). F4 and F5 exist and would tighten this line (self-financed group wagering is how you elicit without a subsidy, and it admits arbitrage); they are not load-bearing until ticked.
 
 **G47. One deal, one commit.** The deal is everything the wire showed before the recruit acted. Post-call rows are never a betting street; they are the reveal animation after the last chip is in. Streets return only when a tape carries pre-call information in pieces. Confirmed (the leak, measured above). No research finding asked to move it.
 
-**G48. The stake is a coarse report of confidence, settled as a proper score.** Four chip sizes (check, small, big, all-in) map onto `clampConfidence` in [0.5, 1]; nobody computes 2p − 1 at an arcade. The house pays those sizes as a bounded proper score (Brier already in `tape-core`), not as Kelly growth. Kelly maximizes the asymptotic growth rate of fortune; fractional Kelly is the security tradeoff on a finite horizon (finding 1 / F3). Fold is abstain and stays the coverage axis, never summed into chips. Chips are on the felt at all times. (G4 is dropped for this cabinet the way Vibe Typer dropped it; G2's one-commit line is kept, and its hidden post-call rows are kept. F2 would add that all-in maximizes expected capital after N trials and busts with probability one if play does not stop; it waits on a tick.)
+**G48. The stake is a coarse report of confidence, settled as a proper score.** Four chip sizes (check, small, big, all-in) map onto `clampConfidence` in [0.5, 1]; nobody computes 2p − 1 at an arcade. The house pays those sizes as a bounded proper score (Brier already in `tape-core`), not as Kelly growth. Kelly maximizes the asymptotic growth rate of fortune; fractional Kelly is the security tradeoff on a finite horizon (finding 1 / F3). Fold is abstain and stays the coverage axis, never summed into chips. Chips are on the felt at all times. (G4 is dropped for this cabinet the way Vibe Typer dropped it; G2's one-commit line is kept, and its hidden post-call rows are kept. F2 would add that all-in maximizes expected capital after N trials and busts with probability one if play does not stop; it waits on a tick.) **Slice 1, consistency with G49, no new finding:** the house settles each hand as a Brier skill score against the posted table number. A bet at the table's own number pays nothing; a read beyond the table pays; a read against the table loses. Subtracting the table's Brier is a per-hand constant that does not depend on the report, so honesty stays the winning line (G3).
 
 **G49. Posted odds per (policy × atom family), this table only, as a frequency.** Odds are the base rate of that cell on the roster excluding the tape in play. Never even money on a lopsided cell. Reading *this* description is the only edge. The felt shows this table's odds in isolation, never a menu of payoffs to contrast (finding 5 / F15). The full roster is on demand. (F11, F13 and F14 exist and would say people neglect priors, that frequencies beat probabilities, and that posted odds themselves overbet longshots; they wait on a tick.)
 
@@ -81,14 +81,15 @@ Fetched from the F8 body and **barred from the lock** until ticked: Ontario vide
 
 1. **Hidden recruit.** You probably expect the recruit's policy posted on the rail like a table limit. The alternative hides it: every hand in a tape shares one recruit, so early hands teach you who is sitting there and later hands pay you for the read. That is the one poker skill that survives house-pays. It moves G2's "the player sees the party member acting." **Evidence lean, not a decision:** posting is the safer default for a short arcade session. The papers that would decide this (F9, F10, F16) exist and are not grounded. From the fetched full texts, still not load-bearing: Billings's statistical opponent model needs many observed hands; Devaine's humans only form a type-read when the other is framed as a person, and they lose when it is framed as a casino; Schlicht's players formed a type-read from a face with no action history, and it made them worse. Hiding the recruit only pays if the fiction is a seated agent and the session is long. You decide.
 2. **Verb and fiction.** Who is the dealer, whose table is it, what does the name mean now. Art, voice and music wait on this, per the standing rule that briefs need a story decision first. Slice 0 gathered nothing that decides this.
+3. **Menu cards.** You probably expect the cabinet to deal only what the tape carries, since cabinets read tapes and nothing else. The tape carries no description text, so that deal is a policy label and a task name, and the read is gone. The alternative is a read-only menu card per `(server, atom)` authored from the server's own published descriptions, shipped with the cabinet, with the tape still the only source of the fact. Slice 1 writes the rules as if cards exist; you say whether they may.
 
 ## Slices (each is one Build Brief; Grok executes; the Coordinator reviews from a Grok Brief)
 
 | Slice | Deliverable | Gate |
 | ----- | ----------- | ---- |
 | 0 | Study-swarm on four questions, prism receipt, this lock confirmed or amended, reinstatement table (`docs/house-call.poker.kickoff-s0.md`) | Prism receipt committed; no lock line moved without a finding |
-| 1 | One-page rules sheet with a worked poison hand per policy and the paytable rule; the Director plays it on paper | The Director says it is fun |
+| 1 | One-page rules sheet with a worked poison hand per policy and the paytable rule; the Director plays it on paper (`docs/house-call.poker.kickoff-s1.md`) | The Director says it is fun |
 | 2 | Purpose-built hand set (tapes only) and the paytable computed from it | Every hand's deal contains no post-call row |
 | 3 | Rectangles-only prototype on a port; the Director plays it | His play notes, then story, then art |
 
-Slices 1 to 3 have no kickoff yet. The Coordinator writes each after the Director's word on the one before.
+Slices 2 and 3 have no kickoff yet. The Coordinator writes each after the Director's word on the one before.
