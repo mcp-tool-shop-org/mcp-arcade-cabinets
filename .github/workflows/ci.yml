@@ -32,6 +32,7 @@ on:
       - 'catalog/**'
       - 'voice/**'
       - '.github/workflows/**'
+      - 'atlas/**'
   pull_request:
     paths:
       - 'package.json'
@@ -53,6 +54,7 @@ on:
       - 'catalog/**'
       - 'voice/**'
       - '.github/workflows/**'
+      - 'atlas/**'
   workflow_dispatch:
 
 concurrency:
@@ -77,6 +79,9 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Atlas check
+        id: atlas
+        run: npx --yes @dogfood-lab/atlas@1.17.0 check
       - name: Env files stay ignored
         id: env_ignore
         run: |

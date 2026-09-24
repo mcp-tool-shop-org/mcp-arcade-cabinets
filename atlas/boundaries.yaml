@@ -1,0 +1,62 @@
+summary: ""
+boundaries:
+  - name: .github
+    globs:
+      - .github/**
+    role: config
+  - name: cabinet-server
+    globs:
+      - packages/cabinet-server/**
+    role: code
+  - name: cabinets
+    globs:
+      - apps/cabinets/**
+    role: code
+  - name: catalog
+    globs:
+      - catalog/**
+    role: data
+  - name: docs
+    globs:
+      - docs/**
+    role: docs
+  - name: fixtures
+    globs:
+      - fixtures/**
+    role: data
+  - name: ghost-on-the-menu
+    globs:
+      - packages/ghost-on-the-menu/**
+    role: code
+  - name: launcher
+    globs:
+      - packages/launcher/**
+    role: code
+  - name: launcher-vibe-typer
+    globs:
+      - packages/launcher-vibe-typer/**
+    role: code
+  - name: root
+    globs:
+      - "*"
+    role: config
+  - name: scripts
+    globs:
+      - scripts/**
+    role: code
+  - name: site
+    globs:
+      - site/**
+    role: site
+  - name: tape-core
+    globs:
+      - packages/tape-core/**
+    role: code
+  - name: vibe-typer
+    globs:
+      - packages/vibe-typer/**
+    role: code
+  - name: voice
+    globs:
+      - voice/**
+    role: code
