@@ -52,14 +52,14 @@ One agent each. 500–600 words each. Every finding carries paper title, authors
 
 ## Standards (this slice)
 
-| Standard                 | Score | Evidence |
-| ------------------------ | ----- | -------- |
-| PIN_PER_STEP             | 2     | Signed prism receipt beside the dispatch; amended lock lines cite finding numbers; one branch, one commit. |
+| Standard                 | Score | Evidence                                                                                                                                      |
+| ------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| PIN_PER_STEP             | 2     | Signed prism receipt beside the dispatch; amended lock lines cite finding numbers; one branch, one commit.                                    |
 | ANDON_AUTHORITY          | 2     | Ungrounded findings barred; halt if prism cannot run; halt if any finding would put a second stack in the pot or a post-call row in the deal. |
-| NAMED_COMPENSATORS       | 2     | Docs-only: delete `cabinet/house-call-s0`. Nothing irreversible in this slice. |
-| DECOMPOSE_BY_SECRETS     | 2     | Docs only; no package, no sibling cabinet, no instrument. |
-| UNCERTAINTY_GATED_HUMANS | 2     | Reinstatement table and the two contrastive questions are the Director's checkpoint; slice 1 waits on his word. |
-| EXTERNAL_VERIFIER        | 2     | Prism with a family-different lens; then the Coordinator (Claude) reviews from the Grok Brief. Grok does not review Grok. |
+| NAMED_COMPENSATORS       | 2     | Docs-only: delete `cabinet/house-call-s0`. Nothing irreversible in this slice.                                                                |
+| DECOMPOSE_BY_SECRETS     | 2     | Docs only; no package, no sibling cabinet, no instrument.                                                                                     |
+| UNCERTAINTY_GATED_HUMANS | 2     | Reinstatement table and the two contrastive questions are the Director's checkpoint; slice 1 waits on his word.                               |
+| EXTERNAL_VERIFIER        | 2     | Prism with a family-different lens; then the Coordinator (Claude) reviews from the Grok Brief. Grok does not review Grok.                     |
 
 ## Done when
 
