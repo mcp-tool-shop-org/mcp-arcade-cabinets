@@ -10,19 +10,19 @@
 
 ## Standards compliance
 
-| Standard                 | Score | Evidence |
-| ------------------------ | ----- | -------- |
-| PIN_PER_STEP             | 2     | Each slice is one brief with one branch and one commit; slice 0 ends with a signed prism receipt beside this file; every lock line that moves cites a finding number. |
-| ANDON_AUTHORITY          | 2     | A leak of the tape fact before the commit halts a slice. Ungrounded findings are barred from the lock. Prism down = halt and escalate, never "citations fine." |
+| Standard                 | Score | Evidence                                                                                                                                                                                 |
+| ------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PIN_PER_STEP             | 2     | Each slice is one brief with one branch and one commit; slice 0 ends with a signed prism receipt beside this file; every lock line that moves cites a finding number.                    |
+| ANDON_AUTHORITY          | 2     | A leak of the tape fact before the commit halts a slice. Ungrounded findings are barred from the lock. Prism down = halt and escalate, never "citations fine."                           |
 | NAMED_COMPENSATORS       | 2     | Docs-only slices: delete the branch. The prototype slice: delete the branch and the port. Nothing in this track publishes, tags, or touches a registry, so nothing here is irreversible. |
-| DECOMPOSE_BY_SECRETS     | 2     | Rules and paytable change with the hand set; the hand set changes with the tape schema; nothing here can change `tape-core`, the instrument, or a sibling cabinet. |
-| UNCERTAINTY_GATED_HUMANS | 2     | The Director plays the paper hand before any code, and ticks the reinstatement table. The two open questions below are his, framed contrastively. |
-| EXTERNAL_VERIFIER        | 2     | Grok builds; prism (family-different lens) verifies citations; the Coordinator (Claude) reviews each slice from a Grok Brief, never Grok reviewing Grok. |
+| DECOMPOSE_BY_SECRETS     | 2     | Rules and paytable change with the hand set; the hand set changes with the tape schema; nothing here can change `tape-core`, the instrument, or a sibling cabinet.                       |
+| UNCERTAINTY_GATED_HUMANS | 2     | The Director plays the paper hand before any code, and ticks the reinstatement table. The two open questions below are his, framed contrastively.                                        |
+| EXTERNAL_VERIFIER        | 2     | Grok builds; prism (family-different lens) verifies citations; the Coordinator (Claude) reviews each slice from a Grok Brief, never Grok reviewing Grok.                                 |
 
 ## The read that unparked it (verified against the twenty fixture tapes, 2026-09-17)
 
 - The parked game had a skill (read the poisoned menu) and a proper score, and no stakes, no moment, no numbers during play. Poker supplies chips on the felt, a showdown, and going bust as a funny retry.
-- **The fact is the row shape.** On `poison.follow_through` a naive recruit's hand has nine rows because a second `tools/call` went to the leak tool; that row *is* `followed`. Task-only stops at seven rows; the missing row *is* `held`. Rug's fact is the second `tools/list` response; ghost's fact is the server's reply. Post-call rows dealt as streets deal the showdown face up.
+- **The fact is the row shape.** On `poison.follow_through` a naive recruit's hand has nine rows because a second `tools/call` went to the leak tool; that row _is_ `followed`. Task-only stops at seven rows; the missing row _is_ `held`. Rug's fact is the second `tools/list` response; ghost's fact is the server's reply. Post-call rows dealt as streets deal the showdown face up.
 - **Pre-call information is one batch.** Handshake (noise), one menu response, the named task, who is acting. That is a deal, not streets.
 - **Even money is a trap.** Task-only held 9 of 9 poison hands; naive followed 8 of 9. At even money the winning line is "bet the policy label."
 - **The roster is too flat for poker.** Three atom families; rug and ghost facts are the server's behavior, not the recruit's; only the ollama recruit is mixed (1 followed, 2 held). A paper hand on today's fixtures will read as a quiz with chips.
@@ -43,19 +43,19 @@ Only the five accepted findings may carry an architectural choice. The other ele
 
 Every identifier below resolved at Crossref to the cited title. The groundedness lens could not run because Crossref returned no abstract. Tick any you confirm from the fetched full text; the lock connections marked _advisory_ then become load-bearing.
 
-| # | Source | Claim | Why unchecked |
-| --- | --- | --- | --- |
-| F1 | Gneiting and Raftery 2007, DOI 10.1198/016214506000001437 | strictly proper rules make honest reporting uniquely dominant | no abstract (same as the 2026-09-10 table; full text fetched from the authors' PDF) |
-| F2 | Kelly 1956, DOI 10.1002/j.1538-7305.1956.tb03809.x | G is the exponential growth rate over a non-terminating sequence; all-in maximizes expected capital after N trials and leaves the gambler broke with probability one if play continues | no abstract (full text fetched) |
-| F4 | Lambert et al. 2008, DOI 10.1145/1386790.1386820 | weighted-score wagering is the unique self-financed truthful group mechanism | no abstract (full text fetched) |
-| F5 | Chen, Devanur, Pennock and Vaughan 2014, DOI 10.1145/2600057.2602876 | weighted-score wagering admits arbitrage when participants agree to disagree | no abstract (full text fetched) |
-| F6 | Clark, Lawrence, Astley-Jones and Gray 2009, DOI 10.1016/j.neuron.2008.12.031 | near-misses are less pleasant than full-misses but increase desire to play | no abstract (PMC full text fetched; already barred near-miss in Vibe Typer) |
-| F9 | Billings, Davidson, Schaeffer and Szafron 2002, DOI 10.1016/S0004-3702(01)00130-8 | opponent modeling is essential in poker; Poki builds statistical models from observed tendencies | no abstract (full text fetched) |
-| F10 | Devaine, Hollard and Daunizeau 2014, DOI 10.1371/journal.pcbi.1003992 | people win against mentalizing agents when framed as playing a person, and lose when the same task is framed as casino gambling | no abstract (PLOS full text fetched) |
-| F11 | Kahneman and Tversky 1973, DOI 10.1037/h0034747 | intuitive predictions are insensitive to prior probability | no abstract (full text fetched) |
-| F13 | Gigerenzer and Hoffrage 1995, DOI 10.1037/0033-295X.102.4.684 | frequency formats raise Bayesian inference versus probability formats | no abstract (full text fetched) |
-| F14 | Snowberg and Wolfers 2010, DOI 10.3386/w15923 | posted odds overbet longshots; tests favor probability misperception | no abstract (NBER full text fetched) |
-| F16 | Schlicht, Shimojo, Camerer, Battaglia and Nakayama 2010, DOI 10.1371/journal.pone.0011663 | in simplified poker with no outcome feedback, trustworthy faces made players slower, more error-prone, and more likely to fold | no abstract (PLOS full text fetched) |
+| #   | Source                                                                                    | Claim                                                                                                                                                                                  | Why unchecked                                                                       |
+| --- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| F1  | Gneiting and Raftery 2007, DOI 10.1198/016214506000001437                                 | strictly proper rules make honest reporting uniquely dominant                                                                                                                          | no abstract (same as the 2026-09-10 table; full text fetched from the authors' PDF) |
+| F2  | Kelly 1956, DOI 10.1002/j.1538-7305.1956.tb03809.x                                        | G is the exponential growth rate over a non-terminating sequence; all-in maximizes expected capital after N trials and leaves the gambler broke with probability one if play continues | no abstract (full text fetched)                                                     |
+| F4  | Lambert et al. 2008, DOI 10.1145/1386790.1386820                                          | weighted-score wagering is the unique self-financed truthful group mechanism                                                                                                           | no abstract (full text fetched)                                                     |
+| F5  | Chen, Devanur, Pennock and Vaughan 2014, DOI 10.1145/2600057.2602876                      | weighted-score wagering admits arbitrage when participants agree to disagree                                                                                                           | no abstract (full text fetched)                                                     |
+| F6  | Clark, Lawrence, Astley-Jones and Gray 2009, DOI 10.1016/j.neuron.2008.12.031             | near-misses are less pleasant than full-misses but increase desire to play                                                                                                             | no abstract (PMC full text fetched; already barred near-miss in Vibe Typer)         |
+| F9  | Billings, Davidson, Schaeffer and Szafron 2002, DOI 10.1016/S0004-3702(01)00130-8         | opponent modeling is essential in poker; Poki builds statistical models from observed tendencies                                                                                       | no abstract (full text fetched)                                                     |
+| F10 | Devaine, Hollard and Daunizeau 2014, DOI 10.1371/journal.pcbi.1003992                     | people win against mentalizing agents when framed as playing a person, and lose when the same task is framed as casino gambling                                                        | no abstract (PLOS full text fetched)                                                |
+| F11 | Kahneman and Tversky 1973, DOI 10.1037/h0034747                                           | intuitive predictions are insensitive to prior probability                                                                                                                             | no abstract (full text fetched)                                                     |
+| F13 | Gigerenzer and Hoffrage 1995, DOI 10.1037/0033-295X.102.4.684                             | frequency formats raise Bayesian inference versus probability formats                                                                                                                  | no abstract (full text fetched)                                                     |
+| F14 | Snowberg and Wolfers 2010, DOI 10.3386/w15923                                             | posted odds overbet longshots; tests favor probability misperception                                                                                                                   | no abstract (NBER full text fetched)                                                |
+| F16 | Schlicht, Shimojo, Camerer, Battaglia and Nakayama 2010, DOI 10.1371/journal.pone.0011663 | in simplified poker with no outcome feedback, trustworthy faces made players slower, more error-prone, and more likely to fold                                                         | no abstract (PLOS full text fetched)                                                |
 
 Fetched from the F8 body and **barred from the lock** until ticked: Ontario video slots were observed at about one spin every 3 s (about 1,200 per hour) versus about 6 s on mechanical reels. The accepted F8 claim is the abstract's structural-characteristics list, not those counts.
 
@@ -67,7 +67,7 @@ Fetched from the F8 body and **barred from the lock** until ticked: Ontario vide
 
 **G48. The stake is a coarse report of confidence, settled as a proper score.** Four chip sizes (check, small, big, all-in) map onto `clampConfidence` in [0.5, 1]; nobody computes 2p − 1 at an arcade. The house pays those sizes as a bounded proper score (Brier already in `tape-core`), not as Kelly growth. Kelly maximizes the asymptotic growth rate of fortune; fractional Kelly is the security tradeoff on a finite horizon (finding 1 / F3). Fold is abstain and stays the coverage axis, never summed into chips. Chips are on the felt at all times. (G4 is dropped for this cabinet the way Vibe Typer dropped it; G2's one-commit line is kept, and its hidden post-call rows are kept. F2 would add that all-in maximizes expected capital after N trials and busts with probability one if play does not stop; it waits on a tick.)
 
-**G49. Posted odds per (policy × atom family), this table only, as a frequency.** Odds are the base rate of that cell on the roster excluding the tape in play. Never even money on a lopsided cell. Reading *this* description is the only edge. The felt shows this table's odds in isolation, never a menu of payoffs to contrast (finding 5 / F15). The full roster is on demand. (F11, F13 and F14 exist and would say people neglect priors, that frequencies beat probabilities, and that posted odds themselves overbet longshots; they wait on a tick.)
+**G49. Posted odds per (policy × atom family), this table only, as a frequency.** Odds are the base rate of that cell on the roster excluding the tape in play. Never even money on a lopsided cell. Reading _this_ description is the only edge. The felt shows this table's odds in isolation, never a menu of payoffs to contrast (finding 5 / F15). The full roster is on demand. (F11, F13 and F14 exist and would say people neglect priors, that frequencies beat probabilities, and that posted odds themselves overbet longshots; they wait on a tick.)
 
 **G50. The reveal is the tape fact.** G1 restated for the felt: `formatFactForReveal` reads the fact after the commit; the house never computes a verdict; no receipt is ever loaded. Confirmed (G1). No new finding asked to move it.
 
@@ -86,11 +86,11 @@ Fetched from the F8 body and **barred from the lock** until ticked: Ontario vide
 
 ## Slices (each is one Build Brief; Grok executes; the Coordinator reviews from a Grok Brief)
 
-| Slice | Deliverable | Gate |
-| ----- | ----------- | ---- |
-| 0 | Study-swarm on four questions, prism receipt, this lock confirmed or amended, reinstatement table (`docs/house-call.poker.kickoff-s0.md`) | Prism receipt committed; no lock line moved without a finding |
-| 1 | One-page rules sheet with a worked poison hand per policy and the paytable rule; the Director plays it on paper | The Director says it is fun |
-| 2 | Purpose-built hand set (tapes only) and the paytable computed from it | Every hand's deal contains no post-call row |
-| 3 | Rectangles-only prototype on a port; the Director plays it | His play notes, then story, then art |
+| Slice | Deliverable                                                                                                                               | Gate                                                          |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 0     | Study-swarm on four questions, prism receipt, this lock confirmed or amended, reinstatement table (`docs/house-call.poker.kickoff-s0.md`) | Prism receipt committed; no lock line moved without a finding |
+| 1     | One-page rules sheet with a worked poison hand per policy and the paytable rule; the Director plays it on paper                           | The Director says it is fun                                   |
+| 2     | Purpose-built hand set (tapes only) and the paytable computed from it                                                                     | Every hand's deal contains no post-call row                   |
+| 3     | Rectangles-only prototype on a port; the Director plays it                                                                                | His play notes, then story, then art                          |
 
 Slices 1 to 3 have no kickoff yet. The Coordinator writes each after the Director's word on the one before.
