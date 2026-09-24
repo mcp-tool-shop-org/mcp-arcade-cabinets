@@ -12,3 +12,6 @@ voice/
 # Art and audio evidence folders are git-ignored and carry the builders' JSON reports
 docs/art/originals-*/
 film/
+
+# Written by `atlas map`; regenerate them, never reformat them by hand
+atlas/
