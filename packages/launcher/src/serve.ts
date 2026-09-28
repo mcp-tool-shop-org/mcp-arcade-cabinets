@@ -23,6 +23,7 @@ import {
   PREFIXES,
   restAfter,
   SAY_PATH,
+  STATUS_PATH,
   upstreamFor,
 } from './allow';
 import { resolveUnder, typeFor } from './files';
@@ -134,6 +135,8 @@ export interface ServeOpts {
   voiceToken: string | null;
   /** Sits the Claude tier of the say seat. Never reaches the browser. */
   anthropicKey: string | null;
+  /** The package version, for the status route. */
+  version?: string;
   /**
    * Where the cabinet says, in words, why a call to the daemon or the worker
    * came back empty. The page is told `no answer` on purpose — it has a
@@ -891,6 +894,59 @@ function endlessRoute(opts: ServeOpts) {
   };
 }
 
+/** The status route: which seats are lit and why a seat is dark. */
+function statusRoute(opts: ServeOpts) {
+  return async (_req: IncomingMessage, res: ServerResponse): Promise<void> => {
+    const [voice, ollama] = await Promise.all([
+      opts.voiceUrl ? probeUp(opts.voiceUrl, opts.voiceToken) : Promise.resolve({ ok: false, error: 'not configured' }),
+      probeOllama(opts.ollamaUrl),
+    ]);
+    sendJson(res, 200, {
+      version: opts.version ?? '0.0.0-unknown',
+      ollama: { url: opts.ollamaUrl, ...ollama },
+      voice: opts.voiceUrl ? { url: opts.voiceUrl, ...voice } : { url: null, ok: false, error: 'not configured' },
+      claude: { configured: !!opts.anthropicKey },
+    });
+  };
+}
+
+const STATUS_PROBE_MS = 2000;
+
+async function probeUp(url: string, token: string | null): Promise<{ ok: boolean; error?: string }> {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), STATUS_PROBE_MS);
+  try {
+    const headers: Record<string, string> = { accept: 'application/json' };
+    if (token) headers.authorization = `Bearer ${token}`;
+    await fetch(`${url.replace(/\/$/, '')}/health`, { headers, signal: ctl.signal });
+    return { ok: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('abort')) return { ok: false, error: 'timed out' };
+    return { ok: false, error: msg };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function probeOllama(url: string): Promise<{ ok: boolean; error?: string }> {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), STATUS_PROBE_MS);
+  try {
+    await fetch(`${url.replace(/\/$/, '')}/api/tags`, {
+      headers: { accept: 'application/json' },
+      signal: ctl.signal,
+    });
+    return { ok: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('abort')) return { ok: false, error: 'timed out' };
+    return { ok: false, error: msg };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * The names this cabinet answers to. Binding `127.0.0.1` stops another
  * machine from reaching the server, and it does nothing at all about DNS
@@ -952,6 +1008,7 @@ export function ownOrigin(raw: string | string[] | undefined, port: number): boo
 export function createCabinetServer(opts: ServeOpts): Server {
   const handleSay = sayRoute(opts);
   const handleEndless = endlessRoute(opts);
+  const handleStatus = statusRoute(opts);
   const watch = seatWatch(opts.onTrouble);
   // The rebinding refusals are said in the terminal once and then not again:
   // a page that is probing will trip them as fast as it can, and the
@@ -1011,6 +1068,10 @@ export function createCabinetServer(opts: ServeOpts): Server {
       }
       if (p === ENDLESS_PATH) {
         await handleEndless(req, res);
+        return;
+      }
+      if (p === STATUS_PATH) {
+        await handleStatus(req, res);
         return;
       }
       const up = upstreamFor(req.url);

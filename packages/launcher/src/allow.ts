@@ -24,6 +24,9 @@ export const PREFIXES: Record<Upstream, string> = {
 /** The say seat's node-side route. Not a proxy: it runs in this process. */
 export const SAY_PATH = '/cabinet/say';
 
+/** The health/status route. Answers which seats are lit and why. */
+export const STATUS_PATH = '/status';
+
 /**
  * The endless seat's node-side route (G28 as slice 3 amends it). Not a
  * proxy either: the typing cabinet posts the level it is about to play and

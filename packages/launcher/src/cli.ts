@@ -552,27 +552,13 @@ export function serveOpts(env: NodeJS.ProcessEnv = process.env): ServeOpts {
   return {
     playDir: PLAY_DIR,
     sayModule: existsSync(SAY_MODULE) ? SAY_MODULE : null,
-    // Only the seats this cabinet uses are lit. The endless seat is the
-    // typing cabinet's — it writes the request a player types — and the
-    // shooter has nothing that calls it. Left absent, `endlessModule` falls
-    // back to the say module and this package would publish a second
-    // model-prompting route, handed the player's ANTHROPIC_API_KEY, that
-    // nothing on its page will ever ask for. The typing cabinet passes
-    // `sayModule: DARK` for the mirror-image reason. `DARK` rather than
-    // null: null means a bundle this package expected on disk and did not
-    // find, which is a broken download, and the two used to answer one 503.
     endlessModule: DARK,
     ollamaUrl: env.OLLAMA_URL ?? DEFAULT_OLLAMA,
     voiceUrl: env.VOICE_URL ?? DEFAULT_VOICE,
     voiceToken: env.VOICE_TOKEN ?? null,
-    // The key leaves this launcher only when the run asked for it. It used to
-    // leave whenever it was in the environment, and the tier picker takes a
-    // key ahead of everything else, so a key exported for a coding agent won
-    // over the local model the player had just picked in the menu and every
-    // boss beat went to the paid tier. The typing cabinet already refuses to
-    // pass one at all; this is the same refusal with a way to say yes.
     anthropicKey: claudeAsked(env) ? (env.ANTHROPIC_API_KEY ?? null) : null,
     onTrouble: sayTrouble,
+    version: version(),
   };
 }
 

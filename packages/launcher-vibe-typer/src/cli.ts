@@ -534,6 +534,7 @@ async function runPlay(args: Args): Promise<void> {
     // player's key on a game that never asked for one.
     anthropicKey: null,
     onTrouble: sayTrouble,
+    version: version(),
   });
   let port: number;
   try {
