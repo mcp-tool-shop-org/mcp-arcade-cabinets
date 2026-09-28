@@ -300,6 +300,8 @@ export interface RoundState {
   boss: Boss | null;
   enemyShots: Shot[];
   caption: Caption | null;
+  /** Captions waiting their turn when the current one expires. */
+  captionQueue: Caption[];
   ended: 'time' | 'lamps' | null;
   /** Seconds of post-hit invulnerability. One burst must not take three lamps. */
   grace: number;

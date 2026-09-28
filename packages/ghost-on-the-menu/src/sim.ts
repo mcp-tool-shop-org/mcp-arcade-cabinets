@@ -23,6 +23,7 @@ import {
   FIELD,
   PARKING_Y,
   type Boss,
+  type Caption,
   type Drop,
   type Enemy,
   type Hazard,
@@ -652,6 +653,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     boss: null,
     enemyShots: [],
     caption: null,
+    captionQueue: [],
     ended: null,
     grace: 0,
     bossKills: 0,
@@ -1185,7 +1187,12 @@ function dropWord(
   if (!text) return;
   // A wave card is never cut short for a drop.
   if (state.caption && state.caption.kind === 'wave') return;
-  state.caption = { text, t: CAPTION_T, kind: 'catch' };
+  const caption: Caption = { text, t: CAPTION_T, kind: 'catch' };
+  if (state.caption && state.caption.kind === 'catch') {
+    state.captionQueue.push(caption);
+  } else {
+    state.caption = caption;
+  }
 }
 
 /**
@@ -1867,7 +1874,9 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   state.columnT = Math.max(0, state.columnT - dt);
   if (state.caption) {
     state.caption.t -= dt;
-    if (state.caption.t <= 0) state.caption = null;
+    if (state.caption.t <= 0) {
+      state.caption = state.captionQueue.shift() ?? null;
+    }
   }
   if (meta) {
     syncWave(state, meta);
@@ -2096,7 +2105,14 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
         state.hitstop = HITSTOP;
         state.shake = 1;
         const text = catchCaption(state, meta, enemy);
-        if (text) state.caption = { text, t: CAPTION_T, kind: 'catch' };
+        if (text) {
+          const caption: Caption = { text, t: CAPTION_T, kind: 'catch' };
+          if (state.caption && state.caption.kind === 'catch') {
+            state.captionQueue.push(caption);
+          } else {
+            state.caption = caption;
+          }
+        }
       } else {
         enemy.mode = 'dying';
         enemy.dieAt = state.t + DIE_POP;
