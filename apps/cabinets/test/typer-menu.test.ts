@@ -188,7 +188,7 @@ describe('the level list, by stack', () => {
 // and then switched cabinets, reloaded or left had lost it — while the
 // setting beside it survived.
 describe('the settings row', () => {
-  it('remembers the type, the keyboard, the sound and the music without pressing Play', async () => {
+  it('remembers the type, the keyboard, the sound, the music, the pace and the check-ins without pressing Play', async () => {
     await paint();
     const pick = (label: string, value: string) => {
       const el = wrap.querySelector(`select[aria-label="${label}"]`) as HTMLSelectElement;
@@ -199,12 +199,16 @@ describe('the settings row', () => {
     pick('keyboard', 'softtouch');
     pick('sound', 'off');
     pick('music', 'off');
+    pick('reading pace', '2');
+    pick('check-ins', 'off');
     expect(vi.mocked(mountVibeTyper)).not.toHaveBeenCalled();
     const kept = readVibePrefs();
     expect(kept.font).toBe('huge');
     expect(kept.theme).toBe('softtouch');
     expect(kept.muted).toBe('on');
     expect(kept.music).toBe('off');
+    expect(kept.paceScale).toBe(2);
+    expect(kept.checkIns).toBe('off');
 
     // And the row opens on them next time.
     await paint();
@@ -212,6 +216,12 @@ describe('the settings row', () => {
       'huge',
     );
     expect((wrap.querySelector('select[aria-label="music"]') as HTMLSelectElement).value).toBe(
+      'off',
+    );
+    expect((wrap.querySelector('select[aria-label="reading pace"]') as HTMLSelectElement).value).toBe(
+      '2',
+    );
+    expect((wrap.querySelector('select[aria-label="check-ins"]') as HTMLSelectElement).value).toBe(
       'off',
     );
   });
