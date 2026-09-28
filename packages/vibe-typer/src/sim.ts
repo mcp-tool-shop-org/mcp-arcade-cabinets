@@ -694,7 +694,8 @@ export function createRun(opts: CreateRunOpts): RunState {
       code.tier === tier &&
       code.endless === opts.endless &&
       code.stack === opts.stack &&
-      code.startBand === cleanStartBand(opts.startBand);
+      code.startBand === cleanStartBand(opts.startBand) &&
+      (code.levelIndex === undefined || code.levelIndex === (opts.levelIndex ?? 0));
     // Two statements of one run that disagree. Playing either of them is a
     // guess, and the seed on the end card was wrong for exactly this reason.
     if (!same) throw new Error('createRun: the run code and the options beside it name two runs');
@@ -1404,6 +1405,7 @@ export function runCodeOf(state: RunState): string {
     endless: ctx.opts.endless,
     ...(ctx.opts.stack ? { stack: ctx.opts.stack } : {}),
     ...(ctx.startBand !== undefined ? { startBand: ctx.startBand } : {}),
+    ...(!ctx.opts.endless ? { levelIndex: ctx.opts.levelIndex ?? 0 } : {}),
     weak: ctx.weakDigest,
     corpus: corpusDigestOf(corpusFingerprint(ctx.corpus)),
   });

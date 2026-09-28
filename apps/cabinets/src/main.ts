@@ -860,7 +860,7 @@ function integrationSeasoning(): Snippet[] {
  */
 function looksLikeRunCode(raw: string): boolean {
   const flat = raw.replace(/[\s-]/g, '');
-  return flat.length === 16 && /^[0-9a-z]+$/i.test(flat);
+  return (flat.length === 16 || flat.length === 17) && /^[0-9a-z]+$/i.test(flat);
 }
 
 /** A typed seed replays; a blank box draws the next one off the last run. */
@@ -1142,13 +1142,16 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
     const name = cleanName(agent.value) || VIBE.cabinet.agentName;
     const endless = code ? code.endless : picked === 'endless';
     const tierPicked = code ? code.tier : (Number(tier.value) as Tier);
+    const levelIndex = !endless
+      ? (code?.levelIndex ?? (picked === 'endless' ? undefined : (picked as number)))
+      : undefined;
     // The run's own fields, and nothing else: the settings row writes itself
     // the moment it is chosen (see the handlers above), so this no longer
     // decides whether a choice is kept.
     writeVibePrefs({
       cabinet: 'vibe',
       tier: tierPicked,
-      ...(endless || picked === 'endless' ? {} : { level: picked as number }),
+      ...(endless || picked === 'endless' ? {} : { level: levelIndex ?? (picked as number) }),
       endless: endless ? 'on' : 'off',
       agent: name,
       seed: raw,
@@ -1156,7 +1159,7 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
     mountVibeTyper(app, {
       tier: tierPicked,
       endless,
-      ...(endless || picked === 'endless' ? {} : { levelIndex: picked as number }),
+      ...(levelIndex !== undefined ? { levelIndex } : {}),
       seed,
       ...(code ? { code: raw } : {}),
       agentName: name,

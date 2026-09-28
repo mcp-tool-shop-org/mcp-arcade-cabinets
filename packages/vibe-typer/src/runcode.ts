@@ -9,7 +9,7 @@
 // different requests and the same seed on a friend's machine is a different
 // run outright. The number carried one of the inputs out of seven.
 //
-// The code carries the rest. Sixteen characters in four groups, and a digit
+// The code carries the rest. Seventeen characters in four groups, and a digit
 // is allowed here because this is the one surface a player reads off the end
 // card and types back into the menu box — it is not the field.
 //
@@ -40,7 +40,7 @@ import type { Band, Stack, Tier } from './types';
  * bits with new offsets is the silent-degradation shape this package refuses
  * everywhere else.
  */
-export const RUN_CODE_VERSION = 1;
+export const RUN_CODE_VERSION = 2;
 
 /**
  * Crockford's base32: no I, no L, no O, no U, so nothing in a code can be
@@ -51,22 +51,21 @@ const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 /** What a player may type in place of the characters the alphabet leaves out. */
 const LOOKALIKE: Record<string, string> = { I: '1', L: '1', O: '0', U: 'V' };
 
-/** Characters in a code, and how many sit in a group. Four groups of four. */
-const CODE_CHARS = 16;
-const GROUP = 4;
+/** Characters in a code. Version 1 was 16 chars; version 2 is 17. */
+const CODE_CHARS = 17;
+const CODE_CHARS_V1 = 16;
+/** Group sizes for the v2 format: 4-4-4-5. */
+const GROUPS = [4, 4, 4, 5];
 
 /**
- * The layout, most significant field first. Sixteen base32 characters are
- * eighty bits and every one of them is spoken for; a field added later takes
- * a new `RUN_CODE_VERSION` and its own layout.
+ * The layout, most significant field first. Version 1 was 80 bits; version 2
+ * is 85 bits (17 base32 chars). A field added later takes a new version.
  */
-const BITS = {
+const BITS_V1 = {
   version: 4,
   endless: 1,
   tier: 2,
-  /** Zero is no pinned stack; otherwise the index in `STACKS`, plus one. */
   stack: 3,
-  /** Zero is the ladder's own first rung; otherwise the rung, 1..7. */
   startBand: 3,
   seed: 32,
   weak: 15,
@@ -74,8 +73,24 @@ const BITS = {
   check: 5,
 } as const;
 
-export const WEAK_DIGEST_BITS = BITS.weak;
-export const CORPUS_DIGEST_BITS = BITS.corpus;
+const BITS_V2 = {
+  version: 4,
+  endless: 1,
+  tier: 2,
+  /** Zero is no pinned stack; otherwise the index in `STACKS`, plus one. */
+  stack: 3,
+  /** Zero is the ladder's own first rung; otherwise the rung, 1..7. */
+  startBand: 3,
+  /** 0-based listed level, 0..31. Only meaningful when endless is false. */
+  levelIndex: 5,
+  seed: 32,
+  weak: 15,
+  corpus: 15,
+  check: 5,
+} as const;
+
+export const WEAK_DIGEST_BITS = BITS_V2.weak;
+export const CORPUS_DIGEST_BITS = BITS_V2.corpus;
 
 /** A weak map with no bias in it at all. The digest a fresh browser mints. */
 export const WEAK_CLEAN = 0;
@@ -96,6 +111,8 @@ export interface RunCode {
   stack?: Stack;
   /** The endless ladder's first rung, or absent for the lever's own. */
   startBand?: Band;
+  /** Which listed level this run started from, 0-based. Absent in endless. */
+  levelIndex?: number;
   /** The digest of the practice map, `WEAK_CLEAN` for a map with nothing in it. */
   weak: number;
   /** The digest of `corpusFingerprint`, which the tapes on disk move. */
@@ -120,12 +137,12 @@ export function weakDigestOf(weak: Record<string, number> | undefined): number {
     if (typeof n !== 'number' || !Number.isFinite(n) || n <= 0) continue;
     sum = (sum + hashString(`${key}:${Math.floor(n)}`)) >>> 0;
   }
-  return sum & mask(BITS.weak);
+  return sum & mask(BITS_V2.weak);
 }
 
 /** The digest of a corpus fingerprint, folded to what the code has room for. */
 export function corpusDigestOf(fingerprint: string): number {
-  return hashString(fingerprint) & mask(BITS.corpus);
+  return hashString(fingerprint) & mask(BITS_V2.corpus);
 }
 
 /**
@@ -138,7 +155,7 @@ export function corpusDigestOf(fingerprint: string): number {
  * browser had, but one map, the same one for everybody who types the code.
  */
 export function weakFromDigest(digest: number): Record<string, number> {
-  const d = digest & mask(BITS.weak);
+  const d = digest & mask(BITS_V2.weak);
   if (d === WEAK_CLEAN) return {};
   const rng = seededRandom(mixSeed(d, WEAK_CODE_SALT));
   const out: Record<string, number> = {};
@@ -152,7 +169,7 @@ export function weakFromDigest(digest: number): Record<string, number> {
 
 /** The check characters, over everything in front of them. */
 function checksum(body: bigint): number {
-  return hashString(body.toString(32)) & mask(BITS.check);
+  return hashString(body.toString(32)) & mask(BITS_V2.check);
 }
 
 function push(bits: bigint, value: number, width: number): bigint {
@@ -177,26 +194,35 @@ export function mintRunCode(input: RunCode): string {
   if (!Number.isInteger(startBand) || startBand < 0 || startBand > 7) {
     throw new Error(`mintRunCode: startBand ${input.startBand}`);
   }
+  const levelIndex = input.levelIndex ?? 0;
+  if (!Number.isInteger(levelIndex) || levelIndex < 0 || levelIndex > 31) {
+    throw new Error(`mintRunCode: levelIndex ${input.levelIndex}`);
+  }
   if (!Number.isInteger(input.seed) || input.seed < 0 || input.seed > 0xffffffff) {
     throw new Error(`mintRunCode: seed ${input.seed}`);
   }
   let body = 0n;
-  body = push(body, RUN_CODE_VERSION, BITS.version);
-  body = push(body, input.endless ? 1 : 0, BITS.endless);
-  body = push(body, input.tier, BITS.tier);
-  body = push(body, stack, BITS.stack);
-  body = push(body, startBand, BITS.startBand);
-  body = push(body, input.seed, BITS.seed);
-  body = push(body, input.weak & mask(BITS.weak), BITS.weak);
-  body = push(body, input.corpus & mask(BITS.corpus), BITS.corpus);
-  let bits = push(body, checksum(body), BITS.check);
+  body = push(body, RUN_CODE_VERSION, BITS_V2.version);
+  body = push(body, input.endless ? 1 : 0, BITS_V2.endless);
+  body = push(body, input.tier, BITS_V2.tier);
+  body = push(body, stack, BITS_V2.stack);
+  body = push(body, startBand, BITS_V2.startBand);
+  body = push(body, levelIndex, BITS_V2.levelIndex);
+  body = push(body, input.seed, BITS_V2.seed);
+  body = push(body, input.weak & mask(BITS_V2.weak), BITS_V2.weak);
+  body = push(body, input.corpus & mask(BITS_V2.corpus), BITS_V2.corpus);
+  let bits = push(body, checksum(body), BITS_V2.check);
   const chars: string[] = [];
   for (let i = 0; i < CODE_CHARS; i++) {
     chars.unshift(ALPHABET[Number(bits & 31n)]!);
     bits >>= 5n;
   }
   const groups: string[] = [];
-  for (let i = 0; i < CODE_CHARS; i += GROUP) groups.push(chars.slice(i, i + GROUP).join(''));
+  let pos = 0;
+  for (const g of GROUPS) {
+    groups.push(chars.slice(pos, pos + g).join(''));
+    pos += g;
+  }
   return groups.join('-');
 }
 
@@ -214,15 +240,17 @@ export function parseRunCode(text: string): RunCode | null {
     .split('')
     .map((ch) => LOOKALIKE[ch] ?? ch)
     .join('');
-  if (raw.length !== CODE_CHARS) return null;
+  if (raw.length !== CODE_CHARS && raw.length !== CODE_CHARS_V1) return null;
+  const isV1 = raw.length === CODE_CHARS_V1;
   let bits = 0n;
   for (const ch of raw) {
     const at = ALPHABET.indexOf(ch);
     if (at < 0) return null;
     bits = (bits << 5n) | BigInt(at);
   }
-  const check = Number(bits & BigInt(mask(BITS.check)));
-  const body = bits >> BigInt(BITS.check);
+  const b = isV1 ? BITS_V1 : BITS_V2;
+  const check = Number(bits & BigInt(mask(b.check)));
+  const body = bits >> BigInt(b.check);
   if (checksum(body) !== check) return null;
   let rest = body;
   const take = (width: number): number => {
@@ -230,18 +258,23 @@ export function parseRunCode(text: string): RunCode | null {
     rest >>= BigInt(width);
     return value;
   };
-  const corpus = take(BITS.corpus);
-  const weak = take(BITS.weak);
-  const seed = take(BITS.seed);
-  const startBand = take(BITS.startBand);
-  const stack = take(BITS.stack);
-  const tier = take(BITS.tier);
-  const endless = take(BITS.endless) === 1;
-  const version = take(BITS.version);
-  if (version !== RUN_CODE_VERSION) return null;
+  const corpus = take(b.corpus);
+  const weak = take(b.weak);
+  const seed = take(b.seed);
+  let levelIndex: number | undefined;
+  if (!isV1) {
+    levelIndex = take(BITS_V2.levelIndex);
+  }
+  const startBand = take(b.startBand);
+  const stack = take(b.stack);
+  const tier = take(b.tier);
+  const endless = take(b.endless) === 1;
+  const version = take(b.version);
+  if (version !== (isV1 ? 1 : RUN_CODE_VERSION)) return null;
   if (stack > STACKS.length) return null;
   const out: RunCode = { seed: seed >>> 0, tier: tier as Tier, endless, weak, corpus };
   if (stack > 0) out.stack = STACKS[stack - 1]!;
   if (startBand > 0) out.startBand = startBand as Band;
+  if (!isV1 && levelIndex !== undefined && !endless) out.levelIndex = levelIndex;
   return out;
 }

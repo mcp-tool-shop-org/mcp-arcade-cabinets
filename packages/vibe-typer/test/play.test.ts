@@ -350,7 +350,7 @@ describe('the run code and the milestones on the print', () => {
   it('prints a code off the run and a list of the rungs it crossed', async () => {
     const out = play({ tier: 0, bot: 'perfect', seed: 3 });
     expect(out.ok, out.text).toBe(true);
-    expect(out.code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    expect(out.code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){2}-[0-9A-Z]{5}$/);
     expect(out.text).toMatch(/^code: [0-9A-Z-]+$/m);
     expect(out.text).toMatch(/^milestones: .+$/m);
     expect(out.milestones.every((name) => typeof name === 'string')).toBe(true);
@@ -403,7 +403,7 @@ describe('the run code and the milestones on the print', () => {
   it('prints a code off the run and a list of the rungs it crossed', async () => {
     const out = play({ tier: 0, bot: 'perfect', seed: 3 });
     expect(out.ok, out.text).toBe(true);
-    expect(out.code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    expect(out.code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){2}-[0-9A-Z]{5}$/);
     expect(out.text).toMatch(/^code: [0-9A-Z-]+$/m);
     expect(out.text).toMatch(/^milestones: .+$/m);
     expect(out.milestones.every((name) => typeof name === 'string')).toBe(true);

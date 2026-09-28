@@ -1679,7 +1679,7 @@ describe('the run code', () => {
       weak: 4242,
       corpus: 777,
     });
-    expect(code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+    expect(code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){2}-[0-9A-Z]{5}$/);
     expect(parseRunCode(code)).toEqual({
       seed: 123456,
       tier: 2,
@@ -1696,6 +1696,7 @@ describe('the run code', () => {
       seed: 1,
       tier: 0,
       endless: false,
+      levelIndex: 0,
       weak: 0,
       corpus: 0,
     });
@@ -1726,6 +1727,24 @@ describe('the run code', () => {
     expect(JSON.stringify(again.plan)).toBe(JSON.stringify(made.plan));
     // A code minted off the replay is the code that was typed.
     expect(runCodeOf(again)).toBe(code);
+  });
+
+  it('carries the listed level in the code so a replay lands on the same level', () => {
+    const made = createRun({ seed: 4, tier: 0, endless: false, levelIndex: 7 });
+    const code = runCodeOf(made);
+    expect(parseRunCode(code)!.levelIndex).toBe(7);
+    // The shell reads levelIndex from the code and passes it to createRun.
+    const again = createRun({ seed: 4, tier: 0, endless: false, levelIndex: 7, code });
+    expect(JSON.stringify(again.plan)).toBe(JSON.stringify(made.plan));
+    expect(again.levelIndex).toBe(7);
+    // A mismatch between the code and the options is a halt.
+    expect(() => createRun({ seed: 4, tier: 0, endless: false, levelIndex: 3, code })).toThrow(
+      'the run code and the options beside it name two runs',
+    );
+    // A plain v2 code carries levelIndex 0 explicitly.
+    const plain = mintRunCode({ seed: 1, tier: 0, endless: false, weak: 0, corpus: 0 });
+    expect(plain).toHaveLength(20); // 17 chars + 3 hyphens
+    expect(parseRunCode(plain)!.levelIndex).toBe(0);
   });
 
   it('plants the practice map the code names in place of this browser own', () => {
