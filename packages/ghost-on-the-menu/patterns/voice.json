@@ -653,6 +653,33 @@
     "the room kept the floor to itself",
     "nothing to see, so i keep still"
   ],
+  "column": [
+    "the column is full",
+    "i pressed into a closed room",
+    "no space for another answer",
+    "the chamber kept its breath",
+    "the air is crowded",
+    "i sent one too many",
+    "the stack is topped out"
+  ],
+  "hull": [
+    "that one has layers",
+    "the shell took it and stayed",
+    "a hit that did not end",
+    "something thick out there",
+    "the hull stayed",
+    "it shrugged the shot off",
+    "that one is built deep"
+  ],
+  "fog": [
+    "the low lane is hiding",
+    "something soft is coming",
+    "the veil is reaching up",
+    "the floor is going soft",
+    "a fog bank is forming",
+    "the lower half is filling",
+    "the room is getting dim"
+  ],
   "drops": {
     "catch": {
       "lamp": [

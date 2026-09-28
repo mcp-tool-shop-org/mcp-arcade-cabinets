@@ -255,7 +255,7 @@ export interface Caption {
    * `blind` paint where a catch does, in the catch's own register: they are
    * the events that cost the player and they used to have no word at all.
    */
-  kind?: 'wave' | 'catch' | 'aside' | 'lamp' | 'blind';
+  kind?: 'wave' | 'catch' | 'aside' | 'lamp' | 'blind' | 'column' | 'hull' | 'fog';
   /** Furniture line under the wave word. Never a fact. */
   line?: string;
 }
@@ -338,6 +338,8 @@ export interface RoundState {
   columnFull: boolean;
   /** Presses the cap swallowed this round. For cues and tests; never drawn as a digit. */
   refusals: number;
+  /** Seconds until another column-full caption may fire. For cues; never drawn as a digit. */
+  columnT: number;
   /** Hits hulls took and lived through this round. For cues and tests; never drawn as a digit. */
   hullHits: number;
   /** Boss-emitted hazards. Class motion, never fact motion. */

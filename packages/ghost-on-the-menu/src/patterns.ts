@@ -329,6 +329,18 @@ export interface VoiceSet {
    * breaking. One pool, in the lamp's register.
    */
   blind: string[];
+  /**
+   * The column is full and a press was swallowed. In the catch register.
+   */
+  column: string[];
+  /**
+   * A hull that took a shot and lived. In the catch register.
+   */
+  hull: string[];
+  /**
+   * A fog bank appearing on the field. In the catch register.
+   */
+  fog: string[];
   /** A word on picking a drop up, and a word when a timed one runs out. */
   drops: {
     catch: Record<DropKind, string[]>;
@@ -1428,6 +1440,9 @@ function loadVoice(raw: unknown): VoiceSet {
   for (const key of END_WHYS) {
     ending[key] = loadLines(req(endingRaw, file, key), file, key, VOICE_POOL_MAX);
   }
+  const column = loadLines(req(obj, file, 'column'), file, 'column', VOICE_POOL_MAX);
+  const hull = loadLines(req(obj, file, 'hull'), file, 'hull', VOICE_POOL_MAX);
+  const fog = loadLines(req(obj, file, 'fog'), file, 'fog', VOICE_POOL_MAX);
   return {
     wave,
     boss,
@@ -1435,6 +1450,9 @@ function loadVoice(raw: unknown): VoiceSet {
     catch: catchLines,
     lamp,
     blind,
+    column,
+    hull,
+    fog,
     drops: { catch: dropCatch, ends: dropEnds },
     end: loadLines(req(obj, file, 'end'), file, 'end', VOICE_POOL_MAX),
     ending,

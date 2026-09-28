@@ -665,6 +665,7 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     dropCatchesByKind: { lamp: 0, spread: 0, rapid: 0, pierce: 0 },
     columnFull: false,
     refusals: 0,
+    columnT: 0,
     hullHits: 0,
     hazards: [],
     bossIntent: null,
@@ -1499,7 +1500,10 @@ function driveBoss(state: RoundState, meta: Meta, dt: number, def: BossDef, atom
 function stepFogBeats(state: RoundState, meta: Meta): void {
   for (const fb of meta.fogBeats) {
     if (fb.t >= 0 && state.t >= fb.t) {
-      if (!state.fog || !state.fog.alive) spawnFog(state, fb.x, 8, 50 * meta.rung.fog);
+      if (!state.fog || !state.fog.alive) {
+        spawnFog(state, fb.x, 8, 50 * meta.rung.fog);
+        sayFog(state, meta);
+      }
       fb.t = -1;
     }
   }
@@ -1523,6 +1527,40 @@ function sayBlind(state: RoundState, meta: Meta | undefined): void {
   // A wave card is not cut short for it, the way the lamp's word is not.
   if (state.caption && state.caption.kind === 'wave') return;
   state.caption = { text, t: CAPTION_T, kind: 'blind' };
+}
+
+function sayColumn(state: RoundState, meta: Meta | undefined): void {
+  if (!meta) return;
+  const lines = meta.patterns.voice.column;
+  if (lines.length === 0) return;
+  const picked = nextBagLine(lines, bagFor(meta.bags, 'column'), meta.round.seed, 81 + state.wave);
+  const text = sanitizeCaption(picked);
+  if (!text) return;
+  if (state.caption && state.caption.kind === 'wave') return;
+  state.caption = { text, t: CAPTION_T, kind: 'column' };
+  state.columnT = CAPTION_T;
+}
+
+function sayHull(state: RoundState, meta: Meta | undefined): void {
+  if (!meta) return;
+  const lines = meta.patterns.voice.hull;
+  if (lines.length === 0) return;
+  const picked = nextBagLine(lines, bagFor(meta.bags, 'hull'), meta.round.seed, 83 + state.wave);
+  const text = sanitizeCaption(picked);
+  if (!text) return;
+  if (state.caption && state.caption.kind === 'wave') return;
+  state.caption = { text, t: CAPTION_T, kind: 'hull' };
+}
+
+function sayFog(state: RoundState, meta: Meta | undefined): void {
+  if (!meta) return;
+  const lines = meta.patterns.voice.fog;
+  if (lines.length === 0) return;
+  const picked = nextBagLine(lines, bagFor(meta.bags, 'fog'), meta.round.seed, 89 + state.wave);
+  const text = sanitizeCaption(picked);
+  if (!text) return;
+  if (state.caption && state.caption.kind === 'wave') return;
+  state.caption = { text, t: CAPTION_T, kind: 'fog' };
 }
 
 function stepFog(state: RoundState, meta: Meta | undefined, dt: number): void {
@@ -1826,6 +1864,7 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   state.spreadT = Math.max(0, state.spreadT - dt);
   state.rapidT = Math.max(0, state.rapidT - dt);
   state.pierceT = Math.max(0, state.pierceT - dt);
+  state.columnT = Math.max(0, state.columnT - dt);
   if (state.caption) {
     state.caption.t -= dt;
     if (state.caption.t <= 0) state.caption = null;
@@ -1890,6 +1929,7 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   const refused = pressed && state.fireCooldown <= 0 && !mayFire;
   if (refused) state.refusals += 1;
   state.columnFull = refused;
+  if (refused && state.columnT <= 0) sayColumn(state, meta);
   if (pressed && state.fireCooldown <= 0 && mayFire) {
     const cx = state.player.x + state.player.w / 2;
     const y = state.player.y - SHOT_H;
@@ -2046,6 +2086,7 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
         // that finally killed it.
         enemy.hitT = 0;
         state.hullHits += 1;
+        sayHull(state, meta);
         if (shot.pierce) continue;
         break;
       }
