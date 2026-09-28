@@ -1,20 +1,22 @@
-# HANDOFF — post-v0.12.0 review, `main` at `8ae1d64` (2026-09-28)
+# HANDOFF — post-v0.12.0 review, `main` at `cef1fe1` (2026-09-28)
 
-**The post-shipped review is substantially complete.** Six housekeeping items landed in `9692832` before this session: SCORECARD.md removed, esbuild bumped to 0.28.2, 45 stale swarm branches deleted, `pnpm verify` ordered build-before-test, trace research files added to `.gitignore`, and five wave-10 proposals picked into `docs/deferred-next.md` (hash routes, PWA basics, headless check, status route, launcher CLI factoring). **Five more commits landed today**, all pushed to `origin/main`:
+**The post-shipped review is complete.** Six housekeeping items landed in `9692832` before this session: SCORECARD.md removed, esbuild bumped to 0.28.2, 45 stale swarm branches deleted, `pnpm verify` ordered build-before-test, trace research files added to `.gitignore`, and five wave-10 proposals picked into `docs/deferred-next.md` (hash routes, PWA basics, headless check, status route, launcher CLI factoring). **Seven more commits landed today**, all pushed to `origin/main`:
 
-| Commit    | What changed                                                                                               |
-| --------- | ---------------------------------------------------------------------------------------------------------- |
-| `b0817bc` | Shell imports `pushBossVerbs` instead of pushing to `state.bossQueue` directly; one guard, one bound.      |
-| `d56e60b` | `CabinetSet.words` gains `deployed`; loader, `cabinet.json`, and shell ribbon read it.                     |
-| `bc07c6c` | Runners test no longer hardcodes a real voice line as the golden header literal.                           |
-| `91296c7` | Touch zones write `autoFire` (fire pad) and `toX` (move pads, with `pointermove` updates); 5 shell tests.  |
-| `8ae1d64` | Power glyphs keep a fixed hollow socket on the bezel even when inactive (F-2af941a8); render test updated. |
+| Commit    | What changed                                                                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `b0817bc` | Shell imports `pushBossVerbs` instead of pushing to `state.bossQueue` directly; one guard, one bound.                                           |
+| `d56e60b` | `CabinetSet.words` gains `deployed`; loader, `cabinet.json`, and shell ribbon read it.                                                          |
+| `bc07c6c` | Runners test no longer hardcodes a real voice line as the golden header literal.                                                                |
+| `91296c7` | Touch zones write `autoFire` (fire pad) and `toX` (move pads, with `pointermove` updates); 5 shell tests.                                       |
+| `8ae1d64` | Power glyphs keep a fixed hollow socket on the bezel even when inactive (F-2af941a8); render test updated.                                      |
+| `ac3db00` | Hash routes `#ghost`/`#vibe` on tab click, read on load, `hashchange` for back button (F-4759c927).                                             |
+| `cef1fe1` | Prefetch `askNextIntents` reports faults via `seatFailed`; `delete input.toX` for exactOptionalPropertyTypes; esbuild 0.28.2 in both launchers. |
 
 **1457 tests pass, 1 skipped.** Clean working tree. No version bump yet; the Director decides when these become a release.
 
-**Still open from the review, one item:** the endless runner's said-row formatter and `nag` word (`docs/dogfood-swarm.md`, Stage D). `SaidRow` in `sim.ts` has no `nag` field; Vibe Typer's `nag` mechanic is a user check-in with its own cue and CSS class. Whether Ghost's endless transcript should carry an equivalent marker, or whether `saidLine` should grow a richer format, needs Director clarification. Nothing was changed here pending that word.
+**Ghost on the Menu is finished for this pass.** All Stage D open items are closed, the wave-10 hash-route proposal is implemented, the `onFail` seam from Stage C is wired, and the launcher esbuild bump is done. What remains is Director-blocked (endless E2–E4, lock G31–G35) or belongs to Vibe / the cabinet server (settings row pace levers, hosted-tier ceiling, catalog bump).
 
-**The next session should move onto improving the cabinets, starting with Ghost on the Menu.** The deferred-next.md proposals (F-4759c927, F-1ddadc07, F-cff99996, F-14547f9e, F-4e691438) are still valid and unscheduled. Ghost-specific work that could ride with them: the wave-11 seams left open in `docs/dogfood-swarm.md` (level index in the run code, pinned-stack recovery, hosted-tier ceiling), and the endless slice E2–E4 if the Director has said yes (`docs/ghost-endless.dispatch.md`, lock G31–G35). The `nag` tool (from the v0.11.0 owed list) is a cabinet-server feature, not a cabinet feature, and also waits on the Director.
+**The next session should move onto Vibe Typer improvements.** The deferred-next.md proposals (F-1ddadc07 PWA basics, F-cff99996 headless check, F-14547f9e status route, F-4e691438 launcher CLI factoring) are still valid and unscheduled. The `nag` tool (from the v0.11.0 owed list) is a cabinet-server feature, not a cabinet feature, and waits on the Director.
 
 **Standing rules unchanged:** version stays `0.x`; no third npm package without the Director's word; no `dependencies` in launcher packages; `pnpm verify` is the gate; identity-scan the tree before every push.
 
