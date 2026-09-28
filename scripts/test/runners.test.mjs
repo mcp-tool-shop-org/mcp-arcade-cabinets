@@ -32,7 +32,7 @@ const GHOST_OK = [
   'Ghost on the Menu',
   `tape ${NAIVE_NDJSON.bout_id} fixture naive-ndjson policy naive server mcp-arcade-fixture bot reader`,
   'round complete',
-  'Same experiment, same guests, different evening.',
+  'a clean line',
   'naive-ndjson',
   'server mcp-arcade-fixture',
   'policy naive',
@@ -178,8 +178,8 @@ describe('the ghost path gates on the printed transcript (F-dbfda755)', () => {
     // its detector missed — the vibe path had this gate and the ghost path
     // did not.
     const leaky = GHOST_OK.replace(
-      'Same experiment, same guests, different evening.',
-      'Same experiment, 2 guests, different evening.',
+      'a clean line',
+      'a clean 2 line',
     );
     const q = quiet();
     try {
