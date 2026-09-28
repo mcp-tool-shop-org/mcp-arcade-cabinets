@@ -87,6 +87,7 @@ No telemetry, no analytics, no network call of its own. The `--mcp` server needs
 ```
   --mcp              speak MCP on stdio instead of opening the game
                      its tools: fire, say, speak, sfx, view, tapes
+  --check            list tools and exit (no browser needed)
   --port <n>         port to listen on (default 7777; takes the next
                      free one when that is busy)
   --no-open          start the server but do not open a browser

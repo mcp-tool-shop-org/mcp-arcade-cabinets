@@ -84,6 +84,7 @@ The gate accepts or refuses; it never fixes. Nothing waits on the client: a late
 ```
   --mcp              speak MCP on stdio instead of opening the game
                      its tools: view, product, ask, react
+  --check            list tools and exit (no browser needed)
   --port <n>         port to listen on (default 7778; takes the next
                      free one when that is busy)
   --no-open          start the server but do not open a browser

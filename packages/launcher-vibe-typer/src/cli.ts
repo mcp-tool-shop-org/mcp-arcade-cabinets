@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 // MCP server, and a help text does not need it bundled in to print four
 // words.
 import { VIBE_TOOL_NAMES } from '../../cabinet-server/src/tool-names';
+import { checkMcp } from '../../launcher/src/check';
 import {
   checkSeatUrl,
   createCabinetServer,
@@ -62,7 +63,7 @@ export const MCP_TOOLS = VIBE_TOOL_NAMES.join(', ');
 
 /** What the arguments asked for. */
 export interface Args {
-  mode: 'play' | 'mcp' | 'help' | 'version';
+  mode: 'play' | 'mcp' | 'check' | 'help' | 'version';
   port: number;
   open: boolean;
   /** The argument that made no sense, when the mode is `help` because of it. */
@@ -79,10 +80,12 @@ const USAGE = `vibe-typer — a typing arcade game where you are the coding agen
 
   npx @mcptoolshop/vibe-typer            play it in your browser
   npx @mcptoolshop/vibe-typer --mcp      run it as an MCP server
+  npx @mcptoolshop/vibe-typer --check     list tools and exit
 
 Options
   --mcp              speak MCP on stdio instead of opening the game
                      its tools: ${MCP_TOOLS}
+  --check            list tools and exit (no browser needed)
   --port <n>         port to listen on (default ${DEFAULT_PORT}; takes the next
                      free one when that is busy)
   --no-open          start the server but do not open a browser
@@ -163,6 +166,7 @@ export function parseArgs(argv: readonly string[]): Args {
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--mcp') out.mode = 'mcp';
+    else if (arg === '--check') out.mode = 'check';
     else if (arg === '-h' || arg === '--help') return { ...out, mode: 'help' };
     else if (arg === '-v' || arg === '--version') return { ...out, mode: 'version' };
     else if (arg === '--no-open') out.open = false;
@@ -492,6 +496,26 @@ function runMcp(argv: readonly string[]): void {
   });
 }
 
+/** Verify the MCP server lists the expected tools and exit. */
+async function runCheck(): Promise<void> {
+  if (!existsSync(MCP_SERVER)) {
+    sayAll(
+      missingLines('cabinet server missing from this package', 'dist/cabinet-stdio.js', bugsIn(here)),
+    );
+    process.exitCode = 1;
+    return;
+  }
+  const result = await checkMcp(MCP_SERVER, VIBE_TOOL_NAMES);
+  if (result.ok) {
+    process.stdout.write(`tools/list: ${result.found.join(',')}\n`);
+    process.stdout.write('check passed\n');
+  } else {
+    process.stderr.write(`check failed: ${result.error ?? 'unexpected tools'}\n`);
+    process.stderr.write(`found: ${result.found.join(',') || '(none)'}\n`);
+    process.exitCode = 1;
+  }
+}
+
 /** Stand the shell up and open it. */
 async function runPlay(args: Args): Promise<void> {
   // The environment is read before the package is, because a bad address is
@@ -596,6 +620,10 @@ export async function main(argv: readonly string[]): Promise<void> {
   }
   if (args.mode === 'mcp') {
     runMcp(argv);
+    return;
+  }
+  if (args.mode === 'check') {
+    await runCheck();
     return;
   }
   await runPlay(args);
