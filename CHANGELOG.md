@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-28
+
+Four deferred proposals from the wave-10 feature audit, landed together: PWA basics for the page, a `/status` route that names which seats are dark and why, a `--check` flag on both launchers for headless MCP verification, and the first pass at factoring duplicated launcher CLI utilities into `packages/launcher/src/core.ts`. The post-v0.12.0 review backlog is closed.
+
+### Added
+
+- **PWA basics** (`manifest.json`, theme-color meta tags, Open Graph / Twitter card tags, favicon and social card SVG) so the page installs and shares cleanly.
+- **`/status` route** on both launchers reporting Ollama, voice worker and Claude seat health with a 2-second probe timeout.
+- **`--check` flag** on both launchers (`npx @mcptoolshop/ghost-on-the-menu --check`, `npx @mcptoolshop/vibe-typer --check`) that spawns the MCP server over piped stdio, sends `initialize` + `tools/list`, verifies the tool names match the contract, and exits 0 or 1.
+- **`packages/launcher/src/core.ts`** holding shared utilities (`forwardSignals`, `exitAfter`, `versionIn`, `floorIn`, `nodeMajor`, `nodeFloorHalt`, `openBrowser`) so a third cabinet costs less and the two that exist do not drift. Both CLIs import from it and re-export for their tests.
+
 ## [0.12.0] - 2026-09-17
 
 The dogfood swarm, whole, in one day on the Director's word: four health stages (bugs and security, proactive health, humanization, visual polish) and the feature pass framed as polish, with the player's pass on every wave and the Director's read on the served bundle between them. Both cabinets play on a phone; full screen survives the flow into the next tape; the typing cabinet has a run code that replays and an end card that goes on; the hosted tier is opt-in; the image answers help and version and stops when asked; Ghost's music is a playlist of seven generated pieces; the boss waits for its grid and the column holds six. The record is `docs/dogfood-swarm.md`.

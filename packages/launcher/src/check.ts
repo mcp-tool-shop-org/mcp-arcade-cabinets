@@ -77,7 +77,11 @@ export async function checkMcp(serverPath: string, want: readonly string[]): Pro
         const tools = (msg as Record<string, unknown>).result;
         if (!Array.isArray(tools)) continue;
         for (const t of tools) {
-          if (t && typeof t === 'object' && typeof (t as Record<string, unknown>).name === 'string') {
+          if (
+            t &&
+            typeof t === 'object' &&
+            typeof (t as Record<string, unknown>).name === 'string'
+          ) {
             found.add((t as Record<string, unknown>).name as string);
           }
         }

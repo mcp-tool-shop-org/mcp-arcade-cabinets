@@ -13,7 +13,7 @@ export const config: SiteConfig = {
     'MIT Licensed — built by <a href="https://mcp-tool-shop.github.io/" style="color:var(--color-muted);text-decoration:underline">MCP Tool Shop</a>',
 
   hero: {
-    badge: 'The arcade · v0.12.0',
+    badge: 'The arcade · v0.13.0',
     headline: 'You are the model.',
     headlineAccent: 'Two cabinets. One wire.',
     description:

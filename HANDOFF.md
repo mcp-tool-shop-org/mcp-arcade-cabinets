@@ -22,6 +22,7 @@
 ## Ghost on the Menu — DONE for this pass
 
 All Stage D open items are closed:
+
 - `pushBossVerbs` wired through the shell, one guard, one bound (F-e3f5b2a4).
 - `words.deployed` lever added; loader, `cabinet.json`, and shell ribbon read it (F-7c8d9e1b).
 - Touch zones write `autoFire` and `toX`; `pointermove` updates move pads; 5 shell tests (F-9a4c7d2e).
@@ -38,6 +39,7 @@ All Stage D open items are closed:
 ## Vibe Typer — DONE for this pass
 
 All open items from the review are closed:
+
 - **Settings row pace/check-in levers**: two selects added (pace: faster/normal/slower; check-ins: normal/fewer/off). Persist under `vibe.` prefs, validate on read, pass through `VibeOpts` into `createRun`. Test in `typer-menu.test.ts` (wave-11 owed, shell half).
 - **Corpus fingerprint exported but not stored**: `corpusFingerprint` now stored beside weak pairs in localStorage; `readWeak()` returns `{}` when the fingerprint mismatches, preventing stale pair data across corpus changes.
 - **Creep fallback drawing another snippet's row**: `creepLine()` now takes an `excludeId` parameter; authored and fallback creeps both exclude the request's own snippet, preventing a snippet from creeping itself.

@@ -11,7 +11,6 @@
 
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { constants as osConstants } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,10 +27,8 @@ import {
   forwardSignals,
   NODE_FLOOR,
   nodeFloorHalt,
-  nodeMajor,
   NO_VERSION,
   openBrowser,
-  type SignalHost,
   versionExit,
   versionIn,
 } from './core';
@@ -253,7 +250,6 @@ export function claudeLines(env: NodeJS.ProcessEnv = process.env): string[] {
   ];
 }
 
-
 function bundledTapes(): number | null {
   try {
     const names = readdirSync(TAPES_DIR).filter((name) => name.endsWith('.tape.json'));
@@ -401,7 +397,11 @@ function runMcp(argv: readonly string[]): void {
 async function runCheck(): Promise<void> {
   if (!existsSync(MCP_SERVER)) {
     sayAll(
-      missingLines('cabinet server missing from this package', 'dist/cabinet-stdio.js', bugsIn(here)),
+      missingLines(
+        'cabinet server missing from this package',
+        'dist/cabinet-stdio.js',
+        bugsIn(here),
+      ),
     );
     process.exitCode = 1;
     return;
@@ -531,7 +531,6 @@ export {
   nodeMajor,
   NO_VERSION,
   openBrowser,
-  type SignalHost,
   versionExit,
   versionIn,
 } from './core';

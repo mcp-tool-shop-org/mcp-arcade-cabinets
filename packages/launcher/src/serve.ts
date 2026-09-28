@@ -898,13 +898,17 @@ function endlessRoute(opts: ServeOpts) {
 function statusRoute(opts: ServeOpts) {
   return async (_req: IncomingMessage, res: ServerResponse): Promise<void> => {
     const [voice, ollama] = await Promise.all([
-      opts.voiceUrl ? probeUp(opts.voiceUrl, opts.voiceToken) : Promise.resolve({ ok: false, error: 'not configured' }),
+      opts.voiceUrl
+        ? probeUp(opts.voiceUrl, opts.voiceToken)
+        : Promise.resolve({ ok: false, error: 'not configured' }),
       probeOllama(opts.ollamaUrl),
     ]);
     sendJson(res, 200, {
       version: opts.version ?? '0.0.0-unknown',
       ollama: { url: opts.ollamaUrl, ...ollama },
-      voice: opts.voiceUrl ? { url: opts.voiceUrl, ...voice } : { url: null, ok: false, error: 'not configured' },
+      voice: opts.voiceUrl
+        ? { url: opts.voiceUrl, ...voice }
+        : { url: null, ok: false, error: 'not configured' },
       claude: { configured: !!opts.anthropicKey },
     });
   };
@@ -912,7 +916,10 @@ function statusRoute(opts: ServeOpts) {
 
 const STATUS_PROBE_MS = 2000;
 
-async function probeUp(url: string, token: string | null): Promise<{ ok: boolean; error?: string }> {
+async function probeUp(
+  url: string,
+  token: string | null,
+): Promise<{ ok: boolean; error?: string }> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), STATUS_PROBE_MS);
   try {

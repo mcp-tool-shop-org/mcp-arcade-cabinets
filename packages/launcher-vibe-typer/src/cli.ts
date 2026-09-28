@@ -16,7 +16,6 @@
 
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { constants as osConstants } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,13 +28,11 @@ import { VIBE_TOOL_NAMES } from '../../cabinet-server/src/tool-names';
 import { checkMcp } from '../../launcher/src/check';
 import {
   exitAfter,
-  floorIn,
   forwardSignals,
   NODE_FLOOR,
   nodeMajor,
   NO_VERSION,
   openBrowser,
-  type SignalHost,
   versionExit,
   versionIn,
 } from '../../launcher/src/core';
@@ -273,7 +270,6 @@ function bundledTapes(): number | null {
   }
 }
 
-
 /**
  * What `--mcp` silently ignores, said so an operator who passed it in a
  * script does not think it was accepted.
@@ -363,7 +359,11 @@ function runMcp(argv: readonly string[]): void {
 async function runCheck(): Promise<void> {
   if (!existsSync(MCP_SERVER)) {
     sayAll(
-      missingLines('cabinet server missing from this package', 'dist/cabinet-stdio.js', bugsIn(here)),
+      missingLines(
+        'cabinet server missing from this package',
+        'dist/cabinet-stdio.js',
+        bugsIn(here),
+      ),
     );
     process.exitCode = 1;
     return;
@@ -500,7 +500,6 @@ export {
   nodeMajor,
   NO_VERSION,
   openBrowser,
-  type SignalHost,
   versionExit,
   versionIn,
 } from '../../launcher/src/core';
