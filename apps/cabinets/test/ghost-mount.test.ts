@@ -1021,13 +1021,15 @@ describe('the chrome under the field', () => {
 // re-sizes the field under 640px — and could not be played on one: the only
 // inputs were a window keydown and keyup and a click that restarts a finished
 // round, so a finger could start a round and then do nothing but watch it
-// end. The sim reads three booleans once a frame, so the zones write those
-// three and the sim is untouched.
+// end. The sim reads three booleans once a frame plus `toX` and `autoFire`,
+// so the zones write all five and the sim is untouched.
 describe('the zones a finger plays the field with', () => {
-  /** A pointer event jsdom will carry, with the one field the wiring reads. */
-  function pointer(type: string, id: number): Event {
+  /** A pointer event jsdom will carry, with the fields the wiring reads. */
+  function pointer(type: string, id: number, opts?: { clientX?: number; clientY?: number }): Event {
     const e = new Event(type, { bubbles: true, cancelable: true });
     Object.defineProperty(e, 'pointerId', { value: id });
+    if (opts?.clientX !== undefined) Object.defineProperty(e, 'clientX', { value: opts.clientX });
+    if (opts?.clientY !== undefined) Object.defineProperty(e, 'clientY', { value: opts.clientY });
     return e;
   }
 
@@ -1044,14 +1046,16 @@ describe('the zones a finger plays the field with', () => {
     pad('left').dispatchEvent(pointer('pointerdown', 1));
     expect(game.debug().input.left).toBe(true);
     // A hold, not a tap: fire is held the same way a move is.
+    // Touch fire writes autoFire; keyboard space writes fire.
     pad('fire').dispatchEvent(pointer('pointerdown', 2));
-    expect(game.debug().input.fire).toBe(true);
+    expect(game.debug().input.autoFire).toBe(true);
+    expect(game.debug().input.fire).toBe(false);
 
     pad('left').dispatchEvent(pointer('pointerup', 1));
     expect(game.debug().input.left).toBe(false);
-    expect(game.debug().input.fire, 'the other finger is still down').toBe(true);
+    expect(game.debug().input.autoFire, 'the other finger is still down').toBe(true);
     pad('fire').dispatchEvent(pointer('pointercancel', 2));
-    expect(game.debug().input.fire).toBe(false);
+    expect(game.debug().input.autoFire).toBe(false);
     game.unmount();
   });
 
@@ -1072,6 +1076,30 @@ describe('the zones a finger plays the field with', () => {
     pad('left').dispatchEvent(pointer('pointerdown', 1));
     pad('left').dispatchEvent(pointer('pointerleave', 9));
     expect(game.debug().input.left).toBe(true);
+    game.unmount();
+  });
+
+  it('writes toX from pointer position on move zones and clears it on release', () => {
+    const game = mount();
+    expect(game.debug().input.toX).toBeUndefined();
+    pad('left').dispatchEvent(pointer('pointerdown', 1, { clientX: 80 }));
+    expect(game.debug().input.toX).toBe(80);
+    pad('left').dispatchEvent(pointer('pointermove', 1, { clientX: 120 }));
+    expect(game.debug().input.toX).toBe(120);
+    pad('left').dispatchEvent(pointer('pointerup', 1));
+    expect(game.debug().input.toX).toBeUndefined();
+    game.unmount();
+  });
+
+  it('keeps toX while any move zone is still held', () => {
+    const game = mount();
+    pad('left').dispatchEvent(pointer('pointerdown', 1, { clientX: 50 }));
+    pad('right').dispatchEvent(pointer('pointerdown', 2, { clientX: 400 }));
+    pad('left').dispatchEvent(pointer('pointerup', 1));
+    // Right is still held; toX stays from the last move event.
+    expect(game.debug().input.toX).toBe(400);
+    pad('right').dispatchEvent(pointer('pointerup', 2));
+    expect(game.debug().input.toX).toBeUndefined();
     game.unmount();
   });
 });

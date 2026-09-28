@@ -1460,20 +1460,33 @@ export function mountGhost(
     go. Fire is held the same way a move is, not tapped. Two fingers may hold
     two zones, so a move is only released once no pointer is still on it.
 
-    Where a later aim would plug in: `zoneDown` is the one place a pointer's
-    position is known against the field's own box, so a target center in field
-    pixels would be written there (and on a move while the pointer is
-    captured) and nowhere else in this file.
+    The sim reads `toX` as a steering target and `autoFire` as a held fire
+    control; the shell writes them here from pointer position and touch zone.
   */
   const held = new Map<number, Zone>();
   const stillHeld = (zone: Zone): boolean => {
     for (const z of held.values()) if (z === zone) return true;
     return false;
   };
+  const stillHeldMove = (): boolean => {
+    for (const z of held.values()) if (z === 'left' || z === 'right') return true;
+    return false;
+  };
+  /** Convert a pointer's client X to field pixels, accounting for canvas scale. */
+  const fieldToX = (e: PointerEvent): number => {
+    const rect = canvas.getBoundingClientRect();
+    const scale = rect.width > 0 ? FIELD.width / rect.width : 1;
+    return (e.clientX - rect.left) * scale;
+  };
   const zoneDown = (zone: Zone) => (e: PointerEvent) => {
     e.preventDefault();
     held.set(e.pointerId, zone);
-    input[zone] = true;
+    if (zone === 'fire') {
+      input.autoFire = true;
+    } else {
+      input[zone] = true;
+      input.toX = fieldToX(e);
+    }
     ensureAudio();
     canvas.focus();
     try {
@@ -1482,11 +1495,21 @@ export function mountGhost(
       /* a pointer the browser has already let go of cannot be captured */
     }
   };
+  const zoneMove = (e: PointerEvent) => {
+    const zone = held.get(e.pointerId);
+    if (zone !== 'left' && zone !== 'right') return;
+    input.toX = fieldToX(e);
+  };
   const zoneUp = (e: PointerEvent) => {
     const zone = held.get(e.pointerId);
     if (zone === undefined) return;
     held.delete(e.pointerId);
-    if (!stillHeld(zone)) input[zone] = false;
+    if (zone === 'fire') {
+      if (!stillHeld('fire')) input.autoFire = false;
+    } else {
+      if (!stillHeld(zone)) input[zone] = false;
+    }
+    if (!stillHeldMove()) input.toX = undefined;
   };
   /** Every zone let go at once: what the end scene does when it takes them away. */
   const dropZones = () => {
@@ -1495,6 +1518,8 @@ export function mountGhost(
     input.left = false;
     input.right = false;
     input.fire = false;
+    input.autoFire = false;
+    input.toX = undefined;
   };
   for (const [zone, el] of [
     ['left', padLeft],
@@ -1502,6 +1527,7 @@ export function mountGhost(
     ['fire', padFire],
   ] as const) {
     el.addEventListener('pointerdown', zoneDown(zone));
+    el.addEventListener('pointermove', zoneMove);
     el.addEventListener('pointerup', zoneUp);
     el.addEventListener('pointercancel', zoneUp);
     el.addEventListener('pointerleave', zoneUp);
