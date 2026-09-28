@@ -42,6 +42,13 @@ import {
   type Stack,
   type Tier,
   runCodeOf,
+  CHECK_INS_MAX,
+  CHECK_INS_MIN,
+  CHECK_INS_OFF,
+  cleanCheckIns,
+  cleanPaceScale,
+  PACE_MAX,
+  PACE_MIN,
 } from '@mcp-arcade-cabinets/vibe-typer';
 import { coarsePointer } from './pointer';
 import { LOCAL_SEATS, probeSeatModels } from './seats';
@@ -334,6 +341,10 @@ export interface VibePrefs {
   font?: VibeFont;
   /** The bed, from the menu's settings row. */
   music?: MusicMode;
+  /** How long the game gives the player to read, as a multiplier on `levels.pace`. */
+  paceScale?: number;
+  /** How often the user checks in while you type, as a multiplier on `levels.nagEvery` — or `'off'`. */
+  checkIns?: number | 'off';
   /** The seed box, as the player left it. */
   seed?: string;
   muted?: 'on' | 'off';
@@ -375,6 +386,13 @@ export function readVibePrefs(): VibePrefs {
     if (isMusicMode(o.music)) out.music = o.music;
     if (typeof o.seed === 'string') out.seed = o.seed.slice(0, SEED_MAX);
     if (o.muted === 'on' || o.muted === 'off') out.muted = o.muted;
+    if (typeof o.paceScale === 'number' && Number.isFinite(o.paceScale)) {
+      out.paceScale = Math.min(PACE_MAX, Math.max(PACE_MIN, o.paceScale));
+    }
+    if (o.checkIns === 'off') out.checkIns = 'off';
+    else if (typeof o.checkIns === 'number' && Number.isFinite(o.checkIns)) {
+      out.checkIns = Math.min(CHECK_INS_MAX, Math.max(CHECK_INS_MIN, o.checkIns));
+    }
     if (typeof o.runs === 'number' && Number.isFinite(o.runs)) out.runs = Math.max(0, o.runs);
     if (typeof o.last === 'number' && Number.isFinite(o.last)) out.last = o.last >>> 0;
     if (o.seat === 'on' || o.seat === 'off') out.seat = o.seat;
@@ -500,6 +518,10 @@ export interface VibeOpts {
   font?: VibeFont;
   /** The bed. Left out, the mount takes the stored pref, then `soft`. */
   music?: MusicMode;
+  /** How long the game gives the player to read, as a multiplier on `levels.pace`. */
+  paceScale?: number;
+  /** How often the user checks in while you type, as a multiplier on `levels.nagEvery` — or `'off'`. */
+  checkIns?: number | 'off';
   /** Integration snippets built from the bundled tapes (G30). */
   integration: Snippet[];
   onExit: () => void;
@@ -727,6 +749,8 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     tier: opts.tier,
     endless: opts.endless,
     ...(opts.code !== undefined ? { code: opts.code } : {}),
+    ...(opts.paceScale !== undefined ? { paceScale: opts.paceScale } : {}),
+    ...(opts.checkIns !== undefined ? { checkIns: opts.checkIns } : {}),
     weakBigrams: storedWeak,
     agentName,
     ...(opts.levelIndex !== undefined && !opts.endless ? { levelIndex: opts.levelIndex } : {}),
@@ -2751,3 +2775,13 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
     }),
   };
 }
+
+export {
+  CHECK_INS_MAX,
+  CHECK_INS_MIN,
+  CHECK_INS_OFF,
+  cleanCheckIns,
+  cleanPaceScale,
+  PACE_MAX,
+  PACE_MIN,
+};

@@ -64,7 +64,9 @@ import {
   TIER_WORDS,
   VIBE_FONTS,
   bandWord,
+  cleanCheckIns,
   cleanName,
+  cleanPaceScale,
   forgetVibePick,
   isVibeFont,
   menuStackGroups,
@@ -1099,7 +1101,44 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
   music.addEventListener('change', () => {
     writeVibePrefs({ music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC });
   });
-  settings.append(font, theme, sound, music);
+  const pace = document.createElement('select');
+  pace.setAttribute('aria-label', 'reading pace');
+  const PACE_OPTS: { value: string; label: string }[] = [
+    { value: '0.5', label: 'pace: faster' },
+    { value: '1', label: 'pace: normal' },
+    { value: '2', label: 'pace: slower' },
+  ];
+  for (const p of PACE_OPTS) {
+    const o = document.createElement('option');
+    o.value = p.value;
+    o.textContent = p.label;
+    pace.append(o);
+  }
+  const storedPace = cleanPaceScale(prefs.paceScale);
+  pace.value = PACE_OPTS.find((p) => p.value === String(storedPace))?.value ?? '1';
+  pace.addEventListener('change', () => {
+    writeVibePrefs({ paceScale: Number(pace.value) });
+  });
+  const checkIns = document.createElement('select');
+  checkIns.setAttribute('aria-label', 'check-ins');
+  const CHECK_OPTS: { value: string; label: string }[] = [
+    { value: '1', label: 'check-ins: normal' },
+    { value: '4', label: 'check-ins: fewer' },
+    { value: 'off', label: 'check-ins: off' },
+  ];
+  for (const c of CHECK_OPTS) {
+    const o = document.createElement('option');
+    o.value = c.value;
+    o.textContent = c.label;
+    checkIns.append(o);
+  }
+  const storedCheck = prefs.checkIns === 'off' ? 'off' : String(cleanCheckIns(prefs.checkIns));
+  checkIns.value = CHECK_OPTS.find((c) => c.value === storedCheck)?.value ?? '1';
+  checkIns.addEventListener('change', () => {
+    const v = checkIns.value;
+    writeVibePrefs({ checkIns: v === 'off' ? 'off' : Number(v) });
+  });
+  settings.append(font, theme, sound, music, pace, checkIns);
 
   const row2 = document.createElement('div');
   row2.className = 'row';
@@ -1179,6 +1218,9 @@ export function vibeMenu(wrap: HTMLElement, heading: MenuHeading = 'h1') {
       theme: theme.value as Theme,
       font: isVibeFont(font.value) ? font.value : DEFAULT_FONT,
       music: isMusicMode(music.value) ? music.value : DEFAULT_MUSIC,
+      paceScale: cleanPaceScale(Number(pace.value) || undefined),
+      checkIns:
+        checkIns.value === 'off' ? 'off' : cleanCheckIns(Number(checkIns.value) || undefined),
       integration: integrationSeasoning(),
       onExit: safeMenu,
       startAudio: true,
