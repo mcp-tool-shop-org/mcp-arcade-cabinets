@@ -1509,7 +1509,7 @@ export function mountGhost(
     } else {
       if (!stillHeld(zone)) input[zone] = false;
     }
-    if (!stillHeldMove()) input.toX = undefined;
+    if (!stillHeldMove()) delete input.toX;
   };
   /** Every zone let go at once: what the end scene does when it takes them away. */
   const dropZones = () => {
@@ -1519,7 +1519,7 @@ export function mountGhost(
     input.right = false;
     input.fire = false;
     input.autoFire = false;
-    input.toX = undefined;
+    delete input.toX;
   };
   for (const [zone, el] of [
     ['left', padLeft],
@@ -1992,6 +1992,7 @@ export function mountGhost(
               { url: '/ollama/api/generate', model: fireOpts().model },
               v,
               need,
+              seatFailed,
             ).then((verbs) => {
               clock.busy = false;
               // Verbs drawn for a view that is no longer on the field are

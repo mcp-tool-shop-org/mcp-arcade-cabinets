@@ -91,14 +91,14 @@ importers:
   packages/launcher:
     devDependencies:
       esbuild:
-        specifier: ^0.25.0
-        version: 0.25.12
+        specifier: ^0.28.2
+        version: 0.28.2
 
   packages/launcher-vibe-typer:
     devDependencies:
       esbuild:
-        specifier: ^0.25.0
-        version: 0.25.12
+        specifier: ^0.28.2
+        version: 0.28.2
 
   packages/tape-core: {}
 

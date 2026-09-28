@@ -2,12 +2,12 @@
 
 **The post-shipped review is substantially complete.** Six housekeeping items landed in `9692832` before this session: SCORECARD.md removed, esbuild bumped to 0.28.2, 45 stale swarm branches deleted, `pnpm verify` ordered build-before-test, trace research files added to `.gitignore`, and five wave-10 proposals picked into `docs/deferred-next.md` (hash routes, PWA basics, headless check, status route, launcher CLI factoring). **Five more commits landed today**, all pushed to `origin/main`:
 
-| Commit | What changed |
-|---|---|
-| `b0817bc` | Shell imports `pushBossVerbs` instead of pushing to `state.bossQueue` directly; one guard, one bound. |
-| `d56e60b` | `CabinetSet.words` gains `deployed`; loader, `cabinet.json`, and shell ribbon read it. |
-| `bc07c6c` | Runners test no longer hardcodes a real voice line as the golden header literal. |
-| `91296c7` | Touch zones write `autoFire` (fire pad) and `toX` (move pads, with `pointermove` updates); 5 shell tests. |
+| Commit    | What changed                                                                                               |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| `b0817bc` | Shell imports `pushBossVerbs` instead of pushing to `state.bossQueue` directly; one guard, one bound.      |
+| `d56e60b` | `CabinetSet.words` gains `deployed`; loader, `cabinet.json`, and shell ribbon read it.                     |
+| `bc07c6c` | Runners test no longer hardcodes a real voice line as the golden header literal.                           |
+| `91296c7` | Touch zones write `autoFire` (fire pad) and `toX` (move pads, with `pointermove` updates); 5 shell tests.  |
 | `8ae1d64` | Power glyphs keep a fixed hollow socket on the bezel even when inactive (F-2af941a8); render test updated. |
 
 **1457 tests pass, 1 skipped.** Clean working tree. No version bump yet; the Director decides when these become a release.

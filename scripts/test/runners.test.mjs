@@ -177,10 +177,7 @@ describe('the ghost path gates on the printed transcript (F-dbfda755)', () => {
     // printed. Before the fix `pnpm test:play ghost` could not fail on a word
     // its detector missed — the vibe path had this gate and the ghost path
     // did not.
-    const leaky = GHOST_OK.replace(
-      'a clean line',
-      'a clean 2 line',
-    );
+    const leaky = GHOST_OK.replace('a clean line', 'a clean 2 line');
     const q = quiet();
     try {
       expect(reportPlay({ ok: true, text: leaky, leaked: false }, 'reader')).toBe(1);
