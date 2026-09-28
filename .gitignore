@@ -55,5 +55,5 @@ site/public/play/
 .claude/
 docs/art/originals-vibe-5/
 
-# The audition page for the Director's listen: served locally, never shipped.
-site/public/audition/
+# Trace cabinet research — lives on its own branch, not main
+docs/trace.*
