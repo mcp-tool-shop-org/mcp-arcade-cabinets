@@ -630,7 +630,7 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // Each kind holds its own socket whether or not it is live, and each is a
   // different shape as well as a different fill: a bar, a filled square, a
   // notched square. Hue alone is not a channel every player has, and a glyph
-  // that slid left when another power expired made 'the middle one is rapid'
+  // that slid left when a neighbor expired made 'the middle one is rapid'
   // unlearnable — a glyph moving was the same visual event as a power
   // arriving. The sockets are the lamps' grammar: a fixed hole per thing.
   const powers: { t: number; fill: string; shape: 'bar' | 'square' | 'notch' }[] = [
@@ -642,6 +642,12 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   for (let i = 0; i < powers.length; i++) {
     const power = powers[i]!;
     const px = FIELD.width - 18 - i * 10;
+    // The socket (second channel): visible whether the power is live or not,
+    // so the three positions are fixed and learnable.
+    ctx.fillStyle = LAMP_RIM;
+    ctx.fillRect(px, py, 6, 6);
+    ctx.fillStyle = FIELD_FILL;
+    ctx.fillRect(px + 1, py + 1, 4, 4);
     if (power.t <= 0) continue;
     // The last second blinks, four times a second, off on the odd halves.
     const going = power.t <= POWER_WARN_S && Math.floor(power.t * 8) % 2 === 1;

@@ -139,7 +139,11 @@ describe('renderRound', () => {
     const ctx = recordingCtx();
     renderRound(ctx, state);
     const lit = ctx.calls.filter((c) => c.startsWith('rect #e8c060')).length;
-    const rims = ctx.calls.filter((c) => c.startsWith('rect #3a3a4a')).length;
+    // Lamp rims are at the left of the bezel; power sockets also use #3a3a4a.
+    const lampXs = new Set([26, 40]);
+    const rims = ctx.calls.filter(
+      (c) => c.startsWith('rect #3a3a4a ') && lampXs.has(Number(c.split(' ')[2])),
+    ).length;
     expect(lit).toBe(1);
     expect(rims).toBe(2);
   });
