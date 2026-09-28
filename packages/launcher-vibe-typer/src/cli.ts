@@ -28,6 +28,18 @@ import { fileURLToPath } from 'node:url';
 import { VIBE_TOOL_NAMES } from '../../cabinet-server/src/tool-names';
 import { checkMcp } from '../../launcher/src/check';
 import {
+  exitAfter,
+  floorIn,
+  forwardSignals,
+  NODE_FLOOR,
+  nodeMajor,
+  NO_VERSION,
+  openBrowser,
+  type SignalHost,
+  versionExit,
+  versionIn,
+} from '../../launcher/src/core';
+import {
   checkSeatUrl,
   createCabinetServer,
   DARK,
@@ -200,33 +212,12 @@ export function parseArgs(argv: readonly string[]): Args {
  * `0.0.0` is a plausible version and a bug report filed against it hides the
  * fact that the install is broken instead of carrying it.
  */
-export const NO_VERSION = '0.0.0-unknown';
-
-export function versionIn(dir: string): string {
-  try {
-    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
-    const parsed = JSON.parse(raw) as { version?: unknown };
-    return typeof parsed.version === 'string' ? parsed.version : NO_VERSION;
-  } catch {
-    return NO_VERSION;
-  }
-}
 
 /** The published version, for `--version`. */
 export function version(): string {
   const said = versionIn(here);
   if (said === NO_VERSION) sayTrouble("could not read this package's version");
   return said;
-}
-
-/**
- * What `--version` leaves with. Undefined for a version; 1 for the word that
- * stands in for one, so `npx ... --version` in a script or a CI gate stops
- * recording a pass over a string that is not a version. Pure, so the two
- * cases are a test.
- */
-export function versionExit(said: string): number | undefined {
-  return said === NO_VERSION ? 1 : undefined;
 }
 
 /**
@@ -245,71 +236,8 @@ export function bugsIn(dir: string): string | null {
 }
 
 /**
- * The Node major this package's own `engines` field asks for, or null when
- * the manifest cannot be read — the same broken install `missingLines` is
- * for. Taken as a directory for the reason `versionIn` is: both layouts this
- * file runs in sit one directory under the package root.
- */
-export function floorIn(dir: string): number | null {
-  try {
-    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
-    const parsed = JSON.parse(raw) as { engines?: { node?: unknown } };
-    const said = parsed.engines?.node;
-    const found = typeof said === 'string' ? /(\d+)/.exec(said) : null;
-    return found?.[1] ? Number(found[1]) : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * The oldest Node this launcher runs on, read off the manifest so the guard
- * and the published `engines` field cannot say two different things. The 22
- * is only what a package whose manifest will not parse falls back to, and a
- * test holds that literal to the field.
- */
-export const NODE_FLOOR = floorIn(here) ?? 22;
-
-/** The major of a Node version string, or null when it is not one. */
-export function nodeMajor(said: string): number | null {
-  const found = /^v?(\d+)\./.exec(said);
-  return found?.[1] ? Number(found[1]) : null;
-}
-
-/**
- * The halt for a Node older than the floor, or null when the one running is
- * new enough. The shooter's launcher carries the same guard and they change
- * together. Pure, so the table of cases is a test rather than a subprocess on
- * an interpreter this machine does not have.
- *
- * `npx` does not refuse on an engine mismatch: it warns and carries on, so
- * the player reached a megabyte and a half of bundled `cli.js` and whatever
- * it did in there. Every other way this launcher fails to start says a
- * sentence and a `next:` line; the one failure that belongs to the player's
- * machine rather than to the package arrived as a stack trace and was filed
- * as a game bug. A version we cannot read is not a version we refuse on.
- */
-export function nodeFloorHalt(said: string, floor: number): string[] | null {
-  const major = nodeMajor(said);
-  if (major === null || major >= floor) return null;
-  return [
-    'this cabinet needs a newer Node than the one running it',
-    `- expected: Node ${floor} or newer, and this is Node ${said}`,
-    '',
-    `next: install Node ${floor} or newer (https://nodejs.org), then run`,
-    '      npx @mcptoolshop/vibe-typer again',
-  ];
-}
-
-/**
  * What to say when a piece of the package is not in the package. The
  * shooter's launcher carries the same shape and they change together.
- *
- * This is the one failure a player cannot diagnose: it means an interrupted
- * `npx` download or a corrupt cache, and the old messages were four and six
- * words stating a fact with no verb in it. The pack gate in
- * `packages/launcher/scripts/build.mjs` is the model — every halt there ends
- * with a `next:` line naming the command that fixes it.
  */
 export function missingLines(what: string, expected: string, bugs: string | null): string[] {
   return [
@@ -329,9 +257,7 @@ function sayAll(lines: readonly string[]): void {
 
 /**
  * What to say when the walk took a port the player did not ask for, or null
- * when it took the one they did. `--help` documents the walk, but the run is
- * where a player who scripted `--port 8080` or bookmarked 7778 finds out, and
- * the two numbers were never in the same sentence.
+ * when it took the one they did.
  */
 export function movedPortLine(asked: number, got: number): string | null {
   return asked === got ? null : `port ${asked} was busy, so this one is on ${got}`;
@@ -347,45 +273,10 @@ function bundledTapes(): number | null {
   }
 }
 
-/**
- * What `--mcp` resolved, said before the first tool call.
- *
- * `seatLines` was called only in play mode, so an operator wiring this
- * cabinet into an MCP client never learned which daemon or voice worker the
- * session would reach, nor whether VOICE_TOKEN had been picked up. The tapes
- * line is here for the same reason: the launcher quietly points the child at
- * the bundled tapes when CABINET_TAPES is unset, which is the right default
- * and was never stated, so an operator who mounted tapes and misspelled the
- * variable saw a server that started cleanly and seasoned the wires stack
- * with somebody else's.
- *
- * All of it on stderr: under `--mcp` stdout belongs to the transport.
- */
-export function mcpStartLines(
-  env: NodeJS.ProcessEnv = process.env,
-  tapes = bundledTapes(),
-): string[] {
-  const chosen = env.CABINET_TAPES;
-  return [
-    'the cabinet server is up on stdio',
-    // Named here as well as in the help because this is the line an operator
-    // whose client lists no tools actually has in front of them, and it used
-    // to name the seats and the tapes and stop.
-    `its tools: ${MCP_TOOLS}`,
-    ...seatLines(env),
-    chosen
-      ? `tapes: ${chosen} (from the environment), seasoning the wires stack`
-      : tapes === null
-        ? 'tapes: none in this package; set CABINET_TAPES to a directory of your own'
-        : `tapes: the ${tapes} bundled ones season the wires stack (set CABINET_TAPES for your own)`,
-  ];
-}
 
 /**
- * The play-mode flags `--mcp` accepts and then does nothing with. Refusing
- * them outright would break MCP client configs that already carry one;
- * silence about an argument that was ignored is the thing to end, because it
- * reads exactly like the port having been honored.
+ * What `--mcp` silently ignores, said so an operator who passed it in a
+ * script does not think it was accepted.
  */
 export function mcpIgnored(argv: readonly string[]): string[] {
   const lines: string[] = [];
@@ -396,72 +287,44 @@ export function mcpIgnored(argv: readonly string[]): string[] {
   return lines;
 }
 
-/** Ask the desktop to open a url. Never blocks, never fails the run. */
-export function openBrowser(url: string): void {
-  const [cmd, args] =
-    process.platform === 'win32'
-      ? ['cmd', ['/c', 'start', '', url]]
-      : process.platform === 'darwin'
-        ? ['open', [url]]
-        : ['xdg-open', [url]];
-  try {
-    const child = spawn(cmd as string, args as string[], { stdio: 'ignore', detached: true });
-    child.on('error', () => {
-      /* No desktop, or no opener. The url is already printed. */
-    });
-    child.unref();
-  } catch {
-    /* Same. */
-  }
-}
-
-/** Enough of `process` for the signal forwarding to be driven by a test. */
-export interface SignalHost {
-  on: (signal: NodeJS.Signals, handler: () => void) => unknown;
-  off: (signal: NodeJS.Signals, handler: () => void) => unknown;
+/**
+ * The halt for a Node older than the floor, or null when the one running is
+ * new enough. The shooter's launcher carries the same guard and they change
+ * together. Pure, so the table of cases is a test rather than a subprocess on
+ * an interpreter this machine does not have.
+ */
+export function nodeFloorHalt(said: string, floor: number): string[] | null {
+  const major = nodeMajor(said);
+  if (major === null || major >= floor) return null;
+  return [
+    'this cabinet needs a newer Node than the one running it',
+    `- expected: Node ${floor} or newer, and this is Node ${said}`,
+    '',
+    `next: install Node ${floor} or newer (https://nodejs.org), then run`,
+    '      npx @mcptoolshop/vibe-typer again',
+  ];
 }
 
 /**
- * Pass SIGINT and SIGTERM on to the child, and hand back the way to stop
- * doing that. Spelled here as well as in the shooter's launcher because the
- * two packages share a server and not a CLI; the two copies change together.
- *
- * Taking the handlers off again is the load-bearing half. When the child dies
- * of a signal we re-raise it at ourselves so the MCP host sees the cabinet
- * server killed rather than exited; with these listeners still installed, the
- * re-raised signal is delivered to our own handler instead, the default
- * terminate action is suppressed, and the launcher leaves with 0 — telling
- * the host a clean exit for a kill.
+ * What `--mcp` resolved, said before the first tool call.
  */
-export function forwardSignals(
-  child: { killed: boolean; kill: (signal: NodeJS.Signals) => void },
-  host: SignalHost = process,
-): () => void {
-  const installed = (['SIGINT', 'SIGTERM'] as const).map((signal) => {
-    const handler = () => {
-      if (!child.killed) child.kill(signal);
-    };
-    host.on(signal, handler);
-    return [signal, handler] as const;
-  });
-  return () => {
-    for (const [signal, handler] of installed) host.off(signal, handler);
-  };
+export function mcpStartLines(
+  env: NodeJS.ProcessEnv = process.env,
+  tapes = bundledTapes(),
+): string[] {
+  const chosen = env.CABINET_TAPES;
+  return [
+    'the cabinet server is up on stdio',
+    `its tools: ${MCP_TOOLS}`,
+    ...seatLines(env),
+    chosen
+      ? `tapes: ${chosen} (from the environment), seasoning the wires stack`
+      : tapes === null
+        ? 'tapes: none in this package; set CABINET_TAPES to a directory of your own'
+        : `tapes: the ${tapes} bundled ones season the wires stack (set CABINET_TAPES for your own)`,
+  ];
 }
 
-/**
- * What the launcher leaves with when the child is done. A signal death is
- * `128 + the signal number`, the shell's own convention, which is what we
- * would exit with anyway once the re-raise below takes effect — and is the
- * whole answer on Windows, where there is no signal to re-raise and the old
- * code terminated with 1 no matter which signal it had been.
- */
-export function exitAfter(code: number | null, signal: NodeJS.Signals | null): number {
-  if (!signal) return code ?? 0;
-  return 128 + (osConstants.signals[signal] ?? 0);
-}
-
-/** Hand stdio to the cabinet server and live exactly as long as it does. */
 function runMcp(argv: readonly string[]): void {
   if (!existsSync(MCP_SERVER)) {
     sayAll(
@@ -628,6 +491,19 @@ export async function main(argv: readonly string[]): Promise<void> {
   }
   await runPlay(args);
 }
+
+export {
+  exitAfter,
+  floorIn,
+  forwardSignals,
+  NODE_FLOOR,
+  nodeMajor,
+  NO_VERSION,
+  openBrowser,
+  type SignalHost,
+  versionExit,
+  versionIn,
+} from '../../launcher/src/core';
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
 if (invoked === fileURLToPath(import.meta.url)) {

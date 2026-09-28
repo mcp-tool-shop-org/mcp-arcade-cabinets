@@ -24,6 +24,18 @@ import { TOOL_NAMES } from '../../cabinet-server/src/tool-names';
 
 import { checkMcp } from './check';
 import {
+  exitAfter,
+  forwardSignals,
+  NODE_FLOOR,
+  nodeFloorHalt,
+  nodeMajor,
+  NO_VERSION,
+  openBrowser,
+  type SignalHost,
+  versionExit,
+  versionIn,
+} from './core';
+import {
   CLAUDE_CALL_CEILING,
   checkSeatUrl,
   createCabinetServer,
@@ -241,45 +253,14 @@ export function claudeLines(env: NodeJS.ProcessEnv = process.env): string[] {
   ];
 }
 
-/**
- * The version in the package.json one directory above `dir`. Taken as an
- * argument rather than read off `here` so both layouts this file runs in are
- * testable: under `src/` in the repo, and as the bundled `dist/cli.js` in the
- * tarball. Both sit one directory under the package root, and a test proves
- * it rather than the packaged path being taken on trust.
- *
- * Nothing crashes over a version string, so every failure still answers a
- * string — but it answers `0.0.0-unknown` rather than `0.0.0`, because
- * `0.0.0` is a plausible version and a bug report filed against it hides the
- * fact that the install is broken instead of carrying it.
- */
-export const NO_VERSION = '0.0.0-unknown';
 
-export function versionIn(dir: string): string {
+function bundledTapes(): number | null {
   try {
-    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
-    const parsed = JSON.parse(raw) as { version?: unknown };
-    return typeof parsed.version === 'string' ? parsed.version : NO_VERSION;
+    const names = readdirSync(TAPES_DIR).filter((name) => name.endsWith('.tape.json'));
+    return names.length > 0 ? names.length : null;
   } catch {
-    return NO_VERSION;
+    return null;
   }
-}
-
-/** The published version, for `--version` and the MCP handshake. */
-export function version(): string {
-  const said = versionIn(here);
-  if (said === NO_VERSION) sayTrouble("could not read this package's version");
-  return said;
-}
-
-/**
- * What `--version` leaves with. Undefined for a version; 1 for the word that
- * stands in for one, so `npx ... --version` in a script or a CI gate stops
- * recording a pass over a string that is not a version. Pure, so the two
- * cases are a test.
- */
-export function versionExit(said: string): number | undefined {
-  return said === NO_VERSION ? 1 : undefined;
 }
 
 /**
@@ -298,70 +279,7 @@ export function bugsIn(dir: string): string | null {
 }
 
 /**
- * The Node major this package's own `engines` field asks for, or null when
- * the manifest cannot be read — the same broken install `missingLines` is
- * for. Taken as a directory for the reason `versionIn` is: both layouts this
- * file runs in sit one directory under the package root.
- */
-export function floorIn(dir: string): number | null {
-  try {
-    const raw = readFileSync(path.resolve(dir, '..', 'package.json'), 'utf8');
-    const parsed = JSON.parse(raw) as { engines?: { node?: unknown } };
-    const said = parsed.engines?.node;
-    const found = typeof said === 'string' ? /(\d+)/.exec(said) : null;
-    return found?.[1] ? Number(found[1]) : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * The oldest Node this launcher runs on, read off the manifest so the guard
- * and the published `engines` field cannot say two different things. The 22
- * is only what a package whose manifest will not parse falls back to, and a
- * test holds that literal to the field.
- */
-export const NODE_FLOOR = floorIn(here) ?? 22;
-
-/** The major of a Node version string, or null when it is not one. */
-export function nodeMajor(said: string): number | null {
-  const found = /^v?(\d+)\./.exec(said);
-  return found?.[1] ? Number(found[1]) : null;
-}
-
-/**
- * The halt for a Node older than the floor, or null when the one running is
- * new enough. Pure, so the table of cases is a test rather than a subprocess
- * on an interpreter this machine does not have.
- *
- * `npx` does not refuse on an engine mismatch: it warns and carries on, so
- * the player reached a megabyte and a half of bundled `cli.js` and whatever
- * it did in there. Every other way this launcher fails to start says a
- * sentence and a `next:` line; the one failure that belongs to the player's
- * machine rather than to the package arrived as a stack trace and was filed
- * as a game bug. A version we cannot read is not a version we refuse on.
- */
-export function nodeFloorHalt(said: string, floor: number): string[] | null {
-  const major = nodeMajor(said);
-  if (major === null || major >= floor) return null;
-  return [
-    'this cabinet needs a newer Node than the one running it',
-    `- expected: Node ${floor} or newer, and this is Node ${said}`,
-    '',
-    `next: install Node ${floor} or newer (https://nodejs.org), then run`,
-    '      npx @mcptoolshop/ghost-on-the-menu again',
-  ];
-}
-
-/**
  * What to say when a piece of the package is not in the package.
- *
- * This is the one failure a player cannot diagnose: it means an interrupted
- * `npx` download or a corrupt cache, and the old messages were four and six
- * words stating a fact with no verb in it. The pack gate in
- * `scripts/build.mjs` is the shape — every halt there ends with a `next:`
- * line naming the command that fixes it — and the launcher, which is the
- * surface a stranger meets first, had none.
  */
 export function missingLines(what: string, expected: string, bugs: string | null): string[] {
   return [
@@ -381,86 +299,17 @@ function sayAll(lines: readonly string[]): void {
 
 /**
  * What to say when the walk took a port the player did not ask for, or null
- * when it took the one they did. `--help` documents the walk, but the run is
- * where a player who scripted `--port 8080` or bookmarked 7777 finds out, and
- * the two numbers were never in the same sentence.
+ * when it took the one they did.
  */
 export function movedPortLine(asked: number, got: number): string | null {
   return asked === got ? null : `port ${asked} was busy, so this one is on ${got}`;
 }
 
-/** Ask the desktop to open a url. Never blocks, never fails the run. */
-export function openBrowser(url: string): void {
-  const [cmd, args] =
-    process.platform === 'win32'
-      ? ['cmd', ['/c', 'start', '', url]]
-      : process.platform === 'darwin'
-        ? ['open', [url]]
-        : ['xdg-open', [url]];
-  try {
-    const child = spawn(cmd as string, args as string[], { stdio: 'ignore', detached: true });
-    child.on('error', () => {
-      /* No desktop, or no opener. The url is already printed. */
-    });
-    child.unref();
-  } catch {
-    /* Same. */
-  }
-}
-
-/** Enough of `process` for the signal forwarding to be driven by a test. */
-export interface SignalHost {
-  on: (signal: NodeJS.Signals, handler: () => void) => unknown;
-  off: (signal: NodeJS.Signals, handler: () => void) => unknown;
-}
-
-/**
- * Pass SIGINT and SIGTERM on to the child, and hand back the way to stop
- * doing that.
- *
- * Taking the handlers off again is the load-bearing half. When the child dies
- * of a signal we re-raise it at ourselves so the MCP host sees the cabinet
- * server killed rather than exited; with these listeners still installed, the
- * re-raised signal is delivered to our own handler instead, the default
- * terminate action is suppressed, and the launcher leaves with 0 — telling
- * the host a clean exit for a kill.
- */
-export function forwardSignals(
-  child: { killed: boolean; kill: (signal: NodeJS.Signals) => void },
-  host: SignalHost = process,
-): () => void {
-  const installed = (['SIGINT', 'SIGTERM'] as const).map((signal) => {
-    const handler = () => {
-      if (!child.killed) child.kill(signal);
-    };
-    host.on(signal, handler);
-    return [signal, handler] as const;
-  });
-  return () => {
-    for (const [signal, handler] of installed) host.off(signal, handler);
-  };
-}
-
-/**
- * What the launcher leaves with when the child is done. A signal death is
- * `128 + the signal number`, the shell's own convention, which is what we
- * would exit with anyway once the re-raise below takes effect — and is the
- * whole answer on Windows, where there is no signal to re-raise and the old
- * code terminated with 1 no matter which signal it had been.
- */
-export function exitAfter(code: number | null, signal: NodeJS.Signals | null): number {
-  if (!signal) return code ?? 0;
-  return 128 + (osConstants.signals[signal] ?? 0);
-}
-
-/** How many tapes are bundled in this package, or null when there are none. */
-function bundledTapes(): number | null {
-  try {
-    const names = readdirSync(TAPES_DIR).filter((name) => name.endsWith('.tape.json'));
-    return names.length > 0 ? names.length : null;
-  } catch {
-    return null;
-  }
+/** The published version, for `--version` and the MCP handshake. */
+export function version(): string {
+  const said = versionIn(here);
+  if (said === NO_VERSION) sayTrouble("could not read this package's version");
+  return said;
 }
 
 /**
@@ -672,6 +521,20 @@ export async function main(argv: readonly string[]): Promise<void> {
   }
   await runPlay(args);
 }
+
+export {
+  exitAfter,
+  floorIn,
+  forwardSignals,
+  NODE_FLOOR,
+  nodeFloorHalt,
+  nodeMajor,
+  NO_VERSION,
+  openBrowser,
+  type SignalHost,
+  versionExit,
+  versionIn,
+} from './core';
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
 if (invoked === fileURLToPath(import.meta.url)) {
