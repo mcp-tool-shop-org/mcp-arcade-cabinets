@@ -196,6 +196,16 @@ function shiftTierLine(value: Difficulty): HTMLParagraphElement {
 
 type CabinetId = 'ghost' | 'vibe';
 
+/** What the URL hash says about which cabinet to show. */
+function parseHash(): CabinetId | '' {
+  const h = location.hash.slice(1);
+  if (h === 'ghost' || h === 'vibe') return h;
+  return '';
+}
+
+/** True after the next hashchange that we ourselves caused, so it is ignored. */
+let skipHashChange = false;
+
 // ——— which cabinets this build carries ———————————————————————————————————
 // `VITE_CABINET` is a string literal in every bundle (see the `define` in
 // `vite.config.ts`), so these two are `true`/`false` constants by the time
@@ -241,9 +251,9 @@ function cabinetCards(): { id: CabinetId; name: string; line: string; phone: str
  * is what is announced, and focus stays on the card the player pressed.
  * Left and Right move between them, which is what a tab list promises.
  */
-function switchMenu(body: HTMLElement) {
+function switchMenu(body: HTMLElement, initial?: CabinetId) {
   const CABINETS = cabinetCards();
-  let picked: CabinetId = readVibePrefs().cabinet ?? 'ghost';
+  let picked: CabinetId = initial ?? readVibePrefs().cabinet ?? 'ghost';
   // The page's own name, on the page. The document's first heading used to be
   // a cabinet's, below a tab list that had no visible name at all — only an
   // `aria-label` — and the title in the browser's tab appeared nowhere on
@@ -296,6 +306,8 @@ function switchMenu(body: HTMLElement) {
     name.addEventListener('click', () => {
       picked = cabinet.id;
       writeVibePrefs({ cabinet: picked });
+      skipHashChange = true;
+      location.hash = picked;
       paint();
     });
     name.addEventListener('keydown', (e) => {
@@ -331,7 +343,8 @@ function menu() {
   const body = document.createElement('section');
   body.className = 'column';
   if (HAS_GHOST && HAS_VIBE) {
-    switchMenu(body);
+    const fromHash = parseHash();
+    switchMenu(body, fromHash || undefined);
   } else if (HAS_GHOST) {
     app.append(body);
     ghostMenu(body);
@@ -1187,6 +1200,13 @@ if (root) {
   });
   window.addEventListener('unhandledrejection', (e) => {
     recover(THE_CABINETS, e.reason);
+  });
+  window.addEventListener('hashchange', () => {
+    if (skipHashChange) {
+      skipHashChange = false;
+      return;
+    }
+    if (!recovering) safeMenu();
   });
   safeMenu();
 }
