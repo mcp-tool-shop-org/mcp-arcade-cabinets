@@ -49,6 +49,7 @@ import {
   isCloudModel,
   listPilotModels,
   prepassRound,
+  pushBossVerbs,
   renderRound,
   snapshot,
   SPRITE_KEYS,
@@ -1970,7 +1971,7 @@ export function mountGhost(
               // Verbs drawn for a view that is no longer on the field are
               // dropped, not queued — the same admit the fire seat makes.
               if (!admitIntents({ left, gen, fireGen, asked, live: state })) return;
-              state.bossQueue.push(...verbs);
+              pushBossVerbs(state, verbs);
             });
           }
         }
