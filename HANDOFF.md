@@ -1,3 +1,71 @@
+# HANDOFF — post-v0.12.0 review complete, `main` at `0536a76` (2026-09-28)
+
+**The post-shipped review is complete.** Six housekeeping items landed in `9692832` before this session; **ten commits landed today**, all pushed to `origin/main`:
+
+| Commit    | What changed                                                                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `b0817bc` | Shell imports `pushBossVerbs` instead of pushing to `state.bossQueue` directly; one guard, one bound.                                           |
+| `d56e60b` | `CabinetSet.words` gains `deployed`; loader, `cabinet.json`, and shell ribbon read it.                                                          |
+| `bc07c6c` | Runners test no longer hardcodes a real voice line as the golden header literal.                                                                |
+| `91296c7` | Touch zones write `autoFire` (fire pad) and `toX` (move pads, with `pointermove` updates); 5 shell tests.                                       |
+| `8ae1d64` | Power glyphs keep a fixed hollow socket on the bezel even when inactive (F-2af941a8); render test updated.                                      |
+| `ac3db00` | Hash routes `#ghost`/`#vibe` on tab click, read on load, `hashchange` for back button (F-4759c927).                                             |
+| `cef1fe1` | Prefetch `askNextIntents` reports faults via `seatFailed`; `delete input.toX` for exactOptionalPropertyTypes; esbuild 0.28.2 in both launchers. |
+| `26fa25f` | Add pace and check-in levers to Vibe Typer settings row (wave-11 owed); test in `typer-menu.test.ts`.                                           |
+| `6eb19bc` | Extend settings-row test for pace and check-ins selects.                                                                                        |
+| `0536a76` | Store corpus fingerprint with weak pairs; exclude own snippet in creep fallback.                                                                |
+
+**1457 tests pass, 1 skipped.** Clean working tree. No version bump yet; the Director decides when these become a release.
+
+---
+
+## Ghost on the Menu — DONE for this pass
+
+All Stage D open items are closed:
+- `pushBossVerbs` wired through the shell, one guard, one bound (F-e3f5b2a4).
+- `words.deployed` lever added; loader, `cabinet.json`, and shell ribbon read it (F-7c8d9e1b).
+- Touch zones write `autoFire` and `toX`; `pointermove` updates move pads; 5 shell tests (F-9a4c7d2e).
+- Power glyphs keep a fixed hollow socket on the bezel when inactive (F-2af941a8).
+- Prefetch `askNextIntents` reports faults via `seatFailed`; `delete input.toX` for exactOptionalPropertyTypes (F-b8c6a5d7).
+- Caption queue surfaces three computed-but-unsaid sim events (column-full, hull-hit, fog-landed).
+- Bezel flash for column-full and hull-hit events.
+- Runners test golden header no longer hardcodes a real voice line.
+
+**Ghost is finished for this pass.** The next session moves to **Vibe Typer improvements** (below), then returns to Ghost for v2 features if the Director says so.
+
+---
+
+## Vibe Typer — DONE for this pass
+
+All open items from the review are closed:
+- **Settings row pace/check-in levers**: two selects added (pace: faster/normal/slower; check-ins: normal/fewer/off). Persist under `vibe.` prefs, validate on read, pass through `VibeOpts` into `createRun`. Test in `typer-menu.test.ts` (wave-11 owed, shell half).
+- **Corpus fingerprint exported but not stored**: `corpusFingerprint` now stored beside weak pairs in localStorage; `readWeak()` returns `{}` when the fingerprint mismatches, preventing stale pair data across corpus changes.
+- **Creep fallback drawing another snippet's row**: `creepLine()` now takes an `excludeId` parameter; authored and fallback creeps both exclude the request's own snippet, preventing a snippet from creeping itself.
+- **Endless runner's doubled ending line**: fixed in a prior commit; the endless seat no longer duplicates the final transcript line.
+- **Hash routes** for cabinet selection (`#ghost`/`#vibe`) implemented (wave-10 proposal).
+
+**Vibe Typer is finished for this pass.**
+
+---
+
+## Standing rules (unchanged)
+
+- Version stays `0.x`; no third npm package without the Director's word.
+- No `dependencies` in launcher packages; esbuild bundles the workspace in.
+- `pnpm verify` is the gate.
+- Identity-scan the git-tracked tree before every push.
+- Both packages publish under one version gate; cutting a GitHub release publishes both to npm (not undoable after 72 hours).
+
+---
+
+## What the next session should do
+
+The review backlog is empty. The deferred proposals in `docs/deferred-next.md` (PWA basics, headless check, status route, launcher CLI factoring) are still open and can be picked up at the Director's discretion.
+
+If the Director wants **v2 cabinet improvements**, start with Ghost (the user asked to finish Ghost first, then Vibe Typer; both are now done, so the next pass can go deeper on either cabinet or on shared infrastructure).
+
+---
+
 # HANDOFF — post-v0.12.0 review, `main` at `6eb19bc` (2026-09-28)
 
 **The post-shipped review is complete.** Six housekeeping items landed in `9692832` before this session: SCORECARD.md removed, esbuild bumped to 0.28.2, 45 stale swarm branches deleted, `pnpm verify` ordered build-before-test, trace research files added to `.gitignore`, and five wave-10 proposals picked into `docs/deferred-next.md` (hash routes, PWA basics, headless check, status route, launcher CLI factoring). **Nine commits landed today**, all pushed to `origin/main`:
@@ -57,285 +125,3 @@ Read this, then `CLAUDE.md`, then `docs/vibe-typer.dispatch.md` (the Director's 
 - **Vibe Typer** is a second cabinet, headless only, in `packages/vibe-typer` (private). Named by the Director; tagline "You're absolutely right."; the multiplier's field word is **vibes**; the agent's default name was Claudette until 2026-09-15, when the Director asked for a neutral name and it became Sprocket. `pnpm verify` runs its play-through (`pnpm test:play vibe-typer --tier 0 --bot typist:40`) beside Ghost's. Ninety-five tests, sixteen band bars, three seeds, eight levels, four tiers. The corpus is dev-op-typer's 249 snippets plus an integration stack from the tapes. The Kimi review of the slice-1 diff is `docs/vibe-typer.slice1.review.md`.
 - **The README is the arcade's entrance** (cabinet table, the shared chassis, layout, adding a cabinet). Ghost's page is `packages/ghost-on-the-menu/README.md`. Logo: the cabinet render in the brand repo (`readme.png`; the ghost icon is `ghost-readme.png`). Repo description and topics updated by `gh repo edit`. The seven translated READMEs still describe Ghost; **translations run before the next tag, not before** (GPU; the watchdog was down this session).
 - The v0.7.0 dogfood swarm's eighty local branches are merged; their worktrees still sit under `.swarm/worktrees/` with 33 dirty diffs archived as patches in `.swarm/archive/`. Removing them was blocked by the permission classifier; the Director runs the one-liner in the session record if wanted. `.claude/` is git- and prettier-ignored now (builder worktrees live there).
-
-## Slice 2, the shell, landed the same day (Opus, `docs/vibe-typer.kickoff-s2.md` → `docs/vibe-typer.slice2.md`, Kimi review `docs/vibe-typer.slice2.review.md`)
-
-The cabinet plays in the browser: `pnpm -F @mcp-arcade-cabinets/cabinets dev`, pick **Vibe Typer** on the switch, pick a product, **Play**. The coordinator played level one end to end with synthetic keystrokes: reply, code, a creep, four pieces in the terminal frame, the deploy ribbon, the standup at valuation 126 with the `seed` milestone and the run's seed. Pages builds both cabinets into `/play/` (`pnpm build:play`); the launcher packs the same bundle, so `npx @mcptoolshop/ghost-on-the-menu` would serve both after the next release — the Director's call whether that is wanted before Vibe Typer has art. The Director has not played it yet; that is the next thing that matters.
-
-## Next: slice 3, the seat and the retro's history (one Opus brief, from `docs/vibe-typer.dispatch.md` § Build plan)
-
-The endless user seat as a lever fill through the say gate, pull path (the launcher's tiered seat: Claude by API key, else an Ollama cloud tag, else local), prefetch, authored fallback; the voice worker on the user's lines; README section and a handbook page; translations before the tag. Then slice 4, the container tools `product`, `ask`, `react`. Art for the preview pieces and ACE-Step beds wait on the Director's word after he plays it on rectangles.
-
-## What slice 2 was briefed as (kept for the record)
-
-`apps/cabinets/src/vibe-typer.ts` with the same mount shape as `mountGhost`; a two-card picker in `main.ts` with Ghost as the default; DOM chat and editor, canvas preview that grows by `state.built`, the scoreboard words from `cabinet.json`; the keystroke audio (LoKey-Typer's `TypewriterAudio` shape with dev-op-typer's five keyboard sample sets under `E:/AI/prototypes/packages/dev-op-typer/DevOpTyper/Assets/Sounds`), a cue table off `state.events`, the procedural bed with tempo on hype; quick sync; Pages. The launcher rides along only after the shell exists (it packs `apps/cabinets/dist`), and the npm package name stays Ghost's. Slice 3 is the endless user seat (pull path) and the retro; slice 4 the container tools `product`, `ask`, `react`.
-
-## Decisions the Director made this session, so nobody re-litigates them
-
-Tone gleeful and absurd, the user comically absurd and the agent sycophantic and lovable; a real scoreboard with combos and multipliers whose points correlate with what is built; the payoff is that something is built; levels with an endless option; a context timer that is joyful in levels and painful only in hardcore; the endless user may be a model as a lever fill (G28); the name Vibe Typer. Two earlier drafts were refused: Ghost-with-a-keyboard, and a nagging-user design.
-
----
-
-# HANDOFF — Ghost on the Menu, v0.8.2
-
-Read this, then `CLAUDE.md`, then `docs/npm-launcher.md`, then `docs/npm-launcher.review.md` (Grok, 2026-09-14, no halt; the three changes applied), then `docs/shift.dispatch.md` (G19–G22), `docs/cabinet-container.md`, `docs/cabinet-server.md`, `docs/cabinet-voice.md`, `docs/ollama-content.md`. Lock: G1, G7–G10, G11–G18, G19–G22. Still `0.x`. **One package is on npm** — `@mcptoolshop/ghost-on-the-menu@0.8.2` is the one to install. `0.8.1` play mode is the Pages chrome; `0.8.0` handshook as `0.7.0`.
-
-## Shipped in v0.8.2 (Grok, 2026-09-14, launcher seats, published on the Director's word)
-
-Tag `v0.8.2` at this commit. GitHub release; npm follows from `release.yml`. Do not retag `v0.8.0` or `v0.8.1`.
-
-The three changes from `docs/npm-launcher.review.md`:
-
-- **Play mode lights the local seats.** `VITE_LOCAL_SEATS=true` at pack time. Pages still omits them. The pack andons if the play bundle is missing `data-local-seats`, `/ollama/api/tags`, `/ollama/api/generate`, or `Ollama bosses`. Measured: launcher bundle has all four; a plain `vite build` has none of the first three.
-- **Archivist sits the say seat.** `BOSS_KINDS` in `packages/launcher/src/serve.ts` and `apps/cabinets/vite.config.ts` is four kinds, in step with the sim.
-- **Next-verb is `POST /api/generate`** on both allowlists. Pull/delete/create still 404 before a socket opens. Fire stays on `/api/chat`.
-
-`--mcp` is unchanged and still the path that already worked.
-
-### Two things the Director still owns
-
-1. **Flip "Require 2FA and disallow tokens"** on the package access page.
-2. **`npm deprecate @mcptoolshop/ghost-on-the-menu@0.0.0 "placeholder"`** — and, if wanted, deprecate `0.8.0` for the wrong handshake. `0.8.1` play mode is the Pages chrome; say so if you deprecate that too.
-
-### Still open
-
-- **Bump the GHCR tag** in both READMEs once an `0.8.x` image is pushed; they correctly still say `0.7.0`. GHCR has `:0.5.0`, `:0.6.0`, `:0.7.0` only.
-- Still deferred from v0.7.0: Comfy Cloud polish of `probe.png`, `shelf.png`, `ledger.png`, `boss-archivist*.png`; `archivist.mp3` then `TRACK_KEYS`; `feel: loud` as a real mix preset; silent `takeEl.play()`; mix-overlap unasserted; `pnpm film` never captures the end scene; Catalog `source.commit` trails HEAD.
-- **Still parked:** House Call; slice 5 stingers/backdrops; no MCP shift/climb tool; no next-verb MCP tools.
-
-## Pickup after v0.8.1 (Grok, 2026-09-14, the launcher review) — history
-
-Tag `v0.8.1` at `8ac309f`. [GitHub release](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.8.1). npm `0.8.1` published 2026-09-15T00:46:17Z. Grok reviewed the launcher (`docs/npm-launcher.review.md`). No halt in the sim lane. Tracked-tree identity scan **CLEAN**. The three changes landed as v0.8.2 above.
-
-## Shipped in v0.8.1 (Claude, 2026-09-14, handshake fix + npm hero)
-
-Tag `v0.8.1` at `8ac309f`. The MCP seat announces `0.8.1`. The release gate now reads `SERVER_VERSION` out of the source and halts on a mismatch (negative-tested). Hero art on the npm-only README (absolute raw URL). Repo README translations were not owed.
-
-## Shipped in v0.8.0 (Claude, 2026-09-14, the npm launcher, published on the Director's word)
-
-Tag `v0.8.0` at `d0b17b7`. [GitHub release](https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.8.0), Pages, and **npm**: [`@mcptoolshop/ghost-on-the-menu@0.8.0`](https://www.npmjs.com/package/@mcptoolshop/ghost-on-the-menu) — published by CI over OIDC with provenance (`_npmUser: "GitHub Actions"`, sigstore log index 2837055244, 63 files, 6.0 MB packed). Translations shipped **with** the tag this time, all eight languages.
-
-`packages/launcher` is the only package that publishes; the other four stay `"private": true`. It declares no runtime dependencies — esbuild collapses the workspace — which is what keeps this to one package. `npx @mcptoolshop/ghost-on-the-menu` serves the shell on loopback; `--mcp` is the stdio cabinet server. Play-mode local seats landed as v0.8.2. `--mcp` was smoke-tested from the registry after the 0.8.0 publish.
-
-**Cutting a GitHub release now publishes to npm.** After 72 hours an npm version can only be deprecated, never unpublished. Compensators in `docs/npm-launcher.md`.
-
-### What this release taught, kept because it will recur
-
-A registry 404 is **not** proof a name is unpublished. `registry.npmjs.org` lags npmjs.com by roughly two minutes after a publish, and npm says so in its own output. A session read a 404 that arrived 115 seconds after the placeholder publish, concluded npm allows Trusted Publishing on a non-existent name, and rewrote the canonical playbook twice on that basis before the timestamps settled it. `npm view <pkg> time --json` is authoritative. The full account is in `docs/npm-launcher.md` and the `npm-placeholder-bootstrap` playbook.
-
----
-
-# History — pickup after v0.7.0
-
-**Pickup after v0.7.0 (Grok, 2026-09-14, dogfood swarm + full treatment, published on the Director's word).** Tag `v0.7.0` at `34433f5`. GitHub release, Pages, GHCR `:0.7.0` (`linux/amd64`+`linux/arm64`, digest `sha256:162480aa60565d6c629b82ef58dc158151f9490d3a669c5f579b53a7af16314d`). Catalog PR docker/mcp-registry#5061 still sealed (network off, no voice), awaiting Docker. The player is the agent; a shift is four flavored calls.
-
-## What shipped in v0.7.0
-
-- Shift flavors (pressure / area-deny / trough / peak) on climb `[0, 0.35, 0.7, 1]`. Card telegraph in words. Field rooms follow the named bed.
-- Cast: probe, shelf, ledger. Archivist closes inspect on a shift. Picker-alone inspect has no Archivist (band).
-- Named beds, ducked mix, 36s hold (one loop) before a switch.
-- Offline gated aside bag (24 per room, no replacement). Not an Ollama seat.
-- Ollama `askNextIntents` / `bossQueue`. Timeout is script. Pages omits local seats.
-- Catalog user-tape overlay, multi-arch CI, host compose at `voice/compose.host.yaml`.
-
-## Next (cover in a few days)
-
-1. **Translations.** GPU was busy; this tag shipped English-only. `v0.7.0` is immutable — do not retag. On a follow-up commit: `node E:/AI/polyglot-mcp/scripts/translate-all.mjs E:/AI/mcp-arcade-cabinets/README.md` then `git add README.md README.*.md`.
-2. **Comfy Cloud polish** of `probe.png`, `shelf.png`, `ledger.png`, `boss-archivist.png`, `boss-archivist-open.png` (graphic hulls shipped).
-3. **`archivist.mp3`** then add `archivist` to `TRACK_KEYS` so Pages fail-closes.
-4. **Health leftovers:** `feel: loud` as a real mix preset; silent `takeEl.play()`; mix-overlap unasserted; `pnpm film` default never captures the end scene; Catalog `source.commit` often trails HEAD (rebuild lever).
-5. **Still parked:** House Call; slice 5 stingers/backdrops; no MCP shift/climb tool; no next-verb MCP tools.
-6. **Director play** of asides + 36s beds when eyes allow.
-
----
-
-# History — pickup after v0.6.0
-
-Read this as history, then `CLAUDE.md`, then `docs/shift.dispatch.md` (slice 7, the shift: the research, the lock G19–G22, the numbers), `docs/cabinet-container.md` (slice 6), `docs/cabinet-server.md` (slices 1–3) and `docs/cabinet-voice.md` (slice 4), then `docs/ollama-content.md` (the v0.4.0 seats). The lock is G1, G7–G10 in `docs/study-swarm.dispatch.md`, G11–G18 in `docs/cabinet-server.dispatch.md`, and G19–G22 in `docs/shift.dispatch.md`. `docs/cabinet-server.kickoff.md` is history (slices 1–3 landed on `main`, untagged); `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are older history.
-
-**This is a pickup after v0.6.0 (Claude, 2026-09-11, full treatment, published on the Director's word): the shift (slice 7, `docs/shift.dispatch.md`), the music rework, the container (slice 6), and Grok's reviews of both applied.** The direction is set: the player is the agent and the rig hands them the calls; a shift is the play. Tag `v0.6.0`, GitHub release, Pages, the image on GHCR (`:0.6.0`, digest `sha256:3b6c80ea…85b95b`; the package is public since 2026-09-11). The Docker MCP Catalog PR is open as docker/mcp-registry#5061 (sealed entry, network off), awaiting Docker's review. Still `0.x`, still not npm. The v0.5.0 pickup below stands as history.
-
-**The v0.5.0 pickup (Claude, 2026-09-11): slices 1–4 of `docs/cabinet-server.dispatch.md`, the music rework and the tuning, reviewed by Grok (`docs/cabinet-server.review.md`, `docs/cabinet-voice.review.md`).** Tag `v0.5.0`, GitHub release, Pages. The tuning diff (`git log fe47dae..b4c5a33`: `patterns.ts`, `sim.ts`, the pattern files) shipped before Grok's review of it; that review is still owed.
-
-## What landed after v0.4.0 (untagged, on `main`)
-
-- **`packages/cabinet-server`**: the cabinet as a stdio MCP server (official SDK). Tools `fire`, `say`, `sfx`, `view`, `tapes` from `tools.json`; fact-blind at the boundary (`CabinetHost` of words; fact-flip test per tool); the say gate and `personas.json`; the say seat tiered by capability (Claude agent by `ANTHROPIC_API_KEY` on the node side, else Cloud tag, else local). `pnpm test:play ghost --seat mcp`. New sim lever `state.bossSay` (a gate-passed line lands as an aside).
-- **The shell's seats moved behind the contract** (`apps/cabinets/src/ghost.ts`): the fire seat through Ollama tool calling with prefetch, revoke on the boss's words, warm-up, `keep_alive`; the say seat through the dev server's `/cabinet/say`. Two status words beside the picker name the tool each seat called. The schema path is off in the shell (measured: it silences local models).
-- **`pnpm sit`** reports per model: verb collapse, tool suppression, bad verbs, revoked, late, and what the gate refused. `--constrain on|off`, `--say on|off`, `--seat mcp|prompt`.
-- **The Ghost's own tapes**: `fixtures/tapes/cabinet.*.tape.json` from `mcp-arcade bout --target stdio` against the server (naive and task-only, wrap off and on). On its own menu the naive policy followed nothing. The band's roster is derived from disk now (twenty tapes).
-- **The panel**: `docs/cabinet-server.panel.md`, every G12 and G14 claim confirmed by two family-different jurors. Grok's review (`docs/cabinet-server.review.md`): no halt; the gate now refuses any digit glyph; only one-sentence lines seed the say prompt (the Director's word).
-- **The voice (slice 4, G15)**: `voice/worker.py` (Kokoro + faster-whisper + fx-dub's spoken-content receipt), the `speak` tool, voice sheets in `personas.json`, the voicer in the shell (a **Voice** checkbox, on only when `pnpm voice` is up), `pnpm sit --voice`. Numbers and decisions in `docs/cabinet-voice.md`.
-
-## Next
-
-1. **The Director plays the seat on the local shell**: `pnpm voice` in one terminal, `pnpm -F @mcp-arcade-cabinets/cabinets dev` in another, the **Ollama bosses** and **Voice** checkboxes, a Cloud tag. Hears the lines. Set `ANTHROPIC_API_KEY` in the dev server's environment to sit the Claude tier; it was built, not measured live.
-2. **The voice pass on `voice.json`** is the Director's: the seed pools are thin (whisperer three, menu five, doorman two one-sentence lines of eight each), and the three preset voices (`bf_emma`, `am_michael`, `bm_george`) are a first cast. A clone per boss kind waits on a consented recording; `personas.json → boss.<kind>.voice.clone` is the slot.
-3. **Grok's slice-4 review is in** (`docs/cabinet-voice.review.md`, no halt): the three changes it asked for are applied (the shell's audio url behind the proxy, the worker's audio route receipt-gated, the voicer never plays over a catch and drops a held take on a newer line). Its slice-6 list stands: bind for the container, a secret on the hook, a cache cap, no rig path default. Its paragraph on the budget is for the Director: start at one second.
-4. **The music** was reworked on the Director's play notes (a bed holds two minutes, then crossfades into the playing wave's bed; bursts as an overlay; a fade at the scene). With **Voice** on every boss speaks its authored spawn line, so the voice is audible without a seat. **Tuning on the same notes:** rounds fifteen percent longer with every clock slowed to match, bursts of four to nine seconds that climb by wave (`copiesLater`, `intensityLater` in `parallelism.json`). The band admits it with the live sweeper exactly on the bar; a third longer did not (nine deaths against five). Longer waves than this mean a fourth lamp on the long tiers or a relaxed band, the Director's call. Grok reviews the pattern and loader diff (`patterns.ts` gains `copiesAt`, `intensityAt`, `waveProgress`; `sim.ts` reads them in `fireScale` and `spawnDecoys`). The Director hears it again; the `poison`, `rug`, `unlisted` and `breather` beds are no longer picked by the shell (the boss beds carry their waves) and are the Director's to reassign or retire.
-5. **Slice 6, the container, landed after v0.5.0** (`docs/cabinet-container.md`): the `Dockerfile`, the image on GHCR (`ghcr.io/mcp-tool-shop-org/mcp-arcade-cabinets:0.5.0`, digest `sha256:743a9eda…3bca75`, pushed by the Director; the `gh` token now carries `write:packages`), the worker hardened for the container route (bearer token, cache cap, no rig path default), and the Catalog entry drafted under `catalog/`. **The Director opens the PR to `docker/mcp-registry`** (copy `catalog/server.yaml` and `catalog/tools.json` into `servers/mcp-arcade-cabinets/`; the pinned `source.commit` is the one that carries the Dockerfile). Grok reviewed slice 6 (`docs/cabinet-container.review.md`, no halt; both changes applied). **Slice 5** (stingers and backdrops) waits on the Director's word.
-6. **Slice 7, the shift, landed the same day on the Director's decisions** (lamps refill at every call; the climb is the lever; four calls; a replay code): `docs/shift.dispatch.md` is the research, the lock G19–G22, what was built, measured and refused. New: `packages/ghost-on-the-menu/src/shift.ts`, `patterns/shift.json`, `copiesShift` / `intensityShift` in `parallelism.json`, `Round.climb`, the shift bar in `band.test.ts`, `pnpm sweep --climb 1`, and the shell's **Shift** button, call card, code box and closing scene. Grok reviewed it (`docs/shift.review.md`, no halt; `ribbon` swapped off the word list; a mixed-word check on the code is a later lever). The music was reworked the same day on the Director's notes: seeded openings from the five wave beds, rotation at each hold, music carried through a shift, the burst track gone and the bed sped up instead. **The Director plays a shift** and says whether the climb list wants a trough on the third call and whether four is the length; both are data (`shift.json`). Untagged; translations before the next tag.
-7. Translations before any later tag, not before.
-
----
-
-## The v0.4.0 pickup as it was written
-
-Read this, then `CLAUDE.md`, then `docs/ollama-content.md` (the decisions from the Ollama session). `docs/study-swarm.dispatch.md` is G1, G7, G8, G9, G10 only. `docs/ollama-content.kickoff.md` and `docs/ghost-wave-3.kickoff.md` are history — the seats shipped as v0.4.0; wave 3 shipped as v0.3.0.
-
-**This is a pickup after v0.4.0 (Claude, 2026-09-10, the Ollama seats, full treatment, published on the Director's word).** Tag `v0.4.0`, GitHub release, Pages. Still `0.x`, still not npm. The next thing that matters is the Director's own play of the seat on the local shell.
-
-## What shipped in v0.4.0
-
-- **The Cloud boss now sits.** `gpt-oss` on Ollama Cloud ignores `think: false`; v0.3.0's default seat was the scripted boss every beat. `pilot.ts` retries with `think: 'low'` and remembers. Measured ~550 ms a beat, no fallbacks (`pnpm sit`).
-- **The seat is felt.** `spread` is a wide fan, `column` leans the boss over the ship then aims, `hold` is a silent still beat. New lever `fire.json → tiers.N.boss.pilot { fan, spread, lean }` with schema and fact-flip tests. The view carries the stick and the phase motion word; health is against the real max.
-- **The voice seat.** Each boss picks which of its own `voice.json` lines it says at spawn (a letter reply; `state.bossLine`). Drafts unchanged.
-- **Seat status** beside the picker (words only; never on the field). Retired Cloud tags say so instead of silently scripting.
-- **`pnpm sit`** (`scripts/sit.mjs`): the headless sit that measured all of this.
-- Refused with reasons in `docs/ollama-content.md`: parallelism toggle (seed's fairness), path pick and phase pick (not this session, written up), asides.
-
-## Next (Director, 2026-09-10): the cabinet server
-
-The Director authorised a study-swarm for the next layer: the cabinet as an MCP server in a Docker container, listed in the Docker MCP Catalog, whose tools are the levers a model uses (fire, say, sfx, stinger, voice, backdrop). The dispatch is `docs/cabinet-server.dispatch.md`: 24 verified findings, the lock extended G11–G18, the tool list as levers, a six-slice build plan. The paste-ready brief for slices 1–3 is `docs/cabinet-server.kickoff.md`.
-
-1. Next session: paste `docs/cabinet-server.kickoff.md` (server, seat over tools, self-bout). Not voice, stingers, backdrops or the container yet.
-2. Still open from v0.4.0: play the seat locally and react to the voice drafts; Grok reviews the Ollama-session diff (`git log 6e1b95f..v0.4.0`).
-3. Everything below this line is the v0.3.0 pickup as it was written, kept for the layout, lanes, lock and gate. Where it says `v0.3.0` / `23b5d87`, read `v0.4.0` and the tag.
-
----
-
-## Where it is (verified 2026-09-10)
-
-| What         | Value                                                                        |
-| ------------ | ---------------------------------------------------------------------------- |
-| Repo         | `E:/AI/mcp-arcade-cabinets` (`mcp-tool-shop-org/mcp-arcade-cabinets`)        |
-| Commit / tag | `23b5d87` / `v0.3.0`                                                         |
-| Release      | https://github.com/mcp-tool-shop-org/mcp-arcade-cabinets/releases/tag/v0.3.0 |
-| Landing      | https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/                     |
-| Game         | https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/play/                |
-| Handbook     | https://mcp-tool-shop-org.github.io/mcp-arcade-cabinets/handbook/            |
-
-Landing header **Play**, hero **Play Ghost on the Menu**, and the usage card all go to `/play/`. Live `/play/` serves the class sprites (`answer.png`) and ACE-Step beds (`parallelism.mp3`). Pagefind is up.
-
-All workspace packages are `"private": true`. The release is the git tag, the GitHub release, and Pages. **Not npm. Not 1.0.0.** Identity scan was CLEAN on the tracked tree, the tag archive, and the re-fetched GitHub tarball.
-
-## The Ollama session as it was briefed (done; kept for the record)
-
-**Focus: the Ollama boss feature, then other Ollama content behind the proper levers.** The whole session. Do not start leftover slice-3 classes, sprite-fit, or a new wave unless this work is done and the Director says so.
-
-### 1. The boss seat that already exists
-
-Local only: `pnpm -F @mcp-arcade-cabinets/cabinets dev`. Checkbox **Ollama bosses**, model picker next to it. Vite proxies `/ollama` → `127.0.0.1:11434`. Cloud tags first; default `gpt-oss:120b-cloud` when pulled. Pages cannot reach the daemon.
-
-| Piece                                                | Where                                     |
-| ---------------------------------------------------- | ----------------------------------------- |
-| Frozen prompt, parse, Cloud tag match                | `packages/ghost-on-the-menu/src/pilot.ts` |
-| Shell checkbox, picker, `/api/tags`, `/api/generate` | `apps/cabinets/src/ghost.ts`              |
-| Proxy                                                | `apps/cabinets/vite.config.ts`            |
-
-The prompt is frozen and fact-blind (G7). `think: false` plus a short `num_predict`. Parse the **last** matching verb (`spread` / `column` / `hold` / `fog` / `plate` / `script`), not the first word. If the call fails, the sim keeps the scripted phase fire. A fact in the prompt is a halt.
-
-Play it on the machine with the daemon. Make the seat actually change the fight in a way a player can feel, without ever seeing a lie.
-
-### 2. Other ways Ollama can add content (levers first)
-
-The cabinet already has data levers under `packages/ghost-on-the-menu/patterns/` (paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism). Ollama may **fill those levers**, not invent a second sim.
-
-Allowed shape: the model proposes or picks from a closed set the JSON already names (a voice line from `voice.json`, a path from a class pool, a boss phase already in `bosses.json`, a parallelism burst on/off as the file allows). Same G7 envelope as the boss seat: no fact, no lie flag, no digit, no score word. Seed still owns fairness. The band still andons a gallery or a wall.
-
-Not in scope this session: a second generate path, writing new sprites, talking to an MCP server, Docker MCP Toolkit, or anything Pages would have to call.
-
-If a new lever is needed, add it as JSON first, with a load-time schema and a fact-flip test, then let Ollama sit in it. Do not let the model key motion, look, or timing on a lie.
-
-## What to do
-
-1. Sit the local Ollama boss (Cloud tag if pulled). Feel it. Fix what is thin.
-2. List other content seats that fit the lever rule above. Build the ones that stay inside G7.
-3. Do not invent wave 4. Do not unpark House Call. Do not add a Docker MCP Toolkit server unless they ask — that is a later, separate slice (tools for an agent, not the generate path, not a Pages-to-localhost hop).
-4. Voice drafts in `patterns/voice.json` still wait on a play reaction. They are not this session's job unless a lever-seat writes from that file without changing the copy.
-
-## What shipped in 0.3.0
-
-Wave 3 from the kickoff, plus spend-approved art and sound, plus the Cloud boss picker:
-
-- **Drops** (`patterns/drops.json`): boss lamp, formation spread, fall **straight down** (drift 0). Never keyed on a lie. The kickoff said "drift toward the ship"; the Director's later play and the shipped sim are straight down. Move under them.
-- **Voice** (`patterns/voice.json`): four-or-more dry lines per wave kind, boss kind, and the end, picked by the round seed. Drafts. They name the experiment and the creature, never a fact, never a digit.
-- **Tape labels** (`src/label.ts`): fixture / seat / live plus an **i** why from header and wire shape. Fact-flip test. Hardcore is not a label; it is a selector override.
-- **Hardcore**: ladder rung 3, selector only, never from `deriveTier`. One lamp, rage from the first shot, boss hazards (echo, band, plate).
-- **Longer seat rounds**: duration clamps recorded 45–90, seat 90–180, live 50–130, hardcore 80–220.
-- **More classes**: `init`, `ready`, `menu`, `grid`, `answer`, `fog`, `obstacle`, `stall`, `error`, plus three bosses. Handshake ack (`ready`) and error responses are their own classes.
-- **Parallelism** (`patterns/parallelism.json`): seed-placed bursts of extra **honest** copies and a hotter track. Off on the recorded rung. Extra copies are never lies. Hardcore decoys fire; other rungs' extras do not unless `decoysFire`.
-- **Art**: class sprites at 128 px under `apps/cabinets/public/sprites/` (answer, ready, error, drop-lamp, drop-spread, hazard-echo/band/plate, plus the v0.2.0 set). Receipts in `docs/art/receipts.json`. Flux 2 Max via Comfy Cloud. Licence: customer-owned, commercial ok, **must not train / distil / fine-tune**, do not strip credentials, do not add to a style dataset.
-- **Sound**: recorded ACE-Step MP3s in `apps/cabinets/public/tracks/` (inspect, poison, rug, unlisted, whisperer, menu, doorman, breather, parallelism). Chiptune remains the fallback.
-- **Ollama Cloud bosses**: `src/pilot.ts`. `isCloudModel` matches `:cloud$` or `-cloud$`. Default `gpt-oss:120b-cloud` when pulled. `think: false` and a short `num_predict` so a thinking 120B still returns one verb. Parse the last matching verb, not the first word.
-
-## What is still open (not this session unless asked)
-
-- **Voice approval.** Drafts in `patterns/voice.json`. Wait for the Director's play notes.
-- **Slice 3 leftover:** the kickoff asked to map _every_ distinct wire shape in the sixteen tapes (`resources/list`, `prompts/list`, pings, long payloads, …). Not every shape has its own class yet. Classes today are the nine in `SpriteClass`. New sprites are a spend ask: count first, wait for the yes.
-- **Sprite fit:** grid members draw in a member-width box; bosses stretch to the sim rect (the Menu squash is the point). If the Director wants boss art unstretched, that is an aspect-fit in `render.ts`, not a sim change. Claude's lane.
-- **House Call** parked at `152f548` until a design that plays exists. `tape-core` still holds the scoring rules for that day.
-- **Docker MCP Toolkit** later, separate.
-
-## The lock
-
-From `docs/study-swarm.dispatch.md`. Not negotiable:
-
-- **G1.** Cabinets are read-only consumers of tape JSON (`mcp-arcade.tape/v1`). They never load a receipt. The reveal is the tape's wire-derived fact, never a game-computed verdict.
-- **G7.** The cabinet arranges the tape; it does not transcribe it. Lies are shootable but not pre-labelled: they reveal on the hit. The round ends with a scene, not a count.
-- **G8.** No shared-guess surface.
-- **G9.** No "you beat" claim except against the instrument's pinned fact.
-- **G10.** Every end screen names the tape, the server and the policy, and nothing more. No score, count, or digit on screen, ever.
-
-Nothing about a lie may differ before the hit: look, motion, timing, sprite key, drop, label, boss pose, voice line, parallelism copy. Extra parallelism copies that clone a lie's class are still honest.
-
-## Lanes
-
-| Lane   | Owns                                                                                            |
-| ------ | ----------------------------------------------------------------------------------------------- |
-| Grok   | `tape-core`, `prepass`, `sim`, `patterns/*`, `label`, `pilot` (the frozen prompt and the parse) |
-| Claude | `render`, `cues`, `audio`, `apps/cabinets` shell, bots, fairness band, docs, Pages copy         |
-
-The Ollama session crossed lanes on the Director's brief: Claude edited `sim.ts` (the seat's verbs, the lean, the hold, the line pick), `pilot.ts`, `patterns.ts` and `fire.json`. Grok should review that diff (`git log 6e1b95f..main`).
-
-Each reviews the other's diff. Cloud panel on G7 claims. Neither partner tags; the Director's word cuts a version.
-
-## Layout
-
-| Path                                  | What                                                                                                                                  |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/cabinet-server`             | The cabinet as a stdio MCP server: `tools.json`, `personas.json`, the gate, the boundary, the seat machine, the say tiers, the voicer |
-| `voice/`                              | The host-side voice worker (Kokoro, faster-whisper, fx-dub). `pnpm voice`. Runs from `.venv`, never in the container                  |
-| `Dockerfile`, `catalog/`              | The cabinet server as a container for the Docker MCP Catalog; the drafted registry entry                                              |
-| `packages/tape-core`                  | Load a tape, refuse forbidden keys at any depth, slice by atom                                                                        |
-| `packages/ghost-on-the-menu/src`      | `prepass`, `sim`, `patterns`, `render`, `cues`, `audio`, `play`, `label`, `pilot`                                                     |
-| `packages/ghost-on-the-menu/patterns` | Ten JSON files: paths, formations, fire, bosses, ladder, waves, player, drops, voice, parallelism                                     |
-| `apps/cabinets`                       | Vite shell. `pnpm build:play` writes gitignored `site/public/play/` for Pages                                                         |
-| `fixtures/tapes`                      | Twenty tapes (sixteen from the instrument, four the cabinet recorded of itself). The only input the game gets                         |
-| `site/`                               | site-theme landing + Starlight handbook. `secondaryCta` stays `{ href: 'handbook/', label: 'Read the Handbook' }`                     |
-| `scripts`                             | `play.mjs`, `film.mjs`, `sweep.mjs`, `sit.mjs`                                                                                        |
-
-Tuning is data. Change a lever, `pnpm sweep`, then `pnpm test` (the band is the andon). A change that makes a gallery or a wall fails the build.
-
-## The gate, every time before a push
-
-```bash
-cd E:/AI/mcp-arcade-cabinets
-pnpm verify
-python %USERPROFILE%\.grok\bin\identity-scan.py .
-```
-
-`pnpm verify` is lint, typecheck, test, build, and `test:play ghost --fixture naive-ndjson`. When a pattern changed, also `pnpm sweep`. Identity scan from the **repo** cwd, never from `C:\WINDOWS\system32`. Stage explicit paths; never `git add .`. Do not add `site/public/play` or `site/dist`. Git author is the org noreply. Pages deploy is a public surface — scan before push even when npm is held.
-
-## Hard stops
-
-- Stays `0.x`. A publish is not a promotion to 1.0.0.
-- No npm. Packages stay private.
-- No score, count, digit, pass/fail, NRP, integrity or utility on screen. The play-through greps screen text for any digit.
-- Tapes only. No receipt, no `docs/proof`, no instrument code in this repo.
-- Identity never ships (home path, personal mailbox, Tailscale, token paths, legal name, scanner needles). Needles stay in `~/.grok/secrets/identity-needles.txt`.
-- House Call stays parked.
-- Art spend only on the Flux 2 Max / Comfy Cloud route, with receipts. Re-check licence before any public deploy of new images.
-
-## How we got here (short)
-
-v0.2.0 published 2026-09-10 (playable cabinet, fairness band, first sprite set). Director play at tier 0: TV frame cheap, field too small, no full screen, "no logic." Frame gone, field full width, F for full screen, then wave cards, protocol order, answers, dives, boss fights, aimed fire. Wave 3 kickoff: drops, voice, more enemies, longer rounds, hardcore, labels. Grok built the sim/data; spend-approved sprites and ACE-Step beds landed; Cloud boss picker landed still at 0.2.0; full treatment published **v0.3.0** the same day. Git history from `7534b30` through `23b5d87` is the diary. Older "next slice: wave card and field reset" in prior handoffs **already landed**.
