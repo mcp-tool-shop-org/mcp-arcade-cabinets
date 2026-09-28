@@ -218,9 +218,9 @@ describe('the settings row', () => {
     expect((wrap.querySelector('select[aria-label="music"]') as HTMLSelectElement).value).toBe(
       'off',
     );
-    expect((wrap.querySelector('select[aria-label="reading pace"]') as HTMLSelectElement).value).toBe(
-      '2',
-    );
+    expect(
+      (wrap.querySelector('select[aria-label="reading pace"]') as HTMLSelectElement).value,
+    ).toBe('2');
     expect((wrap.querySelector('select[aria-label="check-ins"]') as HTMLSelectElement).value).toBe(
       'off',
     );

@@ -20,7 +20,9 @@ import {
   agentNameOf,
   codeOf,
   corpusOf,
+  corpusFingerprint,
   createRun,
+  DEFAULT_CORPUS,
   endlessPeek,
   feedRequests,
   gateCode,
@@ -462,8 +464,12 @@ export function readWeak(): Record<string, number> {
     const raw = localStorage.getItem(WEAK_KEY);
     const parsed: unknown = raw ? JSON.parse(raw) : {};
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const o = parsed as Record<string, unknown>;
+    if (o.corpus !== corpusFingerprint(DEFAULT_CORPUS)) return {};
+    const pairs = o.pairs as Record<string, unknown>;
+    if (!pairs || typeof pairs !== 'object' || Array.isArray(pairs)) return {};
     const out: Record<string, number> = {};
-    for (const [pair, count] of Object.entries(parsed as Record<string, unknown>)) {
+    for (const [pair, count] of Object.entries(pairs)) {
       if (pair.length === 2 && typeof count === 'number' && count > 0) out[pair] = count;
     }
     return out;
@@ -488,7 +494,10 @@ export function mergeWeak(
 
 function writeWeak(next: Record<string, number>): void {
   try {
-    localStorage.setItem(WEAK_KEY, JSON.stringify(next));
+    localStorage.setItem(
+      WEAK_KEY,
+      JSON.stringify({ corpus: corpusFingerprint(DEFAULT_CORPUS), pairs: next }),
+    );
   } catch {
     /* blocked storage: the next run simply starts fresh */
   }

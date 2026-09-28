@@ -268,10 +268,16 @@ function authoredCreep(snippet: Snippet, levelId: string): { line: string; ask: 
   return { line: own.line, ask: own.ask };
 }
 
-/** A one-line addition from the same stack at or under the request's band. */
-function creepLine(corpus: Corpus, stack: Stack, at: Band, rng: () => number): string | null {
+/** A one-line addition from the same stack at or under the request's band, never the request's own snippet. */
+function creepLine(
+  corpus: Corpus,
+  stack: Stack,
+  at: Band,
+  excludeId: string,
+  rng: () => number,
+): string | null {
   const pool = inBand(corpus, stack, 1, at).filter(
-    (s) => s.code.includes('\n') || s.code.length > 0,
+    (s) => s.id !== excludeId && (s.code.includes('\n') || s.code.length > 0),
   );
   if (pool.length === 0) return null;
   const snippet = pool[Math.floor(rng() * pool.length)]!;
@@ -369,7 +375,7 @@ export function planLevel(opts: PlanOpts): LevelPlan | null {
       if (own) {
         request.creep = { line: own.line, ask: fill(own.ask, product, snippet) };
       } else {
-        const line = creepLine(opts.corpus, stack, snippet.band, rng);
+        const line = creepLine(opts.corpus, stack, snippet.band, snippet.id, rng);
         if (line !== null) request.creep = { line, ask: opts.picker.creep() };
       }
     }
