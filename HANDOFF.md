@@ -1,6 +1,6 @@
-# HANDOFF — post-v0.12.0 review, `main` at `cef1fe1` (2026-09-28)
+# HANDOFF — post-v0.12.0 review, `main` at `6eb19bc` (2026-09-28)
 
-**The post-shipped review is complete.** Six housekeeping items landed in `9692832` before this session: SCORECARD.md removed, esbuild bumped to 0.28.2, 45 stale swarm branches deleted, `pnpm verify` ordered build-before-test, trace research files added to `.gitignore`, and five wave-10 proposals picked into `docs/deferred-next.md` (hash routes, PWA basics, headless check, status route, launcher CLI factoring). **Seven more commits landed today**, all pushed to `origin/main`:
+**The post-shipped review is complete.** Six housekeeping items landed in `9692832` before this session: SCORECARD.md removed, esbuild bumped to 0.28.2, 45 stale swarm branches deleted, `pnpm verify` ordered build-before-test, trace research files added to `.gitignore`, and five wave-10 proposals picked into `docs/deferred-next.md` (hash routes, PWA basics, headless check, status route, launcher CLI factoring). **Nine commits landed today**, all pushed to `origin/main`:
 
 | Commit    | What changed                                                                                                                                    |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -11,14 +11,18 @@
 | `8ae1d64` | Power glyphs keep a fixed hollow socket on the bezel even when inactive (F-2af941a8); render test updated.                                      |
 | `ac3db00` | Hash routes `#ghost`/`#vibe` on tab click, read on load, `hashchange` for back button (F-4759c927).                                             |
 | `cef1fe1` | Prefetch `askNextIntents` reports faults via `seatFailed`; `delete input.toX` for exactOptionalPropertyTypes; esbuild 0.28.2 in both launchers. |
+| `26fa25f` | Add pace and check-in levers to Vibe Typer settings row (wave-11 owed); test in `typer-menu.test.ts`.                                           |
+| `6eb19bc` | Extend settings-row test for pace and check-ins selects.                                                                                        |
 
 **1457 tests pass, 1 skipped.** Clean working tree. No version bump yet; the Director decides when these become a release.
 
-**Ghost on the Menu is finished for this pass.** All Stage D open items are closed, the wave-10 hash-route proposal is implemented, the `onFail` seam from Stage C is wired, and the launcher esbuild bump is done. What remains is Director-blocked (endless E2–E4, lock G31–G35) or belongs to Vibe / the cabinet server (settings row pace levers, hosted-tier ceiling, catalog bump).
+**Ghost on the Menu is finished for this pass.** All Stage D open items are closed, the wave-10 hash-route proposal is implemented, the `onFail` seam from Stage C is wired, and the launcher esbuild bump is done.
 
-**The next session should move onto Vibe Typer improvements.** The deferred-next.md proposals (F-1ddadc07 PWA basics, F-cff99996 headless check, F-14547f9e status route, F-4e691438 launcher CLI factoring) are still valid and unscheduled. The `nag` tool (from the v0.11.0 owed list) is a cabinet-server feature, not a cabinet feature, and waits on the Director.
+**Vibe Typer: the settings row now reaches the sim's pace and check-in levers.** Two selects added: pace (faster/normal/slower) and check-ins (normal/fewer/off). Both persist under `vibe.` prefs, validate on read, and pass through `VibeOpts` into `createRun`. The wave-11 owed item for the shell half is closed; the "voice tie" half (whether the voice worker should also respect these scalings) is still open and needs Director clarification.
 
-**Standing rules unchanged:** version stays `0.x`; no third npm package without the Director's word; no `dependencies` in launcher packages; `pnpm verify` is the gate; identity-scan the tree before every push.
+**What remains for Vibe Typer:** the two sim fixes from Stage C (creep fallback drawing another snippet's row; corpus fingerprint exported but not stored beside a best), the endless runner's doubled ending line, and the four deferred proposals in `docs/deferred-next.md` (PWA basics, headless check, status route, launcher CLI factoring).
+
+**The next session can continue with any of the above.** The standing rules are unchanged: version stays `0.x`; no third npm package without the Director's word; no `dependencies` in launcher packages; `pnpm verify` is the gate; identity-scan the tree before every push.
 
 ---
 
