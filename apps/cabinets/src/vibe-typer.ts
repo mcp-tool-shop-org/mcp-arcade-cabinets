@@ -116,7 +116,7 @@ const RIBBON_FONT = '16px system-ui, sans-serif';
  * `CabinetSet` in `packages/vibe-typer/src/patterns.ts` and its loader, and
  * is not this file's to add.
  */
-const DEPLOY_WORD = 'deployed';
+// DEPLOY_WORD removed: now reads words.deployed from the cabinet levers.
 /**
  * The room the milestone word has on the card: its right half, which is where
  * it is drawn because every card keeps its motif in its left third. The word
@@ -1839,14 +1839,14 @@ export function mountVibeTyper(root: HTMLElement, opts: VibeOpts): VibeMount {
         c.fillStyle = '#101018';
         c.font = RIBBON_FONT;
         c.textAlign = 'center';
-        c.fillText(DEPLOY_WORD, PREVIEW_W / 2, PREVIEW_H - 27, RIBBON_MAX);
+        c.fillText(words.deployed, PREVIEW_W / 2, PREVIEW_H - 27, RIBBON_MAX);
         c.textAlign = 'left';
       } else {
         c.fillStyle = '#e8a04a';
         c.fillRect(0, PREVIEW_H - 46, PREVIEW_W, 26);
         c.fillStyle = '#101018';
         c.font = RIBBON_FONT;
-        c.fillText(DEPLOY_WORD, 16, PREVIEW_H - 27, RIBBON_MAX);
+        c.fillText(words.deployed, 16, PREVIEW_H - 27, RIBBON_MAX);
       }
     }
     if (flashLeft > 0) {

@@ -157,6 +157,8 @@ export interface CabinetSet {
     hype: string;
     streak: string;
     context: string;
+    /** The word on the deploy ribbon. Default 'deployed'. */
+    deployed: string;
     /** The beat in words. The enum is never on screen (slice 2's decision 5). */
     beats: Record<Beat, string>;
   };
@@ -707,7 +709,14 @@ function loadCabinet(raw: unknown): CabinetSet {
   const voice = loadVoice(req(obj, file, 'voice'), file);
   const wordsRaw = asRecord(req(obj, file, 'words'), file, 'words');
   const words = { beats: {} as Record<Beat, string> } as CabinetSet['words'];
-  for (const key of ['valuation', 'valuationUnit', 'hype', 'streak', 'context'] as const) {
+  for (const key of [
+    'valuation',
+    'valuationUnit',
+    'hype',
+    'streak',
+    'context',
+    'deployed',
+  ] as const) {
     const word = asString(at(wordsRaw, key, file, `words.${key}`), file, `words.${key}`);
     const wordFault = lineFault(word);
     if (wordFault !== null) {
