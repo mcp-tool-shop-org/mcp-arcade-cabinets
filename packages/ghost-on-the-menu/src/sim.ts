@@ -669,6 +669,8 @@ export function createRoundState(round: Round, opts: RoundStateOpts = {}): Round
     refusals: 0,
     columnT: 0,
     hullHits: 0,
+    bezelFlashT: 0,
+    bezelFlash: null,
     hazards: [],
     bossIntent: null,
     bossQueue: [],
@@ -1872,6 +1874,10 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   state.rapidT = Math.max(0, state.rapidT - dt);
   state.pierceT = Math.max(0, state.pierceT - dt);
   state.columnT = Math.max(0, state.columnT - dt);
+  if (state.bezelFlashT > 0) {
+    state.bezelFlashT = Math.max(0, state.bezelFlashT - dt);
+    if (state.bezelFlashT <= 0) state.bezelFlash = null;
+  }
   if (state.caption) {
     state.caption.t -= dt;
     if (state.caption.t <= 0) {
@@ -1938,7 +1944,11 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
   const refused = pressed && state.fireCooldown <= 0 && !mayFire;
   if (refused) state.refusals += 1;
   state.columnFull = refused;
-  if (refused && state.columnT <= 0) sayColumn(state, meta);
+  if (refused && state.columnT <= 0) {
+    sayColumn(state, meta);
+    state.bezelFlash = 'column';
+    state.bezelFlashT = CAPTION_T;
+  }
   if (pressed && state.fireCooldown <= 0 && mayFire) {
     const cx = state.player.x + state.player.w / 2;
     const y = state.player.y - SHOT_H;
@@ -2096,6 +2106,8 @@ export function stepRound(state: RoundState, input: RoundInput, rawDt: number): 
         enemy.hitT = 0;
         state.hullHits += 1;
         sayHull(state, meta);
+        state.bezelFlash = 'hull';
+        state.bezelFlashT = CAPTION_T;
         if (shot.pierce) continue;
         break;
       }

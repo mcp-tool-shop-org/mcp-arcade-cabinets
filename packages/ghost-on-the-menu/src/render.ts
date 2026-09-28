@@ -212,6 +212,8 @@ const BOSS_FLASH_FILL = 'rgba(255, 255, 255, 0.75)';
 const BOSS_BURST = 0.6;
 const BOSS_BURST_FILL = '#e8e0c8';
 const BEZEL_H = 14;
+/** Seconds of a bezel flash; matches the sim's CAPTION_T without importing it. */
+const BEZEL_FLASH_S = 2.2;
 /** Seconds of a drop's power left at which its bezel glyph starts to blink. */
 const POWER_WARN_S = 1;
 /** Tallest body a caught lie can park at: the largest h in patterns/formations.json. */
@@ -592,6 +594,16 @@ export function renderRound(ctx: DrawContext, state: RoundState, opts: RenderOpt
   // sockets are a hollow 8×6 with a grey rim so three holes stay visible.
   ctx.fillStyle = BEZEL;
   ctx.fillRect(0, FIELD.height - BEZEL_H, FIELD.width, BEZEL_H);
+  // A brief flash on the bezel's top edge for events that cost the player
+  // and already have a caption: the full column and the hull that lived.
+  if (state.bezelFlashT > 0) {
+    const alpha = state.bezelFlashT / BEZEL_FLASH_S;
+    ctx.fillStyle =
+      state.bezelFlash === 'column'
+        ? `rgba(232, 192, 96, ${alpha * 0.6})`
+        : `rgba(120, 160, 200, ${alpha * 0.6})`;
+    ctx.fillRect(0, FIELD.height - BEZEL_H, FIELD.width, 2);
+  }
   const slots = Math.max(1, state.maxLives);
   for (let i = 0; i < slots; i++) {
     const lx = 12 + i * 14;

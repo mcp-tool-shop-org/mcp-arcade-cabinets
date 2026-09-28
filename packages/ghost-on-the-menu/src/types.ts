@@ -344,6 +344,10 @@ export interface RoundState {
   columnT: number;
   /** Hits hulls took and lived through this round. For cues and tests; never drawn as a digit. */
   hullHits: number;
+  /** Seconds of bezel flash remaining, for events the bezel itself marks. */
+  bezelFlashT: number;
+  /** What the bezel is flashing for, if anything. */
+  bezelFlash: 'column' | 'hull' | null;
   /** Boss-emitted hazards. Class motion, never fact motion. */
   hazards: Hazard[];
   /** Optional Ollama (or test) boss fire verb. Never derived from a fact. */
