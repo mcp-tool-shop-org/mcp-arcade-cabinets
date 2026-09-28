@@ -3,7 +3,7 @@
 // terminal. Each case here is red against the code as it stood before the
 // amend wave.
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,9 +25,12 @@ function run(script, args, timeout = 30000) {
   });
 }
 
+const NAIVE_NDJSON = JSON.parse(
+  readFileSync(path.join(ROOT, 'fixtures/tapes/naive-ndjson.tape.json'), 'utf8'),
+);
 const GHOST_OK = [
   'Ghost on the Menu',
-  'tape bout_GOLDEN fixture naive-ndjson policy naive server mcp-arcade-fixture bot reader',
+  `tape ${NAIVE_NDJSON.bout_id} fixture naive-ndjson policy naive server mcp-arcade-fixture bot reader`,
   'round complete',
   'Same experiment, same guests, different evening.',
   'naive-ndjson',
