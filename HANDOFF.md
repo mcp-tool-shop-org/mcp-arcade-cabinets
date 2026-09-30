@@ -1,4 +1,17 @@
-# HANDOFF — v0.13.1 shipped (2026-09-30)
+# HANDOFF — v0.13.2 shipped (2026-09-30)
+
+**v0.13.2 is a dependency patch, cut on the Director's word the same day as 0.13.1.** It ships the lockfile fix merged as #5: `fast-uri` 3.1.8 (bundled through the MCP SDK's `ajv`) and `ip-address` 10.7.2 (lockfile only). That closes Dependabot alerts #1–#3. No path from the cabinets reached either bug. Tagged at `3c7b3d3`. Every surface was updated:
+
+- **npm:** both packages at 0.13.2, published by `release.yml`. Both tarballs bundle only `fast-uri@3.1.8`.
+- **GHCR:** `0.13.2` is manifest list `sha256:539108f3…`. It was pulled back and both cabinets answered `v0.13.2` with their tools on amd64 and arm64, bundling fast-uri 3.1.8.
+- **Pages:** redeployed by the Site run on `3c7b3d3`.
+- **Catalog:** the pin moved to `3c7b3d3` (`735d1e2`), and docker/mcp-registry#5061 and #5141 were brought current.
+
+**Rig note:** this machine's Docker had lost its arm64 binfmt registration (probably a Docker Desktop restart), so arm64 containers failed with `exec format error` even though buildx still built them. `docker run --rm --privileged tonistiigi/binfmt --install arm64` restores it until the next restart. Local Docker also keeps one platform per tag, so smoke arm64 by its manifest digest.
+
+---
+
+# Earlier — v0.13.1 shipped (2026-09-30)
 
 **v0.13.1 is a build fix, and nothing a player sees changes.** The Catalog job on `main` hung for 30 minutes after `pnpm install` died with SIGILL under QEMU arm64. The Dockerfile's build stage now runs on `$BUILDPLATFORM` (its output is plain JS), and the build step has a 10-minute timeout. It was merged as #4 and tagged at `c7f0332`. Every surface was updated:
 
@@ -7,7 +20,7 @@
 - **Pages:** redeployed by the Site run on `c7f0332`, with the badge at v0.13.1.
 - **Catalog:** the `catalog/` pin moved to `c7f0332` (`f935675`). docker/mcp-registry#5061 and #5141 were brought current. v0.13.0 had skipped this step, so both listings sat at the 0.12.0 pin until today.
 
-**After the release:** the three medium Dependabot alerts are fixed on `main` (#5, `48f5085`). Only the lockfile changed: `fast-uri` 3.1.8 and `ip-address` 10.7.2. No path from the cabinets could reach either bug. fast-uri only resolves the servers' own schema refs, and ip-address is only in the HTTP transport, which the cabinets do not use. The published 0.13.1 packages and image still bundle fast-uri 3.1.7. The fix ships with the next release, and no 0.13.2 is owed for it alone.
+**After the release:** the three medium Dependabot alerts were fixed on `main` (#5, `48f5085`) and shipped as 0.13.2 (above).
 
 ---
 
