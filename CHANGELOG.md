@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.2] - 2026-09-30
+
+A dependency patch. Nothing a player sees changes, and no path from the cabinets reached either advisory; this release puts the patched code in what ships.
+
+### Security
+
+- **fast-uri 3.1.8** (GHSA-hrr3-gc8f-f4qj), bundled into both launchers, both cabinet servers and the image through the MCP SDK's `ajv`. The advisory is host case folding on scheme-relative URLs, which could let a case-sensitive host allowlist be sidestepped; `ajv` only resolves the servers' own schema refs with it, so no allowlist read its output.
+- **ip-address 10.7.2** (GHSA-h3mg-xc3c-68pw, GHSA-j6r3-76f7-8jcv), in the lockfile only. It comes through `express-rate-limit`, which only the SDK's HTTP transport uses; the cabinets speak stdio and it is in no bundle.
+
 ## [0.13.1] - 2026-09-30
 
 A build fix for the image and a coverage upload in CI. Nothing a player sees changes; the image is rebuilt so its arm64 half no longer runs Node under emulation to get made.
