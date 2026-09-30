@@ -7,7 +7,7 @@
 - **Pages:** redeployed by the Site run on `c7f0332`, with the badge at v0.13.1.
 - **Catalog:** the `catalog/` pin moved to `c7f0332` (`f935675`). docker/mcp-registry#5061 and #5141 were brought current. v0.13.0 had skipped this step, so both listings sat at the 0.12.0 pin until today.
 
-**Owed:** three medium Dependabot alerts. `fast-uri` 3.1.7 is bundled into both launchers and the image through the MCP SDK's `ajv`. `ip-address` 10.7.0 is in the lockfile only. Patching them needs a lockfile bump; whether it ships as 0.13.2 is the Director's call.
+**After the release:** the three medium Dependabot alerts are fixed on `main` (#5, `48f5085`). Only the lockfile changed: `fast-uri` 3.1.8 and `ip-address` 10.7.2. No path from the cabinets could reach either bug. fast-uri only resolves the servers' own schema refs, and ip-address is only in the HTTP transport, which the cabinets do not use. The published 0.13.1 packages and image still bundle fast-uri 3.1.7. The fix ships with the next release, and no 0.13.2 is owed for it alone.
 
 ---
 
