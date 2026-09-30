@@ -1,70 +1,83 @@
 # mcp-arcade-cabinets: how it works
 
-Mapped at 2026-09-24 from commit 8ebb997.
+Mapped at 2026-09-30 from commit c01c274 by Atlas 1.24.0.
 
 ## What this is
 
-15 parts, mostly TypeScript (156 files). Work enters through 6 doors; CI and Site each reach 10 parts, and CI is followed because it comes first by name. It publishes a package to npm, chosen at run time. People run cabinet-server, ghost-on-the-menu and vibe-typer.
+15 parts, mostly TypeScript (158 files), JavaScript (23), Python (6), CSS (2), Astro (1) and HTML (1). Work enters through 6 doors; CI and Site each reach 10 parts, and CI is followed because it comes first by name. It publishes @mcptoolshop/ghost-on-the-menu (packages/launcher) and @mcptoolshop/vibe-typer (packages/launcher-vibe-typer) to npm. It deploys a site to GitHub Pages. People run ghost-on-the-menu and vibe-typer.
 
-## What changed since the last map
+## What changed since 2026-09-24 (8ebb997)
 
-This is the first map.
+- ghost-on-the-menu now imports scripts.
+- vibe-typer now imports scripts.
+- CI's pull request trigger now also names `codecov.yml`.
+- CI's push trigger now also names `codecov.yml`.
+- CI now also runs apps/cabinets/src/ and apps/cabinets/vite.config.ts.
+- And 5 more changes to doors.
+- packages/vibe-typer/authoring/*-*-*-****-edit.json is now written by packages/vibe-typer/scripts/author.mjs.
+- packages/vibe-typer/authoring/*-*-*-****-run.json is now written by packages/vibe-typer/scripts/author.mjs.
+- packages/vibe-typer/patterns/corpus/bash.json is now written by packages/vibe-typer/scripts/port-corpus.mjs.
+- And 23 more new writers and readers of places.
+- 7 files added, 1 removed and 57 changed content, across 13 parts.
 
 ## What comes in
 
-1. **CI.** On a pull request touching 20 paths; on a push to main touching 20 paths; or by hand. Runs scripts/play.mjs, apps/cabinets/test/, packages/cabinet-server/test/ and 21 more; checks apps/cabinets/package.json, fixtures/tapes/, package.json and 15 more.
-2. **Site.** On a pull request touching 14 paths; on a push to main touching 14 paths; or by hand. Runs site/astro.config.mjs and site/src/. On main, it also runs scripts/play.mjs, apps/cabinets/test/, packages/cabinet-server/test/ and 21 more; checks packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts, packages/cabinet-server/src/server.ts and 13 more.
-3. **Publish.** When a release is published; or by hand. Runs packages/launcher-vibe-typer/scripts/build.mjs, packages/launcher/scripts/build.mjs, scripts/play.mjs and 23 more; checks package.json, packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts and 14 more.
-4. **cabinet-server** (a command people run). Runs packages/cabinet-server/dist/server.js, built from a source this map cannot place.
-5. **ghost-on-the-menu** (a command people run). Runs packages/launcher/dist/cli.js, built from a source this map cannot place.
-6. **vibe-typer** (a command people run). Runs packages/launcher-vibe-typer/dist/cli.js, built from a source this map cannot place.
+1. **CI.** On a pull request touching 21 paths; on a push to main touching 21 paths; or by hand. Runs scripts/play.mjs, apps/cabinets/src/, apps/cabinets/test/ and 61 more; checks packages/, voice/worker.py, apps/ and 10 more; packs apps/cabinets/package.json, fixtures/tapes/, package.json and 9 more into an image.
+2. **Site.** On a pull request touching 14 paths; on a push to main touching 14 paths; or by hand. Runs apps/cabinets/src/, apps/cabinets/vite.config.ts, site/astro.config.mjs and 2 more. On main, it also runs scripts/play.mjs, apps/cabinets/test/, packages/cabinet-server/test/ and 45 more; checks packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts, packages/cabinet-server/src/server.ts and 177 more.
+3. **Publish.** When a release is published; or by hand. Runs packages/launcher-vibe-typer/scripts/build.mjs, packages/launcher/scripts/build.mjs, scripts/play.mjs and 86 more; checks package.json, packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts and 178 more.
+4. **cabinet-server** (a command bundled into @mcptoolshop/ghost-on-the-menu). Runs packages/cabinet-server/src/server.ts.
+5. **vibe-typer** (a command people run). Runs packages/launcher-vibe-typer/src/cli.ts.
+6. **ghost-on-the-menu** (a command people run). Runs packages/launcher/src/cli.ts.
 
 ## What happens through CI
 
-1. The workflow runs scripts/play.mjs and scripts/test/ in scripts, packages/cabinet-server/test/ in cabinet-server, apps/cabinets/test/ in cabinets, packages/ghost-on-the-menu/test/ in ghost-on-the-menu, packages/launcher/test/ in launcher, and 22 files in 3 more parts; it checks apps/cabinets/package.json and apps/ in cabinets, 6 files in the repository root, 8 files in scripts, voice/worker.py in voice, fixtures/tapes/ in fixtures, and packages/ (6 parts).
+1. The workflow runs scripts/play.mjs and scripts/test/ in scripts, packages/cabinet-server/test/ in cabinet-server, apps/cabinets/src/, apps/cabinets/test/ and apps/cabinets/vite.config.ts in cabinets, packages/ghost-on-the-menu/test/ in ghost-on-the-menu, packages/launcher/test/ in launcher, and 22 files in 3 more parts; it checks apps/ in cabinets, eslint.config.js and vitest.config.ts in the repository root, 8 files in scripts, voice/worker.py in voice, and packages/ (6 parts); it packs packages/cabinet-server/package.json in cabinet-server, apps/cabinets/package.json in cabinets, packages/ghost-on-the-menu/package.json in ghost-on-the-menu, packages/launcher/package.json in launcher, packages/launcher-vibe-typer/package.json in launcher-vibe-typer, and 6 files in 4 more parts into an image.
+2. It uploads coverage to Codecov.
+3. It changes other repositories through the GitHub API.
 
 ## Who reads the results
 
-CI writes nothing in the files this map could read; 2 files could not be.
+CI writes nothing this map can see.
 
 ## The other doors
 
-**Site** runs site/astro.config.mjs and site/src/, runs scripts/play.mjs, apps/cabinets/test/, packages/cabinet-server/test/ and 21 more and checks packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts, packages/cabinet-server/src/server.ts and 13 more on main, and deploys the site on main.
+**Site** runs apps/cabinets/src/, apps/cabinets/vite.config.ts, site/astro.config.mjs and 2 more, runs scripts/play.mjs, apps/cabinets/test/, packages/cabinet-server/test/ and 45 more and checks packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts, packages/cabinet-server/src/server.ts and 177 more on main, changes other repositories through the GitHub API, and deploys the site on main.
 
-**Publish** runs packages/launcher-vibe-typer/scripts/build.mjs, packages/launcher/scripts/build.mjs, scripts/play.mjs and 23 more, checks package.json, packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts and 14 more, and publishes a package to npm, chosen at run time (on a run by hand, only with dry_run false).
+**Publish** runs packages/launcher-vibe-typer/scripts/build.mjs, packages/launcher/scripts/build.mjs, scripts/play.mjs and 86 more, checks package.json, packages/cabinet-server/src/index.ts, packages/cabinet-server/src/server-vibe.ts and 178 more, changes other repositories through the GitHub API, and publishes @mcptoolshop/ghost-on-the-menu (packages/launcher) and @mcptoolshop/vibe-typer (packages/launcher-vibe-typer) to npm (on a run by hand, only with dry_run false).
 
-**cabinet-server** (a command people run) runs packages/cabinet-server/dist/server.js, built from a source this map cannot place.
+**cabinet-server** (a command bundled into @mcptoolshop/ghost-on-the-menu) runs packages/cabinet-server/src/server.ts and reaches ghost-on-the-menu and tape-core.
 
-**ghost-on-the-menu** (a command people run) runs packages/launcher/dist/cli.js, built from a source this map cannot place.
+**vibe-typer** (a command people run) runs packages/launcher-vibe-typer/src/cli.ts and reaches cabinet-server and launcher.
 
-**vibe-typer** (a command people run) runs packages/launcher-vibe-typer/dist/cli.js, built from a source this map cannot place.
+**ghost-on-the-menu** (a command people run) runs packages/launcher/src/cli.ts and reaches cabinet-server.
 
 ## What breaks what
 
-- **tape-core** is imported by 4 parts (cabinet-server, cabinets, ghost-on-the-menu, vibe-typer) and sits on the path of 3 doors.
-- **cabinet-server** is imported by 3 parts (cabinets, launcher, launcher-vibe-typer) and sits on the path of 3 doors.
-- **ghost-on-the-menu** is imported by 2 parts (cabinet-server, cabinets) and sits on the path of 3 doors.
+- **tape-core** is imported by 4 parts (cabinet-server, cabinets, ghost-on-the-menu, vibe-typer) and sits on the path of 4 doors.
+- **cabinet-server** is imported by 3 parts (cabinets, launcher, launcher-vibe-typer) and sits on the path of 6 doors.
+- **ghost-on-the-menu** is imported by 2 parts (cabinet-server, cabinets) and sits on the path of 4 doors.
 - **vibe-typer** is imported by 2 parts (cabinet-server, cabinets) and sits on the path of 3 doors.
-- **launcher** is imported by 1 part (launcher-vibe-typer), and by 1 more only from tests; it sits on the path of 3 doors.
-- **cabinets** is imported by no other part and sits on the path of 3 doors.
-- **launcher-vibe-typer** is imported by no other part and sits on the path of 3 doors.
-- **packages/vibe-typer/patterns/corpus/** is written by vibe-typer and read by vibe-typer; a hand edit reaches every reader.
+- **launcher** is imported by 1 part (launcher-vibe-typer), and by 1 more only from tests; it sits on the path of 5 doors.
+- **launcher-vibe-typer** is imported by no other part and sits on the path of 4 doors.
+- **scripts** is imported only from tests, by 2 parts (ghost-on-the-menu, vibe-typer), and sits on the path of 3 doors.
+- **packages/vibe-typer/patterns/corpus/** is written by vibe-typer and read by vibe-typer, and by 2 tests; a hand edit reaches every reader.
 
 ## What tends to change together
 
-- **apps/cabinets/src/vibe-typer.ts** and **apps/cabinets/test/typer-mount.test.ts** changed together in 17 of 23 commits, inside the cabinets part.
-- **packages/ghost-on-the-menu/src/patterns.ts** and **packages/ghost-on-the-menu/src/sim.ts** changed together in 28 of 44 commits, inside the ghost-on-the-menu part.
-- **packages/ghost-on-the-menu/src/sim.ts** and **packages/ghost-on-the-menu/src/types.ts** changed together in 24 of 43 commits, inside the ghost-on-the-menu part.
-- **packages/ghost-on-the-menu/src/patterns.ts** and **packages/ghost-on-the-menu/test/sim.test.ts** changed together in 23 of 42 commits, inside the ghost-on-the-menu part.
-- **packages/ghost-on-the-menu/src/types.ts** and **packages/ghost-on-the-menu/test/sim.test.ts** changed together in 20 of 40 commits, inside the ghost-on-the-menu part.
+- **apps/cabinets/src/vibe-typer.ts** and **apps/cabinets/test/typer-mount.test.ts** changed together in 17 of 26 commits, inside the cabinets part.
+- **packages/ghost-on-the-menu/src/patterns.ts** and **packages/ghost-on-the-menu/src/sim.ts** changed together in 29 of 47 commits, inside the ghost-on-the-menu part.
+- **packages/ghost-on-the-menu/src/sim.ts** and **packages/ghost-on-the-menu/src/types.ts** changed together in 27 of 46 commits, inside the ghost-on-the-menu part.
+- **packages/ghost-on-the-menu/src/patterns.ts** and **packages/ghost-on-the-menu/test/sim.test.ts** changed together in 23 of 43 commits, inside the ghost-on-the-menu part.
 
 5 files changed together with their own tests, as expected.
 
-Window: 180 days; a pair counts from 10 shared commits, since 33 source files reach 10 revisions; the floor falls to 3 when fewer than 20 do.
+Window: 180 days; a pair counts from 10 shared commits, since 37 source files reach 10 revisions; the floor falls to 3 when fewer than 20 do.
 
 ## What no test touches
 
 Every code part is imported by at least one test.
+
+voice/tests/test_worker.py runs in no workflow.
 
 ## Written but never read
 
@@ -76,12 +89,12 @@ Every code part is imported by at least one test.
 These are candidates from names and call order, not a judgement.
 
 - **badArgLines** is exported by packages/launcher-vibe-typer/src/cli.ts (launcher-vibe-typer) and packages/launcher/src/cli.ts (launcher); the two look alike.
+- **botFor** is exported by packages/ghost-on-the-menu/src/play.ts (ghost-on-the-menu) and packages/vibe-typer/src/play.ts (vibe-typer); the two look alike.
 - **bugsIn** is exported by packages/launcher-vibe-typer/src/cli.ts (launcher-vibe-typer) and packages/launcher/src/cli.ts (launcher); the two look alike.
 - **checkSeats** is exported by packages/launcher-vibe-typer/src/cli.ts (launcher-vibe-typer) and packages/launcher/src/cli.ts (launcher); the two look alike.
-- **exitAfter** is exported by packages/launcher-vibe-typer/src/cli.ts (launcher-vibe-typer) and packages/launcher/src/cli.ts (launcher); the two look alike.
-- **floorIn** is exported by packages/launcher-vibe-typer/src/cli.ts (launcher-vibe-typer) and packages/launcher/src/cli.ts (launcher); the two look alike.
+- **loadPatterns** is exported by packages/ghost-on-the-menu/src/patterns.ts (ghost-on-the-menu) and packages/vibe-typer/src/patterns.ts (vibe-typer); the two look alike.
 
-And 16 more pairs.
+And 9 more pairs.
 
 ## Generated, never hand-edited
 
@@ -89,26 +102,35 @@ And 16 more pairs.
 - **docs/vibe-typer.author-sample.md** is written by packages/vibe-typer/scripts/author.mjs.
 - **packages/vibe-typer/authoring/** is written by packages/vibe-typer/scripts/author.mjs.
 - **packages/vibe-typer/patterns/agent.json** has a block written by packages/vibe-typer/scripts/author.mjs.
-- **packages/vibe-typer/patterns/corpus/** is written by packages/vibe-typer/scripts/author.mjs and packages/vibe-typer/scripts/port-corpus.mjs.
+- **packages/vibe-typer/patterns/corpus/** is written by packages/vibe-typer/scripts/author.mjs.
+- **packages/vibe-typer/patterns/corpus/bash.json** has a block written by packages/vibe-typer/scripts/port-corpus.mjs.
+- **packages/vibe-typer/patterns/corpus/csharp.json** has a block written by packages/vibe-typer/scripts/port-corpus.mjs.
+- **packages/vibe-typer/patterns/corpus/java.json** has a block written by packages/vibe-typer/scripts/port-corpus.mjs.
+- **packages/vibe-typer/patterns/corpus/javascript.json** has a block written by packages/vibe-typer/scripts/port-corpus.mjs.
+- **packages/vibe-typer/patterns/corpus/python.json** has a block written by packages/vibe-typer/scripts/port-corpus.mjs.
+- **packages/vibe-typer/patterns/corpus/sql.json** has a block written by packages/vibe-typer/scripts/port-corpus.mjs.
 - **packages/vibe-typer/patterns/levels.json** has a block written by packages/vibe-typer/scripts/author.mjs.
 - **packages/vibe-typer/patterns/user.json** has a block written by packages/vibe-typer/scripts/author.mjs.
 
 ## Hand-authored
 
-People write .github/, catalog/, fixtures/, the repository root and site/; 12 writes with paths built at run time may land here.
+People write .github/, catalog/, fixtures/, the repository root and site/; 6 writes with paths built at run time may land here.
 
 ## Where to start
 
-.github/workflows/ci.yml → scripts/play.mjs
+.github/workflows/ci.yml → scripts/play.mjs → scripts/lib/cli.mjs
 
 Read those in order to follow one pull request end to end.
 
 ## What this map cannot see
 
-- 17 import sites could not be resolved.
-- 2 files use syntax the parser cannot read (apps/cabinets/test/typer-menu.test.ts and packages/ghost-on-the-menu/src/play.ts), so what they import is not known: `typeof import(…)` as a type argument (1) and other syntax (1).
-- 12 writes and 15 reads use paths built at run time and are not named here.
-- 12 writes and 107 reads go to the directory the command is run in, the home directory or a path its caller passes, not to this repository.
-- 11 commands are built at run time and not followed, 5 of them in tests.
+- 10 imports could not be resolved: `packages/launcher/src/serve.ts` imports a path built at run time, twice; `packages/vibe-typer/scripts/author.mjs` imports a path built at run time; `packages/vibe-typer/scripts/sweep-levels.mjs` imports a path built at run time; and 6 more.
+- 6 writes and 10 reads use paths built at run time and are not named here.
+- 7 writes and 99 reads go to a path their caller passes, not to this repository.
+- 5 writes and 9 reads go to the directory the command is run in (.venv/, catalog/, film/ and 1 more place), not to this repository.
+- 2 writes and 5 reads go to the directory the command is run in (film/, fixtures/, ghost and 1 more place) or a path their caller passes, not to this repository.
+- 4 writes go to a temporary directory, not to this repository.
+- 41 commands are built at run time and not followed, 38 of them in tests.
+- There is a Dockerfile that a workflow builds and none pushes and Docker MCP Catalog entries at catalog/server.vibe.yaml and catalog/server.yaml; what ships from them goes from outside this repository, and is not on this page.
 
 Regenerate with `npx --yes @dogfood-lab/atlas map`.
