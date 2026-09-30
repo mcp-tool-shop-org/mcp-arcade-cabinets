@@ -1,4 +1,17 @@
-# HANDOFF — post-v0.12.0 review complete, `main` at `0536a76` (2026-09-28)
+# HANDOFF — v0.13.1 shipped (2026-09-30)
+
+**v0.13.1 is a build fix, and nothing a player sees changes.** The Catalog job on `main` hung for 30 minutes after `pnpm install` died with SIGILL under QEMU arm64. The Dockerfile's build stage now runs on `$BUILDPLATFORM` (its output is plain JS), and the build step has a 10-minute timeout. It was merged as #4 and tagged at `c7f0332`. Every surface was updated:
+
+- **npm:** both packages at 0.13.1, published by `release.yml` with provenance.
+- **GHCR:** `0.13.1` is manifest list `sha256:9fd921c4…`, amd64 and arm64. It was pulled back and both cabinets listed their tools on both architectures.
+- **Pages:** redeployed by the Site run on `c7f0332`, with the badge at v0.13.1.
+- **Catalog:** the `catalog/` pin moved to `c7f0332` (`f935675`). docker/mcp-registry#5061 and #5141 were brought current. v0.13.0 had skipped this step, so both listings sat at the 0.12.0 pin until today.
+
+**Owed:** three medium Dependabot alerts. `fast-uri` 3.1.7 is bundled into both launchers and the image through the MCP SDK's `ajv`. `ip-address` 10.7.0 is in the lockfile only. Patching them needs a lockfile bump; whether it ships as 0.13.2 is the Director's call.
+
+---
+
+# Earlier — post-v0.12.0 review complete, `main` at `0536a76` (2026-09-28)
 
 **The post-shipped review is complete.** Six housekeeping items landed in `9692832` before this session; **ten commits landed today**, all pushed to `origin/main`:
 
