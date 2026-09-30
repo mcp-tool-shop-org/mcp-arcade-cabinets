@@ -301,6 +301,7 @@ jobs:
           fi
       - name: Build Catalog image
         id: docker_build
+        timeout-minutes: 10
         run: |
           if ! command -v docker >/dev/null 2>&1; then
             echo "docker=missing" >> "$GITHUB_OUTPUT"

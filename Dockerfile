@@ -44,8 +44,10 @@
 #
 # Multi-arch: docker buildx build --platform linux/amd64,linux/arm64 .
 # No GPU stage. FROM is the node:22-alpine index digest (amd64+arm64), not :latest.
+# The build stage runs on the builder's own platform: esbuild's bundle is plain
+# JS, and pnpm under QEMU arm64 died with SIGILL and hung CI (2026-09-29).
 
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
+FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
 RUN corepack enable && corepack prepare pnpm@11.4.0 --activate
 WORKDIR /src
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
