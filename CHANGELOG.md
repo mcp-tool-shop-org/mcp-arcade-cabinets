@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-09-30
+
+A build fix for the image and a coverage upload in CI. Nothing a player sees changes; the image is rebuilt so its arm64 half no longer runs Node under emulation to get made.
+
+### Fixed
+
+- **The image's build stage runs on the builder's own platform** (`FROM --platform=$BUILDPLATFORM`). It only emits esbuild's plain-JS bundle, so the arm64 image no longer runs `pnpm install` under QEMU, which died with SIGILL and hung CI's Catalog job to its 30-minute timeout. Both architectures still ship and both list their tools over stdio; the Catalog build step now has a 10-minute timeout of its own.
+
+### Changed
+
+- **CI uploads coverage and test results to Codecov** over OIDC, with 20 seconds per test on the coverage run only.
+
 ## [0.13.0] - 2026-09-28
 
 Four deferred proposals from the wave-10 feature audit, landed together: PWA basics for the page, a `/status` route that names which seats are dark and why, a `--check` flag on both launchers for headless MCP verification, and the first pass at factoring duplicated launcher CLI utilities into `packages/launcher/src/core.ts`. The post-v0.12.0 review backlog is closed.
