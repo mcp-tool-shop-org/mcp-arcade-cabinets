@@ -1,0 +1,34 @@
+{
+  "$comment": "The calibration switches, at their healthy settings, and the named builds. Each switch keeps the meaning it has in ai-playtest's calibration/game.mjs, so its answer key carries over. 'baseline' is healthy everywhere; each mutant flips one switch (refusal has two); 'bleak' flips every switch except reacts, because a build that ignores input would hide the rest, and 'deaf' covers that one alone.",
+  "defaults": {
+    "worldMoves": true,
+    "refusal": "character",
+    "prompt": "clear",
+    "reacts": true,
+    "choiceCost": true,
+    "goal": "stated",
+    "descriptions": "varied",
+    "deadEnd": false
+  },
+  "presets": {
+    "baseline": {},
+    "still-world": { "worldMoves": false },
+    "system-refusal": { "refusal": "system" },
+    "open-gate": { "refusal": "none" },
+    "bare-prompt": { "prompt": "bare" },
+    "deaf": { "reacts": false },
+    "no-cost": { "choiceCost": false },
+    "no-goal": { "goal": "none" },
+    "same-text": { "descriptions": "repeats" },
+    "trapdoor": { "deadEnd": true },
+    "bleak": {
+      "worldMoves": false,
+      "refusal": "system",
+      "prompt": "bare",
+      "choiceCost": false,
+      "goal": "none",
+      "descriptions": "repeats",
+      "deadEnd": true
+    }
+  }
+}

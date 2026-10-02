@@ -1,0 +1,22 @@
+{
+  "$comment": "The town's clock. The bell tolls every 'turnsPerHour' inputs while worldMoves is on, and the gate is barred at 'closingHour'. A rest at the inn costs 'restCoin' and one hour; a wrong answer at the tower door costs one hour.",
+  "turnsPerHour": 5,
+  "startHour": 1,
+  "closingHour": 12,
+  "restCoin": 1,
+  "hourNames": [
+    "",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve"
+  ]
+}
