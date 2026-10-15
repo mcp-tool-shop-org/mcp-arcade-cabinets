@@ -43,7 +43,7 @@
       "externals": 0,
       "files": [
         {
-          "hash": "c11bd81b04da0a2d295aeabfeb3959488346cbbacaf58e4119b90a3d499ea104",
+          "hash": "e18c40b48180e14a21e2854edf0f4fd600fc25d9cf6356e79da7299fe9944597",
           "path": "packages/cabinet-server/package.json"
         },
         {
@@ -603,7 +603,7 @@
               "line": 93
             }
           ],
-          "hash": "1663ee50d264a8bb3cbaafab9051c88b896c8601a3204eef36d68b9a6ecc1b45",
+          "hash": "920a5c7bf018b329e4dd321ae85bc350a8412e8ee261c9258da4e6052a23c743",
           "importOrder": [
             "packages/vibe-typer/src/index.ts",
             "packages/vibe-typer/src/play.ts",
@@ -672,7 +672,7 @@
               "line": 454
             }
           ],
-          "hash": "047749d574524fb2319dc232da4fa873b767c867dbf7ffec009555116e403f12",
+          "hash": "8883ecf67d8d2178126de27a757babdae502fd0e49839f66c44aae1740f32897",
           "importsFiles": [
             "packages/cabinet-server/src/cabinet.ts",
             "packages/cabinet-server/src/contract.ts",
@@ -1386,7 +1386,7 @@
           "testFramework": "vitest"
         },
         {
-          "hash": "fda0a054172638daabfad88fc75f5f9d2a3f4c9522d330729cf93987c5f53dca",
+          "hash": "b6634c4d400fa86239fea468f99a0f9e65f949d3d8adf22128fed1c83b68dcf5",
           "importsFiles": [
             "packages/cabinet-server/src/step-guard.ts"
           ],
@@ -1550,7 +1550,7 @@
           "path": "apps/cabinets/index.html"
         },
         {
-          "hash": "7a27ac057ef548e0bf7e6e26a68a28b386e749aa53e0860d2a497d79e35df97b",
+          "hash": "d0b9f30367c7f85754b82911d40d27cceeb6fb951f1a4d3fac5b707717b2a509",
           "path": "apps/cabinets/package.json"
         },
         {
@@ -4111,7 +4111,7 @@
           "path": "packages/ghost-on-the-menu/README.md"
         },
         {
-          "hash": "498c70a8d4b4773933ed26d8af75509b9266a4c8d5550a8a5f764908ee5a5289",
+          "hash": "d5217f510b2da04cb7881ddbb44844ad5c60cbd536bd3ac83acfb6e2819fd7d6",
           "path": "packages/ghost-on-the-menu/package.json"
         },
         {
@@ -5333,7 +5333,7 @@
           "path": "packages/launcher/README.md"
         },
         {
-          "hash": "fb8ab2fc55c4da12b9e408ecef937611f20edc37cc380ce1df39ddcca807dfa1",
+          "hash": "61d5f7e4e3e85d5958eef74285a20a3a548833ffbe882273fb67b41a61246d4b",
           "path": "packages/launcher/package.json"
         },
         {
@@ -6339,7 +6339,7 @@
           "path": "packages/launcher-vibe-typer/README.md"
         },
         {
-          "hash": "e97aff331ed927af42d5022f483a62890bf97df0c3856ca11f3cf139f3f8652f",
+          "hash": "179f402f463af7cdc5436959e4fb563fc3300a6682ca405c95b057541b30c838",
           "path": "packages/launcher-vibe-typer/package.json"
         },
         {
@@ -6772,7 +6772,7 @@
           "path": ".prettierrc"
         },
         {
-          "hash": "2d67067dd3afd7e8679414807d144e591d901f3d30f9cb74e2cedeb182d61fc5",
+          "hash": "2063244cd527c3737d13b7e35945e6b43cbd80bd06039a41ce8db8ca98c86e48",
           "path": "CHANGELOG.md"
         },
         {
@@ -6792,35 +6792,35 @@
           "path": "LICENSE"
         },
         {
-          "hash": "c3a781a24eabe843ab6f3e8450dd507be166e8d45ad3241efa28242d289638e0",
+          "hash": "1cf4504d8d2c5e030c486d66b0f0e3bc4364d7cb00cbc55a29ae25bec0a23ff8",
           "path": "README.es.md"
         },
         {
-          "hash": "8a88999ccb4de3a9f9a8372f9c150ebca13fd5b75579acd6fa3ad78a03d42e84",
+          "hash": "fa48d43494879440fec425fe3b86f14ba43103634304c8cfe35b91a8d09e6bae",
           "path": "README.fr.md"
         },
         {
-          "hash": "dc3e1b3b6feac501c7e50d04f8926275f09da6704f80fb4761d81a9360d85a9a",
+          "hash": "337c449fd21b1cccd1dfe975f8a6206bbedf58fd7135566239a1025f3879b17a",
           "path": "README.hi.md"
         },
         {
-          "hash": "ac8e9efde14dfd06b539ceb315de084d31176679b6d59588093a2dde85d2080a",
+          "hash": "17de0ee6f1a26728b3fa7651e6c783a6968b2a38d59e81d967b03d2fe24b1d4b",
           "path": "README.it.md"
         },
         {
-          "hash": "73d16e34f929c033bda70cff6352159240753ceb967272271a368aa8e5b2b092",
+          "hash": "a5d1e12f33fc7dfcb4c73388295df8a213425e82b0d95ec531de50810e4a78d3",
           "path": "README.ja.md"
         },
         {
-          "hash": "5b868810fe1f97bddb5ec0658ac4cf50a75b53b846660b05ffc7ed86037be3a9",
+          "hash": "99a4ea0712bdd4dd737c60b99e5ad3e872b425078ce0213190e230172211f845",
           "path": "README.md"
         },
         {
-          "hash": "db2491ed754bd0915fee01a2f6b04d5e0dfc74226060b52a24e3c0e69f5821db",
+          "hash": "762bc59cdcd6c9a47c974642bf16ed0037047a6a030d0eaa9130ab28df632cb9",
           "path": "README.pt-BR.md"
         },
         {
-          "hash": "00fd638cdd58035154c2f37856eef1ddf0661459154c22ae4abf2f583100fbdf",
+          "hash": "dd38552337432a8bda32361954a74bf771960739d96f9e231676e093807380a8",
           "path": "README.zh.md"
         },
         {
@@ -6840,11 +6840,11 @@
           "path": "eslint.config.js"
         },
         {
-          "hash": "d0ee609fc7c9b2e1323163d70c606c1f62ae0c5ae0e20f9f25ab6a0e8c8a6e11",
+          "hash": "0143be7cf0938933e41d3f1a6f21cbc41a3ffefb6cf992904d6fe37765af834c",
           "path": "package.json"
         },
         {
-          "hash": "66c0e3600f672a2e2a08f90620bf0e70dd68e995392feb0bd90ab0abb3034708",
+          "hash": "8b159fbf9d956b43232ef59e98c3579be54a14849b152960c18759aab0c57785",
           "path": "pnpm-lock.yaml"
         },
         {
@@ -7765,11 +7765,11 @@
           "path": "site/astro.config.mjs"
         },
         {
-          "hash": "51e0bf398e576fd228da94263e11b7d730a3b77ed3a84013032b51d00d5be148",
+          "hash": "28916a47dcafdc3c02fa65ab6a0ce648aa0322f10a3416b062f1e005dc6d0f8b",
           "path": "site/package-lock.json"
         },
         {
-          "hash": "cf987ba3ed7a7abcfc191b724a469b624463baef7ae2fa2c6afe39ac3289498b",
+          "hash": "befab1e60a58365ace6a07f29fa3607c011084a5d4519853ef512855c9a5a20e",
           "path": "site/package.json"
         },
         {
@@ -7831,7 +7831,7 @@
         },
         {
           "constantOnly": true,
-          "hash": "e7b792458b32c1a69b0798409c05600eee556639ecf38cc52798776e9d4bd73b",
+          "hash": "4532f0db351d71b75ce61545db88f8afe96137d0769c1b4cae79a134e942be34",
           "path": "site/src/site-config.ts"
         },
         {
@@ -7868,7 +7868,7 @@
       "externals": 0,
       "files": [
         {
-          "hash": "c987efbef080bf13158ebc57851277a4176212aac1acc78ecd93ab9cac4e1497",
+          "hash": "3f06afc95126dc168b0f0df8e66beef3f84ac92cb0064abc19be94d6c11c5de1",
           "path": "packages/tape-core/package.json"
         },
         {
@@ -8402,7 +8402,7 @@
           "path": "packages/vibe-typer/authoring/2026-09-17-041119373-snippet-reactions.json"
         },
         {
-          "hash": "e169e0502b2e74c283be49d61c2b280b4768d1d36014e9197b1dcde24bfe3c2b",
+          "hash": "d70d0b4666f58f97eccffaf252f23da5b2367825dd2b92f604136eab9a8225ac",
           "path": "packages/vibe-typer/package.json"
         },
         {
@@ -12288,7 +12288,7 @@
   ],
   "engine": "1.24.0",
   "generatedFrom": {
-    "commit": "c01c274dde0c021eba60b7f6d9db23283d7d72b0",
+    "commit": "e04ef0955db84960df3afaad9e22aaa244e8ed00",
     "tracked": 757
   },
   "landings": [
