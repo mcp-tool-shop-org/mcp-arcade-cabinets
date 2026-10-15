@@ -6772,7 +6772,7 @@
           "path": ".prettierrc"
         },
         {
-          "hash": "2063244cd527c3737d13b7e35945e6b43cbd80bd06039a41ce8db8ca98c86e48",
+          "hash": "36af72ce6629319246377b96ff0c30819137c07bb1a66112b8933196935f0fa1",
           "path": "CHANGELOG.md"
         },
         {
@@ -6844,7 +6844,7 @@
           "path": "package.json"
         },
         {
-          "hash": "8b159fbf9d956b43232ef59e98c3579be54a14849b152960c18759aab0c57785",
+          "hash": "7421863e2b02774244d521c78bfcde9389825df0719f157ab602aa02c4cac04c",
           "path": "pnpm-lock.yaml"
         },
         {
@@ -12288,7 +12288,7 @@
   ],
   "engine": "1.24.0",
   "generatedFrom": {
-    "commit": "e04ef0955db84960df3afaad9e22aaa244e8ed00",
+    "commit": "09f0f60c40ac4c1caa2e34653e7afb95b0789691",
     "tracked": 757
   },
   "landings": [

@@ -100,21 +100,21 @@
   "changes": {
     "fileCounts": {
       "added": 0,
-      "changed": 24,
+      "changed": 2,
       "moved": 0,
-      "parts": 9,
+      "parts": 1,
       "removed": 0
     },
     "items": [
       {
         "kind": "counts",
-        "sentence": "Nothing structural changed since 2026-09-30; 24 files changed content.",
+        "sentence": "Nothing structural changed since 2026-10-15; 2 files changed content.",
         "subjects": []
       }
     ],
     "since": {
-      "commit": "c01c274dde0c021eba60b7f6d9db23283d7d72b0",
-      "generatedAt": "2026-09-30T20:10:40.777Z"
+      "commit": "e04ef0955db84960df3afaad9e22aaa244e8ed00",
+      "generatedAt": "2026-10-15T02:45:50.225Z"
     },
     "unchanged": true
   },
@@ -123,7 +123,7 @@
     "Window: 180 days; a pair counts from 3 shared commits, since 0 source files reach 10 revisions; the floor rises to 10 when 25 do."
   ],
   "changesTogetherWithTests": 0,
-  "commit": "e04ef0955db84960df3afaad9e22aaa244e8ed00",
+  "commit": "09f0f60c40ac4c1caa2e34653e7afb95b0789691",
   "defaultBranch": "main",
   "derived": "15 parts, mostly TypeScript (158 files), JavaScript (23), Python (6), CSS (2), Astro (1) and HTML (1). Work enters through 6 doors; CI and Site each reach 10 parts, and CI is followed because it comes first by name. It publishes @mcptoolshop/ghost-on-the-menu (packages/launcher) and @mcptoolshop/vibe-typer (packages/launcher-vibe-typer) to npm. It deploys a site to GitHub Pages. People run ghost-on-the-menu and vibe-typer.",
   "doors": [
@@ -835,7 +835,7 @@
       ]
     }
   ],
-  "generatedAt": "2026-10-15T02:45:50.225Z",
+  "generatedAt": "2026-10-15T03:17:43.489Z",
   "limits": [
     "10 imports could not be resolved: `packages/launcher/src/serve.ts` imports a path built at run time, twice; `packages/vibe-typer/scripts/author.mjs` imports a path built at run time; `packages/vibe-typer/scripts/sweep-levels.mjs` imports a path built at run time; and 6 more.",
     "6 writes and 10 reads use paths built at run time and are not named here.",
@@ -845,7 +845,7 @@
     "4 writes go to a temporary directory, not to this repository.",
     "41 commands are built at run time and not followed, 38 of them in tests.",
     "There is a Dockerfile that a workflow builds and none pushes and Docker MCP Catalog entries at catalog/server.vibe.yaml and catalog/server.yaml; what ships from them goes from outside this repository, and is not on this page.",
-    "Statistics confidence is low: fewer than 20 source files reach 10 revisions in the window."
+    "Statistics confidence is low: fewer than 25 source files reach 10 revisions in the window."
   ],
   "mainDoor": ".github/workflows/ci.yml",
   "partLabels": {

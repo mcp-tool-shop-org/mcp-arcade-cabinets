@@ -37,7 +37,7 @@
       "confidence": "low",
       "highWater": null,
       "name": "cabinet-server",
-      "qualifyingSourceCommits": 4,
+      "qualifyingSourceCommits": 5,
       "rebaseline": null
     },
     {
@@ -206,7 +206,7 @@
       "confidence": "low",
       "highWater": null,
       "name": "site",
-      "qualifyingSourceCommits": 3,
+      "qualifyingSourceCommits": 4,
       "rebaseline": null
     },
     {
@@ -310,8 +310,8 @@
         "path": ".prettierrc"
       },
       {
-        "commits": 5,
-        "lines": 343,
+        "commits": 6,
+        "lines": 352,
         "path": "CHANGELOG.md"
       },
       {
@@ -335,43 +335,43 @@
         "path": "LICENSE"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.es.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.fr.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.hi.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.it.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.ja.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.pt-BR.md"
       },
       {
-        "commits": 5,
-        "lines": 114,
+        "commits": 6,
+        "lines": 118,
         "path": "README.zh.md"
       },
       {
@@ -390,8 +390,8 @@
         "path": "apps/cabinets/index.html"
       },
       {
-        "commits": 5,
-        "lines": 28,
+        "commits": 6,
+        "lines": 30,
         "path": "apps/cabinets/package.json"
       },
       {
@@ -1315,8 +1315,8 @@
         "path": "apps/cabinets/vite.config.ts"
       },
       {
-        "commits": 3,
-        "lines": 322,
+        "commits": 4,
+        "lines": 348,
         "path": "atlas/README.md"
       },
       {
@@ -1325,18 +1325,18 @@
         "path": "atlas/boundaries.yaml"
       },
       {
-        "commits": 3,
-        "lines": 1763,
+        "commits": 4,
+        "lines": 1927,
         "path": "atlas/page.json"
       },
       {
-        "commits": 3,
-        "lines": 6012,
+        "commits": 4,
+        "lines": 8801,
         "path": "atlas/statistics.json"
       },
       {
-        "commits": 3,
-        "lines": 22662,
+        "commits": 4,
+        "lines": 22712,
         "path": "atlas/structure.json"
       },
       {
@@ -2705,13 +2705,13 @@
         "path": "fixtures/tapes/task-only-ndjson.tape.json"
       },
       {
-        "commits": 7,
-        "lines": 57,
+        "commits": 8,
+        "lines": 59,
         "path": "package.json"
       },
       {
-        "commits": 5,
-        "lines": 32,
+        "commits": 6,
+        "lines": 36,
         "path": "packages/cabinet-server/package.json"
       },
       {
@@ -2785,13 +2785,13 @@
         "path": "packages/cabinet-server/src/seeds.ts"
       },
       {
-        "commits": 5,
-        "lines": 402,
+        "commits": 6,
+        "lines": 404,
         "path": "packages/cabinet-server/src/server-vibe.ts"
       },
       {
-        "commits": 5,
-        "lines": 678,
+        "commits": 6,
+        "lines": 680,
         "path": "packages/cabinet-server/src/server.ts"
       },
       {
@@ -2940,8 +2940,8 @@
         "path": "packages/ghost-on-the-menu/README.md"
       },
       {
-        "commits": 5,
-        "lines": 24,
+        "commits": 6,
+        "lines": 26,
         "path": "packages/ghost-on-the-menu/package.json"
       },
       {
@@ -3160,8 +3160,8 @@
         "path": "packages/launcher-vibe-typer/README.md"
       },
       {
-        "commits": 6,
-        "lines": 61,
+        "commits": 7,
+        "lines": 63,
         "path": "packages/launcher-vibe-typer/package.json"
       },
       {
@@ -3200,8 +3200,8 @@
         "path": "packages/launcher/README.md"
       },
       {
-        "commits": 6,
-        "lines": 61,
+        "commits": 7,
+        "lines": 63,
         "path": "packages/launcher/package.json"
       },
       {
@@ -3285,8 +3285,8 @@
         "path": "packages/launcher/tsconfig.json"
       },
       {
-        "commits": 5,
-        "lines": 20,
+        "commits": 6,
+        "lines": 22,
         "path": "packages/tape-core/package.json"
       },
       {
@@ -3595,8 +3595,8 @@
         "path": "packages/vibe-typer/authoring/2026-09-17-041119373-snippet-reactions.json"
       },
       {
-        "commits": 5,
-        "lines": 29,
+        "commits": 6,
+        "lines": 31,
         "path": "packages/vibe-typer/package.json"
       },
       {
@@ -3870,8 +3870,8 @@
         "path": "packages/vibe-typer/tsconfig.json"
       },
       {
-        "commits": 6,
-        "lines": 3524,
+        "commits": 7,
+        "lines": 3534,
         "path": "pnpm-lock.yaml"
       },
       {
@@ -3960,13 +3960,13 @@
         "path": "site/astro.config.mjs"
       },
       {
-        "commits": 3,
-        "lines": 6077,
+        "commits": 4,
+        "lines": 6341,
         "path": "site/package-lock.json"
       },
       {
-        "commits": 5,
-        "lines": 26,
+        "commits": 6,
+        "lines": 28,
         "path": "site/package.json"
       },
       {
@@ -4030,8 +4030,8 @@
         "path": "site/src/pages/index.astro"
       },
       {
-        "commits": 5,
-        "lines": 174,
+        "commits": 6,
+        "lines": 176,
         "path": "site/src/site-config.ts"
       },
       {
@@ -4083,13 +4083,35 @@
   },
   "confidence": {
     "level": "low",
-    "reason": "fewer than 20 source files reach 10 revisions in the window"
+    "reason": "fewer than 25 source files reach 10 revisions in the window"
   },
-  "generatedAt": "2026-10-15T02:45:50.225Z",
+  "generatedAt": "2026-10-15T03:17:43.489Z",
   "generatedFrom": {
-    "commit": "e04ef0955db84960df3afaad9e22aaa244e8ed00"
+    "commit": "09f0f60c40ac4c1caa2e34653e7afb95b0789691"
   },
-  "pairs": [],
+  "pairs": [
+    {
+      "a": "package.json",
+      "b": "packages/launcher-vibe-typer/package.json",
+      "either": 6,
+      "shared": 4,
+      "strength": 0.666667
+    },
+    {
+      "a": "package.json",
+      "b": "packages/launcher/package.json",
+      "either": 6,
+      "shared": 4,
+      "strength": 0.666667
+    },
+    {
+      "a": "packages/launcher-vibe-typer/package.json",
+      "b": "packages/launcher/package.json",
+      "either": 5,
+      "shared": 5,
+      "strength": 1
+    }
+  ],
   "parameters": {
     "appliedChangesetLimit": 50,
     "changeset": 50,
@@ -4100,16 +4122,16 @@
     "floor": "fallen",
     "floorHeld": false,
     "floorTrigger": "revision-depth",
-    "headDate": "2026-10-14T22:45:32-04:00",
+    "headDate": "2026-10-14T22:46:02-04:00",
     "inScopeFiles": 762,
     "pinnedStart": null,
-    "priorFloor": "strong",
-    "qualifyingCommits": 34,
+    "priorFloor": "fallen",
+    "qualifyingCommits": 35,
     "qualifyingMinimum": 30,
     "revisions": 5,
     "shared": 10,
     "sharedFloorUsed": 3,
-    "since": "2026-04-18T02:45:32.000Z",
+    "since": "2026-04-18T02:46:02.000Z",
     "sourceExtensions": [
       ".js",
       ".mjs",

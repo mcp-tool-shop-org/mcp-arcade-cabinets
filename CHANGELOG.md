@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 A dependency patch. Nothing a player sees changes.
 
 - **The MCP SDK moves to 1.32.1.** `@modelcontextprotocol/sdk` 1.30.0 had a high advisory fixed in 1.31.0 (GHSA-6qxp-vccf-f47h); `cabinet-server`, which the launchers bundle, declares it, so the floor in `packages/cabinet-server/package.json` is now `^1.32.1` and the pnpm lockfile resolves it.
+- **Two transitive packages in the root lockfile are raised.** `proxy-addr` 2.0.8 (a critical IP-spoofing advisory, GHSA-jqcg-44mw-7w3h; it arrives through `express` under the MCP SDK that `cabinet-server` bundles) and `source-map-js` 1.2.2 (a high advisory, through the test tooling). Both are within the ranges their parents declare, so only `pnpm-lock.yaml` changes, and `pnpm audit --audit-level=high` reports no known vulnerabilities.
 - **The docs site's lockfile is updated.** `sharp` 0.35.5, `source-map-js` 1.2.2, `http-cache-semantics` 4.3.0 and `smol-toml` 1.9.1 (three high, one moderate; `site/` is not in any published package). Ten moderate advisories in one chain (`@astrojs/starlight` > `expressive-code` > `postcss-nested` > `postcss-selector-parser`, GHSA-rj75-hqrm-r3gf) stay open: there is no upstream fix and npm offers only a breaking Starlight downgrade.
 
 ## [0.13.2] - 2026-09-30
