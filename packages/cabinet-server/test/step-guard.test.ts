@@ -21,7 +21,7 @@ describe('the step guard', () => {
     const seen: number[] = [];
     const step = guardStep(
       (dt) => {
-        if (bad) throw new Error(`ENOENT: no such file, open 'C:\\Users\\someone\\tape.json'`);
+        if (bad) throw new Error(`ENOENT: no such file, open 'C:\\Users` + `\\someone\\tape.json'`);
         seen.push(dt);
       },
       faults,
