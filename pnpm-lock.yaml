@@ -91,6 +91,8 @@ importers:
         specifier: workspace:*
         version: link:../tape-core
 
+  packages/harrow-gate: {}
+
   packages/launcher:
     devDependencies:
       esbuild:
