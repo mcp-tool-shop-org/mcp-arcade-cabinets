@@ -8,7 +8,7 @@
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -24,7 +24,7 @@
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": [
           "cabinets",
@@ -34,33 +34,33 @@
       },
       "cohesion": null,
       "cohesionDropped": false,
-      "confidence": "full",
+      "confidence": "low",
       "highWater": null,
       "name": "cabinet-server",
-      "qualifyingSourceCommits": 41,
+      "qualifyingSourceCommits": 5,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
-      "cohesion": 1,
+      "cohesion": null,
       "cohesionDropped": false,
-      "confidence": "full",
-      "highWater": 1,
+      "confidence": "low",
+      "highWater": null,
       "name": "cabinets",
-      "qualifyingSourceCommits": 86,
+      "qualifyingSourceCommits": 7,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -76,7 +76,7 @@
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -92,7 +92,7 @@
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -108,26 +108,26 @@
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": [
           "cabinet-server",
           "cabinets"
         ]
       },
-      "cohesion": 1,
+      "cohesion": null,
       "cohesionDropped": false,
-      "confidence": "full",
-      "highWater": 1,
+      "confidence": "low",
+      "highWater": null,
       "name": "ghost-on-the-menu",
-      "qualifyingSourceCommits": 87,
+      "qualifyingSourceCommits": 1,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": [
           "cabinets",
@@ -139,14 +139,14 @@
       "confidence": "low",
       "highWater": null,
       "name": "launcher",
-      "qualifyingSourceCommits": 20,
+      "qualifyingSourceCommits": 4,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -155,14 +155,14 @@
       "confidence": "low",
       "highWater": null,
       "name": "launcher-vibe-typer",
-      "qualifyingSourceCommits": 10,
+      "qualifyingSourceCommits": 4,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -171,14 +171,14 @@
       "confidence": "low",
       "highWater": null,
       "name": "root",
-      "qualifyingSourceCommits": 8,
+      "qualifyingSourceCommits": 1,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": [
           "ghost-on-the-menu",
@@ -187,17 +187,17 @@
       },
       "cohesion": null,
       "cohesionDropped": false,
-      "confidence": "full",
+      "confidence": "low",
       "highWater": null,
       "name": "scripts",
-      "qualifyingSourceCommits": 33,
+      "qualifyingSourceCommits": 2,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -206,14 +206,14 @@
       "confidence": "low",
       "highWater": null,
       "name": "site",
-      "qualifyingSourceCommits": 22,
+      "qualifyingSourceCommits": 4,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": [
           "cabinet-server",
@@ -227,14 +227,14 @@
       "confidence": "low",
       "highWater": null,
       "name": "tape-core",
-      "qualifyingSourceCommits": 12,
+      "qualifyingSourceCommits": 0,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": [
           "cabinet-server",
@@ -246,14 +246,14 @@
       "confidence": "low",
       "highWater": null,
       "name": "vibe-typer",
-      "qualifyingSourceCommits": 27,
+      "qualifyingSourceCommits": 2,
       "rebaseline": null
     },
     {
       "breakage": {
         "coChangesOnly": [],
         "collapsed": false,
-        "confidence": "full",
+        "confidence": "low",
         "importsAndCoChanges": [],
         "importsOnly": []
       },
@@ -262,7 +262,7 @@
       "confidence": "low",
       "highWater": null,
       "name": "voice",
-      "qualifyingSourceCommits": 8,
+      "qualifyingSourceCommits": 0,
       "rebaseline": null
     }
   ],
@@ -270,38 +270,38 @@
     "definition": "commits is how many commits in the window touch the file, including merges and commits dropped from coupling. lines is added plus deleted in those commits.",
     "files": [
       {
-        "commits": 3,
-        "lines": 35,
+        "commits": 1,
+        "lines": 24,
         "path": ".dockerignore"
       },
       {
-        "commits": 3,
-        "lines": 15,
+        "commits": 1,
+        "lines": 8,
         "path": ".gitattributes"
       },
       {
-        "commits": 16,
-        "lines": 767,
+        "commits": 7,
+        "lines": 595,
         "path": ".github/workflows/ci.yml"
       },
       {
-        "commits": 9,
-        "lines": 562,
+        "commits": 1,
+        "lines": 388,
         "path": ".github/workflows/pages.yml"
       },
       {
-        "commits": 13,
-        "lines": 1150,
+        "commits": 1,
+        "lines": 368,
         "path": ".github/workflows/release.yml"
       },
       {
-        "commits": 26,
-        "lines": 100,
+        "commits": 1,
+        "lines": 59,
         "path": ".gitignore"
       },
       {
-        "commits": 8,
-        "lines": 21,
+        "commits": 1,
+        "lines": 17,
         "path": ".prettierignore"
       },
       {
@@ -310,23 +310,23 @@
         "path": ".prettierrc"
       },
       {
-        "commits": 78,
-        "lines": 473,
+        "commits": 6,
+        "lines": 352,
         "path": "CHANGELOG.md"
       },
       {
-        "commits": 29,
-        "lines": 81,
+        "commits": 1,
+        "lines": 15,
         "path": "CLAUDE.md"
       },
       {
-        "commits": 17,
-        "lines": 227,
+        "commits": 3,
+        "lines": 112,
         "path": "Dockerfile"
       },
       {
-        "commits": 105,
-        "lines": 1479,
+        "commits": 10,
+        "lines": 767,
         "path": "HANDOFF.md"
       },
       {
@@ -335,68 +335,63 @@
         "path": "LICENSE"
       },
       {
-        "commits": 20,
-        "lines": 470,
+        "commits": 6,
+        "lines": 118,
         "path": "README.es.md"
       },
       {
-        "commits": 20,
-        "lines": 528,
+        "commits": 6,
+        "lines": 118,
         "path": "README.fr.md"
       },
       {
-        "commits": 20,
-        "lines": 540,
+        "commits": 6,
+        "lines": 118,
         "path": "README.hi.md"
       },
       {
-        "commits": 20,
-        "lines": 504,
+        "commits": 6,
+        "lines": 118,
         "path": "README.it.md"
       },
       {
-        "commits": 20,
-        "lines": 506,
+        "commits": 6,
+        "lines": 118,
         "path": "README.ja.md"
       },
       {
-        "commits": 37,
-        "lines": 593,
+        "commits": 6,
+        "lines": 118,
         "path": "README.md"
       },
       {
-        "commits": 20,
-        "lines": 490,
+        "commits": 6,
+        "lines": 118,
         "path": "README.pt-BR.md"
       },
       {
-        "commits": 20,
-        "lines": 554,
+        "commits": 6,
+        "lines": 118,
         "path": "README.zh.md"
       },
       {
-        "commits": 6,
-        "lines": 112,
-        "path": "SCORECARD.md"
-      },
-      {
-        "commits": 5,
-        "lines": 57,
+        "commits": 1,
+        "lines": 43,
         "path": "SECURITY.md"
       },
       {
-        "commits": 13,
-        "lines": 161,
+        "commits": 1,
+        "lines": 87,
         "path": "SHIP_GATE.md"
       },
       {
-        "commits": 32,
-        "lines": 1412,
+        "commits": 3,
+        "lines": 866,
         "path": "apps/cabinets/index.html"
       },
       {
-        "commits": 23,
-        "lines": 69,
+        "commits": 6,
+        "lines": 30,
         "path": "apps/cabinets/package.json"
       },
       {
@@ -410,202 +405,202 @@
         "path": "apps/cabinets/public/favicon.svg"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_01.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_02.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_03.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_04.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_05.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_06.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_07.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/alpscream/key_08.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_01.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_02.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_03.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_04.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_05.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_06.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_07.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/mechanical/key_08.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_01.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_02.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_03.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_04.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_05.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_06.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_07.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/membrane/key_08.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_01.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_02.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_03.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_04.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_05.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_06.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_07.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/softtouch/key_08.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_01.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_02.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_03.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_04.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_05.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_06.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_07.wav"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/keys/topre/key_08.wav"
       },
@@ -615,7 +610,7 @@
         "path": "apps/cabinets/public/manifest.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/answer.png"
       },
@@ -635,72 +630,72 @@
         "path": "apps/cabinets/public/sprites/boss-archivist.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/boss-doorman-plate-gone.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/boss-doorman-plate-out.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/boss-menu-open.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/boss-menu-slit.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/boss-whisperer.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/drop-lamp.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/drop-spread.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/error.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/fog.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/grid.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/hazard-band.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/hazard-echo.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/hazard-plate.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/init.png"
       },
@@ -710,17 +705,17 @@
         "path": "apps/cabinets/public/sprites/ledger.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/menu.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/obstacle.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/player.png"
       },
@@ -730,12 +725,12 @@
         "path": "apps/cabinets/public/sprites/probe.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/ready.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/revealed.png"
       },
@@ -745,478 +740,458 @@
         "path": "apps/cabinets/public/sprites/shelf.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/sprites/stall.png"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/breather.mp3"
       },
       {
-        "commits": 5,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/doorman.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/inspect.mp3"
       },
       {
-        "commits": 6,
-        "lines": 0,
-        "path": "apps/cabinets/public/tracks/menu.mp3"
-      },
-      {
-        "commits": 2,
-        "lines": 0,
-        "path": "apps/cabinets/public/tracks/parallelism.mp3"
-      },
-      {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/poison.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/rug.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/unlisted.mp3"
       },
       {
-        "commits": 5,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/tracks/whisperer.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/avatars/agent.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/avatars/user.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/cards/deployed.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/cards/seed.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/cards/series-a.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/cards/unicorn.png"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/frames/ledger.png"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/frames/notebook.png"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/frames/phone.png"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/frames/terminal.png"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/frames/wires.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/bash/table.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/csharp/table.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/integration/table.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/java/table.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/javascript/table.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/python/table.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/button.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/chart.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/file.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/function.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/loop.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/message.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/route.png"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tiles/sql/table.png"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/bash.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/csharp.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/integration.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/java.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/javascript.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/python.mp3"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "apps/cabinets/public/vibe/tracks/sql.mp3"
       },
       {
-        "commits": 2,
-        "lines": 24,
+        "commits": 1,
+        "lines": 12,
         "path": "apps/cabinets/scripts/cut-avatar.d.mts"
       },
       {
-        "commits": 2,
-        "lines": 312,
+        "commits": 1,
+        "lines": 156,
         "path": "apps/cabinets/scripts/cut-avatar.mjs"
       },
       {
-        "commits": 2,
-        "lines": 44,
+        "commits": 1,
+        "lines": 22,
         "path": "apps/cabinets/scripts/cut-banner.d.mts"
       },
       {
-        "commits": 2,
-        "lines": 442,
+        "commits": 1,
+        "lines": 221,
         "path": "apps/cabinets/scripts/cut-banner.mjs"
       },
       {
-        "commits": 4,
-        "lines": 84,
+        "commits": 1,
+        "lines": 42,
         "path": "apps/cabinets/scripts/slice-tiles.d.mts"
       },
       {
-        "commits": 4,
-        "lines": 790,
+        "commits": 1,
+        "lines": 389,
         "path": "apps/cabinets/scripts/slice-tiles.mjs"
       },
       {
-        "commits": 4,
-        "lines": 30,
+        "commits": 1,
+        "lines": 14,
         "path": "apps/cabinets/src/env.d.ts"
       },
       {
-        "commits": 53,
-        "lines": 3864,
+        "commits": 3,
+        "lines": 2189,
         "path": "apps/cabinets/src/ghost.ts"
       },
       {
-        "commits": 2,
-        "lines": 132,
-        "path": "apps/cabinets/src/history.ts"
-      },
-      {
         "commits": 3,
-        "lines": 324,
-        "path": "apps/cabinets/src/house-call.ts"
-      },
-      {
-        "commits": 37,
-        "lines": 2724,
+        "lines": 1262,
         "path": "apps/cabinets/src/main.ts"
       },
       {
@@ -1235,48 +1210,48 @@
         "path": "apps/cabinets/src/tapes.ts"
       },
       {
-        "commits": 17,
-        "lines": 2522,
+        "commits": 1,
+        "lines": 1058,
         "path": "apps/cabinets/src/typer-audio.ts"
       },
       {
-        "commits": 3,
-        "lines": 100,
+        "commits": 1,
+        "lines": 49,
         "path": "apps/cabinets/src/typer-cards.ts"
       },
       {
-        "commits": 9,
-        "lines": 351,
+        "commits": 1,
+        "lines": 167,
         "path": "apps/cabinets/src/typer-cues.ts"
       },
       {
-        "commits": 2,
-        "lines": 116,
+        "commits": 1,
+        "lines": 58,
         "path": "apps/cabinets/src/typer-keys.ts"
       },
       {
-        "commits": 2,
-        "lines": 1050,
+        "commits": 1,
+        "lines": 525,
         "path": "apps/cabinets/src/typer-tiles.ts"
       },
       {
-        "commits": 47,
-        "lines": 6063,
+        "commits": 4,
+        "lines": 2806,
         "path": "apps/cabinets/src/vibe-typer.ts"
       },
       {
-        "commits": 2,
-        "lines": 304,
+        "commits": 1,
+        "lines": 152,
         "path": "apps/cabinets/test/avatar-cut.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 362,
+        "commits": 1,
+        "lines": 181,
         "path": "apps/cabinets/test/banner-cut.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 310,
+        "commits": 1,
+        "lines": 139,
         "path": "apps/cabinets/test/bed-length.test.ts"
       },
       {
@@ -1285,63 +1260,63 @@
         "path": "apps/cabinets/test/dev-allowlists.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 525,
+        "commits": 1,
+        "lines": 340,
         "path": "apps/cabinets/test/ghost-menu.test.ts"
       },
       {
-        "commits": 18,
-        "lines": 2036,
+        "commits": 2,
+        "lines": 1119,
         "path": "apps/cabinets/test/ghost-mount.test.ts"
       },
       {
-        "commits": 17,
-        "lines": 2030,
+        "commits": 1,
+        "lines": 784,
         "path": "apps/cabinets/test/typer-audio.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 182,
+        "commits": 1,
+        "lines": 91,
         "path": "apps/cabinets/test/typer-cards.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 350,
+        "commits": 1,
+        "lines": 161,
         "path": "apps/cabinets/test/typer-cues.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 154,
+        "commits": 1,
+        "lines": 77,
         "path": "apps/cabinets/test/typer-keys.test.ts"
       },
       {
-        "commits": 11,
-        "lines": 849,
+        "commits": 3,
+        "lines": 368,
         "path": "apps/cabinets/test/typer-menu.test.ts"
       },
       {
-        "commits": 38,
-        "lines": 4376,
+        "commits": 1,
+        "lines": 2139,
         "path": "apps/cabinets/test/typer-mount.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 418,
+        "commits": 1,
+        "lines": 209,
         "path": "apps/cabinets/test/typer-tiles.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 11,
+        "commits": 1,
+        "lines": 7,
         "path": "apps/cabinets/tsconfig.json"
       },
       {
-        "commits": 16,
-        "lines": 967,
+        "commits": 1,
+        "lines": 565,
         "path": "apps/cabinets/vite.config.ts"
       },
       {
-        "commits": 1,
-        "lines": 114,
+        "commits": 4,
+        "lines": 348,
         "path": "atlas/README.md"
       },
       {
@@ -1350,38 +1325,38 @@
         "path": "atlas/boundaries.yaml"
       },
       {
-        "commits": 1,
-        "lines": 853,
+        "commits": 4,
+        "lines": 1927,
         "path": "atlas/page.json"
       },
       {
-        "commits": 1,
-        "lines": 4516,
+        "commits": 4,
+        "lines": 8801,
         "path": "atlas/statistics.json"
       },
       {
-        "commits": 1,
-        "lines": 9588,
+        "commits": 4,
+        "lines": 22712,
         "path": "atlas/structure.json"
       },
       {
-        "commits": 4,
-        "lines": 54,
+        "commits": 3,
+        "lines": 52,
         "path": "catalog/server.vibe.yaml"
       },
       {
-        "commits": 25,
-        "lines": 228,
+        "commits": 3,
+        "lines": 84,
         "path": "catalog/server.yaml"
       },
       {
-        "commits": 6,
-        "lines": 124,
+        "commits": 1,
+        "lines": 102,
         "path": "catalog/tools.json"
       },
       {
-        "commits": 7,
-        "lines": 181,
+        "commits": 1,
+        "lines": 83,
         "path": "catalog/tools.vibe.json"
       },
       {
@@ -1391,812 +1366,752 @@
       },
       {
         "commits": 1,
-        "lines": 35,
-        "path": "docs/absolutely-right.citations.json"
-      },
-      {
-        "commits": 2,
-        "lines": 58,
-        "path": "docs/absolutely-right.citations.verify.txt"
-      },
-      {
-        "commits": 1,
-        "lines": 114,
-        "path": "docs/absolutely-right.dispatch.md"
-      },
-      {
-        "commits": 1,
-        "lines": 154,
-        "path": "docs/absolutely-right.kickoff.md"
-      },
-      {
-        "commits": 3,
-        "lines": 98,
+        "lines": 60,
         "path": "docs/art/brief-1.md"
       },
       {
-        "commits": 5,
-        "lines": 1103,
+        "commits": 1,
+        "lines": 263,
         "path": "docs/art/originals-ghost-beds/arrange-plan.json"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/breather.flac"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/doorman.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/inspect.flac"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/menu.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/poison.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/rug.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/unlisted.flac"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/arranged/whisperer.flac"
       },
       {
-        "commits": 5,
-        "lines": 620,
+        "commits": 1,
+        "lines": 102,
         "path": "docs/art/originals-ghost-beds/encoding-report.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/encodings/poison.mp3_128k.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/encodings/poison.mp3_96k.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/encodings/poison.opus_96k.opus"
       },
       {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/breather-8305.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/doorman-8308.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/inspect-8301.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/menu-8307.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/poison-8302.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/rug-8303.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/unlisted-8304.flac"
-      },
-      {
-        "commits": 3,
-        "lines": 0,
-        "path": "docs/art/originals-ghost-beds/fresh/whisperer-8306.flac"
-      },
-      {
-        "commits": 5,
-        "lines": 1941,
+        "commits": 1,
+        "lines": 339,
         "path": "docs/art/originals-ghost-beds/master-report.json"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/breather.flac"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/doorman.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/inspect.flac"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/menu.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/poison.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/rug.flac"
       },
       {
-        "commits": 3,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/unlisted.flac"
       },
       {
-        "commits": 4,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/mastered/whisperer.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/breather.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/doorman.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/inspect.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/menu.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/poison.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/rug.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/unlisted.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/originals/whisperer.mp3"
       },
       {
-        "commits": 2,
-        "lines": 988,
+        "commits": 1,
+        "lines": 494,
         "path": "docs/art/originals-ghost-beds/receipts-m1.json"
       },
       {
-        "commits": 2,
-        "lines": 420,
+        "commits": 1,
+        "lines": 210,
         "path": "docs/art/originals-ghost-beds/stems/_index.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/breather/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/breather/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/breather/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/breather/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/doorman/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/doorman/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/doorman/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/doorman/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/inspect/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/inspect/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/inspect/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/inspect/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/menu/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/menu/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/menu/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/menu/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/poison/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/poison/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/poison/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/poison/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/rug/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/rug/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/rug/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/rug/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/unlisted/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/unlisted/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/unlisted/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/unlisted/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/whisperer/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/whisperer/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/whisperer/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-ghost-beds/stems/whisperer/vocals.flac"
       },
       {
-        "commits": 2,
-        "lines": 206,
+        "commits": 1,
+        "lines": 103,
         "path": "docs/art/originals-ghost-beds/words-report-originals.json"
       },
       {
-        "commits": 4,
-        "lines": 1058,
+        "commits": 1,
+        "lines": 333,
         "path": "docs/art/originals-ghost-beds/words-report.json"
       },
       {
-        "commits": 2,
-        "lines": 362,
+        "commits": 1,
+        "lines": 181,
         "path": "docs/art/originals-vibe-beds-2min/arrange-plan.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/bash.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/csharp.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/integration.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/java.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/javascript.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/python.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/arranged/sql.flac"
       },
       {
-        "commits": 2,
-        "lines": 186,
+        "commits": 1,
+        "lines": 93,
         "path": "docs/art/originals-vibe-beds-2min/encoding-report.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/encodings/bash.mp3_128k.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/encodings/bash.mp3_96k.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/encodings/bash.opus_96k.opus"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/bash-8311.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/csharp-8312.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/integration-8317.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/java-8313.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/javascript-8314.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/python-8315.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/fresh/sql-8316.flac"
       },
       {
-        "commits": 2,
-        "lines": 130,
+        "commits": 1,
+        "lines": 65,
         "path": "docs/art/originals-vibe-beds-2min/loop-cut.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/bash.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/csharp.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/integration.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/java.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/javascript.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/python.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/loops/sql.flac"
       },
       {
-        "commits": 2,
-        "lines": 532,
+        "commits": 1,
+        "lines": 266,
         "path": "docs/art/originals-vibe-beds-2min/master-report.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/bash.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/csharp.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/integration.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/java.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/javascript.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/python.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/mastered/sql.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/bash-8202.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/csharp-8203.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/integration-8208.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/java-8204.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/javascript-8205.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/python-8206.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/masters/sql-8207.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/bash.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/csharp.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/integration.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/java.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/javascript.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/python.mp3"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/originals/sql.mp3"
       },
       {
-        "commits": 2,
-        "lines": 886,
+        "commits": 1,
+        "lines": 443,
         "path": "docs/art/originals-vibe-beds-2min/receipts-m1.json"
       },
       {
-        "commits": 2,
-        "lines": 368,
+        "commits": 1,
+        "lines": 184,
         "path": "docs/art/originals-vibe-beds-2min/stems/_index.json"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/bash/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/bash/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/bash/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/bash/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/csharp/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/csharp/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/csharp/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/csharp/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/integration/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/integration/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/integration/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/integration/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/java/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/java/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/java/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/java/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/javascript/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/javascript/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/javascript/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/javascript/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/python/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/python/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/python/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/python/vocals.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/sql/bass.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/sql/drums.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/sql/other.flac"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 0,
         "path": "docs/art/originals-vibe-beds-2min/stems/sql/vocals.flac"
       },
       {
-        "commits": 2,
-        "lines": 168,
+        "commits": 1,
+        "lines": 84,
         "path": "docs/art/originals-vibe-beds-2min/words-report-originals.json"
       },
       {
-        "commits": 4,
-        "lines": 888,
+        "commits": 1,
+        "lines": 284,
         "path": "docs/art/originals-vibe-beds-2min/words-report.json"
       },
       {
-        "commits": 23,
-        "lines": 6297,
+        "commits": 1,
+        "lines": 3180,
         "path": "docs/art/receipts.json"
       },
       {
-        "commits": 15,
-        "lines": 114,
+        "commits": 1,
+        "lines": 82,
         "path": "docs/cabinet-container.md"
       },
       {
@@ -2245,13 +2160,13 @@
         "path": "docs/cabinet-server.citations.verify.txt"
       },
       {
-        "commits": 4,
-        "lines": 212,
+        "commits": 1,
+        "lines": 138,
         "path": "docs/cabinet-server.dispatch.md"
       },
       {
-        "commits": 4,
-        "lines": 90,
+        "commits": 1,
+        "lines": 58,
         "path": "docs/cabinet-server.kickoff.md"
       },
       {
@@ -2290,8 +2205,8 @@
         "path": "docs/cabinet-server.sources.verify.txt"
       },
       {
-        "commits": 3,
-        "lines": 64,
+        "commits": 1,
+        "lines": 60,
         "path": "docs/cabinet-voice.md"
       },
       {
@@ -2305,33 +2220,33 @@
         "path": "docs/cabinet-voice.review.md"
       },
       {
-        "commits": 3,
-        "lines": 48,
+        "commits": 1,
+        "lines": 34,
         "path": "docs/deferred-next.md"
       },
       {
-        "commits": 26,
-        "lines": 250,
+        "commits": 1,
+        "lines": 136,
         "path": "docs/dogfood-swarm.md"
       },
       {
-        "commits": 6,
-        "lines": 243,
+        "commits": 1,
+        "lines": 79,
         "path": "docs/ghost-attack.grok-consult.md"
       },
       {
-        "commits": 2,
-        "lines": 152,
+        "commits": 1,
+        "lines": 76,
         "path": "docs/ghost-endless.dispatch.md"
       },
       {
-        "commits": 2,
-        "lines": 199,
+        "commits": 1,
+        "lines": 191,
         "path": "docs/ghost-endless.e1.md"
       },
       {
-        "commits": 12,
-        "lines": 202,
+        "commits": 1,
+        "lines": 44,
         "path": "docs/ghost-lines.md"
       },
       {
@@ -2365,68 +2280,68 @@
         "path": "docs/ghost-wave-3.kickoff.md"
       },
       {
-        "commits": 2,
-        "lines": 260,
+        "commits": 1,
+        "lines": 130,
         "path": "docs/house-call.poker.citations.json"
       },
       {
-        "commits": 2,
-        "lines": 20,
+        "commits": 1,
+        "lines": 10,
         "path": "docs/house-call.poker.citations.retry-f8.json"
       },
       {
-        "commits": 2,
-        "lines": 130,
+        "commits": 1,
+        "lines": 65,
         "path": "docs/house-call.poker.citations.retry-f8.verify.txt"
       },
       {
-        "commits": 2,
-        "lines": 84,
+        "commits": 1,
+        "lines": 42,
         "path": "docs/house-call.poker.citations.retry.json"
       },
       {
-        "commits": 2,
-        "lines": 394,
+        "commits": 1,
+        "lines": 197,
         "path": "docs/house-call.poker.citations.retry.verify.txt"
       },
       {
-        "commits": 2,
-        "lines": 914,
+        "commits": 1,
+        "lines": 457,
         "path": "docs/house-call.poker.citations.verify.txt"
       },
       {
-        "commits": 5,
-        "lines": 248,
+        "commits": 1,
+        "lines": 96,
         "path": "docs/house-call.poker.dispatch.md"
       },
       {
-        "commits": 3,
-        "lines": 156,
+        "commits": 1,
+        "lines": 71,
         "path": "docs/house-call.poker.kickoff-s0.md"
       },
       {
-        "commits": 2,
-        "lines": 112,
+        "commits": 1,
+        "lines": 56,
         "path": "docs/house-call.poker.slice0.md"
       },
       {
-        "commits": 2,
-        "lines": 194,
+        "commits": 1,
+        "lines": 97,
         "path": "docs/house-call.poker.slice0.review.kickoff.md"
       },
       {
-        "commits": 2,
-        "lines": 106,
+        "commits": 1,
+        "lines": 53,
         "path": "docs/music.kickoff.md"
       },
       {
-        "commits": 10,
-        "lines": 519,
+        "commits": 1,
+        "lines": 221,
         "path": "docs/music.md"
       },
       {
-        "commits": 6,
-        "lines": 170,
+        "commits": 1,
+        "lines": 104,
         "path": "docs/npm-launcher.md"
       },
       {
@@ -2445,8 +2360,8 @@
         "path": "docs/ollama-content.md"
       },
       {
-        "commits": 2,
-        "lines": 90,
+        "commits": 1,
+        "lines": 88,
         "path": "docs/shift.dispatch.md"
       },
       {
@@ -2460,13 +2375,13 @@
         "path": "docs/shift.review.md"
       },
       {
-        "commits": 2,
-        "lines": 342,
+        "commits": 1,
+        "lines": 274,
         "path": "docs/study-swarm.citations.json"
       },
       {
-        "commits": 2,
-        "lines": 32,
+        "commits": 1,
+        "lines": 26,
         "path": "docs/study-swarm.citations.retry.json"
       },
       {
@@ -2480,23 +2395,23 @@
         "path": "docs/study-swarm.citations.verify.txt"
       },
       {
-        "commits": 2,
-        "lines": 182,
+        "commits": 1,
+        "lines": 114,
         "path": "docs/study-swarm.dispatch.md"
       },
       {
-        "commits": 2,
-        "lines": 2812,
+        "commits": 1,
+        "lines": 1406,
         "path": "docs/vibe-typer.author-sample.json"
       },
       {
-        "commits": 2,
-        "lines": 262,
+        "commits": 1,
+        "lines": 131,
         "path": "docs/vibe-typer.author-sample.md"
       },
       {
-        "commits": 2,
-        "lines": 305,
+        "commits": 1,
+        "lines": 266,
         "path": "docs/vibe-typer.citations.json"
       },
       {
@@ -2510,13 +2425,13 @@
         "path": "docs/vibe-typer.citations.retry.verify.txt"
       },
       {
-        "commits": 2,
-        "lines": 814,
+        "commits": 1,
+        "lines": 810,
         "path": "docs/vibe-typer.citations.verify.txt"
       },
       {
-        "commits": 9,
-        "lines": 130,
+        "commits": 1,
+        "lines": 132,
         "path": "docs/vibe-typer.dispatch.md"
       },
       {
@@ -2525,8 +2440,8 @@
         "path": "docs/vibe-typer.kickoff-s2.md"
       },
       {
-        "commits": 4,
-        "lines": 159,
+        "commits": 1,
+        "lines": 128,
         "path": "docs/vibe-typer.kickoff-s3.md"
       },
       {
@@ -2536,22 +2451,22 @@
       },
       {
         "commits": 1,
-        "lines": 98,
+        "lines": 202,
         "path": "docs/vibe-typer.kickoff.md"
       },
       {
-        "commits": 2,
-        "lines": 68,
+        "commits": 1,
+        "lines": 34,
         "path": "docs/vibe-typer.proofread.review.md"
       },
       {
-        "commits": 2,
-        "lines": 229,
+        "commits": 1,
+        "lines": 223,
         "path": "docs/vibe-typer.reactions.md"
       },
       {
-        "commits": 4,
-        "lines": 554,
+        "commits": 1,
+        "lines": 277,
         "path": "docs/vibe-typer.slice1.md"
       },
       {
@@ -2560,8 +2475,8 @@
         "path": "docs/vibe-typer.slice1.review.md"
       },
       {
-        "commits": 5,
-        "lines": 592,
+        "commits": 1,
+        "lines": 294,
         "path": "docs/vibe-typer.slice2.md"
       },
       {
@@ -2570,33 +2485,33 @@
         "path": "docs/vibe-typer.slice2.review.md"
       },
       {
-        "commits": 3,
-        "lines": 668,
+        "commits": 1,
+        "lines": 298,
         "path": "docs/vibe-typer.slice3.b1.md"
       },
       {
-        "commits": 6,
-        "lines": 1330,
+        "commits": 1,
+        "lines": 339,
         "path": "docs/vibe-typer.slice3.b2.md"
       },
       {
-        "commits": 3,
-        "lines": 1160,
+        "commits": 1,
+        "lines": 571,
         "path": "docs/vibe-typer.slice3.c.md"
       },
       {
-        "commits": 20,
-        "lines": 5824,
+        "commits": 1,
+        "lines": 2274,
         "path": "docs/vibe-typer.slice3.md"
       },
       {
-        "commits": 4,
-        "lines": 272,
+        "commits": 1,
+        "lines": 68,
         "path": "docs/vibe-typer.slice3a.review.md"
       },
       {
-        "commits": 2,
-        "lines": 118,
+        "commits": 1,
+        "lines": 59,
         "path": "docs/vibe-typer.slice3a2.review.md"
       },
       {
@@ -2605,8 +2520,8 @@
         "path": "docs/vibe-typer.slice3b1.review.md"
       },
       {
-        "commits": 3,
-        "lines": 165,
+        "commits": 1,
+        "lines": 55,
         "path": "docs/vibe-typer.slice3b2.review.md"
       },
       {
@@ -2625,28 +2540,28 @@
         "path": "docs/vibe-typer.slice3b5.review.md"
       },
       {
-        "commits": 2,
-        "lines": 132,
+        "commits": 1,
+        "lines": 66,
         "path": "docs/vibe-typer.slice3c.review.md"
       },
       {
-        "commits": 2,
-        "lines": 142,
+        "commits": 1,
+        "lines": 71,
         "path": "docs/vibe-typer.slice3d1.review.md"
       },
       {
-        "commits": 2,
-        "lines": 108,
+        "commits": 1,
+        "lines": 54,
         "path": "docs/vibe-typer.slice3e.review.md"
       },
       {
-        "commits": 2,
-        "lines": 104,
+        "commits": 1,
+        "lines": 52,
         "path": "docs/vibe-typer.slice3f.review.md"
       },
       {
-        "commits": 17,
-        "lines": 6277,
+        "commits": 1,
+        "lines": 3154,
         "path": "docs/vibe-typer.slice4.md"
       },
       {
@@ -2685,28 +2600,28 @@
         "path": "docs/vibe-typer.slice4d2.review.md"
       },
       {
-        "commits": 9,
-        "lines": 37,
+        "commits": 1,
+        "lines": 25,
         "path": "eslint.config.js"
       },
       {
-        "commits": 2,
-        "lines": 380,
+        "commits": 1,
+        "lines": 374,
         "path": "fixtures/tapes/cabinet.naive-wrap-on.tape.json"
       },
       {
-        "commits": 2,
-        "lines": 362,
+        "commits": 1,
+        "lines": 356,
         "path": "fixtures/tapes/cabinet.naive.tape.json"
       },
       {
-        "commits": 2,
-        "lines": 362,
+        "commits": 1,
+        "lines": 356,
         "path": "fixtures/tapes/cabinet.task-only-wrap-on.tape.json"
       },
       {
-        "commits": 2,
-        "lines": 362,
+        "commits": 1,
+        "lines": 356,
         "path": "fixtures/tapes/cabinet.task-only.tape.json"
       },
       {
@@ -2790,128 +2705,128 @@
         "path": "fixtures/tapes/task-only-ndjson.tape.json"
       },
       {
-        "commits": 40,
-        "lines": 153,
+        "commits": 8,
+        "lines": 59,
         "path": "package.json"
       },
       {
-        "commits": 18,
-        "lines": 59,
+        "commits": 6,
+        "lines": 36,
         "path": "packages/cabinet-server/package.json"
       },
       {
-        "commits": 4,
-        "lines": 99,
+        "commits": 1,
+        "lines": 89,
         "path": "packages/cabinet-server/personas.json"
       },
       {
-        "commits": 5,
-        "lines": 54,
+        "commits": 1,
+        "lines": 30,
         "path": "packages/cabinet-server/src/browser.ts"
       },
       {
-        "commits": 14,
-        "lines": 604,
+        "commits": 1,
+        "lines": 422,
         "path": "packages/cabinet-server/src/cabinet.ts"
       },
       {
-        "commits": 13,
-        "lines": 780,
+        "commits": 1,
+        "lines": 582,
         "path": "packages/cabinet-server/src/client.ts"
       },
       {
-        "commits": 9,
-        "lines": 805,
+        "commits": 1,
+        "lines": 418,
         "path": "packages/cabinet-server/src/contract.ts"
       },
       {
-        "commits": 9,
-        "lines": 874,
+        "commits": 1,
+        "lines": 324,
         "path": "packages/cabinet-server/src/endless.ts"
       },
       {
-        "commits": 5,
-        "lines": 168,
+        "commits": 1,
+        "lines": 116,
         "path": "packages/cabinet-server/src/env.ts"
       },
       {
-        "commits": 8,
-        "lines": 237,
+        "commits": 1,
+        "lines": 163,
         "path": "packages/cabinet-server/src/gate.ts"
       },
       {
-        "commits": 11,
-        "lines": 323,
+        "commits": 1,
+        "lines": 261,
         "path": "packages/cabinet-server/src/host.ts"
       },
       {
-        "commits": 11,
-        "lines": 279,
+        "commits": 1,
+        "lines": 166,
         "path": "packages/cabinet-server/src/index.ts"
       },
       {
-        "commits": 8,
-        "lines": 319,
+        "commits": 1,
+        "lines": 209,
         "path": "packages/cabinet-server/src/personas.ts"
       },
       {
-        "commits": 4,
-        "lines": 291,
+        "commits": 1,
+        "lines": 213,
         "path": "packages/cabinet-server/src/say.ts"
       },
       {
-        "commits": 2,
-        "lines": 102,
+        "commits": 1,
+        "lines": 100,
         "path": "packages/cabinet-server/src/scripted.ts"
       },
       {
-        "commits": 3,
-        "lines": 43,
+        "commits": 1,
+        "lines": 29,
         "path": "packages/cabinet-server/src/seeds.ts"
       },
       {
-        "commits": 19,
-        "lines": 872,
+        "commits": 6,
+        "lines": 404,
         "path": "packages/cabinet-server/src/server-vibe.ts"
       },
       {
-        "commits": 32,
-        "lines": 1147,
+        "commits": 6,
+        "lines": 680,
         "path": "packages/cabinet-server/src/server.ts"
       },
       {
-        "commits": 3,
-        "lines": 136,
+        "commits": 1,
+        "lines": 82,
         "path": "packages/cabinet-server/src/step-guard.ts"
       },
       {
-        "commits": 6,
-        "lines": 49,
+        "commits": 1,
+        "lines": 22,
         "path": "packages/cabinet-server/src/tool-names.ts"
       },
       {
-        "commits": 10,
-        "lines": 874,
+        "commits": 1,
+        "lines": 443,
         "path": "packages/cabinet-server/src/vibe-cabinet.ts"
       },
       {
-        "commits": 8,
-        "lines": 826,
+        "commits": 1,
+        "lines": 391,
         "path": "packages/cabinet-server/src/vibe-host.ts"
       },
       {
-        "commits": 2,
-        "lines": 84,
+        "commits": 1,
+        "lines": 42,
         "path": "packages/cabinet-server/src/vibe-seat.ts"
       },
       {
-        "commits": 2,
-        "lines": 104,
+        "commits": 1,
+        "lines": 52,
         "path": "packages/cabinet-server/src/vibe-words.ts"
       },
       {
-        "commits": 3,
-        "lines": 767,
+        "commits": 1,
+        "lines": 370,
         "path": "packages/cabinet-server/src/voice-vibe.ts"
       },
       {
@@ -2920,98 +2835,98 @@
         "path": "packages/cabinet-server/src/voice-words.ts"
       },
       {
-        "commits": 17,
-        "lines": 692,
+        "commits": 1,
+        "lines": 406,
         "path": "packages/cabinet-server/src/voice.ts"
       },
       {
-        "commits": 12,
-        "lines": 590,
+        "commits": 1,
+        "lines": 515,
         "path": "packages/cabinet-server/test/cabinet.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 528,
+        "commits": 1,
+        "lines": 361,
         "path": "packages/cabinet-server/test/contract.test.ts"
       },
       {
-        "commits": 6,
-        "lines": 606,
+        "commits": 1,
+        "lines": 263,
         "path": "packages/cabinet-server/test/endless.test.ts"
       },
       {
-        "commits": 4,
-        "lines": 191,
+        "commits": 1,
+        "lines": 134,
         "path": "packages/cabinet-server/test/gate.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 279,
+        "commits": 1,
+        "lines": 195,
         "path": "packages/cabinet-server/test/personas.test.ts"
       },
       {
-        "commits": 4,
-        "lines": 219,
+        "commits": 1,
+        "lines": 207,
         "path": "packages/cabinet-server/test/say.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 54,
+        "commits": 1,
+        "lines": 48,
         "path": "packages/cabinet-server/test/scripted-play.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 683,
+        "commits": 1,
+        "lines": 529,
         "path": "packages/cabinet-server/test/seat.test.ts"
       },
       {
-        "commits": 14,
-        "lines": 659,
+        "commits": 1,
+        "lines": 467,
         "path": "packages/cabinet-server/test/server.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 176,
+        "commits": 2,
+        "lines": 101,
         "path": "packages/cabinet-server/test/step-guard.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 338,
+        "commits": 1,
+        "lines": 336,
         "path": "packages/cabinet-server/test/surfaces.test.ts"
       },
       {
-        "commits": 9,
-        "lines": 1681,
+        "commits": 1,
+        "lines": 883,
         "path": "packages/cabinet-server/test/vibe-cabinet.test.ts"
       },
       {
-        "commits": 12,
-        "lines": 745,
+        "commits": 1,
+        "lines": 359,
         "path": "packages/cabinet-server/test/vibe-server.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 1001,
+        "commits": 1,
+        "lines": 507,
         "path": "packages/cabinet-server/test/voice-vibe.test.ts"
       },
       {
-        "commits": 14,
-        "lines": 756,
+        "commits": 1,
+        "lines": 487,
         "path": "packages/cabinet-server/test/voice.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 176,
+        "commits": 1,
+        "lines": 140,
         "path": "packages/cabinet-server/tools.json"
       },
       {
-        "commits": 7,
-        "lines": 233,
+        "commits": 1,
+        "lines": 109,
         "path": "packages/cabinet-server/tools.vibe.json"
       },
       {
-        "commits": 3,
-        "lines": 8,
+        "commits": 1,
+        "lines": 4,
         "path": "packages/cabinet-server/tsconfig.json"
       },
       {
@@ -3020,213 +2935,213 @@
         "path": "packages/ghost-on-the-menu/NOTES.md"
       },
       {
-        "commits": 6,
-        "lines": 94,
+        "commits": 1,
+        "lines": 86,
         "path": "packages/ghost-on-the-menu/README.md"
       },
       {
-        "commits": 21,
-        "lines": 54,
+        "commits": 6,
+        "lines": 26,
         "path": "packages/ghost-on-the-menu/package.json"
       },
       {
-        "commits": 4,
-        "lines": 110,
+        "commits": 1,
+        "lines": 88,
         "path": "packages/ghost-on-the-menu/patterns/bosses.json"
       },
       {
-        "commits": 4,
-        "lines": 97,
+        "commits": 1,
+        "lines": 46,
         "path": "packages/ghost-on-the-menu/patterns/drops.json"
       },
       {
-        "commits": 3,
-        "lines": 194,
+        "commits": 1,
+        "lines": 182,
         "path": "packages/ghost-on-the-menu/patterns/endless.json"
       },
       {
-        "commits": 20,
-        "lines": 328,
+        "commits": 1,
+        "lines": 118,
         "path": "packages/ghost-on-the-menu/patterns/fire.json"
       },
       {
-        "commits": 5,
-        "lines": 40,
+        "commits": 1,
+        "lines": 36,
         "path": "packages/ghost-on-the-menu/patterns/formations.json"
       },
       {
-        "commits": 15,
-        "lines": 309,
+        "commits": 1,
+        "lines": 158,
         "path": "packages/ghost-on-the-menu/patterns/ladder.json"
       },
       {
-        "commits": 5,
-        "lines": 86,
+        "commits": 1,
+        "lines": 64,
         "path": "packages/ghost-on-the-menu/patterns/parallelism.json"
       },
       {
-        "commits": 4,
-        "lines": 166,
+        "commits": 1,
+        "lines": 148,
         "path": "packages/ghost-on-the-menu/patterns/paths.json"
       },
       {
-        "commits": 4,
-        "lines": 16,
+        "commits": 1,
+        "lines": 8,
         "path": "packages/ghost-on-the-menu/patterns/player.json"
       },
       {
-        "commits": 4,
-        "lines": 171,
+        "commits": 1,
+        "lines": 169,
         "path": "packages/ghost-on-the-menu/patterns/shift.json"
       },
       {
-        "commits": 20,
-        "lines": 1258,
+        "commits": 1,
+        "lines": 772,
         "path": "packages/ghost-on-the-menu/patterns/voice.json"
       },
       {
-        "commits": 6,
-        "lines": 104,
+        "commits": 1,
+        "lines": 44,
         "path": "packages/ghost-on-the-menu/patterns/waves.json"
       },
       {
-        "commits": 32,
-        "lines": 1839,
+        "commits": 1,
+        "lines": 956,
         "path": "packages/ghost-on-the-menu/src/audio.ts"
       },
       {
-        "commits": 8,
-        "lines": 167,
+        "commits": 1,
+        "lines": 131,
         "path": "packages/ghost-on-the-menu/src/cues.ts"
       },
       {
-        "commits": 3,
-        "lines": 1105,
+        "commits": 1,
+        "lines": 993,
         "path": "packages/ghost-on-the-menu/src/endless.ts"
       },
       {
-        "commits": 23,
-        "lines": 280,
+        "commits": 1,
+        "lines": 210,
         "path": "packages/ghost-on-the-menu/src/index.ts"
       },
       {
-        "commits": 3,
-        "lines": 104,
+        "commits": 1,
+        "lines": 86,
         "path": "packages/ghost-on-the-menu/src/label.ts"
       },
       {
-        "commits": 37,
-        "lines": 2081,
+        "commits": 1,
+        "lines": 1719,
         "path": "packages/ghost-on-the-menu/src/patterns.ts"
       },
       {
-        "commits": 15,
-        "lines": 960,
+        "commits": 1,
+        "lines": 638,
         "path": "packages/ghost-on-the-menu/src/pilot.ts"
       },
       {
-        "commits": 24,
-        "lines": 1031,
+        "commits": 1,
+        "lines": 689,
         "path": "packages/ghost-on-the-menu/src/play.ts"
       },
       {
-        "commits": 14,
-        "lines": 579,
+        "commits": 1,
+        "lines": 391,
         "path": "packages/ghost-on-the-menu/src/prepass.ts"
       },
       {
-        "commits": 24,
-        "lines": 1049,
+        "commits": 2,
+        "lines": 705,
         "path": "packages/ghost-on-the-menu/src/render.ts"
       },
       {
-        "commits": 7,
-        "lines": 449,
+        "commits": 1,
+        "lines": 347,
         "path": "packages/ghost-on-the-menu/src/shift.ts"
       },
       {
-        "commits": 49,
-        "lines": 3098,
+        "commits": 1,
+        "lines": 2161,
         "path": "packages/ghost-on-the-menu/src/sim.ts"
       },
       {
-        "commits": 32,
-        "lines": 542,
+        "commits": 1,
+        "lines": 445,
         "path": "packages/ghost-on-the-menu/src/types.ts"
       },
       {
-        "commits": 25,
-        "lines": 1953,
+        "commits": 1,
+        "lines": 669,
         "path": "packages/ghost-on-the-menu/test/audio.test.ts"
       },
       {
-        "commits": 23,
-        "lines": 1151,
+        "commits": 1,
+        "lines": 314,
         "path": "packages/ghost-on-the-menu/test/band.test.ts"
       },
       {
-        "commits": 4,
-        "lines": 535,
+        "commits": 1,
+        "lines": 525,
         "path": "packages/ghost-on-the-menu/test/cli.test.ts"
       },
       {
-        "commits": 9,
-        "lines": 158,
+        "commits": 1,
+        "lines": 156,
         "path": "packages/ghost-on-the-menu/test/cues.test.ts"
       },
       {
-        "commits": 11,
-        "lines": 901,
+        "commits": 1,
+        "lines": 851,
         "path": "packages/ghost-on-the-menu/test/endless.test.ts"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 109,
         "path": "packages/ghost-on-the-menu/test/label.test.ts"
       },
       {
-        "commits": 29,
-        "lines": 1105,
+        "commits": 1,
+        "lines": 861,
         "path": "packages/ghost-on-the-menu/test/patterns.test.ts"
       },
       {
-        "commits": 13,
-        "lines": 800,
+        "commits": 1,
+        "lines": 600,
         "path": "packages/ghost-on-the-menu/test/pilot.test.ts"
       },
       {
-        "commits": 11,
-        "lines": 371,
+        "commits": 1,
+        "lines": 330,
         "path": "packages/ghost-on-the-menu/test/play.test.ts"
       },
       {
-        "commits": 13,
-        "lines": 469,
+        "commits": 1,
+        "lines": 389,
         "path": "packages/ghost-on-the-menu/test/prepass.test.ts"
       },
       {
-        "commits": 7,
-        "lines": 171,
+        "commits": 1,
+        "lines": 107,
         "path": "packages/ghost-on-the-menu/test/range.test.ts"
       },
       {
-        "commits": 18,
-        "lines": 548,
+        "commits": 2,
+        "lines": 498,
         "path": "packages/ghost-on-the-menu/test/render.test.ts"
       },
       {
-        "commits": 4,
-        "lines": 97,
+        "commits": 1,
+        "lines": 77,
         "path": "packages/ghost-on-the-menu/test/scaffold.test.ts"
       },
       {
-        "commits": 6,
-        "lines": 553,
+        "commits": 1,
+        "lines": 445,
         "path": "packages/ghost-on-the-menu/test/shift.test.ts"
       },
       {
-        "commits": 39,
-        "lines": 3861,
+        "commits": 1,
+        "lines": 2816,
         "path": "packages/ghost-on-the-menu/test/sim.test.ts"
       },
       {
@@ -3235,103 +3150,43 @@
         "path": "packages/ghost-on-the-menu/tsconfig.json"
       },
       {
-        "commits": 3,
-        "lines": 32,
-        "path": "packages/house-call/package.json"
-      },
-      {
-        "commits": 2,
-        "lines": 124,
-        "path": "packages/house-call/src/director.ts"
-      },
-      {
-        "commits": 3,
-        "lines": 88,
-        "path": "packages/house-call/src/index.ts"
-      },
-      {
-        "commits": 4,
-        "lines": 154,
-        "path": "packages/house-call/src/narrative.ts"
-      },
-      {
-        "commits": 3,
-        "lines": 176,
-        "path": "packages/house-call/src/play.ts"
-      },
-      {
-        "commits": 2,
-        "lines": 134,
-        "path": "packages/house-call/src/run.ts"
-      },
-      {
-        "commits": 3,
-        "lines": 228,
-        "path": "packages/house-call/src/score.ts"
-      },
-      {
-        "commits": 2,
-        "lines": 264,
-        "path": "packages/house-call/src/turn.ts"
-      },
-      {
-        "commits": 3,
-        "lines": 128,
-        "path": "packages/house-call/src/types.ts"
-      },
-      {
-        "commits": 3,
-        "lines": 386,
-        "path": "packages/house-call/test/engine.test.ts"
-      },
-      {
-        "commits": 2,
-        "lines": 16,
-        "path": "packages/house-call/test/scaffold.test.ts"
-      },
-      {
-        "commits": 2,
-        "lines": 8,
-        "path": "packages/house-call/tsconfig.json"
-      },
-      {
-        "commits": 3,
-        "lines": 63,
+        "commits": 1,
+        "lines": 21,
         "path": "packages/launcher-vibe-typer/LICENSE"
       },
       {
-        "commits": 11,
-        "lines": 212,
+        "commits": 2,
+        "lines": 114,
         "path": "packages/launcher-vibe-typer/README.md"
       },
       {
-        "commits": 12,
-        "lines": 171,
+        "commits": 7,
+        "lines": 63,
         "path": "packages/launcher-vibe-typer/package.json"
       },
       {
-        "commits": 6,
-        "lines": 114,
+        "commits": 1,
+        "lines": 48,
         "path": "packages/launcher-vibe-typer/scripts/build.mjs"
       },
       {
-        "commits": 19,
-        "lines": 1697,
+        "commits": 5,
+        "lines": 888,
         "path": "packages/launcher-vibe-typer/src/cli.ts"
       },
       {
-        "commits": 15,
-        "lines": 1178,
+        "commits": 1,
+        "lines": 617,
         "path": "packages/launcher-vibe-typer/test/cli.test.ts"
       },
       {
-        "commits": 9,
-        "lines": 756,
+        "commits": 1,
+        "lines": 256,
         "path": "packages/launcher-vibe-typer/test/serve.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 12,
+        "commits": 1,
+        "lines": 4,
         "path": "packages/launcher-vibe-typer/tsconfig.json"
       },
       {
@@ -3340,28 +3195,28 @@
         "path": "packages/launcher/LICENSE"
       },
       {
-        "commits": 13,
-        "lines": 237,
+        "commits": 2,
+        "lines": 127,
         "path": "packages/launcher/README.md"
       },
       {
-        "commits": 16,
-        "lines": 87,
+        "commits": 7,
+        "lines": 63,
         "path": "packages/launcher/package.json"
       },
       {
-        "commits": 10,
-        "lines": 231,
+        "commits": 1,
+        "lines": 56,
         "path": "packages/launcher/scripts/build.d.mts"
       },
       {
-        "commits": 21,
-        "lines": 1926,
+        "commits": 1,
+        "lines": 598,
         "path": "packages/launcher/scripts/build.mjs"
       },
       {
-        "commits": 5,
-        "lines": 93,
+        "commits": 2,
+        "lines": 82,
         "path": "packages/launcher/src/allow.ts"
       },
       {
@@ -3370,8 +3225,8 @@
         "path": "packages/launcher/src/check.ts"
       },
       {
-        "commits": 14,
-        "lines": 1302,
+        "commits": 5,
+        "lines": 931,
         "path": "packages/launcher/src/cli.ts"
       },
       {
@@ -3380,8 +3235,8 @@
         "path": "packages/launcher/src/core.ts"
       },
       {
-        "commits": 3,
-        "lines": 98,
+        "commits": 1,
+        "lines": 75,
         "path": "packages/launcher/src/files.ts"
       },
       {
@@ -3390,38 +3245,38 @@
         "path": "packages/launcher/src/levers.ts"
       },
       {
-        "commits": 17,
-        "lines": 2016,
+        "commits": 3,
+        "lines": 1236,
         "path": "packages/launcher/src/serve.ts"
       },
       {
-        "commits": 2,
-        "lines": 80,
+        "commits": 1,
+        "lines": 78,
         "path": "packages/launcher/test/allow.test.ts"
       },
       {
-        "commits": 9,
-        "lines": 1224,
+        "commits": 1,
+        "lines": 808,
         "path": "packages/launcher/test/cli.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 124,
+        "commits": 1,
+        "lines": 95,
         "path": "packages/launcher/test/files.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 1127,
+        "commits": 1,
+        "lines": 496,
         "path": "packages/launcher/test/pack-gate.test.ts"
       },
       {
-        "commits": 3,
-        "lines": 236,
+        "commits": 1,
+        "lines": 106,
         "path": "packages/launcher/test/release-workflow.test.ts"
       },
       {
-        "commits": 11,
-        "lines": 1980,
+        "commits": 1,
+        "lines": 1236,
         "path": "packages/launcher/test/serve.test.ts"
       },
       {
@@ -3430,43 +3285,43 @@
         "path": "packages/launcher/tsconfig.json"
       },
       {
-        "commits": 20,
-        "lines": 50,
+        "commits": 6,
+        "lines": 22,
         "path": "packages/tape-core/package.json"
       },
       {
-        "commits": 5,
-        "lines": 186,
+        "commits": 1,
+        "lines": 162,
         "path": "packages/tape-core/src/calibration.ts"
       },
       {
-        "commits": 5,
-        "lines": 57,
+        "commits": 1,
+        "lines": 42,
         "path": "packages/tape-core/src/index.ts"
       },
       {
-        "commits": 12,
-        "lines": 437,
+        "commits": 1,
+        "lines": 258,
         "path": "packages/tape-core/src/load.ts"
       },
       {
-        "commits": 2,
-        "lines": 26,
+        "commits": 1,
+        "lines": 24,
         "path": "packages/tape-core/src/reveal.ts"
       },
       {
-        "commits": 2,
-        "lines": 32,
+        "commits": 1,
+        "lines": 26,
         "path": "packages/tape-core/src/slice.ts"
       },
       {
-        "commits": 3,
-        "lines": 125,
+        "commits": 1,
+        "lines": 112,
         "path": "packages/tape-core/src/types.ts"
       },
       {
-        "commits": 5,
-        "lines": 230,
+        "commits": 1,
+        "lines": 205,
         "path": "packages/tape-core/test/calibration.test.ts"
       },
       {
@@ -3475,8 +3330,8 @@
         "path": "packages/tape-core/test/reveal.test.ts"
       },
       {
-        "commits": 13,
-        "lines": 515,
+        "commits": 1,
+        "lines": 285,
         "path": "packages/tape-core/test/schema.test.ts"
       },
       {
@@ -3490,193 +3345,193 @@
         "path": "packages/tape-core/tsconfig.json"
       },
       {
-        "commits": 4,
-        "lines": 77,
+        "commits": 1,
+        "lines": 49,
         "path": "packages/vibe-typer/README.md"
       },
       {
-        "commits": 2,
-        "lines": 2720,
+        "commits": 1,
+        "lines": 1360,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-asks.json"
       },
       {
-        "commits": 2,
-        "lines": 994,
+        "commits": 1,
+        "lines": 497,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-nags.json"
       },
       {
-        "commits": 2,
-        "lines": 2170,
+        "commits": 1,
+        "lines": 1085,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 5096,
+        "commits": 1,
+        "lines": 2548,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-reactions.json"
       },
       {
-        "commits": 2,
-        "lines": 218,
+        "commits": 1,
+        "lines": 109,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-reviews.json"
       },
       {
-        "commits": 2,
-        "lines": 636,
+        "commits": 1,
+        "lines": 318,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-run.json"
       },
       {
-        "commits": 2,
-        "lines": 1314,
+        "commits": 1,
+        "lines": 657,
         "path": "packages/vibe-typer/authoring/2026-09-15-201349721-stories.json"
       },
       {
-        "commits": 2,
-        "lines": 1098,
+        "commits": 1,
+        "lines": 549,
         "path": "packages/vibe-typer/authoring/2026-09-15-234623822-nags.json"
       },
       {
-        "commits": 2,
-        "lines": 124,
+        "commits": 1,
+        "lines": 62,
         "path": "packages/vibe-typer/authoring/2026-09-15-234623822-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 128,
+        "commits": 1,
+        "lines": 64,
         "path": "packages/vibe-typer/authoring/2026-09-15-234623822-run.json"
       },
       {
-        "commits": 2,
-        "lines": 2472,
+        "commits": 1,
+        "lines": 1236,
         "path": "packages/vibe-typer/authoring/2026-09-16-003546907-asks.json"
       },
       {
-        "commits": 2,
-        "lines": 1156,
+        "commits": 1,
+        "lines": 578,
         "path": "packages/vibe-typer/authoring/2026-09-16-003546907-nags.json"
       },
       {
-        "commits": 2,
-        "lines": 5036,
+        "commits": 1,
+        "lines": 2518,
         "path": "packages/vibe-typer/authoring/2026-09-16-003546907-reactions.json"
       },
       {
-        "commits": 2,
-        "lines": 218,
+        "commits": 1,
+        "lines": 109,
         "path": "packages/vibe-typer/authoring/2026-09-16-003546907-reviews.json"
       },
       {
-        "commits": 2,
-        "lines": 354,
+        "commits": 1,
+        "lines": 177,
         "path": "packages/vibe-typer/authoring/2026-09-16-003546907-run.json"
       },
       {
-        "commits": 2,
-        "lines": 1210,
+        "commits": 1,
+        "lines": 605,
         "path": "packages/vibe-typer/authoring/2026-09-16-003546907-stories.json"
       },
       {
-        "commits": 2,
-        "lines": 2588,
+        "commits": 1,
+        "lines": 1294,
         "path": "packages/vibe-typer/authoring/2026-09-16-021204884-asks.json"
       },
       {
-        "commits": 2,
-        "lines": 1042,
+        "commits": 1,
+        "lines": 521,
         "path": "packages/vibe-typer/authoring/2026-09-16-021204884-nags.json"
       },
       {
-        "commits": 2,
-        "lines": 3276,
+        "commits": 1,
+        "lines": 1638,
         "path": "packages/vibe-typer/authoring/2026-09-16-021204884-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 308,
+        "commits": 1,
+        "lines": 154,
         "path": "packages/vibe-typer/authoring/2026-09-16-021204884-run.json"
       },
       {
-        "commits": 2,
-        "lines": 2908,
+        "commits": 1,
+        "lines": 1454,
         "path": "packages/vibe-typer/authoring/2026-09-16-042440000-edit.json"
       },
       {
-        "commits": 2,
-        "lines": 118,
+        "commits": 1,
+        "lines": 59,
         "path": "packages/vibe-typer/authoring/2026-09-16-053014036-run.json"
       },
       {
-        "commits": 2,
-        "lines": 1206,
+        "commits": 1,
+        "lines": 603,
         "path": "packages/vibe-typer/authoring/2026-09-16-053014036-stories.json"
       },
       {
-        "commits": 2,
-        "lines": 146,
+        "commits": 1,
+        "lines": 73,
         "path": "packages/vibe-typer/authoring/2026-09-16-064955177-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 84,
+        "commits": 1,
+        "lines": 42,
         "path": "packages/vibe-typer/authoring/2026-09-16-064955177-run.json"
       },
       {
-        "commits": 2,
-        "lines": 282,
+        "commits": 1,
+        "lines": 141,
         "path": "packages/vibe-typer/authoring/2026-09-16-065549528-premises.json"
       },
       {
-        "commits": 2,
-        "lines": 80,
+        "commits": 1,
+        "lines": 40,
         "path": "packages/vibe-typer/authoring/2026-09-16-065549528-run.json"
       },
       {
-        "commits": 2,
-        "lines": 232,
+        "commits": 1,
+        "lines": 116,
         "path": "packages/vibe-typer/authoring/2026-09-16-065553849-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 96,
+        "commits": 1,
+        "lines": 48,
         "path": "packages/vibe-typer/authoring/2026-09-16-065553849-run.json"
       },
       {
-        "commits": 2,
-        "lines": 98,
+        "commits": 1,
+        "lines": 49,
         "path": "packages/vibe-typer/authoring/2026-09-16-070436992-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 80,
+        "commits": 1,
+        "lines": 40,
         "path": "packages/vibe-typer/authoring/2026-09-16-070436992-run.json"
       },
       {
-        "commits": 2,
-        "lines": 1372,
+        "commits": 1,
+        "lines": 686,
         "path": "packages/vibe-typer/authoring/2026-09-16-070658709-edit.json"
       },
       {
-        "commits": 2,
-        "lines": 340,
+        "commits": 1,
+        "lines": 170,
         "path": "packages/vibe-typer/authoring/2026-09-16-072036588-pools.json"
       },
       {
-        "commits": 2,
-        "lines": 100,
+        "commits": 1,
+        "lines": 50,
         "path": "packages/vibe-typer/authoring/2026-09-16-072036588-run.json"
       },
       {
-        "commits": 2,
-        "lines": 778,
+        "commits": 1,
+        "lines": 389,
         "path": "packages/vibe-typer/authoring/2026-09-16-073306669-edit.json"
       },
       {
-        "commits": 2,
-        "lines": 6180,
+        "commits": 1,
+        "lines": 3090,
         "path": "packages/vibe-typer/authoring/2026-09-16-160153311-edit.json"
       },
       {
-        "commits": 2,
-        "lines": 5622,
+        "commits": 1,
+        "lines": 2811,
         "path": "packages/vibe-typer/authoring/2026-09-16-160249257-edit.json"
       },
       {
@@ -3740,98 +3595,98 @@
         "path": "packages/vibe-typer/authoring/2026-09-17-041119373-snippet-reactions.json"
       },
       {
-        "commits": 16,
-        "lines": 68,
+        "commits": 6,
+        "lines": 31,
         "path": "packages/vibe-typer/package.json"
       },
       {
-        "commits": 19,
-        "lines": 1855,
+        "commits": 1,
+        "lines": 97,
         "path": "packages/vibe-typer/patterns/agent.json"
       },
       {
-        "commits": 12,
-        "lines": 80,
+        "commits": 2,
+        "lines": 26,
         "path": "packages/vibe-typer/patterns/cabinet.json"
       },
       {
-        "commits": 2,
-        "lines": 64,
+        "commits": 1,
+        "lines": 32,
         "path": "packages/vibe-typer/patterns/context.json"
       },
       {
-        "commits": 13,
-        "lines": 1316,
+        "commits": 1,
+        "lines": 508,
         "path": "packages/vibe-typer/patterns/corpus/bash.json"
       },
       {
-        "commits": 7,
-        "lines": 1392,
+        "commits": 1,
+        "lines": 532,
         "path": "packages/vibe-typer/patterns/corpus/csharp.json"
       },
       {
-        "commits": 9,
-        "lines": 1418,
+        "commits": 1,
+        "lines": 528,
         "path": "packages/vibe-typer/patterns/corpus/java.json"
       },
       {
-        "commits": 9,
-        "lines": 1482,
+        "commits": 1,
+        "lines": 554,
         "path": "packages/vibe-typer/patterns/corpus/javascript.json"
       },
       {
-        "commits": 13,
-        "lines": 1527,
+        "commits": 1,
+        "lines": 556,
         "path": "packages/vibe-typer/patterns/corpus/python.json"
       },
       {
-        "commits": 13,
-        "lines": 1360,
+        "commits": 1,
+        "lines": 506,
         "path": "packages/vibe-typer/patterns/corpus/sql.json"
       },
       {
-        "commits": 2,
-        "lines": 712,
+        "commits": 1,
+        "lines": 356,
         "path": "packages/vibe-typer/patterns/difficulty.json"
       },
       {
-        "commits": 16,
-        "lines": 712,
+        "commits": 1,
+        "lines": 232,
         "path": "packages/vibe-typer/patterns/levels.json"
       },
       {
-        "commits": 6,
-        "lines": 84,
+        "commits": 1,
+        "lines": 34,
         "path": "packages/vibe-typer/patterns/products.json"
       },
       {
-        "commits": 4,
-        "lines": 45,
+        "commits": 1,
+        "lines": 22,
         "path": "packages/vibe-typer/patterns/score.json"
       },
       {
-        "commits": 21,
-        "lines": 15053,
+        "commits": 1,
+        "lines": 3673,
         "path": "packages/vibe-typer/patterns/user.json"
       },
       {
-        "commits": 4,
-        "lines": 177,
+        "commits": 1,
+        "lines": 87,
         "path": "packages/vibe-typer/patterns/voice/agent.md"
       },
       {
-        "commits": 6,
-        "lines": 211,
+        "commits": 1,
+        "lines": 93,
         "path": "packages/vibe-typer/patterns/voice/user.md"
       },
       {
-        "commits": 9,
-        "lines": 1638,
+        "commits": 1,
+        "lines": 718,
         "path": "packages/vibe-typer/scripts/author-lib.mjs"
       },
       {
-        "commits": 14,
-        "lines": 8078,
+        "commits": 1,
+        "lines": 3659,
         "path": "packages/vibe-typer/scripts/author.mjs"
       },
       {
@@ -3840,138 +3695,138 @@
         "path": "packages/vibe-typer/scripts/normalize-lines.mjs"
       },
       {
-        "commits": 9,
-        "lines": 556,
+        "commits": 1,
+        "lines": 202,
         "path": "packages/vibe-typer/scripts/port-corpus.mjs"
       },
       {
-        "commits": 4,
-        "lines": 773,
+        "commits": 1,
+        "lines": 479,
         "path": "packages/vibe-typer/scripts/sweep-levels.mjs"
       },
       {
-        "commits": 11,
-        "lines": 1127,
+        "commits": 1,
+        "lines": 578,
         "path": "packages/vibe-typer/src/codegate.ts"
       },
       {
-        "commits": 2,
-        "lines": 102,
+        "commits": 1,
+        "lines": 51,
         "path": "packages/vibe-typer/src/context.ts"
       },
       {
-        "commits": 18,
-        "lines": 897,
+        "commits": 1,
+        "lines": 461,
         "path": "packages/vibe-typer/src/corpus.ts"
       },
       {
-        "commits": 2,
-        "lines": 254,
+        "commits": 1,
+        "lines": 127,
         "path": "packages/vibe-typer/src/difficulty.ts"
       },
       {
-        "commits": 20,
-        "lines": 438,
+        "commits": 1,
+        "lines": 205,
         "path": "packages/vibe-typer/src/index.ts"
       },
       {
-        "commits": 21,
-        "lines": 1041,
+        "commits": 2,
+        "lines": 419,
         "path": "packages/vibe-typer/src/level.ts"
       },
       {
-        "commits": 15,
-        "lines": 847,
+        "commits": 1,
+        "lines": 303,
         "path": "packages/vibe-typer/src/lines.ts"
       },
       {
-        "commits": 29,
-        "lines": 3045,
+        "commits": 2,
+        "lines": 1301,
         "path": "packages/vibe-typer/src/patterns.ts"
       },
       {
-        "commits": 15,
-        "lines": 1201,
+        "commits": 1,
+        "lines": 549,
         "path": "packages/vibe-typer/src/play.ts"
       },
       {
-        "commits": 2,
-        "lines": 354,
+        "commits": 1,
+        "lines": 280,
         "path": "packages/vibe-typer/src/runcode.ts"
       },
       {
-        "commits": 2,
-        "lines": 120,
+        "commits": 1,
+        "lines": 60,
         "path": "packages/vibe-typer/src/score.ts"
       },
       {
-        "commits": 2,
-        "lines": 118,
+        "commits": 1,
+        "lines": 59,
         "path": "packages/vibe-typer/src/seed.ts"
       },
       {
-        "commits": 23,
-        "lines": 2701,
+        "commits": 1,
+        "lines": 1422,
         "path": "packages/vibe-typer/src/sim.ts"
       },
       {
-        "commits": 5,
-        "lines": 366,
+        "commits": 1,
+        "lines": 91,
         "path": "packages/vibe-typer/src/spelling.ts"
       },
       {
-        "commits": 18,
-        "lines": 702,
+        "commits": 1,
+        "lines": 386,
         "path": "packages/vibe-typer/src/types.ts"
       },
       {
-        "commits": 11,
-        "lines": 1510,
+        "commits": 1,
+        "lines": 713,
         "path": "packages/vibe-typer/test/author.test.ts"
       },
       {
-        "commits": 15,
-        "lines": 887,
+        "commits": 1,
+        "lines": 378,
         "path": "packages/vibe-typer/test/band.test.ts"
       },
       {
-        "commits": 9,
-        "lines": 1063,
+        "commits": 1,
+        "lines": 581,
         "path": "packages/vibe-typer/test/codegate.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 136,
+        "commits": 1,
+        "lines": 68,
         "path": "packages/vibe-typer/test/context.test.ts"
       },
       {
-        "commits": 13,
-        "lines": 546,
+        "commits": 1,
+        "lines": 259,
         "path": "packages/vibe-typer/test/corpus.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 146,
+        "commits": 1,
+        "lines": 73,
         "path": "packages/vibe-typer/test/difficulty.test.ts"
       },
       {
-        "commits": 16,
-        "lines": 577,
+        "commits": 1,
+        "lines": 242,
         "path": "packages/vibe-typer/test/helpers.ts"
       },
       {
-        "commits": 14,
-        "lines": 829,
+        "commits": 1,
+        "lines": 333,
         "path": "packages/vibe-typer/test/level.test.ts"
       },
       {
-        "commits": 7,
-        "lines": 2770,
+        "commits": 1,
+        "lines": 993,
         "path": "packages/vibe-typer/test/lines-neutral.test.ts"
       },
       {
-        "commits": 19,
-        "lines": 1227,
+        "commits": 1,
+        "lines": 382,
         "path": "packages/vibe-typer/test/lines.test.ts"
       },
       {
@@ -3980,18 +3835,18 @@
         "path": "packages/vibe-typer/test/normalize.test.ts"
       },
       {
-        "commits": 24,
-        "lines": 1325,
+        "commits": 1,
+        "lines": 516,
         "path": "packages/vibe-typer/test/patterns.test.ts"
       },
       {
-        "commits": 10,
-        "lines": 792,
+        "commits": 1,
+        "lines": 444,
         "path": "packages/vibe-typer/test/play.test.ts"
       },
       {
-        "commits": 2,
-        "lines": 122,
+        "commits": 1,
+        "lines": 61,
         "path": "packages/vibe-typer/test/score.test.ts"
       },
       {
@@ -4000,103 +3855,103 @@
         "path": "packages/vibe-typer/test/scripts.test.ts"
       },
       {
-        "commits": 25,
-        "lines": 3397,
+        "commits": 1,
+        "lines": 1895,
         "path": "packages/vibe-typer/test/sim.test.ts"
       },
       {
-        "commits": 8,
-        "lines": 540,
+        "commits": 1,
+        "lines": 175,
         "path": "packages/vibe-typer/test/spelling.test.ts"
       },
       {
-        "commits": 4,
-        "lines": 18,
+        "commits": 1,
+        "lines": 9,
         "path": "packages/vibe-typer/tsconfig.json"
       },
       {
-        "commits": 25,
-        "lines": 4658,
+        "commits": 7,
+        "lines": 3534,
         "path": "pnpm-lock.yaml"
       },
       {
-        "commits": 2,
+        "commits": 1,
         "lines": 10,
         "path": "pnpm-workspace.yaml"
       },
       {
-        "commits": 4,
-        "lines": 946,
+        "commits": 1,
+        "lines": 560,
         "path": "scripts/beds/arrange.py"
       },
       {
-        "commits": 3,
-        "lines": 530,
+        "commits": 1,
+        "lines": 258,
         "path": "scripts/beds/encode.py"
       },
       {
-        "commits": 5,
-        "lines": 691,
+        "commits": 1,
+        "lines": 365,
         "path": "scripts/beds/master.py"
       },
       {
-        "commits": 4,
-        "lines": 745,
+        "commits": 1,
+        "lines": 298,
         "path": "scripts/beds/words.py"
       },
       {
-        "commits": 6,
-        "lines": 1115,
+        "commits": 1,
+        "lines": 311,
         "path": "scripts/film.mjs"
       },
       {
-        "commits": 2,
-        "lines": 112,
+        "commits": 1,
+        "lines": 56,
         "path": "scripts/lib/bundle.mjs"
       },
       {
-        "commits": 2,
-        "lines": 304,
+        "commits": 1,
+        "lines": 152,
         "path": "scripts/lib/cli.mjs"
       },
       {
-        "commits": 15,
-        "lines": 921,
+        "commits": 1,
+        "lines": 377,
         "path": "scripts/play.mjs"
       },
       {
-        "commits": 8,
-        "lines": 1634,
+        "commits": 1,
+        "lines": 715,
         "path": "scripts/sit-vibe.mjs"
       },
       {
-        "commits": 14,
-        "lines": 1852,
+        "commits": 1,
+        "lines": 686,
         "path": "scripts/sit.mjs"
       },
       {
-        "commits": 7,
-        "lines": 619,
+        "commits": 1,
+        "lines": 160,
         "path": "scripts/sweep.mjs"
       },
       {
-        "commits": 2,
-        "lines": 260,
+        "commits": 1,
+        "lines": 130,
         "path": "scripts/test/cli-lib.test.mjs"
       },
       {
-        "commits": 5,
-        "lines": 610,
+        "commits": 3,
+        "lines": 310,
         "path": "scripts/test/runners.test.mjs"
       },
       {
-        "commits": 4,
-        "lines": 830,
+        "commits": 1,
+        "lines": 441,
         "path": "scripts/transcript.mjs"
       },
       {
-        "commits": 8,
-        "lines": 560,
+        "commits": 1,
+        "lines": 217,
         "path": "scripts/voice.mjs"
       },
       {
@@ -4105,13 +3960,13 @@
         "path": "site/astro.config.mjs"
       },
       {
-        "commits": 1,
-        "lines": 6065,
+        "commits": 4,
+        "lines": 6341,
         "path": "site/package-lock.json"
       },
       {
-        "commits": 5,
-        "lines": 26,
+        "commits": 6,
+        "lines": 28,
         "path": "site/package.json"
       },
       {
@@ -4125,58 +3980,58 @@
         "path": "site/src/content.config.ts"
       },
       {
-        "commits": 9,
-        "lines": 87,
+        "commits": 1,
+        "lines": 59,
         "path": "site/src/content/docs/handbook/architecture.md"
       },
       {
-        "commits": 9,
-        "lines": 132,
+        "commits": 1,
+        "lines": 100,
         "path": "site/src/content/docs/handbook/cabinet-server.md"
       },
       {
-        "commits": 20,
-        "lines": 150,
+        "commits": 1,
+        "lines": 96,
         "path": "site/src/content/docs/handbook/getting-started.md"
       },
       {
-        "commits": 11,
-        "lines": 93,
+        "commits": 1,
+        "lines": 55,
         "path": "site/src/content/docs/handbook/index.md"
       },
       {
-        "commits": 18,
-        "lines": 107,
+        "commits": 1,
+        "lines": 66,
         "path": "site/src/content/docs/handbook/patterns.md"
       },
       {
-        "commits": 5,
-        "lines": 67,
+        "commits": 1,
+        "lines": 59,
         "path": "site/src/content/docs/handbook/reading-a-round.md"
       },
       {
-        "commits": 9,
-        "lines": 97,
+        "commits": 1,
+        "lines": 71,
         "path": "site/src/content/docs/handbook/reference.md"
       },
       {
-        "commits": 4,
-        "lines": 46,
+        "commits": 1,
+        "lines": 30,
         "path": "site/src/content/docs/handbook/security.md"
       },
       {
-        "commits": 10,
-        "lines": 147,
+        "commits": 1,
+        "lines": 85,
         "path": "site/src/content/docs/handbook/vibe-typer.md"
       },
       {
-        "commits": 2,
-        "lines": 41,
+        "commits": 1,
+        "lines": 39,
         "path": "site/src/pages/index.astro"
       },
       {
-        "commits": 24,
-        "lines": 425,
+        "commits": 6,
+        "lines": 176,
         "path": "site/src/site-config.ts"
       },
       {
@@ -4200,559 +4055,61 @@
         "path": "tsconfig.base.json"
       },
       {
-        "commits": 1,
-        "lines": 0,
-        "path": "vibe-typer.citations.json}"
-      },
-      {
-        "commits": 1,
-        "lines": 16,
-        "path": "vibe-typer.dispatch.md}"
-      },
-      {
-        "commits": 1,
-        "lines": 22,
-        "path": "vibe-typer.kickoff.md}"
-      },
-      {
-        "commits": 5,
-        "lines": 34,
+        "commits": 3,
+        "lines": 24,
         "path": "vitest.config.ts"
       },
       {
-        "commits": 4,
-        "lines": 70,
+        "commits": 1,
+        "lines": 40,
         "path": "voice/compose.host.yaml"
       },
       {
-        "commits": 2,
-        "lines": 66,
+        "commits": 1,
+        "lines": 33,
         "path": "voice/tests/README"
       },
       {
-        "commits": 5,
-        "lines": 844,
+        "commits": 1,
+        "lines": 376,
         "path": "voice/tests/test_worker.py"
       },
       {
-        "commits": 13,
-        "lines": 1024,
+        "commits": 1,
+        "lines": 600,
         "path": "voice/worker.py"
       }
     ]
   },
   "confidence": {
-    "level": "full",
-    "reason": "at least 30 qualifying commits, and at least 20 source files reach 10 revisions"
+    "level": "low",
+    "reason": "fewer than 25 source files reach 10 revisions in the window"
   },
-  "generatedAt": "2026-09-30T20:10:40.777Z",
+  "generatedAt": "2026-10-15T03:17:43.489Z",
   "generatedFrom": {
-    "commit": "c01c274dde0c021eba60b7f6d9db23283d7d72b0"
+    "commit": "09f0f60c40ac4c1caa2e34653e7afb95b0789691"
   },
   "pairs": [
     {
-      "a": "README.es.md",
-      "b": "README.fr.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.es.md",
-      "b": "README.hi.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.es.md",
-      "b": "README.it.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.es.md",
-      "b": "README.ja.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.es.md",
-      "b": "README.pt-BR.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.es.md",
-      "b": "README.zh.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.es.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.es.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.es.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.es.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "README.fr.md",
-      "b": "README.hi.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.fr.md",
-      "b": "README.it.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.fr.md",
-      "b": "README.ja.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.fr.md",
-      "b": "README.pt-BR.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.fr.md",
-      "b": "README.zh.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.fr.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.fr.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.fr.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.fr.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "README.hi.md",
-      "b": "README.it.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.hi.md",
-      "b": "README.ja.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.hi.md",
-      "b": "README.pt-BR.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.hi.md",
-      "b": "README.zh.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.hi.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.hi.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.hi.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.hi.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "README.it.md",
-      "b": "README.ja.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.it.md",
-      "b": "README.pt-BR.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.it.md",
-      "b": "README.zh.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.it.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.it.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.it.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.it.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "README.ja.md",
-      "b": "README.pt-BR.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.ja.md",
-      "b": "README.zh.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.ja.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.ja.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.ja.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.ja.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "README.pt-BR.md",
-      "b": "README.zh.md",
-      "either": 19,
-      "shared": 19,
-      "strength": 1
-    },
-    {
-      "a": "README.pt-BR.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.pt-BR.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.pt-BR.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.pt-BR.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "README.zh.md",
-      "b": "apps/cabinets/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.zh.md",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 26,
-      "shared": 13,
-      "strength": 0.5
-    },
-    {
-      "a": "README.zh.md",
-      "b": "packages/tape-core/package.json",
-      "either": 25,
-      "shared": 13,
-      "strength": 0.52
-    },
-    {
-      "a": "README.zh.md",
-      "b": "site/src/site-config.ts",
-      "either": 27,
-      "shared": 14,
-      "strength": 0.518519
-    },
-    {
-      "a": "apps/cabinets/package.json",
-      "b": "package.json",
-      "either": 33,
-      "shared": 18,
-      "strength": 0.545455
-    },
-    {
-      "a": "apps/cabinets/package.json",
-      "b": "packages/cabinet-server/package.json",
-      "either": 22,
-      "shared": 14,
-      "strength": 0.636364
-    },
-    {
-      "a": "apps/cabinets/package.json",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 22,
-      "shared": 18,
-      "strength": 0.818182
-    },
-    {
-      "a": "apps/cabinets/package.json",
-      "b": "packages/launcher/package.json",
-      "either": 22,
-      "shared": 11,
-      "strength": 0.5
-    },
-    {
-      "a": "apps/cabinets/package.json",
-      "b": "packages/tape-core/package.json",
-      "either": 21,
-      "shared": 18,
-      "strength": 0.857143
-    },
-    {
-      "a": "apps/cabinets/src/vibe-typer.ts",
-      "b": "apps/cabinets/test/typer-mount.test.ts",
-      "either": 26,
-      "shared": 17,
-      "strength": 0.653846
-    },
-    {
       "a": "package.json",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 32,
-      "shared": 19,
-      "strength": 0.59375
-    },
-    {
-      "a": "package.json",
-      "b": "packages/tape-core/package.json",
-      "either": 32,
-      "shared": 18,
-      "strength": 0.5625
-    },
-    {
-      "a": "packages/cabinet-server/package.json",
-      "b": "packages/cabinet-server/src/server.ts",
-      "either": 28,
-      "shared": 14,
-      "strength": 0.5
-    },
-    {
-      "a": "packages/cabinet-server/package.json",
-      "b": "packages/ghost-on-the-menu/package.json",
-      "either": 22,
-      "shared": 14,
-      "strength": 0.636364
-    },
-    {
-      "a": "packages/cabinet-server/package.json",
-      "b": "packages/launcher/package.json",
-      "either": 18,
-      "shared": 11,
-      "strength": 0.611111
-    },
-    {
-      "a": "packages/cabinet-server/package.json",
-      "b": "packages/tape-core/package.json",
-      "either": 21,
-      "shared": 14,
+      "b": "packages/launcher-vibe-typer/package.json",
+      "either": 6,
+      "shared": 4,
       "strength": 0.666667
     },
     {
-      "a": "packages/ghost-on-the-menu/package.json",
+      "a": "package.json",
       "b": "packages/launcher/package.json",
-      "either": 22,
-      "shared": 11,
-      "strength": 0.5
+      "either": 6,
+      "shared": 4,
+      "strength": 0.666667
     },
     {
-      "a": "packages/ghost-on-the-menu/package.json",
-      "b": "packages/tape-core/package.json",
-      "either": 21,
-      "shared": 18,
-      "strength": 0.857143
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/audio.ts",
-      "b": "packages/ghost-on-the-menu/test/audio.test.ts",
-      "either": 30,
-      "shared": 21,
-      "strength": 0.7
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/patterns.ts",
-      "b": "packages/ghost-on-the-menu/src/sim.ts",
-      "either": 47,
-      "shared": 29,
-      "strength": 0.617021
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/patterns.ts",
-      "b": "packages/ghost-on-the-menu/test/patterns.test.ts",
-      "either": 36,
-      "shared": 20,
-      "strength": 0.555556
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/patterns.ts",
-      "b": "packages/ghost-on-the-menu/test/sim.test.ts",
-      "either": 43,
-      "shared": 23,
-      "strength": 0.534884
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/prepass.ts",
-      "b": "packages/ghost-on-the-menu/test/prepass.test.ts",
-      "either": 15,
-      "shared": 12,
-      "strength": 0.8
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/render.ts",
-      "b": "packages/ghost-on-the-menu/test/render.test.ts",
-      "either": 25,
-      "shared": 14,
-      "strength": 0.56
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/sim.ts",
-      "b": "packages/ghost-on-the-menu/src/types.ts",
-      "either": 46,
-      "shared": 27,
-      "strength": 0.586957
-    },
-    {
-      "a": "packages/ghost-on-the-menu/src/sim.ts",
-      "b": "packages/ghost-on-the-menu/test/sim.test.ts",
-      "either": 47,
-      "shared": 31,
-      "strength": 0.659574
-    },
-    {
-      "a": "packages/launcher/package.json",
-      "b": "packages/tape-core/package.json",
-      "either": 21,
-      "shared": 11,
-      "strength": 0.52381
+      "a": "packages/launcher-vibe-typer/package.json",
+      "b": "packages/launcher/package.json",
+      "either": 5,
+      "shared": 5,
+      "strength": 1
     }
   ],
   "parameters": {
@@ -4762,19 +4119,19 @@
     "cohesionDrop": 0.2,
     "couplingPopulation": "source",
     "fallenShared": 3,
-    "floor": "strong",
+    "floor": "fallen",
     "floorHeld": false,
-    "floorTrigger": null,
-    "headDate": "2026-09-30T10:42:09-04:00",
+    "floorTrigger": "revision-depth",
+    "headDate": "2026-10-14T22:46:02-04:00",
     "inScopeFiles": 762,
     "pinnedStart": null,
-    "priorFloor": "strong",
-    "qualifyingCommits": 354,
+    "priorFloor": "fallen",
+    "qualifyingCommits": 35,
     "qualifyingMinimum": 30,
     "revisions": 5,
     "shared": 10,
-    "sharedFloorUsed": 10,
-    "since": "2026-04-03T14:42:09.000Z",
+    "sharedFloorUsed": 3,
+    "since": "2026-04-18T02:46:02.000Z",
     "sourceExtensions": [
       ".js",
       ".mjs",
@@ -4790,7 +4147,7 @@
     ],
     "sourceFileReach": 20,
     "sourceFileRise": 25,
-    "sourceFilesReachingStrongFloor": 37,
+    "sourceFilesReachingStrongFloor": 0,
     "strength": 0.5,
     "windowDays": 180
   },
