@@ -9,7 +9,7 @@
       "externals": 0,
       "files": [
         {
-          "hash": "33e5fa3d9601faa03e3eaa6f4016622d8829e4e3cb17fd6e24bc9b73295755a0",
+          "hash": "1aaf7160d6bc64d5eb6279a512ad2bde5ddb434cda13d7103b8b211648357681",
           "path": ".github/workflows/ci.yml"
         },
         {
@@ -7765,11 +7765,11 @@
           "path": "site/astro.config.mjs"
         },
         {
-          "hash": "28916a47dcafdc3c02fa65ab6a0ce648aa0322f10a3416b062f1e005dc6d0f8b",
+          "hash": "2ece7237b974c1ad1e68d4c6ef84bb3bbba958ec45830345b8018f4701107ae6",
           "path": "site/package-lock.json"
         },
         {
-          "hash": "befab1e60a58365ace6a07f29fa3607c011084a5d4519853ef512855c9a5a20e",
+          "hash": "9b760ec648db6abc94f872522053096212d7580df2f0bd58232ea5f4da04c51f",
           "path": "site/package.json"
         },
         {
@@ -12286,9 +12286,9 @@
       "to": "tape-core"
     }
   ],
-  "engine": "1.24.0",
+  "engine": "1.26.0",
   "generatedFrom": {
-    "commit": "09f0f60c40ac4c1caa2e34653e7afb95b0789691",
+    "commit": "fd7039f130cbd2f95da7f99eeaf85954814dec01",
     "tracked": 757
   },
   "landings": [
