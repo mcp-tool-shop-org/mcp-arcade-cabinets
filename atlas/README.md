@@ -1,14 +1,14 @@
 # mcp-arcade-cabinets: how it works
 
-Mapped at 2026-10-15 from commit 09f0f60 by Atlas 1.24.0.
+Mapped at 2026-11-12 from commit 02cf53c by Atlas 1.26.0.
 
 ## What this is
 
 15 parts, mostly TypeScript (158 files), JavaScript (23), Python (6), CSS (2), Astro (1) and HTML (1). Work enters through 6 doors; CI and Site each reach 10 parts, and CI is followed because it comes first by name. It publishes @mcptoolshop/ghost-on-the-menu (packages/launcher) and @mcptoolshop/vibe-typer (packages/launcher-vibe-typer) to npm. It deploys a site to GitHub Pages. People run ghost-on-the-menu and vibe-typer.
 
-## What changed since 2026-10-15 (e04ef09)
+## What changed since 2026-11-12 (6d2dde6)
 
-Nothing structural changed since 2026-10-15; 2 files changed content.
+Nothing structural changed since 2026-11-12; 1 file changed content.
 
 ## What comes in
 
@@ -54,9 +54,14 @@ CI writes nothing this map can see.
 
 ## What tends to change together
 
-No two source files changed together often enough to name.
+- **apps/cabinets/src/vibe-typer.ts** and **apps/cabinets/test/typer-mount.test.ts** changed together in 17 of 26 commits, inside the cabinets part.
+- **packages/ghost-on-the-menu/src/patterns.ts** and **packages/ghost-on-the-menu/src/sim.ts** changed together in 29 of 47 commits, inside the ghost-on-the-menu part.
+- **packages/ghost-on-the-menu/src/sim.ts** and **packages/ghost-on-the-menu/src/types.ts** changed together in 27 of 46 commits, inside the ghost-on-the-menu part.
+- **packages/ghost-on-the-menu/src/patterns.ts** and **packages/ghost-on-the-menu/test/sim.test.ts** changed together in 23 of 43 commits, inside the ghost-on-the-menu part.
 
-Window: 180 days; a pair counts from 3 shared commits, since 0 source files reach 10 revisions; the floor rises to 10 when 25 do.
+5 files changed together with their own tests, as expected.
+
+Window: 180 days; a pair counts from 10 shared commits, since 37 source files reach 10 revisions; the floor falls to 3 when fewer than 20 do.
 
 ## What no test touches
 
@@ -116,7 +121,6 @@ Read those in order to follow one pull request end to end.
 - 2 writes and 5 reads go to the directory the command is run in (film/, fixtures/, ghost and 1 more place) or a path their caller passes, not to this repository.
 - 4 writes go to a temporary directory, not to this repository.
 - 41 commands are built at run time and not followed, 38 of them in tests.
-- There is a Dockerfile that a workflow builds and none pushes and Docker MCP Catalog entries at catalog/server.vibe.yaml and catalog/server.yaml; what ships from them goes from outside this repository, and is not on this page.
-- Statistics confidence is low: fewer than 25 source files reach 10 revisions in the window.
+- There are a Dockerfile that a workflow builds and none pushes and Docker MCP Catalog entries at catalog/server.vibe.yaml and catalog/server.yaml; what ships from them goes from outside this repository, and is not on this page.
 
 Regenerate with `npx --yes @dogfood-lab/atlas map`.

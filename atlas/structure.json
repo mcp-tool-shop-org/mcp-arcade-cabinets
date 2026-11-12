@@ -9,7 +9,7 @@
       "externals": 0,
       "files": [
         {
-          "hash": "33e5fa3d9601faa03e3eaa6f4016622d8829e4e3cb17fd6e24bc9b73295755a0",
+          "hash": "1aaf7160d6bc64d5eb6279a512ad2bde5ddb434cda13d7103b8b211648357681",
           "path": ".github/workflows/ci.yml"
         },
         {
@@ -43,7 +43,7 @@
       "externals": 0,
       "files": [
         {
-          "hash": "e18c40b48180e14a21e2854edf0f4fd600fc25d9cf6356e79da7299fe9944597",
+          "hash": "1ee9d0acefb3422dd364c528396f09baf1331659e0669e700d974f533140507d",
           "path": "packages/cabinet-server/package.json"
         },
         {
@@ -1550,7 +1550,7 @@
           "path": "apps/cabinets/index.html"
         },
         {
-          "hash": "d0b9f30367c7f85754b82911d40d27cceeb6fb951f1a4d3fac5b707717b2a509",
+          "hash": "984d3a6efbadcae8cb5ee35f0141d6d40f5f979e68748d1d8c0c1eedba548411",
           "path": "apps/cabinets/package.json"
         },
         {
@@ -6844,7 +6844,7 @@
           "path": "package.json"
         },
         {
-          "hash": "7421863e2b02774244d521c78bfcde9389825df0719f157ab602aa02c4cac04c",
+          "hash": "ce398906d5f7b9b5e529887e017aeaf0bcbd25b1f531a4895590e2a0da44e73d",
           "path": "pnpm-lock.yaml"
         },
         {
@@ -7765,11 +7765,11 @@
           "path": "site/astro.config.mjs"
         },
         {
-          "hash": "28916a47dcafdc3c02fa65ab6a0ce648aa0322f10a3416b062f1e005dc6d0f8b",
+          "hash": "61f329c3a435839dbdb94668eaf1b2896e8290699b0401211f03480aadec664c",
           "path": "site/package-lock.json"
         },
         {
-          "hash": "befab1e60a58365ace6a07f29fa3607c011084a5d4519853ef512855c9a5a20e",
+          "hash": "9b760ec648db6abc94f872522053096212d7580df2f0bd58232ea5f4da04c51f",
           "path": "site/package.json"
         },
         {
@@ -12286,9 +12286,9 @@
       "to": "tape-core"
     }
   ],
-  "engine": "1.24.0",
+  "engine": "1.26.0",
   "generatedFrom": {
-    "commit": "09f0f60c40ac4c1caa2e34653e7afb95b0789691",
+    "commit": "02cf53cc9472aaa14c0727101e27fd2be32a5699",
     "tracked": 757
   },
   "landings": [
