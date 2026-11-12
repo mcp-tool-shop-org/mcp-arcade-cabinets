@@ -43,7 +43,7 @@
       "externals": 0,
       "files": [
         {
-          "hash": "e18c40b48180e14a21e2854edf0f4fd600fc25d9cf6356e79da7299fe9944597",
+          "hash": "1ee9d0acefb3422dd364c528396f09baf1331659e0669e700d974f533140507d",
           "path": "packages/cabinet-server/package.json"
         },
         {
@@ -1550,7 +1550,7 @@
           "path": "apps/cabinets/index.html"
         },
         {
-          "hash": "d0b9f30367c7f85754b82911d40d27cceeb6fb951f1a4d3fac5b707717b2a509",
+          "hash": "984d3a6efbadcae8cb5ee35f0141d6d40f5f979e68748d1d8c0c1eedba548411",
           "path": "apps/cabinets/package.json"
         },
         {
@@ -6844,7 +6844,7 @@
           "path": "package.json"
         },
         {
-          "hash": "7421863e2b02774244d521c78bfcde9389825df0719f157ab602aa02c4cac04c",
+          "hash": "ce398906d5f7b9b5e529887e017aeaf0bcbd25b1f531a4895590e2a0da44e73d",
           "path": "pnpm-lock.yaml"
         },
         {
@@ -12288,7 +12288,7 @@
   ],
   "engine": "1.26.0",
   "generatedFrom": {
-    "commit": "fd7039f130cbd2f95da7f99eeaf85954814dec01",
+    "commit": "6d2dde6e4b4793bfc900b80a4585fc04b926b78a",
     "tracked": 757
   },
   "landings": [

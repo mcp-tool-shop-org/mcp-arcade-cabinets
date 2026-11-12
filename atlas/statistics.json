@@ -280,8 +280,8 @@
         "path": ".gitattributes"
       },
       {
-        "commits": 18,
-        "lines": 771,
+        "commits": 19,
+        "lines": 773,
         "path": ".github/workflows/ci.yml"
       },
       {
@@ -1340,8 +1340,8 @@
         "path": "apps/cabinets/vite.config.ts"
       },
       {
-        "commits": 4,
-        "lines": 348,
+        "commits": 5,
+        "lines": 366,
         "path": "atlas/README.md"
       },
       {
@@ -1350,18 +1350,18 @@
         "path": "atlas/boundaries.yaml"
       },
       {
-        "commits": 4,
-        "lines": 1927,
+        "commits": 5,
+        "lines": 2015,
         "path": "atlas/page.json"
       },
       {
-        "commits": 4,
-        "lines": 8801,
+        "commits": 5,
+        "lines": 11585,
         "path": "atlas/statistics.json"
       },
       {
-        "commits": 4,
-        "lines": 22712,
+        "commits": 5,
+        "lines": 22722,
         "path": "atlas/structure.json"
       },
       {
@@ -4243,11 +4243,11 @@
   },
   "confidence": {
     "level": "full",
-    "reason": "at least 30 qualifying commits, and at least 25 source files reach 10 revisions"
+    "reason": "at least 30 qualifying commits, and at least 20 source files reach 10 revisions"
   },
-  "generatedAt": "2026-11-11T22:23:26.464Z",
+  "generatedAt": "2026-11-12T00:46:27.353Z",
   "generatedFrom": {
-    "commit": "fd7039f130cbd2f95da7f99eeaf85954814dec01"
+    "commit": "6d2dde6e4b4793bfc900b80a4585fc04b926b78a"
   },
   "pairs": [
     {
@@ -4772,16 +4772,16 @@
     "floor": "strong",
     "floorHeld": false,
     "floorTrigger": null,
-    "headDate": "2026-10-15T01:41:54-07:00",
+    "headDate": "2026-11-11T17:23:34-05:00",
     "inScopeFiles": 762,
     "pinnedStart": null,
-    "priorFloor": "fallen",
-    "qualifyingCommits": 358,
+    "priorFloor": "strong",
+    "qualifyingCommits": 359,
     "qualifyingMinimum": 30,
     "revisions": 5,
     "shared": 10,
     "sharedFloorUsed": 10,
-    "since": "2026-04-18T08:41:54.000Z",
+    "since": "2026-05-15T22:23:34.000Z",
     "sourceExtensions": [
       ".js",
       ".mjs",
