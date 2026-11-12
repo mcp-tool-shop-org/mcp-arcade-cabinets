@@ -8,3 +8,6 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@anthropic-ai/sdk@0.125.0'
   - zod@4.6.2
+
+overrides:
+  'minimatch@>=7 <11.0.1': ^11.0.8
