@@ -395,8 +395,8 @@
         "path": "apps/cabinets/index.html"
       },
       {
-        "commits": 24,
-        "lines": 71,
+        "commits": 25,
+        "lines": 73,
         "path": "apps/cabinets/package.json"
       },
       {
@@ -1340,8 +1340,8 @@
         "path": "apps/cabinets/vite.config.ts"
       },
       {
-        "commits": 5,
-        "lines": 366,
+        "commits": 6,
+        "lines": 372,
         "path": "atlas/README.md"
       },
       {
@@ -1350,18 +1350,18 @@
         "path": "atlas/boundaries.yaml"
       },
       {
-        "commits": 5,
-        "lines": 2015,
+        "commits": 6,
+        "lines": 2027,
         "path": "atlas/page.json"
       },
       {
-        "commits": 5,
-        "lines": 11585,
+        "commits": 6,
+        "lines": 11619,
         "path": "atlas/statistics.json"
       },
       {
-        "commits": 5,
-        "lines": 22722,
+        "commits": 6,
+        "lines": 22730,
         "path": "atlas/structure.json"
       },
       {
@@ -2795,8 +2795,8 @@
         "path": "package.json"
       },
       {
-        "commits": 19,
-        "lines": 63,
+        "commits": 20,
+        "lines": 65,
         "path": "packages/cabinet-server/package.json"
       },
       {
@@ -4015,8 +4015,8 @@
         "path": "packages/vibe-typer/tsconfig.json"
       },
       {
-        "commits": 26,
-        "lines": 4686,
+        "commits": 27,
+        "lines": 4757,
         "path": "pnpm-lock.yaml"
       },
       {
@@ -4245,9 +4245,9 @@
     "level": "full",
     "reason": "at least 30 qualifying commits, and at least 20 source files reach 10 revisions"
   },
-  "generatedAt": "2026-11-12T00:46:27.353Z",
+  "generatedAt": "2026-11-12T01:07:10.034Z",
   "generatedFrom": {
-    "commit": "6d2dde6e4b4793bfc900b80a4585fc04b926b78a"
+    "commit": "02cf53cc9472aaa14c0727101e27fd2be32a5699"
   },
   "pairs": [
     {
@@ -4295,9 +4295,9 @@
     {
       "a": "README.es.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.es.md",
@@ -4358,9 +4358,9 @@
     {
       "a": "README.fr.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.fr.md",
@@ -4414,9 +4414,9 @@
     {
       "a": "README.hi.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.hi.md",
@@ -4463,9 +4463,9 @@
     {
       "a": "README.it.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.it.md",
@@ -4505,9 +4505,9 @@
     {
       "a": "README.ja.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.ja.md",
@@ -4540,9 +4540,9 @@
     {
       "a": "README.pt-BR.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.pt-BR.md",
@@ -4568,9 +4568,9 @@
     {
       "a": "README.zh.md",
       "b": "apps/cabinets/package.json",
-      "either": 27,
+      "either": 28,
       "shared": 14,
-      "strength": 0.518519
+      "strength": 0.5
     },
     {
       "a": "README.zh.md",
@@ -4596,37 +4596,37 @@
     {
       "a": "apps/cabinets/package.json",
       "b": "package.json",
-      "either": 34,
+      "either": 35,
       "shared": 19,
-      "strength": 0.558824
+      "strength": 0.542857
     },
     {
       "a": "apps/cabinets/package.json",
       "b": "packages/cabinet-server/package.json",
-      "either": 23,
-      "shared": 15,
-      "strength": 0.652174
+      "either": 24,
+      "shared": 16,
+      "strength": 0.666667
     },
     {
       "a": "apps/cabinets/package.json",
       "b": "packages/ghost-on-the-menu/package.json",
-      "either": 23,
+      "either": 24,
       "shared": 19,
-      "strength": 0.826087
+      "strength": 0.791667
     },
     {
       "a": "apps/cabinets/package.json",
       "b": "packages/launcher/package.json",
-      "either": 23,
+      "either": 24,
       "shared": 12,
-      "strength": 0.521739
+      "strength": 0.5
     },
     {
       "a": "apps/cabinets/package.json",
       "b": "packages/tape-core/package.json",
-      "either": 22,
+      "either": 23,
       "shared": 19,
-      "strength": 0.863636
+      "strength": 0.826087
     },
     {
       "a": "apps/cabinets/src/vibe-typer.ts",
@@ -4652,30 +4652,30 @@
     {
       "a": "packages/cabinet-server/package.json",
       "b": "packages/cabinet-server/src/server.ts",
-      "either": 29,
+      "either": 30,
       "shared": 15,
-      "strength": 0.517241
+      "strength": 0.5
     },
     {
       "a": "packages/cabinet-server/package.json",
       "b": "packages/ghost-on-the-menu/package.json",
-      "either": 23,
+      "either": 24,
       "shared": 15,
-      "strength": 0.652174
+      "strength": 0.625
     },
     {
       "a": "packages/cabinet-server/package.json",
       "b": "packages/launcher/package.json",
-      "either": 19,
+      "either": 20,
       "shared": 12,
-      "strength": 0.631579
+      "strength": 0.6
     },
     {
       "a": "packages/cabinet-server/package.json",
       "b": "packages/tape-core/package.json",
-      "either": 22,
+      "either": 23,
       "shared": 15,
-      "strength": 0.681818
+      "strength": 0.652174
     },
     {
       "a": "packages/ghost-on-the-menu/package.json",
@@ -4772,16 +4772,16 @@
     "floor": "strong",
     "floorHeld": false,
     "floorTrigger": null,
-    "headDate": "2026-11-11T17:23:34-05:00",
+    "headDate": "2026-11-11T19:46:37-05:00",
     "inScopeFiles": 762,
     "pinnedStart": null,
     "priorFloor": "strong",
-    "qualifyingCommits": 359,
+    "qualifyingCommits": 360,
     "qualifyingMinimum": 30,
     "revisions": 5,
     "shared": 10,
     "sharedFloorUsed": 10,
-    "since": "2026-05-15T22:23:34.000Z",
+    "since": "2026-05-16T00:46:37.000Z",
     "sourceExtensions": [
       ".js",
       ".mjs",
