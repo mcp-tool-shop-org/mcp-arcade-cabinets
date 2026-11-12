@@ -1,0 +1,13 @@
+{
+  "name": "@mcp-arcade-cabinets/harrow-gate",
+  "version": "0.13.2",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "pnpm --dir ../.. exec vitest run packages/harrow-gate/test",
+    "build": "esbuild src/play.ts --bundle --platform=node --format=esm --outfile=dist/play.js --log-level=warning"
+  }
+}

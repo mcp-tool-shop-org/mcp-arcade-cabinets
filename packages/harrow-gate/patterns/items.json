@@ -1,0 +1,47 @@
+{
+  "$comment": "Things the player can carry. 'at' places an item in the world; 'start' puts it in the pack; 'dark' items cannot be found without a lit lamp in a dark place; 'token' marks one of the masons' carved tokens; 'shown' is the line added to a place's description while the item lies there.",
+  "coins": 3,
+  "oil": 3,
+  "items": {
+    "lamp": { "name": "a lamp", "start": true },
+    "seal": {
+      "name": "the warden's brass seal",
+      "at": "archive",
+      "dark": true,
+      "shown": "On the desk, under a ledger, lies the warden's brass seal."
+    },
+    "archive key": { "name": "the archive key" },
+    "rope": { "name": "a coil of rope", "price": 3, "seller": "coll" },
+    "locket": {
+      "name": "a silver locket",
+      "at": "well bottom",
+      "shown": "A small silver locket glints in the water."
+    },
+    "first token": {
+      "name": "a carved token",
+      "at": "graveyard",
+      "token": true,
+      "shown": "A carved token is set into the lichen of the oldest stone."
+    },
+    "second token": {
+      "name": "a carved token",
+      "at": "well bottom",
+      "token": true,
+      "shown": "A carved token sits on the dry ledge."
+    },
+    "third token": {
+      "name": "a carved token",
+      "at": "tower top",
+      "token": true,
+      "shown": "A carved token is wedged in the parapet."
+    }
+  },
+  "quests": {
+    "locket": {
+      "giver": "pell",
+      "wants": "locket",
+      "coin": 2,
+      "reply": "Pell clutches the locket. \"Gran's! Thank you. Here, it is all I have.\""
+    }
+  }
+}
