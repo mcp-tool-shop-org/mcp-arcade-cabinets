@@ -1,14 +1,14 @@
 # mcp-arcade-cabinets: how it works
 
-Mapped at 2026-11-12 from commit 02cf53c by Atlas 1.26.0.
+Mapped at 2026-11-12 from commit db080ce by Atlas 1.26.0.
 
 ## What this is
 
 15 parts, mostly TypeScript (158 files), JavaScript (23), Python (6), CSS (2), Astro (1) and HTML (1). Work enters through 6 doors; CI and Site each reach 10 parts, and CI is followed because it comes first by name. It publishes @mcptoolshop/ghost-on-the-menu (packages/launcher) and @mcptoolshop/vibe-typer (packages/launcher-vibe-typer) to npm. It deploys a site to GitHub Pages. People run ghost-on-the-menu and vibe-typer.
 
-## What changed since 2026-11-12 (6d2dde6)
+## What changed since 2026-11-12 (02cf53c)
 
-Nothing structural changed since 2026-11-12; 1 file changed content.
+Nothing structural changed since 2026-11-12; 2 files changed content.
 
 ## What comes in
 
