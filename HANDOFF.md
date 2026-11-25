@@ -1,4 +1,22 @@
-# HANDOFF — v0.13.2 shipped (2026-09-30)
+# HANDOFF — Harrow Gate cabinet in review (2026-10-02)
+
+**A third cabinet, Harrow Gate, is on branch `feat/harrow-gate`.** It is a text
+adventure for testing ai-playtest's persona profiles: a 15-place walled town with
+people, a side quest, tokens, fights, a shortcut and system verbs, and every lever
+in JSON.
+
+- **The lock is H1–H7 in `docs/harrow-gate.dispatch.md`:**
+  - It is private, with no npm package.
+  - It reads no tapes.
+  - No paid run uses it until both the band and the ai-playtest-judged gate pass.
+- **`test/band.test.ts` is the andon:** a scripted bot for each of 17 personas
+  must separate by ai-playtest's rules.
+- **`pnpm verify` passes:** 1512 tests, including the cabinet's 55.
+- **Not merged, not released.** The Director decides both.
+
+---
+
+# Earlier — v0.13.2 shipped (2026-09-30)
 
 **v0.13.2 is a dependency patch, cut on the Director's word the same day as 0.13.1.** It ships the lockfile fix merged as #5: `fast-uri` 3.1.8 (bundled through the MCP SDK's `ajv`) and `ip-address` 10.7.2 (lockfile only). That closes Dependabot alerts #1–#3. No path from the cabinets reached either bug. Tagged at `3c7b3d3`. Every surface was updated:
 

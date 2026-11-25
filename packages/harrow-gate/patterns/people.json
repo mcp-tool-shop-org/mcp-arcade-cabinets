@@ -1,0 +1,79 @@
+{
+  "$comment": "Who is where, what they say, and what asking gets you. 'gives' hands over an item the first time a topic is asked; 'pays' hands over coin once a condition holds. A topic asked twice is answered with the 'again' prefix, so a player checking continuity can see the town remembers.",
+  "again": "As I said, ",
+  "people": {
+    "sela": {
+      "name": "Warden Sela",
+      "aliases": ["sela", "warden", "guard"],
+      "at": "gatehouse",
+      "greet": "Warden Sela looks up from the guard post. \"Gate shuts at dusk. What do you need?\"",
+      "topics": {
+        "seal": "the brass seal sits in the archive. Bring it, and the gate opens for you.",
+        "gate": "nobody leaves without the warden's seal. Orders came down this morning.",
+        "dusk": "the bell counts the hours. When it rings the last one, the gate is barred.",
+        "wall": "the wall walk is the sergeant's business. I keep the gate.",
+        "town": "quiet town. Too quiet since the archive keeper fell sick."
+      }
+    },
+    "oren": {
+      "name": "Father Oren",
+      "aliases": ["oren", "priest", "father"],
+      "at": "chapel",
+      "greet": "Father Oren straightens a candle. \"You look like someone in a hurry.\"",
+      "topics": {
+        "archive": "the keeper is abed, so I hold his key. Here, take it, and mind the dark in there.",
+        "rats": "there are rats in the cellar under us. Clear them out and I will see you paid.",
+        "bell": "the bell has a tongue and never says a word, yet the whole town hears it.",
+        "graveyard": "the old stones carry tokens the masons left. Nobody minds if you look."
+      },
+      "gives": { "archive": "archive key" },
+      "pays": { "rats": { "after": "rats", "coin": 2 } }
+    },
+    "marta": {
+      "name": "Marta the innkeeper",
+      "aliases": ["marta", "innkeeper", "keeper"],
+      "at": "inn",
+      "greet": "Marta wipes the long table. \"A bed, a meal, or the news?\"",
+      "topics": {
+        "room": "a rest by the fire costs a coin, and you will feel the better for it.",
+        "news": "they say a body with a rope could get down off the wall walk, if they had the nerve.",
+        "ledger": "sign the guest ledger and the inn remembers you. Type save whenever you like.",
+        "child": "Pell from the old quarter has been crying all day over something lost down the well.",
+        "tokens": "the masons hid three carved tokens about the town, long ago. Find them all and you have found the town."
+      }
+    },
+    "coll": {
+      "name": "Coll the rope seller",
+      "aliases": ["coll", "seller", "vendor", "rope seller"],
+      "at": "market",
+      "greet": "Coll leans over a coil of rope. \"Good hemp. Three coins.\"",
+      "topics": {
+        "rope": "three coins, and it will hold you down a well or off a wall. Say buy rope.",
+        "archive": "the archive door is locked while the keeper is sick. Father Oren has the key.",
+        "fish": "the fish is yesterday's. I would not."
+      }
+    },
+    "pell": {
+      "name": "Pell",
+      "aliases": ["pell", "child", "kid"],
+      "at": "old quarter",
+      "greet": "A child sits on a doorstep, red-eyed. \"I dropped Gran's locket down the well.\"",
+      "topics": {
+        "locket": "it is silver, with Gran's picture in it. It went down the well and I cannot reach.",
+        "tower": "the iron door wants a word. Gran says it is the thing that calls the town but has no mouth.",
+        "well": "the winch is broken. You would need a rope to get down."
+      }
+    },
+    "brask": {
+      "name": "Sergeant Brask",
+      "aliases": ["brask", "sergeant", "soldier"],
+      "at": "barracks",
+      "greet": "Sergeant Brask taps the sparring ring with a staff. \"Fancy a round? A coin for every one you win.\"",
+      "topics": {
+        "spar": "step into the ring and say spar. A coin a win, up to three, and you will hit harder for it.",
+        "wall": "the wall walk is open. Getting down the outside needs a rope and a steady head.",
+        "seal": "the warden wants her seal. I want a decent sparring partner."
+      }
+    }
+  }
+}

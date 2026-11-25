@@ -1,0 +1,146 @@
+{
+  "$comment": "Places, exits and descriptions. text[0] is the first visit, text[1] a return visit (descriptions: varied). 'dark' needs a lit lamp to read; 'locks' names the item an exit needs; 'needs' names an item that must be carried to use an exit at all. The road is the way out and is not a place.",
+  "start": "square",
+  "places": {
+    "square": {
+      "name": "the square",
+      "exits": { "north": "market", "east": "chapel", "west": "gatehouse", "south": "inn" },
+      "text": [
+        "Harrow Gate's square. A dry fountain, a notice board, cobbles worn smooth by carts.",
+        "The square again. Someone has chalked a crooked arrow on the fountain, pointing west."
+      ],
+      "things": ["fountain", "notice board"]
+    },
+    "market": {
+      "name": "the market",
+      "exits": { "south": "square", "east": "archive", "north": "barracks" },
+      "text": [
+        "The market. Awnings sag over trestles of salt fish and rope.",
+        "The market again. The rope seller has moved his stall nearer the archive door."
+      ],
+      "locks": { "east": "archive key" },
+      "things": ["trestles", "archive door"]
+    },
+    "archive": {
+      "name": "the archive",
+      "exits": { "west": "market" },
+      "text": [
+        "The town archive. Shelves of ledgers lean in toward a reading desk.",
+        "The archive again. Dust you disturbed earlier still hangs in the air."
+      ],
+      "dark": true,
+      "things": ["ledgers", "reading desk"]
+    },
+    "chapel": {
+      "name": "the chapel",
+      "exits": { "west": "square", "down": "cellar", "east": "graveyard" },
+      "text": [
+        "A small chapel. Candles gutter by a trapdoor in the floor, and a side door opens on the graveyard.",
+        "The chapel again. One of the candles has burned out since you were here."
+      ],
+      "things": ["candles", "trapdoor", "bell rope"]
+    },
+    "cellar": {
+      "name": "the cellar",
+      "exits": { "up": "chapel" },
+      "text": [
+        "A low cellar of barrels and old nets. Something scratches behind the barrels.",
+        "The cellar again. Water drips somewhere behind the barrels."
+      ],
+      "things": ["barrels", "nets"]
+    },
+    "graveyard": {
+      "name": "the graveyard",
+      "exits": { "west": "chapel" },
+      "text": [
+        "A walled graveyard. Lichen softens the names on the older stones.",
+        "The graveyard again. A crow has taken the highest stone."
+      ],
+      "things": ["stones", "crow"]
+    },
+    "gatehouse": {
+      "name": "the gatehouse",
+      "exits": { "east": "square", "west": "road" },
+      "text": [
+        "The gatehouse. A heavy arch opens on the west road.",
+        "The gatehouse again. The arch looks narrower than you remembered."
+      ],
+      "things": ["arch", "guard post"]
+    },
+    "inn": {
+      "name": "the inn",
+      "exits": { "north": "square", "east": "old quarter" },
+      "text": [
+        "The Lantern Inn. A low fire, a long table, and a guest ledger open on the counter.",
+        "The inn again. Someone has signed the ledger since you came in."
+      ],
+      "things": ["fire", "guest ledger"]
+    },
+    "old quarter": {
+      "name": "the old quarter",
+      "exits": { "west": "inn", "south": "well", "north": "tower" },
+      "text": [
+        "The old quarter. Narrow houses lean together over a lane of broken paving.",
+        "The old quarter again. A shutter that was open is closed now."
+      ],
+      "things": ["houses", "paving"]
+    },
+    "well": {
+      "name": "the well",
+      "exits": { "north": "old quarter", "down": "well bottom" },
+      "text": [
+        "An old well with a broken winch. The shaft drops into the dark.",
+        "The well again. A cold breath rises from the shaft."
+      ],
+      "locks": { "down": "rope" },
+      "things": ["winch", "shaft"]
+    },
+    "well bottom": {
+      "name": "the bottom of the well",
+      "exits": { "up": "well" },
+      "text": [
+        "The bottom of the well. Ankle-deep water, and a ledge of dry stone.",
+        "The well bottom again. Your rope still hangs where you left it."
+      ],
+      "things": ["ledge", "water"]
+    },
+    "tower": {
+      "name": "the old tower",
+      "exits": { "south": "old quarter", "up": "tower top" },
+      "text": [
+        "The foot of the old tower. A door of black iron bars the stair, with words worked into it.",
+        "The foot of the tower again. The iron door is as cold as before."
+      ],
+      "riddle": "up",
+      "things": ["iron door", "words"]
+    },
+    "tower top": {
+      "name": "the top of the tower",
+      "exits": { "down": "tower" },
+      "text": [
+        "The top of the tower. The whole town lies below you, and the west road beyond the wall.",
+        "The tower top again. The wind has not let up."
+      ],
+      "things": ["parapet", "view"]
+    },
+    "barracks": {
+      "name": "the barracks yard",
+      "exits": { "south": "market", "east": "wall walk" },
+      "text": [
+        "The barracks yard. A sparring ring of packed earth, and a stair up to the wall.",
+        "The barracks yard again. The ring has been raked since you were here."
+      ],
+      "things": ["sparring ring", "stair"]
+    },
+    "wall walk": {
+      "name": "the wall walk",
+      "exits": { "west": "barracks", "down": "road" },
+      "text": [
+        "The wall walk. A narrow path along the battlements, the drop outside sheer and long.",
+        "The wall walk again. The wind tugs at you up here."
+      ],
+      "locks": { "down": "rope" },
+      "things": ["battlements", "drop"]
+    }
+  }
+}
